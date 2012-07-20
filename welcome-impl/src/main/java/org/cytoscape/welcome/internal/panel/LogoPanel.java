@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal;
+package org.cytoscape.welcome.internal.panel;
 
 import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;
@@ -7,18 +7,17 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-public class LogoPanel extends JPanel {
+import org.cytoscape.welcome.internal.WelcomeScreenDialog;
+
+public class LogoPanel extends AbstractWelcomeScreenChildPanel {
 	
 	private static final long serialVersionUID = -1450934154838736314L;
 	private static final String IMAGE_LOCATION = "images/logo.png";
 	private BufferedImage bgImage;
 	
-	LogoPanel() {
-		
-		
+	public LogoPanel() {
 		initComponents();
 	}
 	
@@ -30,7 +29,7 @@ public class LogoPanel extends JPanel {
 		}
 		
 		this.setLayout(new BorderLayout());
-		JLabel logo = new JLabel();
+		final JLabel logo = new JLabel();
 		logo.setIcon(new ImageIcon(bgImage));
 		logo.setHorizontalAlignment(SwingConstants.CENTER);
 		

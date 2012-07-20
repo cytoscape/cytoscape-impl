@@ -20,13 +20,20 @@ public class BackgroundImagePanel extends JPanel {
 	public void paintComponent(Graphics g) {
 		Graphics2D g2D = (Graphics2D) g;
 
-		int panelWidth = this.getWidth();
-		int panelHeight = this.getHeight();
+		final int panelWidth = this.getWidth();
+		final int panelHeight = this.getHeight();
+		
+		// Centering image
+		final int imageW = image.getWidth();
+		final int imageH = image.getHeight();
+		
+		int x = panelWidth/2 - imageW/2;
+		int y = panelHeight/2 - imageH/2;
 		
 		g2D.setColor(getBackground());
 		g2D.fillRect(0, 0, panelWidth, panelHeight);
 
-		g2D.drawImage(image, null, 0, 0);
+		g2D.drawImage(image, null, x, y);
 	}
 
 }

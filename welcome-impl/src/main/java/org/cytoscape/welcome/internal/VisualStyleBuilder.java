@@ -32,7 +32,7 @@ public class VisualStyleBuilder {
 	private static final Color EDGE_MAPPING_MIN_COLOR = new Color(180, 180, 180);
 	private static final Color EDGE_MAPPING_MAX_COLOR = new Color(0x7A, 0xC5, 0xCD);
 
-	private static final Color NODE_LABEL_COLOR = new Color(160, 160, 160);
+	private static final Color NODE_LABEL_COLOR = new Color(100, 100, 100);
 	private static final Color EDGE_COLOR = new Color(180, 180, 180);
 	private static final String NODE_COLOR_COLUMN = "BetweennessCentrality";
 	private static final String NODE_SIZE_COLUMN = "BetweennessCentrality";
@@ -89,7 +89,7 @@ public class VisualStyleBuilder {
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, NODE_LABEL_COLOR);
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_FACE, NODE_LABEL_FONT);
-		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY, 190);
+		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY, 210);
 		
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0d);
 		visualStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_TRANSPARENCY, 150);

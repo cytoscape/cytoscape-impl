@@ -2,24 +2,16 @@ package org.cytoscape.welcome.internal;
 
 import java.awt.event.ActionEvent;
 import java.util.Properties;
+
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
-import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.osgi.framework.BundleContext;
+import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
+import org.cytoscape.welcome.internal.panel.HelpPanel;
+import org.cytoscape.welcome.internal.panel.OpenPanel;
+import org.cytoscape.welcome.internal.panel.StatusPanel;
 
 public class WelcomeScreenAction extends AbstractCyAction {
 
@@ -27,61 +19,34 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	public static final String DO_NOT_DISPLAY_PROP_NAME = "hideWelcomeScreen";
 	public static final String TEMP_DO_NOT_DISPLAY_PROP_NAME = "tempHideWelcomeScreen";
-
 	private static final String MENU_NAME = "Show Welcome Screen...";
 	private static final String PARENT_NAME = "Help";
 
-	private final OpenBrowser openBrowser;
-	private final RecentlyOpenedTracker fileTracker;
-	private final DialogTaskManager guiTaskManager;
-	private final LoadNetworkURLTaskFactory importNetworksTaskFactory;
-	private final CyApplicationConfiguration config;
-	private final DataSourceManager dsManager;
-
-	private final OpenSessionTaskFactory openSessionTaskFactory;
-	private final TaskFactory importNetworkFileTF;
-
-	private final CySwingApplication app;
-	private final CyProperty<Properties> cyProps;
-
-	private final BundleContext bc;
-
-	private final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
-	private final CyServiceRegistrar registrar;
-	private final VisualStyleBuilder vsBuilder;
-	private final VisualMappingManager vmm;
-	private final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory;
-
 	private boolean hide = false;
 
-	public WelcomeScreenAction(final BundleContext bc, final CySwingApplication app, OpenBrowser openBrowserServiceRef,
-			RecentlyOpenedTracker fileTracker, final OpenSessionTaskFactory openSessionTaskFactory,
-			DialogTaskManager guiTaskManager, final TaskFactory importNetworkFileTF,
-			final LoadNetworkURLTaskFactory importNetworksTaskFactory, final CyApplicationConfiguration config,
-			final DataSourceManager dsManager, final CyProperty<Properties> cyProps,
-			final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory,
-			final CyServiceRegistrar registrar, final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory) {
+	// Child Panels
+	private final CreateNewNetworkPanel importPanel;
+	private final OpenPanel openPanel;
+	private final HelpPanel helpPanel;
+	private final StatusPanel statusPanel;
+
+	private final CyProperty<Properties> cyProps;
+	private final CySwingApplication cytoscapeDesktop;
+
+	public WelcomeScreenAction(final CreateNewNetworkPanel importPanel, final OpenPanel openPanel,
+			final HelpPanel helpPanel, final StatusPanel statusPanel, final CyProperty<Properties> cyProps,
+			final CySwingApplication cytoscapeDesktop) {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
-
 		this.setMenuGravity(1.5f);
 
-		this.openBrowser = openBrowserServiceRef;
-		this.fileTracker = fileTracker;
-		this.guiTaskManager = guiTaskManager;
-		this.importNetworksTaskFactory = importNetworksTaskFactory;
-		this.config = config;
-		this.dsManager = dsManager;
-		this.app = app;
+		this.importPanel = importPanel;
+		this.openPanel = openPanel;
+		this.helpPanel = helpPanel;
+		this.statusPanel = statusPanel;
+		this.cytoscapeDesktop = cytoscapeDesktop;
+
 		this.cyProps = cyProps;
-		this.openSessionTaskFactory = openSessionTaskFactory;
-		this.importNetworkFileTF = importNetworkFileTF;
-		this.bc = bc;
-		this.analyzeNetworkCollectionTaskFactory = analyzeNetworkCollectionTaskFactory;
-		this.registrar = registrar;
-		this.vsBuilder = vsBuilder;
-		this.vmm = vmm;
-		this.applyPreferredLayoutTaskFactory = applyPreferredLayoutTaskFactory;
 
 		// Show it if necessary
 		SwingUtilities.invokeLater(new Runnable() {
@@ -93,11 +58,13 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(bc, openBrowser, fileTracker,
-				openSessionTaskFactory, guiTaskManager, config, importNetworkFileTF, importNetworksTaskFactory,
-				dsManager, cyProps, analyzeNetworkCollectionTaskFactory, registrar, vsBuilder, vmm, applyPreferredLayoutTaskFactory, hide);
-		welcomeScreen.setLocationRelativeTo(app.getJFrame());
+		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, openPanel, helpPanel,
+				statusPanel, cyProps, hide);
+		welcomeScreen.setLocationRelativeTo(cytoscapeDesktop.getJFrame());
 		welcomeScreen.setVisible(true);
+		welcomeScreen.setModal(true);
+
+		// Update property
 		this.hide = welcomeScreen.getHideStatus();
 		this.cyProps.getProperties().setProperty(DO_NOT_DISPLAY_PROP_NAME, ((Boolean) hide).toString());
 	}

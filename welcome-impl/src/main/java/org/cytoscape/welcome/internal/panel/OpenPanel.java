@@ -1,15 +1,15 @@
-package org.cytoscape.welcome.internal;
+package org.cytoscape.welcome.internal.panel;
 
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -17,20 +17,22 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-
 import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.welcome.internal.WelcomeScreenDialog;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class OpenPanel extends JPanel {
+public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final long serialVersionUID = 591882944100485039L;
-	private static final Font FILE_NAME_FONT = new Font(Font.DIALOG, Font.ITALIC, 12);
+
+	private static final Logger logger = LoggerFactory.getLogger(OpenPanel.class);
+
 	private static final String ICON_LOCATION = "/images/Icons/open_session.png";
 	private BufferedImage openIconImg;
 	private ImageIcon openIcon;
@@ -43,12 +45,9 @@ public class OpenPanel extends JPanel {
 	private final DialogTaskManager taskManager;
 	private final OpenSessionTaskFactory openSessionTaskFactory;
 
-	Window parent;
-
-	OpenPanel(Window parent, final RecentlyOpenedTracker fileTracker, final DialogTaskManager taskManager,
+	public OpenPanel(final RecentlyOpenedTracker fileTracker, final DialogTaskManager taskManager,
 			final OpenSessionTaskFactory openSessionTaskFactory) {
 		this.fileTracker = fileTracker;
-		this.parent = parent;
 		this.taskManager = taskManager;
 		this.openSessionTaskFactory = openSessionTaskFactory;
 		initComponents();
@@ -72,34 +71,35 @@ public class OpenPanel extends JPanel {
 
 		for (int i = 0; i < fileCount; i++) {
 			final URL target = recentFiles.get(i);
-			final JLabel fileLabel = new JLabel(recentFiles.get(i).toString());
 
-			fileLabel.setFont(FILE_NAME_FONT);
+			URI fileURI = null;
+			try {
+				fileURI = target.toURI();
+			} catch (URISyntaxException e2) {
+				logger.error("Invalid file URL.", e2);
+				continue;
+			}
+			final File targetFile = new File(fileURI);
+			final JLabel fileLabel = new JLabel("<html><u>" + target.toString() + "</u></html>");
+			fileLabel.setForeground(REGULAR_FONT_COLOR);
+			fileLabel.setFont(LINK_FONT);
 			fileLabel.setBorder(padLine);
 			fileLabel.setHorizontalAlignment(SwingConstants.LEFT);
 			fileLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-			try {
-				fileLabel.setToolTipText(target.toURI().toString());				
-			}
-			catch(Exception e){
-			}
+			fileLabel.setToolTipText(fileURI.toString());
 			fileLabel.addMouseListener(new MouseAdapter() {
-
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					 try {
-						final File targetFile = new File(target.toURI());
-						taskManager.execute(openSessionTaskFactory.createTaskIterator(targetFile));
-					} catch (URISyntaxException e1) {
-						e1.printStackTrace();
-					}
-					parent.dispose();
+					taskManager.execute(openSessionTaskFactory.createTaskIterator(targetFile));
+					closeParentWindow();
 				}
 			});
 
 			this.add(fileLabel);
 		}
-		open = new JLabel("Open other...");
+		open = new JLabel("Open other file...");
+		open.setFont(REGULAR_FONT);
+		open.setForeground(REGULAR_FONT_COLOR);
 		open.setIcon(openIcon);
 		open.setBorder(padLine);
 		open.setHorizontalAlignment(SwingConstants.LEFT);
@@ -108,7 +108,7 @@ public class OpenPanel extends JPanel {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				parent.dispose();
+				closeParentWindow();
 				taskManager.execute(openSessionTaskFactory.createTaskIterator());
 			}
 		});
