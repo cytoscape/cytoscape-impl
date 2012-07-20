@@ -27,7 +27,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.HelpPanel;
+import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
 import org.cytoscape.welcome.internal.panel.OpenPanel;
 import org.cytoscape.welcome.internal.panel.StatusPanel;
 import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
@@ -82,14 +82,13 @@ public class CyActivator extends AbstractCyActivator {
 				importNetworkFileTF, importNetworkTF, dsManagerServiceRef);
 		registerAllServices(bc, createNewNetworkPanel, new Properties());
 
-		final HelpPanel helpPanel = new HelpPanel(openBrowserServiceRef, cytoscapePropertiesServiceRef);
-
 		// TODO: implement contents
 		final StatusPanel statusPanel = new StatusPanel(cyVersion);
+		final NewsAndLinkPanel helpPanel = new NewsAndLinkPanel(statusPanel, openBrowserServiceRef, cytoscapePropertiesServiceRef);
 
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, openPanel,
-				helpPanel, statusPanel, cytoscapePropertiesServiceRef, cytoscapeDesktop);
+				helpPanel, cytoscapePropertiesServiceRef, cytoscapeDesktop);
 		registerAllServices(bc, welcomeScreenAction, new Properties());
 
 		// Export preset tasks

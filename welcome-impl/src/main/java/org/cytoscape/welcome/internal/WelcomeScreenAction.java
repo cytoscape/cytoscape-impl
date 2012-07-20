@@ -9,9 +9,8 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.HelpPanel;
+import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
 import org.cytoscape.welcome.internal.panel.OpenPanel;
-import org.cytoscape.welcome.internal.panel.StatusPanel;
 
 public class WelcomeScreenAction extends AbstractCyAction {
 
@@ -27,14 +26,13 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	// Child Panels
 	private final CreateNewNetworkPanel importPanel;
 	private final OpenPanel openPanel;
-	private final HelpPanel helpPanel;
-	private final StatusPanel statusPanel;
+	private final NewsAndLinkPanel helpPanel;
 
 	private final CyProperty<Properties> cyProps;
 	private final CySwingApplication cytoscapeDesktop;
 
 	public WelcomeScreenAction(final CreateNewNetworkPanel importPanel, final OpenPanel openPanel,
-			final HelpPanel helpPanel, final StatusPanel statusPanel, final CyProperty<Properties> cyProps,
+			final NewsAndLinkPanel helpPanel, final CyProperty<Properties> cyProps,
 			final CySwingApplication cytoscapeDesktop) {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
@@ -43,7 +41,6 @@ public class WelcomeScreenAction extends AbstractCyAction {
 		this.importPanel = importPanel;
 		this.openPanel = openPanel;
 		this.helpPanel = helpPanel;
-		this.statusPanel = statusPanel;
 		this.cytoscapeDesktop = cytoscapeDesktop;
 
 		this.cyProps = cyProps;
@@ -58,8 +55,8 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, openPanel, helpPanel,
-				statusPanel, cyProps, hide);
+		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, openPanel, helpPanel, cyProps,
+				hide);
 		welcomeScreen.setLocationRelativeTo(cytoscapeDesktop.getJFrame());
 		welcomeScreen.setVisible(true);
 		welcomeScreen.setModal(true);

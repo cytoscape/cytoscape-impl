@@ -24,10 +24,9 @@ import javax.swing.border.LineBorder;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.HelpPanel;
 import org.cytoscape.welcome.internal.panel.LogoPanel;
+import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
 import org.cytoscape.welcome.internal.panel.OpenPanel;
-import org.cytoscape.welcome.internal.panel.StatusPanel;
 import org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel;
 
 public class WelcomeScreenDialog extends JDialog {
@@ -41,7 +40,7 @@ public class WelcomeScreenDialog extends JDialog {
 	private static final String IMAGE_LOCATION = "images/background.png";
 	private BufferedImage bgImage;
 
-	private static final Dimension DEF_SIZE = new Dimension(900, 500);
+	private static final Dimension DEF_SIZE = new Dimension(600, 500);
 
 	private BackgroundImagePanel basePanel;
 	private JPanel mainPanel;
@@ -53,21 +52,18 @@ public class WelcomeScreenDialog extends JDialog {
 	// Child Panels
 	private final CreateNewNetworkPanel importPanel;
 	private final OpenPanel openPanel;
-	private final HelpPanel helpPanel;
-	private final StatusPanel statusPanel;
+	private final NewsAndLinkPanel helpPanel;
 
 	public WelcomeScreenDialog(final CreateNewNetworkPanel importPanel, final OpenPanel openPanel,
-			final HelpPanel helpPanel, final StatusPanel statusPanel, final CyProperty<Properties> cyProps, final boolean hide) {
+			final NewsAndLinkPanel helpPanel, final CyProperty<Properties> cyProps, final boolean hide) {
 
 		this.importPanel = importPanel;
 		this.openPanel = openPanel;
 		this.helpPanel = helpPanel;
-		this.statusPanel = statusPanel;
 
 		this.importPanel.setParentWindow(this);
 		this.openPanel.setParentWindow(this);
 		this.helpPanel.setParentWindow(this);
-		this.statusPanel.setParentWindow(this);
 
 		this.cyProps = cyProps;
 
@@ -108,7 +104,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 		mainPanel = new JPanel();
 		mainPanel.setSize(DEF_SIZE);
-		mainPanel.setLayout(new GridLayout(1, 3));
+		mainPanel.setLayout(new GridLayout(1, 2));
 		mainPanel.setOpaque(false);
 
 		basePanel.add(mainPanel, BorderLayout.CENTER);
@@ -153,13 +149,11 @@ public class WelcomeScreenDialog extends JDialog {
 		JPanel panel2 = new JPanel();
 		JPanel panel3 = new JPanel();
 		JPanel panel4 = new JPanel();
-		JPanel statusPanelBase = new JPanel();
 
 		panel1.setOpaque(false);
 		panel2.setOpaque(false);
 		panel3.setOpaque(false);
 		panel4.setOpaque(false);
-		statusPanelBase.setOpaque(false);
 
 		Color borderPaint = new Color(0xff, 0xff, 0xff, 50);
 		final LineBorder border = new LineBorder(borderPaint, 5, false);
@@ -167,18 +161,15 @@ public class WelcomeScreenDialog extends JDialog {
 		panel2.setBorder(border);
 		panel3.setBorder(border);
 		panel4.setBorder(border);
-		statusPanelBase.setBorder(border);
 
 		panel1.setBackground(PANEL_COLOR);
 		panel2.setBackground(PANEL_COLOR);
 		panel3.setBackground(PANEL_COLOR);
 		panel4.setBackground(PANEL_COLOR);
-		statusPanelBase.setBackground(PANEL_COLOR);
 
 		setChildPanel(panel1, openPanel, "Open Recent Session");
 		setChildPanel(panel2, importPanel, "Common Workflow");
-		setChildPanel(panel3, helpPanel, "Help");
-		setChildPanel(statusPanelBase, statusPanel, "News");
+		setChildPanel(panel3, helpPanel, "News and Links");
 		setLogoPanel(panel4, new LogoPanel());
 
 		final JPanel leftPanel = new JPanel();
@@ -195,15 +186,11 @@ public class WelcomeScreenDialog extends JDialog {
 		mainPanel.setBorder(border);
 
 		leftPanel.add(panel1);
-		leftPanel.add(panel4);
+		leftPanel.add(panel3);
 
 		rightPanel.add(panel2);
 
-		centerPanel.add(panel3);
-		centerPanel.add(statusPanelBase);
-
 		mainPanel.add(leftPanel);
-		mainPanel.add(centerPanel);
 		mainPanel.add(rightPanel);
 	}
 

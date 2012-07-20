@@ -94,7 +94,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 		// Enable combo box listener here to avoid unnecessary reaction.
 		this.networkList.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				loadPreset();

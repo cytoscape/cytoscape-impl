@@ -1,6 +1,7 @@
 package org.cytoscape.welcome.internal.panel;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -11,14 +12,16 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.OpenBrowser;
 
-public class HelpPanel extends AbstractWelcomeScreenChildPanel {
+public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final long serialVersionUID = -1685752658901305871L;
 
@@ -33,16 +36,31 @@ public class HelpPanel extends AbstractWelcomeScreenChildPanel {
 	private final OpenBrowser openBrowserServiceRef;
 	private final CyProperty<Properties> cyProps;
 
-	public HelpPanel(final OpenBrowser openBrowserServiceRef, CyProperty<Properties> cyProps) {
+	private final StatusPanel statusPanel;
+
+	public NewsAndLinkPanel(final StatusPanel statusPanel, final OpenBrowser openBrowserServiceRef,
+			CyProperty<Properties> cyProps) {
 		labelSet = new ArrayList<JLabel>();
 		urlMap = new HashMap<JLabel, String>();
 		this.openBrowserServiceRef = openBrowserServiceRef;
 		this.cyProps = cyProps;
+		this.statusPanel = statusPanel;
 		initComponents();
 	}
 
 	private void initComponents() {
-		this.setLayout(new GridLayout(4, 1));
+		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		
+		
+		final JPanel linkPanel = new JPanel();
+		linkPanel.setOpaque(false);
+		linkPanel.setMaximumSize(new Dimension(300, 65));
+		linkPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(REGULAR_FONT_COLOR, 1),
+				"Web Links", TitledBorder.LEFT, TitledBorder.CENTER, REGULAR_FONT, REGULAR_FONT_COLOR));
+		linkPanel.setLayout(new GridLayout(2, 2));
+
+		
 		about = new JLabel("<html><u>About Cytoscape</u></html>");
 		manual = new JLabel("<html><u>User Documentation</u></html>");
 		tutorial = new JLabel("<html><u>Tutorials</u></html>");
@@ -74,8 +92,19 @@ public class HelpPanel extends AbstractWelcomeScreenChildPanel {
 			label.setOpaque(false);
 			label.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			label.addMouseListener(new LabelMouseListener(label, urlMap.get(label), this));
-			add(label);
+			linkPanel.add(label);
 		}
+
+		statusPanel.setOpaque(false);
+		final Dimension statusPanelSize = new Dimension(300, 100);
+		statusPanel.setPreferredSize(statusPanelSize);
+		statusPanel.setSize(statusPanelSize);
+		statusPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(REGULAR_FONT_COLOR, 1),
+				"Latest News", TitledBorder.LEFT, TitledBorder.CENTER, REGULAR_FONT, REGULAR_FONT_COLOR));
+		
+		add(linkPanel);
+		add(statusPanel);
+		
 	}
 
 	private final class LabelMouseListener extends MouseAdapter {
