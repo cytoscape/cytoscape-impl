@@ -16,13 +16,7 @@
 package org.cytoscape.session;
 
 import static org.junit.Assert.*;
-import static org.ops4j.pax.exam.CoreOptions.systemProperty;
-import static org.ops4j.pax.exam.CoreOptions.felix;
-import static org.ops4j.pax.exam.CoreOptions.junitBundles;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-import static org.ops4j.pax.exam.CoreOptions.options;
-import static org.ops4j.pax.exam.CoreOptions.repository;
-import static org.ops4j.pax.exam.CoreOptions.frameworkStartLevel;
+import static org.ops4j.pax.exam.CoreOptions.*;
 
 import java.io.File;
 
@@ -125,6 +119,7 @@ public abstract class BasicIntegrationTest {
 		return options(
 				systemProperty("org.osgi.framework.system.packages.extra").value("com.sun.xml.internal.bind"),
 				junitBundles(),
+				vmOption("-Xmx512M"),
 
 				// Use Felix as runtime
 				felix(), 
