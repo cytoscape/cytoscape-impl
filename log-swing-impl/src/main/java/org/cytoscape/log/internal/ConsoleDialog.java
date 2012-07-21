@@ -68,6 +68,7 @@ class ConsoleDialog {
 			Level.ERROR,
 			Level.FATAL
 		};
+        static final Level DEFAULT_LEVEL = Level.WARN;
 
 		static final DateFormat timeFmt = DateFormat.getTimeInstance();
 
@@ -106,7 +107,7 @@ class ConsoleDialog {
 		 */
 		public boolean logEventMatches(final String selectedLog, final Pattern regex, int logLevelThreshold)
 		{
-			if (this.level > logLevelThreshold)
+			if (this.level < logLevelThreshold)
 				return false;
 			if (selectedLog != null && !(this.log.startsWith(selectedLog)))
 				return false;
@@ -176,7 +177,7 @@ class ConsoleDialog {
 		filterTextField.getDocument().addDocumentListener(new FilterUpdater());
 
 		levelComboBox = new JComboBox(LogEvent.LEVELS);
-		levelComboBox.setSelectedIndex(levelComboBox.getItemCount() - 1);
+		levelComboBox.setSelectedItem(LogEvent.DEFAULT_LEVEL);
 		levelComboBox.addActionListener(new LevelThresholdListener());
 
 		logViewer = new LogViewer(logViewerConfig);
@@ -188,7 +189,7 @@ class ConsoleDialog {
 		logsTree.addTreeSelectionListener(new LogsTreeSelectionListener());
 		final JScrollPane logsTreeScrollPane = new JScrollPane(logsTree);
 
-		final JSplitPane logsPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logsTree, logViewer.getComponent());
+		final JSplitPane logsPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logsTreeScrollPane, logViewer.getComponent());
 		logsPane.setDividerLocation(200);
 
 		scrollCheckBox = new JCheckBox("Scroll to new messages");
@@ -201,22 +202,33 @@ class ConsoleDialog {
 
 		GridBagConstraints c = new GridBagConstraints();
 
-		final JPanel filterPanel = new JPanel(new BorderLayout());
-		filterPanel.add(new JLabel("Filter:"), BorderLayout.WEST);
-		filterPanel.add(filterTextField, BorderLayout.CENTER);
+		final JPanel filterPanel = new JPanel(new GridBagLayout());
+		c.insets = new Insets(4, 4, 0, 0);
+		c.gridx = 0;		c.gridy = 0;
+		c.gridwidth = 1;	c.gridheight = 1;
+		c.weightx = 0.0;	c.weighty = 0.0;
+		c.fill = GridBagConstraints.NONE;
+		filterPanel.add(new JLabel("Filter:"), c);
 
-		c.insets = new Insets(4, 4, 0, 4);
+		c.gridx++;		    c.gridy = 0;
+		c.weightx = 1.0;	c.weighty = 0.0;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		filterPanel.add(filterTextField, c);
+
+		c.gridx++;		    c.gridy = 0;
+		c.weightx = 0.0;	c.weighty = 0.0;
+		c.fill = GridBagConstraints.NONE;
+		filterPanel.add(new JLabel("Log Level Threshold:"), c);
+
+		c.gridx++;		    c.gridy = 0;
+		filterPanel.add(levelComboBox, c);
+
+		c.insets = new Insets(4, 4, 0, 0);
 		c.gridx = 0;		c.gridy = 0;
 		c.gridwidth = 2;	c.gridheight = 1;
 		c.weightx = 1.0;	c.weighty = 0.0;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		dialog.add(filterPanel, c);
-
-		final JPanel levelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		levelPanel.add(new JLabel("Log Level Threshold:"));
-		levelPanel.add(levelComboBox);
-		c.gridx = 0;		c.gridy++;
-		dialog.add(levelPanel, c);
 
 		c.gridx = 0;		c.gridy++;
 		c.gridwidth = 2;	c.gridheight = 1;
@@ -224,16 +236,16 @@ class ConsoleDialog {
 		c.fill = GridBagConstraints.BOTH;
 		dialog.add(logsPane, c);
 
-		final JPanel btnsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		btnsPanel.add(exportButton);
-		btnsPanel.add(clearButton);
-
 		c.gridx = 0;		c.gridy++;
 		c.gridwidth = 1;	c.gridheight = 1;
 		c.weightx = 0.5;	c.weighty = 0.0;
 		c.fill = GridBagConstraints.HORIZONTAL;
 
 		dialog.add(scrollCheckBox, c);
+
+		final JPanel btnsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		btnsPanel.add(exportButton);
+		btnsPanel.add(clearButton);
 
 		c.gridx++;
 		dialog.add(btnsPanel, c);
