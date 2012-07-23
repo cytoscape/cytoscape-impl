@@ -94,21 +94,19 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		tables.clear();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public synchronized void addTable(final CyTable t) {
 		if (t == null)
 			throw new NullPointerException("added table is null");
 
-		tables.put(t.getSUID(), t);
-		eventHelper.fireEvent(new TableAddedEvent(this, t));
+		final Long suid = t.getSUID();
+		
+		if (tables.get(suid) == null) {
+			tables.put(suid, t);
+			eventHelper.fireEvent(new TableAddedEvent(this, t));
+		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public synchronized Set<CyTable> getAllTables(final boolean includePrivate) {
 		final Set<CyTable> res = new HashSet<CyTable>();
@@ -121,10 +119,6 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		return res;
 	}
 
-
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public synchronized CyTable getTable(final long suid) {
 		return tables.get(suid);
@@ -164,9 +158,6 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		table = null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void deleteTable(long suid) {
 		deleteTableInternal(suid, false);
@@ -179,7 +170,6 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 			for (CyTable table : networkTableManager.getTables(network, type).values())
 				deleteTableInternal(table.getSUID(), true);
 	}
-
 
 	@Override
 	public Set<CyTable> getGlobalTables() {
@@ -199,7 +189,6 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		
 		return globalTables;
 	}
-
 
 	@Override
 	public Set<CyTable> getLocalTables(final Class<? extends CyIdentifiable> type) {
