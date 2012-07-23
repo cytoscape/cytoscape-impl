@@ -51,6 +51,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -112,8 +113,7 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 			throw new NullPointerException("RenderingEngineFactory is null.");
 
 		// Create dummy view.
-		final CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables();
-
+		final CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
 		final CyNode source = dummyNet.addNode();
 		final CyNode target = dummyNet.addNode();
 

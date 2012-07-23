@@ -44,49 +44,32 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 
-import org.cytoscape.application.swing.events.PreferencesUpdatedEvent;
 import org.cytoscape.event.CyEventHelper;
-
-import org.cytoscape.model.CyTable.SavePolicy;
-import org.cytoscape.property.PropertyUpdatedEvent;
-import org.cytoscape.property.PropertyUpdatedListener;
-import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
-
+import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.property.SimpleCyProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.swing.JComboBox;
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.table.DefaultTableColumnModel;
 
 
 /**

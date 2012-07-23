@@ -28,10 +28,15 @@
 package org.cytoscape.model.subnetwork;
 
 
+
+import static org.junit.Assert.*;
+
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.TestCyNetworkFactory;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 
 
 public class CyRootNetworkTest extends AbstractCyRootNetworkTest {
@@ -45,5 +50,21 @@ public class CyRootNetworkTest extends AbstractCyRootNetworkTest {
 	public void tearDown() {
 		root = null;
 		root2 = null;
+	}
+	
+	@Test
+	public void testAddSubNetwork() {
+		CySubNetwork sn1 = TestCyNetworkFactory.getPublicRootInstance(SavePolicy.SESSION_FILE).addSubNetwork();
+		CySubNetwork sn2 = TestCyNetworkFactory.getPublicRootInstance(SavePolicy.DO_NOT_SAVE).addSubNetwork();
+		assertEquals("Subnetwork inherits save policy from its root network", SavePolicy.SESSION_FILE, sn1.getSavePolicy());
+		assertEquals("Subnetwork inherits save policy from its root network", SavePolicy.DO_NOT_SAVE, sn2.getSavePolicy());
+	}
+	
+	@Test
+	public void testAddSubNetworkWithDifferentSavePolicy() {
+		CySubNetwork sn1 = TestCyNetworkFactory.getPublicRootInstance(SavePolicy.SESSION_FILE).addSubNetwork(SavePolicy.DO_NOT_SAVE);
+		CySubNetwork sn2 = TestCyNetworkFactory.getPublicRootInstance(SavePolicy.DO_NOT_SAVE).addSubNetwork(SavePolicy.SESSION_FILE);
+		assertEquals("New subnetwork can have a different save policy", SavePolicy.DO_NOT_SAVE, sn1.getSavePolicy());
+		assertEquals("New subnetwork can have a different save policy", SavePolicy.SESSION_FILE, sn2.getSavePolicy());
 	}
 }

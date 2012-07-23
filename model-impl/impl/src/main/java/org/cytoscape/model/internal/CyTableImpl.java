@@ -43,6 +43,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -400,7 +401,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 					 final boolean isImmutable) {
 		createListColumn(columnName,listElementType,isImmutable,null);
 	}
-
 
 	@Override
 	public <T> void createListColumn(final String columnName, final Class<T> listElementType,
@@ -1149,7 +1149,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			return CyTableImpl.this;
 		}
 
-//		@Override
+		@Override
 		public String toString() {
 			return 	"Table: " + title + " SUID: " + suid + " isImmutable: " + isImmutable + " public: " + pub;
 		/*

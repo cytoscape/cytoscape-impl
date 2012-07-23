@@ -44,6 +44,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.events.ColumnCreatedListener;
@@ -63,6 +64,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork {
 
 	private final long suid;
+	private SavePolicy savePolicy;
 	
 	private final CyEventHelper eventHelper;
 	private final List<CySubNetwork> subNetworks;
@@ -87,15 +89,20 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	                         final CyNetworkTableManager networkTableMgr,
 	                         final CyTableFactory tableFactory,
 	                         final CyServiceRegistrar serviceRegistrar, 
-	                         final boolean publicTables)
+	                         final boolean publicTables,
+	                         final SavePolicy savePolicy)
 	{
 		super(SUIDFactory.getNextSUID(), networkTableMgr, tableFactory,publicTables,0);
+		
+		assert(savePolicy != null);
+		
 		this.eventHelper = eh;
 		this.tableMgr = tableMgr;
 		this.networkTableMgr = networkTableMgr;
 		this.tableFactory = tableFactory;
 		this.serviceRegistrar = serviceRegistrar;
 		this.publicTables = publicTables;
+		this.savePolicy = savePolicy;
 		suid = super.getSUID(); 
 		subNetworks = new ArrayList<CySubNetwork>();
 		nextNodeIndex = 0;
@@ -116,11 +123,12 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		networkNameSetListener = new NetworkNameSetListener(this);
 		serviceRegistrar.registerService(networkNameSetListener, RowsSetListener.class, new Properties());		
 		serviceRegistrar.registerService(networkNameSetListener, NetworkAddedListener.class, new Properties());		
-		base = addSubNetwork(); 
 
 		registerAllTables(networkTableMgr.getTables(this, CyNetwork.class).values());
 		registerAllTables(networkTableMgr.getTables(this, CyNode.class).values());
 		registerAllTables(networkTableMgr.getTables(this, CyEdge.class).values());
+		
+		base = addSubNetwork();
 	}
 
 	@Override
@@ -229,34 +237,39 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 
 	@Override
-	public boolean equals(final Object o) {
-		if (!(o instanceof CyRootNetworkImpl))
-			return false;
-
-		return super.equals(o); 
-	}
-
-	@Override
 	public CySubNetwork addSubNetwork(final Iterable<CyNode> nodes, final Iterable<CyEdge> edges) {
+		return addSubNetwork(nodes, edges, savePolicy);
+	}
+	
+	@Override
+	public CySubNetwork addSubNetwork(final Iterable<CyNode> nodes, final Iterable<CyEdge> edges,
+			final SavePolicy policy) {
 		// Only addSubNetwork() modifies the internal state of CyRootNetworkImpl (this object), 
 		// so because it's synchronized, we don't need to synchronize this method.
-		final CySubNetwork sub = addSubNetwork();
-		if ( nodes != null ) 
-			for ( CyNode n : nodes )
+		final CySubNetwork sub = addSubNetwork(policy);
+		
+		if (nodes != null)
+			for (CyNode n : nodes)
 				sub.addNode(n);
-		if ( edges != null ) 
-			for ( CyEdge e : edges )
+		if (edges != null)
+			for (CyEdge e : edges)
 				sub.addEdge(e);
+		
 		return sub;
 	}
 
 	@Override
 	public synchronized CySubNetwork addSubNetwork() {
+		return addSubNetwork(savePolicy);
+	}
+	
+	@Override
+	public synchronized CySubNetwork addSubNetwork(final SavePolicy policy) {
 		// Subnetwork's ID
 		final long newSUID = SUIDFactory.getNextSUID();
 		
-		final CySubNetworkImpl sub = new CySubNetworkImpl(this,newSUID,eventHelper,tableMgr,networkTableMgr,
-		                                                  tableFactory,publicTables,subNetworks.size());		
+		final CySubNetworkImpl sub = new CySubNetworkImpl(this, newSUID, eventHelper, tableMgr, networkTableMgr,
+				tableFactory, publicTables, subNetworks.size(), policy);	
 		networkAddedListenerDelegator.addListener(sub);
 		
 		CyTable networkTable = networkTableMgr.getTable(this, CyNetwork.class, CyRootNetwork.SHARED_ATTRS);
@@ -268,23 +281,9 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		linkDefaultTables(edgeTable, sub.getDefaultEdgeTable());
 		// Another listener tracks changes to the interaction column in local tables
 		interactionSetListener.addInterestedTables(sub.getDefaultEdgeTable(), edgeTable);
-
 		subNetworks.add(sub);
+		
 		return sub;
-	}
-
-	private class NetworkAddedListenerDelegator implements NetworkAddedListener {
-		List<WeakReference<NetworkAddedListener>> listeners = new ArrayList<WeakReference<NetworkAddedListener>>();
-		public void addListener(NetworkAddedListener l) {
-			listeners.add(new WeakReference<NetworkAddedListener>(l));
-		}
-		public void handleEvent(NetworkAddedEvent e) {
-			for (WeakReference<NetworkAddedListener> ref : listeners) {
-				final NetworkAddedListener l = ref.get();
-				if ( l != null )
-					l.handleEvent(e);
-			}
-		}
 	}
 
 	@Override
@@ -334,10 +333,23 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	public synchronized boolean containsNetwork(final CyNetwork net) {
 		return subNetworks.contains(net);
 	}
+	
+	@Override
+	public SavePolicy getSavePolicy() {
+		return savePolicy;
+	}
+	
+	@Override
+	public boolean equals(final Object o) {
+		if (!(o instanceof CyRootNetworkImpl))
+			return false;
 
+		return super.equals(o); 
+	}
+	
 	@Override
 	public String toString() {
-		return "CyNetwork: " + suid + " name: " + getRow(this).get("name", String.class); 
+		return "CyRootNetwork: " + suid + " name: " + getRow(this).get("name", String.class); 
 	}
 
 	private synchronized int getNextNodeIndex() {
@@ -346,5 +358,19 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	private synchronized int getNextEdgeIndex() {
 		return nextEdgeIndex++;
+	}
+	
+	private class NetworkAddedListenerDelegator implements NetworkAddedListener {
+		List<WeakReference<NetworkAddedListener>> listeners = new ArrayList<WeakReference<NetworkAddedListener>>();
+		public void addListener(NetworkAddedListener l) {
+			listeners.add(new WeakReference<NetworkAddedListener>(l));
+		}
+		public void handleEvent(NetworkAddedEvent e) {
+			for (WeakReference<NetworkAddedListener> ref : listeners) {
+				final NetworkAddedListener l = ref.get();
+				if ( l != null )
+					l.handleEvent(e);
+			}
+		}
 	}
 }

@@ -40,6 +40,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveNodesEvent;
 import org.cytoscape.model.events.AddedEdgesEvent;
@@ -61,6 +62,8 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
  */
 public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySubNetwork, NetworkAddedListener {
 
+	private SavePolicy savePolicy;
+	
 	private final CyEventHelper eventHelper;
 	private final CyRootNetworkImpl parent;
 	private boolean fireAddedNodesAndEdgesEvents;
@@ -75,24 +78,29 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	                 final CyNetworkTableManager netTableMgr, 
 	                 final CyTableFactory tableFactory, 
 	                 boolean publicTables,
-	                 int tableSizeDeterminer) {
+	                 int tableSizeDeterminer,
+	                 final SavePolicy savePolicy) {
 		super(suid, netTableMgr, tableFactory,publicTables,tableSizeDeterminer);
 
 		assert(par != null);
+		assert(savePolicy != null);
+		
 		this.parent = par;
 		this.eventHelper = eventHelper;
 		this.tableMgr = tableMgr;
 		this.networkTableMgr = netTableMgr;
+		this.savePolicy = savePolicy;
 		
 		initTables(this);
 
 		fireAddedNodesAndEdgesEvents = false;		
 	}
 
+	@Override
 	public CyRootNetwork getRootNetwork() {
 		return parent;
 	}
-
+	
 	@Override
 	public CyNode addNode() {
 		final CyNode ret;
@@ -246,6 +254,11 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	}
 
 	@Override
+	public SavePolicy getSavePolicy() {
+		return savePolicy;
+	}
+	
+	@Override
 	public void handleEvent(final NetworkAddedEvent e) {
 		if (e.getNetwork() == this) {
 			registerSubnetworkTables();
@@ -287,6 +300,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 				tr.set(CyRootNetwork.SHARED_INTERACTION, sr.get(CyEdge.INTERACTION, String.class));
 		}
 	}
+	
 	@Override
 	public boolean equals(final Object o) {
 		if (!(o instanceof CySubNetworkImpl))

@@ -71,8 +71,8 @@ import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.CyTableMetadata;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
@@ -255,9 +255,11 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		final Set<CyRootNetwork> rootNetworks = new HashSet<CyRootNetwork>();
 
 		// Zip only root-networks, because sub-networks should be automatically saved with them.
-		for (CyNetwork n : networks) {
-			CyRootNetwork rn = rootNetworkManager.getRootNetwork(n);
-			rootNetworks.add(rn);
+		for (final CyNetwork n : networks) {
+			final CyRootNetwork rn = rootNetworkManager.getRootNetwork(n);
+			
+			if (rn.getSavePolicy() == SavePolicy.SESSION_FILE)
+				rootNetworks.add(rn);
 		}
 		
 		for (CyRootNetwork rn : rootNetworks) {
@@ -334,24 +336,13 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
 	private void zipTables() throws Exception {
 		tableFilenamesBySUID = new HashMap<Long, String>();
-		Set<CyNetwork> networks = session.getNetworks();
-		Set<CyNetwork> allNetworks = new HashSet<CyNetwork>();
-		
-		for (CyNetwork n : networks) {
-			allNetworks.add(n);
-			// Don't forget the root networks!
-			CyRootNetwork rn = rootNetworkManager.getRootNetwork(n);
-			allNetworks.add(rn);
-		}
-		
 		Set<CyTableMetadata> tableData = session.getTables();
 		
 		for (CyTableMetadata metadata : tableData) {
 			CyTable table = metadata.getTable();
 			
-			if (table.getSavePolicy() == SavePolicy.DO_NOT_SAVE) {
+			if (table.getSavePolicy() != SavePolicy.SESSION_FILE)
 				continue;
-			}
 
 			String tableTitle = SessionUtil.escape(table.getTitle());
 			String filename;
@@ -360,10 +351,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 			if (network == null) {
 				filename = String.format("global/%d-%s.cytable", table.getSUID(), tableTitle);
 			} else {
-				if (!allNetworks.contains(network)) {
-					continue;
-				}
-				
 				filename = SessionUtil.getNetworkTableFilename(network, metadata);
 			}
 			

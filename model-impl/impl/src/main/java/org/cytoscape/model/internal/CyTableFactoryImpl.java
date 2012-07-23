@@ -30,14 +30,12 @@ package org.cytoscape.model.internal;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Properties;
 import java.lang.ref.WeakReference;
 
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.equations.Interpreter;

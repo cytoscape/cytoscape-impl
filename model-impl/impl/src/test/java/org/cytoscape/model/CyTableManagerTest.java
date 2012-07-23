@@ -38,7 +38,6 @@ import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
@@ -68,8 +67,8 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		
 		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, interpreter, serviceRegistrar);
-		goodNetwork = new CyRootNetworkImpl(eventHelper, (CyTableManagerImpl) mgr, networkTableMgr, tableFactory, serviceRegistrar, true)
-				.getBaseNetwork();
+		goodNetwork = new CyRootNetworkImpl(eventHelper, (CyTableManagerImpl) mgr, networkTableMgr, tableFactory,
+				serviceRegistrar, true, SavePolicy.DO_NOT_SAVE).getBaseNetwork();
 		networkManager.addNetwork(goodNetwork);
 		
 		globalTable = tableFactory.createTable("test table", CyIdentifiable.SUID, Long.class, true, true);
@@ -87,7 +86,6 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		goodNetwork = null;
 	}
 
- 
 	@Test
 	public void immutableTableTest() {
 		mgr.addTable(goodNetwork.getDefaultNodeTable());

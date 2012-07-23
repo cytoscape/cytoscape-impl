@@ -31,13 +31,13 @@ package org.cytoscape.browser.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.SavePolicy;
 
 
 /** This class provides a view into an immutable subset of rows and columns of an associated CyTable.

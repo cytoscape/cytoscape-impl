@@ -108,7 +108,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	}
 
 	private CyNetwork cloneNetwork(CyNetwork origNet) {
-		final CyNetwork newNet = netFactory.createNetwork();
+		final CyNetwork newNet = netFactory.createNetwork(origNet.getSavePolicy());
 
 		final CyTable nodeTable = newNet.getDefaultNodeTable();
 		final CyTable edgeTable = newNet.getDefaultEdgeTable();

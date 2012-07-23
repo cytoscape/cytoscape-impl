@@ -30,10 +30,7 @@
 
 package org.cytoscape.cmdline.gui.internal;
 
-import org.cytoscape.application.CyShutdown;
-import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -51,15 +48,11 @@ import org.cytoscape.work.TaskMonitor;
 
 import java.util.Properties;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

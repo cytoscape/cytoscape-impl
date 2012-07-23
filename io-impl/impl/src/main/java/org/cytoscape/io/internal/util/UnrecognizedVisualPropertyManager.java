@@ -1,20 +1,19 @@
 package org.cytoscape.io.internal.util;
 
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collection;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.model.CyTable.SavePolicy;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;

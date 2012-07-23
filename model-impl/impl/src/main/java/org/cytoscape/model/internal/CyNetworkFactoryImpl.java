@@ -33,6 +33,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import org.slf4j.Logger;
@@ -53,11 +54,11 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 *
 	 * @param help An instance of CyEventHelper. 
 	 */
-	public CyNetworkFactoryImpl(final CyEventHelper help, final CyTableManagerImpl mgr,
-					final CyNetworkTableManager networkTableMgr,
-				    final CyTableFactory tableFactory,
-				    final CyServiceRegistrar serviceRegistrar)
-	{
+	public CyNetworkFactoryImpl(final CyEventHelper help,
+								final CyTableManagerImpl mgr,
+								final CyNetworkTableManager networkTableMgr,
+								final CyTableFactory tableFactory,
+								final CyServiceRegistrar serviceRegistrar) {
 		if (help == null)
 			throw new NullPointerException("CyEventHelper is null.");
 
@@ -77,25 +78,33 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public CyNetwork createNetwork() {
-		final CyRootNetworkImpl net = new CyRootNetworkImpl(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, true);
+		return createNetwork(SavePolicy.SESSION_FILE); 
+	}
+	
+	@Override
+	public CyNetwork createNetwork(final SavePolicy policy) {
+		final CyRootNetworkImpl net = new CyRootNetworkImpl(help, mgr, networkTableMgr, tableFactory, serviceRegistrar,
+				true, policy);
 		logger.info("CyNetwork w/ public tables created: ID = " +  net.getSUID());
 		logger.info("CyNetwork w/ public tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
+		
 		return net.getBaseNetwork(); 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public CyNetwork createNetworkWithPrivateTables() {
-		CyRootNetworkImpl net = new CyRootNetworkImpl(help, mgr, networkTableMgr, tableFactory, serviceRegistrar, false);
-		logger.info("CyNetwork w/ private tables created: ID = " +  net.getSUID());
-		logger.info("CyNetwork w/ private tables created: Base Graph ID = " +  net.getBaseNetwork().getSUID());
-		return net.getBaseNetwork(); 
+		return createNetworkWithPrivateTables(SavePolicy.SESSION_FILE); 
+	}
+
+	@Override
+	public CyNetwork createNetworkWithPrivateTables(final SavePolicy policy) {
+		CyRootNetworkImpl net = new CyRootNetworkImpl(help, mgr, networkTableMgr, tableFactory, serviceRegistrar,
+				false, policy);
+		logger.info("CyNetwork w/ private tables created: ID = " + net.getSUID());
+		logger.info("CyNetwork w/ private tables created: Base Graph ID = " + net.getBaseNetwork().getSUID());
+
+		return net.getBaseNetwork();
 	}
 }

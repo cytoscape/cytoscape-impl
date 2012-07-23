@@ -450,8 +450,10 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			final Set<CyTableMetadataBuilder> builders = entry.getValue();
 			final CyNetwork network = cache.getNetwork(oldId);
 
-			if (network == null)
-				throw new RuntimeException("Cannot merge network tables: Cannot find network " + oldId);
+			if (network == null) {
+				logger.error("Cannot merge network tables: Cannot find network " + oldId);
+				continue;
+			}
 
 			for (CyTableMetadataBuilder builder : builders) {
 				builder.setNetwork(network);

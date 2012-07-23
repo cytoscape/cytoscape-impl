@@ -17,6 +17,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
@@ -94,7 +95,7 @@ public class UpdateAddedNetworkAttributeTaskTest {
 	
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				CyTable.SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
 		table1.createColumn(tabel1sCol, String.class, false);
 		
 		CyRow row1 = table1.getRow(node1Name);
@@ -129,7 +130,7 @@ public class UpdateAddedNetworkAttributeTaskTest {
 		
 		//creating another table to map to the second network only
 		table2 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				CyTable.SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
 		table2.createColumn(table2sCol, String.class, false);
 		
 		CyRow row3 = table2.getRow(node1Name);

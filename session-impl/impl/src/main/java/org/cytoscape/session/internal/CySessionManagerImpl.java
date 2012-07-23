@@ -56,6 +56,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
@@ -128,33 +129,31 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	public CySession getCurrentSession() {
 		// Apps who want to save anything to a session will have to listen for this event
 		// and will then be responsible for adding files through SessionAboutToBeSavedEvent.addAppFiles(..)
-		SessionAboutToBeSavedEvent savingEvent = new SessionAboutToBeSavedEvent(this);
+		final SessionAboutToBeSavedEvent savingEvent = new SessionAboutToBeSavedEvent(this);
 		cyEventHelper.fireEvent(savingEvent);
 
-		Set<CyNetwork> networks = netMgr.getNetworkSet();
-		Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
+		final Set<CyNetwork> networks = getSerializableNetworks();
+		final Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
 
 		// Visual Styles Map
-		Map<CyNetworkView, String> stylesMap = new HashMap<CyNetworkView, String>();
+		final Map<CyNetworkView, String> stylesMap = new HashMap<CyNetworkView, String>();
 
 		if (netViews != null) {
-			for (CyNetworkView nv : netViews) {
-				VisualStyle style = vmMgr.getVisualStyle(nv);
+			for (final CyNetworkView nv : netViews) {
+				final VisualStyle style = vmMgr.getVisualStyle(nv);
 
-				if (style != null) {
+				if (style != null)
 					stylesMap.put(nv, style.getTitle());
-				}
 			}
 		}
 
-		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
-		Set<CyTable> tables = tblMgr.getAllTables(true);
-		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-		Set<CyTableMetadata> metadata = buildMetadata(tables, networks);
-		Set<CyProperty<?>> props = getAllProperties();
+		final Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
+		final Set<CyTableMetadata> metadata = createTablesMetadata(networks);
+		final Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
+		final Set<CyProperty<?>> props = getAllProperties();
 		
 		// Build the session
-		CySession sess = new CySession.Builder().properties(props).appFileListMap(appMap)
+		final CySession sess = new CySession.Builder().properties(props).appFileListMap(appMap)
 				.tables(metadata).networks(networks).networkViews(netViews).visualStyles(styles)
 				.viewVisualStyleMap(stylesMap).build();
 
@@ -164,72 +163,68 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	@SuppressWarnings("unchecked")
 	private static Class<? extends CyIdentifiable>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
 	
-	private Set<CyTableMetadata> buildMetadata(Set<CyTable> tables, Set<CyNetwork> networks) {
-		Set<CyTableMetadata> result = new HashSet<CyTableMetadata>();
+	private Set<CyNetwork> getSerializableNetworks() {
+		final Set<CyNetwork> serializableNetworks = new HashSet<CyNetwork>();
+		final Set<CyNetwork> allNetworks = netTblMgr.getNetworkSet();
 		
-		// Clone the networks and tables to add the root-networks without changing the original sets:
-		Set<CyNetwork> allNetworks = new HashSet<CyNetwork>(networks);
-		Set<CyTable> allTables = new HashSet<CyTable>(tables);
-		
-		// Add the root-networks, which are not included in the original networks set:
-		for (CyNetwork network : networks) {
-			if (!(network instanceof CyRootNetwork)) {
-				CyRootNetwork rootNet = rootNetMgr.getRootNetwork(network);
-				
-				if (!allNetworks.contains(rootNet)) {
-					allNetworks.add(rootNet);
-					
-					// TODO: remove it once manager is fixed to return all tables
-					for (Class<? extends CyIdentifiable> type : TYPES) {
-						Map<String, CyTable> tableMap = netTblMgr.getTables(rootNet, type);
-						allTables.addAll(tableMap.values());
-					}
-				}
-			}
+		for (final CyNetwork net : allNetworks) {
+			if (net.getSavePolicy() == SavePolicy.SESSION_FILE)
+				serializableNetworks.add(net);
 		}
 		
-		// Figure out which tables aren't associated with networks
-		Map<CyTable, Set<CyTableMetadata>> networkTables = getNetworkTables(allNetworks);
+		return serializableNetworks;
+	}
+	
+	private Set<CyTableMetadata> createTablesMetadata(final Set<CyNetwork> networks) {
+		final Set<CyTableMetadata> result = new HashSet<CyTableMetadata>();
 		
 		// Merge network/global metadata into a single set
-		for (CyTable table : allTables) {
-			Set<CyTableMetadata> metadataSet = networkTables.get(table);
+		final Map<CyTable, CyTableMetadata> networkTables = createNetworkTablesMetadata(networks);
+		result.addAll(networkTables.values());
+		
+		final Set<CyTable> tables = new HashSet<CyTable>(tblMgr.getAllTables(true));
+		
+		for (final CyTable tbl : tables) {
+			if (tbl.getSavePolicy() != SavePolicy.SESSION_FILE)
+				continue;
 			
-			if (metadataSet == null || metadataSet.size() == 0) {
-				result.add(new CyTableMetadataImpl.CyTableMetadataBuilder().setCyTable(table));
-			} else {
-				for (CyTableMetadata metadata : metadataSet) {
-					result.add(metadata);
-				}
-			}
+			final CyTableMetadata metadata = networkTables.get(tbl);
+			
+			if (metadata == null) // Create global table metadata
+				result.add(new CyTableMetadataImpl.CyTableMetadataBuilder().setCyTable(tbl));
 		}
 		
 		return result;
 	}
 
-	private Map<CyTable, Set<CyTableMetadata>> getNetworkTables(final Set<CyNetwork> networks) {
-		Map<CyTable, Set<CyTableMetadata>> result = new HashMap<CyTable, Set<CyTableMetadata>>();
+	private Map<CyTable, CyTableMetadata> createNetworkTablesMetadata(final Set<CyNetwork> networks) {
+		final Map<CyTable, CyTableMetadata> result = new HashMap<CyTable, CyTableMetadata>();
+		final Set<CyNetwork> allNetworks = new HashSet<CyNetwork>(networks);
 		
-		for (CyNetwork network : networks) {
-			for (Class<? extends CyIdentifiable> type : TYPES) {
-				Map<String, CyTable> tableMap = netTblMgr.getTables(network, type);
+		// Make sure we got the root networks
+		for (final CyNetwork net : networks) {
+			final CyRootNetwork rootNet = rootNetMgr.getRootNetwork(net);
+			
+			if (SavePolicy.SESSION_FILE == rootNet.getSavePolicy())
+				allNetworks.add(rootNet);
+		}
+		
+		// Create the metadata object for each network table
+		for (final CyNetwork network : allNetworks) {
+			for (final Class<? extends CyIdentifiable> type : TYPES) {
+				final Map<String, CyTable> tableMap = netTblMgr.getTables(network, type);
 				
-				for (Entry<String, CyTable> entry : tableMap.entrySet()) {
-					CyTable table = entry.getValue();
-					Set<CyTableMetadata> metadataSet = result.get(table);
+				for (final Entry<String, CyTable> entry : tableMap.entrySet()) {
+					final CyTable tbl = entry.getValue();
 					
-					if (metadataSet == null) {
-						metadataSet = new HashSet<CyTableMetadata>();
-						result.put(table, metadataSet);
-					}
+					if (tbl.getSavePolicy() != SavePolicy.SESSION_FILE)
+						continue;
 					
-					String namespace = entry.getKey();
-					metadataSet.add(new CyTableMetadataImpl.CyTableMetadataBuilder()
-										.setCyTable(table)
-										.setNamespace(namespace)
-										.setType(type)
-										.setNetwork(network)
-										.build());
+					final String namespace = entry.getKey();
+					final CyTableMetadata metadata = new CyTableMetadataImpl.CyTableMetadataBuilder().setCyTable(tbl)
+							.setNamespace(namespace).setType(type).setNetwork(network).build();
+					
+					result.put(tbl, metadata);
 				}
 			}
 		}

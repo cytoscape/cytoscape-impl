@@ -28,7 +28,6 @@
 package org.cytoscape.model.subnetwork;
 
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.AbstractCyNetworkTest;
 import org.cytoscape.model.TestCyNetworkFactory;
 

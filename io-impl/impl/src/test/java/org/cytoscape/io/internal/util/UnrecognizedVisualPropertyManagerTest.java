@@ -14,7 +14,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTable.SavePolicy;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;

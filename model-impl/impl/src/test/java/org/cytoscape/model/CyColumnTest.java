@@ -3,7 +3,6 @@ package org.cytoscape.model;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.CyTable.SavePolicy;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.junit.Before;
 

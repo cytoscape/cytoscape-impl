@@ -14,6 +14,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.work.Task;
@@ -68,7 +69,7 @@ public class MapTableToNetworkTableTaskTest {
 		netMgr.addNetwork(net1);
 		
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				CyTable.SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
 		table1.createColumn("col1", String.class, false);
 		
 		CyRow row1 = table1.getRow(node1Name);

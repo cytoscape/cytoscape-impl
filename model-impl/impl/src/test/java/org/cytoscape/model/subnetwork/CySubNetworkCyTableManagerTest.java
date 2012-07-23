@@ -38,6 +38,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.AbstractCyTableManagerTest;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkImpl;
@@ -65,7 +66,8 @@ public class CySubNetworkCyTableManagerTest extends AbstractCyTableManagerTest {
 		final Interpreter interpreter = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eh, interpreter, serviceRegistrar);
-		CyRootNetworkImpl baseNet = new CyRootNetworkImpl(eh,(CyTableManagerImpl)mgr, networkTableMgr, tableFactory, serviceRegistrar, true);
+		CyRootNetworkImpl baseNet = new CyRootNetworkImpl(eh, (CyTableManagerImpl) mgr, networkTableMgr, tableFactory,
+				serviceRegistrar, true, SavePolicy.DO_NOT_SAVE);
 		// This is a different subnetwork and not "baseNetwork" in ArrayGraph.
 		goodNetwork = baseNet.addSubNetwork(); 
 		

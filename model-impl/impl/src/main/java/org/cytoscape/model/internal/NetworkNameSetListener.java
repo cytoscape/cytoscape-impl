@@ -70,8 +70,8 @@ public class NetworkNameSetListener implements RowsSetListener, NetworkAddedList
 		for ( RowSetRecord record : payloadCollection ) {
 			// assume payload collection is for same column
 			final Object name = record.getValue();
-			setTablesName(name.toString() + " root shared ", rootNetwork.getSharedEdgeTable(), rootNetwork.getSharedNodeTable(), rootNetwork.getSharedNetworkTable());
-			setTablesName(name.toString() + " root default ", rootNetwork.getDefaultEdgeTable(), rootNetwork.getDefaultNodeTable(), rootNetwork.getDefaultNetworkTable());
+			setTablesName(name + " root shared ", rootNetwork.getSharedEdgeTable(), rootNetwork.getSharedNodeTable(), rootNetwork.getSharedNetworkTable());
+			setTablesName(name + " root default ", rootNetwork.getDefaultEdgeTable(), rootNetwork.getDefaultNodeTable(), rootNetwork.getDefaultNetworkTable());
 			
 			return;
 		}

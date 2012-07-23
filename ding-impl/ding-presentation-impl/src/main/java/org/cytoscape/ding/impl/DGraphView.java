@@ -96,6 +96,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AboutToRemoveNodesEvent;
@@ -481,7 +482,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.annMgr = annMgr;
 
 		// creating empty subnetworks
-		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork();
+		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork(SavePolicy.DO_NOT_SAVE);
 		cyEventHelper.silenceEventSource(m_drawPersp);
 		m_spacial = spacialFactory.createSpacialIndex2D();
 		m_spacialA = spacialFactory.createSpacialIndex2D();
