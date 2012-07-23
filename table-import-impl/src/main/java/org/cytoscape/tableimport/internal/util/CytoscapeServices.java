@@ -20,6 +20,7 @@ import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.io.util.StreamUtil;
+import org.osgi.service.event.EventAdmin;
 
 public class  CytoscapeServices {
 
@@ -43,4 +44,5 @@ public class  CytoscapeServices {
 	public static StreamUtil streamUtil;
 	public static CyEventHelper cyEventHelper;
 	public static MapGlobalToLocalTableTaskFactory mapGlobalToLocalTableTaskFactory;
+    public static EventAdmin eventAdmin;
 }

@@ -41,6 +41,7 @@ import org.cytoscape.application.swing.CyAction;
 
 
 import org.osgi.framework.BundleContext;
+import org.osgi.service.event.EventAdmin;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 
@@ -77,6 +78,7 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
 		CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
 		CytoscapeServices.mapGlobalToLocalTableTaskFactory = getService(bc, MapGlobalToLocalTableTaskFactory.class);
+		CytoscapeServices.eventAdmin = getService(bc, EventAdmin.class);
 		
 		
 
