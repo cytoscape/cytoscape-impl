@@ -1,7 +1,9 @@
 package org.cytoscape.scripting.internal;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,18 @@ public class ExecuteScriptCommandTask extends AbstractExecuteScriptTask {
 		engine.put("args", argArray);
 		
 		// Execute
-		engine.eval(new FileReader(new File(filename)));
+		FileReader reader = null;
+		try {
+			reader = new FileReader(new File(filename));
+			engine.eval(reader);
+		} catch (FileNotFoundException e) {
+			throw new IOException("Could not open the file.", e);
+		} finally {
+			if(reader != null) {
+				reader.close();
+				reader = null;
+			}
+		}
 	}
 
 }
