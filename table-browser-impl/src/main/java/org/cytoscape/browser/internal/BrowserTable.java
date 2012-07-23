@@ -170,7 +170,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 						final CyColumn cyColumn =
 							tableModel.getColumn(column);
 						final Object primaryKeyValue =
-							((ValidatedObjectAndEditString)tableModel.getValueAt(row, 0))
+							((ValidatedObjectAndEditString)tableModel.getValueAt(row, tableModel.getDataTable().getPrimaryKey().getName()))
 							.getValidatedObject();
 						popupMenuHelper.createTableCellMenu(cyColumn,
 										    primaryKeyValue,
@@ -235,21 +235,13 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		
 		final int selectedRowCount = getSelectedRowCount();
 		
-		//TODO: performance tuning
-		final int columnCount = this.getColumnCount();
-		int targetColIdx;
-		for(targetColIdx = 0; targetColIdx<columnCount; targetColIdx++) {
-			final String colName = this.getColumnName(targetColIdx);
-			if(colName.equals(pKeyName))
-				break;
-		}
-		
 		final Set<CyRow> targetRows = new HashSet<CyRow>();
 		for(int i=0; i<selectedRowCount; i++) {
-			final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) this.getValueAt(rowsSelected[i], targetColIdx);
+			//getting the row from data table solves the problem with hidden or moved SUID column. However, since the rows might be sorted we need to convert the index to model
+			final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) btModel.getValueAt(this.convertRowIndexToModel( rowsSelected[i]), pKeyName);
 			targetRows.add(btModel.getRow(selected.getValidatedObject()));
 		}
-
+		
 		// Clear selection for non-global table
 		if (tableManager.getGlobalTables().contains(table) == false) {
 			List<CyRow> allRows = btModel.getDataTable().getAllRows();
@@ -287,7 +279,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	@Override
 	public boolean isCellEditable(final int row, final int column) {
-		return column != 0;
+		return this.getModel().isCellEditable(row, column);
 	}
 
 	@Override

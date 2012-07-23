@@ -3,6 +3,7 @@ package org.cytoscape.browser.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
@@ -67,6 +69,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 		initAttrNamesAndVisibilities();
 
+		
+		
 		// add each row to an array to allow fast lookup from an index
 		final Collection<CyRow> rows = dataTable.getAllRows();
 		this.rowIndexToPrimaryKey = new Object[rows.size()]; 
@@ -82,19 +86,10 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 	private void initAttrNamesAndVisibilities() {
 		attrNamesAndVisibilities = new ArrayList<AttrNameAndVisibility>();
-
-		final CyColumn primaryKey = dataTable.getPrimaryKey();
-		attrNamesAndVisibilities.add(new AttrNameAndVisibility(primaryKey.getName(), true));
-
+		int i = 0;
 		for (final CyColumn column : dataTable.getColumns()) {
-
-			// Ignore p-key (SUID)
-			if (column == primaryKey)
-				continue;
-			if (column.getName().equals(CyNetwork.SELECTED))
-				attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), false));
-			else
-				attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), true));
+			attrNamesAndVisibilities.add(new AttrNameAndVisibility(column.getName(), true));
+			i++;
 		}
 	}
 
@@ -121,29 +116,13 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		return visibleAttrNames;
 	}
 
-	// Note: primary key visibility will not be affected by this, whether "visibleAttributes"
-	//       contains the primary key or not!
+	
 	public void setVisibleAttributeNames(final Collection<String> visibleAttributes) {
-		boolean changed = false;
-		final String primaryKey = dataTable.getPrimaryKey().getName();
-		for (final AttrNameAndVisibility nameAndVisibility : attrNamesAndVisibilities) {
-			if (nameAndVisibility.getName().equals(primaryKey))
-				continue;
 
-			if (visibleAttributes.contains(nameAndVisibility.getName())) {
-				if (!nameAndVisibility.isVisible()) {
-					nameAndVisibility.setVisibility(true);
-					changed = true;
-				}
-			} else if (nameAndVisibility.isVisible()) {
-				nameAndVisibility.setVisibility(false);
-				changed = true;
-			}
-		}
-
-		if (changed) {
-			fireTableStructureChanged();
-		}
+		for (final AttrNameAndVisibility nameAndVisibility : attrNamesAndVisibilities) 
+			nameAndVisibility.setVisibility(visibleAttributes.contains(nameAndVisibility.getName()));
+				
+		fireTableStructureChanged();
 	}
 
 	@Override
@@ -171,11 +150,17 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		return count;
 	}
 
+	
+	public Object getValueAt(final int rowIndex, final String columnName) {
+		final CyRow row = mapRowIndexToRow(rowIndex);
+		return getValidatedObjectAndEditString(row, columnName);
+	}
+
 	@Override
 	public Object getValueAt(final int rowIndex, final int columnIndex) {
 		final String columnName = getColumnName(columnIndex);
-		final CyRow row = mapRowIndexToRow(rowIndex);
-
+		final CyRow row = mapRowIndexToRow(rowIndex);	
+		
 		return getValidatedObjectAndEditString(row, columnName);
 	}
 
@@ -325,8 +310,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 			if (regularViewMode) {
 				fireTableDataChanged();
 			} else {
-				table.clearSelection();
-				fireTableDataChanged();
+				//table.clearSelection();
+				//fireTableDataChanged();
 				if(tableManager.getGlobalTables().contains(dataTable) == false)
 					bulkUpdate(rows);
 			}
@@ -367,15 +352,6 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	 */
 	private void bulkUpdate(final Collection<RowSetRecord> rows) {
 		final int columnCount = table.getColumnCount();
-		int tablePKeyIndex = 0;
-		// Find Primary key index.
-		for (int i = 0; i < columnCount; i++) {
-			final String colName = table.getColumnName(i);
-			if (colName.equals(CyIdentifiable.SUID)) {
-				tablePKeyIndex = i;
-				break;
-			}
-		}
 
 		final Map<Long, Boolean> suidMapSelected = new HashMap<Long, Boolean>();
 		final Map<Long, Boolean> suidMapUnselected = new HashMap<Long, Boolean>();
@@ -391,9 +367,12 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 			}
 		}
 
+		final BrowserTableModel btmodel =  ((BrowserTableModel) table.getModel() );
+		final String pKeyName = dataTable.getPrimaryKey().getName();
 		final int rowCount = table.getRowCount();
 		for(int i=0; i<rowCount; i++) {
-			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) table.getValueAt(i, tablePKeyIndex);
+			//getting the row from data table solves the problem with hidden or moved SUID column. However, since the rows might be sorted we need to convert the index to model
+			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString)  btmodel.getValueAt(table.convertRowIndexToModel( i), pKeyName );
 			Long pk = null;
 			try{
 				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
@@ -404,7 +383,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 			if(pk != null) {
 				if (suidMapSelected.keySet().contains(pk)){
 					table.addRowSelectionInterval(i, i);
-					table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
+					if (table.getColumnCount() > 0)
+						table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
 				}else if (suidMapUnselected.keySet().contains(pk)){
 					table.removeRowSelectionInterval(i, i);
 				}
@@ -420,6 +400,11 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		} 
 	}
 
+	
+	public String getCyColumnName( final int column){
+		return (String) dataTable.getColumns().toArray()[column];
+	}
+	
 	@Override
 	public String getColumnName(final int column) {
 		return mapColumnIndexToColumnName(column);
@@ -436,34 +421,34 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		throw new IllegalStateException("We should *never* get here.");
 	}
 
+
+	
+	public boolean isPrimaryKey (int col){
+		String colName = getColumnName(col);
+		return colName.equals(dataTable.getPrimaryKey());
+	}
+
+	
 	int mapColumnNameToColumnIndex(final String columnName) {
-		final String primaryKey = dataTable.getPrimaryKey().getName();
-		if (columnName.equals(primaryKey))
-			return 0;
-
-		int index = attrNamesAndVisibilities.get(0).isVisible() ? 1 : 0;
+		
+		int index = 0;
 		for (final AttrNameAndVisibility nameAndVisibility : attrNamesAndVisibilities) {
-			if (!nameAndVisibility.isVisible() || nameAndVisibility.getName().equals(primaryKey))
+			
+			if(!nameAndVisibility.isVisible())
 				continue;
-
+			
 			if (nameAndVisibility.getName().equals(columnName))
 				return index;
-
-			++index;
+			index++;
 		}
-
 		return -1;
 	}
 
 	private String mapColumnIndexToColumnName(final int index) {
-		final String primaryKey = dataTable.getPrimaryKey().getName();
-		final boolean primaryKeyIsVisible = attrNamesAndVisibilities.get(0).isVisible();
-		if (index == 0 && primaryKeyIsVisible)
-			return primaryKey;
-
-		int i = primaryKeyIsVisible ? 1 : 0;
+		
+		int i = 0;
 		for (final AttrNameAndVisibility nameAndVisibility : attrNamesAndVisibilities) {
-			if (!nameAndVisibility.isVisible() || nameAndVisibility.getName().equals(primaryKey))
+			if (!nameAndVisibility.isVisible())
 				continue;
 
 			if (index == i)
@@ -471,8 +456,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 			++i;
 		}
-
-		throw new IllegalStateException("We should *never* get here. (index="+index+", i="+i+")");
+		throw new IllegalStateException("We should *never* get here. (index="+index+", visible attibutes are="+ attrNamesAndVisibilities.size()+")");
+		
 	}
 
 	// Because tableModel will disappear if user click on open space on canvas, 
@@ -480,7 +465,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	public Vector getCellData(final int rowIndex, final int columnIndex){
 		Vector cellVect = new Vector();
 		cellVect.add(mapRowIndexToRow(rowIndex));
-		cellVect.add( mapColumnIndexToColumnName(columnIndex));
+		cellVect.add( getColumnName(columnIndex));
 
 		return cellVect;
 	}
@@ -488,6 +473,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	CyRow getRow(final Object suid) {
 		return dataTable.getRow(suid);
 	}
+	
+	
 
 	@Override
 	public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
@@ -594,7 +581,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 	@Override
 	public boolean isCellEditable(final int rowIndex, final int columnIndex) {
-		return table.convertColumnIndexToModel(columnIndex) != 0;
+		return !dataTable.getPrimaryKey().getName().equals(getColumnName(table.convertColumnIndexToModel(columnIndex)));
 	}
 
 }
@@ -604,10 +591,10 @@ final class AttrNameAndVisibility {
 
 	private String attrName;
 	private boolean isVisible;
-
+	
 	AttrNameAndVisibility(final String attrName, final boolean isVisible) {
 		this.attrName = attrName;
-		this.isVisible = isVisible;
+		this.isVisible = isVisible;;
 	}
 
 	String getName() {
@@ -617,12 +604,17 @@ final class AttrNameAndVisibility {
 	void setName(final String newAttrName) {
 		attrName = newAttrName;
 	}
-
+	
 	void setVisibility(final boolean isVisible) {
 		this.isVisible = isVisible;
 	}
 
 	boolean isVisible() {
 		return isVisible;
+	}
+
+	@Override
+	public String toString(){
+		return "Attr name " + attrName + " visiblity " + isVisible;
 	}
 }
