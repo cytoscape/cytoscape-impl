@@ -13,16 +13,13 @@ import java.util.List;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.property.CyProperty;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	
-	private static final int MAX_TRACK_COUNT = 5;
-	private static final String USER_HOME_DIR = System.getProperty("user.home");
+	private static final int MAX_TRACK_COUNT = 10;
 	private static final Logger logger = LoggerFactory.getLogger(RecentlyOpenedTrackerImpl.class); 
 	
 	private final String trackerFileName;
@@ -41,12 +38,13 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 		this.propDir = config.getConfigurationDirectoryLocation();
 		this.trackerURLs = new LinkedList<URL>();
 
+		BufferedReader reader = null;
 		try {
 			final File input = new File(propDir, trackerFileName);
 			if (!input.exists())
 				input.createNewFile();
 	
-			final BufferedReader reader = new BufferedReader(new FileReader(input));
+			reader = new BufferedReader(new FileReader(input));
 			String line;
 			while ((line = reader.readLine()) != null && trackerURLs.size() < MAX_TRACK_COUNT) {
 				final String newURL = line.trim();
@@ -55,6 +53,15 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 			}
 		} catch (IOException ioe) {
 			logger.warn("problem reading Recently Opened File list",ioe); 	
+		} finally {
+			if(reader != null) {
+				try {
+					reader.close();
+					reader = null;
+				} catch (IOException e) {
+					logger.error("Colud not close the reader for RecentlyOpenedTracker.",e); 	
+				}
+			}
 		}
 	}
 
