@@ -36,6 +36,15 @@ public class SessionEventsListener implements SessionLoadedListener, SessionAbou
 	private final CyRootNetworkManager rootNetMgr;
 	private final String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges";
 	private final String GROUP_COLLAPSED_ATTRIBUTE="__groupCollapsed";
+	// 2.x group attributes
+	private final String GROUP_STATE_ATTRIBUTE="__groupState";
+	private final String GROUP_ISLOCAL_ATTRIBUTE="__groupIsLocal";
+	private final String GROUP_NODEX_ATTRIBUTE="__metanodeHintX";
+	private final String GROUP_NODEY_ATTRIBUTE="__metanodeHintY";
+	private final String X_LOCATION_ATTR="__xLocation";
+	private final String Y_LOCATION_ATTR="__yLocation";
+	private final String X_OFFSET_ATTR="__xOffset";
+	private final String Y_OFFSET_ATTR="__yOffset";
 	
 	private static final Logger logger = LoggerFactory.getLogger(SessionEventsListener.class);
 	
@@ -76,19 +85,19 @@ public class SessionEventsListener implements SessionLoadedListener, SessionAbou
 			final CyRow dnRow = net.getRow(n, CyNetwork.DEFAULT_ATTRS);
 			final CyRow hnRow = net.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			final CyRow rnRow = rootNet.getRow(n, CyNetwork.HIDDEN_ATTRS);
-			if (!dnRow.isSet("__groupState") && !hnRow.isSet("__groupState")
-			    && !rnRow.isSet("__groupCollapsed"))
+			if (!dnRow.isSet(GROUP_STATE_ATTRIBUTE) && !hnRow.isSet(GROUP_STATE_ATTRIBUTE)
+			    && !rnRow.isSet(GROUP_COLLAPSED_ATTRIBUTE))
 				return;
 
 			boolean collapsed = false;
 			boolean cy2group = false;
 
-			if (hnRow.isSet("__groupState")) {
-				Integer grState = hnRow.get("__groupState", Integer.class); // 2.x metadata
+			if (hnRow.isSet(GROUP_STATE_ATTRIBUTE)) {
+				Integer grState = hnRow.get(GROUP_STATE_ATTRIBUTE, Integer.class); // 2.x metadata
 				cy2group = true;
 				if (grState.intValue() == 2) collapsed = true;
-			} else if (dnRow.isSet("__groupState")) {
-				Integer grState = dnRow.get("__groupState", Integer.class); // 2.x metadata
+			} else if (dnRow.isSet(GROUP_STATE_ATTRIBUTE)) {
+				Integer grState = dnRow.get(GROUP_STATE_ATTRIBUTE, Integer.class); // 2.x metadata
 				cy2group = true;
 				if (grState.intValue() == 2) collapsed = true;
 			} 
@@ -159,10 +168,10 @@ public class SessionEventsListener implements SessionLoadedListener, SessionAbou
 		}
 
 		// TODO: If this is a 2.x group, clean up
-		if (net.getDefaultNodeTable().getColumn("__groupState") != null)
-			net.getDefaultNodeTable().deleteColumn("__groupState");
-		if (net.getDefaultNodeTable().getColumn("__groupIsLocal") != null)
-			net.getDefaultNodeTable().deleteColumn("__groupIsLocal");
+		if (net.getDefaultNodeTable().getColumn(GROUP_STATE_ATTRIBUTE) != null)
+			net.getDefaultNodeTable().deleteColumn(GROUP_STATE_ATTRIBUTE);
+		if (net.getDefaultNodeTable().getColumn(GROUP_ISLOCAL_ATTRIBUTE) != null) 
+			net.getDefaultNodeTable().deleteColumn(GROUP_ISLOCAL_ATTRIBUTE);
 	}
 
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
@@ -231,14 +240,14 @@ public class SessionEventsListener implements SessionLoadedListener, SessionAbou
 			for (CyColumn col: hiddenSubTable.getColumns()) {
 				String name = col.getName();
 				// Look for child node location information
-				if (name.equals("__metanodeHintX")) {
+				if (name.equals(GROUP_NODEX_ATTRIBUTE)) {
 					Double offset = hiddenSubRow.get(name, Double.class);
-					createColumn(hiddenRootRow, "__xOffset", Double.class);
-					hiddenRootRow.set("__xOffset", offset);
-				} else if (name.equals("__metanodeHintY")) {
+					createColumn(hiddenRootRow, X_OFFSET_ATTR, Double.class);
+					hiddenRootRow.set(X_OFFSET_ATTR, offset);
+				} else if (name.equals(GROUP_NODEY_ATTRIBUTE)) {
 					Double offset = hiddenSubRow.get(name, Double.class);
-					createColumn(hiddenRootRow, "__yOffset", Double.class);
-					hiddenRootRow.set("__yOffset", offset);
+					createColumn(hiddenRootRow, Y_OFFSET_ATTR, Double.class);
+					hiddenRootRow.set(Y_OFFSET_ATTR, offset);
 				} else if (hiddenTable.getColumn(name) != null && 
 				           !hiddenTable.getColumn(name).getVirtualColumnInfo().isVirtual()) {
 					hiddenSubRow.set(col.getName(), hiddenRow.get(name, col.getType()));
@@ -265,10 +274,10 @@ public class SessionEventsListener implements SessionLoadedListener, SessionAbou
 		double y = nView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 		// Save it
 		CyRow hRow = rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS);
-		createColumn(hRow, "__xLocation", Double.class);
-		createColumn(hRow, "__yLocation", Double.class);
-		hRow.set("__xLocation", new Double(x));
-		hRow.set("__yLocation", new Double(y));
+		createColumn(hRow, X_LOCATION_ATTR, Double.class);
+		createColumn(hRow, Y_LOCATION_ATTR, Double.class);
+		hRow.set(X_LOCATION_ATTR, new Double(x));
+		hRow.set(Y_LOCATION_ATTR, new Double(y));
 	}
 
 	private void createColumn(CyRow row, String column, Class type) {
