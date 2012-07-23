@@ -81,12 +81,9 @@ final class CyColumnImpl implements CyColumn {
 		if (isImmutable)
 			throw new IllegalArgumentException("can't rename an immutable column.");
 
-			
 		final String oldName = columnName;
 		table.updateColumnName(oldName, newName);
 		columnName = newName;
-		
-
 	}
 
 	/** @return the data type of the column. */
@@ -120,7 +117,14 @@ final class CyColumnImpl implements CyColumn {
 		return virtualInfo;
 	}
 
+	@Override
 	public Object getDefaultValue() {
 		return defaultValue;
+	}
+
+	@Override
+	public String toString() {
+		return "CyColumn{ " + (isPrimaryKey ? "[PK] " : "") + columnName + " (" + columnType.getSimpleName() + ")"
+				+ (isImmutable ? " IMMUTABLE" : "") + " }";
 	}
 }
