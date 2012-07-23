@@ -17,11 +17,13 @@ import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -30,6 +32,7 @@ import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
 import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
 import org.cytoscape.welcome.internal.panel.OpenPanel;
 import org.cytoscape.welcome.internal.panel.StatusPanel;
+import org.cytoscape.welcome.internal.task.ApplySelectedLayoutTaskFactory;
 import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -42,6 +45,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		final CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		CyVersion cyVersion = getService(bc, CyVersion.class);
 		final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc,
@@ -84,7 +88,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		// TODO: implement contents
 		final StatusPanel statusPanel = new StatusPanel(cyVersion);
-		final NewsAndLinkPanel helpPanel = new NewsAndLinkPanel(statusPanel, openBrowserServiceRef, cytoscapePropertiesServiceRef);
+		final NewsAndLinkPanel helpPanel = new NewsAndLinkPanel(statusPanel, openBrowserServiceRef,
+				cytoscapePropertiesServiceRef);
 
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, openPanel,
@@ -112,5 +117,15 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Define listener
 		registerServiceListener(bc, createNewNetworkPanel, "addTaskFactory", "removeTaskFactory", TaskFactory.class);
+		
+		// Export task
+		CyLayoutAlgorithmManager cyLayoutAlgorithmManager = getService(bc, CyLayoutAlgorithmManager.class);
+		final ApplySelectedLayoutTaskFactory applySelectedLayoutTaskFactory = new ApplySelectedLayoutTaskFactory(
+				registrar, applicationManager, cyLayoutAlgorithmManager);
+		Properties applySelectedLayoutTaskFactoryProps = new Properties();
+		applySelectedLayoutTaskFactoryProps.setProperty(CreateNewNetworkPanel.WORKFLOW_ID, "applySelectedLayoutTaskFactory");
+		applySelectedLayoutTaskFactoryProps.setProperty(CreateNewNetworkPanel.WORKFLOW_NAME, "Apply layout algorithm of your choice");
+		applySelectedLayoutTaskFactoryProps.setProperty(CreateNewNetworkPanel.WORKFLOW_DESCRIPTION, "Apply a layout algorithm to the network.");
+		registerService(bc, applySelectedLayoutTaskFactory, TaskFactory.class, applySelectedLayoutTaskFactoryProps );
 	}
 }

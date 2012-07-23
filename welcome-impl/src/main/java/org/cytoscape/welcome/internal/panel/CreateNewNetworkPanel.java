@@ -174,7 +174,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		// Remote access
 		final JPanel wsPanel = new JPanel();
 		wsPanel.setLayout(new GridLayout(1, 1));
-		wsPanel.setBorder(BorderFactory.createTitledBorder("Access Remore Service"));
+		wsPanel.setBorder(BorderFactory.createTitledBorder("Access Remote Service"));
 		wsPanel.setOpaque(false);
 		final Dimension dbPanelSize = new Dimension(300, 60);
 		fromWebService.setMaximumSize(dbPanelSize);
