@@ -2,6 +2,7 @@ package org.cytoscape.log.internal;
 
 
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -167,7 +168,7 @@ class ConsoleDialog {
 	public ConsoleDialog(final TaskManager taskManager, final CySwingApplication app, final Map<String,String> logViewerConfig) {
 		this.taskManager = taskManager;
 
-		dialog = new JDialog(app.getJFrame(), "Developer's Log Console");
+		dialog = new JDialog(app.getJFrame(), "Developer's Log Console", Dialog.ModalityType.MODELESS);
 		dialog.setLayout(new GridBagLayout());
 		dialog.setModal(false);
 		dialog.setAlwaysOnTop(false);
@@ -203,7 +204,7 @@ class ConsoleDialog {
 		GridBagConstraints c = new GridBagConstraints();
 
 		final JPanel filterPanel = new JPanel(new GridBagLayout());
-		c.insets = new Insets(4, 4, 0, 0);
+		c.insets = new Insets(4, 4, 4, 0);
 		c.gridx = 0;		c.gridy = 0;
 		c.gridwidth = 1;	c.gridheight = 1;
 		c.weightx = 0.0;	c.weighty = 0.0;
@@ -255,7 +256,10 @@ class ConsoleDialog {
 	}
 
 	public void open() {
-		dialog.setVisible(true);
+        if (!dialog.isVisible()) {
+            dialog.setVisible(true);
+            refreshSolicitedLogEvents();
+        }
 	}
 
 
@@ -281,7 +285,7 @@ class ConsoleDialog {
 		final LogEvent event = new LogEvent(paxEvent);
 		allLogEvents.add(event);
 		updateLogs(event.getLog());
-		if (event.logEventMatches(getSelectedLog(), currentPattern, getSelectedLogLevelThreshold()))
+		if (dialog.isVisible() && event.logEventMatches(getSelectedLog(), currentPattern, getSelectedLogLevelThreshold()))
 		{
 			solicitedLogEvents.add(event);
 			event.appendToLogViewer(logViewer);
@@ -388,11 +392,12 @@ class ConsoleDialog {
 			logViewer.clear();
 			solicitedLogEvents.clear();
 			final String selectedLog = getSelectedLog();
+            final int logLevelThreshold = getSelectedLogLevelThreshold();
 			cancel = false;
 			for (final LogEvent event : allLogEvents)
 			{
 				if (cancel) break;
-				if (event.logEventMatches(selectedLog, currentPattern, getSelectedLogLevelThreshold()))
+				if (event.logEventMatches(selectedLog, currentPattern, logLevelThreshold))
 				{
 					solicitedLogEvents.add(event);
 					event.appendToLogViewer(logViewer);
