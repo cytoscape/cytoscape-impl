@@ -412,7 +412,7 @@ public class CyActivator extends AbstractCyActivator {
 				AnnotationFactory.class);
 
 		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerServiceRef,
-				cyNetworkViewManagerServiceRef, dialogTaskManager, cyPropertyServiceRef, dingGraphLOD, dingGraphLODAll);
+				cyNetworkViewManagerServiceRef, dingGraphLOD, dingGraphLODAll);
 		registerAllServices(bc, graphicsDetailAction, new Properties());
 
 		BendFactory bendFactory = new BendFactoryImpl();
