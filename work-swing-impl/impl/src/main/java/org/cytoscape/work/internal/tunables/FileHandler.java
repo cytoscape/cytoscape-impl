@@ -1,14 +1,15 @@
 package org.cytoscape.work.internal.tunables;
 
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.Component;
-import java.awt.Window;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -21,7 +22,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
@@ -47,6 +47,7 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	private static final Logger logger = LoggerFactory.getLogger(FileHandler.class);
 	
 	private static final Font FILE_NAME_FONT = new Font("SansSerif", Font.PLAIN, 10);
+	private static final Dimension PANEL_SIZE_DIMENSION = new Dimension(500, 80);
 	
 	private final FileUtil fileUtil;
 
@@ -54,7 +55,6 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	private JTextField fileTextField;
 	private ImageIcon image;
 	private JLabel titleLabel;
-//	private JSeparator titleSeparator;
 	private MouseClick mouseClick;
 	private GroupLayout layout;
 	private SupportedFileTypesManager fileTypesManager;
@@ -164,7 +164,13 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 		//set title and textfield text for the file type
 		final String fileCategory = getFileCategory();
 		fileTextField.setText(defaultString);
-		titleLabel.setText((input ? "Load " : "Save ") + initialCaps(fileCategory) + " File");
+		String description = this.getDescription();
+		if(description == null || description.isEmpty())
+			titleLabel.setText((input ? "Load " : "Save ") + initialCaps(fileCategory) + " File");
+		else
+			titleLabel.setText(description);
+		
+		panel.setPreferredSize(PANEL_SIZE_DIMENSION);
 	}
 
 	private String getFileCategory() {

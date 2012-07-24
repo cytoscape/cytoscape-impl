@@ -1,7 +1,6 @@
 package org.cytoscape.work.internal.tunables;
 
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.lang.reflect.Field;
@@ -11,16 +10,17 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.ListMultipleSelection;
 
@@ -71,13 +71,15 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 			return;
 		}
 
-		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
-		JTextArea jta = new JTextArea(getDescription());
-		jta.setPreferredSize(new Dimension(120, 50));
+		final Border padding = BorderFactory.createEmptyBorder(5, 10, 5, 10);
+		panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		final JTextArea jta = new JTextArea(getDescription());
+		jta.setPreferredSize(new Dimension(200, 50));
 		jta.setLineWrap(true);
 		jta.setWrapStyleWord(true);
-		jta.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		panel.add(jta,BorderLayout.BEFORE_LINE_BEGINS);
+		jta.setBorder(padding);
+		panel.add(jta);
 		jta.setBackground(null);
 		jta.setEditable(false);
 
@@ -104,8 +106,10 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		itemsContainerList.setSelectedIndices(selectedIdx);
 		
 		//use a JscrollPane to visualize the items
-		JScrollPane scrollpane = new JScrollPane(itemsContainerList);
-		panel.add(scrollpane,BorderLayout.CENTER);
+		final JScrollPane scrollpane = new JScrollPane(itemsContainerList);
+		scrollpane.setOpaque(false);
+		scrollpane.setBorder(padding);
+		panel.add(scrollpane);
 	}
 
 	

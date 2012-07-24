@@ -25,8 +25,8 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 	
 	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD, 12);
 	private static final Font COMBOBOX_FONT = new Font("SansSerif", Font.PLAIN, 12);
-	private static final Dimension DEF_LABEL_SIZE = new Dimension(300, 25);
-	private static final Dimension DEF_COMBOBOX_SIZE = new Dimension(200, 25);
+//	private static final Dimension DEF_LABEL_SIZE = new Dimension(300, 25);
+	private static final Dimension DEF_COMBOBOX_SIZE = new Dimension(300, 25);
 	
 	private JComboBox combobox;
 
@@ -68,20 +68,20 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 		}
 
 		//set Gui
-		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
+		panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		final JLabel textArea = new JLabel(getDescription());
 		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		textArea.setFont(LABEL_FONT);
-		textArea.setPreferredSize(DEF_LABEL_SIZE);
 		textArea.setVerticalTextPosition(SwingConstants.CENTER);
-		panel.add(textArea,BorderLayout.WEST);
+		panel.add(textArea);
 
 		//add list's items to the combobox
 		combobox = new JComboBox(getSingleSelection().getPossibleValues().toArray());
 		combobox.setPreferredSize(DEF_COMBOBOX_SIZE);
 		combobox.setFont(COMBOBOX_FONT);
 		combobox.addActionListener(this);
-		panel.add(combobox, BorderLayout.CENTER);
+		panel.add(combobox);
 		
 		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
 	}
