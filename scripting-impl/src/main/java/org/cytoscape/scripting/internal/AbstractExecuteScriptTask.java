@@ -9,9 +9,9 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
 import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.work.Task;
+import org.cytoscape.work.AbstractTask;
 
-public abstract class AbstractExecuteScriptTask implements Task {
+public abstract class AbstractExecuteScriptTask extends AbstractTask {
 
 	protected final Map<String, ScriptEngineFactory> name2engineMap;
 	protected final CyAppAdapter cyAppAdapter;

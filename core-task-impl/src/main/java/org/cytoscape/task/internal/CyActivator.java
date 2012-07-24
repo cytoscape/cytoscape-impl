@@ -859,7 +859,7 @@ public class CyActivator extends AbstractCyActivator {
 		openSessionTaskFactoryProps.setProperty(PREFERRED_MENU,"File");
 		openSessionTaskFactoryProps.setProperty(ACCELERATOR,"cmd o");
 		openSessionTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/open_session.png").toString());
-		openSessionTaskFactoryProps.setProperty(TITLE,"Open");
+		openSessionTaskFactoryProps.setProperty(TITLE,"Open...");
 		openSessionTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"1.0");
 		openSessionTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		openSessionTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
@@ -886,7 +886,7 @@ public class CyActivator extends AbstractCyActivator {
 		saveSessionAsTaskFactoryProps.setProperty(PREFERRED_MENU,"File");
 		saveSessionAsTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift s");
 		saveSessionAsTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
-		saveSessionAsTaskFactoryProps.setProperty(TITLE,"Save As");
+		saveSessionAsTaskFactoryProps.setProperty(TITLE,"Save As...");
 		saveSessionAsTaskFactoryProps.setProperty(COMMAND,"save-session-as");
 		saveSessionAsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"cytoscape");
 		registerService(bc,saveSessionAsTaskFactory,TaskFactory.class, saveSessionAsTaskFactoryProps);

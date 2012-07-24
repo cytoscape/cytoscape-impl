@@ -63,6 +63,7 @@ public class CytoscapeMenus {
 		menuBar.addSeparator("File", 2.0);
 		menuBar.addSeparator("File", 4.0);
 		menuBar.addSeparator("File", 6.0);
+		menuBar.addSeparator("File", 7.0);
 		if (!isMac())
 			menuBar.addSeparator("File", 8.0);
 

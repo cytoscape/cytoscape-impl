@@ -77,6 +77,8 @@
 			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
 		</repository>
 	</repositories>
+	
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -85,6 +87,10 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>app-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>command-executor-api</artifactId>
 		</dependency>
 
 		<dependency>
