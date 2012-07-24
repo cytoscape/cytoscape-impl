@@ -37,7 +37,6 @@ package org.cytoscape.internal.actions;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -45,17 +44,19 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.AvailableCommands;
 
 /**
- *
+ * Display a list of all available commands
  */
-public class CommandListAction extends AbstractCyAction {
+public final class CommandListAction extends AbstractCyAction {
 
 	private static final long serialVersionUID = 8750641831904687541L;
+	
 	private final CySwingApplication swingApp;
 	private final AvailableCommands availableCommands;
 
 	public CommandListAction(CySwingApplication swingApp, AvailableCommands availableCommands) {
-		super("List All Commands...");
-		setPreferredMenu("Tools.Command");
+		super("Show List of Available Commands...");
+		setPreferredMenu("Help.Cytoscape Commands");
+		setMenuGravity(100000f);
 		this.swingApp = swingApp;
 		this.availableCommands = availableCommands;
 	}
@@ -64,27 +65,10 @@ public class CommandListAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent ae) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				showCommandList();
+				final CommandListUI ui= new CommandListUI(availableCommands);
+				ui.setLocationRelativeTo(swingApp.getJFrame());
+				ui.setVisible(true);
 			}
 		});
-	}
-
-	private final void showCommandList() {
-		final StringBuilder sb = new StringBuilder();
-		for (String namespace : availableCommands.getNamespaces()) {
-			for (String command : availableCommands.getCommands(namespace)) {
-				sb.append(namespace);
-				sb.append(" ");
-				sb.append(command);
-				sb.append(" ");
-				for (String arg : availableCommands.getArguments(namespace, command)) {
-					sb.append(arg);
-					sb.append(" ");
-				}
-				sb.append(System.getProperty("line.separator"));
-			}
-		}
-		JOptionPane.showMessageDialog(swingApp.getJFrame(), sb.toString(), "List of All Available Commands",
-				JOptionPane.INFORMATION_MESSAGE);
 	}
 }
