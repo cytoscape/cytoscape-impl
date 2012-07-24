@@ -165,7 +165,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	}
 
 	CyColumn getColumn(final int columnIndex)  {
-		final String columnName = getColumnName(columnIndex);
+		final String columnName = getColumnName( table.convertColumnIndexToModel(columnIndex));
+		
 		return dataTable.getColumn(columnName);
 	}
 
@@ -424,8 +425,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 	
 	public boolean isPrimaryKey (int col){
-		String colName = getColumnName(col);
-		return colName.equals(dataTable.getPrimaryKey());
+		return dataTable.getPrimaryKey().getName().equals(getColumnName(table.convertColumnIndexToModel(col)));
 	}
 
 	

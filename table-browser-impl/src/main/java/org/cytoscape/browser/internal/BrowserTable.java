@@ -150,11 +150,12 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 					final int column = getColumnModel().getColumnIndexAtX(e.getX());
 					final int row = e.getY() / getRowHeight();
 
+					final BrowserTableModel tableModel = (BrowserTableModel)table.getModel();
+
 					// Bail out if we're at the ID column:
-					if (column == 0)
+					if (tableModel.isPrimaryKey(column))
 						return;
 
-					final BrowserTableModel tableModel = (BrowserTableModel)table.getModel();
 					// Make sure the column and row we're clicking on actually exists!
 					if (column >= tableModel.getColumnCount() || row >= tableModel.getRowCount())
 						return;
@@ -565,7 +566,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				return;
 
 			// Ignore clicks on the ID column:
-			if (column == 0)
+			if ( tableModel.isPrimaryKey(column))
 				return;
 
 			final CyColumn cyColumn = tableModel.getColumn(column);
