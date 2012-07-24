@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -22,6 +23,8 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.browser.internal.util.ColumnResizer;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
@@ -203,6 +206,11 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 					applicationManager, eventHelper, tableManager);
 			
 			btm = new BrowserTableModel(browserTable, currentTable, compiler, tableManager);
+			final List<String> attrList =  btm.getVisibleAttributeNames();
+			//hide SUID and selected by default
+			attrList.remove(CyNetwork.SUID);
+			attrList.remove( CyNetwork.SELECTED);
+			btm.setVisibleAttributeNames(attrList);
 			browserTableModels.put(currentTable, btm);
 		}
 		
