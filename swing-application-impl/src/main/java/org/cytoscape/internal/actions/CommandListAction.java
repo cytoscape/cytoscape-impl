@@ -54,8 +54,8 @@ public final class CommandListAction extends AbstractCyAction {
 	private final AvailableCommands availableCommands;
 
 	public CommandListAction(CySwingApplication swingApp, AvailableCommands availableCommands) {
-		super("Show List of Available Commands...");
-		setPreferredMenu("Help.Cytoscape Commands");
+		super("List Available Commands...");
+		setPreferredMenu("Help");
 		setMenuGravity(100000f);
 		this.swingApp = swingApp;
 		this.availableCommands = availableCommands;
