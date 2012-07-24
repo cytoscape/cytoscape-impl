@@ -4,28 +4,21 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
-import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
-import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.AbstractCyApp;
-import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
+import org.cytoscape.app.internal.exception.AppDisableException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
@@ -33,7 +26,6 @@ import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.application.CyApplicationConfiguration;
 
-import org.cytoscape.app.internal.net.server.LocalHttpServer;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.slf4j.Logger;
@@ -68,7 +60,7 @@ public class AppManager {
 	
 	/** This subdirectory in the local Cytoscape storage directory is used to store app data, as 
 	 * well as installed and uninstalled apps. */
-	private static final String APPS_DIRECTORY_NAME = "3.0/apps";
+	private static final String APPS_DIRECTORY_NAME = "3.0" + File.separator + "apps";
 	
 	/** The set of all apps, represented by {@link App} objects, registered to this App Manager. */
 	private Set<App> apps;
@@ -148,12 +140,13 @@ public class AppManager {
 		this.appListeners = new HashSet<AppsChangedListener>();
 
 		// Install previously enabled apps
-		installAppsInDirectory(new File(getKarafDeployDirectory()), false);
-		installAppsInDirectory(new File(getInstalledAppsPath()), true);
+		
+		//installAppsInDirectory(new File(getKarafDeployDirectory()), false);
+		//installAppsInDirectory(new File(getInstalledAppsPath()), true);
 		
 		// Load apps from the "uninstalled apps" directory
-		Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()), true);
-		apps.addAll(uninstalledApps);
+		//Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()), true);
+		//apps.addAll(uninstalledApps);
 		
 		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
 	}
@@ -169,43 +162,17 @@ public class AppManager {
 	private void setupAlterationMonitor() {
 		// Set up the FileAlterationMonitor to install/uninstall apps when apps are moved in/out of the 
 		// installed/uninstalled app directories
-		fileAlterationMonitor = new FileAlterationMonitor(30000L);
+		fileAlterationMonitor = new FileAlterationMonitor(2000L);
 		
 		File installedAppsPath = new File(getInstalledAppsPath());
 		
 		FileAlterationObserver installAlterationObserver = new FileAlterationObserver(
 				installedAppsPath, new SingleLevelFileFilter(installedAppsPath), IOCase.SYSTEM);
 		
+		final AppManager appManager = this;
+		
 		// Listen for events on the "installed apps" folder
 		installAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
-			@Override
-			public void onFileDelete(File file) {
-				DebugHelper.print("Install directory file deleted");
-				
-				try {
-					String canonicalPath = file.getCanonicalPath();
-					
-					for (App app : apps) {
-						File appFile = app.getAppFile();
-						
-						if (appFile != null 
-								&& appFile.getCanonicalPath().equals(canonicalPath)) {
-
-							app.setAppFile(new File(getUninstalledAppsPath() + File.separator + appFile.getName()));
-							
-							try {
-								uninstallApp(app);
-							} catch (AppUninstallException e) {
-								logger.warn("Failed to uninstall app " + app.getAppName() + " when it was removed from the local install directory.");
-							}
-						}
-					}
-				} catch (IOException e) {
-					
-					e.printStackTrace();
-				}
-			}
-			
 			@Override
 			public void onFileCreate(File file) {
 				DebugHelper.print("Install directory file created");
@@ -213,27 +180,124 @@ public class AppManager {
 				App parsedApp = null;
 				try {
 					parsedApp = appParser.parseApp(file);
-					installApp(parsedApp);
-
-					DebugHelper.print("Installed: " + parsedApp.getAppName());
 				} catch (AppParsingException e) {
-					DebugHelper.print("Failed to parse: " + file.getName());
-				} catch (AppInstallException e) {
-					DebugHelper.print("Failed to install: " + parsedApp.getAppName());
+					return;
 				}
-			
-			}
-			
-			@Override
-			public void onFileChange(File file) {
+				
+				App registeredApp = null;
+				for (App app : apps) {
+					if (parsedApp.heuristicEquals(app)) {
+						registeredApp = app;
+						
+						// Update file reference to reflect file having been moved
+						registeredApp.setAppFile(file);
+					}
+				}
+				
+				try {
+					if (registeredApp == null) {
+						apps.add(parsedApp);
+						parsedApp.install(appManager);
+					} else {
+						registeredApp.install(appManager);
+					}
+					
+					fireAppsChangedEvent();
+				} catch (AppInstallException e) {
+				}
 			}
 		});
 		
-		setupKarafDeployMonitor(fileAlterationMonitor);
+		FileAlterationObserver disableAlterationObserver = new FileAlterationObserver(
+				getDisabledAppsPath(), new SingleLevelFileFilter(new File(getDisabledAppsPath())), IOCase.SYSTEM);
+		
+		// Listen for events on the "disabled apps" folder
+		disableAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
+			@Override
+			public void onFileCreate(File file) {
+				App parsedApp = null;
+				try {
+					parsedApp = appParser.parseApp(file);
+				} catch (AppParsingException e) {
+					return;
+				}
+				
+				App registeredApp = null;
+				for (App app : apps) {
+					if (parsedApp.heuristicEquals(app)) {
+						registeredApp = app;
+						
+						// Update file reference to reflect file having been moved
+						registeredApp.setAppFile(file);
+					}
+				}
+				
+				try {
+					if (registeredApp == null) {
+						apps.add(parsedApp);
+						parsedApp.disable(appManager);
+					} else {
+						registeredApp.disable(appManager);
+					}
+					
+					fireAppsChangedEvent();
+				} catch (AppDisableException e) {
+				}
+			}
+		});
+		
+		
+		FileAlterationObserver uninstallAlterationObserver = new FileAlterationObserver(
+				getUninstalledAppsPath(), new SingleLevelFileFilter(new File(getUninstalledAppsPath())), IOCase.SYSTEM);
+		
+		// Listen for events on the "disabled apps" folder
+		uninstallAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
+			@Override
+			public void onFileCreate(File file) {
+				App parsedApp = null;
+				try {
+					parsedApp = appParser.parseApp(file);
+				} catch (AppParsingException e) {
+					return;
+				}
+				
+				App registeredApp = null;
+				for (App app : apps) {
+					if (parsedApp.heuristicEquals(app)) {
+						registeredApp = app;
+						
+						// Update file reference to reflect file having been moved
+						registeredApp.setAppFile(file);
+					}
+				}
+				
+				try {
+					if (registeredApp == null) {
+						apps.add(parsedApp);
+						parsedApp.uninstall(appManager);
+					} else {
+						registeredApp.uninstall(appManager);
+					}
+					
+					fireAppsChangedEvent();
+				} catch (AppUninstallException e) {
+				}
+			}
+		});
+		
+		
+		// setupKarafDeployMonitor(fileAlterationMonitor);
 		
 		try {
-			//installAlterationObserver.initialize();
-			//fileAlterationMonitor.addObserver(installAlterationObserver);
+			installAlterationObserver.initialize();
+			fileAlterationMonitor.addObserver(installAlterationObserver);
+			
+			disableAlterationObserver.initialize();
+			fileAlterationMonitor.addObserver(disableAlterationObserver);
+			
+			uninstallAlterationObserver.initialize();
+			fileAlterationMonitor.addObserver(uninstallAlterationObserver);
+			
 			fileAlterationMonitor.start();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -275,7 +339,7 @@ public class AppManager {
 					try {
 						parsedApp = appParser.parseApp(file);
 						
-						if (parsedApp instanceof SimpleApp) {
+						if (parsedApp instanceof SimpleAppOld) {
 							logger.warn("A simple app " + file.getName() + " was moved to the " 
 									+ "framework/deploy directory. It should be installed via the "
 									+ "app manager. Installing anyway..");
@@ -358,26 +422,10 @@ public class AppManager {
 	public void installApp(App app) throws AppInstallException {
 		
 		try {
-			app.install(this);
-		} catch (AppInstallException e) {
-			if (app.getAppFile() != null) {
-				app.getAppFile().delete();
-			}
-			
-			throw new AppInstallException(e.getMessage());
+			app.moveAppFile(this, new File(getInstalledAppsPath()));
+		} catch (IOException e) {
+			throw new AppInstallException("Unable to move app file, " + e.getMessage());
 		}
-		
-		// For bundle apps, remove temporary files from Karaf deploy directory on exit
-		if (app instanceof KarafArchiveApp) {
-			File temporaryInstallFile = ((KarafArchiveApp) app).getAppTemporaryInstallFile();
-			
-			if (temporaryInstallFile != null) {
-				// temporaryInstallFile.deleteOnExit();
-			}
-		}
-		
-		// Let the listeners know that an app has been installed
-		fireAppsChangedEvent();
 	}
 	
 	/**
@@ -393,16 +441,20 @@ public class AppManager {
 	 */
 	public void uninstallApp(App app) throws AppUninstallException {
 		
-		app.uninstall(this);
-		
-		// Let the listeners know that an app has been uninstalled
-		fireAppsChangedEvent();
+		try {
+			app.moveAppFile(this, new File(getUninstalledAppsPath()));
+		} catch (IOException e) {
+			throw new AppUninstallException("Unable to move app file, " + e.getMessage());
+		}
 	}
 
-    public void disableApp(App app) {
+    public void disableApp(App app) throws AppDisableException {
 		
-		// Let the listeners know that an app has been disabled
-		fireAppsChangedEvent();
+    	try {
+			app.moveAppFile(this, new File(getDisabledAppsPath()));
+		} catch (IOException e) {
+			throw new AppDisableException("Unable to move app file, " + e.getMessage());
+		}
     }
 	
 	private void fireAppsChangedEvent() {
@@ -546,20 +598,12 @@ public class AppManager {
 	
 	
 	public String getKarafDeployDirectory() {
-		Object property = System.getProperties().get("cytoscape.home");
+		File directory = new File(System.getProperty("user.home") + File.separator + ".cytoscape" + File.separator + "3.0"
+				+ File.separator + "apps" + File.separator + "deploy");
 		
-		// Temporary fix -- will still allow app-impl to start even if failed to obtain Karaf deploy directory
-		if (property == null) {
-			File tempPath = new File(getDownloadedAppsPath() + File.separator + "temp");
-			tempPath.mkdirs();
-			return tempPath.getAbsolutePath();
-		}
-
-		String current = property.toString();
-		String deployDirectoryPath = current + File.separator + "framework" 
-			+ File.separator + "deploy";
+		directory.mkdirs();
 		
-		return deployDirectoryPath;
+		return directory.getAbsolutePath();
 	}
 	
 	public void cleanKarafDeployDirectory() {

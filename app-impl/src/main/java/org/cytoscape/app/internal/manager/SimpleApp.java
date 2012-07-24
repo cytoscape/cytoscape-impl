@@ -1,54 +1,33 @@
 package org.cytoscape.app.internal.manager;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.regex.Pattern;
+import java.util.LinkedList;
 
+import org.apache.commons.io.FileUtils;
+import org.cytoscape.app.AbstractCyApp;
 import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.internal.exception.AppDisableException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 
 public class SimpleApp extends App {
-	/** 
-	 * The name of the key in the app jar's manifest file that indicates the fully-qualified name 
-	 * of the class to instantiate upon app installation. 
-	 * */
-	public static final String APP_CLASS_TAG = "Cytoscape-App";
-	
-	/**
-	 * The name of the key in the app jar's manifest file indicating the human-readable
-	 * name of the app
-	 */
-	public static final String APP_READABLE_NAME_TAG = "Cytoscape-App-Name";
-
-	/**
-	 * The name of the key in the app jar's manifest file indicating the version of the app
-	 * in the format major.minor.patch[-tag], eg. 3.0.0-SNAPSHOT or 1.2.3
-	 */
-	public static final String APP_VERSION_TAG = "Cytoscape-App-Version";
-	
-	/**
-	 * The name of the key in the app jar's manifest file indicating the major versions of
-	 * Cytoscape that the app is known to be compatible with in comma-delimited form
-	 */
-	public static final String APP_COMPATIBLE_TAG = "Cytoscape-API-Compatibility";
-	
-	/**
-	 * A regular expression representing valid app versions, which are in the format major.minor[.patch][-tag],
-	 * eg. 3.0.0-SNAPSHOT, or 3.0.
-	 */
-	public static final Pattern APP_VERSION_TAG_REGEX = Pattern.compile("(0|([1-9]+\\d*))\\.(\\d)+(\\.(\\d)+)?(-.*)?");
 
 	@Override
-	public Object createAppInstance(CySwingAppAdapter appAdapter) throws AppInstanceException {
-		
+	public Object createAppInstance(CySwingAppAdapter appAdapter)
+			throws AppInstanceException {
 		File installFile = this.getAppTemporaryInstallFile();
+		if (installFile == null) {
+			throw new AppInstanceException("No copy of app jar for instancing was found");
+		}
+		
 		URL appURL = null;
 		try {
 			appURL = installFile.toURI().toURL();
@@ -113,20 +92,51 @@ public class SimpleApp extends App {
 
 	@Override
 	public void install(AppManager appManager) throws AppInstallException {
-		// Use the default installation method of copying over the file,
-		// creating an instance, and registering with the app manager.
-		defaultInstall(appManager);
+		if (this.getStatus() == AppStatus.INSTALLED) {
+			return;
+		}
+		
+		try {
+			moveAppFile(appManager, new File(appManager.getKarafDeployDirectory()));
+		} catch (IOException e) {
+			throw new AppInstallException("Failed to move app file, " + e.getMessage());
+		}
+		
+		// Make a copy used to create app instance
+		LinkedList<String> uniqueNameDirectory = new LinkedList<String>();
+		uniqueNameDirectory.add(appManager.getTemporaryInstallPath());
+		
+		try {
+			if (this.getAppTemporaryInstallFile() == null) {
+				File targetFile = new File(suggestFileName(uniqueNameDirectory, this.getAppFile().getName()));
+				FileUtils.copyFile(this.getAppFile(), targetFile);
+				this.setAppTemporaryInstallFile(targetFile);
+			}
+		} catch (IOException e) {
+			throw new AppInstallException("Unable to make copy of app jar for instancing, " + e.getMessage());
+		}
+		
+		try {
+			if (this.getAppInstance() == null) {
+				Object appInstance = this.createAppInstance(appManager.getSwingAppAdapter());
+				this.setAppInstance((AbstractCyApp) appInstance);
+			}
+		} catch (AppInstanceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.setStatus(AppStatus.INSTALLED);
 	}
 
 	@Override
 	public void uninstall(AppManager appManager) throws AppUninstallException {
-		
-		// Use the default uninstallation procedure which is to move the app to
-		// the uninstalled apps directory
-		defaultUninstall(appManager);
-				
-		// Simple apps require a Cytoscape restart to be uninstalled
-		setStatus(AppStatus.TO_BE_UNINSTALLED);
+		this.setStatus(AppStatus.UNINSTALLED);
+	}
+
+	@Override
+	public void disable(AppManager appManager) throws AppDisableException {
+		this.setStatus(AppStatus.DISABLED);
 	}
 
 }

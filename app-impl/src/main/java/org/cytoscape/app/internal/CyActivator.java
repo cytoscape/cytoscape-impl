@@ -120,6 +120,7 @@ import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 
@@ -348,6 +349,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, webQuerier, WebQuerier.class, new Properties());
 		
 		FeaturesService featuresService = getService(bc, FeaturesService.class);
+		
+		Properties properties = System.getProperties();
+
+		for (Entry<Object, Object> entry : properties.entrySet()) {
+			//System.out.println("Entry: " + entry.getKey() + ", value: " + entry.getValue());
+		}
 		
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, 

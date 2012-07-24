@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.internal.exception.AppDisableException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
@@ -27,6 +28,7 @@ public class KarafArchiveApp extends App {
 	 * Karaf feature information used to install/uninstall a bundle app, 
 	 * which consists of Karaf features.
 	 */
+	
 	public static class KarafFeature {
 		public String featureName;
 		public String featureVersion;
@@ -39,6 +41,8 @@ public class KarafArchiveApp extends App {
 		
 		this.featuresSet = new HashMap<String, KarafFeature>();
 	}
+	
+	
 	
 	@Override
 	public Object createAppInstance(CySwingAppAdapter appAdapter)
@@ -192,6 +196,12 @@ public class KarafArchiveApp extends App {
 		this.setStatus(AppStatus.TO_BE_UNINSTALLED);
 	}
 
+	@Override
+	public void disable(AppManager appManager) throws AppDisableException {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	/**
 	 * Return the list of karaf features.
 	 * @return The list of karaf features
@@ -203,4 +213,5 @@ public class KarafArchiveApp extends App {
 	public void setFeaturesList(Map<String, KarafFeature> featuresSet) {
 		this.featuresSet = featuresSet;
 	}
+
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.cytoscape.app.AbstractCyApp;
 import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.internal.exception.AppDisableException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
@@ -78,9 +79,10 @@ public abstract class App {
 	 */
 	public enum AppStatus{
 		INSTALLED("Installed"),
-		TO_BE_UNINSTALLED("Will be uninstalled after restart"),
-		TO_BE_DISABLED("Will be disabled after restart"),
-		DISABLED("Disabled");
+		TO_BE_UNINSTALLED("Uninstalled-on-restart"),
+		TO_BE_DISABLED("Disable-on-restart"),
+		DISABLED("Disabled"),
+		UNINSTALLED("Uninstalled");
 		
 		String readableStatus;
 		
@@ -137,6 +139,8 @@ public abstract class App {
 	 * apps directory.
 	 */
 	public abstract void uninstall(AppManager appManager) throws AppUninstallException;
+	
+	public abstract void disable(AppManager appManager) throws AppDisableException;
 	
 	/**
 	 * Default app installation method that can be used by classes extending this class.
@@ -340,7 +344,7 @@ public abstract class App {
 	 * @return A new name of the file that does not collide with any non-directory file in the given
 	 * paths. If the given filename had no collisions, then an identical filename is returned.
 	 */
-	private String suggestFileName(Collection<String> directoryPaths, String desiredFileName) {
+	protected String suggestFileName(Collection<String> directoryPaths, String desiredFileName) {
 		
 		int postfixNumber = 1;
 		boolean nameCollision = false;
@@ -632,4 +636,61 @@ public abstract class App {
         return ret;  
     }
 
+	/**
+	 * Moves an app file to the given directory, copying the app if it is outside one of the local app storage directories
+	 * and moving if it is not. Also assigns filename that does not colliide with any from the local app storage directories.
+	 * 
+	 * @param appManager A reference to the app manager
+	 * @param targetDirectory The local storage directory to move to, such as the local sotrage directory
+	 * containing installed apps obtained via the app manager
+	 * @throws IOException If there was an error while moving/copying the file
+	 */
+	public void moveAppFile(AppManager appManager, File targetDirectory) throws IOException {
+		File parentPath = this.getAppFile().getParentFile();
+		File installDirectoryPath = new File(appManager.getKarafDeployDirectory());
+		File disabledDirectoryPath = new File(appManager.getDisabledAppsPath());
+		File uninstallDirectoryPath = new File(appManager.getUninstalledAppsPath());
+
+		// Want to make sure the app file's name does not collide with another name in these directories
+		LinkedList<String> uniqueNameDirectories = new LinkedList<String>();
+		
+		if (!parentPath.equals(installDirectoryPath))
+			uniqueNameDirectories.add(installDirectoryPath.getAbsolutePath());
+		
+		if (!parentPath.equals(disabledDirectoryPath))	
+			uniqueNameDirectories.add(disabledDirectoryPath.getAbsolutePath());
+	
+		if (!parentPath.equals(uninstallDirectoryPath))	
+			uniqueNameDirectories.add(uninstallDirectoryPath.getAbsolutePath());
+		
+		// If the app file is in one of these directories, do a move instead of a copy
+		LinkedList<File> moveDirectories = new LinkedList<File>();
+		moveDirectories.add(installDirectoryPath);
+		moveDirectories.add(disabledDirectoryPath);
+		moveDirectories.add(uninstallDirectoryPath);
+		
+		File targetFile = new File(targetDirectory.getAbsolutePath() + File.separator 
+				+ suggestFileName(uniqueNameDirectories, this.getAppFile().getName()));
+		
+		if (!targetDirectory.equals(parentPath)) {
+			if (moveDirectories.contains(parentPath)) {
+				FileUtils.moveFile(this.getAppFile(), targetFile);
+				this.setAppFile(targetFile);
+			} else {
+				FileUtils.copyFile(this.getAppFile(), targetFile);
+				this.setAppFile(targetFile);
+			}
+		}
+	}
+	
+	protected boolean checkAppAlreadyInstalled(AppManager appManager) {
+		boolean appAlreadyInstalled = false;
+		for (App app : appManager.getApps()) {
+			if (app.heuristicEquals(this)) {
+				appAlreadyInstalled = true;
+			}
+		}
+		
+		return appAlreadyInstalled;
+	}
 }

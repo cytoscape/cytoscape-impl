@@ -56,7 +56,7 @@ public class AppParser {
 	 * @throws AppParsingException If there was an error during parsing, such as missing data from the manifest file
 	 */
 	public App parseApp(File file) throws AppParsingException {
-		App parsedApp = new SimpleApp();
+		App parsedApp = new SimpleAppOld();
 		
 		DebugHelper.print("Parsing: " + file.getPath());
 		
@@ -113,7 +113,7 @@ public class AppParser {
 			}
 		} else if (osgiMetadataFound) {
 			bundleApp = true;
-			parsedApp = new KarafArchiveApp();
+			parsedApp = new BundleApp();
 		}
 		
 		// Attempt to obtain manifest file from jar
@@ -133,52 +133,52 @@ public class AppParser {
 		// Bundle apps are instantiated by OSGi using their activator classes
 		if (!bundleApp) {
 			// Obtain the fully-qualified name of the class to instantiate upon app installation
-			entryClassName = manifest.getMainAttributes().getValue(SimpleApp.APP_CLASS_TAG);
+			entryClassName = manifest.getMainAttributes().getValue(SimpleAppOld.APP_CLASS_TAG);
 			if (entryClassName == null || entryClassName.trim().length() == 0) {
-				throw new AppParsingException("Jar is missing value for entry " + SimpleApp.APP_CLASS_TAG + " in its manifest file.");
+				throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_CLASS_TAG + " in its manifest file.");
 			}
 		}
 		
 		// Obtain the human-readable name of the app
-		String readableName = manifest.getMainAttributes().getValue(SimpleApp.APP_READABLE_NAME_TAG);
+		String readableName = manifest.getMainAttributes().getValue(SimpleAppOld.APP_READABLE_NAME_TAG);
 		if (readableName == null || readableName.trim().length() == 0) {
 			
 			if (bundleApp) {
 				readableName = "Name-not-found: karaf/" + file.getName();
 			} else {
-				throw new AppParsingException("Jar is missing value for entry " + SimpleApp.APP_READABLE_NAME_TAG + " in its manifest file.");
+				throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_READABLE_NAME_TAG + " in its manifest file.");
 				// readableName = "unnamed";
 			}
 		}
 		
 		// Obtain the version of the app, in major.minor.patch[-tag] format, ie. 3.0.0-SNAPSHOT or 1.2.3
-		String appVersion = manifest.getMainAttributes().getValue(SimpleApp.APP_VERSION_TAG);
+		String appVersion = manifest.getMainAttributes().getValue(SimpleAppOld.APP_VERSION_TAG);
 		if (appVersion == null || appVersion.trim().length() == 0) {
 			
 			if (bundleApp) {
 				appVersion = "Not found";
 			} else {
-				throw new AppParsingException("Jar is missing value for entry " + SimpleApp.APP_VERSION_TAG + " in its manifiest file.");
+				throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_VERSION_TAG + " in its manifiest file.");
 				// appVersion = "unversioned";
 			}
 			
-		} else if (!SimpleApp.APP_VERSION_TAG_REGEX.matcher(appVersion).matches()) {
-			throw new AppParsingException("The app version specified in its manifest file under the key " + SimpleApp.APP_VERSION_TAG
+		} else if (!SimpleAppOld.APP_VERSION_TAG_REGEX.matcher(appVersion).matches()) {
+			throw new AppParsingException("The app version specified in its manifest file under the key " + SimpleAppOld.APP_VERSION_TAG
 					+ " was found to not match the format major.minor[.patch][-tag], eg. 2.1, 2.1-test, 3.0.0 or 3.0.0-SNAPSHOT");
 		}
 		
-		String compatibleVersions = manifest.getMainAttributes().getValue(SimpleApp.APP_COMPATIBLE_TAG);
+		String compatibleVersions = manifest.getMainAttributes().getValue(SimpleAppOld.APP_COMPATIBLE_TAG);
 		if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
             if (bundleApp) {
-                logger.warn("Bundle app " + file.getName() + " manifest does not contain the entry \"" + SimpleApp.APP_COMPATIBLE_TAG
+                logger.info("Bundle app " + file.getName() + " manifest does not contain the entry \"" + SimpleAppOld.APP_COMPATIBLE_TAG
                         + "\". Assuming default value 3.0.");
                 compatibleVersions = "3.0";
             } else {
-                throw new AppParsingException("Jar is missing value for entry " + SimpleApp.APP_COMPATIBLE_TAG + " in its manifest file.");
+                throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_COMPATIBLE_TAG + " in its manifest file.");
             }
 		} else if (!compatibleVersions.matches(APP_COMPATIBLE_TAG_REGEX)) {
 			throw new AppParsingException("The known compatible versions of Cytoscape specified in the manifest under the"
-					+ " key " + SimpleApp.APP_COMPATIBLE_TAG + " does not match the form of a comma-delimited list of versions of the form"
+					+ " key " + SimpleAppOld.APP_COMPATIBLE_TAG + " does not match the form of a comma-delimited list of versions of the form"
 					+ " major[.minor] (eg. 1 or 1.0) with variable whitespace around versions");
 		}
 		
