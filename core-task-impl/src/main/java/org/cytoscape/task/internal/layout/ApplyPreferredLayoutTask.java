@@ -27,15 +27,14 @@
  */
 package org.cytoscape.task.internal.layout;
 
-import org.cytoscape.task.AbstractNetworkViewCollectionTask;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.work.TaskMonitor;
-
 import java.util.Collection;
 import java.util.Properties;
+
+import org.cytoscape.task.AbstractNetworkViewCollectionTask;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskMonitor;
 
 public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask {
 
