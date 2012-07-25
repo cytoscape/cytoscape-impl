@@ -71,6 +71,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.apple.eawt.FullScreenUtilities;
+
 
 /**
  * The CytoscapeDesktop is the central Window for working with Cytoscape
@@ -171,6 +173,11 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			UIManager.setLookAndFeel(laf);
 			SwingUtilities.updateComponentTreeUI(this);
 		} catch (Exception e) { /* not really a problem if this fails */ }
+		
+		if(System.getProperty("os.name").startsWith("Mac OS X")) {
+			// Enable full screen mode for 10.7+
+			FullScreenUtilities.setWindowCanFullScreen(this, true);
+		}
 
 		//don't automatically close window. Let shutdown.exit(returnVal)
 		//handle this

@@ -63,6 +63,8 @@ import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CommandListAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.ExitAction;
+import org.cytoscape.internal.actions.FullScreenAction;
+import org.cytoscape.internal.actions.FullScreenMacAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
@@ -357,6 +359,7 @@ public class CyActivator extends AbstractCyActivator {
 		arrangeVerticalTaskFactoryProps.setProperty(PREFERRED_MENU,
 		                                            "View.Arrange Network Windows[110]");
 		arrangeVerticalTaskFactoryProps.setProperty(TITLE, "Vertical");
+		
 		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
 		                arrangeVerticalTaskFactoryProps);
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
@@ -418,9 +421,19 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
 
- 		AvailableCommands availableCommandsServiceRef = getService(bc,AvailableCommands.class);
-        CommandListAction cla = new CommandListAction(cytoscapeDesktop, availableCommandsServiceRef);
-        registerService(bc,cla,CyAction.class,new Properties());
+		AvailableCommands availableCommandsServiceRef = getService(bc, AvailableCommands.class);
+		CommandListAction cla = new CommandListAction(cytoscapeDesktop, availableCommandsServiceRef);
+		registerService(bc, cla, CyAction.class, new Properties());
+		
+		// Full screen actions.  This is platform dependent
+		FullScreenAction fullScreenAction = null;
+		if(isMac()) {
+			fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
+		} else {
+			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
+		}
+		registerService(bc, fullScreenAction, CyAction.class, new Properties());
+		
 	}
 
 	private boolean isMac() {
