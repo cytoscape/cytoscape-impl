@@ -178,7 +178,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	// Size of square for moving handle
-	static final float DEFAULT_ANCHOR_SIZE = 25.0f;
+	static final float DEFAULT_ANCHOR_SIZE = 12.0f;
 	
 	static final Paint DEFAULT_ANCHOR_SELECTED_PAINT = Color.red;
 	static final Paint DEFAULT_ANCHOR_UNSELECTED_PAINT = Color.DARK_GRAY;
