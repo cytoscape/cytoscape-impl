@@ -32,7 +32,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
 
 
 public class PerfTest {
@@ -73,6 +72,8 @@ public class PerfTest {
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
+		is.close();
+		
 		return snvp;
 	}
 
