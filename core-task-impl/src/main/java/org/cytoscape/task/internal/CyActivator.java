@@ -1,7 +1,27 @@
 
 package org.cytoscape.task.internal;
 
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
 import java.util.Properties;
 
@@ -55,8 +75,8 @@ import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.edit.ExpandGroupTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
 import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
 import org.cytoscape.task.edit.UnGroupTaskFactory;
@@ -116,8 +136,8 @@ import org.cytoscape.task.internal.session.SaveSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.table.CopyValueToEntireColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
-import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
+import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
@@ -159,7 +179,6 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
@@ -265,7 +284,7 @@ public class CyActivator extends AbstractCyActivator {
 		CopyValueToEntireColumnTaskFactoryImpl copyValueToEntireColumnTaskFactory = new CopyValueToEntireColumnTaskFactoryImpl(undoSupportServiceRef);
 		DeleteTableTaskFactoryImpl deleteTableTaskFactory = new DeleteTableTaskFactoryImpl(cyTableManagerServiceRef);
 		ExportVizmapTaskFactoryImpl exportVizmapTaskFactory = new ExportVizmapTaskFactoryImpl(vizmapWriterManagerServiceRef,visualMappingManagerServiceRef, tunableSetterServiceRef);
-		ConnectSelectedNodesTaskFactoryImpl connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef,cyEventHelperRef,visualMappingManagerServiceRef,cyNetworkViewManagerServiceRef);
+		ConnectSelectedNodesTaskFactoryImpl connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef, cyEventHelperRef, visualMappingManagerServiceRef, cyNetworkViewManagerServiceRef);
 		MapGlobalToLocalTableTaskFactoryImpl mapGlobal = new MapGlobalToLocalTableTaskFactoryImpl(cyTableManagerServiceRef, cyNetworkManagerServiceRef, tunableSetterServiceRef);
 		
 		DynamicTaskFactoryProvisionerImpl dynamicTaskFactoryProvisionerImpl = new DynamicTaskFactoryProvisionerImpl(cyApplicationManagerServiceRef);
@@ -927,15 +946,22 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,deleteTableTaskFactory,TableTaskFactory.class, new Properties());
 		registerService(bc,deleteTableTaskFactory,DeleteTableTaskFactory.class, new Properties());
 
+		// Register as 3 types of service.
 		Properties connectSelectedNodesTaskFactoryProps = new Properties();
-		connectSelectedNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
-		connectSelectedNodesTaskFactoryProps.setProperty(ENABLE_FOR,"network");
-		connectSelectedNodesTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.5");
-		connectSelectedNodesTaskFactoryProps.setProperty(TITLE,"Connect Selected Nodes");
-		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND,"connect-selected-nodes");
-		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		registerService(bc,connectSelectedNodesTaskFactory,NetworkTaskFactory.class, connectSelectedNodesTaskFactoryProps);
-		registerService(bc,connectSelectedNodesTaskFactory,ConnectSelectedNodesTaskFactory.class, connectSelectedNodesTaskFactoryProps);
+		connectSelectedNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
+		connectSelectedNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
+		connectSelectedNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		connectSelectedNodesTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+		connectSelectedNodesTaskFactoryProps.setProperty(MENU_GRAVITY, "0.9");
+		connectSelectedNodesTaskFactoryProps.setProperty(TITLE, "Connect Selected Nodes with Undirected Edges");
+		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND, "connect-selected-nodes");
+		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+//		registerService(bc, connectSelectedNodesTaskFactory, NetworkTaskFactory.class,
+//				connectSelectedNodesTaskFactoryProps);
+		registerService(bc, connectSelectedNodesTaskFactory, NodeViewTaskFactory.class,
+				connectSelectedNodesTaskFactoryProps);
+		registerService(bc, connectSelectedNodesTaskFactory, ConnectSelectedNodesTaskFactory.class,
+				connectSelectedNodesTaskFactoryProps);
 
 		GroupNodesTaskFactoryImpl groupNodesTaskFactory = 
 			new GroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory);
