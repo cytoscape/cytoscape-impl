@@ -334,6 +334,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties arrangeGridTaskFactoryProps = new Properties();
 		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
+		arrangeGridTaskFactoryProps.setProperty(ACCELERATOR,"cmd g");
 		arrangeGridTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[110]");
 		arrangeGridTaskFactoryProps.setProperty(TITLE, "Grid");
 		registerService(bc, arrangeGridTaskFactory, TaskFactory.class, arrangeGridTaskFactoryProps);
