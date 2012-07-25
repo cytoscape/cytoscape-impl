@@ -57,14 +57,14 @@ public final class BypassManager {
 		// Create root menu
 		final Properties nodeProp = new Properties();
 		nodeProp.setProperty("preferredTaskManager", "menu");
-		nodeProp.setProperty(PREFERRED_MENU, NODE_PREFERENCES_MENU);
+		nodeProp.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
 		nodeProp.setProperty(MENU_GRAVITY, "-1");
 		final NodeBypassContextMenuFactory ntf = new NodeBypassContextMenuFactory(rootNode, editorManager, vmm, lexicon);
 		registrar.registerService(ntf, CyNodeViewContextMenuFactory.class, nodeProp);
 
 		final Properties edgeProp = new Properties();
 		edgeProp.setProperty("preferredTaskManager", "menu");
-		edgeProp.setProperty(PREFERRED_MENU, EDGE_PREFERENCES_MENU);
+		edgeProp.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
 		edgeProp.setProperty(MENU_GRAVITY, "-1");
 		final EdgeBypassContextMenuFactory etf = new EdgeBypassContextMenuFactory(rootEdge, editorManager, vmm, lexicon);
 		registrar.registerService(etf, CyEdgeViewContextMenuFactory.class, edgeProp);
