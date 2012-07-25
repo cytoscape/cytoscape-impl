@@ -131,12 +131,12 @@ public class SimpleApp extends App {
 
 	@Override
 	public void uninstall(AppManager appManager) throws AppUninstallException {
-		this.setStatus(AppStatus.UNINSTALLED);
+		this.setStatus(AppStatus.TO_BE_UNINSTALLED);
 	}
 
 	@Override
 	public void disable(AppManager appManager) throws AppDisableException {
-		this.setStatus(AppStatus.DISABLED);
+		this.setStatus(AppStatus.TO_BE_DISABLED);
 	}
 
 }

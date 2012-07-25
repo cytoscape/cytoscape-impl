@@ -647,7 +647,7 @@ public abstract class App {
 	 */
 	public void moveAppFile(AppManager appManager, File targetDirectory) throws IOException {
 		File parentPath = this.getAppFile().getParentFile();
-		File installDirectoryPath = new File(appManager.getKarafDeployDirectory());
+		File installDirectoryPath = new File(appManager.getInstalledAppsPath());
 		File disabledDirectoryPath = new File(appManager.getDisabledAppsPath());
 		File uninstallDirectoryPath = new File(appManager.getUninstalledAppsPath());
 
@@ -675,9 +675,11 @@ public abstract class App {
 		if (!targetDirectory.equals(parentPath)) {
 			if (moveDirectories.contains(parentPath)) {
 				FileUtils.moveFile(this.getAppFile(), targetFile);
+				System.out.println("Moving: " + this.getAppFile() + " -> " + targetFile);
 				this.setAppFile(targetFile);
 			} else {
 				FileUtils.copyFile(this.getAppFile(), targetFile);
+				System.out.println("Copying: " + this.getAppFile() + " -> " + targetFile);
 				this.setAppFile(targetFile);
 			}
 		}

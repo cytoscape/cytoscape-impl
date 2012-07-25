@@ -141,6 +141,33 @@ public class AppManager {
 
 		// Install previously enabled apps
 		
+		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
+		for (App app: installedFolderApps) {
+			try {
+				app.install(this);
+				apps.add(app);
+			} catch (AppInstallException e) {
+			}
+		}
+		
+		Set<App> disabledFolderApps = obtainAppsFromDirectory(new File(getDisabledAppsPath()), false);
+		for (App app: disabledFolderApps) {
+			try {
+				app.disable(this);
+				apps.add(app);
+			} catch (AppDisableException e) {
+			}
+		}
+		
+		Set<App> uninstalledFolderApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()), false);
+		for (App app: uninstalledFolderApps) {
+			try {
+				app.uninstall(this);
+				apps.add(app);
+			} catch (AppUninstallException e) {
+			}
+		}
+		
 		//installAppsInDirectory(new File(getKarafDeployDirectory()), false);
 		//installAppsInDirectory(new File(getInstalledAppsPath()), true);
 		
@@ -721,6 +748,7 @@ public class AppManager {
 					app = appParser.parseApp(potentialApp);
 				} catch (AppParsingException e) {
 					DebugHelper.print("Failed to parse " + potentialApp + ", error: " + e.getMessage());
+					app = null;
 				} finally {
 					if (app != null) {
 						parsedApps.add(app);

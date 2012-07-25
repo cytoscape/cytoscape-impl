@@ -56,7 +56,7 @@ public class AppParser {
 	 * @throws AppParsingException If there was an error during parsing, such as missing data from the manifest file
 	 */
 	public App parseApp(File file) throws AppParsingException {
-		App parsedApp = new SimpleAppOld();
+		App parsedApp = new SimpleApp();
 		
 		DebugHelper.print("Parsing: " + file.getPath());
 		
@@ -140,31 +140,48 @@ public class AppParser {
 		}
 		
 		// Obtain the human-readable name of the app
-		String readableName = manifest.getMainAttributes().getValue(SimpleAppOld.APP_READABLE_NAME_TAG);
-		if (readableName == null || readableName.trim().length() == 0) {
+		String readableName = null;
+		if (!bundleApp) {
+			readableName = manifest.getMainAttributes().getValue(SimpleAppOld.APP_READABLE_NAME_TAG);
 			
-			if (bundleApp) {
-				readableName = "Name-not-found: karaf/" + file.getName();
-			} else {
+			if (readableName == null || readableName.trim().length() == 0) {
 				throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_READABLE_NAME_TAG + " in its manifest file.");
-				// readableName = "unnamed";
+			}
+		} else {
+			readableName = manifest.getMainAttributes().getValue("Bundle-Name");
+			
+			if (readableName == null || readableName.trim().length() == 0) {
+				readableName = manifest.getMainAttributes().getValue("Bundle-SymbolicName");
+			}
+			
+			if (readableName == null || readableName.trim().length() == 0) {
+				throw new AppParsingException("Bundle jar manifest had no entry for Bundle-Name, and no entry for Bundle-SymbolicName");
 			}
 		}
 		
 		// Obtain the version of the app, in major.minor.patch[-tag] format, ie. 3.0.0-SNAPSHOT or 1.2.3
-		String appVersion = manifest.getMainAttributes().getValue(SimpleAppOld.APP_VERSION_TAG);
-		if (appVersion == null || appVersion.trim().length() == 0) {
+		String appVersion = null;
+		if (!bundleApp) {
+			appVersion = manifest.getMainAttributes().getValue(SimpleAppOld.APP_VERSION_TAG);
 			
-			if (bundleApp) {
-				appVersion = "Not found";
-			} else {
+			if (appVersion == null || appVersion.trim().length() == 0) {
 				throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_VERSION_TAG + " in its manifiest file.");
-				// appVersion = "unversioned";
+			} else if (!SimpleAppOld.APP_VERSION_TAG_REGEX.matcher(appVersion).matches()) {
+				throw new AppParsingException("The app version specified in its manifest file under the key " + SimpleAppOld.APP_VERSION_TAG
+						+ " was found to not match the format major.minor[.patch][-tag], eg. 2.1, 2.1-test, 3.0.0 or 3.0.0-SNAPSHOT");
 			}
+		} else {
+			appVersion = manifest.getMainAttributes().getValue("Bundle-Version");
 			
-		} else if (!SimpleAppOld.APP_VERSION_TAG_REGEX.matcher(appVersion).matches()) {
-			throw new AppParsingException("The app version specified in its manifest file under the key " + SimpleAppOld.APP_VERSION_TAG
-					+ " was found to not match the format major.minor[.patch][-tag], eg. 2.1, 2.1-test, 3.0.0 or 3.0.0-SNAPSHOT");
+			if (appVersion == null || appVersion.trim().length() == 0) {
+				
+				// For now, while it hasn't been decided, accept values for Cytoscape-App-Version if Bundle-Version is not found
+				appVersion = manifest.getMainAttributes().getValue(SimpleAppOld.APP_VERSION_TAG);
+				
+				if (appVersion == null || appVersion.trim().length() == 0) {
+					throw new AppParsingException("Bundle jar manifest has no entry for Bundle-Version");
+				}
+			}
 		}
 		
 		String compatibleVersions = manifest.getMainAttributes().getValue(SimpleAppOld.APP_COMPATIBLE_TAG);

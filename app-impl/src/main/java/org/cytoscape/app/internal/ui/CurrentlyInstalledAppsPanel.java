@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
+import org.cytoscape.app.internal.exception.AppDisableException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.manager.App;
@@ -130,11 +131,11 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(descriptionLabel)
                             .add(layout.createSequentialGroup()
-                                .add(uninstallSelectedButton)
+                            	.add(enableSelectedButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(disableSelectedButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(enableSelectedButton))
+                                .add(uninstallSelectedButton))
                             .add(appsInstalledLabel))
                         .add(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
@@ -187,13 +188,13 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         for (App app : selectedApps) {
         	if (app.getStatus().equals(AppStatus.DISABLED))
                 continue;
-            /*
-            try {
-            } catch (AppInstallException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            */
+
+        	try {
+        		appManager.disableApp(app);
+        	} catch (AppDisableException e) {
+        		// TODO Auto-generated catch block
+				e.printStackTrace();
+        	}
         }
         
         disableSelectedButton.setEnabled(false);
@@ -208,7 +209,8 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         
         for (App app : selectedApps) {
         	// Only uninstall apps that are installed
-        	if (app.getStatus() == AppStatus.INSTALLED) {
+        	if (app.getStatus() == AppStatus.INSTALLED
+        			|| app.getStatus() == AppStatus.DISABLED) {
         		try {
 					appManager.uninstallApp(app);
 				} catch (AppUninstallException e) {
@@ -311,7 +313,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     private void updateLabels() {
     	int installedCount = appManager.getApps().size();
     	
-    	appsInstalledLabel.setText(installedCount + " Apps installed.");
+    	appsInstalledLabel.setText(installedCount + installedCount == 1 ? " App installed." : " Apps installed.");
     }
     
     /**
@@ -338,6 +340,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     		
     		// Disable buttons
     		enableSelectedButton.setEnabled(false);
+    		disableSelectedButton.setEnabled(false);
     		uninstallSelectedButton.setEnabled(false);
     		
     	// If a single app is selected, show its app description
@@ -350,38 +353,57 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     		// Enable/disable the appropriate button
     		if (selectedApp.getStatus() == AppStatus.INSTALLED) {
     			enableSelectedButton.setEnabled(false);
+    			disableSelectedButton.setEnabled(true);
     			uninstallSelectedButton.setEnabled(true);
-    		} else {
+    		} else if (selectedApp.getStatus() == AppStatus.DISABLED) {
     			enableSelectedButton.setEnabled(true);
+    			disableSelectedButton.setEnabled(false);
+    			uninstallSelectedButton.setEnabled(true);
+    		} else if (selectedApp.getStatus() == AppStatus.UNINSTALLED) {
+    			enableSelectedButton.setEnabled(true);
+    			disableSelectedButton.setEnabled(true);
     			uninstallSelectedButton.setEnabled(false);
-    		}
+    		} 
     	} else {
     		descriptionTextArea.setText(numSelected + " apps selected.");
     		
     		// Enable/disable the appropriate buttons
     		boolean allInstalled = true;
+    		boolean allDisabled = true;
     		boolean allUninstalled = true;
     		
     		for (App selectedApp : selectedApps) {
     			if (selectedApp.getStatus() == AppStatus.INSTALLED) {
+    				allDisabled = false;
     				allUninstalled = false;
     			}
     			
-    			if (selectedApp.getStatus() != AppStatus.INSTALLED) {
+    			if (selectedApp.getStatus() == AppStatus.DISABLED) {
     				allInstalled = false;
+    				allUninstalled = false;
+    			}
+    			
+    			if (selectedApp.getStatus() == AppStatus.UNINSTALLED) {
+    				allInstalled = false;
+    				allDisabled = false;
     			}
     		}
     		
     		if (allInstalled) {
     			enableSelectedButton.setEnabled(false);
+    			disableSelectedButton.setEnabled(true);
+    			uninstallSelectedButton.setEnabled(true);
+    		} else if (allDisabled) {
+    			enableSelectedButton.setEnabled(true);
+    			disableSelectedButton.setEnabled(false);
     			uninstallSelectedButton.setEnabled(true);
     		} else if (allUninstalled) {
     			enableSelectedButton.setEnabled(true);
+    			disableSelectedButton.setEnabled(true);
     			uninstallSelectedButton.setEnabled(false);
     		} else {
-    			// If some of the selected apps are installed and some are uninstalled,
-    			// enable both buttons
     			enableSelectedButton.setEnabled(true);
+    			disableSelectedButton.setEnabled(true);
     			uninstallSelectedButton.setEnabled(true);
     		}
     	}
