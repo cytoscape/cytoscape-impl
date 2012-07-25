@@ -36,7 +36,7 @@ public class CyActivator extends AbstractCyActivator {
 		CreateNetworkViewTaskFactory createNetworkViewTaskFactoryServiceRef = getService(bc, CreateNetworkViewTaskFactory.class);
 
 		// NetworkView (empty space) context menus
-		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory();
+		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory(visualMappingManagerServiceRef, cyEventHelperServiceRef);
 		Properties sifInterpreterTaskFactoryProps = new Properties();
 		sifInterpreterTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");

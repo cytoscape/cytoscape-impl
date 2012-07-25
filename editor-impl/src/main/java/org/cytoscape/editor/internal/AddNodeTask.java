@@ -21,7 +21,10 @@ public class AddNodeTask extends AbstractNetworkViewTask{
 	private final CyEventHelper eh;
 	private static int new_node_index =1;
 	
-	public AddNodeTask(final VisualMappingManager vmm, final CyNetworkView view,final Point2D xformPt, final CyEventHelper eh) {
+	public AddNodeTask(final VisualMappingManager vmm,
+					   final CyNetworkView view,
+					   final Point2D xformPt,
+					   final CyEventHelper eh) {
 		super(view);
 		this.vmm = vmm;
 		this.xformPt = xformPt;
@@ -30,24 +33,24 @@ public class AddNodeTask extends AbstractNetworkViewTask{
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		final CyNetwork net = view.getModel();		
+		final CyNetwork net = view.getModel();
 		final CyNode n = net.addNode();
 
 		// set the name attribute for the new node
-		final String nodeName = "Node "+ new_node_index;		
+		final String nodeName = "Node " + new_node_index;
 		new_node_index++;
-		
+
 		final CyRow nodeRow = net.getRow(n);
 		nodeRow.set(CyNetwork.NAME, nodeName);
 
 		eh.flushPayloadEvents();
 		View<CyNode> nv = view.getNodeView(n);
-		nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,xformPt.getX());
-		nv.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,xformPt.getY());
-		view.updateView();
-		
+		nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xformPt.getX());
+		nv.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, xformPt.getY());
+
 		// Apply visual style
 		VisualStyle vs = vmm.getVisualStyle(view);
 		vs.apply(view);
+		view.updateView();
 	}
 }
