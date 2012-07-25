@@ -43,7 +43,7 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 		
 		if(isUpToDate()) {
 			status.setIcon(upToDateIcon);
-			status.setText("Your Cytoscape " + versionStr + " is up to date!");
+			status.setText("Cytoscape " + versionStr + " is up to date.");
 		} else {
 			status.setIcon(newVersionAvailableIcon);
 			status.setText("New version is available: " + versionStr);
