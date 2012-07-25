@@ -29,6 +29,7 @@ import org.cytoscape.io.internal.read.session.Cy2SessionReaderFactoryImpl;
 import org.cytoscape.io.internal.read.session.Cy3SessionReaderFactoryImpl;
 import org.cytoscape.io.internal.read.session.SessionFileFilter;
 import org.cytoscape.io.internal.read.sif.SIFNetworkReaderFactory;
+import org.cytoscape.io.internal.read.nnf.NNFNetworkReaderFactory;
 import org.cytoscape.io.internal.read.vizmap.VizmapPropertiesFileFilter;
 import org.cytoscape.io.internal.read.vizmap.VizmapPropertiesReaderFactory;
 import org.cytoscape.io.internal.read.vizmap.VizmapXMLFileFilter;
@@ -66,6 +67,7 @@ import org.cytoscape.io.internal.write.graphics.SVGWriterFactory;
 import org.cytoscape.io.internal.write.properties.PropertiesWriterFactoryImpl;
 import org.cytoscape.io.internal.write.session.SessionWriterFactoryImpl;
 import org.cytoscape.io.internal.write.sif.SifNetworkWriterFactory;
+//import org.cytoscape.io.internal.write.nnf.NnfNetworkWriterFactory;
 import org.cytoscape.io.internal.write.vizmap.VizmapWriterFactoryImpl;
 import org.cytoscape.io.internal.write.xgmml.SessionXGMMLWriterFactory;
 import org.cytoscape.io.internal.write.xgmml.GenericXGMMLWriterFactory;
@@ -151,6 +153,7 @@ public class CyActivator extends AbstractCyActivator {
 		BasicCyFileFilter svgFilter = new BasicCyFileFilter(new String[]{"svg"}, new String[]{"image/svg"}, "Scalable Vector Graphics (SVG) File",DataCategory.IMAGE, streamUtil);
 		BasicCyFileFilter attrsFilter = new BasicCyFileFilter(new String[]{"attrs"}, new String[]{"text/plain"}, "Any text file",DataCategory.TABLE, streamUtil);
 		BasicCyFileFilter sifFilter = new BasicCyFileFilter(new String[]{"sif"}, new String[]{"text/sif"}, "SIF files",DataCategory.NETWORK, streamUtil);
+		BasicCyFileFilter nnfFilter = new BasicCyFileFilter(new String[]{"nnf"}, new String[]{"text/nnf"}, "Nested Network files",DataCategory.NETWORK, streamUtil);
 		BasicCyFileFilter csvFilter = new BasicCyFileFilter(new String[]{"csv"}, new String[]{"text/plain"}, "CSV file",DataCategory.TABLE, streamUtil);
 		BasicCyFileFilter sessionTableFilter = new BasicCyFileFilter(new String[]{"cytable"}, new String[]{"text/plain"}, "Session table file",DataCategory.TABLE, streamUtil);
 		GenericXGMMLFileFilter xgmmlFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML files",DataCategory.NETWORK, streamUtil);
@@ -181,6 +184,7 @@ public class CyActivator extends AbstractCyActivator {
 		ExpressionReaderFactory expressionReaderFactory = new ExpressionReaderFactory(expressionFilter,cyTableFactoryServiceRef);
 		CyAttributesReaderFactory attrsDataReaderFactory = new CyAttributesReaderFactory(attrsFilter,cyTableFactoryServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyRootNetworkManagerServiceRef);
 		SIFNetworkReaderFactory sifNetworkViewReaderFactory = new SIFNetworkReaderFactory(sifFilter,cyLayoutsServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyEventHelperRef);
+		NNFNetworkReaderFactory nnfNetworkViewReaderFactory = new NNFNetworkReaderFactory(nnfFilter,cyLayoutsServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyEventHelperRef, cyNetworkManagerServiceRef);
 		UnrecognizedVisualPropertyManager unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(cyTableFactoryServiceRef,cyTableManagerServiceRef);
 		GMLNetworkReaderFactory gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager);
 		ReadCache readCache = new ReadCache();
@@ -206,6 +210,7 @@ public class CyActivator extends AbstractCyActivator {
 		PSWriterFactory psWriterFactory = new PSWriterFactory(psFilter);
 		SVGWriterFactory svgWriterFactory = new SVGWriterFactory(svgFilter);
 		SifNetworkWriterFactory sifNetworkViewWriterFactory = new SifNetworkWriterFactory(sifFilter);
+//		NnfNetworkWriterFactory nnfNetworkViewWriterFactory = new NnfNetworkWriterFactory(nnfFilter);
 		GenericXGMMLWriterFactory xgmmlWriterFactory = new GenericXGMMLWriterFactory(xgmmlFilter,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager,cyNetworkManagerServiceRef,cyRootNetworkManagerServiceRef,visualMappingManagerServiceRef);
 		SessionXGMMLWriterFactory sessionXgmmlWriterFactory = new SessionXGMMLWriterFactory(sessXgmmlFileFilter,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager,cyNetworkManagerServiceRef,cyRootNetworkManagerServiceRef,visualMappingManagerServiceRef);
 		CysessionWriterFactoryImpl cysessionWriterFactory = new CysessionWriterFactoryImpl(cysessionFilter);
@@ -229,6 +234,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,tableWriterManager,CyTableWriterManager.class, new Properties());
 		registerService(bc,vizmapWriterManager,VizmapWriterManager.class, new Properties());
 		registerService(bc,sifNetworkViewReaderFactory,InputStreamTaskFactory.class, new Properties());
+		registerService(bc,nnfNetworkViewReaderFactory,InputStreamTaskFactory.class, new Properties());
 
 		registerService(bc,xgmmlReaderFactory,InputStreamTaskFactory.class, new Properties());
 		registerService(bc,sessXgmmlNetReaderFactory,InputStreamTaskFactory.class, new Properties());
@@ -267,6 +273,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, psWriterFactory, new Properties());
 		registerAllServices(bc, svgWriterFactory, new Properties());
 		registerAllServices(bc, sifNetworkViewWriterFactory, new Properties());
+//		registerAllServices(bc, nnfNetworkViewWriterFactory, new Properties());
 		registerAllServices(bc, xgmmlWriterFactory, new Properties());
 		registerAllServices(bc, cysessionWriterFactory, new Properties());
 		registerAllServices(bc, bookmarksWriterFactory, new Properties());
