@@ -108,6 +108,8 @@ public final class PSICQUICSimpleClient {
 		String strCount = streamToString(result);
 		strCount = strCount.replaceAll("\n", "");
 
+		result.close();
+		
 		return Long.parseLong(strCount);
 	}
 

@@ -1,8 +1,12 @@
 package org.cytoscape.webservice.psicquic;
 
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NODE_APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
 import java.util.Properties;
 
-import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -14,7 +18,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ExpandNodeContextMenuFactory;
-import static org.cytoscape.work.ServiceProperties.*;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -34,8 +37,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
 		CyEventHelper eh = getService(bc, CyEventHelper.class);
-
-		DialogTaskManager taskManager = getService(bc, DialogTaskManager.class);
 
 		CreateNetworkViewTaskFactory createViewTaskFactoryServiceRef = getService(bc,
 				CreateNetworkViewTaskFactory.class);

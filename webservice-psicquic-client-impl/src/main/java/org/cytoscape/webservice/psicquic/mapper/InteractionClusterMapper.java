@@ -15,12 +15,11 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.webservice.psicquic.miriam.Miriam;
-import org.cytoscape.webservice.psicquic.miriam.Synonyms;
 import org.cytoscape.webservice.psicquic.miriam.Miriam.Datatype;
+import org.cytoscape.webservice.psicquic.miriam.Synonyms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -337,20 +337,20 @@ public class SourceStatusPanel extends JPanel {
 
 	private void importButtonActionPerformed(ActionEvent evt) {
 
-		final boolean toBeClustered = clusterResultCheckBox.isSelected();
+		final boolean mergeNetwork = clusterResultCheckBox.isSelected();
+		
 		final Set<String> targetSources = getSelected();
 		final Set<String> sourceURLs = new HashSet<String>();
-		for (String source : targetSources) {
+		for (String source : targetSources)
 			sourceURLs.add(manager.getActiveServices().get(source));
-		}
 
 		// Execute Import Task
 		final ImportNetworkFromPSICQUICTask networkTask = new ImportNetworkFromPSICQUICTask(query, client,
-				networkManager, manager, sourceURLs, mode, createViewTaskFactory, toBeClustered, null);
+				networkManager, manager, sourceURLs, mode, createViewTaskFactory, mergeNetwork);
 
 		taskManager.execute(new TaskIterator(networkTask));
 
-		Window parentWindow = ((Window) getRootPane().getParent());
+		final Window parentWindow = ((Window) getRootPane().getParent());
 		parentWindow.pack();
 		repaint();
 

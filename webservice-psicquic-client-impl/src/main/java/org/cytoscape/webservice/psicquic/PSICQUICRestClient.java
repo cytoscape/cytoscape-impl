@@ -1,10 +1,11 @@
 package org.cytoscape.webservice.psicquic;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionService;
@@ -27,7 +27,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.simpleclient.PSICQUICSimpleClient;
 import org.cytoscape.work.TaskMonitor;
@@ -68,10 +67,10 @@ public final class PSICQUICRestClient {
 	public static final Long ERROR_TIMEOUT = -2l;
 	public static final Long ERROR_CANCEL = -3l;
 
-	// Timeout for search.  TODO: Make public as property.
+	// Timeout for search. TODO: Make public as property.
 	private static final long SEARCH_TIMEOUT_MSEC = 7000;
-	
-	// Timeout for import.  TODO: Make public as property.
+
+	// Timeout for import. TODO: Make public as property.
 	private static final long IMPORT_TIMEOUT = 1000;
 
 	private final CyNetworkFactory factory;
@@ -80,121 +79,73 @@ public final class PSICQUICRestClient {
 
 	private boolean canceled = false;
 
-	public PSICQUICRestClient(final CyNetworkFactory factory, final RegistryManager regManager, final MergedNetworkBuilder builder) {
+	public PSICQUICRestClient(final CyNetworkFactory factory, final RegistryManager regManager,
+			final MergedNetworkBuilder builder) {
 		this.factory = factory;
 		this.regManager = regManager;
 		this.builder = builder;
 	}
 
-	public Map<String, CyNetwork> importNetwork(final String query, final Collection<String> targetServices,
-			final SearchMode mode, final TaskMonitor tm) {
-
-		canceled = false;
-
-		tm.setTitle("Loading network data from PSICQUIC Remote Services");
-
-		Map<String, CyNetwork> resultMap = new ConcurrentHashMap<String, CyNetwork>();
-		final ExecutorService exe = Executors.newCachedThreadPool();
-		final CompletionService<Map<CyNetwork, String>> completionService = new ExecutorCompletionService<Map<CyNetwork, String>>(
-				exe);
-
-		final long startTime = System.currentTimeMillis();
-
-		// Submit the query for each active service
-		double completed = 0.0d;
-		final double increment = 1.0d / (double) targetServices.size();
-
-		final SortedSet<String> sourceSet = new TreeSet<String>();
-		final Set<ImportNetworkTask> taskSet = new HashSet<ImportNetworkTask>();
-		for (final String serviceURL : targetServices) {
-			ImportNetworkTask task = new ImportNetworkTask(serviceURL, query, mode);
-			completionService.submit(task);
-			taskSet.add(task);
-			sourceSet.add(serviceURL);
-		}
-
-		for (int i = 0; i < targetServices.size(); i++) {
-			if (canceled) {
-				logger.warn("Interrupted by user: network import task");
-				exe.shutdownNow();
-				resultMap.clear();
-				resultMap = null;
-
-				return new ConcurrentHashMap<String, CyNetwork>();
-			}
-
-			Future<Map<CyNetwork, String>> future = null;
-			try {
-				future = completionService.take();
-				final Map<CyNetwork, String> ret = future.get();
-				final CyNetwork network = ret.keySet().iterator().next();
-				final String source = ret.get(network);
-				resultMap.put(source, network);
-				sourceSet.remove(source);
-
-				completed = completed + increment;
-				tm.setProgress(completed);
-
-				final StringBuilder sBuilder = new StringBuilder();
-				for (String sourceStr : sourceSet) {
-					sBuilder.append(regManager.getSource2NameMap().get(sourceStr) + " ");
-				}
-
-				tm.setStatusMessage((i + 1) + " / " + targetServices.size() + " tasks finished.\n"
-						+ "Still waiting responses from the following databases:\n\n" + sBuilder.toString());
-
-			} catch (InterruptedException ie) {
-				for (ImportNetworkTask t : taskSet)
-					t.cancel();
-				taskSet.clear();
-
-				List<Runnable> tasks = exe.shutdownNow();
-				logger.warn("Interrupted: network import.  Remaining = " + tasks.size(), ie);
-				resultMap.clear();
-				resultMap = null;
-				return new ConcurrentHashMap<String, CyNetwork>();
-			} catch (ExecutionException e) {
-				logger.warn("Error occured in network import", e);
-				continue;
-			}
-		}
-
-		try {
-			exe.shutdown();
-			exe.awaitTermination(IMPORT_TIMEOUT, TimeUnit.SECONDS);
-
-			long endTime = System.currentTimeMillis();
-			double sec = (endTime - startTime) / (1000.0);
-			logger.info("PSICUQIC Import Finished in " + sec + " sec.");
-		} catch (Exception ex) {
-			logger.warn("Import operation timeout", ex);
-			return resultMap;
-		} finally {
-			taskSet.clear();
-			sourceSet.clear();
-		}
-
-		return resultMap;
-	}
-
-	public CyNetwork importClusteredNetwork(final String query, final Collection<String> targetServices,
+	public CyNetwork importMergedNetwork(final String query, final Collection<String> targetServices,
 			final SearchMode mode, final TaskMonitor tm) throws IOException {
-		
-		InteractionCluster importedCluster = importClustered(query, targetServices, mode, tm);
 
+		final InteractionCluster importedCluster = importMerged(query, targetServices, mode, tm);
 		final CyNetwork network = builder.buildNetwork(importedCluster);
-		
+
 		tm.setProgress(1.0d);
 		return network;
 	}
-	
+
+	public Collection<CyNetwork> importNetworks(final String query, final Collection<String> targetServices,
+			final SearchMode mode, final TaskMonitor tm) throws IOException {
+
+		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		final Map<String, Collection<BinaryInteraction>> result = importNetwork(query, targetServices, mode, tm);
+
+		for (String source : result.keySet()) {
+			tm.setStatusMessage("Merging results...");
+			final InteractionCluster iC = new InteractionCluster();
+			iC.setBinaryInteractionIterator(result.get(source).iterator());
+			iC.setMappingIdDbNames(MAPPING_NAMES);
+			iC.runService();
+
+			final CyNetwork network = builder.buildNetwork(iC);
+			final String networkName = regManager.getSource2NameMap().get(source);
+			network.getRow(network).set(CyNetwork.NAME, networkName);
+			networks.add(network);
+		}
+
+		tm.setProgress(1.0d);
+		return networks;
+	}
+
 	public InteractionCluster importNeighbours(final String query, final Collection<String> targetServices,
 			final SearchMode mode, final TaskMonitor tm) throws IOException {
-		return importClustered(query, targetServices, mode, tm);
+		return importMerged(query, targetServices, mode, tm);
 	}
-	
-	private final InteractionCluster importClustered(final String query, final Collection<String> targetServices,
+
+	private final InteractionCluster importMerged(final String query, final Collection<String> targetServices,
 			final SearchMode mode, final TaskMonitor tm) {
+
+		final Map<String, Collection<BinaryInteraction>> result = importNetwork(query, targetServices, mode, tm);
+		final Collection<Collection<BinaryInteraction>> binaryInteractions = result.values();
+		final List<BinaryInteraction> allInteractions = new ArrayList<BinaryInteraction>();
+		for (Collection<BinaryInteraction> interactions : binaryInteractions)
+			allInteractions.addAll(interactions);
+
+		tm.setStatusMessage("Merging results...");
+		InteractionCluster iC = new InteractionCluster();
+		iC.setBinaryInteractionIterator(allInteractions.iterator());
+		iC.setMappingIdDbNames(MAPPING_NAMES);
+		iC.runService();
+
+		return iC;
+	}
+
+	private Map<String, Collection<BinaryInteraction>> importNetwork(final String query,
+			final Collection<String> targetServices, final SearchMode mode, final TaskMonitor tm) {
+		final Map<String, Collection<BinaryInteraction>> result = new HashMap<String, Collection<BinaryInteraction>>();
+
 		canceled = false;
 
 		tm.setTitle("Loading network data from Remote PSICQUIC Services");
@@ -211,16 +162,16 @@ public final class PSICQUICRestClient {
 		final double increment = 1.0d / (double) targetServices.size();
 
 		final SortedSet<String> sourceSet = new TreeSet<String>();
-		final Set<ImportNetworkAsStreamsTask> taskSet = new HashSet<ImportNetworkAsStreamsTask>();
+		final Set<ImportNetworkAsMitabTask> taskSet = new HashSet<ImportNetworkAsMitabTask>();
 		for (final String serviceURL : targetServices) {
-			ImportNetworkAsStreamsTask task = new ImportNetworkAsStreamsTask(serviceURL, query, mode);
+			final ImportNetworkAsMitabTask task = new ImportNetworkAsMitabTask(serviceURL, query, mode);
 			completionService.submit(task);
 			taskSet.add(task);
 			sourceSet.add(serviceURL);
 		}
 
-		final List<BinaryInteraction> binaryInteractions = new ArrayList<BinaryInteraction>();
-		for (int i = 0; i < targetServices.size(); i++) {
+		int i = 0;
+		for (final String service : targetServices) {
 			if (canceled) {
 				logger.warn("Interrupted by user: network import task");
 				exe.shutdownNow();
@@ -234,8 +185,10 @@ public final class PSICQUICRestClient {
 			try {
 				future = completionService.take();
 				final Collection<BinaryInteraction> ret = future.get();
-				if (ret != null)
-					binaryInteractions.addAll(ret);
+				if (ret != null) {
+					result.put(service, ret);
+					// binaryInteractions.addAll(ret);
+				}
 
 				completed = completed + increment;
 				tm.setProgress(completed);
@@ -249,7 +202,7 @@ public final class PSICQUICRestClient {
 						+ "Still waiting responses from the following databases:\n\n" + sBuilder.toString());
 
 			} catch (InterruptedException ie) {
-				for (ImportNetworkAsStreamsTask t : taskSet) {
+				for (ImportNetworkAsMitabTask t : taskSet) {
 					// t.cancel();
 				}
 
@@ -264,6 +217,8 @@ public final class PSICQUICRestClient {
 				logger.warn("Error occured in network import", e);
 				continue;
 			}
+
+			i++;
 		}
 
 		try {
@@ -281,13 +236,7 @@ public final class PSICQUICRestClient {
 			sourceSet.clear();
 		}
 
-		tm.setStatusMessage("Merging results...");
-		InteractionCluster iC = new InteractionCluster();
-		iC.setBinaryInteractionIterator(binaryInteractions.iterator());
-		iC.setMappingIdDbNames(MAPPING_NAMES);
-		iC.runService();
-		
-		return iC;
+		return result;
 	}
 
 	public Map<String, Long> search(final String query, final Collection<String> targetServices, final SearchMode mode,
@@ -359,7 +308,7 @@ public final class PSICQUICRestClient {
 	 * Search each data source and return aggregated result.
 	 * 
 	 */
-	private final class SearchTask implements Callable<Long> {
+	private static final class SearchTask implements Callable<Long> {
 		private final String serviceURL;
 		private final String query;
 		private final SearchMode mode;
@@ -383,54 +332,12 @@ public final class PSICQUICRestClient {
 		}
 	}
 
-	private final class ImportNetworkTask implements Callable<Map<CyNetwork, String>> {
+	private static final class ImportNetworkAsMitabTask implements Callable<Collection<BinaryInteraction>> {
 		private final String serviceURL;
 		private final String query;
 		private final SearchMode mode;
 
-		private final Map<CyNetwork, String> returnThis;
-
-		private final CyNetworkBuilder networkBuilder;
-
-		private ImportNetworkTask(final String serviceURL, final String query, final SearchMode mode) {
-			this.serviceURL = serviceURL;
-			this.query = query;
-			this.mode = mode;
-			this.returnThis = new WeakHashMap<CyNetwork, String>();
-			this.networkBuilder = new CyNetworkBuilder(factory);
-		}
-
-		@Override
-		public Map<CyNetwork, String> call() throws Exception {
-			final PSICQUICSimpleClient simpleClient = new PSICQUICSimpleClient(serviceURL);
-			InputStream is = null;
-			if (mode == SearchMode.INTERACTOR)
-				is = simpleClient.getByInteraction(query);
-			else if (mode == SearchMode.MIQL)
-				is = simpleClient.getByQuery(query);
-
-			// This can be null if interrupted.
-			final CyNetwork network = networkBuilder.buildNetwork(is);
-			is.close();
-			is = null;
-
-			if (network != null)
-				returnThis.put(network, serviceURL);
-
-			return returnThis;
-		}
-
-		public void cancel() {
-			networkBuilder.cancel();
-		}
-	}
-
-	private final class ImportNetworkAsStreamsTask implements Callable<Collection<BinaryInteraction>> {
-		private final String serviceURL;
-		private final String query;
-		private final SearchMode mode;
-
-		private ImportNetworkAsStreamsTask(final String serviceURL, final String query, final SearchMode mode) {
+		private ImportNetworkAsMitabTask(final String serviceURL, final String query, final SearchMode mode) {
 			this.serviceURL = serviceURL;
 			this.query = query;
 			this.mode = mode;
@@ -438,14 +345,23 @@ public final class PSICQUICRestClient {
 
 		@Override
 		public Collection<BinaryInteraction> call() throws Exception {
-			final PSICQUICSimpleClient simpleClient = new PSICQUICSimpleClient(serviceURL);
-			InputStream is = null;
-			if (mode == SearchMode.INTERACTOR)
-				is = simpleClient.getByInteraction(query);
-			else if (mode == SearchMode.MIQL)
-				is = simpleClient.getByQuery(query);
 
-			URL queryURL = new URL(serviceURL + "query/" + query);
+			String encodedStr = URLEncoder.encode(query, "UTF-8");
+			encodedStr = encodedStr.replaceAll("\\+", "%20");
+
+			URL queryURL = null;
+			if (mode == SearchMode.INTERACTOR) {
+				// Query is list of interactors.
+				queryURL = new URL(serviceURL + "interactor/" + encodedStr);
+			} else if (mode == SearchMode.MIQL) {
+				queryURL = new URL(serviceURL + "query/" + encodedStr);
+			}
+
+			if (queryURL == null)
+				throw new IllegalArgumentException("Could not create query URL.");
+
+			logger.info("Query URL: " + queryURL);
+
 			final PsimiTabReader mitabReader = new PsimiTabReader(false);
 			return mitabReader.read(queryURL);
 		}
@@ -454,5 +370,4 @@ public final class PSICQUICRestClient {
 	public void cancel() {
 		this.canceled = true;
 	}
-
 }
