@@ -28,26 +28,51 @@
 package org.cytoscape.task.internal.table;
 
 
+import java.util.List;
+
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.task.AbstractTableCellTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.task.AbstractTableCellTask;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public final class CopyValueToEntireColumnTaskFactoryImpl extends AbstractTableCellTaskFactory {
+final class CopyValueToColumnTask extends AbstractTableCellTask {
 	private final UndoSupport undoSupport;
-
-	public CopyValueToEntireColumnTaskFactoryImpl(final UndoSupport undoSupport) {
+	private final boolean selectedOnly;
+	
+	CopyValueToColumnTask(final UndoSupport undoSupport, final CyColumn column,
+				    final Object primaryKeyValue, final boolean selectedOnly)
+	{
+		super(column, primaryKeyValue);
 		this.undoSupport = undoSupport;
+		this.selectedOnly = selectedOnly;
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyColumn column, Object primaryKeyValue) {
-		if (column == null)
-			throw new IllegalStateException("\"column\" was not set.");
-		if (primaryKeyValue == null)
-			throw new IllegalStateException("\"primaryKeyValue\" was not set.");
-		return new TaskIterator(new CopyValueToEntireColumnTask(undoSupport, column,
-									primaryKeyValue));
+	public void run(final TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setTitle("Copying...");
+
+		final CyRow sourceRow = column.getTable().getRow(primaryKeyValue);
+		final String columnName = column.getName();
+		final Object sourceValue = sourceRow.getRaw(columnName);
+		
+		undoSupport.postEdit(
+			new CopyValueToColumnEdit(column, sourceValue));
+
+		final List<CyRow> rows = column.getTable().getAllRows();
+		final int total = rows.size() - 1;
+		int count = 0;
+		for (final CyRow row : rows) {
+			if (row == sourceRow)
+				continue;
+			if (selectedOnly && !row.get(CyNetwork.SELECTED, Boolean.class))
+				continue;
+			row.set(columnName, sourceValue);
+			if ((++count % 1000) == 0)
+				taskMonitor.setProgress((100.0 * count) / total);
+		}
 	}
 }

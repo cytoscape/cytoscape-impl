@@ -10,14 +10,14 @@ import org.cytoscape.work.undo.AbstractCyEdit;
 
 
 /** An undoable edit that will undo and redo the copying of a value to an entire column. */
-final class CopyValueToEntireColumnEdit extends AbstractCyEdit {
+final class CopyValueToColumnEdit extends AbstractCyEdit {
 	private final CyTable table;
 	private final String columnName;
 	private final Class<?> columnType;
 	private final Object value;
 	private SaveColumn savedColumn;
 
-	CopyValueToEntireColumnEdit(final CyColumn column, final Object value) {
+	CopyValueToColumnEdit(final CyColumn column, final Object value) {
 		super("Copy Value to Entire Column");
 
 		this.table       = column.getTable();

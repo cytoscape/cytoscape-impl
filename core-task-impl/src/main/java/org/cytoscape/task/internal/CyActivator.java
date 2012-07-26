@@ -133,7 +133,7 @@ import org.cytoscape.task.internal.session.NewSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.OpenSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionAsTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionTaskFactoryImpl;
-import org.cytoscape.task.internal.table.CopyValueToEntireColumnTaskFactoryImpl;
+import org.cytoscape.task.internal.table.CopyValueToColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
@@ -281,7 +281,10 @@ public class CyActivator extends AbstractCyActivator {
 		ApplyPreferredLayoutTaskFactoryImpl applyPreferredLayoutTaskFactory = new ApplyPreferredLayoutTaskFactoryImpl(cyLayoutsServiceRef,cyPropertyServiceRef);
 		DeleteColumnTaskFactoryImpl deleteColumnTaskFactory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef);
 		RenameColumnTaskFactoryImpl renameColumnTaskFactory = new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef);
-		CopyValueToEntireColumnTaskFactoryImpl copyValueToEntireColumnTaskFactory = new CopyValueToEntireColumnTaskFactoryImpl(undoSupportServiceRef);
+		
+		CopyValueToColumnTaskFactoryImpl copyValueToEntireColumnTaskFactory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, false);
+		CopyValueToColumnTaskFactoryImpl copyValueToSelectedRowsInColumnTaskFactory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, true);
+		
 		DeleteTableTaskFactoryImpl deleteTableTaskFactory = new DeleteTableTaskFactoryImpl(cyTableManagerServiceRef);
 		ExportVizmapTaskFactoryImpl exportVizmapTaskFactory = new ExportVizmapTaskFactoryImpl(vizmapWriterManagerServiceRef,visualMappingManagerServiceRef, tunableSetterServiceRef);
 		ConnectSelectedNodesTaskFactoryImpl connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef, cyEventHelperRef, visualMappingManagerServiceRef, cyNetworkViewManagerServiceRef);
@@ -946,6 +949,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,deleteTableTaskFactory,TableTaskFactory.class, new Properties());
 		registerService(bc,deleteTableTaskFactory,DeleteTableTaskFactory.class, new Properties());
 
+		Properties copyValueToSelectedRowsInColumnTaskFactoryProps = new Properties();
+		copyValueToSelectedRowsInColumnTaskFactoryProps.setProperty(TITLE,"Copy to current selection");
+		registerService(bc,copyValueToSelectedRowsInColumnTaskFactory,TableCellTaskFactory.class, copyValueToSelectedRowsInColumnTaskFactoryProps);
+		
 		// Register as 3 types of service.
 		Properties connectSelectedNodesTaskFactoryProps = new Properties();
 		connectSelectedNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");

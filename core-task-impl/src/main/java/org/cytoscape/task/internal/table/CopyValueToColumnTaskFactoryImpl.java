@@ -28,46 +28,28 @@
 package org.cytoscape.task.internal.table;
 
 
-import java.util.List;
-
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.task.AbstractTableCellTask;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.task.AbstractTableCellTaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-final class CopyValueToEntireColumnTask extends AbstractTableCellTask {
+public final class CopyValueToColumnTaskFactoryImpl extends AbstractTableCellTaskFactory {
 	private final UndoSupport undoSupport;
+	private final boolean selectedOnly;
 
-	CopyValueToEntireColumnTask(final UndoSupport undoSupport, final CyColumn column,
-				    final Object primaryKeyValue)
-	{
-		super(column, primaryKeyValue);
+	public CopyValueToColumnTaskFactoryImpl(final UndoSupport undoSupport, boolean selectedOnly) {
 		this.undoSupport = undoSupport;
+		this.selectedOnly = selectedOnly;
 	}
-
+	
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Copying...");
-
-		final CyRow sourceRow = column.getTable().getRow(primaryKeyValue);
-		final String columnName = column.getName();
-		final Object sourceValue = sourceRow.getRaw(columnName);
-
-		undoSupport.postEdit(
-			new CopyValueToEntireColumnEdit(column, sourceValue));
-
-		final List<CyRow> rows = column.getTable().getAllRows();
-		final int total = rows.size() - 1;
-		int count = 0;
-		for (final CyRow row : rows) {
-			if (row == sourceRow)
-				continue;
-			row.set(columnName, sourceValue);
-			if ((++count % 1000) == 0)
-				taskMonitor.setProgress((100.0 * count) / total);
-		}
+	public TaskIterator createTaskIterator(CyColumn column, Object primaryKeyValue) {
+		if (column == null)
+			throw new IllegalStateException("\"column\" was not set.");
+		if (primaryKeyValue == null)
+			throw new IllegalStateException("\"primaryKeyValue\" was not set.");
+		return new TaskIterator(new CopyValueToColumnTask(undoSupport, column,
+									primaryKeyValue, selectedOnly));
 	}
 }
