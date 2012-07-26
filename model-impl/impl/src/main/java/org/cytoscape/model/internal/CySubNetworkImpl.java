@@ -225,13 +225,17 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	public boolean removeNodes(final Collection<CyNode> nodes) {
 		if ( nodes == null || nodes.isEmpty() )
 			return false;
-
 		eventHelper.fireEvent(new AboutToRemoveNodesEvent(this, nodes));
 
 		boolean ret = removeNodesInternal(nodes);
 
-		if ( ret )
+		if ( ret ){
+			for(CyNode node: nodes)
+				if (this.containsNode(node))
+					getRow(node).set(CyNetwork.SELECTED, false);
+
 			eventHelper.fireEvent(new RemovedNodesEvent(this));
+		}
 
 		return ret;
 	}
@@ -247,8 +251,13 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 		boolean ret = removeEdgesInternal(edges);
 
-		if ( ret )
+		if ( ret ){
+			for(CyEdge edge: edges)
+				if (this.containsEdge(edge))
+					getRow(edge).set(CyNetwork.SELECTED, false);
+			
 			eventHelper.fireEvent(new RemovedEdgesEvent(this));
+		}
 
 		return ret;
 	}
