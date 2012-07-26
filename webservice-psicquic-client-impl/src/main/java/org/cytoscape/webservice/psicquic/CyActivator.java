@@ -50,13 +50,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, psicquicClient, new Properties());
 
 		final ExpandNodeContextMenuFactory expandNodeContextMenuFactory = new ExpandNodeContextMenuFactory(eh, vmm,
-				psicquicClient.getRestClient(), psicquicClient.getRegistryManager(), taskManager, layoutManager, builder);
+				psicquicClient.getRestClient(), psicquicClient.getRegistryManager(), layoutManager, builder);
 		final Properties nodeProp = new Properties();
 		nodeProp.setProperty("preferredTaskManager", "menu");
-		nodeProp.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
-		nodeProp.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+		nodeProp.setProperty(PREFERRED_MENU, NODE_APPS_MENU);
 		nodeProp.setProperty(MENU_GRAVITY, "10.0");
-		nodeProp.setProperty(TITLE, "Extend Network");
+		nodeProp.setProperty(TITLE, "Extend Network by PSICQUIC...");
 		registerService(bc, expandNodeContextMenuFactory, NodeViewTaskFactory.class, nodeProp);
 	}
 }
