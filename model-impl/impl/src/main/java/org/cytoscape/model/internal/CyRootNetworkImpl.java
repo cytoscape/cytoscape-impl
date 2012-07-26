@@ -264,7 +264,14 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 	
 	@Override
-	public synchronized CySubNetwork addSubNetwork(final SavePolicy policy) {
+	public synchronized CySubNetwork addSubNetwork(SavePolicy policy) {
+		if (policy == null)
+			policy = savePolicy;
+		
+		if (savePolicy == SavePolicy.DO_NOT_SAVE && policy != savePolicy)
+			throw new IllegalArgumentException("Cannot create subnetwork with \"" + policy
+					+ "\" save policy, because this root network's policy is \"DO_NOT_SAVE\".");
+		
 		// Subnetwork's ID
 		final long newSUID = SUIDFactory.getNextSUID();
 		
