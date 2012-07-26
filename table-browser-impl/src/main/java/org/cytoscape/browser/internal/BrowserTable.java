@@ -239,7 +239,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		final Set<CyRow> targetRows = new HashSet<CyRow>();
 		for(int i=0; i<selectedRowCount; i++) {
 			//getting the row from data table solves the problem with hidden or moved SUID column. However, since the rows might be sorted we need to convert the index to model
-			final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) btModel.getValueAt(this.convertRowIndexToModel( rowsSelected[i]), pKeyName);
+			final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) btModel.getValueAt(rowsSelected[i], pKeyName);
 			targetRows.add(btModel.getRow(selected.getValidatedObject()));
 		}
 		

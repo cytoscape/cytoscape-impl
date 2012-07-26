@@ -152,7 +152,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 	
 	public Object getValueAt(final int rowIndex, final String columnName) {
-		final CyRow row = mapRowIndexToRow(rowIndex);
+		final CyRow row = mapRowIndexToRow(table.convertRowIndexToModel(rowIndex));
 		return getValidatedObjectAndEditString(row, columnName);
 	}
 
@@ -373,7 +373,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		final int rowCount = table.getRowCount();
 		for(int i=0; i<rowCount; i++) {
 			//getting the row from data table solves the problem with hidden or moved SUID column. However, since the rows might be sorted we need to convert the index to model
-			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString)  btmodel.getValueAt(table.convertRowIndexToModel( i), pKeyName );
+			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString)  btmodel.getValueAt(i, pKeyName );
 			Long pk = null;
 			try{
 				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
