@@ -67,7 +67,7 @@ public class BuildQueryTask extends AbstractTask {
 		for (CyColumn col : columns) {
 			final Object val = row.get(col.getName(), col.getType());
 			if (val != null && col.getType() == String.class) {
-				final String labelString = col.getName() + "(" + val.toString() + ")";
+				final String labelString = col.getName() + " (" + val.toString() + ")";
 				colName2column.put(labelString, col);
 				if (col.getName().equals(CyNetwork.NAME))
 					defaultSelection = labelString;
