@@ -161,13 +161,15 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		// and all of the extra clicks, instead we just want to show the special dialog.
 		if ( handlers.size() == 1 && handlers.get(0) instanceof DirectlyPresentableTunableHandler ) {
 			DirectlyPresentableTunableHandler fh = (DirectlyPresentableTunableHandler) handlers.get(0);
-			boolean fileFound = fh.setTunableDirectly(possibleParent);
-			if ( fileFound )
-				return null; 
-			else
-				return HANDLER_CANCEL_PANEL;
+			if (fh.isForcedToSetDirectly()){
+				boolean fileFound = fh.setTunableDirectly(possibleParent);
+				if ( fileFound )
+					return null; 
+				else
+					return HANDLER_CANCEL_PANEL;
+			}
 		} 
-		
+
 		
 		if (!panelMap.containsKey(handlers)) {
 			final String MAIN = " ";

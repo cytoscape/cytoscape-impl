@@ -91,6 +91,11 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 		}
 	}
 	
+	
+	@Override
+	public boolean isForcedToSetDirectly() {
+		return getParams().getProperty("ForceSetDirectly", "false").equalsIgnoreCase("true");
+	}
 
 	@Override
 	public boolean setTunableDirectly(Window possibleParent) {

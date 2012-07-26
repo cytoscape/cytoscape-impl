@@ -221,6 +221,12 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	}
 
 	
+
+	@Override
+	public boolean isForcedToSetDirectly() {
+		return true;
+	}
+	
 	/**
 	 * This method allows us to bypass the normal tunable support when the only
 	 * tunable in a Task is a File.  This allows us to pop up a file dialog
