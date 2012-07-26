@@ -67,7 +67,7 @@ import org.cytoscape.io.internal.write.graphics.SVGWriterFactory;
 import org.cytoscape.io.internal.write.properties.PropertiesWriterFactoryImpl;
 import org.cytoscape.io.internal.write.session.SessionWriterFactoryImpl;
 import org.cytoscape.io.internal.write.sif.SifNetworkWriterFactory;
-//import org.cytoscape.io.internal.write.nnf.NnfNetworkWriterFactory;
+import org.cytoscape.io.internal.write.nnf.NnfNetworkWriterFactory;
 import org.cytoscape.io.internal.write.vizmap.VizmapWriterFactoryImpl;
 import org.cytoscape.io.internal.write.xgmml.SessionXGMMLWriterFactory;
 import org.cytoscape.io.internal.write.xgmml.GenericXGMMLWriterFactory;
@@ -210,7 +210,7 @@ public class CyActivator extends AbstractCyActivator {
 		PSWriterFactory psWriterFactory = new PSWriterFactory(psFilter);
 		SVGWriterFactory svgWriterFactory = new SVGWriterFactory(svgFilter);
 		SifNetworkWriterFactory sifNetworkViewWriterFactory = new SifNetworkWriterFactory(sifFilter);
-//		NnfNetworkWriterFactory nnfNetworkViewWriterFactory = new NnfNetworkWriterFactory(nnfFilter);
+		NnfNetworkWriterFactory nnfNetworkViewWriterFactory = new NnfNetworkWriterFactory(cyNetworkManagerServiceRef,nnfFilter);
 		GenericXGMMLWriterFactory xgmmlWriterFactory = new GenericXGMMLWriterFactory(xgmmlFilter,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager,cyNetworkManagerServiceRef,cyRootNetworkManagerServiceRef,visualMappingManagerServiceRef);
 		SessionXGMMLWriterFactory sessionXgmmlWriterFactory = new SessionXGMMLWriterFactory(sessXgmmlFileFilter,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager,cyNetworkManagerServiceRef,cyRootNetworkManagerServiceRef,visualMappingManagerServiceRef);
 		CysessionWriterFactoryImpl cysessionWriterFactory = new CysessionWriterFactoryImpl(cysessionFilter);
@@ -273,7 +273,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, psWriterFactory, new Properties());
 		registerAllServices(bc, svgWriterFactory, new Properties());
 		registerAllServices(bc, sifNetworkViewWriterFactory, new Properties());
-//		registerAllServices(bc, nnfNetworkViewWriterFactory, new Properties());
+		registerAllServices(bc, nnfNetworkViewWriterFactory, new Properties());
 		registerAllServices(bc, xgmmlWriterFactory, new Properties());
 		registerAllServices(bc, cysessionWriterFactory, new Properties());
 		registerAllServices(bc, bookmarksWriterFactory, new Properties());
