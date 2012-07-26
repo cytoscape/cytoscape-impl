@@ -20,12 +20,19 @@ import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 public class BuildQueryTask extends AbstractTask {
 
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Extend Network by PSICQUIC Web Services";
+	}
+	
 	@Tunable(description = "Select column send as query:")
 	public ListSingleSelection<String> columnList;
 
