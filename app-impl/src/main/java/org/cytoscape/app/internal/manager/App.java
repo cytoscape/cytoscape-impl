@@ -462,7 +462,8 @@ public abstract class App {
 	
 	/**
 	 * Uses heuristics to check if another App represents the same Cytoscape app as this App, 
-	 * ignoring filename differences.
+	 * ignoring filename differences. Specifically, it returns true only if the app names
+	 * and app versions are equal.
 	 * 
 	 * @param other The app to compare against.
 	 * @return <code>true</code> if the apps are suspected to be the same Cytoscape app,
@@ -474,6 +475,22 @@ public abstract class App {
 		if (appName.equalsIgnoreCase(other.appName)
 				&& version.equalsIgnoreCase(other.version)) {
 			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Returns true only if the argument is an {@link App} with the same app name and version.
+	 */
+	@Override
+	public boolean equals(Object other) {
+		if (other == null) {
+			return false;
+		}
+		
+		if (other instanceof App) {
+			return (this.heuristicEquals((App) other));
 		}
 		
 		return false;
@@ -599,14 +616,14 @@ public abstract class App {
     {  
         if( ! f.exists() )  
         {  
-            System.err.println( "Cannont delete, file does not exist: " + f.getPath() );  
+            System.err.println( "Cannot delete, file does not exist: " + f.getPath() );  
             return false;  
         }  
         f.setReadable( true );  
         f.setWritable( true );  
         if( ! f.canWrite() )  
         {  
-            System.err.println( "Cannont delete, file is read-only: " + f.getPath() );  
+            System.err.println( "Cannot delete, file is read-only: " + f.getPath() );  
             return false;  
         }  
   
@@ -616,7 +633,7 @@ public abstract class App {
         parent.setWritable( true );  
         if( ! parent.canWrite() )  
         {  
-            System.err.println( "Cannont delete, parent folder read-only: " + parent.getPath() );  
+            System.err.println( "Cannot delete, parent folder read-only: " + parent.getPath() );  
             return false;  
         }  
   
@@ -675,11 +692,11 @@ public abstract class App {
 		if (!targetDirectory.equals(parentPath)) {
 			if (moveDirectories.contains(parentPath)) {
 				FileUtils.moveFile(this.getAppFile(), targetFile);
-				System.out.println("Moving: " + this.getAppFile() + " -> " + targetFile);
+				//System.out.println("Moving: " + this.getAppFile() + " -> " + targetFile);
 				this.setAppFile(targetFile);
 			} else {
 				FileUtils.copyFile(this.getAppFile(), targetFile);
-				System.out.println("Copying: " + this.getAppFile() + " -> " + targetFile);
+				//System.out.println("Copying: " + this.getAppFile() + " -> " + targetFile);
 				this.setAppFile(targetFile);
 			}
 		}

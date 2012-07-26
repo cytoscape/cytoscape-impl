@@ -144,8 +144,15 @@ public class AppManager {
 		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
 		for (App app: installedFolderApps) {
 			try {
-				app.install(this);
-				apps.add(app);
+				boolean appRegistered = false;
+				for (App regApp : apps) {
+					if (regApp.heuristicEquals(app))
+						appRegistered = true;
+				}
+				if (!appRegistered) {
+					app.install(this);
+					apps.add(app);
+				}
 			} catch (AppInstallException e) {
 			}
 		}
@@ -153,8 +160,15 @@ public class AppManager {
 		Set<App> disabledFolderApps = obtainAppsFromDirectory(new File(getDisabledAppsPath()), false);
 		for (App app: disabledFolderApps) {
 			try {
-				app.disable(this);
-				apps.add(app);
+				boolean appRegistered = false;
+				for (App regApp : apps) {
+					if (regApp.heuristicEquals(app))
+						appRegistered = true;
+				}
+				if (!appRegistered) {
+					app.disable(this);
+					apps.add(app);
+				}				
 			} catch (AppDisableException e) {
 			}
 		}
@@ -162,8 +176,15 @@ public class AppManager {
 		Set<App> uninstalledFolderApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()), false);
 		for (App app: uninstalledFolderApps) {
 			try {
-				app.uninstall(this);
-				apps.add(app);
+				boolean appRegistered = false;
+				for (App regApp : apps) {
+					if (regApp.heuristicEquals(app))
+						appRegistered = true;
+				}
+				if (!appRegistered) {
+					app.uninstall(this);
+					apps.add(app);
+				}
 			} catch (AppUninstallException e) {
 			}
 		}

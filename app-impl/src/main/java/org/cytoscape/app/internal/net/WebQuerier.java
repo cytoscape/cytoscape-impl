@@ -33,7 +33,7 @@ import org.json.JSONObject;
  */
 public class WebQuerier {
 	
-	private static final String APP_STORE_URL = "http://apps.cytoscape.org/";
+	private static final String APP_STORE_URL = "http://apps3.nrnb.org/";
 	
 	private static final String REQUEST_JSON_HEADER_KEY = "X-Requested-With";
 	private static final String REQUEST_JSON_HEADER_VALUE = "XMLHttpRequest";
@@ -242,7 +242,7 @@ public class WebQuerier {
 				List<WebApp.Release> compatibleReleases = getCompatibleReleases(webApp);
 				
 				// Only add this app if it has compatible releases
-				if (compatibleReleases.size() > -1) {
+				if (compatibleReleases.size() > 0) {
 					// Obtain tags associated with this app
 					processAppTags(webApp, jsonObject);
 	

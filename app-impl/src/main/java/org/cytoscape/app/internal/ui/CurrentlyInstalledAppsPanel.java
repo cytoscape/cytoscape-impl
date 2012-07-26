@@ -313,7 +313,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     private void updateLabels() {
     	int installedCount = appManager.getApps().size();
     	
-    	appsInstalledLabel.setText(installedCount + installedCount == 1 ? " App installed." : " Apps installed.");
+    	appsInstalledLabel.setText(installedCount + (installedCount == 1 ? " App installed." : " Apps installed."));
     }
     
     /**
