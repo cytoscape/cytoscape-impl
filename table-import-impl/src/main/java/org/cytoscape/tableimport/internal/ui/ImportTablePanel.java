@@ -2695,8 +2695,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 	public int getStartLineNumber(){
 		if (isFirstRowTitle())
-			return Integer.parseInt(startRowSpinner.getValue().toString()) + 1 ;
-		return Integer.parseInt(startRowSpinner.getValue().toString());
+			return Integer.parseInt(startRowSpinner.getValue().toString())  ;
+		return Integer.parseInt(startRowSpinner.getValue().toString())-1;
 	}
 	public String getCommentlinePrefix(){
 		return commentLineTextField.getText();
