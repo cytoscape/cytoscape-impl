@@ -76,6 +76,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     private javax.swing.JTextPane descriptionTextPane;
     private javax.swing.JTextField filterTextField;
     private javax.swing.JButton installButton;
+    private javax.swing.JButton closeButton;
     private javax.swing.JButton installFromFileButton;
     private javax.swing.JScrollPane resultsScrollPane;
     private javax.swing.JTree resultsTree;
@@ -171,7 +172,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         descriptionTextPane = new javax.swing.JTextPane();
         viewOnAppStoreButton = new javax.swing.JButton();
         installButton = new javax.swing.JButton();
-
+        closeButton = new javax.swing.JButton();
+        
         searchAppsLabel.setText("Search:");
 
         installFromFileButton.setText("Install from File...");
@@ -241,6 +243,14 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
             }
         });
 
+        closeButton.setText("Close");
+        closeButton.setEnabled(true);
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            	((javax.swing.JDialog)InstallFromStorePanel.this.parent).dispose();
+            }
+        });
+        
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -262,6 +272,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                         .addComponent(installButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(viewOnAppStoreButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(closeButton)
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -277,7 +289,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(installFromFileButton)
                     .addComponent(viewOnAppStoreButton)
-                    .addComponent(installButton))
+                    .addComponent(installButton)
+                    .addComponent(closeButton))
                 .addContainerGap())
         );
 
