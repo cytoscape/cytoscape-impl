@@ -4,18 +4,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.webservice.psicquic.miriam.Miriam;
 import org.cytoscape.webservice.psicquic.miriam.Miriam.Datatype;
@@ -32,6 +35,20 @@ public class InteractionClusterMapper {
 	private static final Logger logger = LoggerFactory.getLogger(InteractionClusterMapper.class);
 
 	private static final String SCHEMA_NAMESPACE = "org.cytoscape.webservice.psicquic.miriam";
+
+	static final String PREDICTED_GENE_NAME = "Human Readable Gene Name";
+	static final String PUB_ID = "publication id";
+	static final String PUB_DB = "publication db";
+
+	static final String EXPERIMENT = "experiment";
+
+	private final static Pattern exact1Pattern = Pattern.compile("^[A-Z][A-Z][A-Z]\\d");
+	private final static Pattern ncbiPattern = Pattern.compile("^[A-Za-z].+");
+	private final static Pattern uniprotPattern = Pattern.compile("^[a-zA-Z]\\d.+");
+
+	private static final String ENTREZ_GENE_ATTR_NAME = "entrez gene/locuslink";
+	private static final String UNIPROT_ATTR_NAME = "uniprot";
+	private static final String STRING_ATTR_NAME = "string";
 
 	private final Set<String> namespaceSet;
 	private final Map<String, String> name2ns;
@@ -79,44 +96,70 @@ public class InteractionClusterMapper {
 			processSpecies(targetRow, speciesTargetFirst);
 		}
 
+		// Try to find hjuman-readable gene name
+		guessHumanReadableName(sourceRow);
+		guessHumanReadableName(targetRow);
 	}
 
 	public void mapEdgeColumn(final EncoreInteraction interaction, final CyRow row) {
-		
+
+		final Set<String> exp = interaction.getExperimentToPubmed().keySet();
+		row.set(EXPERIMENT, new ArrayList<String>(exp));
+
+		final List<CrossReference> pubIDs = interaction.getPublicationIds();
+		final List<String> pubIdList = new ArrayList<String>();
+		final List<String> pubDBList = new ArrayList<String>();
+		for (CrossReference pub : pubIDs) {
+			pubIdList.add(pub.getIdentifier());
+			pubDBList.add(pub.getDatabase());
+		}
+		if (pubIdList.isEmpty() == false)
+			row.set(PUB_ID, pubIdList);
+		if (pubDBList.isEmpty() == false)
+			row.set(PUB_DB, pubDBList);
+
 		// Interaction (use DB names)
 		row.set(CyEdge.INTERACTION, interaction.getMappingIdDbNames());
-		
+
 		final List<Confidence> scores = interaction.getConfidenceValues();
-		for(Confidence c: scores) {
+		for (Confidence c : scores) {
 			String type = c.getType();
-			String value  =c.getValue();
-			
+			String value = c.getValue();
+
 			if (row.getTable().getColumn(type) == null)
 				row.getTable().createColumn(type, Double.class, true);
-			
+
 			try {
 				double doubleVal = Double.parseDouble(value);
 				row.set(type, doubleVal);
-			} catch(NumberFormatException e) {
-				//logger.warn("Invalid number string: " + value);
+			} catch (NumberFormatException e) {
+				// logger.warn("Invalid number string: " + value);
 				// Ignore invalid number
 			}
-			
+
 		}
-		
+
 	}
 
 	private void processNames(CyRow row, final Map<String, String> accs) {
 		for (String originalDBName : accs.keySet()) {
-			
-			final String dbName = validateNamespace(originalDBName);
-			
-			if (row.getTable().getColumn(dbName) == null)
-				row.getTable().createColumn(dbName, String.class, true);
-			
-			row.set(dbName, accs.get(originalDBName));
-		}
 
+			final String dbName = validateNamespace(originalDBName);
+
+			if (row.getTable().getColumn(dbName) == null)
+				row.getTable().createListColumn(dbName, String.class, true);
+
+			List<String> currentList = row.getList(dbName, String.class);
+			if (currentList == null)
+				currentList = new ArrayList<String>();
+
+			final Set<String> nameSet = new HashSet<String>(currentList);
+
+			final String entry = accs.get(originalDBName);
+			nameSet.add(entry);
+
+			row.set(dbName, new ArrayList<String>(nameSet));
+		}
 	}
 
 	private void processOtherNames(CyRow row, final Map<String, List<String>> accs) {
@@ -125,16 +168,16 @@ public class InteractionClusterMapper {
 			final String dbName = validateNamespace(originalDBName);
 
 			if (row.getTable().getColumn(dbName) == null)
-				row.getTable().createColumn(dbName, String.class, true);
+				row.getTable().createListColumn(dbName, String.class, false);
 
+			List<String> currentList = row.getList(dbName, String.class);
+			if (currentList == null)
+				currentList = new ArrayList<String>();
+
+			final Set<String> nameSet = new HashSet<String>(currentList);
 			final List<String> names = accs.get(originalDBName);
-			StringBuilder builder = new StringBuilder();
-			for (String name : names) {
-				builder.append(name + ",");
-			}
-			String longName = builder.toString();
-			longName = longName.substring(0, longName.length() - 2);
-			row.set(dbName, longName);
+			nameSet.addAll(names);
+			row.set(dbName, new ArrayList<String>(nameSet));
 		}
 	}
 
@@ -192,11 +235,11 @@ public class InteractionClusterMapper {
 	}
 
 	private String validateNamespace(final String columnName) {
-		
+
 		// This is a hack for db's bug
-		if(columnName.equals("entrezgene/locuslink"))
+		if (columnName.equals("entrezgene/locuslink"))
 			return "entrez gene/locuslink";
-		
+
 		if (namespaceSet.contains(columnName.toLowerCase()))
 			return columnName;
 
@@ -209,5 +252,84 @@ public class InteractionClusterMapper {
 			return newName;
 
 		return columnName;
+	}
+
+	private void guessHumanReadableName(final CyRow row) {
+		boolean found = false;
+
+		// Special handler for STRING. This is a hack... 
+		if (row.getTable().getColumn(STRING_ATTR_NAME) != null) {
+			final List<String> stringList = row.getList(STRING_ATTR_NAME, String.class);
+			if (stringList != null)
+				found = findHumanReadableName(row, stringList, ncbiPattern, true);
+		}
+
+		if (found)
+			return;
+
+		// try NCBI
+		if (row.getTable().getColumn(ENTREZ_GENE_ATTR_NAME) != null) {
+			final List<String> ncbiList = row.getList(ENTREZ_GENE_ATTR_NAME, String.class);
+			if (ncbiList != null)
+				found = findHumanReadableName(row, ncbiList, ncbiPattern, true);
+		}
+		if (found)
+			return;
+
+		// Try Uniprot
+		List<String> uniprotList = null;
+		if (row.getTable().getColumn(UNIPROT_ATTR_NAME) != null) {
+			uniprotList = row.getList(UNIPROT_ATTR_NAME, String.class);
+			if (uniprotList != null)
+				found = findHumanReadableName(row, uniprotList, exact1Pattern, true);
+		}
+		if (found)
+			return;
+
+		if (uniprotList != null)
+			found = findHumanReadableName(row, uniprotList, uniprotPattern, false);
+
+		if (found)
+			return;
+		
+		// Unknown
+		if (row.getTable().getColumn("unknown") != null) {
+			final List<String> unknownList = row.getList("unknown", String.class);
+			if (unknownList != null)
+				found = findHumanReadableName(row, unknownList, uniprotPattern, false);
+		}
+		if (found)
+			return;
+		
+		if (found == false) {
+			// Give up. Use primary key
+			row.set(PREDICTED_GENE_NAME, row.get(CyNetwork.NAME, String.class));
+		}
+	}
+
+	private boolean findHumanReadableName(final CyRow row, final List<String> attrList, Pattern pattern, boolean exist) {
+		String candidateString = null;
+		for (final String geneID : attrList) {
+			if (pattern.matcher(geneID).find() == exist) {
+				candidateString = geneID;
+				break;
+			}
+		}
+		if (candidateString != null) {
+			if(candidateString.contains("_")) {
+				final String firstPart = candidateString.split("_")[0];
+				for(String candidate: attrList) {
+					if(candidate.equalsIgnoreCase(firstPart)) {
+						candidateString = firstPart;
+						break;
+					}
+				}
+					
+			}
+			row.set(PREDICTED_GENE_NAME, candidateString);
+			return true;
+		}
+
+		return false;
 	}
 }

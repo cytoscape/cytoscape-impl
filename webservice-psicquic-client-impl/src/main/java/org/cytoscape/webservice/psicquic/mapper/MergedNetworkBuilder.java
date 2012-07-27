@@ -42,7 +42,6 @@ public class MergedNetworkBuilder {
 	public MergedNetworkBuilder(final CyNetworkFactory networkFactory) {
 		this.networkFactory = networkFactory;
 		mapper = new InteractionClusterMapper();
-		
 	}
 
 	public CyNetwork buildNetwork(final InteractionCluster iC) throws IOException {
@@ -50,27 +49,27 @@ public class MergedNetworkBuilder {
 		process(iC, network, null, null);
 		return network;
 	}
-	
-	public Map<String, CyNode> addToNetwork(final InteractionCluster iC, CyNetworkView networkView, final View<CyNode> hubNode) {
+
+	public Map<String, CyNode> addToNetwork(final InteractionCluster iC, CyNetworkView networkView,
+			final View<CyNode> hubNode) {
 		return process(iC, networkView.getModel(), networkView, hubNode);
 	}
-	
-	private final Map<String, CyNode> process(final InteractionCluster iC, CyNetwork network, CyNetworkView netView, final View<CyNode> hubNode) {
+
+	private final Map<String, CyNode> process(final InteractionCluster iC, CyNetwork network, CyNetworkView netView,
+			final View<CyNode> hubNode) {
 		nodeMap = new HashMap<String, CyNode>();
-		if(hubNode != null) {
+		if (hubNode != null) {
 			nodeMap.put(network.getRow(hubNode.getModel()).get(CyNetwork.NAME, String.class), hubNode.getModel());
-			if(netView != null)
+			if (netView != null)
 				network.getRow(hubNode.getModel()).set(CyNetwork.SELECTED, true);
 		}
-		
-		if(network.getNodeCount() != 0) {
-			for(CyNode existingNode: network.getNodeList())
+
+		if (network.getNodeCount() != 0) {
+			for (CyNode existingNode : network.getNodeList())
 				nodeMap.put(network.getRow(existingNode).get(CyNetwork.NAME, String.class), existingNode);
 		}
-		
-		Map<Integer, EncoreInteraction> interactions = iC.getInteractionMapping();
-		Map<String, List<Integer>> interactorMapping = iC.getInteractorMapping();
-		Map<String, String> interactorSynonyms = iC.getSynonymMapping();
+
+		final Map<Integer, EncoreInteraction> interactions = iC.getInteractionMapping();
 
 		prepareColumns(network);
 
@@ -81,13 +80,13 @@ public class MergedNetworkBuilder {
 			}
 
 			final EncoreInteraction interaction = interactions.get(interactionKey);
-			
+
 			final String source = interaction.getInteractorA();
 			CyNode sourceNode = nodeMap.get(source);
 			if (sourceNode == null) {
 				sourceNode = network.addNode();
 				network.getRow(sourceNode).set(CyNetwork.NAME, source);
-				if(netView != null)
+				if (netView != null)
 					network.getRow(sourceNode).set(CyNetwork.SELECTED, true);
 				nodeMap.put(source, sourceNode);
 			}
@@ -96,12 +95,12 @@ public class MergedNetworkBuilder {
 			if (targetNode == null) {
 				targetNode = network.addNode();
 				network.getRow(targetNode).set(CyNetwork.NAME, target);
-				if(netView != null)
+				if (netView != null)
 					network.getRow(targetNode).set(CyNetwork.SELECTED, true);
 				nodeMap.put(target, targetNode);
 			}
 			mapper.mapNodeColumn(interaction, network.getRow(sourceNode), network.getRow(targetNode));
-			
+
 			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
 			mapper.mapEdgeColumn(interaction, network.getRow(newEdge));
 		}
@@ -118,6 +117,19 @@ public class MergedNetworkBuilder {
 			nodeTable.createColumn(TAXNOMY_NAME, String.class, false);
 		if (nodeTable.getColumn(TAXNOMY_DB) == null)
 			nodeTable.createColumn(TAXNOMY_DB, String.class, false);
+
+		// Prepare label column
+		if (nodeTable.getColumn(InteractionClusterMapper.PREDICTED_GENE_NAME) == null)
+			nodeTable.createColumn(InteractionClusterMapper.PREDICTED_GENE_NAME, String.class, false);
+
+		// Prepare edge column
+		if (edgeTable.getColumn(InteractionClusterMapper.PUB_DB) == null)
+			edgeTable.createListColumn(InteractionClusterMapper.PUB_DB, String.class, false);
+		if (edgeTable.getColumn(InteractionClusterMapper.PUB_ID) == null)
+			edgeTable.createListColumn(InteractionClusterMapper.PUB_ID, String.class, false);
+		if (edgeTable.getColumn(InteractionClusterMapper.EXPERIMENT) == null)
+			edgeTable.createListColumn(InteractionClusterMapper.EXPERIMENT, String.class, false);
+		
 	}
 
 	public void cancel() {
