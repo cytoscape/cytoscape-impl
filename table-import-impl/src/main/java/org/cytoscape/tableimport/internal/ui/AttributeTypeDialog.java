@@ -39,13 +39,12 @@ package org.cytoscape.tableimport.internal.ui;
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
 import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.*;
 
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 
 import javax.swing.DefaultComboBoxModel;
 
 //import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
-import java.util.List;
+import java.awt.Dialog;
 
 /**
  *
@@ -63,7 +62,7 @@ public class AttributeTypeDialog extends javax.swing.JDialog {
 
 	/** Creates new form AttributeTypeDialog
 	 * @param delimiter TODO*/
-	public AttributeTypeDialog(Frame parent, boolean modal, final String name, final byte dataType,
+	public AttributeTypeDialog(Dialog parent, boolean modal, final String name, final byte dataType,
 	                           int index, String delimiter) {
 		super(parent, true);
 

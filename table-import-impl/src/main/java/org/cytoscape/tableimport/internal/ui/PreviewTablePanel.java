@@ -101,6 +101,8 @@ import org.cytoscape.util.swing.ColumnResizer;
 import org.jdesktop.layout.GroupLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.swing.JDialog;
+import java.awt.Container;
 
 /**
  * General purpose preview table panel.
@@ -1127,15 +1129,27 @@ public class PreviewTablePanel extends JPanel {
 					e.getX());
 
 			if (SwingUtilities.isRightMouseButton(e)) {
+				// determine the parent of AttributeTypeDialog, should be a TunableDialog
+				Object parent = null;
+				
+				Container cnt = PreviewTablePanel.this.getParent();
+				while(true){
+					cnt = cnt.getParent();
+					if (cnt instanceof JDialog){						
+						parent = cnt;
+						break;
+					}
+				}
+				
 				/*
 				 * Right click: This action pops up an dialog to edit the
 				 * attribute type and name.
 				 */
-				AttributeTypeDialog atd = new AttributeTypeDialog(CytoscapeServices.cySwingApplication.getJFrame(),
+				AttributeTypeDialog atd = new AttributeTypeDialog((java.awt.Dialog)parent,
 						true, targetTable.getColumnModel()
 						.getColumn(column).getHeaderValue().toString(),
-						dataTypes[column], column, listDelimiter);
-
+						dataTypes[column], column, listDelimiter);				
+				
 				atd.setLocationRelativeTo(targetTable.getParent());
 				atd.setVisible(true);
 
