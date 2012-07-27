@@ -9,6 +9,8 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,27 +72,43 @@ public class SessionXGMMLNetworkWriterTest extends AbstractXGMMLWriterTest {
 		assertEquals(0, evalNumber("count(//x:edge/graphics)"));
 	}
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testRootNetworkOnlySavedIfSessionSavePolicy() throws UnsupportedEncodingException {
+		CyRootNetwork newRoot = ((CySubNetwork)netFactory.createNetwork(SavePolicy.DO_NOT_SAVE)).getRootNetwork();
+		setRegistered(newRoot, true); // Registering it doesn't make any difference
+		write(newRoot);
+	}
+	
 	@Test
-	public void testRegisteredSubNetworkSaved() throws UnsupportedEncodingException {
+	public void testRegisteredSubNetworkSavedIfSessionSavePolicy() throws UnsupportedEncodingException {
 		CySubNetwork sn = rootNet.addSubNetwork();
-		setRegistered(sn, true);
+		setRegistered(sn, true); // It doesn't matter
 		write(rootNet);
 		assertEquals("1", evalString("/x:graph/x:att/x:graph[@id="+sn.getSUID()+"]/@cy:registered"));
 	}
 	
 	@Test
-	public void testUnregisteredSubNetworksNotSaved() throws UnsupportedEncodingException {
+	public void testUnregisteredSubNetworkSavedIfSessionSavePolicy() throws UnsupportedEncodingException {
 		CySubNetwork sn = rootNet.addSubNetwork();
-		setRegistered(sn, false);
+		setRegistered(sn, false); // It doesn't matter
 		write(rootNet);
-		assertTrue(evalBoolean("count(//x:graph[@id="+sn.getSUID()+"]) = 0"));
+		assertEquals("0", evalString("/x:graph/x:att/x:graph[@id="+sn.getSUID()+"]/@cy:registered"));
 	}
 	
 	@Test
-	public void testUnregisteredNetworkSavedIfNetworkPointer() throws UnsupportedEncodingException {
+	public void testSubNetworkIgnoredIfNotSessionSavePolicy() throws UnsupportedEncodingException {
+		CySubNetwork sn = rootNet.addSubNetwork(SavePolicy.DO_NOT_SAVE);
+		setRegistered(sn, true); // It doesn't matter
+		write(rootNet);
+		assertEquals(2, evalNumber("count(//x:graph)"));
+		assertEquals(0, evalNumber("count(//x:graph[@id="+sn.getSUID()+"])"));
+	}
+	
+	@Test
+	public void testUnregisteredNetworkPointerSavedIfSessionSavePolicy() throws UnsupportedEncodingException {
 		// Create a subnetwork from the same root
 		CySubNetwork sn = rootNet.addSubNetwork();
-		setRegistered(sn, false);
+		setRegistered(sn, false); // It doesn't matter
 		// Set it as network pointer
 		CyNode n = net.getNodeList().get(0);
 		n.setNetworkPointer(sn);

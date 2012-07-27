@@ -55,6 +55,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -176,7 +177,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 		
 		if (network instanceof CyRootNetwork) {
 			this.network = this.rootNetwork = (CyRootNetwork) network;
-			this.subNetworks = getRegisteredSubNetworks(rootNetwork);
+			this.subNetworks = getSerializableSubNetworks(rootNetwork);
 		} else {
 			this.network = network;
 			this.rootNetwork = rootNetworkMgr.getRootNetwork(network);
@@ -412,8 +413,12 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 			
 			// Output the node attributes
 			writeAttributes(net.getRow(node));
+			
 			// Write node's sub-graph
-			writeSubGraph(node.getNetworkPointer());
+			final CyNetwork netPointer = node.getNetworkPointer();
+			
+			if (netPointer != null && isSerializable(netPointer))
+				writeSubGraph(netPointer);
 			
 	        // Output the node graphics if we have a view
 			if (networkView != null)
@@ -430,9 +435,9 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      * @param edge the edge to output
      * @throws IOException
      */
-	protected void writeEdge(CyNetwork net, CyEdge edge) throws IOException {
+	protected void writeEdge(final CyNetwork net, final CyEdge edge) throws IOException {
 		writeElement("<edge");
-		boolean written = writtenEdgeMap.containsKey(edge);
+		final boolean written = writtenEdgeMap.containsKey(edge);
 		
 		if (written) {
 			// Write as an XLink only
@@ -883,26 +888,30 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     
     /**
      * @param rootNet
-     * @return A set with all the sub-networks that are registered in the network manager.
+     * @return A set with all the subnetworks that should be serialized.
      */
-    private Set<CySubNetwork> getRegisteredSubNetworks(CyRootNetwork rootNet) {
-		List<CySubNetwork> subNetList = rootNet.getSubNetworkList();
-		Set<CySubNetwork> registeredSubNetSet = new LinkedHashSet<CySubNetwork>();
+    protected Set<CySubNetwork> getSerializableSubNetworks(final CyRootNetwork rootNet) {
+		final Set<CySubNetwork> serializableSet = new LinkedHashSet<CySubNetwork>();
+		final List<CySubNetwork> subNetList = rootNet.getSubNetworkList();
+		final CySubNetwork baseNetwork = rootNet.getBaseNetwork();
 		
-		CySubNetwork baseNetwork = rootNet.getBaseNetwork();
-		if (isRegistered(baseNetwork)) {
-			registeredSubNetSet.add(baseNetwork); // The base network must be the first one!
+		// The base network must be the first one!
+		if (isSerializable(baseNetwork))
+			serializableSet.add(baseNetwork);
+		
+		for (final CySubNetwork sn : subNetList) {
+			if (isSerializable(sn))
+				serializableSet.add(sn);
 		}
 		
-		for (CySubNetwork sn : subNetList) {
-			if (isRegistered(sn))
-				registeredSubNetSet.add(sn);
-		}
-		
-		return registeredSubNetSet;
+		return serializableSet;
 	}
     
-    protected boolean isRegistered(CyNetwork net) {
+    protected boolean isSerializable(final CyNetwork net) {
+    	return net.getSavePolicy() != SavePolicy.DO_NOT_SAVE;
+    }
+    
+    protected boolean isRegistered(final CyNetwork net) {
     	return networkMgr.networkExists(net.getSUID());
     }
 }

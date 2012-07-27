@@ -11,6 +11,7 @@ import javax.xml.xpath.XPathConstants;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -47,9 +48,21 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 	}
 	
 	@Test
+	public void testTopNetworkSavedEvenIfDoNotSavePolicy() throws UnsupportedEncodingException {
+		// The network that is passed to the writer should always be saved, even if its save policy is DO_NOT_SAVE,
+		// because it doesn't make sense to prevent an app from exporting it if the app explicitly wants to do so.
+		CyNetwork newNet = netFactory.createNetwork(SavePolicy.DO_NOT_SAVE);
+		setRegistered(newNet, false); // It shouldn't make any difference either
+		write(newNet);
+		// Test:
+		assertEquals(1, evalNumber("count(//x:graph)")); // No nested graph elements
+		assertEquals(""+newNet.getSUID(), evalString("/x:graph/@id"));
+	}
+	
+	@Test
 	public void testNetworkPointerSavedIfSameRootNetwork() throws UnsupportedEncodingException {
 		// Create a subnetwork from the same root
-		CySubNetwork sn1 = rootNet.addSubNetwork();
+		CySubNetwork sn1 = rootNet.addSubNetwork(); // Of course the save policy cannot be DO_NOT_SAVE!
 		CySubNetwork sn2 = rootNet.addSubNetwork();
 		setRegistered(sn1, true);
 		setRegistered(sn2, false);
@@ -71,13 +84,27 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 	@Test
 	public void testNetworkPointerIgnoredIfAnotherRootNetwork() throws UnsupportedEncodingException {
 		// Create a subnetwork from another root network
-		CyNetwork subNet = netFactory.createNetwork();
+		CyNetwork net2 = netFactory.createNetwork();
 		// Set it as network pointer
 		CyNode n = net.getNodeList().get(0);
-		n.setNetworkPointer(subNet);
+		n.setNetworkPointer(net2);
 		write(net);
 		// Test
 		assertEquals(1, evalNumber("count(//x:graph)")); // no nested graph elements
+	}
+	
+	@Test
+	public void testNetworkPointerIgnoredIfDoNotSavePolicy() throws UnsupportedEncodingException {
+		// Create a subnetwork from another root network
+		CyNetwork sn = rootNet.addSubNetwork(SavePolicy.DO_NOT_SAVE);
+		setRegistered(sn, true); // Ignore even if registered!
+		// Set it as network pointer
+		CyNode n = net.getNodeList().get(0);
+		n.setNetworkPointer(sn);
+		write(net);
+		// Test
+		assertEquals(1, evalNumber("count(//x:graph)")); // no nested graph elements
+		assertEquals(""+net.getSUID(), evalString("/x:graph/@id"));
 	}
 	
 	@Test

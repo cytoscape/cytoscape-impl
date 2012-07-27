@@ -11,6 +11,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -29,6 +30,11 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 									 final CyNetworkManager networkMgr,
 									 final CyRootNetworkManager rootNetworkMgr) {
 		super(outputStream, renderingEngineMgr, network, unrecognizedVisualPropertyMgr, networkMgr, rootNetworkMgr);
+
+		if (rootNetwork.getSavePolicy() != SavePolicy.SESSION_FILE)
+			throw new IllegalArgumentException(
+					"Network cannot be saved because the root network's save policy is not \"SESSION_FILE\": "
+							+ network);
 	}
 
 	@Override
@@ -47,8 +53,8 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 	@Override
 	protected void writeRootGraphAttributes() throws IOException {
 		// Write sub-graphs first
-		for (CySubNetwork subNet : subNetworks) {
-			if (!writtenNetMap.containsKey(subNet)) {
+		for (final CySubNetwork subNet : subNetworks) {
+			if (!writtenNetMap.containsKey(subNet) && isSerializable(subNet)) {
 				writeSubGraph(subNet);
 			}
 		}
@@ -56,7 +62,7 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 	
 	@Override
 	protected void writeNode(final CyNetwork net, final CyNode node) throws IOException {
-		boolean written = writtenNodeMap.containsKey(node);
+		final boolean written = writtenNodeMap.containsKey(node);
 		
 		// Output the node
 		writeElement("<node");
@@ -75,14 +81,14 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 			
 			final CyNetwork netPointer = node.getNetworkPointer();
 			
-			if (netPointer == null) {
+			if (netPointer == null || !isSerializable(netPointer)) {
 				write("/>\n");
 			} else {
 				write(">\n");
 				depth++;
 				
 				// Write node's sub-graph:
-				if (subNetworks.contains(netPointer)) {
+				if (isRegistered(netPointer)) {
 					// Because this network is registered (is also a child network), just write the reference.
 					// The content will be saved later, under the root graph
 					// (it's important to save the child network graphs in the correct order).
@@ -98,9 +104,9 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 	}
 	
 	@Override
-	protected void writeEdge(CyNetwork net, CyEdge edge) throws IOException {
+	protected void writeEdge(final CyNetwork net, final CyEdge edge) throws IOException {
 		writeElement("<edge");
-		boolean written = writtenEdgeMap.containsKey(edge);
+		final boolean written = writtenEdgeMap.containsKey(edge);
 		
 		if (written) {
 			// Write as an XLink only
@@ -146,4 +152,9 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 	protected boolean ignoreGraphicsAttribute(final CyIdentifiable element, String attName) {
 		return true;
 	}
+	
+	@Override
+	protected boolean isSerializable(final CyNetwork net) {
+    	return net.getSavePolicy() == SavePolicy.SESSION_FILE;
+    }
 }

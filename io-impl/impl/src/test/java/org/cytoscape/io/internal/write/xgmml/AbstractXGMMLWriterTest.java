@@ -45,7 +45,9 @@ public abstract class AbstractXGMMLWriterTest {
 	protected final int NODE_COUNT = 3;
 	protected final int EDGE_COUNT = NODE_COUNT - 1;
 	protected CyNetworkView view;
+	/** Registered and serializable base network */
 	protected CyNetwork net;
+	/** Unregistered root network of net */
 	protected CyRootNetwork rootNet;
 	protected CyEdge dirEdge;
 	protected CyEdge undirEdge;
@@ -158,6 +160,8 @@ public abstract class AbstractXGMMLWriterTest {
 			        throw new UnsupportedOperationException();
 			    }
 			});
+		} catch (IllegalArgumentException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
