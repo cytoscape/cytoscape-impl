@@ -30,6 +30,7 @@ public class ExportNetworkImageTaskFactoryTest {
 	public void setUp() throws Exception {
 		final List<CyFileFilter> filters = new ArrayList<CyFileFilter>();
 		final CyFileFilter dummyFilter = mock(CyFileFilter.class);
+		when(dummyFilter.getDescription()).thenReturn("dummy description");
 		filters.add(dummyFilter);
 		when(viewWriterMgr.getAvailableWriterFilters()).thenReturn(filters);
 		final RenderingEngine engine = mock(RenderingEngine.class);
