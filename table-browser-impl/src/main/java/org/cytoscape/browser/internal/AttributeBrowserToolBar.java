@@ -560,7 +560,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			selectButton.setBorder(null);
 			selectButton.setMargin(new Insets(0, 0, 0, 0));
 			selectButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table-select-column-icon.png")));
-			selectButton.setToolTipText("Select Column");
+			selectButton.setToolTipText("Show Column");
 			selectButton.setBorder(null);
 			selectButton.setEnabled(false);
 
@@ -684,7 +684,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			selectAllAttributesButton.setBorder(null);
 			selectAllAttributesButton.setMargin(new Insets(0, 0, 0, 0));
 			selectAllAttributesButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/select_all.png")));
-			selectAllAttributesButton.setToolTipText("Select All Columns");
+			selectAllAttributesButton.setToolTipText("Show All Columns");
 			selectAllAttributesButton.setBorder(null);
 			selectAllAttributesButton.setEnabled(false);
 
@@ -715,7 +715,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			unselectAllAttributesButton.setBorder(null);
 			unselectAllAttributesButton.setMargin(new Insets(0, 0, 0, 0));
 			unselectAllAttributesButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/unselect_all.png")));
-			unselectAllAttributesButton.setToolTipText("Unselect All Columns");
+			unselectAllAttributesButton.setToolTipText("Hide All Columns");
 			unselectAllAttributesButton.setBorder(null);
 			unselectAllAttributesButton.setEnabled(false);
 

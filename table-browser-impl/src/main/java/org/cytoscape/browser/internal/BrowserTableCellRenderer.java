@@ -49,6 +49,11 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 				? objectAndEditString.getErrorText()
 				: objectAndEditString.getValidatedObject().toString();
 			setText(displayText);
+			String tooltipText = displayText;
+			if (tooltipText.length() > 100 )
+				setToolTipText(tooltipText.substring(0, 100) + "...");
+			else
+				setToolTipText(tooltipText);
 		}
 
 		// If selected, return
@@ -64,7 +69,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		setForeground(table.getForeground());
 		setFont(normalFont);
 		setBackground(table.getBackground());
-
+		
 		// If ID, return default.
 		//if (((BrowserTableModel)  table.getModel()).getDataTable().getPrimaryKey(). )
 		if (table.getModel() instanceof BrowserTableModel){

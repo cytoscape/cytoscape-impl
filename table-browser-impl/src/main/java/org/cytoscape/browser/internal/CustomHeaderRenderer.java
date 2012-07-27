@@ -109,6 +109,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 			return this;
 
 		
+		
 		// Set datatype icon if available
 		this.setIcon(getIcon(col.getType(), col));
 		
@@ -116,9 +117,9 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		
 		
 		if(col.getType() == List.class) {
-			toolTip = "<html>Name: " + col.getName() + "<br /> Type: List "+ getMinimizedType( col.getListElementType().getName()) + "</html>";
+			toolTip = "<html>Name: " + col.getName() + "<br /> Type: List of "+ getMinimizedType( col.getListElementType().getName()) + "s</html>";
 		} else if(text.equals(CyIdentifiable.SUID))
-			toolTip = "Session-Unique ID (Primary Key).  This is column is immutable.";
+			toolTip = "Session-Unique ID (Primary Key).<br /> This column is immutable.";
 		else
 			toolTip = "<html>Name: " + col.getName()+ "<br /> Type: " + getMinimizedType(col.getType().getName());
 		
