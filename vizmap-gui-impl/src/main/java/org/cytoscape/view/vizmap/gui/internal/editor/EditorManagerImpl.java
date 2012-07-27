@@ -153,13 +153,13 @@ public class EditorManagerImpl implements EditorManager {
 
 	@Override
 	public void addValueEditor(ValueEditor<?> ve, @SuppressWarnings("rawtypes") Map properties) {
-		logger.debug("Got Value Editor " + ve.toString() + ", this is for " + ve.getType() + "\n\n\n");
-		this.valueEditors.put(ve.getType(), ve);
+		logger.debug("Got Value Editor " + ve.toString() + ", this is for " + ve.getValueType() + "\n\n\n");
+		this.valueEditors.put(ve.getValueType(), ve);
 	}
 
 	public void removeValueEditor(ValueEditor<?> valueEditor, @SuppressWarnings("rawtypes") Map properties) {
 		logger.debug("************* Removing Value Editor ****************");
-		valueEditors.remove(valueEditor.getType());
+		valueEditors.remove(valueEditor.getValueType());
 	}
 
 	public void addVisualPropertyEditor(VisualPropertyEditor<?> ve, @SuppressWarnings("rawtypes") Map properties) {

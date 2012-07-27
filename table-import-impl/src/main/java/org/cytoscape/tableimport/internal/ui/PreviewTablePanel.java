@@ -1140,7 +1140,7 @@ public class PreviewTablePanel extends JPanel {
 				atd.setVisible(true);
 
 				final String name = atd.getName();
-				final byte newType = atd.getType();
+				final byte newType = atd.getAttributeType();
 				final byte newListType = atd.getListDataType();
 
 				if (name != null) {

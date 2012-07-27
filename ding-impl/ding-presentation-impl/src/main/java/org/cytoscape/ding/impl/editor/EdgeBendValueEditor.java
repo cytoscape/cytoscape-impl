@@ -180,7 +180,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 	}
 
 	@Override
-	public Class<Bend> getType() {
+	public Class<Bend> getValueType() {
 		return Bend.class;
 	}
 }

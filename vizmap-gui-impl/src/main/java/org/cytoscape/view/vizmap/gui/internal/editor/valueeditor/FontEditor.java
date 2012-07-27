@@ -120,7 +120,7 @@ public class FontEditor extends JDialog implements ValueEditor<Font> {
 		return font;
 	}
 
-	public Class<Font> getType() {
+	public Class<Font> getValueType() {
 		return Font.class;
 	}
 

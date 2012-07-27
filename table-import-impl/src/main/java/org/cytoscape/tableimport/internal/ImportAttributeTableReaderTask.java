@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.IllegalSelectorException;
 import java.util.Set;
 
 
@@ -77,13 +78,14 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			amp = new AttributeMappingParameters(new FileInputStream(tempFile), fileType);
 			this.is = new FileInputStream(tempFile);
 		} catch (IOException e) {
-			e.printStackTrace();
+			try {
+				is.close();
+			} catch (IOException e1) {
+			}
+			
 			this.is = null;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new IllegalStateException("Could not initialize object", e);
 		}
-		
 	}
 
 

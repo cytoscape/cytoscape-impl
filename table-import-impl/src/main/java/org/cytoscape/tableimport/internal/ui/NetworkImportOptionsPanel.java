@@ -147,7 +147,8 @@ public class NetworkImportOptionsPanel extends JPanel {
 				public void actionPerformed(java.awt.event.ActionEvent evt) {
 					networkColumnsComboBoxActionPerformed(evt);
 
-                    props.put("action", "set target interaction column");
+                    final Map<String,String> props = new HashMap<String,String>();
+					props.put("action", "set target interaction column");
                     props.put("column", targetComboBox.getSelectedItem() == null ? null : targetComboBox.getSelectedItem().toString());
                     CytoscapeServices.eventAdmin.postEvent(new Event("org/cytoscape/gettingstarted", props));
 				}

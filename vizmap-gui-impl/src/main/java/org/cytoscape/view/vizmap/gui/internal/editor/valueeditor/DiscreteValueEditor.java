@@ -327,7 +327,7 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	}
 
 	@Override
-	public Class<T> getType() {
+	public Class<T> getValueType() {
 		return type;
 	}
 }

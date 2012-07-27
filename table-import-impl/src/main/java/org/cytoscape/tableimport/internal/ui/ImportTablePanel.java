@@ -1928,9 +1928,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			try {
 				workbook = WorkbookFactory.create(tempIs);
 			} catch (InvalidFormatException e) {
-				e.printStackTrace();
-				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
-			} 
+				tempIs.close();
+				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?", e);
+			}
 			
 		}
 		
@@ -2101,11 +2101,19 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (sourceURL.toString().startsWith("file:")) {
 			int fileSize = 0;
 
+			BufferedInputStream fis = null;
 			try {
-				BufferedInputStream fis = (BufferedInputStream) sourceURL.openStream();
+				fis = (BufferedInputStream) sourceURL.openStream();
 				fileSize = fis.available();
+				fis.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				if(fis!= null)
+					try {
+						fis.close();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 			}
 
 			if ((fileSize / 1000) == 0) {

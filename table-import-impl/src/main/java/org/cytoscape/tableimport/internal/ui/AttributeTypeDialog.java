@@ -457,7 +457,7 @@ public class AttributeTypeDialog extends javax.swing.JDialog {
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-	public byte getType() {
+	byte getAttributeType() {
 		if (delimiterButtonGroup.getSelection().equals(stringRadioButton.getModel())) {
 			return AttributeTypes.TYPE_STRING;
 		} else if (delimiterButtonGroup.getSelection().equals(integerRadioButton.getModel())) {

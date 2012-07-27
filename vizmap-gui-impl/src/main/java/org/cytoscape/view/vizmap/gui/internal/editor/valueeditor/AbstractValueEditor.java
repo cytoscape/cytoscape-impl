@@ -12,7 +12,7 @@ public abstract class AbstractValueEditor<V> implements ValueEditor<V> {
 	protected final JOptionPane pane;
 	protected JDialog editorDialog;
 	
-	public AbstractValueEditor(Class<V> type) {
+	public AbstractValueEditor(final Class<V> type) {
 		this.type = type;
 		
 		pane = new JOptionPane();
@@ -20,7 +20,7 @@ public abstract class AbstractValueEditor<V> implements ValueEditor<V> {
 		pane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
 	}
 
-	@Override public Class<V> getType() {
+	@Override public Class<V> getValueType() {
 		return type;
 	}
 }

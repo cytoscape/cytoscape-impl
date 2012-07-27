@@ -156,7 +156,7 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 
 
 	@Override
-	public Class<ObjectPosition> getType() {
+	public Class<ObjectPosition> getValueType() {
 		return ObjectPosition.class;
 	}
 }

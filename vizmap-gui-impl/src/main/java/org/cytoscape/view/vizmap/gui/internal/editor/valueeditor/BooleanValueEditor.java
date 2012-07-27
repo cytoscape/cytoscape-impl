@@ -26,7 +26,7 @@ public final class BooleanValueEditor implements ValueEditor<Boolean> {
 	}
 
 	@Override
-	public Class<Boolean> getType() {
+	public Class<Boolean> getValueType() {
 		return Boolean.class;
 	}
 }

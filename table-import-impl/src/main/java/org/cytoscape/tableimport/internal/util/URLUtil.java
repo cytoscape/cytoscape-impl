@@ -28,15 +28,12 @@ package org.cytoscape.tableimport.internal.util;
 //import cytoscape.task.ui.JTask;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
-
 import java.util.jar.JarInputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
@@ -45,10 +42,9 @@ import java.util.zip.ZipInputStream;
  * 
  */
 public class URLUtil {
+	
 	private static final String GZIP = ".gz";
-
 	private static final String ZIP = ".zip";
-
 	private static final String JAR = ".jar";
 
 	private static int msConnectionTimeout = 2000;
@@ -235,11 +231,11 @@ public class URLUtil {
 			while ((c = is.read()) != -1) {
 				buffer.append((char) c);
 			}
+			is.close();
 		}
 		finally {
-			if (is != null) {
+			if (is != null)
 				is.close();
-			}
 		}
 
 		return buffer.toString();

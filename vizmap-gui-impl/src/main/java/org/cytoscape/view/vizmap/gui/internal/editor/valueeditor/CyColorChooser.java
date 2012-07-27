@@ -73,7 +73,7 @@ public class CyColorChooser implements ValueEditor<Paint> {
 		}
 	}
 
-	public Class<Paint> getType() {
+	public Class<Paint> getValueType() {
 		return Paint.class;
 	}
 }
