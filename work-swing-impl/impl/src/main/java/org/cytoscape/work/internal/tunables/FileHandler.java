@@ -224,7 +224,7 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 
 	@Override
 	public boolean isForcedToSetDirectly() {
-		return true;
+		return getParams().getProperty("ForceSetDirectly", "true").equalsIgnoreCase("true");
 	}
 	
 	/**
