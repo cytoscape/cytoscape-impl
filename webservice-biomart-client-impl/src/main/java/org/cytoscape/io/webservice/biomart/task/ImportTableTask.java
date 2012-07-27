@@ -12,11 +12,8 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
@@ -71,13 +68,15 @@ public class ImportTableTask extends AbstractTask {
 
 		final BufferedReader result = client.sendQuery(query.getQueryString());
 
-		if (result.ready() == false)
+		if (result.ready() == false) {
+			result.close();
 			throw new IOException("Could not get result.");
-
+		}
 		
 		taskMonitor.setStatusMessage("Creating global table...");
 		final CyTable newTable = createGlobalTable(result,
 				query.getKeyColumnName());
+		result.close();
 
 		tables.add(newTable);
 

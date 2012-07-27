@@ -283,7 +283,10 @@ public class BiomartRestClient {
 			is = connection.getInputStream();
 		} catch (Exception e) {
 			// Could not create connection.
+			is.close();
 			throw new IOException("Could not create connection.");
+		} finally {
+			is.close();
 		}
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
