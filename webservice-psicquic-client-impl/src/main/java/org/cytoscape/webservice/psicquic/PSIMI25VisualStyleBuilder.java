@@ -25,6 +25,7 @@ public class PSIMI25VisualStyleBuilder {
 	private static final Color NODE_BORDER_COLOR = new Color(180, 180, 180);
 	private static final Color NODE_LABEL_COLOR = new Color(100, 100, 100);
 	private static final Color EDGE_COLOR = new Color(180, 180, 180);
+	private static final Color EDGE_CROSS_COLOR = new Color(0x1C, 0x86, 0xEE);
 
 	private static Font NODE_LABEL_FONT;
 	static {
@@ -108,7 +109,7 @@ public class PSIMI25VisualStyleBuilder {
 		// Edge Color Mapping.  
 		final DiscreteMapping<Boolean, Paint> edgeColorMapping = (DiscreteMapping<Boolean, Paint>) discreteMappingFactory
 				.createVisualMappingFunction(InteractionClusterMapper.CROSS_SPECIES_EDGE, Boolean.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-		edgeColorMapping.putMapValue(Boolean.TRUE, Color.RED);
+		edgeColorMapping.putMapValue(Boolean.TRUE, EDGE_CROSS_COLOR);
 		defStyle.addVisualMappingFunction(edgeColorMapping);
 		
 		final DiscreteMapping<Boolean, LineType> edgeLineTypeMapping = (DiscreteMapping<Boolean, LineType>) discreteMappingFactory
