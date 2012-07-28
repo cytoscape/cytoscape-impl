@@ -28,7 +28,9 @@ import javax.swing.table.TableModel;
 
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
+import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
@@ -54,6 +56,9 @@ public class SourceStatusPanel extends JPanel {
 
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 
+	private final PSIMI25VisualStyleBuilder vsBuilder;
+	private final VisualMappingManager vmm;
+	
 	private int interactionsFound = 0;
 
 	/**
@@ -62,7 +67,8 @@ public class SourceStatusPanel extends JPanel {
 	 */
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
-			SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory) {
+			SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
@@ -70,6 +76,8 @@ public class SourceStatusPanel extends JPanel {
 		this.taskManager = taskManager;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
 
 		setTableModel(result);
 		
@@ -346,7 +354,7 @@ public class SourceStatusPanel extends JPanel {
 
 		// Execute Import Task
 		final ImportNetworkFromPSICQUICTask networkTask = new ImportNetworkFromPSICQUICTask(query, client,
-				networkManager, manager, sourceURLs, mode, createViewTaskFactory, mergeNetwork);
+				networkManager, manager, sourceURLs, mode, createViewTaskFactory, vsBuilder, vmm, mergeNetwork);
 
 		taskManager.execute(new TaskIterator(networkTask));
 

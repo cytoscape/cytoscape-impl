@@ -11,7 +11,10 @@ import java.util.Set;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
+import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.work.AbstractTask;
@@ -41,12 +44,15 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	private final SearchMode mode;
 	private final boolean mergeNetworks;
 	
+	private final PSIMI25VisualStyleBuilder vsBuilder;
+	private final VisualMappingManager vmm;
 	
 	private volatile boolean canceled = false;
 	
 	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
 			final CyNetworkManager manager, final RegistryManager registryManager, final Set<String> searchResult,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final boolean toCluster) {
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm, final boolean toCluster) {
 		this.client = client;
 		this.manager = manager;
 		this.registryManager = registryManager;
@@ -56,11 +62,14 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		this.searchResult = searchResult;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
 	}
 
 	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
 			final CyNetworkManager manager, final RegistryManager registryManager, final SearchRecoredsTask searchTask,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory) {
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm) {
 		
 		this.client = client;
 		this.manager = manager;
@@ -70,6 +79,9 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		this.searchTask = searchTask;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
+		
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
 	}
 
 	@Override
@@ -118,8 +130,24 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			return;
 		}
 		
-		if (!canceled)
+		if (!canceled) {
+			// Check Visual Style exists or not
+			VisualStyle psiStyle = null;
+			for(VisualStyle style: vmm.getAllVisualStyles()) {
+				if(style.getTitle().equals(PSIMI25VisualStyleBuilder.DEF_VS_NAME)) {
+					psiStyle = style;
+					break;
+				}
+			}
+			
+			if(psiStyle == null) {
+				psiStyle = vsBuilder.getVisualStyle();
+				vmm.addVisualStyle(psiStyle);
+			}
+			vmm.setCurrentVisualStyle(psiStyle);
+			
 			insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(result.values()));
+		}
 	}
 	
 	@Override

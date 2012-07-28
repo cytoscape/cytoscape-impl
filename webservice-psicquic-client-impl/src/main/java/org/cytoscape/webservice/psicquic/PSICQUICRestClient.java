@@ -68,7 +68,7 @@ public final class PSICQUICRestClient {
 	public static final Long ERROR_CANCEL = -3l;
 
 	// Timeout for search. TODO: Make public as property.
-	private static final long SEARCH_TIMEOUT_MSEC = 7000;
+	private static final long SEARCH_TIMEOUT_MSEC = 10000;
 
 	// Timeout for import. TODO: Make public as property.
 	private static final long IMPORT_TIMEOUT = 1000;
@@ -77,7 +77,7 @@ public final class PSICQUICRestClient {
 	private final RegistryManager regManager;
 	private final MergedNetworkBuilder builder;
 
-	private boolean canceled = false;
+	static boolean canceled = false;
 
 	public PSICQUICRestClient(final CyNetworkFactory factory, final RegistryManager regManager,
 			final MergedNetworkBuilder builder) {
@@ -162,14 +162,19 @@ public final class PSICQUICRestClient {
 		final double increment = 1.0d / (double) targetServices.size();
 
 		final SortedSet<String> sourceSet = new TreeSet<String>();
+		final SortedSet<String> nameSet = new TreeSet<String>();
 		final Set<ImportNetworkAsMitabTask> taskSet = new HashSet<ImportNetworkAsMitabTask>();
 		for (final String serviceURL : targetServices) {
+			nameSet.add(regManager.getSource2NameMap().get(serviceURL));
 			final ImportNetworkAsMitabTask task = new ImportNetworkAsMitabTask(serviceURL, query, mode);
 			completionService.submit(task);
 			taskSet.add(task);
 			sourceSet.add(serviceURL);
 		}
 
+		
+		
+		
 		int i = 0;
 		for (final String service : targetServices) {
 			if (canceled) {
@@ -192,19 +197,18 @@ public final class PSICQUICRestClient {
 
 				completed = completed + increment;
 				tm.setProgress(completed);
-
-				final StringBuilder sBuilder = new StringBuilder();
-				for (String sourceStr : sourceSet) {
-					sBuilder.append(regManager.getSource2NameMap().get(sourceStr) + " ");
-				}
+				nameSet.remove(regManager.getSource2NameMap().get(service));
+//				final StringBuilder sBuilder = new StringBuilder();
+//				for (String sourceStr : sourceSet) {
+//					sBuilder.append(regManager.getSource2NameMap().get(sourceStr) + " ");
+//				}
 
 				tm.setStatusMessage((i + 1) + " / " + targetServices.size() + " tasks finished.\n"
-						+ "Still waiting responses from the following databases:\n\n" + sBuilder.toString());
+						+ "Still waiting responses from the following databases:\n\n" + nameSet.toString());
 
 			} catch (InterruptedException ie) {
-				for (ImportNetworkAsMitabTask t : taskSet) {
-					// t.cancel();
-				}
+				for (final ImportNetworkAsMitabTask t : taskSet)
+					t.cancel();
 
 				taskSet.clear();
 
@@ -365,9 +369,13 @@ public final class PSICQUICRestClient {
 			final PsimiTabReader mitabReader = new PsimiTabReader(false);
 			return mitabReader.read(queryURL);
 		}
+		
+		public void cancel() {
+			canceled = true;
+		}
 	}
 
 	public void cancel() {
-		this.canceled = true;
+		canceled = true;
 	}
 }

@@ -19,6 +19,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.webservice.psicquic.miriam.Miriam;
 import org.cytoscape.webservice.psicquic.miriam.Miriam.Datatype;
@@ -36,7 +37,9 @@ public class InteractionClusterMapper {
 
 	private static final String SCHEMA_NAMESPACE = "org.cytoscape.webservice.psicquic.miriam";
 
-	static final String PREDICTED_GENE_NAME = "Human Readable Gene Name";
+	public static final String PREDICTED_GENE_NAME = "Human Readable Gene Name";
+	public static final String CROSS_SPECIES_EDGE = "Cross Species Interaction";
+	
 	static final String PUB_ID = "publication id";
 	static final String PUB_DB = "publication db";
 
@@ -138,7 +141,6 @@ public class InteractionClusterMapper {
 			}
 
 		}
-
 	}
 
 	private void processNames(CyRow row, final Map<String, String> accs) {

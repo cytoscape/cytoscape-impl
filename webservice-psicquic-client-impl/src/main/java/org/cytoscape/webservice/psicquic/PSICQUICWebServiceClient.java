@@ -19,6 +19,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
@@ -48,12 +49,15 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 
 	private SearchRecoredsTask searchTask;
-	
+
 	private final OpenBrowser openBrowser;
+	private final PSIMI25VisualStyleBuilder vsBuilder;
+	private final VisualMappingManager vmm;
 
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
-			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager, final TaskManager<?, ?> tManager,
-			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowser, final MergedNetworkBuilder builder) {
+			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager,
+			final TaskManager<?, ?> tManager, final CreateNetworkViewTaskFactory createViewTaskFactory,
+			final OpenBrowser openBrowser, final MergedNetworkBuilder builder, PSIMI25VisualStyleBuilder vsBuilder, VisualMappingManager vmm) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;
@@ -61,6 +65,8 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.openBrowser = openBrowser;
 		this.builder = builder;
+		this.vsBuilder = vsBuilder;
+		this.vmm = vmm;
 
 		// Initialize registry manager in different thread.
 		initRegmanager(networkFactory);
@@ -93,12 +99,12 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 				throw new IllegalStateException("PSICQUIC Reg manager initialization interrupted.", ie);
 			}
 		}
-		
-		if(regManager == null)
+
+		if (regManager == null)
 			throw new IllegalStateException("PSICQUIC Reg manager could not be initialized.");
-		
+
 		client = new PSICQUICRestClient(factory, regManager, builder);
-		
+
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
 		logger.info("Registry Manager initialized in " + sec + " sec.");
@@ -118,12 +124,11 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 			searchTask.setTargets(activeSource.values());
 
 			networkTask = new ImportNetworkFromPSICQUICTask(query2, client, networkManager, regManager, searchTask,
-					SearchMode.MIQL, createViewTaskFactory);
+					SearchMode.MIQL, createViewTaskFactory, vsBuilder, vmm);
 
 			return new TaskIterator(searchTask, networkTask);
 		}
 	}
-
 
 	private static final class InitRegistryManagerTask implements Callable<RegistryManager> {
 		@Override
@@ -134,13 +139,13 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	@Override
 	public Container getQueryBuilderGUI() {
-		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, openBrowser);
+		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, openBrowser, vsBuilder, vmm);
 	}
-	
+
 	PSICQUICRestClient getRestClient() {
 		return this.client;
 	}
-	
+
 	RegistryManager getRegistryManager() {
 		return regManager;
 	}

@@ -29,7 +29,9 @@ import javax.swing.event.ChangeListener;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
+import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
@@ -89,15 +91,21 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 
 	private final OpenBrowser openBrowserUtil;
 
+	private final PSIMI25VisualStyleBuilder vsBuilder;
+	private final VisualMappingManager vmm;
+
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
 			final PSICQUICRestClient client, final TaskManager<?, ?> tmManager,
-			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowserUtil) {
+			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowserUtil,
+			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;
 		this.networkManager = networkManager;
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.openBrowserUtil = openBrowserUtil;
+		this.vmm = vmm;
+		this.vsBuilder = vsBuilder;
 
 		init();
 	}
@@ -224,7 +232,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 
 		// Source Status
 		this.statesPanel = new SourceStatusPanel("", client, regManager, networkManager, null, taskManager, mode,
-				createViewTaskFactory);
+				createViewTaskFactory, vsBuilder, vmm);
 		this.add(statesPanel, BorderLayout.SOUTH);
 		statesPanel.enableComponents(false);
 
@@ -293,7 +301,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 			final Map<String, Long> result = searchTask.getResult();
 			remove(statesPanel);
 			statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager, networkManager, result,
-					taskManager, mode, createViewTaskFactory);
+					taskManager, mode, createViewTaskFactory, vsBuilder, vmm);
 			add(statesPanel, BorderLayout.SOUTH);
 
 			statesPanel.sort();
@@ -335,7 +343,7 @@ public class PSICQUICSearchUI extends JPanel implements ChangeListener {
 
 		remove(statesPanel);
 		statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager, networkManager, null, taskManager,
-				mode, createViewTaskFactory);
+				mode, createViewTaskFactory, vsBuilder, vmm);
 		add(statesPanel, BorderLayout.SOUTH);
 		Window parentWindow = ((Window) getRootPane().getParent());
 		parentWindow.pack();

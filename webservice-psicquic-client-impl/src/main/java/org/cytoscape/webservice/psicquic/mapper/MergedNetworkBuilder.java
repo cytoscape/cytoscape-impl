@@ -14,6 +14,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -103,9 +104,25 @@ public class MergedNetworkBuilder {
 
 			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
 			mapper.mapEdgeColumn(interaction, network.getRow(newEdge));
+			
+			// Create new attribute if cross species
+			processCrossSpeciesEdge(network.getRow(newEdge), network.getRow(sourceNode), network.getRow(targetNode));
+			
 		}
 		logger.info("Import Done: " + network.getSUID());
 		return nodeMap;
+	}
+	
+	private void processCrossSpeciesEdge(final CyRow row, final CyRow source, final CyRow target) {
+		final String sTax = source.get(TAXNOMY, String.class);
+		final String tTax = target.get(TAXNOMY, String.class);
+		
+		if(sTax == null || tTax == null)
+			return;
+		
+		if (sTax.equals(tTax) == false) {
+			row.set(InteractionClusterMapper.CROSS_SPECIES_EDGE, true);
+		}
 	}
 
 	private final void prepareColumns(CyNetwork network) {
@@ -129,6 +146,8 @@ public class MergedNetworkBuilder {
 			edgeTable.createListColumn(InteractionClusterMapper.PUB_ID, String.class, false);
 		if (edgeTable.getColumn(InteractionClusterMapper.EXPERIMENT) == null)
 			edgeTable.createListColumn(InteractionClusterMapper.EXPERIMENT, String.class, false);
+		if (edgeTable.getColumn(InteractionClusterMapper.CROSS_SPECIES_EDGE) == null)
+			edgeTable.createColumn(InteractionClusterMapper.CROSS_SPECIES_EDGE, Boolean.class, false);
 		
 	}
 
