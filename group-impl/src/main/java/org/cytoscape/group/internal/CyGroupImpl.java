@@ -487,6 +487,9 @@ class CyGroupImpl implements CyGroup {
  	 * CyGroupManager, only.
  	 */
 	public void destroyGroup() {
+		for (CyNetwork net: networkSet)
+			expand(net);
+
 		// Destroy the subNetwork
 		rootNetwork.removeSubNetwork(getGroupNetwork());
 		groupNode.setNetworkPointer(null);
