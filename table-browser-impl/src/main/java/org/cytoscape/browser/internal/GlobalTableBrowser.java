@@ -23,8 +23,6 @@ import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.TablePrivacyChangedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
-import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 public class GlobalTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener, TableAddedListener, TablePrivacyChangedListener {
@@ -39,11 +37,11 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 	private final TableChooser tableChooser;
 
 	public GlobalTableBrowser(String tabTitle, CyTableManager tableManager, CyNetworkTableManager networkTableManager,
-			CyServiceRegistrar serviceRegistrar, EquationCompiler compiler, OpenBrowser openBrowser,
+			CyServiceRegistrar serviceRegistrar, EquationCompiler compiler,
 			CyNetworkManager networkManager, DeleteTableTaskFactory deleteTableTaskFactoryService,
 			DialogTaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
 			CyApplicationManager applicationManager, CyEventHelper eventHelper){//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
+		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, networkManager,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
 
 		tableChooser = new TableChooser();

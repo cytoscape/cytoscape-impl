@@ -61,7 +61,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	protected CyTable currentTable;
 	protected final CyApplicationManager applicationManager;
 	protected final CyNetworkManager networkManager;
-	private final OpenBrowser openBrowser;
 	private final PopupMenuHelper popupMenuHelper; 
 	private final CyEventHelper eventHelper;
 	
@@ -77,7 +76,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 						 final CyNetworkTableManager networkTableManager,
 						 final CyServiceRegistrar serviceRegistrar,
 						 final EquationCompiler compiler,
-						 final OpenBrowser openBrowser,
 						 final CyNetworkManager networkManager,
 						 final TableTaskFactory deleteTableTaskFactory,
 						 final DialogTaskManager guiTaskManager,
@@ -90,7 +88,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		this.tabTitle = tabTitle;
 		this.networkManager = networkManager;
 		this.applicationManager = applicationManager;
-		this.openBrowser = openBrowser;
 		this.popupMenuHelper = popupMenuHelper;
 		this.eventHelper = eventHelper;
 
@@ -202,7 +199,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		BrowserTableModel btm = browserTableModels.get(currentTable);
 		
 		if (btm == null && currentTable != null) {
-			final BrowserTable browserTable = new BrowserTable(openBrowser, compiler, popupMenuHelper,
+			final BrowserTable browserTable = new BrowserTable(compiler, popupMenuHelper,
 					applicationManager, eventHelper, tableManager);
 			
 			btm = new BrowserTableModel(browserTable, currentTable, compiler, tableManager);

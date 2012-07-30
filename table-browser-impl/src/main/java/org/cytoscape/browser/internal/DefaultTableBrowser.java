@@ -2,7 +2,6 @@ package org.cytoscape.browser.internal;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,9 +14,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 
@@ -42,7 +39,6 @@ import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 
@@ -66,14 +62,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 							   final CyNetworkTableManager networkTableManager,
 							   final CyServiceRegistrar serviceRegistrar,
 							   final EquationCompiler compiler,
-							   final OpenBrowser openBrowser,
 							   final CyNetworkManager networkManager,
 							   final DeleteTableTaskFactory deleteTableTaskFactory,
 							   final DialogTaskManager guiTaskManager,
 							   final PopupMenuHelper popupMenuHelper,
 							   final CyApplicationManager applicationManager,
 							   final CyEventHelper eventHelper) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, openBrowser, networkManager,
+		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, networkManager,
 				deleteTableTaskFactory, guiTaskManager, popupMenuHelper, applicationManager, eventHelper);
 
 		this.objType = objType;
