@@ -25,7 +25,7 @@ public class SimpleApp extends App {
 		switch (this.getStatus()) {
 		
 		case DISABLED:
-			return "Disable on Restart)";
+			return "Disable on Restart";
 		case UNINSTALLED:
 			return "Uninstall on Restart";
 		case FILE_MOVED:
