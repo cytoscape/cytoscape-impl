@@ -83,6 +83,7 @@ public abstract class App {
 		TO_BE_DISABLED("Disable-on-restart"),
 		DISABLED("Disabled"),
 		UNINSTALLED("Uninstalled"),
+		FILE_MOVED("File Moved (Uninstalled)"),
 		FILE_MOVED_UNINSTALLED("File Moved (Uninstalled)"),
 		// Currently, simple apps require a restart for uninstall, so we require a restart even if file is moved
 		FILE_MOVED_INSTALLED("File Moved (Uninstall-on-restart)");
@@ -501,6 +502,10 @@ public abstract class App {
 		return false;
 	}
 	*/
+	
+	public String getReadableStatus() {
+		return this.getStatus().toString();
+	}
 	
 	public String getAppName() {
 		return appName;

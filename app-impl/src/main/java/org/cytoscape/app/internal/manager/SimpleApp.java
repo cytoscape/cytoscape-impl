@@ -21,6 +21,22 @@ import org.cytoscape.app.swing.CySwingAppAdapter;
 public class SimpleApp extends App {
 
 	@Override
+	public String getReadableStatus() {
+		switch (this.getStatus()) {
+		
+		case DISABLED:
+			return "Disable on Restart)";
+		case UNINSTALLED:
+			return "Uninstall on Restart";
+		case FILE_MOVED:
+			return "File Moved (Needs restart to uninstall)";
+		default:
+			return super.getReadableStatus();
+		
+		}
+	}
+	
+	@Override
 	public Object createAppInstance(CySwingAppAdapter appAdapter)
 			throws AppInstanceException {
 		File installFile = this.getAppTemporaryInstallFile();
@@ -96,11 +112,13 @@ public class SimpleApp extends App {
 			return;
 		}
 		
+		/*
 		try {
 			moveAppFile(appManager, new File(appManager.getKarafDeployDirectory()));
 		} catch (IOException e) {
 			throw new AppInstallException("Failed to move app file, " + e.getMessage());
 		}
+		*/
 		
 		// Make a copy used to create app instance
 		LinkedList<String> uniqueNameDirectory = new LinkedList<String>();
@@ -108,7 +126,8 @@ public class SimpleApp extends App {
 		
 		try {
 			if (this.getAppTemporaryInstallFile() == null) {
-				File targetFile = new File(suggestFileName(uniqueNameDirectory, this.getAppFile().getName()));
+				File targetFile = new File(appManager.getTemporaryInstallPath() + File.separator 
+						+ suggestFileName(uniqueNameDirectory, this.getAppFile().getName()));
 				FileUtils.copyFile(this.getAppFile(), targetFile);
 				this.setAppTemporaryInstallFile(targetFile);
 			}
@@ -132,12 +151,12 @@ public class SimpleApp extends App {
 
 	@Override
 	public void uninstall(AppManager appManager) throws AppUninstallException {
-		this.setStatus(AppStatus.TO_BE_UNINSTALLED);
+		this.setStatus(AppStatus.UNINSTALLED);
 	}
 
 	@Override
 	public void disable(AppManager appManager) throws AppDisableException {
-		this.setStatus(AppStatus.TO_BE_DISABLED);
+		this.setStatus(AppStatus.DISABLED);
 	}
 
 }

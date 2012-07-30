@@ -300,7 +300,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 					app,
 					app.getAppFile() != null ? app.getAppName() : app.getAppName() + " (File moved)",
 					app.getVersion(),
-					app.getStatus()
+					app.getReadableStatus()
 			});
     	}
     	

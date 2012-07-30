@@ -148,10 +148,11 @@ public class AppManager {
 						appRegistered = true;
 				}
 				if (!appRegistered) {
-					app.install(this);
 					apps.add(app);
+					app.install(this);
 				}
 			} catch (AppInstallException e) {
+				logger.warn("Failed to initially install app, " + e);
 			}
 		}
 		
@@ -164,8 +165,8 @@ public class AppManager {
 						appRegistered = true;
 				}
 				if (!appRegistered) {
-					app.disable(this);
 					apps.add(app);
+					app.disable(this);
 				}				
 			} catch (AppDisableException e) {
 			}
@@ -180,8 +181,8 @@ public class AppManager {
 						appRegistered = true;
 				}
 				if (!appRegistered) {
-					app.uninstall(this);
 					apps.add(app);
+					app.uninstall(this);
 				}
 			} catch (AppUninstallException e) {
 			}
@@ -263,11 +264,7 @@ public class AppManager {
 					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
 					if (app.getAppFile().equals(file)) {
 						// System.out.println(app + " moved");
-						if (app instanceof SimpleApp) {
-							app.setStatus(AppStatus.FILE_MOVED_INSTALLED);
-						} else {
-							app.setStatus(AppStatus.FILE_MOVED_UNINSTALLED);
-						}
+						app.setStatus(AppStatus.FILE_MOVED);
 					}
 				}
 				
@@ -322,11 +319,7 @@ public class AppManager {
 					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
 					if (app.getAppFile().equals(file)) {
 						// System.out.println(app + " moved");
-						if (app instanceof SimpleApp) {
-							app.setStatus(AppStatus.FILE_MOVED_INSTALLED);
-						} else {
-							app.setStatus(AppStatus.FILE_MOVED_UNINSTALLED);
-						}
+						app.setStatus(AppStatus.FILE_MOVED);
 					}
 				}
 				
@@ -382,11 +375,7 @@ public class AppManager {
 					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
 					if (app.getAppFile().equals(file)) {
 						// System.out.println(app + " moved");
-						if (app instanceof SimpleApp) {
-							app.setStatus(AppStatus.FILE_MOVED_INSTALLED);
-						} else {
-							app.setStatus(AppStatus.FILE_MOVED_UNINSTALLED);
-						}
+						app.setStatus(AppStatus.FILE_MOVED);
 					}
 				}
 				
