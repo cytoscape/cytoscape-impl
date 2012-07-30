@@ -24,9 +24,8 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.browser.internal;
-
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -41,22 +40,16 @@ import javax.swing.JMenuItem;
 
 import org.cytoscape.util.swing.OpenBrowser;
 
-
 public class HyperLinkOut extends JMenu {
-	private static final String TITLE = "Search";
+
+	private static final long serialVersionUID = 2344898200050965794L;
+
 	private final String value;
 	private final Map<String, Map<String, String>> structure;
 	private final OpenBrowser openBrowser;
 
-	/**
-	 * Creates a new HyperLinkOut object.
-	 *
-	 * @param value  DOCUMENT ME!
-	 * @param menuStructure  DOCUMENT ME!
-	 */
-	public HyperLinkOut(String value,
-						final Map<String, Map<String, String>> menuStructure,
-						final OpenBrowser openBrowser)	{
+	public HyperLinkOut(String value, final Map<String, Map<String, String>> menuStructure,
+			final OpenBrowser openBrowser) {
 		this.value = value;
 		this.structure = menuStructure;
 		this.openBrowser = openBrowser;
@@ -94,7 +87,7 @@ public class HyperLinkOut extends JMenu {
 	private void buildLinks() {
 		if (structure == null)
 			return;
-		
+
 		for (final String category : structure.keySet()) {
 			JMenu cat = new JMenu(category);
 			Map<String, String> children = structure.get(category);
