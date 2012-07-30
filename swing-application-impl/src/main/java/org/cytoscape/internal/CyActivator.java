@@ -182,7 +182,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
 		FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
-		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, DynamicTaskFactoryProvisioner.class);
+
+		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, 
+		                                                                                   DynamicTaskFactoryProvisioner.class);
 		
 		
 		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
@@ -199,29 +201,39 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar();
 		CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar();
 		CytoscapeMenus cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
+
 		ToolBarEnableUpdater toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar);
+
 		NetworkViewManager networkViewManager = new NetworkViewManager(cyApplicationManagerServiceRef,
-		                                                               cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef,
+		                                                               cyNetworkViewManagerServiceRef, 
+		                                                               renderingEngineManagerServiceRef,
 		                                                               cytoscapePropertiesServiceRef,
 		                                                               cyHelpBroker);
+
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  dingNavigationPresentationFactoryServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);
+
 		NetworkPanel networkPanel = new NetworkPanel(cyApplicationManagerServiceRef,
 		                                             cyNetworkManagerServiceRef,
 		                                             cyNetworkViewManagerServiceRef,
 		                                             birdsEyeViewHandler,
 		                                             dialogTaskManagerServiceRef,
 		                                             dynamicTaskFactoryProvisionerServiceRef);
+
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
 		                                                         networkViewManager, networkPanel,
 		                                                         cytoscapeShutdownServiceRef,
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
 		                                                         dialogTaskManagerServiceRef);
+
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
+
 		SaveSessionAsTaskFactory saveTaskFactoryServiceRef = getService(bc, SaveSessionAsTaskFactory.class);
+
 		SessionStateIO sessStateIO = new SessionStateIO();
+
 		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop,
 														   cyNetworkManagerServiceRef,
 														   networkViewManager,
@@ -230,24 +242,38 @@ public class CyActivator extends AbstractCyActivator {
 														   sessStateIO,
 														   cySessionManagerServiceRef,
 														   fileUtilServiceRef);
-		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cytoscapePropertiesServiceRef);
+
+		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, 
+		                                          cyNetworkViewManagerServiceRef, 
+		                                          cytoscapePropertiesServiceRef);
+
 		ExitAction exitAction = new ExitAction( cytoscapeShutdownServiceRef);
+
 		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,
 		                                                         preferencesDialogFactory,
 		                                                         bookmarksUtilServiceRef);
+
 		BookmarkAction bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
-		LayoutMenuPopulator layoutMenuPopulator = new LayoutMenuPopulator(cytoscapeDesktop,
-		                                                                  cyApplicationManagerServiceRef, dialogTaskManagerServiceRef);
+
+		LayoutMenuPopulator layoutMenuPopulator = new LayoutMenuPopulator(cytoscapeMenuBar,
+		                                                                  cyApplicationManagerServiceRef, 
+		                                                                  dialogTaskManagerServiceRef);
+
 		CytoscapeMenuPopulator cytoscapeMenuPopulator = new CytoscapeMenuPopulator(cytoscapeDesktop,
 		                                                                           dialogTaskManagerServiceRef,
 		                                                                           panelTaskManagerServiceRef,
-		                                                                           cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef,
+		                                                                           cyApplicationManagerServiceRef, 
+		                                                                           cyNetworkViewManagerServiceRef,
 		                                                                           cyServiceRegistrarServiceRef,
 		                                                                           dynamicTaskFactoryProvisionerServiceRef);
+
 		SettingsAction settingsAction = new SettingsAction(cyLayoutsServiceRef, cytoscapeDesktop,
-		                                                   cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef,
+		                                                   cyApplicationManagerServiceRef, 
+		                                                   cyNetworkViewManagerServiceRef,
 		                                                   panelTaskManagerServiceRef,
-		                                                   cytoscapePropertiesServiceRef, dynamicTaskFactoryProvisionerServiceRef);
+		                                                   cytoscapePropertiesServiceRef, 
+		                                                   dynamicTaskFactoryProvisionerServiceRef);
+
 		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker,
 		                                                                              cytoscapeDesktop);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
@@ -272,15 +298,14 @@ public class CyActivator extends AbstractCyActivator {
 		SelectNodeViewUpdater selecteNodeViewUpdater = new SelectNodeViewUpdater(rowViewTracker);
 		
 		RowsSetViewUpdater rowsSetViewUpdater = new RowsSetViewUpdater(cyApplicationManagerServiceRef, 
-				cyNetworkViewManagerServiceRef, visualMappingManagerServiceRef, rowViewTracker);
-		
+		                                                               cyNetworkViewManagerServiceRef, 
+		                                                               visualMappingManagerServiceRef, rowViewTracker);
 		
 		RecentSessionManager recentSessionManager = new RecentSessionManager(recentlyOpenedTrackerServiceRef,
 		                                                                     cyServiceRegistrarServiceRef,
 		                                                                     cySessionManagerServiceRef,
 		                                                                     sessionReaderManagerServiceRef,
 		                                                                     cyApplicationManagerServiceRef);
-
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());

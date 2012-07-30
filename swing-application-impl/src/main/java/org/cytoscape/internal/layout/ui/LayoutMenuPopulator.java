@@ -37,10 +37,12 @@
 package org.cytoscape.internal.layout.ui;
 
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import static org.cytoscape.work.ServiceProperties.*;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.view.CytoscapeMenuBar;
 
 import java.util.*;
 
@@ -51,26 +53,24 @@ public class LayoutMenuPopulator {
     private Map<String, LayoutMenu> menuMap;
     private CyApplicationManager appMgr;
     private DialogTaskManager tm;
-    private CySwingApplication swingApp;
+    private CytoscapeMenuBar menuBar;
 
-    public LayoutMenuPopulator(CySwingApplication swingApp, CyApplicationManager appMgr, DialogTaskManager tm) {
+    public LayoutMenuPopulator(CytoscapeMenuBar menuBar, CyApplicationManager appMgr, DialogTaskManager tm) {
         menuAlgorithmMap = new HashMap<String,List<CyLayoutAlgorithm>>();
         menuMap = new HashMap<String,LayoutMenu>();
         this.appMgr = appMgr;
         this.tm = tm;
-        this.swingApp = swingApp;
+        this.menuBar = menuBar;
     }
 
     public void addLayout(CyLayoutAlgorithm layout, Map props) {
-
-        String fullMenuName = (String)props.get("preferredMenu");
+        String fullMenuName = (String)props.get(PREFERRED_MENU);
         if (fullMenuName == null )
             fullMenuName = "Layout." + layout.toString();
         
-        
         String actualMenuName = fullMenuName;
         if ( actualMenuName.startsWith("Layout."))
-        	actualMenuName = actualMenuName.substring(7);
+            actualMenuName = actualMenuName.substring(7);
 
         // make sure the list is set up for this name
         if ( !menuAlgorithmMap.containsKey(fullMenuName) ) {
@@ -85,7 +85,15 @@ public class LayoutMenuPopulator {
         if ( !menuMap.containsKey(fullMenuName) ) {
             LayoutMenu menu = new LayoutMenu(actualMenuName, appMgr, tm);
             menuMap.put(fullMenuName, menu);
-            swingApp.getJMenu("Layout").add(menu);
+            // This needs to be done so that gravity is supported
+            menuBar.getMenu("Layout").add(menu);
+        } else {
+            // See if the menu type has changed from a Menu to a MenuItem or visa-versa
+            // Yes, replace it.
+            LayoutMenu menu = menuMap.get(fullMenuName);
+            // if (menu.updateSubMenus()) {
+                // Update the menu
+            // }
         }
 
         // add layout to the menu for this name
@@ -93,11 +101,8 @@ public class LayoutMenuPopulator {
     }
 
     public void removeLayout(CyLayoutAlgorithm layout, Map props) {
-
         for (String menu : menuAlgorithmMap.keySet()) {
-
             List<CyLayoutAlgorithm> menuList = menuAlgorithmMap.get(menu);
-
             if (menuList.indexOf(layout) >= 0) {
                 menuList.remove(layout);
                 menuMap.get(menu).remove(layout);

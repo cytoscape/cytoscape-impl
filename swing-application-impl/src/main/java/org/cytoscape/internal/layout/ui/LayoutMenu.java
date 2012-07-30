@@ -66,19 +66,21 @@ import java.util.Comparator;
  * factors such as whether or not nodes are selected, the presence of node or edge
  * attributes, etc.
  */
+
+// This should extend CyMenuItem, I think....
 public class LayoutMenu extends JMenu implements MenuListener {
     private final static long serialVersionUID = 1202339874255880L;
     List<CyLayoutAlgorithm> subMenuList;
     private CyApplicationManager appMgr;
     private DialogTaskManager tm;
-	private final LayoutComparator layoutComparator = new LayoutComparator();
+    private final LayoutComparator layoutComparator = new LayoutComparator();
 
     /**
      * Creates a new LayoutMenu object.
      *
      * @param menuName  DOCUMENT ME!
      */
-    public LayoutMenu(String menuName, CyApplicationManager appMgr,DialogTaskManager tm) {
+    public LayoutMenu(String menuName, CyApplicationManager appMgr, DialogTaskManager tm) {
         super(menuName);
         addMenuListener(this);
         subMenuList = new ArrayList<CyLayoutAlgorithm>();
@@ -103,7 +105,6 @@ public class LayoutMenu extends JMenu implements MenuListener {
     public void remove(CyLayoutAlgorithm layout) {
         subMenuList.remove(layout);
     }
-
 
     /**
      *  DOCUMENT ME!
@@ -138,8 +139,8 @@ public class LayoutMenu extends JMenu implements MenuListener {
         this.removeAll();
 
         CyNetworkView view = appMgr.getCurrentNetworkView();
-		if ( view == null )
-			return;
+        if ( view == null )
+            return;
 
         CyNetwork network = view.getModel();
 
@@ -147,22 +148,24 @@ public class LayoutMenu extends JMenu implements MenuListener {
         boolean someSelected = network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) > 0;
         boolean enableMenuItem = checkEnabled();
         
-		Collections.sort(subMenuList,layoutComparator);
+        Collections.sort(subMenuList,layoutComparator);
 
         for ( CyLayoutAlgorithm layout : subMenuList ) {
-        	
-            boolean usesNodeAttrs = hasValidAttributes(layout.getSupportedNodeAttributeTypes(),network.getDefaultNodeTable());
-            boolean usesEdgeAttrs = hasValidAttributes(layout.getSupportedEdgeAttributeTypes(),network.getDefaultEdgeTable());
+        
+            boolean usesNodeAttrs = 
+                hasValidAttributes(layout.getSupportedNodeAttributeTypes(),network.getDefaultNodeTable());
+            boolean usesEdgeAttrs = 
+                hasValidAttributes(layout.getSupportedEdgeAttributeTypes(),network.getDefaultEdgeTable());
             boolean usesSelected = (layout.getSupportsSelectedOnly() && someSelected);
 
             if (usesNodeAttrs || usesEdgeAttrs || usesSelected) {
-                super.add(new DynamicLayoutMenu(layout,network,enableMenuItem,appMgr,tm,usesNodeAttrs,usesEdgeAttrs,usesSelected));
+                super.add(new DynamicLayoutMenu(layout,network,enableMenuItem,appMgr,
+                                                tm,usesNodeAttrs,usesEdgeAttrs,usesSelected));
             } else {
                 super.add(new StaticLayoutMenu(layout,enableMenuItem,appMgr,tm));
             }
         }
     }
-    
     
     private boolean hasValidAttributes(Set<Class<?>> typeSet, CyTable attributes) {
         for (final CyColumn column : attributes.getColumns())
@@ -183,13 +186,13 @@ public class LayoutMenu extends JMenu implements MenuListener {
             return true;
     }
 
-	private static class LayoutComparator implements Comparator<CyLayoutAlgorithm> {
-		public int compare(CyLayoutAlgorithm o1, CyLayoutAlgorithm o2) {
-			return o1.toString().compareTo(o2.toString());	
-		}
-		public boolean equals(Object obj) {
-			return ( obj == this );
-		}
-	}
+    private static class LayoutComparator implements Comparator<CyLayoutAlgorithm> {
+        public int compare(CyLayoutAlgorithm o1, CyLayoutAlgorithm o2) {
+            return o1.toString().compareTo(o2.toString());    
+        }
+        public boolean equals(Object obj) {
+            return ( obj == this );
+        }
+    }
 }
 
