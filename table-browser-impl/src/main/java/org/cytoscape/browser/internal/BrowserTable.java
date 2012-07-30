@@ -353,11 +353,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			JMenuItem copyAll = new JMenuItem("Copy all");
 			copyAll.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					StringBuilder builder = new StringBuilder();
-
-					for (Object oneEntry : listItems) {
+					final StringBuilder builder = new StringBuilder();
+					for (Object oneEntry : listItems)
 						builder.append(oneEntry.toString() + "\t");
-					}
 
 					final StringSelection selection = new StringSelection(builder.toString());
 					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -377,7 +375,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 			curItem.add(copy);
 			curItem.add(popupMenuHelper.getOpenLinkMenu(dispName));
-
 			cellMenu.add(curItem);
 		}
 
