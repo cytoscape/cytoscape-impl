@@ -444,9 +444,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			curItem.getMenuComponent(2).setEnabled(true);
 
 			if (type == List.class)
-				curItem.add(new HyperLinkOut(item.toString(), linkoutProps, openBrowser));
+				curItem.add(new OpenURLMenu(item.toString(), linkoutProps, openBrowser));
 			else
-				curItem.add(new HyperLinkOut(item.toString().split("=")[1], linkoutProps, openBrowser));
+				curItem.add(new OpenURLMenu(item.toString().split("=")[1], linkoutProps, openBrowser));
 
 			cellMenu.add(curItem);
 		}

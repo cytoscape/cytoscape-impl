@@ -30,9 +30,6 @@ package org.cytoscape.browser.internal;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JMenu;
@@ -40,7 +37,7 @@ import javax.swing.JMenuItem;
 
 import org.cytoscape.util.swing.OpenBrowser;
 
-public class HyperLinkOut extends JMenu {
+public class OpenURLMenu extends JMenu {
 
 	private static final long serialVersionUID = 2344898200050965794L;
 
@@ -48,7 +45,7 @@ public class HyperLinkOut extends JMenu {
 	private final Map<String, Map<String, String>> structure;
 	private final OpenBrowser openBrowser;
 
-	public HyperLinkOut(String value, final Map<String, Map<String, String>> menuStructure,
+	public OpenURLMenu(String value, final Map<String, Map<String, String>> menuStructure,
 			final OpenBrowser openBrowser) {
 		this.value = value;
 		this.structure = menuStructure;
@@ -64,24 +61,6 @@ public class HyperLinkOut extends JMenu {
 
 		setText("<html>Search <strong text=\"#DC143C\">" + dispStr + "</strong> on the web</html>");
 		buildLinks();
-	}
-
-	private Map<String, List> getDefaultMenu() {
-		Map<String, List> def = new HashMap<String, List>();
-
-		List<String> se = new ArrayList<String>();
-		se.add("Google");
-		se.add("Ask");
-		def.put("Search Engines", se);
-
-		List<String> bio = new ArrayList<String>();
-		bio.add("SGD");
-		bio.add("GO");
-		bio.add("MGD");
-		bio.add("Reactome");
-		def.put("Biological Databases", bio);
-
-		return def;
 	}
 
 	private void buildLinks() {
