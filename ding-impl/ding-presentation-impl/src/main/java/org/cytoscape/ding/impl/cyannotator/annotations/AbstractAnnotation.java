@@ -220,6 +220,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		cyAnnotator.removeAnnotation(this);
 		for (ArrowAnnotation arrow: arrowList) 
 			removeAnnotation();
+		canvas.repaint();
 	}
 
 	public void resizeAnnotation(double width, double height) {};

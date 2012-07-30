@@ -54,23 +54,31 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 			int cornerX2 = cornerX1 + resizeComponent.getWidth();
 			int cornerY2 = cornerY1 + resizeComponent.getHeight();
 
-			int width = mouseX-cornerX1;
-			int height = mouseY-cornerY1;
+			int width, height;
 
-			if (width <= 0 || height <= 0) {
-				if (width <= 0) {
-					cornerX1 = cornerX1+width;
-					width = cornerX2-cornerX1;
-				}
-				if (height <= 0) {
-					cornerY1 = cornerY1+height;
-					height = cornerY2-cornerY1;
-				}
-				resizeComponent.setLocation(cornerX1, cornerY1);
+			// Figure out which corner we're tracking
+			if (Math.abs(mouseX-cornerX1) < Math.abs(mouseX-cornerX2)) {
+				// Left
+				cornerX1 = mouseX;
+				width = cornerX2-cornerX1;
+			} else {
+				// Right
+				width = mouseX-cornerX1;
+			}
+
+			if (Math.abs(mouseY-cornerY1) < Math.abs(mouseY-cornerY2)) {
+				// Upper
+				cornerY1 = mouseY;
+				height = cornerY2-cornerY1;
+			} else {
+				// Lower
+				height = mouseY-cornerY1;
 			}
 
 			if (width == 0) width = 2;
 			if (height == 0) height = 2;
+
+			resizeComponent.setLocation(cornerX1, cornerY1);
 			resizeAnnotation.setSize((double)width, (double)height);
 			resizeAnnotation.update();
 			resizeAnnotation.getCanvas().repaint();
