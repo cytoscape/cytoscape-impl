@@ -43,7 +43,7 @@ public final class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTableT
 		if(tableType == null)
 			throw new IllegalArgumentException("The specified type " + type + " is not acceptable.");
 		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<TableType>(tableType);
-		tableTypes.setSelectedValue( tableType);
+		tableTypes.setSelectedValue(tableType);
 		
 		List<String> networkNames = new ArrayList<String>();
 		for(CyNetwork net: networksList){

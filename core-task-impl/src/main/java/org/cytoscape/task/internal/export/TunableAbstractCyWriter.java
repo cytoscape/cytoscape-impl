@@ -2,13 +2,13 @@ package org.cytoscape.task.internal.export;
 
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyWriterManager;
 import org.cytoscape.io.write.CyWriterFactory;
+import org.cytoscape.io.write.CyWriterManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -42,7 +42,8 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 	 */
 	public TunableAbstractCyWriter(T writerManager) {
 		super(writerManager);
-		options = new ListSingleSelection<String>(new ArrayList<String>(getFileFilterDescriptions()));
+		final List<String> availableFormats = new ArrayList<String>(getFileFilterDescriptions());
+		options = new ListSingleSelection<String>(availableFormats);
 	}
 
 	@Override

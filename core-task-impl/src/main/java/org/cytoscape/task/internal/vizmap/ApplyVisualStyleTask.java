@@ -34,7 +34,7 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask {
 
 		final List<VisualStyle> vsList = new ArrayList<VisualStyle>(vmm.getAllVisualStyles());
 		styles = new ListSingleSelection<VisualStyle>(vsList);
-		if (vsList.size() > 0)
+		if (!vsList.isEmpty())
 			styles.setSelectedValue(vsList.get(0));
 	}
 

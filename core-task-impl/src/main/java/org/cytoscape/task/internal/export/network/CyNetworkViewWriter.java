@@ -30,7 +30,15 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 		
 		if (view == null)
 			throw new NullPointerException("View is null.");
+		
 		this.view = view;
+		// Pick SIF as a default file format
+		for(String fileTypeDesc: this.getFileFilterDescriptions()) {
+			if(fileTypeDesc.contains("SIF")) {
+				this.options.setSelectedValue(fileTypeDesc);
+				break;
+			}
+		}
 	}
 
 	/**
