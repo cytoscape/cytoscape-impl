@@ -117,6 +117,7 @@ public class SimpleApp extends App {
 		}
 		
 		try {
+			// Only create new instance if none created
 			if (this.getAppInstance() == null) {
 				Object appInstance = this.createAppInstance(appManager.getSwingAppAdapter());
 				this.setAppInstance((AbstractCyApp) appInstance);

@@ -4,48 +4,31 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Font;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.cytoscape.app.internal.exception.AppDownloadException;
-import org.cytoscape.app.internal.exception.AppInstallException;
-import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.AppParser;
@@ -70,13 +53,15 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	/** Long serial version identifier required by the Serializable class */
 	private static final long serialVersionUID = -1208176142084829272L;
 	
-	private javax.swing.JPanel descriptionPanel;
+    private javax.swing.JButton closeButton;
+    private javax.swing.JPanel descriptionPanel;
     private javax.swing.JScrollPane descriptionScrollPane;
     private javax.swing.JSplitPane descriptionSplitPane;
     private javax.swing.JTextPane descriptionTextPane;
+    private javax.swing.JComboBox downloadSiteComboBox;
+    private javax.swing.JLabel downloadSiteLabel;
     private javax.swing.JTextField filterTextField;
     private javax.swing.JButton installButton;
-    private javax.swing.JButton closeButton;
     private javax.swing.JButton installFromFileButton;
     private javax.swing.JScrollPane resultsScrollPane;
     private javax.swing.JTree resultsTree;
@@ -172,8 +157,10 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         descriptionTextPane = new javax.swing.JTextPane();
         viewOnAppStoreButton = new javax.swing.JButton();
         installButton = new javax.swing.JButton();
+        downloadSiteLabel = new javax.swing.JLabel();
+        downloadSiteComboBox = new javax.swing.JComboBox();
         closeButton = new javax.swing.JButton();
-        
+
         searchAppsLabel.setText("Search:");
 
         installFromFileButton.setText("Install from File...");
@@ -218,11 +205,11 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         descriptionPanel.setLayout(descriptionPanelLayout);
         descriptionPanelLayout.setHorizontalGroup(
             descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
+            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
         );
         descriptionPanelLayout.setVerticalGroup(
             descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
+            .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
         );
 
         descriptionSplitPane.setRightComponent(descriptionPanel);
@@ -243,14 +230,18 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
             }
         });
 
+        downloadSiteLabel.setText("Download Site:");
+
+        downloadSiteComboBox.setEditable(true);
+        downloadSiteComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "http://apps3.nrnb.org/" }));
+
         closeButton.setText("Close");
-        closeButton.setEnabled(true);
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-            	((javax.swing.JDialog)InstallFromStorePanel.this.parent).dispose();
+                closeButtonActionPerformed(evt);
             }
         });
-        
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -258,23 +249,27 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(descriptionSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 635, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(searchAppsLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(filterTextField)
-                        .addGap(247, 247, 247))
+                    .addComponent(descriptionSplitPane)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(installFromFileButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(installButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
                         .addComponent(viewOnAppStoreButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(closeButton)
-                        .addContainerGap())))
+                        .addComponent(installButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(closeButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(downloadSiteLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(downloadSiteComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(searchAppsLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -284,7 +279,11 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                     .addComponent(searchAppsLabel)
                     .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(descriptionSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(downloadSiteLabel)
+                    .addComponent(downloadSiteComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(descriptionSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(installFromFileButton)
@@ -619,5 +618,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 				e.printStackTrace();
 			}
 		}
-    }    
+    }
+    
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    	((javax.swing.JDialog)InstallFromStorePanel.this.parent).dispose();
+    }
 }

@@ -128,16 +128,14 @@ public class AppManager {
 		this.featuresService = featuresService;
 		
 		apps = new HashSet<App>();
-
 		appParser = new AppParser();
+		appListeners = new HashSet<AppsChangedListener>();
 		
 		// cleanKarafDeployDirectory();
 		purgeTemporaryDirectories();
 		initializeAppsDirectories();
 		
 		setupAlterationMonitor();
-		
-		this.appListeners = new HashSet<AppsChangedListener>();
 
 		// Install previously enabled apps
 		
@@ -253,6 +251,27 @@ public class AppManager {
 					fireAppsChangedEvent();
 				} catch (AppInstallException e) {
 				}
+				
+				// System.out.println(file + " on create");
+			}
+			
+			@Override
+			public void onFileDelete(File file) {
+				// System.out.println(file + " on delete");
+				
+				for (App app : apps) {
+					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
+					if (app.getAppFile().equals(file)) {
+						// System.out.println(app + " moved");
+						if (app instanceof SimpleApp) {
+							app.setStatus(AppStatus.FILE_MOVED_INSTALLED);
+						} else {
+							app.setStatus(AppStatus.FILE_MOVED_UNINSTALLED);
+						}
+					}
+				}
+				
+				fireAppsChangedEvent();
 			}
 		});
 		
@@ -291,6 +310,27 @@ public class AppManager {
 					fireAppsChangedEvent();
 				} catch (AppDisableException e) {
 				}
+				
+				// System.out.println(file + " on create");
+			}
+			
+			@Override
+			public void onFileDelete(File file) {
+				// System.out.println(file + " on delete");
+				
+				for (App app : apps) {
+					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
+					if (app.getAppFile().equals(file)) {
+						// System.out.println(app + " moved");
+						if (app instanceof SimpleApp) {
+							app.setStatus(AppStatus.FILE_MOVED_INSTALLED);
+						} else {
+							app.setStatus(AppStatus.FILE_MOVED_UNINSTALLED);
+						}
+					}
+				}
+				
+				fireAppsChangedEvent();
 			}
 		});
 		
@@ -330,6 +370,27 @@ public class AppManager {
 					fireAppsChangedEvent();
 				} catch (AppUninstallException e) {
 				}
+				
+				// System.out.println(file + " on create");
+			}
+			
+			@Override
+			public void onFileDelete(File file) {
+				// System.out.println(file + " on delete");
+				
+				for (App app : apps) {
+					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
+					if (app.getAppFile().equals(file)) {
+						// System.out.println(app + " moved");
+						if (app instanceof SimpleApp) {
+							app.setStatus(AppStatus.FILE_MOVED_INSTALLED);
+						} else {
+							app.setStatus(AppStatus.FILE_MOVED_UNINSTALLED);
+						}
+					}
+				}
+				
+				fireAppsChangedEvent();
 			}
 		});
 		

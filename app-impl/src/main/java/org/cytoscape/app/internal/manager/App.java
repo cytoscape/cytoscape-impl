@@ -82,7 +82,10 @@ public abstract class App {
 		TO_BE_UNINSTALLED("Uninstalled-on-restart"),
 		TO_BE_DISABLED("Disable-on-restart"),
 		DISABLED("Disabled"),
-		UNINSTALLED("Uninstalled");
+		UNINSTALLED("Uninstalled"),
+		FILE_MOVED_UNINSTALLED("File Moved (Uninstalled)"),
+		// Currently, simple apps require a restart for uninstall, so we require a restart even if file is moved
+		FILE_MOVED_INSTALLED("File Moved (Uninstall-on-restart)");
 		
 		String readableStatus;
 		
@@ -479,10 +482,12 @@ public abstract class App {
 		
 		return false;
 	}
-
+	
+	/*
 	/**
 	 * Returns true only if the argument is an {@link App} with the same app name and version.
 	 */
+	/*
 	@Override
 	public boolean equals(Object other) {
 		if (other == null) {
@@ -495,6 +500,7 @@ public abstract class App {
 		
 		return false;
 	}
+	*/
 	
 	public String getAppName() {
 		return appName;
@@ -693,11 +699,15 @@ public abstract class App {
 			if (moveDirectories.contains(parentPath)) {
 				FileUtils.moveFile(this.getAppFile(), targetFile);
 				//System.out.println("Moving: " + this.getAppFile() + " -> " + targetFile);
-				this.setAppFile(targetFile);
+				
+				// ** Disabled to let directory observers assign file reference
+				// this.setAppFile(targetFile);
 			} else {
 				FileUtils.copyFile(this.getAppFile(), targetFile);
 				//System.out.println("Copying: " + this.getAppFile() + " -> " + targetFile);
-				this.setAppFile(targetFile);
+				
+				// ** Disabled to let directory observers assign file reference
+				// this.setAppFile(targetFile);
 			}
 		}
 	}
