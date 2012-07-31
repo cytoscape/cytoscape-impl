@@ -1030,7 +1030,7 @@ public class CyActivator extends AbstractCyActivator {
 			new GroupNodeContextTaskFactoryImpl(cyGroupManager, true);
 		Properties collapseGroupTaskFactoryProps = new Properties();
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
-		collapseGroupTaskFactoryProps.setProperty(TITLE,"Collapse Group");
+		collapseGroupTaskFactoryProps.setProperty(TITLE,"Collapse Group(s)");
 		collapseGroupTaskFactoryProps.setProperty(TOOLTIP,"Collapse Grouped Nodes");
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		collapseGroupTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
@@ -1043,7 +1043,7 @@ public class CyActivator extends AbstractCyActivator {
 			new GroupNodeContextTaskFactoryImpl(cyGroupManager, false);
 		Properties expandGroupTaskFactoryProps = new Properties();
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
-		expandGroupTaskFactoryProps.setProperty(TITLE,"Expand Group");
+		expandGroupTaskFactoryProps.setProperty(TITLE,"Expand Group(s)");
 		expandGroupTaskFactoryProps.setProperty(TOOLTIP,"Expand Group");
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		expandGroupTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");

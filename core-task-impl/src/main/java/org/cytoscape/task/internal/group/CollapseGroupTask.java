@@ -47,26 +47,29 @@ import org.cytoscape.work.TaskMonitor;
 public class CollapseGroupTask extends AbstractTask {
 	private CyNetwork net;
 	private CyGroupManager mgr;
-	private CyGroup group;
+	private List<CyGroup> groups;
 	private boolean collapse;
 
-	public CollapseGroupTask(CyNetwork net, CyGroup group, CyGroupManager manager, boolean collapse) {
+	public CollapseGroupTask(CyNetwork net, List<CyGroup> groups, CyGroupManager manager, boolean collapse) {
 		if (net == null)
 			throw new NullPointerException("network is null");
-		if (group == null)
-			throw new NullPointerException("group is null");
+		if (groups == null || groups.size() == 0)
+			throw new NullPointerException("group list is null");
 		this.net = net;
 		this.mgr = manager;
-		this.group = group;
+		this.groups = groups;
 		this.collapse = collapse;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
-		if (collapse)
-			group.collapse(net);
-		else
-			group.expand(net);
+		for (CyGroup group: groups) {
+			if (collapse)
+				group.collapse(net);
+			else
+				group.expand(net);
+			tm.setProgress(1.0d/groups.size());
+		}
 		tm.setProgress(1.0d);
 	}
 }

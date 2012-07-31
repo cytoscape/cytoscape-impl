@@ -29,11 +29,14 @@
  */
 package org.cytoscape.task.internal.group;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.task.edit.CollapseGroupTaskFactory;
 import org.cytoscape.task.edit.ExpandGroupTaskFactory;
@@ -57,7 +60,7 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
 		if (collapse) {
 			// We're ready to collapse if the node view is in a group
-			if (getExpandedGroupForNode(nodeView, netView) != null)
+			if (getExpandedGroupForNode(nodeView.getModel(), netView) != null)
 				return true;
 		} else {
 			// We're ready to expand if the node view is a group
@@ -70,17 +73,29 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
-		CyGroup group;
-		if (collapse)
-			group = getExpandedGroupForNode(nodeView, netView);
-		else 
-			group = mgr.getGroup(nodeView.getModel(), netView.getModel());
+		List<CyGroup> groups = new ArrayList<CyGroup>();
+		final List<CyNode> selNodes = CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true);
 
-		return new TaskIterator(new CollapseGroupTask(netView.getModel(), group, mgr, collapse));
+		if (collapse) {
+			// Always add the context node, whether it's selected or not
+			groups.add(getExpandedGroupForNode(nodeView.getModel(), netView));
+			for (CyNode node: selNodes) {
+				CyGroup g = getExpandedGroupForNode(node, netView);
+				if (g != null) groups.add(g);
+			}
+		} else  {
+			groups.add(mgr.getGroup(nodeView.getModel(), netView.getModel()));
+			for (CyNode node: selNodes) {
+				CyGroup g = mgr.getGroup(node, netView.getModel());
+				if (g != null) groups.add(g);
+			}
+		}
+
+		return new TaskIterator(new CollapseGroupTask(netView.getModel(), groups, mgr, collapse));
 	}
 
-	private CyGroup getExpandedGroupForNode(View<CyNode> nodeView, CyNetworkView netView) {
-		List<CyGroup> groups = mgr.getGroupsForNode(nodeView.getModel());
+	private CyGroup getExpandedGroupForNode(CyNode node, CyNetworkView netView) {
+		List<CyGroup> groups = mgr.getGroupsForNode(node); // Always add the context node
 		if (groups == null || groups.size() == 0)
 			return null;
 
