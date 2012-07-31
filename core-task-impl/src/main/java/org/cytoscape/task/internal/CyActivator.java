@@ -971,7 +971,7 @@ public class CyActivator extends AbstractCyActivator {
 				connectSelectedNodesTaskFactoryProps);
 
 		GroupNodesTaskFactoryImpl groupNodesTaskFactory = 
-			new GroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory);
+			new GroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory, undoSupportServiceRef);
 		Properties groupNodesTaskFactoryProps = new Properties();
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,NETWORK_GROUP_MENU);
 		groupNodesTaskFactoryProps.setProperty(TITLE,"Group Selected Nodes");
@@ -998,7 +998,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,groupNodesTaskFactory,NodeViewTaskFactory.class, groupNodeViewTaskFactoryProps);
 
 		UnGroupNodesTaskFactoryImpl unGroupTaskFactory = 
-			new UnGroupNodesTaskFactoryImpl(cyGroupManager);
+			new UnGroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory, undoSupportServiceRef);
 		Properties unGroupNodesTaskFactoryProps = new Properties();
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,NETWORK_GROUP_MENU);
 		unGroupNodesTaskFactoryProps.setProperty(TITLE,"Ungroup Selected Nodes");

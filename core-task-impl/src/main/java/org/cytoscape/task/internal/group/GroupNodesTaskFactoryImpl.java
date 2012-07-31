@@ -1,7 +1,7 @@
 /*
- File: SelectFirstNeighborsNodeViewTaskFactory.java
+ File: GroupNodesTaskFactoryImpl.java
 
- Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2012, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -42,24 +42,27 @@ import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory 
                                        implements NodeViewTaskFactory, GroupNodesTaskFactory {
 	private CyGroupManager mgr;
 	private CyGroupFactory groupFactory;
+	private UndoSupport undoSupport;
 
-	public GroupNodesTaskFactoryImpl(CyGroupManager mgr, CyGroupFactory groupFactory) {
+	public GroupNodesTaskFactoryImpl(CyGroupManager mgr, CyGroupFactory groupFactory, UndoSupport undoSupport) {
 		super();
 		this.mgr = mgr;
 		this.groupFactory = groupFactory;
+		this.undoSupport = undoSupport;
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(new GroupNodesTask(view, mgr, groupFactory));
+		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory));
 	}
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView view) {
-		return new TaskIterator(new GroupNodesTask(view, mgr, groupFactory));
+		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory));
 	}
 
 	public boolean isReady(CyNetworkView netView) {

@@ -1,7 +1,7 @@
 /*
- File: SelectFirstNeighborsNodeViewTaskFactory.java
+ File: UnGroupNodesTaskFactoryImpl.java
 
- Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2012, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -46,14 +47,19 @@ import org.cytoscape.task.edit.UnGroupTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory, 
                                                     UnGroupTaskFactory, UnGroupNodesTaskFactory {
 	
+	private CyGroupFactory factory;
 	private CyGroupManager mgr;
+	private UndoSupport undoSupport;
 
-	public UnGroupNodesTaskFactoryImpl(CyGroupManager mgr) {
+	public UnGroupNodesTaskFactoryImpl(CyGroupManager mgr, CyGroupFactory factory, UndoSupport undoSupport) {
 		this.mgr = mgr;
+		this.undoSupport = undoSupport;
+		this.factory = factory;
 	}
 
 	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
@@ -91,14 +97,14 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 		CyNetwork net = netView.getModel();
 		Set<CyGroup> groups = getGroups(net, nodeList);
 
-		return new TaskIterator(new UnGroupNodesTask(net, groups, mgr));
+		return new TaskIterator(new UnGroupNodesTask(undoSupport, net, factory, groups, mgr));
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView netView) {
 		CyNetwork net = netView.getModel();
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
 		Set<CyGroup> groups = getGroups(net, selNodes);
-		return new TaskIterator(new UnGroupNodesTask(netView.getModel(), groups, mgr));
+		return new TaskIterator(new UnGroupNodesTask(undoSupport, netView.getModel(), factory, groups, mgr));
 	}
 
 	private Set<CyGroup>getGroups(CyNetwork net, List<CyNode>nodeList) {

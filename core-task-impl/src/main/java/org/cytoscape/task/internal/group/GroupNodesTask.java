@@ -1,7 +1,7 @@
 /*
- File: SelectFirstNeighborsNodeViewTask.java
+ File: GroupNodesTask.java
 
- Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2012, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -43,18 +43,21 @@ import org.cytoscape.view.model.CyNetworkView;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class GroupNodesTask extends AbstractTask {
 	private CyNetwork net;
 	private CyGroupManager mgr;
 	private CyGroupFactory factory;
+	private UndoSupport undoSupport;
 
-	public GroupNodesTask(CyNetworkView netView, CyGroupManager mgr, CyGroupFactory factory) {
+	public GroupNodesTask(UndoSupport undoSupport, CyNetworkView netView, CyGroupManager mgr, CyGroupFactory factory) {
 		if (netView == null)
 			throw new NullPointerException("network view is null");
 		this.net = netView.getModel();
 		this.mgr = mgr;
 		this.factory = factory;
+		this.undoSupport = undoSupport;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
@@ -66,6 +69,7 @@ public class GroupNodesTask extends AbstractTask {
 		// At some point, we'll want to seriously think about only adding 
 		// those edges that are also selected, but for now....
 		CyGroup group = factory.createGroup(net, selNodes, null, true);
+		undoSupport.postEdit(new GroupEdit(net, mgr, factory, group));
 		// mgr.addGroup(group);
 		tm.setProgress(1.0d);
 	}

@@ -1,7 +1,7 @@
 /*
- File: SelectFirstNeighborsNodeViewTask.java
+ File: UnGroupNodesTask.java
 
- Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
+ Copyright (c) 2012, The Cytoscape Consortium (www.cytoscape.org)
 
  This library is free software; you can redistribute it and/or modify it
  under the terms of the GNU Lesser General Public License as published
@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 
 import org.cytoscape.model.CyNetwork;
@@ -40,27 +41,35 @@ import org.cytoscape.model.CyNode;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class UnGroupNodesTask extends AbstractTask {
 	private CyNetwork net;
 	private CyGroupManager mgr;
+	private CyGroupFactory factory;
 	private	Set<CyGroup>groupSet = null;
+	private UndoSupport undoSupport;
 
-	public UnGroupNodesTask(CyNetwork net, Set<CyGroup>groups, CyGroupManager mgr) {
+	public UnGroupNodesTask(UndoSupport undoSupport, CyNetwork net, CyGroupFactory factory,
+	                        Set<CyGroup>groups, CyGroupManager mgr) {
 		if (net == null)
 			throw new NullPointerException("network is null");
 		this.net = net;
 		this.mgr = mgr;
+		this.factory = factory;
 		this.groupSet = groups;
+		this.undoSupport = undoSupport;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
 
+		GroupEdit edit = new GroupEdit(net, mgr, factory, groupSet);
 		for (CyGroup group: groupSet) {
 			mgr.destroyGroup(group);
 			tm.setProgress(1.0d/(double)groupSet.size());
 		}
+		undoSupport.postEdit(edit);
 		tm.setProgress(1.0d);
 	}
 }
