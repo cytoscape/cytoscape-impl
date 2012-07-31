@@ -208,7 +208,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cyNetworkViewManagerServiceRef, 
 		                                                               renderingEngineManagerServiceRef,
 		                                                               cytoscapePropertiesServiceRef,
-		                                                               cyHelpBroker);
+		                                                               cyHelpBroker, visualMappingManagerServiceRef);
 
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  dingNavigationPresentationFactoryServiceRef,
@@ -299,7 +299,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		RowsSetViewUpdater rowsSetViewUpdater = new RowsSetViewUpdater(cyApplicationManagerServiceRef, 
 		                                                               cyNetworkViewManagerServiceRef, 
-		                                                               visualMappingManagerServiceRef, rowViewTracker);
+		                                                               visualMappingManagerServiceRef, rowViewTracker, networkViewManager);
 		
 		RecentSessionManager recentSessionManager = new RecentSessionManager(recentlyOpenedTrackerServiceRef,
 		                                                                     cyServiceRegistrarServiceRef,

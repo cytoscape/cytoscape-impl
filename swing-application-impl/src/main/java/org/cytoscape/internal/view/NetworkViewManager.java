@@ -45,8 +45,10 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.swing.JDesktopPane;
@@ -81,6 +83,8 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +110,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	// Key is MODEL ID
 	private final Map<CyNetworkView, JInternalFrame> presentationContainerMap;
 	private final Map<CyNetworkView, RenderingEngine<CyNetwork>> presentationMap;
+	private final Set<CyNetworkView> viewUpdateRequired;
 
 	private final Map<JInternalFrame, CyNetworkView> iFrameMap;
 	private final Map<JInternalFrame, InternalFrameListener> frameListeners;
@@ -125,13 +130,14 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final CyNetworkViewManager netViewMgr;
 	private final CyApplicationManager appMgr;
 	private final RenderingEngineManager renderingEngineMgr;
+	private final VisualMappingManager vmm;
 	
 	
 	public NetworkViewManager(final CyApplicationManager appMgr,
 							  final CyNetworkViewManager netViewMgr,
 							  final RenderingEngineManager renderingEngineManager,
 							  final CyProperty<Properties> cyProps,
-							  final CyHelpBroker help) {
+							  final CyHelpBroker help, final VisualMappingManager vmm) {
 
 		if (appMgr == null)
 			throw new NullPointerException("CyApplicationManager is null.");
@@ -145,6 +151,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		this.netViewMgr = netViewMgr;
 		this.appMgr = appMgr;
 		this.props = cyProps.getProperties();
+		this.vmm = vmm;
 
 		this.desktopPane = new JDesktopPane();
 
@@ -155,6 +162,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		presentationMap = new WeakHashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
 		iFrameMap = new WeakHashMap<JInternalFrame, CyNetworkView>();
 		frameListeners = new HashMap<JInternalFrame, InternalFrameListener>();
+		viewUpdateRequired = new HashSet<CyNetworkView>();
 	}
 
 	/**
@@ -221,17 +229,24 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 */
 	@Override
 	public void internalFrameActivated(InternalFrameEvent e) {
-		final CyNetworkView view = iFrameMap.get(e.getInternalFrame());
+		final CyNetworkView targetView = iFrameMap.get(e.getInternalFrame());
 		
-		if (view != null) {
+		if (targetView != null) {
 			final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
 			
-			if (netViewMgr.getNetworkViewSet().contains(view)) {
-				if (!view.equals(appMgr.getCurrentNetworkView()))
-					appMgr.setCurrentNetworkView(view);
+			if (netViewMgr.getNetworkViewSet().contains(targetView)) {
+				if (!targetView.equals(appMgr.getCurrentNetworkView()))
+					appMgr.setCurrentNetworkView(targetView);
 	
-				if (currentEngine == null || currentEngine.getViewModel() != view)
-					appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+				if (currentEngine == null || currentEngine.getViewModel() != targetView)
+					appMgr.setCurrentRenderingEngine(presentationMap.get(targetView));
+			}
+			
+			if(viewUpdateRequired.contains(targetView)) {
+				viewUpdateRequired.remove(targetView);
+				final VisualStyle style = vmm.getVisualStyle(targetView);
+				style.apply(targetView);
+				targetView.updateView();
 			}
 		}
 	}
@@ -585,5 +600,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		final JInternalFrame selectedFrame = getSelectedFrame();
 		
 		return iFrameMap.get(selectedFrame);
+	}
+	
+	public void setUpdateFlag(CyNetworkView view) {
+		this.viewUpdateRequired.add(view);
 	}
 }
