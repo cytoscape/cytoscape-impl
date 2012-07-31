@@ -224,12 +224,12 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 				if (val != null && (val == true))
 					row.set(CyNetwork.SELECTED, false);
-
-				final CyNetworkView curView = applicationManager.getCurrentNetworkView();
-				if (curView != null) {
-					eventHelper.flushPayloadEvents();
-					curView.updateView();
-				}
+			}
+			
+			final CyNetworkView curView = applicationManager.getCurrentNetworkView();
+			if (curView != null) {
+				eventHelper.flushPayloadEvents();
+				curView.updateView();
 			}
 		}
 	}
