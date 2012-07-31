@@ -70,9 +70,27 @@ public class CanvasKeyListener implements KeyListener {
 				annotation.update();
 				annotation.getCanvas().repaint();	
 			}
-		} else {
-			networkCanvas.keyPressed(e);
+			return;
+		} else if (code == KeyEvent.VK_ESCAPE) {
+			if (cyAnnotator.getResizeShape() != null) {
+				cyAnnotator.getResizeShape().contentChanged();
+				cyAnnotator.resizeShape(null);
+				return;
+			}
+
+			if (cyAnnotator.getRepositioningArrow() != null) {
+				cyAnnotator.getRepositioningArrow().contentChanged();
+				cyAnnotator.positionArrow(null);
+				return;
+			}
+
+			if (cyAnnotator.getMovingAnnotation() != null) {
+				cyAnnotator.getMovingAnnotation().contentChanged();
+				cyAnnotator.moveAnnotation(null);
+				return;
+			}
 		}
+		networkCanvas.keyPressed(e);
 	}
 
 	public void keyReleased(KeyEvent e) { }

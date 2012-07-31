@@ -232,9 +232,10 @@ public class CyAnnotator {
 	}
 
 	public void setSelectedAnnotation(Annotation a, boolean selected) {
-		if (selected) 
+		if (selected) {
+			a.getCanvas().requestFocusInWindow();
 			selectedAnnotations.add(a);
-		else
+		} else
 			selectedAnnotations.remove(a);
 	}
 
@@ -259,6 +260,8 @@ public class CyAnnotator {
 
 	public void resizeShape(ShapeAnnotation shape) {
 		resizing = shape;
+		if (resizing != null)
+			resizing.getCanvas().requestFocusInWindow();
 	}
 
 	public ShapeAnnotation getResizeShape() {
@@ -267,6 +270,8 @@ public class CyAnnotator {
 
 	public void positionArrow(ArrowAnnotation arrow) {
 		repositioning = arrow;
+		if (repositioning != null)
+			repositioning.getCanvas().requestFocusInWindow();
 	}
 
 	public ArrowAnnotation getRepositioningArrow() {
@@ -279,6 +284,8 @@ public class CyAnnotator {
 
 	public void moveAnnotation(Annotation annotation) {
 		moving = annotation;
+		if (moving != null)
+			moving.getCanvas().requestFocusInWindow();
 	}
 
 	public Annotation getMovingAnnotation() {
