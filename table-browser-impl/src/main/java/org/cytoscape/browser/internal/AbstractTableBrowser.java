@@ -15,15 +15,14 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.browser.internal.util.ColumnResizer;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -31,9 +30,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
-import javax.swing.table.DefaultTableModel;
 
 
 /**
