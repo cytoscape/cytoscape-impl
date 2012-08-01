@@ -107,13 +107,12 @@ public class LayoutMenuPopulator implements MenuListener {
      */
     public void menuSelected(MenuEvent e) {
         CyNetworkView view = appMgr.getCurrentNetworkView();
-        if ( view == null )
-            return;
-
-        CyNetwork network = view.getModel();
+        CyNetwork network = appMgr.getCurrentNetwork();
 
         // Figure out if we have anything selected
-        boolean someSelected = network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) > 0;
+        boolean someSelected = false;
+        if (network != null)
+            someSelected = network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) > 0;
         boolean enableMenuItem = checkEnabled();
 
         // Get all of the algorithms
@@ -121,15 +120,15 @@ public class LayoutMenuPopulator implements MenuListener {
             Map props = algorithmMap.get(layout);
             double gravity = 1000.0;
             if (props.get(MENU_GRAVITY) != null)
-            	gravity = Double.parseDouble((String)props.get(MENU_GRAVITY));
+                gravity = Double.parseDouble((String)props.get(MENU_GRAVITY));
 
-						boolean separatorAfter = false;
+            boolean separatorAfter = false;
             if (props.get(INSERT_SEPARATOR_AFTER) != null)
-            	separatorAfter = Boolean.parseBoolean((String)props.get(INSERT_SEPARATOR_AFTER));
+                separatorAfter = Boolean.parseBoolean((String)props.get(INSERT_SEPARATOR_AFTER));
 
-						boolean separatorBefore = false;
+            boolean separatorBefore = false;
             if (props.get(INSERT_SEPARATOR_BEFORE) != null)
-            	separatorBefore = Boolean.parseBoolean((String)props.get(INSERT_SEPARATOR_BEFORE));
+                separatorBefore = Boolean.parseBoolean((String)props.get(INSERT_SEPARATOR_BEFORE));
 
             // Remove the old menu
             if (menuMap.containsKey(layout)) {
@@ -137,10 +136,12 @@ public class LayoutMenuPopulator implements MenuListener {
                 menuMap.remove(layout);
             }
         
-            boolean usesNodeAttrs = 
-                hasValidAttributes(layout.getSupportedNodeAttributeTypes(),network.getDefaultNodeTable());
-            boolean usesEdgeAttrs = 
-                hasValidAttributes(layout.getSupportedEdgeAttributeTypes(),network.getDefaultEdgeTable());
+            boolean usesNodeAttrs = false;
+            if (network != null)
+                usesNodeAttrs = hasValidAttributes(layout.getSupportedNodeAttributeTypes(),network.getDefaultNodeTable());
+            boolean usesEdgeAttrs = false;
+            if (network != null)
+                usesEdgeAttrs = hasValidAttributes(layout.getSupportedEdgeAttributeTypes(),network.getDefaultEdgeTable());
             boolean usesSelected = (layout.getSupportsSelectedOnly() && someSelected);
 
             if (usesNodeAttrs || usesEdgeAttrs || usesSelected) {
