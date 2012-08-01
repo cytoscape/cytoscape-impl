@@ -370,8 +370,6 @@ public class CyAnnotator {
 					((Annotation)annotations[i]).setZoom(newZoom);
 				}
 			}
-
-			view.updateView();	
 		}
 	}
 }

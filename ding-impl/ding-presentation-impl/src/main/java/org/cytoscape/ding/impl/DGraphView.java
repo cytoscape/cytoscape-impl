@@ -1168,7 +1168,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	@Override
 	public void updateView() {
-		//System.out.println("%% Update view called");
+//		System.out.println(this.toString() + ": Update view called: " + this.model);
+//		Thread.dumpStack();
+		
 		final long start = System.currentTimeMillis();
 		cyEventHelper.flushPayloadEvents();
 		m_networkCanvas.repaint();

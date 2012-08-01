@@ -3,13 +3,13 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.geom.Point2D;
+
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
 public class ShapeAnnotationDialog extends javax.swing.JFrame {
 
