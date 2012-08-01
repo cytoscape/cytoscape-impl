@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.session;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.read.CyNetworkReaderManager;
@@ -43,6 +44,7 @@ import org.cytoscape.work.TaskIterator;
 public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory {
 
 	private final ReadCache cache;
+	private final SUIDUpdater suidUpdater;
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
@@ -52,6 +54,7 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 
 	public Cy3SessionReaderFactoryImpl(final CyFileFilter filter,
 									   final ReadCache cache,
+									   final SUIDUpdater suidUpdater,
 									   final CyNetworkReaderManager networkReaderMgr,
 									   final CyPropertyReaderManager propertyReaderMgr,
 									   final VizmapReaderManager vizmapReaderMgr,
@@ -60,6 +63,7 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 									   final CyRootNetworkManager rootNetworkMgr) {
 		super(filter);
 		this.cache = cache;
+		this.suidUpdater = suidUpdater;
 		this.networkReaderMgr = networkReaderMgr;
 		this.propertyReaderMgr = propertyReaderMgr;
 		this.vizmapReaderMgr = vizmapReaderMgr;
@@ -70,7 +74,7 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new Cy3SessionReaderImpl(inputStream, cache, networkReaderMgr, propertyReaderMgr,
-				vizmapReaderMgr, csvCyReaderFactory, networkTableMgr, rootNetworkMgr));
+		return new TaskIterator(new Cy3SessionReaderImpl(inputStream, cache, suidUpdater, networkReaderMgr,
+				propertyReaderMgr, vizmapReaderMgr, csvCyReaderFactory, networkTableMgr, rootNetworkMgr));
 	}
 }

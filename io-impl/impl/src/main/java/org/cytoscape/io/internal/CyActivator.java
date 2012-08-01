@@ -13,6 +13,7 @@ import org.cytoscape.io.internal.read.CyNetworkReaderManagerImpl;
 import org.cytoscape.io.internal.read.CyPropertyReaderManagerImpl;
 import org.cytoscape.io.internal.read.CySessionReaderManagerImpl;
 import org.cytoscape.io.internal.read.CyTableReaderManagerImpl;
+import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.VizmapReaderManagerImpl;
 import org.cytoscape.io.internal.read.bookmarks.BookmarkFileFilter;
 import org.cytoscape.io.internal.read.bookmarks.BookmarkReaderFactory;
@@ -187,8 +188,10 @@ public class CyActivator extends AbstractCyActivator {
 		NNFNetworkReaderFactory nnfNetworkViewReaderFactory = new NNFNetworkReaderFactory(nnfFilter,cyLayoutsServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyEventHelperRef, cyNetworkManagerServiceRef);
 		UnrecognizedVisualPropertyManager unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(cyTableFactoryServiceRef,cyTableManagerServiceRef);
 		GMLNetworkReaderFactory gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager);
+		
 		ReadCache readCache = new ReadCache();
-		ReadDataManager readDataManager = new ReadDataManager(readCache,equationCompilerServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkManagerServiceRef);
+		SUIDUpdater suidUpdater = new SUIDUpdater();
+		ReadDataManager readDataManager = new ReadDataManager(readCache,suidUpdater,equationCompilerServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkManagerServiceRef);
 		
 		HandlerFactory handlerFactory = new HandlerFactory(readDataManager);
 		XGMMLParser xgmmlParser = new XGMMLParser(handlerFactory,readDataManager);
@@ -196,7 +199,7 @@ public class CyActivator extends AbstractCyActivator {
 		SessionXGMMLNetworkReaderFactory sessXgmmlNetReaderFactory = new SessionXGMMLNetworkReaderFactory(sessXgmmlNetFileFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkManagerServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
 		SessionXGMMLNetworkViewReaderFactory sessXgmmlViewReaderFactory = new SessionXGMMLNetworkViewReaderFactory(sessXgmmlViewFileFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,readDataManager,xgmmlParser,unrecognizedVisualPropertyManager);
 		CSVCyReaderFactory sessionTableReaderFactory = new CSVCyReaderFactory(sessionTableFilter,true,true,cyTableFactoryServiceRef,compilerServiceRef);
-		Cy3SessionReaderFactoryImpl cy3SessionReaderFactory = new Cy3SessionReaderFactoryImpl(cys3Filter,readCache,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,sessionTableReaderFactory,cyNetworkTableManagerServiceRef,cyRootNetworkManagerServiceRef);
+		Cy3SessionReaderFactoryImpl cy3SessionReaderFactory = new Cy3SessionReaderFactoryImpl(cys3Filter,readCache,suidUpdater,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,sessionTableReaderFactory,cyNetworkTableManagerServiceRef,cyRootNetworkManagerServiceRef);
 		Cy2SessionReaderFactoryImpl cy2SessionReaderFactory = new Cy2SessionReaderFactoryImpl(cys2Filter,readCache,cyNetworkReaderManager,cyPropertyReaderManager,vizmapReaderManager,cyRootNetworkManagerServiceRef);
 		CysessionReaderFactory cysessionReaderFactory = new CysessionReaderFactory(cysessionFilter);
 		BookmarkReaderFactory bookmarkReaderFactory = new BookmarkReaderFactory(bookmarksFilter);

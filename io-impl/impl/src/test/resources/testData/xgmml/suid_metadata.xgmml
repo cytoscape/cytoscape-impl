@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<graph id="20" label="Network A" xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:cy="http://www.cytoscape.org" xmlns="http://www.cs.rpi.edu/XGMML"
+	directed="1">
+	
+	<att type="boolean" name="test" value="1" />
+	<att type="real" name="net_id.SUID" value="20" />
+	<att type="list" name="nodes.SUID" cy:hidden="true">
+		<att type="real" value="21" />
+		<att type="real" value="22" />
+	</att>
+	
+	<node label="node1" id="21">
+		<att type="string" name="name" value="node 1" />
+		<att type="string" name="wrong_type_1.SUID" value="abcd" cy:hidden="true" />
+		<att type="string" name="wrong_type_2.SUID" value="23" cy:hidden="true" />
+		<att type="real" name="other_node.SUID" value="22" cy:hidden="true" />
+		<att type="list" name="edges.SUID">
+			<att type="real" value="23" />
+			<att type="real" value="24" />
+		</att>
+	</node>
+	<node label="node2" id="22">
+		<att type="string" name="name" value="node 2" />
+		<att type="real" name="other_node.SUID" value="21" cy:hidden="true" />
+		<att type="list" name="edges.SUID">
+			<att type="real" value="23" />
+			<att type="real" value="24" />
+		</att>
+	</node>
+	<edge id="23" label="node1 (DirectedEdge) node2" source="21" target="22">
+		<att type="string" name="name" value="node1 (DirectedEdge) node2" />
+		<att type="real" name="source_node.SUID" value="21" />
+	</edge>
+	<edge id="24" label="node2 (DirectedEdge) node1" source="22" target="21">
+		<att type="string" name="name" value="node2 (DirectedEdge) node1" />
+		<att type="real" name="source_node.SUID" value="22" />
+	</edge>
+</graph>

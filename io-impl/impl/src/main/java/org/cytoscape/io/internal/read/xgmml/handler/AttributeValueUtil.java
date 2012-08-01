@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.MetadataEntries;
 import org.cytoscape.io.internal.read.xgmml.MetadataParser;
 import org.cytoscape.io.internal.read.xgmml.ObjectType;
@@ -67,7 +68,7 @@ public class AttributeValueUtil {
     
     protected static final Logger logger = LoggerFactory.getLogger(AttributeValueUtil.class);
 
-    public AttributeValueUtil(ReadDataManager manager) {
+    public AttributeValueUtil(final ReadDataManager manager) {
         this.manager = manager;
         this.typeMap = new ObjectTypeMap();
     }
@@ -115,22 +116,20 @@ public class AttributeValueUtil {
     }
 
     /**
-     * Return the typed attribute value for the passed attribute. In this case,
-     * the caller has already determined that this is the correct attribute and
-     * we just lookup the value. This routine is responsible for type conversion
-     * consistent with the passed argument.
-     * 
-     * @param type
-     *            the ObjectType of the value
-     * @param atts
-     *            the attributes
-     * @return the value of the attribute in the appropriate type
-     */
-    protected Object getTypedAttributeValue(ObjectType type, Attributes atts) throws SAXParseException {
+	 * Return the typed attribute value for the passed attribute. In this case, the caller has already determined that
+	 * this is the correct attribute and we just lookup the value. This routine is responsible for type conversion
+	 * consistent with the passed argument.
+	 * 
+	 * @param type the ObjectType of the value
+	 * @param atts the attributes
+	 * @param name the attribute name
+	 * @return the value of the attribute in the appropriate type
+	 */
+    protected Object getTypedAttributeValue(ObjectType type, Attributes atts, String name) throws SAXParseException {
         String value = atts.getValue("value");
 
         try {
-            return typeMap.getTypedValue(type, value);
+            return typeMap.getTypedValue(type, value, name);
         } catch (Exception e) {
             throw new SAXParseException("Unable to convert '" + value + "' to type " + type.toString(), locator);
         }
@@ -243,15 +242,20 @@ public class AttributeValueUtil {
             }
         } else {
         	// Regular attribute value...
-        	value = getTypedAttributeValue(objType, atts);
+        	value = getTypedAttributeValue(objType, atts, name);
         }
 
-		switch (objType) {
+        switch (objType) {
 			case BOOLEAN:
 				if (name != null) setAttribute(row, name, Boolean.class, (Boolean) value);
 				break;
 			case REAL:
-				if (name != null) setAttribute(row, name, Double.class, (Double) value);
+				if (name != null) {
+					if (SUIDUpdater.isUpdatableSUIDColumn(name))
+						setAttribute(row, name, Long.class, (Long) value);
+					else
+						setAttribute(row, name, Double.class, (Double) value);
+				}
 				break;
 			case INTEGER:
 				if (name != null) setAttribute(row, name, Integer.class, (Integer) value);
@@ -268,8 +272,13 @@ public class AttributeValueUtil {
 			case LIST:
 				manager.currentAttributeID = name;
 				manager.setCurrentRow(row);
+				
 				if (column != null && List.class.isAssignableFrom(column.getType()))
 					row.set(name, null);
+				
+				if (SUIDUpdater.isUpdatableSUIDColumn(name))
+            		manager.getSUIDUpdater().addSUIDColumn(row.getTable(), name);
+				
 				return ParseState.LIST_ATT;
 		}
 
@@ -290,6 +299,9 @@ public class AttributeValueUtil {
             
             if (value != null) {
             	row.set(name, value);
+            	
+            	if (SUIDUpdater.isUpdatableSUIDColumn(name))
+            		manager.getSUIDUpdater().addSUIDColumn(row.getTable(), name);
             }
         }
     }

@@ -626,7 +626,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 				if (!columnType.isAssignableFrom(value.getClass())
 				    && !EqnSupport.scalarEquationIsCompatible(value, columnType))
-					throw new IllegalArgumentException("value is not of type: " + columnType);
+					throw new IllegalArgumentException("value of \"" + columnName + "\" is not of type " + columnType);
 
 				if (value instanceof Equation) {
 					newRawValue = value;

@@ -106,6 +106,7 @@ public class HandleGraphDone extends AbstractHandler {
 		
 		resolveEquations();
 		resolveNetworkPointers();
+		updateSUIDAttributes();
 		
 		return ParseState.NONE;
 	}
@@ -138,6 +139,12 @@ public class HandleGraphDone extends AbstractHandler {
 			// If reading a session file, network pointers should be processed after all XGMML files are parsed,
 			// because some network references might not have been created yet.
 			manager.getCache().createNetworkPointers();
+		}
+	}
+	
+	private void updateSUIDAttributes() {
+		if (!manager.isSessionFormat()) {
+			manager.getSUIDUpdater().updateSUIDColumns();
 		}
 	}
 }

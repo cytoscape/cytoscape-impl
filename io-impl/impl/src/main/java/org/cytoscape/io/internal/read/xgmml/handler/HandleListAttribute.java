@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.ObjectType;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyColumn;
@@ -41,9 +42,10 @@ public class HandleListAttribute extends AbstractHandler {
 
     @Override
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-        String type = atts.getValue("type");
-        ObjectType objType = typeMap.getType(type);
-        Object obj = attributeValueUtil.getTypedAttributeValue(objType, atts);
+        final String type = atts.getValue("type");
+        final String name = manager.currentAttributeID;
+        final ObjectType objType = typeMap.getType(type);
+        final Object value = attributeValueUtil.getTypedAttributeValue(objType, atts, name);
         Class<?> clazz = null;
 
         switch (objType) {
@@ -51,7 +53,7 @@ public class HandleListAttribute extends AbstractHandler {
                 clazz = Boolean.class;
                 break;
             case REAL:
-                clazz = Double.class;
+                clazz = SUIDUpdater.isUpdatableSUIDColumn(name) ? Long.class : Double.class;
                 break;
             case INTEGER:
                 clazz = Integer.class;
@@ -62,12 +64,11 @@ public class HandleListAttribute extends AbstractHandler {
                 break;
         }
 
-        String name = manager.currentAttributeID;
-        CyRow row = manager.getCurrentRow();
+        final CyRow row = manager.getCurrentRow();
         CyColumn column = row.getTable().getColumn(name);
 
         if (column == null) {
-            row.getTable().createListColumn(name, clazz, false);
+            row.getTable().createListColumn(name, clazz, false, new ArrayList());
             column = row.getTable().getColumn(name);
         }
 
@@ -77,8 +78,8 @@ public class HandleListAttribute extends AbstractHandler {
                 row.set(name, manager.listAttrHolder);
             }
 
-            if (manager.listAttrHolder != null)
-                manager.listAttrHolder.add(obj);
+            if (manager.listAttrHolder != null && value != null)
+                manager.listAttrHolder.add(value);
         }
 
         return current;

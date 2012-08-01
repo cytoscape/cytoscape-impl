@@ -41,6 +41,7 @@ import java.util.Stack;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
@@ -123,6 +124,7 @@ public class ReadDataManager {
 	private Map<Object/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewLockedGraphics;
 	
 	private final ReadCache cache;
+	private final SUIDUpdater suidUpdater;
 	private final EquationCompiler equationCompiler;
 	private final CyNetworkFactory networkFactory;
 	private final CyRootNetworkManager rootNetworkManager;
@@ -130,19 +132,23 @@ public class ReadDataManager {
 	private static final Logger logger = LoggerFactory.getLogger(ReadDataManager.class);
 
 	public ReadDataManager(final ReadCache cache,
+						   final SUIDUpdater suidUpdater,
 						   final EquationCompiler equationCompiler,
 						   final CyNetworkFactory networkFactory,
 						   final CyRootNetworkManager rootNetworkManager) {
-		this.equationCompiler = equationCompiler;
 		this.cache = cache;
+		this.suidUpdater = suidUpdater;
+		this.equationCompiler = equationCompiler;
 		this.networkFactory = networkFactory;
 		this.rootNetworkManager = rootNetworkManager;
 		init();
 	}
 
 	public void init() {
-		if (!SessionUtil.isReadingSessionFile())
+		if (!SessionUtil.isReadingSessionFile()) {
 			cache.init();
+			suidUpdater.init();
+		}
 		
 		viewFormat = false;
 		graphCount = 0;
@@ -207,8 +213,10 @@ public class ReadDataManager {
 		// Important: graphics related maps and lists cannot be disposed here,
 		// because they may be necessary when creating the network views.
 		
-		if (!SessionUtil.isReadingSessionFile())
+		if (!SessionUtil.isReadingSessionFile()) {
 			cache.dispose();
+			suidUpdater.dispose();
+		}
 	}
 	
 	public double getDocumentVersion() {
@@ -239,6 +247,10 @@ public class ReadDataManager {
 		return cache;
 	}
 	
+	public SUIDUpdater getSUIDUpdater() {
+		return suidUpdater;
+	}
+
 	/**
 	 * @param element A CyNode or CyEdge
 	 * @param attName The name of the attribute
@@ -431,6 +443,8 @@ public class ReadDataManager {
         cache.cache(oldId, node);
         cache.cacheNodeByName(label, node);
         
+        mapSUIDs(oldId, node.getSUID());
+        
         return node;
     }
 
@@ -504,6 +518,8 @@ public class ReadDataManager {
         	
         	if (extEdgeIds != null)
         		extEdgeIds.add(id.toString());
+        	
+        	mapSUIDs(id, edge.getSUID());
         }
         
         // Add to internal cache:
@@ -518,6 +534,7 @@ public class ReadDataManager {
 				publicNetworks.add(net);
 			
 			cache.cache(oldId, net);
+			mapSUIDs(oldId, net.getSUID());
 		}
 	}
 	
@@ -621,6 +638,14 @@ public class ReadDataManager {
 			setCurrentEdge((CyEdge) entry);
 	}
 
+ 	/**
+ 	 * Adds old->new SUID references to the SUID Updater 
+ 	 */
+	private void mapSUIDs(final Object oldId, final Long newSUID) {
+        if (oldId instanceof Long) // if String (probably Cy2), it has to be handled differently
+        	suidUpdater.addSUIDMapping((Long)oldId, newSUID);
+	}
+	
 	/**
 	 * It controls which graphics attributes should be parsed.
 	 * @param element The network, node or edge

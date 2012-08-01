@@ -56,21 +56,17 @@ public class ReadCache {
 	
 	private Map<CyNetwork, Set<Long>> nodeLinkMap;
 	private Map<CyNetwork, Set<Long>> edgeLinkMap;
-	
 	private Map<CyNode, Object/*network's id*/> networkPointerMap;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ReadCache.class);
 	
 	public void init() {
 		oldIdMap = new HashMap<Long, Object>();
-		
 		nodeByIdMap = new HashMap<Object, CyNode>();
 		edgeByIdMap = new HashMap<Object, CyEdge>();
 		networkByIdMap = new HashMap<Object, CyNetwork>();
 		networkViewByIdMap = new HashMap<Object, CyNetworkView>();
-		
 		nodeByNameMap = new HashMap<Object, CyNode>();
-		
 		nodeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
 		edgeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
 		networkPointerMap = new WeakHashMap<CyNode, Object>();
@@ -81,9 +77,7 @@ public class ReadCache {
 		edgeByIdMap = null;
 		networkByIdMap = null;
 		networkViewByIdMap = null;
-		
 		nodeByNameMap = null;
-		
 		nodeLinkMap = null;
 		edgeLinkMap = null;
 		networkPointerMap = null;

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.io.internal.read.SUIDUpdater;
+
 public class ObjectTypeMap {
 
     private Map<String, ObjectType> typeMap;
@@ -29,33 +31,41 @@ public class ObjectTypeMap {
      * 
      * @param type the ObjectType of the value
      * @param value the value to type
+     * @param name the attribute name
      * @return the typed value
      */
-    public Object getTypedValue(ObjectType type, String value) {
-
+    public Object getTypedValue(final ObjectType type, final String value, final String name) {
+    	Object typedValue = null; 
+    	
         switch (type) {
             case BOOLEAN:
-                if (value != null) return fromXGMMLBoolean(""+value);
+                if (value != null)
+                	typedValue = fromXGMMLBoolean(""+value);
                 break;
             case REAL:
-                if (value != null) return new Double(value);
+                if (value != null) {
+                	if (SUIDUpdater.isUpdatableSUIDColumn(name))
+                		typedValue = new Long(value);
+                	else
+                		typedValue = new Double(value);
+                }
                 break;
             case INTEGER:
-                if (value != null) return new Integer(value);
+                if (value != null)
+                	typedValue = new Integer(value);
                 break;
             case STRING:
                 if (value != null) {
                     // Make sure we convert our newlines and tabs back
                     String sAttr = value.replace("\\t", "\t");
-                    sAttr = sAttr.replace("\\n", "\n");
-                    return sAttr;
+                    typedValue = sAttr.replace("\\n", "\n");
                 }
                 break;
             case LIST:
-                return new ArrayList<Object>();
+            	typedValue = new ArrayList<Object>();
         }
-
-        return null;
+        
+        return typedValue;
     }
     
     public static boolean fromXGMMLBoolean(String s) {

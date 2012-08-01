@@ -42,7 +42,7 @@ public class HandleListAttributeDone extends AbstractHandler {
             }
         } catch (Exception e) {
             String err = "XGMML attribute handling error for attribute '" + manager.currentAttributeID +
-                         "' and object '" + manager.getCurrentNetwork() + "': " + e.getMessage();
+                         "' and network '" + manager.getCurrentNetwork() + "': " + e.getMessage();
             throw new SAXException(err);
         }
         

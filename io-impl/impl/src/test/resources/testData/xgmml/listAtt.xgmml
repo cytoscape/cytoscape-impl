@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<graph id="20" label="Network A" xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:cy="http://www.cytoscape.org" xmlns="http://www.cs.rpi.edu/XGMML"
+	directed="1">
+	
+	<att type="list" name="empty_list"/>
+	<att type="list" name="null_value_list">
+		<att type="string" />
+	</att>
+	<att type="list" name="int_list">
+		<att type="integer" value="1" />
+		<att type="integer" value="2" />
+	</att>
+	<att type="list" name="str_list">
+		<att type="string" value="a" />
+		<att type="string" value="b" />
+		<att type="string" value="c" />
+	</att>
+	
+</graph>

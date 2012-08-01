@@ -14,6 +14,7 @@ import javax.swing.plaf.basic.BasicViewportUI;
 import org.cytoscape.io.internal.util.session.model.SelectedNodes;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -48,7 +49,6 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 	}
 
 	private void confirm() {
-		
 		// test overall status of current session.
 		checkGlobalStatus();
 		
@@ -65,6 +65,8 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 			checkNetwork(net2);
 			checkChildNetwork(net1);
 		}
+		
+		checkTables();
 	}
 	
 	private void checkGlobalStatus() {
@@ -119,8 +121,6 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		
 		Double nodeWidth = view.getNodeView(network.getNodeList().iterator().next()).getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
 		assertEquals(Double.valueOf(70.0d), nodeWidth);
-		
-		
 	}
 	
 	private void checkVisualStyle(final VisualStyle style) {
@@ -139,5 +139,11 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 	private void checkChildNetwork(final CyNetwork network) {
 		assertEquals(43, network.getNodeCount());
 		assertEquals(34, network.getEdgeCount());
+	}
+	
+	private void checkTables() {
+		// Check SUID-type columns
+		final Set<CyTable> globalTables = tableManager.getGlobalTables();
+		// TODO
 	}
 }

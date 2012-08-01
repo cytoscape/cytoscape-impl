@@ -107,7 +107,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	// In 3, CG Manager is treated as a regular app.  This is a unique name for it.
 	private static final String DING_CG_MANAGER_NAME = "org.cytoscape.ding.customgraphicsmgr";
 	
-	public static final String CY2_PARENT_NETWORK_COLUMN = "Cytoscape2 Parent Network";
+	public static final String CY2_PARENT_NETWORK_COLUMN = "Cy2 Parent Network.SUID";
 	
 	public static final String CY_PROPS_FILE = "session_cytoscape.props";
 	public static final Pattern NETWORK_PATTERN = Pattern.compile(".*/(([^/]+)[.]xgmml)");

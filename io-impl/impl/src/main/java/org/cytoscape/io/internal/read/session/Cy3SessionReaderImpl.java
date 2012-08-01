@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.read.datatable.CyTablesXMLReader;
 import org.cytoscape.io.internal.read.session.CyTableMetadataImpl.CyTableMetadataBuilder;
@@ -109,6 +110,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new LinkedHashMap<Long, CyNetwork>();
 	private final Map<Long/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<Long, Set<CyTableMetadataBuilder>>();
 
+	private final SUIDUpdater suidUpdater;
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
@@ -125,6 +127,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 	public Cy3SessionReaderImpl(final InputStream sourceInputStream,
 							    final ReadCache cache,
+							    final SUIDUpdater suidUpdater,
 							    final CyNetworkReaderManager networkReaderMgr,
 							    final CyPropertyReaderManager propertyReaderMgr,
 							    final VizmapReaderManager vizmapReaderMgr,
@@ -133,6 +136,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 							    final CyRootNetworkManager rootNetworkMgr) {
 		super(sourceInputStream, cache);
 
+		if (suidUpdater == null) throw new NullPointerException("SUID updater is null.");
+		this.suidUpdater = suidUpdater;
+		
 		if (networkReaderMgr == null) throw new NullPointerException("network reader manager is null.");
 		this.networkReaderMgr = networkReaderMgr;
 		
@@ -153,6 +159,12 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 		filenameTableMap = new HashMap<String, CyTable>();
 		builderFilenameMap = new HashMap<CyTableMetadataBuilder, String>();
+	}
+	
+	@Override
+	protected void init(TaskMonitor tm) throws Exception {
+		super.init(tm);
+		suidUpdater.init();
 	}
 	
 	@Override
@@ -210,6 +222,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		// Read the session file again, this time to extract the network views
 		networksExtracted = true;
 		readSessionFile(tm);
+		
+		tm.setProgress(0.8);
+		tm.setTitle("Update SUID columns");
+		tm.setStatusMessage("Updating SUID columns...");
+		updateSUIDColumns();
 		
 		super.complete(tm);
 	}
@@ -281,6 +298,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			String filename = matcher.group(1);
 			filenameTableMap.put(filename, table);
 			builderFilenameMap.put(builder, filename);
+			
+			// Look for SUID-type columns--only global tables now
+			findSUIDColumns(table);
 		}
 	}
 
@@ -479,9 +499,13 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			// Just use the source table
 			networkTableMgr.setTable(network, type, namespace, src);
 			builder.setCyTable(src);
+			
+			findSUIDColumns(src);
 		} else {
 			mergeTables(src, tgt, type);
 			builder.setCyTable(tgt);
+			
+			findSUIDColumns(tgt);
 		}
 	}
 	
@@ -535,6 +559,17 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				targetRow.set(columnName, value);
 			}
 		}
+	}
+	
+	private void findSUIDColumns(final CyTable table) {
+		for (final CyColumn column : table.getColumns()) {
+			if (SUIDUpdater.isUpdatableSUIDColumn(column.getName()))
+				suidUpdater.addSUIDColumn(table, column.getName());
+		}
+	}
+	
+	private void updateSUIDColumns() {
+		suidUpdater.updateSUIDColumns();
 	}
 	
 	/**
