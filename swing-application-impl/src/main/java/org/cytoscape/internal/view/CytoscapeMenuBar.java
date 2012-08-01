@@ -160,6 +160,10 @@ public class CytoscapeMenuBar extends JMenuBar {
 		return (JMenu)gravityTracker.getMenu();
 	}
 
+	public JMenuTracker getMenuTracker() {
+		return menuTracker;
+	}
+
 	private JMenuItem createMenuItem(final CyAction action) {
 		JMenuItem ret;
 		if (action.useCheckBoxMenuItem())

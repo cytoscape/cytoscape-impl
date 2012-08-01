@@ -36,78 +36,151 @@
 */
 package org.cytoscape.internal.layout.ui;
 
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import static org.cytoscape.work.ServiceProperties.*;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.view.CytoscapeMenuBar;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.work.TaskManager;
+import static org.cytoscape.work.ServiceProperties.*;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.util.swing.GravityTracker;
+import org.cytoscape.util.swing.JMenuTracker;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.model.CyNetworkView;
 
 import java.util.*;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 
-public class LayoutMenuPopulator {
+public class LayoutMenuPopulator implements MenuListener {
 
-    private Map<String, List<CyLayoutAlgorithm>> menuAlgorithmMap;
-    private Map<String, LayoutMenu> menuMap;
+		private Map<CyLayoutAlgorithm, Map> algorithmMap;
+		private Map<CyLayoutAlgorithm, JMenuItem> menuMap;
+		private Map<CyLayoutAlgorithm, Boolean> separatorMap;
     private CyApplicationManager appMgr;
     private DialogTaskManager tm;
-    private CytoscapeMenuBar menuBar;
+    private GravityTracker gravityTracker; 
+    private JMenu layoutMenu;
 
     public LayoutMenuPopulator(CytoscapeMenuBar menuBar, CyApplicationManager appMgr, DialogTaskManager tm) {
-        menuAlgorithmMap = new HashMap<String,List<CyLayoutAlgorithm>>();
-        menuMap = new HashMap<String,LayoutMenu>();
+        algorithmMap = new HashMap<CyLayoutAlgorithm,Map>();
+        menuMap = new HashMap<CyLayoutAlgorithm,JMenuItem>();
+        separatorMap = new HashMap<CyLayoutAlgorithm,Boolean>();
         this.appMgr = appMgr;
         this.tm = tm;
-        this.menuBar = menuBar;
+        this.gravityTracker = menuBar.getMenuTracker().getGravityTracker("Layout");
+        this.layoutMenu = (JMenu)gravityTracker.getMenu();
+        this.layoutMenu.addMenuListener(this);
     }
 
     public void addLayout(CyLayoutAlgorithm layout, Map props) {
-        String fullMenuName = (String)props.get(PREFERRED_MENU);
-        if (fullMenuName == null )
-            fullMenuName = "Layout." + layout.toString();
-        
-        String actualMenuName = fullMenuName;
-        if ( actualMenuName.startsWith("Layout."))
-            actualMenuName = actualMenuName.substring(7);
-
-        // make sure the list is set up for this name
-        if ( !menuAlgorithmMap.containsKey(fullMenuName) ) {
-            List<CyLayoutAlgorithm> menuList = new ArrayList<CyLayoutAlgorithm>();
-            menuAlgorithmMap.put(fullMenuName, menuList);
-        }
-
-        // add layout to the list of layouts for this name
-        menuAlgorithmMap.get(fullMenuName).add(layout);
-
-        // make sure the menu is set up
-        if ( !menuMap.containsKey(fullMenuName) ) {
-            LayoutMenu menu = new LayoutMenu(actualMenuName, appMgr, tm);
-            menuMap.put(fullMenuName, menu);
-            // This needs to be done so that gravity is supported
-            menuBar.getMenu("Layout").add(menu);
-        } else {
-            // See if the menu type has changed from a Menu to a MenuItem or visa-versa
-            // Yes, replace it.
-            LayoutMenu menu = menuMap.get(fullMenuName);
-            // if (menu.updateSubMenus()) {
-                // Update the menu
-            // }
-        }
-
-        // add layout to the menu for this name
-        menuMap.get(fullMenuName).add(layout);
+        algorithmMap.put(layout, props);
     }
 
     public void removeLayout(CyLayoutAlgorithm layout, Map props) {
-        for (String menu : menuAlgorithmMap.keySet()) {
-            List<CyLayoutAlgorithm> menuList = menuAlgorithmMap.get(menu);
-            if (menuList.indexOf(layout) >= 0) {
-                menuList.remove(layout);
-                menuMap.get(menu).remove(layout);
-                return;
+        algorithmMap.remove(layout);
+    }
+
+    /**
+     *  DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
+    public void menuCanceled(MenuEvent e) { } ;
+
+    /**
+     *  DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
+    public void menuDeselected(MenuEvent e) { } ;
+
+    /**
+     *  DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
+    public void menuSelected(MenuEvent e) {
+        CyNetworkView view = appMgr.getCurrentNetworkView();
+        if ( view == null )
+            return;
+
+        CyNetwork network = view.getModel();
+
+        // Figure out if we have anything selected
+        boolean someSelected = network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) > 0;
+        boolean enableMenuItem = checkEnabled();
+
+        // Get all of the algorithms
+        for ( CyLayoutAlgorithm layout : algorithmMap.keySet() ) {
+            Map props = algorithmMap.get(layout);
+            double gravity = 1000.0;
+            if (props.get(MENU_GRAVITY) != null)
+            	gravity = Double.parseDouble((String)props.get(MENU_GRAVITY));
+
+						boolean separatorAfter = false;
+            if (props.get(INSERT_SEPARATOR_AFTER) != null)
+            	separatorAfter = Boolean.parseBoolean((String)props.get(INSERT_SEPARATOR_AFTER));
+
+						boolean separatorBefore = false;
+            if (props.get(INSERT_SEPARATOR_BEFORE) != null)
+            	separatorBefore = Boolean.parseBoolean((String)props.get(INSERT_SEPARATOR_BEFORE));
+
+            // Remove the old menu
+            if (menuMap.containsKey(layout)) {
+                layoutMenu.remove(menuMap.get(layout));
+                menuMap.remove(layout);
             }
+        
+            boolean usesNodeAttrs = 
+                hasValidAttributes(layout.getSupportedNodeAttributeTypes(),network.getDefaultNodeTable());
+            boolean usesEdgeAttrs = 
+                hasValidAttributes(layout.getSupportedEdgeAttributeTypes(),network.getDefaultEdgeTable());
+            boolean usesSelected = (layout.getSupportsSelectedOnly() && someSelected);
+
+            if (usesNodeAttrs || usesEdgeAttrs || usesSelected) {
+                JMenu newMenu = new DynamicLayoutMenu(layout,network,enableMenuItem,appMgr,
+                                                      tm,usesNodeAttrs,usesEdgeAttrs,usesSelected);
+                menuMap.put(layout, newMenu);
+                gravityTracker.addMenu(newMenu, gravity);
+            } else {
+                JMenuItem newMenu = new StaticLayoutMenu(layout,enableMenuItem,appMgr,tm);
+                menuMap.put(layout, newMenu);
+                gravityTracker.addMenuItem(newMenu, gravity);
+            }
+
+						if (separatorAfter && !separatorMap.containsKey(layout)) {
+                gravityTracker.addMenuSeparator(gravity+0.0001);
+                separatorMap.put(layout, Boolean.TRUE);
+						} else if (separatorBefore && !separatorMap.containsKey(layout)) {
+                gravityTracker.addMenuSeparator(gravity-0.0001);
+                separatorMap.put(layout, Boolean.TRUE);
+						}
         }
     }
+    
+    private boolean hasValidAttributes(Set<Class<?>> typeSet, CyTable attributes) {
+        for (final CyColumn column : attributes.getColumns())
+            if (typeSet.contains(column.getType()))
+                return true;
+        return false;
+    }
+
+    private boolean checkEnabled() {
+        CyNetwork network = appMgr.getCurrentNetwork();
+        if ( network == null )
+            return false;
+
+        CyNetworkView view = appMgr.getCurrentNetworkView();
+        if ( view == null )
+            return false;
+        else
+            return true;
+    }
+    
 }
