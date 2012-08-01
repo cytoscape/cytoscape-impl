@@ -652,13 +652,15 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         return new String[]{};
     }
     
-    protected void writeAttributes(CyRow row) throws IOException {
+    protected void writeAttributes(final CyRow row) throws IOException {
 		// If it is a Cy Session XGMML, writing the CyRows would be redundant,
 		// because they are already serialized in .cytable files.
-    	CyTable table = row.getTable();
+    	final CyTable table = row.getTable();
 
-		for (final CyColumn column : table.getColumns())
-			writeAttribute(row, column.getName());
+		for (final CyColumn column : table.getColumns()) {
+			if (!CyIdentifiable.SUID.equals(column.getName()))
+				writeAttribute(row, column.getName());
+		}
     }
     
     /**
@@ -681,43 +683,51 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 		if (attType == Double.class) {
 			Double dAttr = row.get(attName, Double.class);
 			writeAttributeXML(attName, ObjectType.REAL, dAttr, true);
-		} else {
-			if (attType == Integer.class) {
-				Integer iAttr = row.get(attName, Integer.class);
-				writeAttributeXML(attName, ObjectType.INTEGER, iAttr, true);
-			} else if (attType == String.class) {
-				String sAttr = row.get(attName, String.class);
-				// Protect tabs and returns
-				if (sAttr != null) {
-					sAttr = sAttr.replace("\n", "\\n");
-					sAttr = sAttr.replace("\t", "\\t");
-				}
+		} else if (attType == Integer.class) {
+			Integer iAttr = row.get(attName, Integer.class);
+			writeAttributeXML(attName, ObjectType.INTEGER, iAttr, true);
+		} else if (attType == Long.class) {
+			Long lAttr = row.get(attName, Long.class);
+			writeAttributeXML(attName, ObjectType.REAL, lAttr, true);
+		} else if (attType == String.class) {
+			String sAttr = row.get(attName, String.class);
+			// Protect tabs and returns
+			if (sAttr != null) {
+				sAttr = sAttr.replace("\n", "\\n");
+				sAttr = sAttr.replace("\t", "\\t");
+			}
 
-				writeAttributeXML(attName, ObjectType.STRING, sAttr, true);
-			} else if (attType == Boolean.class) {
-				Boolean bAttr = row.get(attName, Boolean.class);
-				writeAttributeXML(attName, ObjectType.BOOLEAN, bAttr, true);
-			} else if (attType == List.class) {
-				final List<?> listAttr = row.getList(attName, column.getListElementType());
-				writeAttributeXML(attName, ObjectType.LIST, null, false);
+			writeAttributeXML(attName, ObjectType.STRING, sAttr, true);
+		} else if (attType == Boolean.class) {
+			Boolean bAttr = row.get(attName, Boolean.class);
+			writeAttributeXML(attName, ObjectType.BOOLEAN, ObjectTypeMap.toXGMMLBoolean(bAttr), true);
+		} else if (attType == List.class) {
+			final List<?> listAttr = row.getList(attName, column.getListElementType());
+			writeAttributeXML(attName, ObjectType.LIST, null, false);
 
-				if (listAttr != null) {
-					depth++;
-					// iterate through the list
-					for (Object obj : listAttr) {
+			if (listAttr != null) {
+				depth++;
+				// iterate through the list
+				for (Object obj : listAttr) {
+					String sAttr = null;
+					
+					if (obj instanceof Boolean) {
+						sAttr = ObjectTypeMap.toXGMMLBoolean((Boolean) obj);
+					} else {
 						// Protect tabs and returns (if necessary)
-						String sAttr = obj.toString();
+						sAttr = obj.toString();
 						if (sAttr != null) {
 							sAttr = sAttr.replace("\n", "\\n");
 							sAttr = sAttr.replace("\t", "\\t");
 						}
-						// set child attribute value & label
-						writeAttributeXML(attName, checkType(obj), sAttr, true);
 					}
-					depth--;
+					// set child attribute value & label
+					writeAttributeXML(attName, checkType(obj), sAttr, true);
 				}
-				writeAttributeXML(null, null, null, true);
+				depth--;
 			}
+			
+			writeAttributeXML(null, null, null, true);
 		}
 	}
 
@@ -790,18 +800,19 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      * @param obj
      * @return Attribute type in string.
      */
-    private ObjectType checkType(final Object obj) {
-        if (obj.getClass() == String.class) {
+	private ObjectType checkType(final Object obj) {
+        final Class<?> type = obj.getClass();
+		
+		if (type == String.class)
             return ObjectType.STRING;
-        } else if (obj.getClass() == Integer.class) {
+        else if (type == Integer.class)
             return ObjectType.INTEGER;
-        } else if ((obj.getClass() == Double.class) || (obj.getClass() == Float.class)) {
+        else if (type == Double.class || type == Float.class || type == Long.class)
             return ObjectType.REAL;
-        } else if (obj.getClass() == Boolean.class) {
+        else if (type == Boolean.class)
             return ObjectType.BOOLEAN;
-        } else {
-            return null;
-        }
+
+        return null;
     }
 
     protected String getLabel(CyNetwork network, CyIdentifiable entry) {

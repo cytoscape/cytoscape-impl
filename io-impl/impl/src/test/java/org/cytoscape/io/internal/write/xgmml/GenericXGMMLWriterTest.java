@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 
 import java.awt.Color;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import javax.xml.xpath.XPathConstants;
 
@@ -45,6 +46,83 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 		write(net);
 		assertEquals(EDGE_COUNT, evalNumber("count(/x:graph/x:edge)"));
 		assertEquals(EDGE_COUNT, evalNumber("count(//x:edge)"));
+	}
+	
+	@Test
+	public void testIntegerAttributeSavedAsInteger() {
+		net.getRow(net).getTable().createColumn("test_int", Integer.class, false);
+		net.getRow(net).set("test_int", Integer.MAX_VALUE);
+		net.getRow(net).getTable().createListColumn("test_list_int", Integer.class, false);
+		net.getRow(net).set("test_list_int", Arrays.asList(new Integer[]{ 1 }));
+		write(net);
+		assertEquals("integer", evalString("/x:graph/x:att[@name=\"test_int\"]/@type"));
+		assertEquals(Integer.MAX_VALUE, evalNumber("/x:graph/x:att[@name=\"test_int\"]/@value"));
+		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_int\"]/@type"));
+		assertEquals("integer", evalString("/x:graph/x:att[@name=\"test_list_int\"]/x:att[@value=\"1\"]/@type"));
+	}
+	
+	@Test
+	public void testLongAttributeSavedAsReal() {
+		net.getRow(net).getTable().createColumn("test_long", Long.class, false);
+		net.getRow(net).set("test_long", Long.MAX_VALUE);
+		net.getRow(net).getTable().createListColumn("test_list_long", Long.class, false);
+		net.getRow(net).set("test_list_long", Arrays.asList(new Long[]{ 1L }));
+		write(net);
+		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_long\"]/@type"));
+		assertEquals(Long.MAX_VALUE, evalNumber("/x:graph/x:att[@name=\"test_long\"]/@value"));
+		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_long\"]/@type"));
+		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_list_long\"]/x:att[@value=\"1\"]/@type"));
+	}
+	
+	@Test
+	public void testDoubleAttributeSavedAsReal() {
+		net.getRow(net).getTable().createColumn("test_double", Double.class, false);
+		net.getRow(net).set("test_double", Double.MAX_VALUE);
+		net.getRow(net).getTable().createListColumn("test_list_double", Double.class, false);
+		net.getRow(net).set("test_list_double", Arrays.asList(new Double[]{ 1.2D }));
+		write(net);
+		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_double\"]/@type"));
+		assertEquals(Double.MAX_VALUE, new Double(evalString("/x:graph/x:att[@name=\"test_double\"]/@value")), 0.0);
+		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_double\"]/@type"));
+		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_list_double\"]/x:att[@value=\"1.2\"]/@type"));
+	}
+	
+	@Test
+	public void testStringAttributeSavedAsString() {
+		net.getRow(net).getTable().createColumn("test_str", String.class, false);
+		net.getRow(net).set("test_str", "My String");
+		net.getRow(net).getTable().createListColumn("test_list_str", String.class, false);
+		net.getRow(net).set("test_list_str", Arrays.asList(new String[]{ "A", "B" }));
+		write(net);
+		assertEquals("string", evalString("/x:graph/x:att[@name=\"test_str\"]/@type"));
+		assertEquals("My String", evalString("/x:graph/x:att[@name=\"test_str\"]/@value"));
+		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_str\"]/@type"));
+		assertEquals("string", evalString("/x:graph/x:att[@name=\"test_list_str\"]/x:att[@value=\"B\"]/@type"));
+	}
+	
+	@Test
+	public void testBooleanAttributeSavedAsBoolean() {
+		net.getRow(net).getTable().createColumn("test_bool", Boolean.class, false);
+		net.getRow(net).set("test_bool", true);
+		net.getRow(net).getTable().createListColumn("test_list_bool", Boolean.class, false);
+		net.getRow(net).set("test_list_bool", Arrays.asList(new Boolean[]{ true, false }));
+		write(net);
+		// see http://www.cs.rpi.edu/research/groups/pb/punin/public_html/XGMML/draft-xgmml-20010628.html#BT
+		assertEquals("boolean", evalString("/x:graph/x:att[@name=\"test_bool\"]/@type"));
+		assertEquals("1", evalString("/x:graph/x:att[@name=\"test_bool\"]/@value")); // XGMML boolean [0|1]
+		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/@type"));
+		assertEquals("boolean", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/x:att[1]/@type"));
+		assertEquals("1", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/x:att[1]/@value"));
+		assertEquals("0", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/x:att[last()]/@value"));
+	}
+	
+	@Test
+	public void testSUIDAttNotSaved() throws UnsupportedEncodingException {
+		// The SUID should NEVER be saved as an att tag 
+		CyNetwork newNet = netFactory.createNetwork(SavePolicy.DO_NOT_SAVE);
+		setRegistered(newNet, false); // It shouldn't make any difference either
+		write(newNet);
+		assertEquals(0, evalNumber("count(//x:att[@name=\"SUID\"])"));
 	}
 	
 	@Test
