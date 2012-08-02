@@ -53,6 +53,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.NumberConverter;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
@@ -137,8 +138,8 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, above);
 
 			// Add two points.
-			mapping.addPoint( ContinuousMappingEditorPanel.convert(columnType, ((rangeValue.doubleValue() * 0.1) + minValue.doubleValue())), lowerRange);
-			mapping.addPoint(ContinuousMappingEditorPanel.convert(columnType,(rangeValue.doubleValue() * 0.9) + minValue.doubleValue()), upperRange);
+			mapping.addPoint( NumberConverter.convert(columnType, ((rangeValue.doubleValue() * 0.1) + minValue.doubleValue())), lowerRange);
+			mapping.addPoint(NumberConverter.convert(columnType,(rangeValue.doubleValue() * 0.9) + minValue.doubleValue()), upperRange);
 
 			slider.repaint();
 			repaint();
@@ -163,7 +164,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		lowerRange = new BoundaryRangeValues<Color>(lesserVal, equalVal, greaterVal);
 
-		mapping.addPoint(ContinuousMappingEditorPanel.convert(columnType, maxValue), lowerRange);
+		mapping.addPoint(NumberConverter.convert(columnType, maxValue), lowerRange);
 
 		updateMap();
 

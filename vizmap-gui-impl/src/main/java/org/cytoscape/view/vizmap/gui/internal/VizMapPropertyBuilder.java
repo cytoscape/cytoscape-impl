@@ -175,21 +175,37 @@ public class VizMapPropertyBuilder {
 
 		if (visualMapping instanceof DiscreteMapping && (attrName != null)) {
 			// Discrete Mapping
-
 			// This set should not contain null!
-			final SortedSet<K> attrSet = new TreeSet<K>();
-
+			final SortedSet<Object> attrSet = new TreeSet<Object>();
+			
+			
 			for (CyNetwork net : graphObjectSet.keySet()) {
 				if (vp.getTargetDataType() == CyNetwork.class) {
 					final CyRow row = net.getRow(net);
-					processDiscretValues(row, attrName, attrSet);
+					final CyColumn column = row.getTable().getColumn(attrName);
+					if(column != null)
+						processDiscretValues(row, attrName, column, column.getType(), attrSet);
 				} else {
-					for (CyIdentifiable go : graphObjectSet.get(net)) {
+					// Assule all data sets are same data type.
+					final Set<CyIdentifiable> graphObjects = graphObjectSet.get(net);
+					if(graphObjects.isEmpty())
+						continue;
+					
+					CyIdentifiable firstEntry = graphObjects.iterator().next();
+					final CyRow firstRow = net.getRow(firstEntry);
+					final CyColumn column = firstRow.getTable().getColumn(attrName);
+					if(column == null)
+						continue;
+					
+					final Class<?> type = column.getType();
+					for (final CyIdentifiable go : graphObjects) {
 						final CyRow row = net.getRow(go);
-						processDiscretValues(row, attrName, attrSet);
+						processDiscretValues(row, attrName, column, type, attrSet);
 					}
 				}
 			}
+			
+			
 
 			// FIXME
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, topProperty, propertySheetPanel);
@@ -233,25 +249,33 @@ public class VizMapPropertyBuilder {
 		return topProperty;
 	}
 	
-	private <K> void processDiscretValues(final CyRow row, final String attrName, final SortedSet<K> attrSet) {
-		final CyTable table = row.getTable();
-		final CyColumn column = table.getColumn(attrName);
+	private void processDiscretValues(final CyRow row, final String columnName, final CyColumn column, final Class<?> attrClass,
+			final SortedSet<Object> attrSet) {
 
-		if (column != null) {
-			final Class<?> attrClass = column.getType();
+		if (column.getListElementType() != null) {
+			// Expand list contents as a flat list.
+			final List<?> list = row.getList(columnName, column.getListElementType());
+			if (list != null) {
+				for (final Object item : list) {
+					if (item != null)
+						attrSet.add(item);
+				}
+			}
+		} else {
+			Object id = row.get(columnName, attrClass);
 
-			if (attrClass.isAssignableFrom(List.class)) {
-				List<?> list = row.getList(attrName, column.getListElementType());
-				if (list != null) {
-					for (Object item : list) {
-						if (item != null)
-							attrSet.add((K) item);
+			if (id != null) {
+				//System.out.println(id + ": id is " + id.getClass() + ", col type is " + attrClass);
+
+				if (id.getClass() != attrClass && id instanceof Number)
+					attrSet.add(NumberConverter.convert(attrClass, (Number) id));
+				else {
+					try {
+						attrSet.add(id);
+					} catch (Exception e) {
+						logger.debug(columnName + ": Invalid entry ignored", e);
 					}
 				}
-			} else {
-				final Object id = row.get(attrName, attrClass);
-				if (id != null)
-					attrSet.add((K) id);
 			}
 		}
 	}
@@ -261,7 +285,7 @@ public class VizMapPropertyBuilder {
 	 * list should be created against all available attribute values.
 	 */
 	private <K, V> void setDiscreteProps(VisualProperty<V> vp, VisualMappingFunction<K, V> mapping,
-			SortedSet<K> attrSet, VisualPropertyEditor<V> visualPropertyEditor, DefaultProperty parent,
+			SortedSet<Object> attrSet, VisualPropertyEditor<V> visualPropertyEditor, DefaultProperty parent,
 			PropertySheetPanel propertySheetPanel) {
 		if (attrSet == null)
 			return;
@@ -277,9 +301,9 @@ public class VizMapPropertyBuilder {
 		final PropertyRendererRegistry cellRendererFactory = (PropertyRendererRegistry) table.getRendererFactory();
 		final PropertyEditorRegistry cellEditorFactory = (PropertyEditorRegistry) table.getEditorFactory();
 
-		for (K key : attrSet) {
+		for (Object key : attrSet) {
 
-			valProp = new VizMapperProperty<K, V, VisualMappingFunction<K, V>>(CellType.DISCRETE, key, mapping
+			valProp = new VizMapperProperty<K, V, VisualMappingFunction<K, V>>(CellType.DISCRETE, (K)key, mapping
 					.getVisualProperty().getRange().getType());
 			strVal = key.toString();
 			valProp.setDisplayName(strVal);

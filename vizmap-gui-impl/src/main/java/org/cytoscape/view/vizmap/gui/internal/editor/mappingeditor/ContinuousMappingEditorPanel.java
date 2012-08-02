@@ -66,6 +66,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.NumberConverter;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
@@ -166,33 +167,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		initComponents();
 		initRangeValues();
 		setSpinner();
-	}
-	
-	protected static <T> T convert(final Class<T> type, Number value) {
-		T converted = null;
-		if(type == Double.class) {
-			Double doubleValue = value.doubleValue();
-			converted = (T) doubleValue;
-		} else if(type == Integer.class) {
-			Integer intValue = value.intValue();
-			converted = (T) intValue;
-		} else if(type == Float.class) {
-			Float floatValue = value.floatValue();
-			converted = (T) floatValue;
-		} else if(type == Byte.class) {
-			Byte byteValue = value.byteValue();
-			converted = (T) byteValue;
-		} else if(type == Long.class){
-			Long longValue = value.longValue();
-			converted = (T) longValue;
-		} else if(type == Short.class) {
-			Short shortValue = value.shortValue();
-			converted = (T) shortValue;
-		} else {
-			throw new IllegalStateException("Could not covert Number.");
-		}
-		
-		return converted;
 	}
 
 
@@ -555,7 +529,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			V greaterVal = above;
 
 			if(equalVal instanceof Number)
-				mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(convert(vpValueType, (Number)equalVal), convert(vpValueType, (Number)lesserVal), convert(vpValueType, (Number)greaterVal)));
+				mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number)equalVal), NumberConverter.convert(vpValueType, (Number)lesserVal), NumberConverter.convert(vpValueType, (Number)greaterVal)));
 			else {
 				mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(equalVal, lesserVal, greaterVal));
 			}
@@ -588,7 +562,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			}
 
 			if(equalVal instanceof Number)
-				mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(convert(vpValueType, (Number)equalVal), convert(vpValueType, (Number)lesserVal), convert(vpValueType, (Number)greaterVal)));
+				mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number)equalVal), NumberConverter.convert(vpValueType, (Number)lesserVal), NumberConverter.convert(vpValueType, (Number)greaterVal)));
 			else {
 				mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(equalVal, lesserVal, greaterVal));
 			}

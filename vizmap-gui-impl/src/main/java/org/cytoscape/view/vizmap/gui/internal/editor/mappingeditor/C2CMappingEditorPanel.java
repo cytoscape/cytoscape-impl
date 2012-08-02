@@ -46,6 +46,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.NumberConverter;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
@@ -91,11 +92,11 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	}
 	
 	private V convertToValue(final Number value) {
-		return convert(vpValueType, value);
+		return NumberConverter.convert(vpValueType, value);
 	}
 	
 	private K convertToColumnValue(final Number value) {
-		return convert(columnType, value);
+		return NumberConverter.convert(columnType, value);
 	}
 	
 	
