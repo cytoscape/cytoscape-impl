@@ -114,7 +114,7 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 					if (appFile == null) {
 						installStatus = "version-not-found";
 						installError = "An entry for the app " + appName + " with version " + version
-							+ " was not found in the app store database at: " + appManager.getWebQuerier().getAppStoreUrl();
+							+ " was not found in the app store database at: " + appManager.getWebQuerier().getDefaultAppStoreUrl();
 					} else {
 						installStatus = "success";
 						
@@ -135,7 +135,7 @@ public class AppGetResponder implements LocalHttpServer.GetResponder{
 				} else {
 					installStatus = "app-not-found";
 					installError = "The app " + appName + " is not found in the app store database at "
-						+ appManager.getWebQuerier().getAppStoreUrl();
+						+ appManager.getWebQuerier().getDefaultAppStoreUrl();
 				}
 				
 				responseData.put("install_status", installStatus);

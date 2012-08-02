@@ -44,7 +44,7 @@ public class SimpleAppOld extends App {
 	 * A regular expression representing valid app versions, which are in the format major.minor[.patch][-tag],
 	 * eg. 3.0.0-SNAPSHOT, or 3.0.
 	 */
-	public static final Pattern APP_VERSION_TAG_REGEX = Pattern.compile("(0|([1-9]+\\d*))\\.(\\d)+(\\.(\\d)+)?(-.*)?");
+	public static final Pattern APP_VERSION_TAG_REGEX = Pattern.compile("(0|([1-9]+\\d*))\\.(\\d)+(\\.(\\d)+)?(.*)?");
 
 	@Override
 	public Object createAppInstance(CySwingAppAdapter appAdapter) throws AppInstanceException {
