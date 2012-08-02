@@ -395,7 +395,7 @@ public class CyActivator extends AbstractCyActivator {
 		//
 		ShowGraphicsDetailsTaskFactory showGraphicsDetailsTaskFactory = new ShowGraphicsDetailsTaskFactory(applicationManagerServiceRef,dingGraphLOD, dingGraphLODAll);
 		Properties showGraphicsDetailsTaskFactoryProps = new Properties();
-		showGraphicsDetailsTaskFactoryProps.setProperty(MENU_GRAVITY, "10.0");
+		showGraphicsDetailsTaskFactoryProps.setProperty(MENU_GRAVITY, "11.0");
 		showGraphicsDetailsTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
 		showGraphicsDetailsTaskFactoryProps.setProperty(TITLE, "Show/Hide Graphics Details");
 		showGraphicsDetailsTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");		
