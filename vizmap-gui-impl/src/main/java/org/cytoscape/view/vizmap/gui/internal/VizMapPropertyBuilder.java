@@ -48,8 +48,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -177,26 +175,25 @@ public class VizMapPropertyBuilder {
 			// Discrete Mapping
 			// This set should not contain null!
 			final SortedSet<Object> attrSet = new TreeSet<Object>();
-			
-			
+
 			for (CyNetwork net : graphObjectSet.keySet()) {
 				if (vp.getTargetDataType() == CyNetwork.class) {
 					final CyRow row = net.getRow(net);
 					final CyColumn column = row.getTable().getColumn(attrName);
-					if(column != null)
+					if (column != null)
 						processDiscretValues(row, attrName, column, column.getType(), attrSet);
 				} else {
 					// Assule all data sets are same data type.
 					final Set<CyIdentifiable> graphObjects = graphObjectSet.get(net);
-					if(graphObjects.isEmpty())
+					if (graphObjects.isEmpty())
 						continue;
-					
+
 					CyIdentifiable firstEntry = graphObjects.iterator().next();
 					final CyRow firstRow = net.getRow(firstEntry);
 					final CyColumn column = firstRow.getTable().getColumn(attrName);
-					if(column == null)
+					if (column == null)
 						continue;
-					
+
 					final Class<?> type = column.getType();
 					for (final CyIdentifiable go : graphObjects) {
 						final CyRow row = net.getRow(go);
@@ -204,8 +201,6 @@ public class VizMapPropertyBuilder {
 					}
 				}
 			}
-			
-			
 
 			// FIXME
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, topProperty, propertySheetPanel);
@@ -248,9 +243,9 @@ public class VizMapPropertyBuilder {
 
 		return topProperty;
 	}
-	
-	private void processDiscretValues(final CyRow row, final String columnName, final CyColumn column, final Class<?> attrClass,
-			final SortedSet<Object> attrSet) {
+
+	private void processDiscretValues(final CyRow row, final String columnName, final CyColumn column,
+			final Class<?> attrClass, final SortedSet<Object> attrSet) {
 
 		if (column.getListElementType() != null) {
 			// Expand list contents as a flat list.
@@ -262,14 +257,11 @@ public class VizMapPropertyBuilder {
 				}
 			}
 		} else {
-			Object id = row.get(columnName, attrClass);
-
+			final Object id = row.get(columnName, attrClass);
 			if (id != null) {
-				//System.out.println(id + ": id is " + id.getClass() + ", col type is " + attrClass);
-
-				if (id.getClass() != attrClass && id instanceof Number)
+				if (id.getClass() != attrClass && id instanceof Number) {
 					attrSet.add(NumberConverter.convert(attrClass, (Number) id));
-				else {
+				} else {
 					try {
 						attrSet.add(id);
 					} catch (Exception e) {
@@ -303,7 +295,7 @@ public class VizMapPropertyBuilder {
 
 		for (Object key : attrSet) {
 
-			valProp = new VizMapperProperty<K, V, VisualMappingFunction<K, V>>(CellType.DISCRETE, (K)key, mapping
+			valProp = new VizMapperProperty<K, V, VisualMappingFunction<K, V>>(CellType.DISCRETE, (K) key, mapping
 					.getVisualProperty().getRange().getType());
 			strVal = key.toString();
 			valProp.setDisplayName(strVal);
