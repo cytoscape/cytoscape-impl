@@ -96,6 +96,7 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
@@ -134,6 +135,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	private final Map<Long, NetworkTreeNode> treeNodeMap;
 	private final Map<Object, TaskFactory> provisionerMap;
+	
+	private HashMap<JMenuItem, Double> actionGravityMap;
 
 	private final Map<CyNetwork, NetworkTreeNode> network2nodeMap;
 
@@ -168,6 +171,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		treeTable = new JTreeTable(treeTableModel);
 		initialize();
 
+		this.actionGravityMap = new HashMap<JMenuItem, Double>();
+		
 		// create and populate the popup window
 		popup = new JPopupMenu();
 		popupMap = new WeakHashMap<TaskFactory, JMenuItem>();
@@ -245,12 +250,34 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			action = new TaskFactoryTunableAction(taskMgr, factory, props);
 
 		final JMenuItem item = new JMenuItem(action);
+
+		Double gravity = 10.0;
+		if (props.containsKey(ServiceProperties.MENU_GRAVITY)){
+			gravity = Double.valueOf(props.get(ServiceProperties.MENU_GRAVITY).toString());
+		}
+		
+		this.actionGravityMap.put(item, gravity);
+		
 		popupMap.put(factory, item);
 		popupActions.put(factory, action);
-		popup.add(item);
+		int menuIndex = getMenuIndexByGravity(item);
+		popup.insert(item, menuIndex);
 		popup.addPopupMenuListener(action);
 	}
 
+	private int getMenuIndexByGravity(JMenuItem item) {
+		Double gravity = this.actionGravityMap.get(item);		
+		Double gravityX;
+		for (int i=0; i < popup.getComponentCount(); i++ ){
+			gravityX = this.actionGravityMap.get(popup.getComponent(i));
+			if (gravity < gravityX){
+				return i;
+			}
+		}
+		
+		return popup.getComponentCount();
+	}
+	
 	private void removeFactory(TaskFactory factory) {
 		JMenuItem item = popupMap.remove(factory);
 		if (item != null)
