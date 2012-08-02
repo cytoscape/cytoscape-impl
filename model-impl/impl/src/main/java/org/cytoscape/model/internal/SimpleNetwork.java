@@ -236,10 +236,11 @@ class SimpleNetwork {
 		if (nodes == null || nodes.isEmpty())
 			return false;
 
+		boolean madeChanges = false;
 		synchronized (this) {
 			for ( CyNode n : nodes ) {
 				if (!containsNode(n)) 
-					return false;
+					continue;
 
 				// remove adjacent edges from network
 				removeEdgesInternal(getAdjacentEdgeList(n, CyEdge.Type.ANY));
@@ -249,10 +250,11 @@ class SimpleNetwork {
 				firstNode = node.remove(firstNode);
 	
 				nodeCount--;
+				madeChanges = true;
 			}
 		}
 
-		return true;
+		return madeChanges;
 	}
 
 	protected CyEdge addEdgeInternal(final CyNode s, final CyNode t, final boolean directed, final CyEdge edge) {
@@ -289,10 +291,11 @@ class SimpleNetwork {
 		if ( edges == null || edges.isEmpty() )
 			return false;
 
+		boolean madeChanges = false;
 		synchronized (this) {
 			for (CyEdge edge : edges) {
 				if (!containsEdge(edge))
-					return false;
+					continue;
 	
 				final EdgePointer e = (EdgePointer)edgePointers.get(edge.getSUID());
 				edgePointers.removeKey(edge.getSUID());
@@ -300,10 +303,11 @@ class SimpleNetwork {
 				e.remove();
 	
 				edgeCount--;
+				madeChanges = true;
 			}
 		}
 
-		return true;
+		return madeChanges;
 	}
 
 	public boolean containsNode(final CyNode node) {
