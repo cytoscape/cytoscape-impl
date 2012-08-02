@@ -84,6 +84,7 @@ import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -391,6 +392,15 @@ public class CyActivator extends AbstractCyActivator {
 		selectNodesEdgesProps.setProperty(TITLE, "Nodes and Edges");
 		registerService(bc, selectNodesAndEdges, TaskFactory.class, selectNodesEdgesProps);
 		
+		//
+		ShowGraphicsDetailsTaskFactory showGraphicsDetailsTaskFactory = new ShowGraphicsDetailsTaskFactory(applicationManagerServiceRef,dingGraphLOD, dingGraphLODAll);
+		Properties showGraphicsDetailsTaskFactoryProps = new Properties();
+		showGraphicsDetailsTaskFactoryProps.setProperty(MENU_GRAVITY, "10.0");
+		showGraphicsDetailsTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
+		showGraphicsDetailsTaskFactoryProps.setProperty(TITLE, "Show/Hide Graphics Details");
+		showGraphicsDetailsTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");		
+		registerService(bc, showGraphicsDetailsTaskFactory, NetworkViewTaskFactory.class, showGraphicsDetailsTaskFactoryProps);
+
 		//
 		registerServiceListener(bc, vtfListener, "addNodeViewTaskFactory", "removeNodeViewTaskFactory",
 				NodeViewTaskFactory.class);
