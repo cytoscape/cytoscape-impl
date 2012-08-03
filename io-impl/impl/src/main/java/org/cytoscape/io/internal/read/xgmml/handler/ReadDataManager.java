@@ -61,6 +61,9 @@ import org.xml.sax.Attributes;
 
 public class ReadDataManager {
 
+	public final static String GROUP_STATE_ATTRIBUTE="__groupState";
+	public final static String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges.SUID";
+	
 	protected final static String XLINK = "http://www.w3.org/1999/xlink";
 	
 	/* RDF Data */
@@ -470,7 +473,7 @@ public class ReadDataManager {
         	CyNode actualSrc = net.getNode(source.getSUID());
         	CyNode actualTgt = net.getNode(target.getSUID());
         	
-        	List<String> extEdgeIds = null; // For 2.x groups
+        	List<Long> extEdgeIds = null; // For 2.x groups
         	
         	if ( (getDocumentVersion() < 3.0 || !isSessionFormat()) && (actualSrc == null || actualTgt == null) ) {
         		// The nodes might have been added to other sub-networks, but not to the current one.
@@ -497,18 +500,18 @@ public class ReadDataManager {
         			// Check for the group's metadata attribute
         			final CyRow grhRow = grNet.getRow(grNode, CyNetwork.HIDDEN_ATTRS);
         			
-        			if (grhRow.isSet("__groupState")) { // It's a group!
+        			if (grhRow.isSet(GROUP_STATE_ATTRIBUTE)) { // It's a group!
         				// Add extra metadata for external edges, so that the information is not lost
         				final CyRow rnRow = getRootNetwork().getRow(grNode, CyNetwork.HIDDEN_ATTRS);
         				
-        				if (rnRow.getTable().getColumn("__externalEdges") == null)
-        					rnRow.getTable().createListColumn("__externalEdges", String.class, false);
+        				if (rnRow.getTable().getColumn(EXTERNAL_EDGE_ATTRIBUTE) == null)
+        					rnRow.getTable().createListColumn(EXTERNAL_EDGE_ATTRIBUTE, Long.class, false);
         				
-        				extEdgeIds = rnRow.getList("__externalEdges", String.class);
+        				extEdgeIds = rnRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
         						
         				if (extEdgeIds == null) {
-        					extEdgeIds = new ArrayList<String>();
-        					rnRow.set("__externalEdges", extEdgeIds);
+        					extEdgeIds = new ArrayList<Long>();
+        					rnRow.set(EXTERNAL_EDGE_ATTRIBUTE, extEdgeIds);
         				}
         			}
         		}
@@ -517,7 +520,7 @@ public class ReadDataManager {
         	edge = net.addEdge(actualSrc, actualTgt, directed);
         	
         	if (extEdgeIds != null)
-        		extEdgeIds.add(id.toString());
+        		extEdgeIds.add(edge.getSUID());
         	
         	mapSUIDs(id, edge.getSUID());
         }

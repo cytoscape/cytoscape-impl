@@ -310,7 +310,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		int npCount = 0;
 		
 		for (CyNode n : net.getNodeList()) {
-			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet("__groupState")) {
+			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet(ReadDataManager.GROUP_STATE_ATTRIBUTE)) {
 				gn = n;
 				if (++npCount > 1) fail("There should be only one group node!");
 			} else { // The other nodes have no network pointer!
@@ -331,11 +331,11 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// Check external edges metadata (must be added by the reader!)
 		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(np);
 		CyRow rnRow = rootNet.getRow(gn, HIDDEN_ATTRS);
-		List<String> extEdgeIds = rnRow.getList("__externalEdges", String.class);
+		List<Long> extEdgeIds = rnRow.getList(ReadDataManager.EXTERNAL_EDGE_ATTRIBUTE, Long.class);
 		
 		assertNotNull(extEdgeIds);
 		assertEquals(1, extEdgeIds.size());
-		assertEquals("node1 (DirectedEdge) node2", extEdgeIds.get(0));
+		assertNotNull(rootNet.getEdge(extEdgeIds.get(0)));
 		
 		return gn;
 	}

@@ -34,7 +34,7 @@ public class SessionEventsListener implements SessionLoadedListener, SessionAbou
 	private final CyGroupManager groupMgr;
 	private final CyNetworkManager netMgr;
 	private final CyRootNetworkManager rootNetMgr;
-	private final String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges";
+	private final String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges.SUID";
 	private final String GROUP_COLLAPSED_ATTRIBUTE="__groupCollapsed";
 	// 2.x group attributes
 	private final String GROUP_STATE_ATTRIBUTE="__groupState";
@@ -126,17 +126,10 @@ public class SessionEventsListener implements SessionLoadedListener, SessionAbou
 			// Add in the missing external edges if we're collapsed
 			// CyRow groupNodeRow = net.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			if (rnRow.isSet(EXTERNAL_EDGE_ATTRIBUTE)) {
-				Class<?> listType = rnRow.getTable().getColumn(EXTERNAL_EDGE_ATTRIBUTE).getListElementType();
-				List<?> externalIDs = rnRow.getList(EXTERNAL_EDGE_ATTRIBUTE, listType);
+				List<Long> externalIDs = rnRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
 				List<CyEdge> externalEdges = new ArrayList<CyEdge>();
-				for (Object oldId: externalIDs) {
-					CyEdge newEdge = null;
-					
-					if (oldId instanceof Long) // Cy3 old edge IDs are SUIDs
-						newEdge = sess.getObject((Long)oldId, CyEdge.class);
-					else // Cy2 uses edge labels as IDs
-						newEdge = sess.getObject(oldId.toString(), CyEdge.class);
-						
+				for (Long suid: externalIDs) {
+					CyEdge newEdge = rootNet.getEdge(suid);
 					if (newEdge != null)
 						externalEdges.add(newEdge);
 				}
