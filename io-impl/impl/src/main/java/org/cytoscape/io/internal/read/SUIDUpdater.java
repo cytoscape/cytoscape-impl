@@ -87,9 +87,7 @@ public class SUIDUpdater {
 			if (type == Long.class) {
 				final Long oldSUID = row.get(columnName, Long.class);
 				final Long newSUID = getNewSUID(oldSUID);
-				
-				if (newSUID != null)
-					row.set(columnName, newSUID);
+				row.set(columnName, newSUID);
 			} else if (type == List.class) {
 				final List<Long> oldList = row.getList(columnName, Long.class);
 				

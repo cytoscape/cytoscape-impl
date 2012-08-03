@@ -176,6 +176,12 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// Check edge attributes
 		assertEquals(edges.get(0).getSource().getSUID(), net.getRow(edges.get(0)).get("source_node.SUID", Long.class));
 		assertEquals(edges.get(1).getSource().getSUID(), net.getRow(edges.get(1)).get("source_node.SUID", Long.class));
+		
+		// Set null to invalid SUIDs
+		assertNull(net.getRow(edges.get(0)).get("invalid.SUID", Long.class));
+		// Don't add invalid SUIDs to list value
+		assertEquals(1, net.getRow(edges.get(0)).getList("invalid_list_1.SUID", Long.class).size()); // one valid SUID
+		assertTrue(net.getRow(edges.get(0)).getList("invalid_list_2.SUID", Long.class).isEmpty()); // all invalid
 	}
 	
 	@Test

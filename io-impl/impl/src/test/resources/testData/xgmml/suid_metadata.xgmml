@@ -32,9 +32,27 @@
 	<edge id="23" label="node1 (DirectedEdge) node2" source="21" target="22">
 		<att type="string" name="name" value="node1 (DirectedEdge) node2" />
 		<att type="real" name="source_node.SUID" value="21" />
+		<att type="real" name="invalid.SUID" value="101" />
+		<att type="list" name="invalid_list_1.SUID">
+			<att type="real" value="21" />
+			<att type="real" value="104" /><!-- invalid -->
+		</att>
+		<att type="list" name="invalid_list_2.SUID"><!-- all invalid -->
+			<att type="real" value="103" />
+			<att type="real" value="104" />
+		</att>
 	</edge>
 	<edge id="24" label="node2 (DirectedEdge) node1" source="22" target="21">
 		<att type="string" name="name" value="node2 (DirectedEdge) node1" />
 		<att type="real" name="source_node.SUID" value="22" />
+		<att type="real" name="invalid.SUID" value="102" />
+		<att type="list" name="invalid_list_1.SUID">
+			<att type="real" value="21" />
+			<att type="real" value="105" /><!-- invalid -->
+		</att>
+		<att type="list" name="invalid_list_2.SUID"><!-- all invalid -->
+			<att type="real" value="103" />
+			<att type="real" value="104" />
+		</att>
 	</edge>
 </graph>
