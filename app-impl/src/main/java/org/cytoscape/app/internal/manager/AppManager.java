@@ -2,7 +2,14 @@ package org.cytoscape.app.internal.manager;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -520,6 +527,12 @@ public class AppManager {
 	public void installApp(App app) throws AppInstallException {
 		
 		try {
+			System.out.println(getChecksum(app.getAppFile()));
+		} catch (ChecksumException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		try {
 			app.moveAppFile(this, new File(getInstalledAppsPath()));
 		} catch (IOException e) {
 			throw new AppInstallException("Unable to move app file, " + e.getMessage());
@@ -883,14 +896,67 @@ public class AppManager {
 		appListeners.add(appListener);
 	}
 	
-	public  void removeAppListener(AppsChangedListener appListener) {
+	public void removeAppListener(AppsChangedListener appListener) {
 		appListeners.remove(appListener);
 	}
 	
+	public class ChecksumException extends Exception {
+		private static final long serialVersionUID = 7022699404764909882L;
+		
+		public ChecksumException(String text) {
+			super(text);
+		}
+	}
+	
 	/**
-	 * Install apps from the local storage directory containing previously installed apps.
+	 * Obtain the SHA-512 checksum of a file, in the following format: sha512:3c1c..
+	 * @param file The file to find the checksum
+	 * @return The SHA-512 checksum, in format: sha512:e1..
+	 * @throws ChecksumException If unable to obtain SHA-512 algorithm implementation,
+	 * file does not exist, or IO error while reading
 	 */
-	public void installAppsFromDirectory() {
-		installAppsInDirectory(new File(getInstalledAppsPath()), false);
+	public String getChecksum(File file) throws ChecksumException {
+		MessageDigest messageDigest;
+		 
+		try {
+			messageDigest = MessageDigest.getInstance("SHA-512");
+		} catch (NoSuchAlgorithmException e) {
+			throw new ChecksumException("Unable to obtain SHA-512 algorithm implementation");
+		}
+
+		InputStream inputStream;
+		try {
+			inputStream = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			throw new ChecksumException("File " + file.getAbsolutePath() + " does not exist.");
+		}
+		 
+		try {
+			inputStream = new DigestInputStream(inputStream, messageDigest);
+			
+			byte[] byteBuffer = new byte[128];
+			
+			while (inputStream.available() != 0) {
+				inputStream.read(byteBuffer);
+			}
+		} catch (IOException e) {
+			throw new ChecksumException("Error reading from file " + file + ", " + e.getMessage());
+		} finally {
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.warn("Failed to close input stream on file " + file.getAbsolutePath() + ", " + e.getMessage());
+			}
+		}
+		
+		byte[] digest = messageDigest.digest();
+		
+		String result = "";
+		for (int i = 0; i < digest.length; i++) {
+			// Convert each byte to a 2-digit hex number, adding 0x100 to obtain the 0 if the byte is 0E
+			result += Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1);
+		}
+		
+	    return "sha512:" + result;
 	}
 }

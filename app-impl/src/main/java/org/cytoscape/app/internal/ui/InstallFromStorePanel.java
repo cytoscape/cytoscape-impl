@@ -4,6 +4,9 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -15,6 +18,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -106,15 +111,20 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 		
 		setupTextFieldListener();
     	
-		taskManager.execute(new TaskIterator(new Task() {
+		queryForApps();
+    }
+    
+    // Queries the currently set app store url for available apps.
+    private void queryForApps() {
+    	taskManager.execute(new TaskIterator(new Task() {
 			
 			// Obtain information for all available apps, then append tag information
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
-				taskMonitor.setTitle("Obtaining Apps from App Store");
-				
 				WebQuerier webQuerier = appManager.getWebQuerier();
 		    	
+				taskMonitor.setTitle("Obtaining apps from: " + webQuerier.getCurrentAppStoreUrl());
+				
 				taskMonitor.setStatusMessage("Getting available apps");
 				Set<WebApp> availableApps = webQuerier.getAllApps();
 			
@@ -233,7 +243,22 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         downloadSiteLabel.setText("Download Site:");
 
         downloadSiteComboBox.setEditable(true);
-        downloadSiteComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "http://apps3.nrnb.org/" }));
+        downloadSiteComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "http://apps3.nrnb.org/", "http://apps.cytoscape.org/" }));
+        downloadSiteComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                downloadSiteComboBoxItemStateChanged(evt);
+            }
+        });
+        downloadSiteComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadSiteComboBoxActionPerformed(evt);
+            }
+        });
+        downloadSiteComboBox.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                downloadSiteComboBoxKeyPressed(evt);
+            }
+        });
 
         closeButton.setText("Close");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -293,6 +318,57 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        // Add a key listener to the download site combo box to listen for the enter key event
+        final WebQuerier webQuerier = this.appManager.getWebQuerier();
+        
+        downloadSiteComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				final ComboBoxEditor editor = downloadSiteComboBox.getEditor();
+		    	final Object selectedValue = editor.getItem();
+				
+				if (e.isActionKey() || e.getKeyCode() == KeyEvent.VK_ENTER) {
+					
+			    	if (downloadSiteComboBox.getModel() instanceof DefaultComboBoxModel
+			    			&& selectedValue != null) {
+			    		final DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel) downloadSiteComboBox.getModel();
+			    	
+			    		SwingUtilities.invokeLater(new Runnable() {
+			    			
+			    			@Override
+			    			public void run() {
+				    			boolean selectedAlreadyInList = false;
+				    	    	
+				        		for (int i = 0; i < comboBoxModel.getSize(); i++) {
+				        			Object listElement = comboBoxModel.getElementAt(i);
+				        			
+				        			if (listElement.equals(selectedValue)) {
+				        				selectedAlreadyInList = true;
+				        				
+				        				break;	
+				        			}
+				        		}
+				        		
+				        		if (!selectedAlreadyInList) {
+				        			comboBoxModel.insertElementAt(selectedValue, 1);
+				        			
+				        			editor.setItem(selectedValue);
+				        		}
+			    			}
+			    			
+			    		});
+			    	}
+			    	
+			    	if (webQuerier.getCurrentAppStoreUrl() != selectedValue.toString()) {
+			    		webQuerier.setCurrentAppStoreUrl(selectedValue.toString());
+			    		
+			    		queryForApps();
+			    	}
+				}
+			}
+		});
+        
         // Make the JTextPane render HTML using the default UI font
         Font font = UIManager.getFont("Label.font");
         String bodyRule = "body { font-family: " + font.getFamily() + "; " +
@@ -622,5 +698,58 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {
     	((javax.swing.JDialog)InstallFromStorePanel.this.parent).dispose();
+    }
+    
+    private void downloadSiteComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {
+    }
+
+    private void downloadSiteComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
+    	
+    	final Object selected = downloadSiteComboBox.getSelectedItem();
+    	
+    	if (downloadSiteComboBox.getModel() instanceof DefaultComboBoxModel
+    			&& selected != null) {
+    		final DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel) downloadSiteComboBox.getModel();
+    	
+    		SwingUtilities.invokeLater(new Runnable() {
+    			
+    			@Override
+    			public void run() {
+	    			boolean selectedAlreadyInList = false;
+	    	    	
+	        		for (int i = 0; i < comboBoxModel.getSize(); i++) {
+	        			Object listElement = comboBoxModel.getElementAt(i);
+	        			
+	        			if (listElement.equals(selected)) {
+	        				selectedAlreadyInList = true;
+	        				
+	        				if (i > 0) {
+	        					// comboBoxModel.removeElementAt(i);
+	        					// comboBoxModel.insertElementAt(listElement, 1);
+	        				}
+	        				
+	        				break;	
+	        			}
+	        		}
+	        		
+	        		if (!selectedAlreadyInList) {
+	        			comboBoxModel.insertElementAt(selected, 1);
+	        		}
+    			}
+    			
+    		});
+    		
+    		if (appManager.getWebQuerier().getCurrentAppStoreUrl() != selected.toString()) {
+    			appManager.getWebQuerier().setCurrentAppStoreUrl(selected.toString());
+	    		
+	    		queryForApps();
+	    	}
+    	}
+    	
+    	
+   
+    }
+    
+    private void downloadSiteComboBoxKeyPressed(java.awt.event.KeyEvent evt) {
     }
 }

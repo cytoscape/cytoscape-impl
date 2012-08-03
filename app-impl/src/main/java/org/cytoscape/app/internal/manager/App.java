@@ -72,6 +72,11 @@ public abstract class App {
 	 */
 	private boolean officialNameObtained;
 	
+	/**
+	 * The SHA-512 checksum of the app file, in format sha512:0a516c..
+	 */
+	private String sha512Checksum;
+	
 	private AppStatus status;
 	
 	/**
@@ -551,6 +556,10 @@ public abstract class App {
 		return compatibleVersions;
 	}
 	
+	public String getSha512Checksum() {
+		return sha512Checksum;
+	}
+	
 	public URL getAppStoreUrl() {
 		return appStoreUrl;
 	}
@@ -601,6 +610,10 @@ public abstract class App {
 	
 	public void setCompatibleVersions(String compatibleVersions) {
 		this.compatibleVersions = compatibleVersions;
+	}
+	
+	public void setSha512Checksum(String sha512Checksum) {
+		this.sha512Checksum = sha512Checksum;
 	}
 	
 	public void setAppStoreUrl(URL appStoreURL) {

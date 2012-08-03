@@ -21,6 +21,7 @@ import javax.swing.ImageIcon;
 
 import org.apache.commons.io.IOUtils;
 import org.cytoscape.app.internal.exception.AppDownloadException;
+import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
 import org.cytoscape.app.internal.util.DebugHelper;
@@ -61,7 +62,7 @@ public class WebQuerier {
 	// private Map<String, AppTag> appTags;
 	
 	/**
-	 * A reference to the result obtained by the last successful query for all available apps 
+	 * A reference to the result obtained by the last successful query for all available apps
 	 * to this app store URL.
 	 */
 	private Map<String, Set<WebApp>> appsByUrl;
@@ -192,7 +193,7 @@ public class WebQuerier {
 		return DEFAULT_APP_STORE_URL;
 	}
 	
-	public String getCurrentAppStoreUrl(String url) {
+	public String getCurrentAppStoreUrl() {
 		return currentAppStoreUrl;
 	}
 	
@@ -259,7 +260,7 @@ public class WebQuerier {
 		String jsonResult = null;
 		try {
 			// Obtain information about the app from the website
-			jsonResult = query(DEFAULT_APP_STORE_URL + "backend/all_apps");
+			jsonResult = query(currentAppStoreUrl + "backend/all_apps");
 			
 			// Parse the JSON result
 			JSONArray jsonArray = new JSONArray(jsonResult);
@@ -331,9 +332,10 @@ public class WebQuerier {
 							
 							WebApp.Release release = new WebApp.Release();
 							
-							release.setRelativeUrl(jsonRelease.get("release_download_url").toString());
-							release.setReleaseDate(jsonRelease.get("created_iso").toString());
-							release.setReleaseVersion(jsonRelease.get("version").toString());
+							release.setRelativeUrl(jsonRelease.optString("release_download_url"));
+							release.setReleaseDate(jsonRelease.optString("created_iso"));
+							release.setReleaseVersion(jsonRelease.optString("version"));							
+							release.setSha512Checksum(jsonRelease.optString("hexchecksum"));
 							
 							keyName = "works_with";
 							if (jsonRelease.has(keyName)) {
@@ -466,7 +468,7 @@ public class WebQuerier {
 			
 			URL downloadUrl = null;
 			try {
-				downloadUrl = new URL(DEFAULT_APP_STORE_URL + releaseToDownload.getRelativeUrl());
+				downloadUrl = new URL(currentAppStoreUrl + releaseToDownload.getRelativeUrl());
 			} catch (MalformedURLException e) {
 				throw new AppDownloadException("Unable to obtain URL for version " + version 
 						+ " of the release for " + webApp.getFullName());
@@ -524,11 +526,30 @@ public class WebQuerier {
 		return compatibleReleases;
 	}
 	
-	
 	public Set<WebApp> getAppsByTag(String tagName) {
 		// Query for apps (which includes tag information) if not done so
 		Set<WebApp> webApps = getAllApps();
 		
 		return appsByTagNameByUrl.get(currentAppStoreUrl).get(tagName);
+	}
+	
+	public Set<Update> checkForUpdates(Set<App> apps) {
+		Set<Update> updates = new HashSet<Update>();
+		
+		for (App app : apps) {
+			
+		}
+		
+		return updates;
+	}
+	
+	private Update checkForUpdate(App app, String url) {
+		Set<WebApp> urlApps = appsByUrl.get(url);
+		
+		if (urlApps != null) {
+			
+		}
+		
+		return null;
 	}
 }

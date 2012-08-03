@@ -56,6 +56,7 @@ public class WebApp {
 		private String releaseDate;
 		private String releaseVersion;
 		private String compatibleCytoscapeVersions;
+		private String sha512Checksum;
 		
 		@Override
 		public int compareTo(Release other) {
@@ -78,6 +79,9 @@ public class WebApp {
 			return compatibleCytoscapeVersions;
 		}
 		
+		public String getSha512Checksum() {
+			return sha512Checksum;
+		}
 		
 		public void setRelativeUrl(String relativeUrl) {
 			this.relativeUrl = relativeUrl;
@@ -93,6 +97,10 @@ public class WebApp {
 		
 		public void setCompatibleCytoscapeVersions(String compatibleCytoscapeVersions) {
 			this.compatibleCytoscapeVersions = compatibleCytoscapeVersions;
+		}
+		
+		public void setSha512Checksum(String checksum) {
+			this.sha512Checksum = checksum;
 		}
 
 	}
