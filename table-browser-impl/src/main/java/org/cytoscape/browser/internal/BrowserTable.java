@@ -11,6 +11,7 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -21,6 +22,7 @@ import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +42,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.JTableHeader;
@@ -108,6 +111,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		getPopupMenu();
 		getHeaderPopupMenu();
 		setKeyStroke();
+		setTransferHandler(new BrowserTableTransferHandler());
 	}
 
 	public void setUpdateComparators(final boolean updateColumnComparators) {
@@ -622,6 +626,57 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	public void paint(Graphics graphics) {
 		synchronized (getModel()) {
 			super.paint(graphics);
+		}
+	}
+	
+	private static class BrowserTableTransferHandler extends TransferHandler {
+		@Override
+		protected Transferable createTransferable(JComponent source) {
+			// Encode cell data in Excel format so we can copy/paste list
+			// attributes as multi-line cells.
+			StringBuilder builder = new StringBuilder();
+			BrowserTable table = (BrowserTable) source;
+			for (int rowIndex : table.getSelectedRows()) {
+				boolean firstColumn = true;
+				for (int columnIndex : table.getSelectedColumns()) {
+					if (!firstColumn) {
+						builder.append("\t");
+					} else {
+						firstColumn = false;
+					}
+					Object object = table.getValueAt(rowIndex, columnIndex);
+					if (object instanceof ValidatedObjectAndEditString) {
+						ValidatedObjectAndEditString raw = (ValidatedObjectAndEditString) object;
+						Object validatedObject = raw.getValidatedObject();
+						if (validatedObject instanceof Collection) {
+							builder.append("\"");
+							boolean firstRow = true;
+							for (Object member : (Collection<?>) validatedObject) {
+								if (!firstRow) {
+									builder.append("\r");
+								} else {
+									firstRow = false;
+								}
+								builder.append(member.toString().replaceAll("\"", "\"\""));
+							}
+							builder.append("\"");
+						} else {
+							builder.append(validatedObject.toString());
+						}
+					} else {
+						if (object != null) {
+							builder.append(object.toString());
+						}
+					}
+				}
+				builder.append("\n");
+			}
+			return new StringSelection(builder.toString());
+		}
+		
+		@Override
+		public int getSourceActions(JComponent c) {
+			return TransferHandler.COPY;
 		}
 	}
 }
