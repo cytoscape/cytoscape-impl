@@ -617,8 +617,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		if (rowSorter == null)
 			return;
 
-		final BrowserTableModel tableModel = (BrowserTableModel) getModel();
-		final Class<?> rowDataType = tableModel.getColumn(aColumn.getModelIndex()).getType();
+		final BrowserTableModel tableModel = (BrowserTableModel)getModel();
+		final Class<?> rowDataType = tableModel.getColumnByModelIndex(aColumn.getModelIndex()).getType();
 		rowSorter.setComparator(aColumn.getModelIndex(), new ValidatedObjectAndEditStringComparator(rowDataType));
 	}
 

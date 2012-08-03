@@ -737,7 +737,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		final String[] attrArray = getAttributeArray();
 
 		final JFrame frame = (JFrame)SwingUtilities.getRoot(this);
-		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getAttributes());
+		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getAttributes(), browserTableModel);
 
 		dDialog.pack();
 		dDialog.setLocationRelativeTo(toolBar);

@@ -49,11 +49,13 @@ import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 
 public class AttributeListModel
-	implements ListModel, ComboBoxModel, ColumnCreatedListener, ColumnDeletedListener
+	implements ListModel, ComboBoxModel, ColumnCreatedListener, ColumnDeletedListener, ColumnNameChangedListener
 {
 	private Vector listeners = new Vector();
 	private BrowserTableModel browserTableModel;
@@ -178,5 +180,21 @@ public class AttributeListModel
 				((ListDataListener) listenIt.next()).intervalRemoved(e);
 			}
 		}
+	}
+
+	@Override
+	public void handleEvent(ColumnNameChangedEvent e) {
+
+		if (browserTableModel == null)
+			return;
+
+		if (e.getSource() != browserTableModel.getAttributes())
+			return;
+		
+		if (attributeNames.contains(e.getOldColumnName())){
+			int attrIndex = attributeNames.indexOf(e.getOldColumnName());
+			attributeNames.set(attrIndex, e.getNewColumnName());
+		}
+		
 	}
 }

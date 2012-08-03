@@ -184,6 +184,13 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 				updateColumnComparators(rowSorter, browserTableModel);
 				browserTable.setUpdateComparators(true);
 				
+				//hide SUID and selected by default
+				
+				final List<String> attrList = browserTableModel.getAllAttributeNames();
+				attrList.remove(CyNetwork.SUID);
+				attrList.remove( CyNetwork.SELECTED);
+				browserTableModel.setVisibleAttributeNames(attrList);
+				
 				scrollPane = new JScrollPane(browserTable);
 				scrollPanes.put(browserTableModel, scrollPane);
 			}
@@ -198,13 +205,10 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		if (btm == null && currentTable != null) {
 			final BrowserTable browserTable = new BrowserTable(compiler, popupMenuHelper,
 					applicationManager, eventHelper, tableManager);
+			BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
+			browserTable.setColumnModel(columnModel);
 			
 			btm = new BrowserTableModel(browserTable, currentTable, compiler, tableManager);
-			final List<String> attrList =  btm.getVisibleAttributeNames();
-			//hide SUID and selected by default
-			attrList.remove(CyNetwork.SUID);
-			attrList.remove( CyNetwork.SELECTED);
-			btm.setVisibleAttributeNames(attrList);
 			browserTableModels.put(currentTable, btm);
 		}
 		

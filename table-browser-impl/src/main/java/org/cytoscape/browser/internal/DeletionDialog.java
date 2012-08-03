@@ -35,12 +35,15 @@ public class DeletionDialog extends JDialog {
 	}
 
 	private CyTable attributes;
+	private BrowserTableModel tableModel;
 
 	/** Creates new form DeletionDialog */
-	protected DeletionDialog(final Frame parent, final CyTable attributes) {
+	protected DeletionDialog(final Frame parent, final CyTable attributes, final BrowserTableModel tableModel) {
 		super(parent, "Delete Attributes", /* modal = */ true);
 
 		this.attributes = attributes;
+		this.tableModel  = tableModel;
+
 		initComponents();
 	}
 
@@ -60,80 +63,83 @@ public class DeletionDialog extends JDialog {
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		attributeList.setModel(new AbstractListModel() {
-				public int getSize() {
-					int mutableCount = 0;
-					for (final CyColumn column : attributes.getColumns()) {
-						if (!column.isImmutable())
+			public int getSize() {
+				int mutableCount = 0;
+				for (final CyColumn column : attributes.getColumns()) {
+					if (!column.isImmutable())
+						if (tableModel.isColumnVisible(column.getName()))
 							++mutableCount;
-					}
-
-					return mutableCount;
 				}
 
-				public Object getElementAt(final int i) {
-					final String[] columnNames = new String[getSize()];
+				return mutableCount;
+			}
 
-					int k = 0;
-					for (final CyColumn column : attributes.getColumns()) {
-                                                if (!column.isImmutable())
+			public Object getElementAt(final int i) {
+				final String[] columnNames = new String[getSize()];
+
+				int k = 0;
+				for (final CyColumn column : attributes.getColumns()) {
+					if (!column.isImmutable()){
+						if (tableModel.isColumnVisible(column.getName()))
 							columnNames[k++] = column.getName();
 					}
-
-					Arrays.sort(columnNames, new CaseInsensitiveCompare());
-					return columnNames[i];
 				}
-			});
+
+				Arrays.sort(columnNames, new CaseInsensitiveCompare());
+				return columnNames[i];
+			}
+		});
 		deletionPane.setViewportView(attributeList);
 
 		deleteButton.setText("Delete");
 		deleteButton.addActionListener(new ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					deleteButtonActionPerformed(evt);
-				}
-			});
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				deleteButtonActionPerformed(evt);
+			}
+		});
 
 		cancelButton.setText("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					cancelButtonActionPerformed(evt);
-					;
-				}
-			});
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				cancelButtonActionPerformed(evt);
+				;
+			}
+		});
 
 		descriptionLabel.setText("Please select attributes to be deleted:");
 
 		final GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
-		                                .addGroup(layout.createSequentialGroup().addContainerGap()
-		                                           .addGroup(layout.createParallelGroup(Alignment.LEADING)
-		                                                      .addGroup(Alignment.TRAILING,
-		                                                           layout.createSequentialGroup()
-		                                                                 .addComponent(deleteButton)
-		                                                                 .addPreferredGap(ComponentPlacement.RELATED)
-		                                                                 .addComponent(cancelButton)
-		                                                                 .addContainerGap())
-		                                                      .addGroup(Alignment.TRAILING,
-		                                                           layout.createSequentialGroup()
-		                                                                 .addComponent(deletionPane,
-		                                                                      GroupLayout.DEFAULT_SIZE,
-		                                                                      229, Short.MAX_VALUE)
-		                                                                 .addGap(12, 12, 12))
-		                                                      .addGroup(layout.createSequentialGroup()
-		                                                                 .addComponent(descriptionLabel)
-		                                                                 .addContainerGap(26,
-		                                                                                  Short.MAX_VALUE)))));
+				.addGroup(layout.createSequentialGroup().addContainerGap()
+						.addGroup(layout.createParallelGroup(Alignment.LEADING)
+								.addGroup(Alignment.TRAILING,
+										layout.createSequentialGroup()
+										.addComponent(deleteButton)
+										.addPreferredGap(ComponentPlacement.RELATED)
+										.addComponent(cancelButton)
+										.addContainerGap())
+										.addGroup(Alignment.TRAILING,
+												layout.createSequentialGroup()
+												.addComponent(deletionPane,
+														GroupLayout.DEFAULT_SIZE,
+														229, Short.MAX_VALUE)
+														.addGap(12, 12, 12))
+														.addGroup(layout.createSequentialGroup()
+																.addComponent(descriptionLabel)
+																.addContainerGap(26,
+																		Short.MAX_VALUE)))));
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
-		                              .addGroup(Alignment.TRAILING,
-		                                   layout.createSequentialGroup().addContainerGap()
-		                                         .addComponent(descriptionLabel).addGap(12, 12, 12)
-		                                         .addComponent(deletionPane,
-		                                              GroupLayout.DEFAULT_SIZE,
-		                                              200, Short.MAX_VALUE)
-		                                         .addPreferredGap(ComponentPlacement.RELATED)
-		                                         .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-		                                                    .addComponent(deleteButton).addComponent(cancelButton))
-		                                         .addContainerGap()));
+				.addGroup(Alignment.TRAILING,
+						layout.createSequentialGroup().addContainerGap()
+						.addComponent(descriptionLabel).addGap(12, 12, 12)
+						.addComponent(deletionPane,
+								GroupLayout.DEFAULT_SIZE,
+								200, Short.MAX_VALUE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+										.addComponent(deleteButton).addComponent(cancelButton))
+										.addContainerGap()));
 		pack();
 	} // </editor-fold>
 
