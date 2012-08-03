@@ -70,7 +70,7 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-		final Border padLine = BorderFactory.createEmptyBorder(3, 20, 3, 0);
+		final Border padLine = BorderFactory.createEmptyBorder(3, 5, 3, 0);
 
 		for (int i = 0; i<fileCount; i++) {
 			final URL target = recentFiles.get(i);
@@ -83,7 +83,7 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 				continue;
 			}
 			final File targetFile = new File(fileURI);
-			final JLabel fileLabel = new JLabel("<html><u>" + target.toString() + "</u></html>");
+			final JLabel fileLabel = new JLabel(target.toString());
 			fileLabel.setMaximumSize(new Dimension(300, 18));
 			fileLabel.setForeground(REGULAR_FONT_COLOR);
 			fileLabel.setFont(LINK_FONT);
