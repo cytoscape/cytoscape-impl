@@ -1,0 +1,78 @@
+#! /usr/bin/env python
+"""
+Program for generating random nested network files.  First a list of networks will be generated and then a parent network in which every node contains one of the previously
+generated networks as a nested network.
+"""
+from sets import Set
+from random import randint
+import sys, os
+
+
+def printf(format, *args):
+    print str(format) % args,
+
+
+def GenerateNetwork(network_name, node_prefix, network_size, no_of_links):
+    used_nodes = Set()
+    for i in range(0, no_of_links):
+        distinct = False
+        while not distinct:
+            end_point1 = randint(1, network_size)
+            end_point2 = randint(1, network_size)
+            distinct = end_point1 != end_point2
+        printf("%s %s%1d pp %s%1d\n", network_name, node_prefix, end_point1, node_prefix, end_point2)
+        used_nodes.add(end_point1)
+        used_nodes.add(end_point2)
+
+    for node_ID in range(1, network_size + 1):
+        if node_ID not in used_nodes:
+            printf("%s %s%1d\n", network_name, node_prefix, node_ID)
+
+
+def Usage():
+    print >> sys.stderr, "usage: " + sys.argv[0] + " number_of_nested_networks min_network_size max_network_size link_factor > NNF_file"
+    print >> sys.stderr, "\twhere number_of_nested_networks is the number of child networks for the nodes of the final network that will be generated"
+    print >> sys.stderr, "\twhere min_network_size is the minimum size of a child or nested network"
+    print >> sys.stderr, "\twhere max_network_size is the maximum size of a child or nested network"
+    print >> sys.stderr, "\twhere link_factor will be used to determine the number of links within a child network and the final network.  The number of links created will be Round(size(network)*link_factor)"
+
+    sys.exit(1)
+
+
+def ProcessArgs(argv):
+    if len(argv) != 5:
+        Usage()
+    try:
+        number_of_nested_networks = int(argv[1])
+        min_network_size          = int(argv[2])
+        max_network_size          = int(argv[3])
+        link_factor               = float(argv[4])
+    except ValueError:
+        Usage()
+
+    if number_of_nested_networks < 1 or min_network_size < 1 or max_network_size < min_network_size or link_factor < 0.0:
+        Usage()
+
+    return (number_of_nested_networks, min_network_size, max_network_size, link_factor)
+
+
+(number_of_nested_networks, min_nested_network_size, max_nested_network_size, link_factor) = ProcessArgs(sys.argv)
+
+# Create a header comment for the output file:
+print "# Generated with " + sys.argv[0]
+print "# number_of_nested_networks = " + str(number_of_nested_networks)
+print "# min_nested_network_size   = " + str(min_nested_network_size)
+print "# max_nested_network_size   = " + str(max_nested_network_size)
+print "# link_factor               = " + str(link_factor)
+
+# Generate the networks that will be nested networks:
+for nested_network_number in range(1, number_of_nested_networks + 1):
+    network_size = randint(min_nested_network_size, max_nested_network_size)
+    no_of_links = int(network_size * link_factor + 0.5)
+    network_name = "M" + str(nested_network_number)
+    node_prefix = "N" + str(nested_network_number) + "_"
+    GenerateNetwork(network_name, node_prefix, network_size, no_of_links)
+
+# Generate the network that will have all the nodes that are parents of the nested networks:
+no_of_links = int(number_of_nested_networks * link_factor + 0.5)
+GenerateNetwork("MM", "M", number_of_nested_networks, no_of_links)

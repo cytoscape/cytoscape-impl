@@ -1,0 +1,47 @@
+#! /usr/bin/env python
+"""
+Program for calculating the size of multilevel nested networks.
+"""
+import math, sys
+
+
+def Usage():
+    print "usage: " + sys.argv[0] + " no_of_nodes_per_network levels link_factor"
+    print "\twhere no_of_nodes_per_network is the number of nodes in each network."
+    print "\twhere levels is the number of network levels."
+    print "\twhere link_factor will be used to determine the number of links within a network.  The number of links will be Round(size(network)*link_factor)"
+
+    sys.exit(1)
+
+
+# Command-line argument processing.  Returns the triple (no_of_nodes_per_network, levels, link_factor).
+def ProcessArgs(argv):
+    if len(argv) != 4:
+        Usage()
+    try:
+        no_of_nodes_per_network = int(argv[1])
+        levels                  = int(argv[2])
+        link_factor             = float(argv[3])
+    except ValueError:
+        Usage()
+
+    if no_of_nodes_per_network < 1 or levels < 1 or link_factor < 0.0:
+        Usage()
+
+    return (no_of_nodes_per_network, levels, link_factor)
+
+
+#
+# Start of main program.
+#
+
+(no_of_nodes_per_network, levels, link_factor) = ProcessArgs(sys.argv)
+
+
+total_no_of_networks = (math.pow(no_of_nodes_per_network, levels) - 1) / (no_of_nodes_per_network - 1)
+no_of_edges_per_network = int(no_of_nodes_per_network * link_factor + 0.5)
+total_no_of_nodes_plus_edges = total_no_of_networks * (no_of_nodes_per_network + no_of_edges_per_network)
+
+print "total_no_of_networks         = " + str(total_no_of_networks)
+print "no_of_edges_per_network      = " + str(no_of_edges_per_network)
+print "total_no_of_nodes_plus_edges = " + str(total_no_of_nodes_plus_edges)

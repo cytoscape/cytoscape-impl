@@ -1,0 +1,18 @@
+Top_Level_Network	M1	
+	
+Top_Level_Network	M3	
+	
+M1	A	pp	B
+M1	B	pp	A
+Top_Level_Network	C	pp	B
+M3	M2	
+	
+M2	D	
+	
+M3	E	pp	F
+M3	D	pp	F
+M3	D	pp	E
+Top_Level_Network	D	pp	C
+Top_Level_Network	A	pp	M2
+Top_Level_Network	B	pp	M3
+Top_Level_Network	M2	pp	B

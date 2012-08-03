@@ -1,0 +1,9 @@
+# A header comment
+ root 	 C 	
+	# A random comment
+root 	network1 	
+	
+network1	A	pp	B
+network1	B	pp	A
+root	C	pp	B
+# A trailer comment

@@ -1,0 +1,9 @@
+root	M1	im	M2
+root	M3	im
+root	M2	im	M3
+root	C	pp	M3
+root	M2	pp	C
+M1	A	
+	
+M2	A	pp	B
+M3	B	pp	C
