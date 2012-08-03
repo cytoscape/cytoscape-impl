@@ -62,7 +62,6 @@ import org.slf4j.LoggerFactory;
 public class NNFNetworkReader extends AbstractNetworkReader {
 	private static final Logger logger = LoggerFactory.getLogger(NNFNetworkReader.class);
 
-	private final CyEventHelper eventHelper;
 	private final CyLayoutAlgorithmManager layouts;	
 	// Optional comments start with this character and extend to the end of line.
 	private static final char COMMENT_CHAR = '#';	
@@ -71,10 +70,9 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 
 	public NNFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			final CyEventHelper eventHelper,CyNetworkManager cyNetworkManagerServiceRef) {
+			CyNetworkManager cyNetworkManagerServiceRef) {
 		super(is, cyNetworkViewFactory, cyNetworkFactory);
 		this.layouts = layouts;
-		this.eventHelper = eventHelper;
 		this.parser = new NNFParser(cyNetworkManagerServiceRef, cyNetworkFactory);
 	}
 
