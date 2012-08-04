@@ -50,8 +50,7 @@ public class NNFParser {
 	private CyNetwork getNetworkByTitle(final String networkTitle) {
 		Set<CyNetwork> networks = this.cyNetworkManagerServiceRef.getNetworkSet();
 		for (final CyNetwork network : networks) {
-			String title = network.getDefaultNetworkTable().getRow(network).get(CyNetwork.NAME, String.class);
-			
+			String title = network.getRow(network).get(CyNetwork.NAME, String.class);
 			if (title.equals(networkTitle))
 				return network;
 		}
