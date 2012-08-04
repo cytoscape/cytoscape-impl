@@ -3,6 +3,7 @@ package org.cytoscape.view.vizmap.internal.mappings;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -13,6 +14,12 @@ public class PassthroughMappingFactory implements VisualMappingFunctionFactory {
 	
 	private static final Map<Class<?>, ValueTranslator<?, ?>> TRANSLATORS = new HashMap<Class<?>, ValueTranslator<?,?>>();
 	private static final ValueTranslator<Object, String> DEFAULT_TRANSLATOR = new StringTranslator();
+	
+	private final CyEventHelper eventHelper;
+	
+	public PassthroughMappingFactory(final CyEventHelper eventHelper) {
+		this.eventHelper = eventHelper;
+	}
 	
 	public void addValueTranslator(ValueTranslator<?, ?> translator, Map props) {
 		if (translator != null)
@@ -30,10 +37,10 @@ public class PassthroughMappingFactory implements VisualMappingFunctionFactory {
 
 		if (translator != null)
 			return new PassthroughMappingImpl<K, V>(attributeName, attrValueType, vp,
-					(ValueTranslator<K, V>) translator);
+					(ValueTranslator<K, V>) translator, eventHelper);
 		else
 			return new PassthroughMappingImpl<K, V>(attributeName, attrValueType, vp,
-					(ValueTranslator<K, V>) DEFAULT_TRANSLATOR);
+					(ValueTranslator<K, V>) DEFAULT_TRANSLATOR, eventHelper);
 	}
 
 	@Override

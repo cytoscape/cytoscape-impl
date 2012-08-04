@@ -36,6 +36,8 @@
 package org.cytoscape.view.vizmap.gui.internal.action;
 
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -112,6 +114,7 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 			return;
 
 		final Class<?> keyClass = dm.getMappingColumnType();
+		final Map<Object, Object> changes = new HashMap<Object, Object>();
 		for (int i = 0; i < selected.length; i++) {
 			final Item currentItem = ((Item) propertySheetPanel.getTable().getValueAt(selected[i], 0));
 			// First, update property sheet
@@ -134,14 +137,11 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 				continue;
 			}
 
-			dm.putMapValue(key, newValue);
+			changes.put(key, newValue);
 		}
+		
+		dm.putAll(changes);
 
 		table.repaint();
-		CyNetworkView curView = applicationManager.getCurrentNetworkView();
-		if (curView != null) {
-			currentStyle.apply(curView);
-			curView.updateView();
-		}
 	}
 }

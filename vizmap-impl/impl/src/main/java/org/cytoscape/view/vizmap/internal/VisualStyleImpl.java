@@ -39,8 +39,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -54,12 +56,17 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedListener;
+import org.cytoscape.view.vizmap.events.VisualStyleChangeRecord;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  */
-public class VisualStyleImpl implements VisualStyle {
+public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(VisualStyleImpl.class);
 
@@ -71,9 +78,10 @@ public class VisualStyleImpl implements VisualStyle {
 	private final Map<Class<? extends CyIdentifiable>, ApplyHandler> applyHandlersMap;
 
 	private String title;
+	private final CyEventHelper eventHelper;
 
 	private final Set<VisualPropertyDependency<?>> dependencies;
-	
+
 	/**
 	 * 
 	 * @param title
@@ -81,7 +89,7 @@ public class VisualStyleImpl implements VisualStyle {
 	 * @param lexManager
 	 */
 	public VisualStyleImpl(final String title, final VisualLexiconManager lexManager,
-			final CyServiceRegistrar serviceRegistrar) {
+			final CyServiceRegistrar serviceRegistrar, final CyEventHelper eventHelper) {
 
 		if (lexManager == null)
 			throw new NullPointerException("Lexicon Manager is missing.");
@@ -90,7 +98,9 @@ public class VisualStyleImpl implements VisualStyle {
 			this.title = DEFAULT_TITLE;
 		else
 			this.title = title;
-		
+
+		this.eventHelper = eventHelper;
+
 		mappings = new HashMap<VisualProperty<?>, VisualMappingFunction<?, ?>>();
 		styleDefaults = new HashMap<VisualProperty<?>, Object>();
 
@@ -105,12 +115,15 @@ public class VisualStyleImpl implements VisualStyle {
 		// Listening to dependencies
 		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory",
 				VisualPropertyDependencyFactory.class);
+		serviceRegistrar.registerService(this, VisualMappingFunctionChangedListener.class, new Properties());
 		logger.info("New Visual Style Created: Style Name = " + this.title);
 	}
 
 	@Override
 	public void addVisualMappingFunction(final VisualMappingFunction<?, ?> mapping) {
 		mappings.put(mapping.getVisualProperty(), mapping);
+		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
+				VisualStyleChangedEvent.class);
 	}
 
 	@Override
@@ -122,6 +135,8 @@ public class VisualStyleImpl implements VisualStyle {
 	@Override
 	public void removeVisualMappingFunction(VisualProperty<?> t) {
 		mappings.remove(t);
+		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
+				VisualStyleChangedEvent.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -133,15 +148,18 @@ public class VisualStyleImpl implements VisualStyle {
 	@Override
 	public <V, S extends V> void setDefaultValue(final VisualProperty<V> vp, final S value) {
 		styleDefaults.put(vp, value);
+		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
+				VisualStyleChangedEvent.class);
 	}
-	
+
 	@Override
 	public void apply(final CyNetworkView networkView) {
-		@SuppressWarnings("unchecked") // This is always safe.
+		@SuppressWarnings("unchecked")
+		// This is always safe.
 		final ApplyHandler<CyNetwork> networkViewHandler = applyHandlersMap.get(CyNetwork.class);
 		networkViewHandler.apply(null, networkView);
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void apply(final CyRow row, final View<? extends CyIdentifiable> view) {
@@ -151,7 +169,7 @@ public class VisualStyleImpl implements VisualStyle {
 		}
 
 		ApplyHandler handler = null;
-		
+
 		for (final Class<?> viewType : applyHandlersMap.keySet()) {
 			if (viewType.isAssignableFrom(view.getModel().getClass())) {
 				handler = applyHandlersMap.get(viewType);
@@ -222,5 +240,13 @@ public class VisualStyleImpl implements VisualStyle {
 		// FIXME
 		// if(dependencyFactory != null)
 		// removeVisualPropertyDependency(dependency);
+	}
+
+	@Override
+	public void handleEvent(VisualMappingFunctionChangedEvent e) {
+		final VisualMappingFunction<?, ?> mapping = e.getSource();
+		if (this.mappings.containsValue(mapping)) {
+			eventHelper.addEventPayload((VisualStyle)this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+		}
 	}
 }

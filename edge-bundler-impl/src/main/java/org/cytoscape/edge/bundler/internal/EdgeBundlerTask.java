@@ -1,7 +1,15 @@
 package org.cytoscape.edge.bundler.internal;
 
-import java.awt.geom.Point2D;
-import java.util.*;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -12,18 +20,16 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.BendFactory;
+import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.view.presentation.property.values.Bend;
-import org.cytoscape.view.presentation.property.values.BendFactory;
-import org.cytoscape.view.presentation.property.values.Handle;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -232,7 +238,10 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		// Create new discrete mapping for edge SUID to Edge Bend
 		final DiscreteMapping<Long, Bend> function = (DiscreteMapping<Long, Bend>) discreteFactory
 				.createVisualMappingFunction(CyTable.SUID, Long.class, EDGE_BEND);
+		final VisualStyle style = vmm.getVisualStyle(view);
+		style.addVisualMappingFunction(function);
 
+		final Map<Long, Bend> newMappingValues = new HashMap<Long, Bend>();
 		int ei = 0;
 		for (final View<CyEdge> edge : edges) {
 			final View<CyNode> eSource = view.getNodeView(edge.getModel().getSource());
@@ -251,14 +260,11 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 				hlist.add(h);
 			}
 			
-			function.putMapValue(edge.getModel().getSUID(), bend);
+			newMappingValues.put(edge.getModel().getSUID(), bend);
 			ei++;
 		}
 
-		final VisualStyle style = vmm.getVisualStyle(view);
-		style.addVisualMappingFunction(function);
-		style.apply(view);
-		view.updateView();
+		function.putAll(newMappingValues);
 	}
 
 	private void computeEdgeCompatability() {

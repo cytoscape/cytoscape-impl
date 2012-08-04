@@ -63,9 +63,6 @@ public class DeleteMappingFunctionTask extends AbstractTask {
 
 	private void removeMapping(final VisualStyle style, final VisualProperty<?> vp) {
 		style.removeVisualMappingFunction(vp);
-		final CyNetworkView currentView = appManager.getCurrentNetworkView();
-		style.apply(currentView);
-		currentView.updateView();
 	}
 
 	private void updatePropertySheet(final VizMapperProperty<?, ?, ?> prop, final VisualProperty<?> vp) {

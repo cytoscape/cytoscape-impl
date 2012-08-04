@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap;
 
 import static org.mockito.Mockito.mock;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
@@ -16,8 +17,9 @@ public class VisualStyleFactoryTest extends AbstractVisualStyleFactoryTest {
 		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
+		final CyEventHelper eventHelper = mock(CyEventHelper.class);
 		
-		factory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, ptFactory );
+		factory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, ptFactory, eventHelper );
 	}
 
 	@After

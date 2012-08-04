@@ -36,7 +36,6 @@
  */
 package org.cytoscape.internal.view;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -85,6 +84,8 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +95,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
-		NetworkViewChangedListener, RowsSetListener {
+		NetworkViewChangedListener, RowsSetListener, VisualStyleChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -130,8 +131,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final CyNetworkViewManager netViewMgr;
 	private final CyApplicationManager appMgr;
 	private final RenderingEngineManager renderingEngineMgr;
-	private final VisualMappingManager vmm;
-	
+	private final VisualMappingManager vmm;	
 	
 	public NetworkViewManager(final CyApplicationManager appMgr,
 							  final CyNetworkViewManager netViewMgr,
@@ -145,7 +145,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			throw new NullPointerException("CyNetworkViewManager is null.");
 		
 		this.renderingEngineMgr = renderingEngineManager;
-
 		this.factories = new HashMap<String, RenderingEngineFactory<CyNetwork>>();
 
 		this.netViewMgr = netViewMgr;
@@ -604,5 +603,26 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	
 	public void setUpdateFlag(CyNetworkView view) {
 		this.viewUpdateRequired.add(view);
+	}
+
+	@Override
+	public void handleEvent(VisualStyleChangedEvent e) {
+		
+		final VisualStyle style= e.getSource();
+		// First, check current view.  If necessary, apply it.
+		final Set<CyNetworkView> networkViews = netViewMgr.getNetworkViewSet();
+		
+		for(final CyNetworkView view: networkViews) {
+			final VisualStyle targetViewsStyle = vmm.getVisualStyle(view);
+			if(targetViewsStyle != style)
+				continue;
+			
+			if(view == appMgr.getCurrentNetworkView()) {
+				style.apply(view);
+				view.updateView();
+			} else {
+				this.viewUpdateRequired.add(view);
+			}
+		}
 	}
 }

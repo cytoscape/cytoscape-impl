@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -70,7 +71,8 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, ptFactory);
+		final CyEventHelper eventHelper = mock(CyEventHelper.class);
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, ptFactory, eventHelper);
 		originalTitle = "Style 1";
 		newTitle = "Style 2";
 		style = visualStyleFactory.createVisualStyle(originalTitle);

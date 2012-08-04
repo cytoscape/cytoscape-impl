@@ -32,8 +32,6 @@ public class PasteTask extends AbstractNetworkViewTask {
 		else
 			clipMgr.paste(view, xformPt.getX(), xformPt.getY(), true);
 		
-		view.updateView();
-
 		// Apply visual style
 		VisualStyle vs = vmm.getVisualStyle(view);
 		vs.apply(view);

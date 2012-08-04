@@ -170,9 +170,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				cyNetworkViewManager.addNetworkView(nnView);
 				// Move the nodes around
 				moveNodes(group, nnView, d);
-				// Apply our visual style
-				viewStyle.apply(nnView);
-				nnView.updateView();
+//				// Apply our visual style
+//				viewStyle.apply(nnView);
+//				nnView.updateView();
 
 				// Allow the nested network image to be displayed
 				nView.clearValueLock(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
@@ -204,7 +204,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				for (CyEdge edge: groupNodeEdges)
 					subnet.addEdge(edge);
 
-				view.updateView();
+//				view.updateView();
 
 				// Now, call ourselves as if we had been collapsed
 				handleEvent(new GroupCollapsedEvent(group, network, true));
@@ -213,7 +213,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		}
 		
 		viewStyle.apply(view);
-		view.updateView();
+//		view.updateView();
 	}
 
 	private Dimension calculateCenter(CyNetworkView view, List<CyNode> nodeList) {

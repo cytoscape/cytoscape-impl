@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -26,13 +24,10 @@ public class GenerateValuesTask extends AbstractTask {
 	private final DiscreteMappingGenerator<?> generator;
 
 	private final PropertySheetPanel table;
-	private final CyApplicationManager appManager;
 	private final VisualMappingManager vmm;
 
-	public GenerateValuesTask(final DiscreteMappingGenerator<?> generator, final PropertySheetPanel table,
-			final CyApplicationManager appManager, final VisualMappingManager vmm) {
+	public GenerateValuesTask(final DiscreteMappingGenerator<?> generator, final PropertySheetPanel table, final VisualMappingManager vmm) {
 		this.generator = generator;
-		this.appManager = appManager;
 		this.table = table;
 		this.vmm = vmm;
 	}
@@ -89,10 +84,6 @@ public class GenerateValuesTask extends AbstractTask {
 		Map<Object, ?> map = generator.generateMap(keySet);
 
 		discMapping.putAll(map);
-
-		final CyNetworkView networkView = appManager.getCurrentNetworkView();
-		style.apply(networkView);
-		networkView.updateView();
 
 		table.removeProperty(prop);
 		prop.clearSubProperties();

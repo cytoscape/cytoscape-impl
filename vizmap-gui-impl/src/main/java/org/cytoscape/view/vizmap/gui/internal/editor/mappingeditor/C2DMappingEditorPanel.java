@@ -40,6 +40,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.swing.ImageIcon;
 
@@ -82,13 +84,6 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		initSlider();
 	}
 
-	
-	private void updateView() {
-		final CyNetworkView curView = appManager.getCurrentNetworkView();
-		style.apply(curView);
-		curView.updateView();
-	}
-
 
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
@@ -125,8 +120,6 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 
 		slider.repaint();
 		repaint();
-		
-		updateView();
 	}
 
 	
@@ -188,8 +181,6 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			mapping.removePoint(selectedIndex);
 			updateMap();
 			repaint();
-			
-			updateView();
 		}
 	}
 
@@ -239,10 +230,6 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 					slider.setTrackRenderer(new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
 							appManager.getCurrentRenderingEngine()));
 					slider.repaint();
-
-					// Update network
-					style.apply(appManager.getCurrentNetworkView());
-					appManager.getCurrentNetworkView().updateView();
 				}
 			}
 		});
@@ -252,23 +239,23 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		BoundaryRangeValues<V> bound;
 		Float fraction;
 
-		/*
-		 * NPE?
-		 */
-		if (allPoints == null) {
-			return;
-		}
-
-		for (ContinuousMappingPoint<Number, V> point : allPoints) {
+		for (ContinuousMappingPoint<Number, V> point : mapping.getAllPoints()) {
 			bound = point.getRange();
 
 			fraction = ((Number) ((point.getValue().doubleValue() - minValue) / actualRange)).floatValue() * 100;
 			slider.getModel().addThumb(fraction, bound.equalValue);
 		}
 
-		if (allPoints.size() != 0) {
-			below = allPoints.get(0).getRange().lesserValue;
-			above = allPoints.get(allPoints.size() - 1).getRange().greaterValue;
+		
+		final SortedMap<Double, ContinuousMappingPoint<Number, V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<Number, V>>();
+		for (final ContinuousMappingPoint<Number, V> point : mapping.getAllPoints()) {
+			final Number val =point.getValue();
+			sortedPoints.put(val.doubleValue(), point);
+		}
+		
+		if (!sortedPoints.isEmpty()) {
+			below = sortedPoints.get(sortedPoints.firstKey()).getRange().lesserValue;
+			above = sortedPoints.get(sortedPoints.lastKey()).getRange().greaterValue;
 		} else {
 			V defaultVal = type.getDefault();
 			below = defaultVal;
@@ -287,8 +274,6 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		slider.addMouseListener(new ThumbMouseListener());
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent pce) {}
 
 	@Override
 	public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {

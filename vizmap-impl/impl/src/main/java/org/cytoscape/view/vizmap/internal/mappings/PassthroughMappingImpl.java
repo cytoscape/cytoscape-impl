@@ -28,6 +28,7 @@
 
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.VisualProperty;
@@ -48,8 +49,8 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 	 * FIXME: allow different once? but how to coerce?
 	 */
 	public PassthroughMappingImpl(final String columnName, final Class<K> columnType, final VisualProperty<V> vp,
-			final ValueTranslator<K, V> translator) {
-		super(columnName, columnType, vp);
+			final ValueTranslator<K, V> translator, final CyEventHelper eventHelper) {
+		super(columnName, columnType, vp, eventHelper);
 		this.translator = translator;
 	}
 

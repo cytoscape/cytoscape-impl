@@ -33,10 +33,15 @@ package org.cytoscape.view.vizmap.internal.mappings;
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
 import org.cytoscape.view.vizmap.internal.mappings.interpolators.FlatInterpolator;
 import org.cytoscape.view.vizmap.internal.mappings.interpolators.Interpolator;
 import org.cytoscape.view.vizmap.internal.mappings.interpolators.LinearNumberToColorInterpolator;
@@ -68,8 +73,8 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	private List<ContinuousMappingPoint<K, V>> points;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp) {
-		super(attrName, attrType, vp);
+	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp, final CyEventHelper eventHelper) {
+		super(attrName, attrType, vp, eventHelper);
 		
 		// Validate type.  K is always a number.
 		if (Number.class.isAssignableFrom(attrType) == false)
@@ -94,17 +99,21 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 
 	@Override
 	public List<ContinuousMappingPoint<K, V>> getAllPoints() {
-		return points;
+		return Collections.unmodifiableList(points);
 	}
 
 	@Override
 	public void addPoint(K value, BoundaryRangeValues<V> brv) {
-		points.add(new ContinuousMappingPoint<K, V>(value, brv));
+		points.add(new ContinuousMappingPoint<K, V>(value, brv, this, eventHelper));
+		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
+				VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override
 	public void removePoint(int index) {
 		points.remove(index);
+		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
+				VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override
@@ -114,7 +123,13 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 
 	@Override
 	public ContinuousMappingPoint<K, V> getPoint(int index) {
-		return points.get(index);
+		if(points.isEmpty())
+			return null;
+		else if(points.size()>index)
+			return points.get(index);
+		else {
+			throw new IllegalArgumentException("Invalid Index: " + index + ".  There are " + points.size() + " points.");
+		}
 	}
 
 	@Override
@@ -134,6 +149,9 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	}
 
 	private V getRangeValue(K domainValue) {
+		if(points.isEmpty())
+			return null;
+		
 		ContinuousMappingPoint<K, V> firstPoint = points.get(0);
 		K minDomain = firstPoint.getValue();
 

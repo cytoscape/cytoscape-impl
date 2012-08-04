@@ -1,5 +1,6 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -10,6 +11,12 @@ import org.slf4j.LoggerFactory;
 public class ContinuousMappingFactory implements VisualMappingFunctionFactory {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ContinuousMappingFactory.class);
+	
+	private final CyEventHelper eventHelper;
+	
+	public ContinuousMappingFactory(final CyEventHelper eventHelper) {
+		this.eventHelper = eventHelper;
+	}
 
 	@Override
 	public <K, V> VisualMappingFunction<K, V> createVisualMappingFunction(final String attributeName, 
@@ -21,7 +28,7 @@ public class ContinuousMappingFactory implements VisualMappingFunctionFactory {
 		if(Number.class.isAssignableFrom(attrValueType) == false)
 			throw new IllegalArgumentException("ContinuousMapping can be used for numerical attributes only.");
 		
-		return new ContinuousMappingImpl<K, V>(attributeName, attrValueType, vp);
+		return new ContinuousMappingImpl<K, V>(attributeName, attrValueType, vp, eventHelper);
 	}
 	
 	@Override public String toString() {

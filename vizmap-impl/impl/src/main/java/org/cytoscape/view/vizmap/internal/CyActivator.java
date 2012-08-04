@@ -25,13 +25,13 @@ public class CyActivator extends AbstractCyActivator {
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 
 		// Mapping Factories
-		DiscreteMappingFactory discreteMappingFactory = new DiscreteMappingFactory();
-		ContinuousMappingFactory continuousMappingFactory = new ContinuousMappingFactory();
-		PassthroughMappingFactory passthroughMappingFactory = new PassthroughMappingFactory();
+		DiscreteMappingFactory discreteMappingFactory = new DiscreteMappingFactory(cyEventHelperServiceRef);
+		ContinuousMappingFactory continuousMappingFactory = new ContinuousMappingFactory(cyEventHelperServiceRef);
+		PassthroughMappingFactory passthroughMappingFactory = new PassthroughMappingFactory(cyEventHelperServiceRef);
 		
 		VisualLexiconManager visualLexiconManager = new VisualLexiconManager();
 		VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(visualLexiconManager,
-				serviceRegistrarServiceRef, passthroughMappingFactory);
+				serviceRegistrarServiceRef, passthroughMappingFactory, cyEventHelperServiceRef);
 		VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(cyEventHelperServiceRef,
 				visualStyleFactory, visualLexiconManager);
 		

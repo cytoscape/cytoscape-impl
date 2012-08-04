@@ -29,13 +29,18 @@
  */
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
 import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 
@@ -49,7 +54,6 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	// contains the actual map elements (sorted)
 	private final Map<K, V> attribute2visualMap;
 
-	
 	/**
 	 * Constructor.
 	 * 
@@ -57,8 +61,9 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	 * @param attrType
 	 * @param vp
 	 */
-	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp) {
-		super(attrName, attrType, vp);
+	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp,
+			final CyEventHelper eventHelper) {
+		super(attrName, attrType, vp, eventHelper);
 		attribute2visualMap = new HashMap<K, V>();
 	}
 
@@ -70,10 +75,11 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	@Override
 	public V getMappedValue(final CyRow row) {
 		V value = null;
-		
+
 		if (row != null && row.isSet(columnName)) {
 			// Skip if source attribute is not defined.
-			// ViewColumn will automatically substitute the per-VS or global default, as appropriate
+			// ViewColumn will automatically substitute the per-VS or global
+			// default, as appropriate
 			final CyColumn column = row.getTable().getColumn(columnName);
 			final Class<?> attrClass = column.getType();
 
@@ -97,10 +103,10 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 					value = attribute2visualMap.get(key);
 			}
 		}
-		
+
 		return value;
 	}
-	
+
 	@Override
 	public V getMapValue(K key) {
 		return attribute2visualMap.get(key);
@@ -109,15 +115,20 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	@Override
 	public <T extends V> void putMapValue(final K key, final T value) {
 		attribute2visualMap.put(key, value);
+		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
+				VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override
 	public <T extends V> void putAll(Map<K, T> map) {
 		attribute2visualMap.putAll(map);
+		VisualMappingFunction function = this;
+		eventHelper.addEventPayload(function, new VisualMappingFunctionChangeRecord(),
+				VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override
 	public Map<K, V> getAll() {
-		return attribute2visualMap;
+		return Collections.unmodifiableMap(attribute2visualMap);
 	}
 }

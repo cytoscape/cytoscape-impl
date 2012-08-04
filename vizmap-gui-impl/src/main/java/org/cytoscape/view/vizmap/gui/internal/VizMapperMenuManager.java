@@ -48,17 +48,15 @@ public class VizMapperMenuManager {
 	private final TaskManager taskManager;
 
 	private final PropertySheetPanel panel;
-	private final CyApplicationManager appManager;
 	private final VisualMappingManager vmm;
 
 	public VizMapperMenuManager(final TaskManager taskManager, final PropertySheetPanel panel,
-			final VisualMappingManager vmm, final CyApplicationManager appManager) {
+			final VisualMappingManager vmm) {
 
 		if (taskManager == null)
 			throw new NullPointerException("TaskManager is null.");
 
 		this.taskManager = taskManager;
-		this.appManager = appManager;
 		this.panel = panel;
 		this.vmm = vmm;
 
@@ -157,7 +155,7 @@ public class VizMapperMenuManager {
 			throw new NullPointerException("Title metadata is missing.");
 
 		// Create mapping generator task factory
-		final GenerateValuesTaskFactory taskFactory = new GenerateValuesTaskFactory(generator, panel, vmm, appManager);
+		final GenerateValuesTaskFactory taskFactory = new GenerateValuesTaskFactory(generator, panel, vmm);
 
 		// Add new menu to the pull-down
 		final JMenuItem menuItem = new JMenuItem(title.toString());

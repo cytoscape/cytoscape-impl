@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -22,18 +23,21 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	private final VisualLexiconManager lexManager;
 	private final CyServiceRegistrar serviceRegistrar;
-	
+	private final CyEventHelper eventHelper;
+
 	private final VisualMappingFunctionFactory passThroughFactory;
 
-	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar, final VisualMappingFunctionFactory passThroughFactory) {
+	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar,
+			final VisualMappingFunctionFactory passThroughFactory, final CyEventHelper eventHelper) {
 		this.lexManager = lexManager;
 		this.serviceRegistrar = serviceRegistrar;
 		this.passThroughFactory = passThroughFactory;
+		this.eventHelper = eventHelper;
 	}
 
 	@Override
 	public VisualStyle createVisualStyle(final VisualStyle original) {
-		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), lexManager, serviceRegistrar);
+		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), lexManager, serviceRegistrar, eventHelper);
 
 		copyDefaultValues(original, copy);
 		copyMappingFunctions(original, copy);
@@ -43,7 +47,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	@Override
 	public VisualStyle createVisualStyle(final String title) {
-		return new VisualStyleImpl(title, lexManager, serviceRegistrar);
+		return new VisualStyleImpl(title, lexManager, serviceRegistrar, eventHelper);
 	}
 
 	private <V, S extends V> void copyDefaultValues(final VisualStyle original, final VisualStyle copy) {
@@ -87,7 +91,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <K,V> VisualMappingFunction<K, V> createPassthrough(final PassthroughMapping<K, V> originalMapping) {
+	private <K, V> VisualMappingFunction<K, V> createPassthrough(final PassthroughMapping<K, V> originalMapping) {
 
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<K> colType = originalMapping.getMappingColumnType();
@@ -98,25 +102,27 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <K,V> VisualMappingFunction<K, V> createContinuous(final ContinuousMapping<K, V> originalMapping) {
+	private <K, V> VisualMappingFunction<K, V> createContinuous(final ContinuousMapping<K, V> originalMapping) {
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<?> colType = originalMapping.getMappingColumnType();
-		
-		final ContinuousMapping<K,V> copyMapping = new ContinuousMappingImpl(attrName, colType, originalMapping.getVisualProperty());
+
+		final ContinuousMapping<K, V> copyMapping = new ContinuousMappingImpl(attrName, colType,
+				originalMapping.getVisualProperty(), eventHelper);
 		List<ContinuousMappingPoint<K, V>> points = originalMapping.getAllPoints();
-		for(ContinuousMappingPoint<K, V> point: points)
-			 copyMapping.addPoint(point.getValue(), point.getRange());
-		
+		for (ContinuousMappingPoint<K, V> point : points)
+			copyMapping.addPoint(point.getValue(), point.getRange());
+
 		return copyMapping;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <K,V> VisualMappingFunction<K,V> createDiscrete(final DiscreteMapping<K, V> originalMapping) {
+	private <K, V> VisualMappingFunction<K, V> createDiscrete(final DiscreteMapping<K, V> originalMapping) {
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<K> colType = originalMapping.getMappingColumnType();
 
-		final DiscreteMapping<K, V> copyMapping = new DiscreteMappingImpl(attrName, colType, originalMapping.getVisualProperty());
-		
+		final DiscreteMapping<K, V> copyMapping = new DiscreteMappingImpl(attrName, colType,
+				originalMapping.getVisualProperty(), eventHelper);
+
 		copyMapping.putAll(originalMapping.getAll());
 		return copyMapping;
 	}

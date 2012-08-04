@@ -39,8 +39,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
+import java.util.Iterator;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -62,7 +66,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -80,8 +83,7 @@ import org.slf4j.LoggerFactory;
  * Number to visual property value.
  * 
  */
-public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends JPanel implements
-		PropertyChangeListener {
+public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends JPanel {
 
 	private static final long serialVersionUID = 2077889066171872186L;
 	private static final Logger logger = LoggerFactory.getLogger(ContinuousMappingEditorPanel.class);
@@ -90,7 +92,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private static final Dimension BUTTON_SIZE = new Dimension(120, 1);
 	private static final Dimension SPINNER_SIZE = new Dimension(100, 25);
 	private static final Dimension EDITOR_SIZE = new Dimension(850, 350);
-	
+
 	private static final Font SMALL_FONT = new Font("SansSerif", 1, 10);
 
 	protected static final String BELOW_VALUE_CHANGED = "BELOW_VALUE_CHANGED";
@@ -101,7 +103,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected final VisualProperty<V> type;
 	private final CyTable dataTable;
 
-	protected List<ContinuousMappingPoint<K, V>> allPoints;
 	private SpinnerNumberModel spinnerModel;
 
 	protected V below;
@@ -118,12 +119,13 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected final VisualStyle style;
 
 	final JPanel mainPanel;
-	
+
 	protected final Class<K> columnType;
 	protected final Class<V> vpValueType;
 
 	/**
-	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual property type T.
+	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual
+	 * property type T.
 	 */
 	public ContinuousMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping,
 			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm) {
@@ -143,39 +145,38 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.style = style;
 		this.mainPanel = new JPanel();
 		this.dataTable = table;
-		
+
 		columnType = mapping.getMappingColumnType();
 		vpValueType = mapping.getVisualProperty().getRange().getType();
-		
+
 		final String controllingAttrName = mapping.getMappingColumnName();
-		
-		//TODO more error checking
+
+		// TODO more error checking
 		final CyColumn col = table.getColumn(controllingAttrName);
-		
+
 		if (col == null) {
 			logger.info("The column \"" + controllingAttrName + "\" does not exist in the \"" + table.getTitle()
 					+ "\" table");
 		}
-		
+
 		final Class<?> attrType = mapping.getMappingColumnType();
 		logger.debug("Selected attr type is " + attrType);
 
 		if (!Number.class.isAssignableFrom(attrType))
 			throw new IllegalArgumentException("Cannot support attribute data type.  Numerical values only: "
 					+ attrType);
-		
+
 		initComponents();
 		initRangeValues();
 		setSpinner();
 	}
-
 
 	private void setSpinner() {
 		spinnerModel = new SpinnerNumberModel(0.0d, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
 		spinnerModel.addChangeListener(new SpinnerChangeListener());
 		valueSpinner.setModel(spinnerModel);
 	}
-	
+
 	protected void reset() {
 
 		initRangeValues();
@@ -189,16 +190,16 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.setOpaque(true);
 		this.setBackground(BACKGROUND);
 		this.setBorder(BorderFactory.createLineBorder(BACKGROUND, 5));
-		
+
 		this.setSize(EDITOR_SIZE);
 		this.setMinimumSize(EDITOR_SIZE);
 		this.setPreferredSize(EDITOR_SIZE);
 
 		mainPanel.setBackground(BACKGROUND);
-		
-		abovePanel = new BelowAndAbovePanel(this, Color.yellow, false, mapping);
+
+		abovePanel = new BelowAndAbovePanel(Color.yellow, false, mapping, this);
 		abovePanel.setName("abovePanel");
-		belowPanel = new BelowAndAbovePanel(this, Color.white, true, mapping);
+		belowPanel = new BelowAndAbovePanel(Color.white, true, mapping, this);
 		belowPanel.setName("belowPanel");
 		abovePanel.setPreferredSize(new Dimension(20, 1));
 		belowPanel.setPreferredSize(new Dimension(20, 1));
@@ -219,7 +220,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		attrNameLabel = new javax.swing.JLabel();
 		iconPanel = new YValueLegendPanel(type);
 		iconPanel.setBackground(BACKGROUND);
-		
+
 		handlePositionSpinnerLabel.setFont(SMALL_FONT);
 		handlePositionSpinnerLabel.setText("Selected Handle Position:");
 		valueSpinner = new JSpinner();
@@ -228,7 +229,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		valueSpinner.setEnabled(false);
 
 		iconPanel.setPreferredSize(new Dimension(25, 1));
-		
+
 		addButton.setText("Add");
 		addButton.setPreferredSize(BUTTON_SIZE);
 		addButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -269,9 +270,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		okButton.setMargin(new Insets(2, 2, 2, 2));
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				final CyNetworkView curView = appManager.getCurrentNetworkView();
-				style.apply(curView);
-				curView.updateView();
 				final JDialog parentComponent = (JDialog) mainPanel.getRootPane().getParent();
 				parentComponent.dispose();
 			}
@@ -284,11 +282,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		propValuePanel.setLayout(new BoxLayout(propValuePanel, BoxLayout.X_AXIS));
 		propValuePanel.setBackground(BACKGROUND);
 		rangeSettingPanel.setBackground(BACKGROUND);
-		
+
 		final Class<V> vpValueType = type.getRange().getType();
 		propertyLabel = new JLabel();
 		propertyLabel.setFont(SMALL_FONT);
-		
+
 		if (Number.class.isAssignableFrom(vpValueType)) {
 			propertySpinner = new JSpinner();
 			propertySpinner.setPreferredSize(SPINNER_SIZE);
@@ -310,18 +308,17 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			propertyComponent = new JLabel();
 			propertyLabel.setText("Double-click on icon to change " + type.getDisplayName());
 		}
-		
+
 		propValuePanel.add(propertyLabel);
 		propValuePanel.add(propertyComponent);
-		
+
 		final JPanel editorPanel = new JPanel();
 		editorPanel.setLayout(new BorderLayout());
 		editorPanel.setBorder(BorderFactory.createTitledBorder(null, "Edit Handle Positions and Values",
 				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, SMALL_FONT,
-				new java.awt.Color(0, 0, 0)));
+				javax.swing.border.TitledBorder.DEFAULT_POSITION, SMALL_FONT, new java.awt.Color(0, 0, 0)));
 		editorPanel.setBackground(BACKGROUND);
-		
+
 		final JPanel buttonPanel = new JPanel();
 		buttonPanel.setBackground(BACKGROUND);
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
@@ -369,13 +366,12 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		rangeSettingPanelLayout.setVerticalGroup(rangeSettingPanelLayout.createParallelGroup(
 				GroupLayout.Alignment.LEADING).addGroup(
 				rangeSettingPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-						.addComponent(handlePositionSpinnerLabel).addComponent(valueSpinner)
-						.addComponent(minMaxButton)
+						.addComponent(handlePositionSpinnerLabel).addComponent(valueSpinner).addComponent(minMaxButton)
 						.addComponent(deleteButton).addComponent(addButton)));
 
 		editorPanel.add(rangeSettingPanel, BorderLayout.CENTER);
 		editorPanel.add(propValuePanel, BorderLayout.SOUTH);
-		
+
 		GroupLayout layout = new GroupLayout(mainPanel);
 		mainPanel.setLayout(layout);
 
@@ -438,31 +434,29 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		// Set range values
 		if (tracer.getRange(type) == 0) {
 			final CyColumn col = dataTable.getColumn(mapping.getMappingColumnName());
-			
+
 			if (col != null) {
 				Double maxValue = Double.NEGATIVE_INFINITY;
 				Double minValue = Double.POSITIVE_INFINITY;
 				final List<?> valueList = col.getValues(col.getType());
-				
+
 				for (Object o : valueList) {
 					if (o instanceof Number) {
 						Number val = (Number) o;
-						
+
 						if (val.doubleValue() > maxValue)
 							maxValue = val.doubleValue();
-		
+
 						if (val.doubleValue() < minValue)
 							minValue = val.doubleValue();
 					}
 
 				}
-	
+
 				tracer.setMax(type, maxValue);
 				tracer.setMin(type, minValue);
 			}
 		}
-
-		allPoints = mapping.getAllPoints();
 	}
 
 	protected void setSidePanelIconColor(Color below, Color above) {
@@ -501,13 +495,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	protected int getSelectedPoint(int selectedIndex) {
 		final List<Thumb<V>> thumbs = slider.getModel().getSortedThumbs();
-		Thumb<?> selected = slider.getModel().getThumbAt(selectedIndex);
-		int i;
+		final Thumb<V> selected = slider.getModel().getThumbAt(selectedIndex);
 
-		for (i = 0; i < thumbs.size(); i++) {
-			if (thumbs.get(i) == selected) {
+		for (int i = 0; i < thumbs.size(); i++) {
+			if (thumbs.get(i) == selected)
 				return i;
-			}
 		}
 
 		return -1;
@@ -515,65 +507,82 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	protected void updateMap() {
 		final List<Thumb<V>> thumbs = slider.getModel().getSortedThumbs();
-
 		final double min = tracer.getMin(type);
 		final double range = tracer.getRange(type);
 
-		Thumb<?> t;
-		Number newVal;
-
 		if (thumbs.size() == 1) {
-			// Special case: only one handle.
-			V equalVal = thumbs.get(0).getObject();
-			V lesserVal = below;
-			V greaterVal = above;
-
-			if(equalVal instanceof Number)
-				mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number)equalVal), NumberConverter.convert(vpValueType, (Number)lesserVal), NumberConverter.convert(vpValueType, (Number)greaterVal)));
-			else {
-				mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(equalVal, lesserVal, greaterVal));
-			}
-			newVal = ((thumbs.get(0).getPosition() / 100) * range) + min;
-			mapping.getPoint(0).setValue((K) newVal);
-
-			// Apply it.
-			style.apply(appManager.getCurrentNetworkView());
+			updateOnePoint(thumbs, min, range);
 			return;
 		}
 
 		int size = thumbs.size();
-
+		
+		final SortedMap<Double, ContinuousMappingPoint<K,V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<K,V>>();
+		for (final ContinuousMappingPoint<K, V> point : mapping.getAllPoints()) {
+			Number val =point.getValue();
+			if(sortedPoints.containsKey(val.doubleValue()))
+				val=val.doubleValue()-0.01d;
+			sortedPoints.put(val.doubleValue(), point);
+		}
+		
+		final SortedSet<Double> keys= new TreeSet<Double>(sortedPoints.keySet()); 
+		final Iterator<Double> itr = keys.iterator();
+		
 		for (int i = 0; i < size; i++) {
-			t = thumbs.get(i);
-
+			final Thumb<V> t = thumbs.get(i);
+			final Double key = itr.next();
+			final ContinuousMappingPoint<K, V> point = sortedPoints.get(key);
+			
 			V lesserVal;
-			V equalVal = (V) t.getObject();
+			V equalVal = t.getObject();
 			V greaterVal;
 
 			if (i == 0) {
 				lesserVal = below;
-				greaterVal = (V) t.getObject();
+				greaterVal = t.getObject();
 			} else if (i == (thumbs.size() - 1)) {
 				greaterVal = above;
-				lesserVal = (V) t.getObject();
+				lesserVal = t.getObject();
 			} else {
-				lesserVal = (V) t.getObject();
-				greaterVal = (V) t.getObject();
+				lesserVal = t.getObject();
+				greaterVal = t.getObject();
 			}
 
-			if(equalVal instanceof Number)
-				mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number)equalVal), NumberConverter.convert(vpValueType, (Number)lesserVal), NumberConverter.convert(vpValueType, (Number)greaterVal)));
-			else {
-				mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(equalVal, lesserVal, greaterVal));
+			final BoundaryRangeValues<V> newRange;
+			if (equalVal instanceof Number) {
+				newRange = new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number) lesserVal),
+						NumberConverter.convert(vpValueType, (Number) equalVal), NumberConverter.convert(
+								vpValueType, (Number) greaterVal));
+				
+			} else {
+				newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
 			}
-//			mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal));
+			
+			point.setRange(newRange);
 
-			newVal = ((t.getPosition() / 100) * range) + min;
-			mapping.getPoint(i).setValue((K) newVal);
+			Number newVal = ((t.getPosition() / 100) * range) + min;
+			point.setValue((K) newVal);
 		}
+	}
+	
+	
+	private void updateOnePoint(final List<Thumb<V>> thumbs, final double min,
+			final double range) {
+		// Special case: only one handle.
+		V equalVal = thumbs.get(0).getObject();
+		V lesserVal = below;
+		V greaterVal = above;
 
-		// Apply it.
-		style.apply(appManager.getCurrentNetworkView());
+		if (equalVal instanceof Number)
+			mapping.getPoint(0).setRange(
+					new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number) lesserVal), NumberConverter
+							.convert(vpValueType, (Number) equalVal), NumberConverter.convert(vpValueType,
+							(Number) greaterVal)));
+		else {
+			mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal));
+		}
+		Number newVal = ((thumbs.get(0).getPosition() / 100) * range) + min;
+		mapping.getPoint(0).setValue((K) newVal);
 	}
 
 	protected void enableSpinner(final int selectedIndex) {
@@ -613,7 +622,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		Class<?> dataType = type.getClass();
 		valueSpinner.setEnabled(false);
 		valueSpinner.setValue(0);
-		
+
 		if (Number.class.isAssignableFrom(dataType)) {
 			propertySpinner.setEnabled(false);
 			propertySpinner.setValue(0);
@@ -638,10 +647,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				updateMap();
 				slider.repaint();
 				repaint();
-
-				final CyNetworkView curView = appManager.getCurrentNetworkView();
-				style.apply(curView);
-				curView.updateView();
 			} else {
 				valueSpinner.setEnabled(false);
 				valueSpinner.setValue(0);
@@ -650,10 +655,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 
 	private final class SpinnerChangeListener implements ChangeListener {
-		
+
 		@Override
 		public void stateChanged(ChangeEvent e) {
-			
+
 			Number newVal = spinnerModel.getNumber();
 			int selectedIndex = slider.getSelectedIndex();
 
@@ -677,9 +682,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				slider.getParent().repaint();
 				slider.repaint();
 				lastSpinnerNumber = newVal.doubleValue();
-				
-				final CyNetworkView curView = appManager.getCurrentNetworkView();
-				curView.updateView();
 			}
 		}
 	}

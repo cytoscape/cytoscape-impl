@@ -183,8 +183,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				discMap.putMapValue(prop.getKey(), newVal);
 			}
 
-			vmm.getCurrentVisualStyle().apply(applicationManager.getCurrentNetworkView());
-			applicationManager.getCurrentNetworkView().updateView();
+//			vmm.getCurrentVisualStyle().apply(applicationManager.getCurrentNetworkView());
+			//applicationManager.getCurrentNetworkView().updateView();
 		}
 	}
 
@@ -278,8 +278,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		vizMapPropertySheetBuilder.updateTableView();
 
 		// Finally, update graph view and focus.
-		currentStyle.apply(applicationManager.getCurrentNetworkView());
-		applicationManager.getCurrentNetworkView().updateView();
+//		currentStyle.apply(applicationManager.getCurrentNetworkView());
+//		applicationManager.getCurrentNetworkView().updateView();
 		return;
 
 	}
@@ -358,9 +358,10 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		propList.add(newRootProp);
 
 		parent = null;
-		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
-		currentStyle.apply(applicationManager.getCurrentNetworkView());
-		applicationManager.getCurrentNetworkView().updateView();
+//		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
+//		currentStyle.apply(applicationManager.getCurrentNetworkView());
+		
+		//applicationManager.getCurrentNetworkView().updateView();
 
 		vizMapPropertySheetBuilder.updateTableView();
 

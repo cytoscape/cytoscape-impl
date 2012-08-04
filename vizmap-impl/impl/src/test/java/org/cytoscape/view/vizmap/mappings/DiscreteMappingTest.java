@@ -3,12 +3,16 @@ package org.cytoscape.view.vizmap.mappings;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import static org.mockito.Mockito.*;
+
 import java.awt.Color;
 import java.awt.Paint;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingImpl;
 import org.junit.Test;
+import org.mockito.Mock;
 
 public class DiscreteMappingTest {
 
@@ -41,8 +45,9 @@ public class DiscreteMappingTest {
 
 		final Class<String> type = String.class;
 
+		CyEventHelper eventHelper = mock(CyEventHelper.class);
 		final DiscreteMapping<String, Paint> mapping = new DiscreteMappingImpl<String, Paint>(attrName, type,
-				BasicVisualLexicon.NODE_FILL_COLOR);
+				BasicVisualLexicon.NODE_FILL_COLOR, eventHelper);
 
 		return mapping;
 	}

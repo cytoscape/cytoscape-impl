@@ -444,7 +444,6 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 	private void applyNewStyle(final CyNetworkView view) {
 		final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
-
 		vmm.setVisualStyle(selectedStyle, view);
 		selectedStyle.apply(view);
 		view.updateView();

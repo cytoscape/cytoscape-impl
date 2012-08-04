@@ -609,11 +609,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 				cMapping.getPoint(selectedIdx).setRange(brv);
 
-				if (numPoints > 1) {
-					style.apply(manager.getCurrentNetworkView());
-					manager.getCurrentNetworkView().updateView();
-				}
-
 				repaint();
 				slider.repaint();
 				repaint();
@@ -643,11 +638,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 						vpValueType, newValue), NumberConverter.convert(vpValueType, original.equalValue),
 						NumberConverter.convert(vpValueType, original.greaterValue));
 				cMapping.getPoint(0).setRange(brv);
-
-
-				// Update view.
-				style.apply(manager.getCurrentNetworkView());
-				manager.getCurrentNetworkView().updateView();
 
 				slider.repaint();
 				repaint();
@@ -681,10 +671,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 						NumberConverter.convert(vpValueType, above));
 				
 				cMapping.getPoint(cMapping.getPointCount() - 1).setRange(brv);
-
-				// Update view.
-				style.apply(manager.getCurrentNetworkView());
-				manager.getCurrentNetworkView().updateView();
 
 				slider.repaint();
 				repaint();
@@ -752,8 +738,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 			if (dragFlag == true) {
 				dragFlag = false;
-				style.apply(manager.getCurrentNetworkView());
-				manager.getCurrentNetworkView().updateView();
 			}
 		}
 
