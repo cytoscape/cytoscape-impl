@@ -32,10 +32,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.model.CyEdge;
@@ -44,6 +45,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -53,7 +55,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.HashSet;
 
 /**
  * Reader for graphs in the interactions file format. Given the filename,
@@ -70,10 +72,11 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 
 	public NNFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			CyNetworkManager cyNetworkManagerServiceRef) {
+			CyNetworkManager cyNetworkManagerServiceRef, CyRootNetworkManager cyRootNetworkFactory) {
 		super(is, cyNetworkViewFactory, cyNetworkFactory);
 		this.layouts = layouts;
-		this.parser = new NNFParser(cyNetworkManagerServiceRef, cyNetworkFactory);
+
+		this.parser = new NNFParser(cyNetworkManagerServiceRef, cyNetworkFactory,cyRootNetworkFactory);
 	}
 
 	@Override
@@ -94,7 +97,18 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 
 		// Create buffered reader from given InputStream
 		final BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-
+				
+		in.mark(9999999);
+		
+		String overviewNetworkName = retriveOverviewNetworkName(in);
+		if (overviewNetworkName == null){
+			throw new IOException("Can not find overview netwrok!");
+		}
+				
+		in.reset();
+		
+		parser.setOverViewnetworkName(overviewNetworkName);
+		
 		String line;
 		try {
 			for (int lineNumber = 1; (line = in.readLine()) != null; ++lineNumber) {
@@ -102,6 +116,7 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 				if (line.length() == 0) {
 					continue;
 				}
+
 				if (!parser.parse(line)) {
 					throw new IOException("Malformed line in NNF file: " + lineNumber + " \"" + line + "\"");
 				}
@@ -128,6 +143,52 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 		logger.debug("NNF file loaded!");
 	}
 
+	
+	
+	private String retriveOverviewNetworkName(final BufferedReader in) throws IOException {
+		
+		HashSet<String> networkSet = new HashSet<String>();
+		HashSet<String> nodeSet = new HashSet<String>();
+		
+		String line;
+		
+		for (int lineNumber = 1; (line = in.readLine()) != null; ++lineNumber) {
+				line = processComment(line);
+				if (line.length() == 0) {
+					continue;
+				}
+				// Split with white space chars
+				String[] parts = NNFParser.splitLine(line);
+				int length = parts.length;
+								
+				if (length == 2) {
+					networkSet.add(parts[0]);
+					nodeSet.add(parts[1]);
+				} else if (length == 4) {
+					networkSet.add(parts[0]);
+					nodeSet.add(parts[1]);
+					nodeSet.add(parts[3]);
+				}								
+		}
+
+		String overviewName = null;
+		int overviewNameCount = 0;
+		Iterator<String> it = networkSet.iterator();
+		while(it.hasNext()){
+			String tmp = it.next();
+			if (!nodeSet.contains(tmp)){
+				overviewName = tmp;
+				overviewNameCount++;
+			}
+		}
+		
+		if (overviewNameCount != 1){
+			overviewName = null;
+		}
+
+		return overviewName;
+	}
+	
 	
 	private String processComment(String line) {
 		final int hashPos = line.indexOf(COMMENT_CHAR);

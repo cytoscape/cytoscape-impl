@@ -34,6 +34,7 @@ import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
@@ -42,17 +43,19 @@ public class NNFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
 	private final CyLayoutAlgorithmManager layouts;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
+	private final CyRootNetworkManager cyRootNetworkFactory;
 
 	public NNFNetworkReaderFactory(CyFileFilter filter, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			 CyNetworkManager cyNetworkManagerServiceRef) {
+			 CyNetworkManager cyNetworkManagerServiceRef,CyRootNetworkManager cyRootNetworkFactory) {
 		super(filter, cyNetworkViewFactory, cyNetworkFactory);
 		this.layouts = layouts;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		this.cyRootNetworkFactory = cyRootNetworkFactory;
 	}
 
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new NNFNetworkReader(inputStream, layouts, cyNetworkViewFactory, cyNetworkFactory,
-				 cyNetworkManagerServiceRef));
+				 cyNetworkManagerServiceRef, cyRootNetworkFactory));
 	}
 }
