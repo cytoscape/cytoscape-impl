@@ -2,6 +2,7 @@ package org.cytoscape.browser.internal;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -95,6 +96,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private JPopupMenu cellMenu;
 
+	private int sortedColumnIndex;
+	private boolean sortedColumnAscending;
+	
 	public BrowserTable(final EquationCompiler compiler, final PopupMenuHelper popupMenuHelper,
 			final CyApplicationManager applicationManager, final CyEventHelper eventHelper,
 			final CyTableManager tableManager) {
@@ -104,7 +108,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		this.applicationManager = applicationManager;
 		this.eventHelper = eventHelper;
 		this.tableManager = tableManager;
-
+		this.sortedColumnAscending = true;
+		this.sortedColumnIndex = -1;
+		
 		initHeader();
 		setCellSelectionEnabled(true);
 		setDefaultEditor(Object.class, new MultiLineTableCellEditor());
@@ -445,7 +451,24 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	@Override
 	public void mouseClicked(final MouseEvent event) {
-		if (event.getButton() == MouseEvent.BUTTON3) {
+		
+		//*******************Sort header code **********************
+
+		final int cursorType = getTableHeader().getCursor().getType();
+		if ((event.getButton() == MouseEvent.BUTTON1) && (cursorType != Cursor.E_RESIZE_CURSOR)
+				&& (cursorType != Cursor.W_RESIZE_CURSOR)) {
+			final int index = getColumnModel().getColumnIndexAtX(event.getX());
+
+			if (index >= 0) {
+				final int modelIndex = getColumnModel().getColumn(index).getModelIndex();
+				if (sortedColumnIndex == index) {
+					sortedColumnAscending = !sortedColumnAscending;
+				}
+
+				sortedColumnIndex = index;
+			}
+		}//end of sorting
+		else if (event.getButton() == MouseEvent.BUTTON3) {
 			final int column = getColumnModel().getColumnIndexAtX(event.getX());
 			final BrowserTableModel tableModel = (BrowserTableModel) getModel();
 
@@ -679,4 +702,17 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			return TransferHandler.COPY;
 		}
 	}
+	
+	
+	//*******************Sort header code **********************
+	public int getSortedColumnIndex() {
+		return sortedColumnIndex;
+	}
+
+	
+	public boolean isSortedColumnAscending() {
+		return sortedColumnAscending;
+	}
+	
+	
 }

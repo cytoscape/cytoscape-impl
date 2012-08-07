@@ -43,6 +43,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellRenderer;
 
+import org.cytoscape.browser.internal.util.SortArrowIcon;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 
@@ -77,6 +78,21 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 	
 	private static final ImageIcon PRIMARY_KEY_ICON = new ImageIcon(CustomHeaderRenderer.class.getClassLoader().getResource(
 			"images/primary_key.png"));
+
+	/**
+	 * 
+	 */
+	public static Icon NONSORTED = new SortArrowIcon(SortArrowIcon.NONE);
+
+	/**
+	 * 
+	 */
+	public static Icon ASCENDING = new SortArrowIcon(SortArrowIcon.ASCENDING);
+
+	/**
+	 * 
+	 */
+	public static Icon DECENDING = new SortArrowIcon(SortArrowIcon.DECENDING);
 
 	CustomHeaderRenderer() {
 		setBorder(BORDER);
@@ -140,6 +156,21 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		// Set tool tip if desired
 		setToolTipText(toolTip);
 
+		//*****sorting icon**
+		
+		int index = -1;
+		boolean ascending = true;
+		
+		if (table instanceof BrowserTable) {
+			BrowserTable sortTable = (BrowserTable) table;
+			index = sortTable.getSortedColumnIndex();
+			ascending = sortTable.isSortedColumnAscending();
+		}
+		
+		Icon icon = ascending ? ASCENDING : DECENDING;
+		setIcon((vColIndex == index) ? icon : NONSORTED);
+
+		
 		// Since the renderer is a component, return itself
 		return this;
 	}
