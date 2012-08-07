@@ -836,6 +836,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_drawPersp.addNode(node);
 
 		final DNodeView dNodeView = new DNodeView(dingLexicon, this, nodeInx, node, vmm, netViewMgr);
+		Boolean selected = getModel().getRow(node).get(CyNetwork.SELECTED, Boolean.class);
+		if (selected != null && selected) {
+			dNodeView.select();
+		}
 
 		m_nodeViewMap.put(node, dNodeView);
 		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, m_defaultNodeXMax, m_defaultNodeYMax);
