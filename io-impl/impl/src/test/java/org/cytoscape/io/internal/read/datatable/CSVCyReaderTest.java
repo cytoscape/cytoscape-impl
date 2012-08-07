@@ -43,7 +43,7 @@ public class CSVCyReaderTest {
 	public void testReadSimple() throws Exception {
 		String data = "SUID\r\njava.lang.Long\r\ntest table,\"public\\,mutable\"\r\n5\r\n6";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null);
+						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		assertNotNull(tables);
@@ -64,7 +64,7 @@ public class CSVCyReaderTest {
 	public void testReadString() throws Exception {
 		String data = "SUID,name\r\njava.lang.Long,java.lang.String\r\ntest table,\"public\\,mutable\"\r\n1,Alice\r\n2,Bob\r\n3,Carol";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null);
+						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -76,7 +76,7 @@ public class CSVCyReaderTest {
 	public void testReadDouble() throws Exception {
 		String data = "SUID,weight\r\njava.lang.Long,java.lang.Double\r\ntest table,\"public\\,mutable\"\r\n0,0.56\r\n-5,-1.234";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null);
+						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -88,7 +88,7 @@ public class CSVCyReaderTest {
 	public void testReadBoolean() throws Exception {
 		String data = "SUID,hidden\r\njava.lang.Long,java.lang.Boolean\r\ntest table,\"public\\,mutable\"\r\n30,true\r\n40,false\r\n50,true";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null);
+						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -100,7 +100,7 @@ public class CSVCyReaderTest {
 	public void testReadList() throws Exception {
 		String data = "SUID,list\r\njava.lang.Long,java.util.List<java.lang.String>\r\ntest table,\"public\\,mutable\"\r\n1,\"a\rb\rc\"";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null);
+						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];

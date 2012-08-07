@@ -31,19 +31,21 @@ public class CSVCyReader implements CyTableReader {
 	private final boolean handleEquations;
 	private final CyTableFactory tableFactory;
 	private final EquationCompiler compiler;
+	private final String encoding;
 
 	private boolean isCanceled;
 	private CyTable table;
 
 	public CSVCyReader(final InputStream stream, final boolean readSchema,
 			   final boolean handleEquations, final CyTableFactory tableFactory,
-			   final EquationCompiler compiler)
+			   final EquationCompiler compiler, final String encoding)
 	{
 		this.stream          = stream;
 		this.readSchema      = readSchema;
 		this.handleEquations = handleEquations;
 		this.tableFactory    = tableFactory;
 		this.compiler        = compiler;
+		this.encoding        = encoding;
 	}
 
 	@Override
@@ -55,7 +57,7 @@ public class CSVCyReader implements CyTableReader {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
 
-		CSVReader reader = new CSVReader(new InputStreamReader(stream));
+		CSVReader reader = new CSVReader(new InputStreamReader(stream, encoding));
 		taskMonitor.setProgress(0.2);
 
 		TableInfo info = readHeader(reader);

@@ -26,15 +26,17 @@ public class CSVCyWriter implements CyWriter {
 	private boolean isCanceled;
 	private final boolean handleEquations;
 	private final boolean includeVirtualColumns;
+	private String encoding;
 
 	public CSVCyWriter(final OutputStream outputStream, final CyTable table,
-			   final boolean writeSchema, final boolean handleEquations, final boolean includeVirtualColumns)
+			   final boolean writeSchema, final boolean handleEquations, final boolean includeVirtualColumns, final String encoding)
 	{
 		this.outputStream    = outputStream;
 		this.table           = table;
 		this.writeSchema     = writeSchema;
 		this.handleEquations = handleEquations;
 		this.includeVirtualColumns = includeVirtualColumns;
+		this.encoding = encoding;
 	}
 
 	@Override
@@ -45,7 +47,7 @@ public class CSVCyWriter implements CyWriter {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
-		CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream), ',', '"', "\r\n");
+		CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream, encoding), ',', '"', "\r\n");
 		try {
 			List<CyColumn> columns = new ArrayList<CyColumn>();
 			for (CyColumn column : table.getColumns()) {

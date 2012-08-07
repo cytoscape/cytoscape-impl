@@ -1,12 +1,13 @@
 package org.cytoscape.io.internal.write.datatable.csv;
 
 
+import java.io.OutputStream;
+
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyTableWriterFactory;
 import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
+import org.cytoscape.io.write.CyTableWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyTable;
-import java.io.OutputStream;
 
 
 public class CSVTableWriterFactory extends AbstractCyWriterFactory implements CyTableWriterFactory {
@@ -25,6 +26,6 @@ public class CSVTableWriterFactory extends AbstractCyWriterFactory implements Cy
 	
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CyTable table) {
-		return new CSVCyWriter(outputStream, table, writeSchema, handleEquations, includeVirtualColumns);
+		return new CSVCyWriter(outputStream, table, writeSchema, handleEquations, includeVirtualColumns, "UTF-8");
 	}
 }

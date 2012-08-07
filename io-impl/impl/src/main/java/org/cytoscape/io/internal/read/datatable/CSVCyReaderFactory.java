@@ -29,6 +29,6 @@ public class CSVCyReaderFactory extends AbstractInputStreamTaskFactory {
 	
 	@Override
 	public TaskIterator createTaskIterator(InputStream stream, String inputName) {
-		return new TaskIterator(new CSVCyReader(stream, readSchema, handleEquations, tableFactory, compiler));
+		return new TaskIterator(new CSVCyReader(stream, readSchema, handleEquations, tableFactory, compiler, "UTF-8"));
 	}
 }
