@@ -32,7 +32,7 @@ public class HandleImpl implements Handle {
 
 	@Override
 	public Point2D calculateHandleLocation(final CyNetworkView graphView, final View<CyEdge> view) {
-		if (sinTheta == Double.NaN || cosTheta == Double.NaN) {
+		if (Double.isNaN(sinTheta) || Double.isNaN(cosTheta)) {
 			defineHandle(graphView, view, x, y);
 		}
 		final CyNode source = view.getModel().getSource();
@@ -64,10 +64,10 @@ public class HandleImpl implements Handle {
 	
 	@Override
 	public void defineHandle(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
-		if(!((Double)x).equals(Double.NaN))
+		if(!Double.isNaN(x))
 			this.x = x;
 		
-		if(!((Double)y).equals(Double.NaN))
+		if(!Double.isNaN(y))
 			this.y = y;
 		
 		if(graphView != null && view != null)
@@ -99,40 +99,48 @@ public class HandleImpl implements Handle {
 		// final double dist1 = Math.sqrt(Math.pow(v1x, 2) + Math.pow(v1y, 2));
 		final double dist1 = Point2D.Double.distance(sX, sY, tX, tY);
 
-		// Vector v2
-		// Distance from source to current handle
-		final double v2x = hX - sX;
-		final double v2y = hY - sY;
-		// final double dist2 = Math.sqrt(Math.pow(v2x, 2) + Math.pow(v2y, 2));
-		final double dist2 = Point2D.Double.distance(sX, sY, hX, hY);
+		if (dist1 == 0.0) {
+			// If the source and target are at the same location, use
+			// reasonable defaults.
+			ratio = 0;
+			cosTheta = 0;
+			sinTheta = 0;
+		} else {
+			// Vector v2
+			// Distance from source to current handle
+			final double v2x = hX - sX;
+			final double v2y = hY - sY;
+			// final double dist2 = Math.sqrt(Math.pow(v2x, 2) + Math.pow(v2y, 2));
+			final double dist2 = Point2D.Double.distance(sX, sY, hX, hY);
+	
+			// Ratio of vector lengths
+			ratio = dist2 / dist1;
+	
+			// Dot product of v1 and v2
+			final double dotProduct = (v1x * v2x) + (v1y * v2y);
+			cosTheta = dotProduct / (dist1 * dist2);
+	
+			// Avoid rounding problem
+			if (cosTheta > 1.0d)
+				cosTheta = 1.0d;
+	
+			// Theta is the angle between v1 and v2
+			double theta = Math.acos(cosTheta);
+			sinTheta = Math.sin(theta);
+	
+	//		 System.out.println("\n\n## Dot prod = " + dotProduct);
+	//		 System.out.println("** cos = " + cosTheta);
+	//		 System.out.println("** sin = " + sinTheta);
+	//		 System.out.println("** theta = " + theta);
+	//		 System.out.println("** (Hx, Hy) = (" + hX + ", " + hY + ")");
+			final Point2D validate = convert(sX, sY, tX, tY);
+			if (Math.abs(validate.getX() - hX) > 2 || Math.abs(validate.getY() - hY) > 2)
+				sinTheta = -sinTheta;
 
-		// Ratio of vector lengths
-		ratio = dist2 / dist1;
-
-		// Dot product of v1 and v2
-		final double dotProduct = (v1x * v2x) + (v1y * v2y);
-		cosTheta = dotProduct / (dist1 * dist2);
-
-		// Avoid rounding problem
-		if (cosTheta > 1.0d)
-			cosTheta = 1.0d;
-
-		// Theta is the angle between v1 and v2
-		double theta = Math.acos(cosTheta);
-		sinTheta = Math.sin(theta);
-
-//		 System.out.println("\n\n## Dot prod = " + dotProduct);
-//		 System.out.println("** cos = " + cosTheta);
-//		 System.out.println("** sin = " + sinTheta);
-//		 System.out.println("** theta = " + theta);
-//		 System.out.println("** (Hx, Hy) = (" + hX + ", " + hY + ")");
-		final Point2D validate = convert(sX, sY, tX, tY);
-		if (Math.abs(validate.getX() - hX) > 2 || Math.abs(validate.getY() - hY) > 2)
-			sinTheta = -sinTheta;
-
-		// Validate
-		if (theta == Double.NaN || sinTheta == Double.NaN)
-			throw new IllegalStateException("Invalid angle: " + theta + ". Cuased by cos(theta) = " + cosTheta);
+			// Validate
+			if (Double.isNaN(theta) || Double.isNaN(sinTheta))
+				throw new IllegalStateException("Invalid angle: " + theta + ". Cuased by cos(theta) = " + cosTheta);
+		}
 	}
 
 	/**
