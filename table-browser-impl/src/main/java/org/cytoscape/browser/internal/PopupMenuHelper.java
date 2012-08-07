@@ -94,7 +94,8 @@ public class PopupMenuHelper {
 		
 		// Add preset menue items
 		final Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
-		menu.add(getOpenLinkMenu(value.toString()));
+		if (value != null)
+			menu.add(getOpenLinkMenu(value.toString()));
 		
 		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
 

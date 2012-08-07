@@ -632,7 +632,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	}
 
 	private String getAttribName(final int cellRow, final int cellColumn) {
-		return browserTableModel.getColumnName(cellColumn);
+		int colIndexModel = browserTableModel.getTable().convertColumnIndexToModel(cellColumn);
+		return browserTableModel.getColumnName( colIndexModel);
 	}
 
 	private JButton getDeleteButton() {

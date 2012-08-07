@@ -808,8 +808,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			lastInternalError = errorMsg.toString();
 			if ( type == null )
 				return value;
-			else
+			else if(value != null)
 				return EqnSupport.convertEqnResultToColumnType(type, value);
+			else 
+				return null;
 		} else
 			return vl;
 	}

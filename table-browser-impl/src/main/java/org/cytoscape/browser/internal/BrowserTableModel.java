@@ -178,10 +178,10 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	}
 
 	@Override
-	public Object getValueAt(final int rowIndex, final int columnIndex) {		
+	public Object getValueAt(final int rowIndex, final int columnIndex) {	
 		final String columnName = getColumnName(columnIndex);
 		final CyRow row = mapRowIndexToRow(rowIndex);	
-
+		
 		return getValidatedObjectAndEditString(row, columnName);
 	}
 
@@ -230,15 +230,13 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 			return null;
 
 		// Optimisation hack:
+		
+		
 		Object cooked;
-		if (!(raw instanceof String))
+		if (!(raw instanceof Equation))
 			cooked = raw;
 		else {
-			final String rawString = (String)raw;
-			if (!rawString.startsWith("="))
-				cooked = rawString;
-			else
-				cooked = getColumnValue(row, columnName);
+			cooked = getColumnValue(row, columnName);
 		}
 
 		if (cooked != null)
@@ -253,8 +251,9 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		if (column.getType() == List.class) {
 			final Class<?> listElementType = column.getListElementType();
 			return row.getList(columnName, listElementType);
-		} else
+		} else{
 			return row.get(columnName, column.getType());
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -448,8 +447,10 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 			if(pk != null) {
 				if (suidMapSelected.keySet().contains(pk)){
 					table.addRowSelectionInterval(i, i);
+					/*
 					if (table.getColumnCount() > 0)
 						table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
+						*/
 				}else if (suidMapUnselected.keySet().contains(pk)){
 					table.removeRowSelectionInterval(i, i);
 				}
@@ -544,12 +545,14 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 			final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 			initVariableNameToTypeMap(variableNameToTypeMap);
 			if (compiler.compile(text, variableNameToTypeMap)) {
+				
 				final Equation eqn = compiler.getEquation();
 				final Class<?> eqnType = eqn.getType();
 
 				// Is the equation type compatible with the column type?
-				if (eqnTypeIsCompatible(columnType, eqnType))
+				if (eqnTypeIsCompatible(columnType, eqnType)){
 					row.set(columnName, eqn);
+				}
 				else { // The equation type is incompatible w/ the column type!
 					final Class<?> expectedType = columnType == Integer.class ? Long.class : columnType;
 					final String errorMsg = "Equation result type is "
@@ -578,6 +581,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 		final TableModelEvent event = new TableModelEvent(this, rowIndex, rowIndex, columnIndex);
 		fireTableChanged(event);
+		fireTableDataChanged();
 	}
 
 	// Pop-up window for error message

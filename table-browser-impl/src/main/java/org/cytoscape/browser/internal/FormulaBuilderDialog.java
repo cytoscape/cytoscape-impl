@@ -207,6 +207,11 @@ public class FormulaBuilderDialog extends JDialog {
 			|| returnType == String.class || returnType == Object.class))
 			return true;
 
+		if (requiredType == Integer.class
+			    && (returnType == Double.class || returnType == Boolean.class
+				|| returnType == String.class || returnType == Object.class))
+				return true;
+		
 		if (requiredType == Long.class
 		    && (returnType == Double.class || returnType == Boolean.class
 			|| returnType == String.class || returnType == Object.class))
@@ -480,7 +485,8 @@ public class FormulaBuilderDialog extends JDialog {
 			formula = formula + ")";
 
 		final JTable table = tableModel.getTable();
-		final int cellColum = table.getSelectedColumn();
+		final int cellColum = table.convertColumnIndexToModel( table.getSelectedColumn());
+		
 		final String attribName = tableModel.getColumnName(cellColum);
 		final CyTable attribs = tableModel.getAttributes();
 
@@ -490,7 +496,7 @@ public class FormulaBuilderDialog extends JDialog {
 		
 		switch (applicationDomain) {
 		case CURRENT_CELL:
-			final int cellRow = table.getSelectedRow();
+			final int cellRow = table.convertRowIndexToModel( table.getSelectedRow());
 			tableModel.setValueAt(formula, cellRow, cellColum);
 			break;
 		case CURRENT_SELECTION:
