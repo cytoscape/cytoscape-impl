@@ -22,6 +22,7 @@ import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	private final CyNetworkManager manager;
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableManager;
+	private final FileUtil fileUtil;
 
 	public ImportOntologyAndAnnotationAction(final InputStreamTaskFactory factory)
 	{
@@ -56,6 +58,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 		this.manager      = CytoscapeServices.cyNetworkManager;
 		this.tableFactory = CytoscapeServices.cyTableFactory;
 		this.tableManager = CytoscapeServices.cyTableManager;
+		this.fileUtil = CytoscapeServices.fileUtil;
 	}
 
 	@Override
@@ -66,7 +69,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 			ontologyPanel =
 				new ImportTablePanel(ImportTablePanel.ONTOLOGY_AND_ANNOTATION_IMPORT,
 				                     null, null, bookmarksProp, bkUtil, taskManager,
-				                     factory, manager, tableFactory, tableManager);
+				                     factory, manager, tableFactory, tableManager, fileUtil);
 			dialog.add(ontologyPanel, BorderLayout.CENTER);
 			dialog.pack();
 			dialog.setLocationRelativeTo(null);

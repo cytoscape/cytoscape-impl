@@ -128,6 +128,7 @@ import org.cytoscape.tableimport.internal.util.AttributeTypes;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.JStatusBar;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
@@ -235,16 +236,17 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private final CyTableManager tableManager;
     private final EventAdmin eventAdmin;
 	private File tempFile;
+	private final FileUtil fileUtil;
 
 	public ImportTablePanel(final int dialogType, final InputStream is, final String fileType,
 	                        final String inputName, final CyProperty<Bookmarks> bookmarksProp,
 	                        final BookmarksUtil bkUtil, final TaskManager taskManager,
 	                        final InputStreamTaskFactory factory, final CyNetworkManager manager,
-	                        final CyTableFactory tableFactory, final CyTableManager tableManager)
+	                        final CyTableFactory tableFactory, final CyTableManager tableManager, final FileUtil fileUtil)
 	    throws JAXBException, IOException
 	{
 		this(dialogType, is, fileType, bookmarksProp, bkUtil, taskManager, factory, manager,
-		     tableFactory, tableManager);
+		     tableFactory, tableManager, fileUtil);
 		this.inputName = inputName;
 	}
 
@@ -252,7 +254,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				final CyProperty<Bookmarks> bookmarksProp,
 				final BookmarksUtil bkUtil, final TaskManager taskManager,
 				final InputStreamTaskFactory factory, final CyNetworkManager manager,
-				final CyTableFactory tableFactory, final CyTableManager tableManager)
+				final CyTableFactory tableFactory, final CyTableManager tableManager, final FileUtil fileUtil)
 	    throws JAXBException, IOException
 	{
 		this.bookmarksProp = null;
@@ -263,6 +265,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		this.tableFactory  = tableFactory;
 		this.tableManager  = tableManager;
         this.eventAdmin    = CytoscapeServices.eventAdmin;
+        this.fileUtil = fileUtil;
 
 		if (dialogType != ONTOLOGY_AND_ANNOTATION_IMPORT) {
 
@@ -687,7 +690,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
 			panelBuilder = new OntologyPanelBuilder(this, bookmarksProp, bkUtil,
 			                                        taskManager, factory, manager,
-			                                        tableFactory, tableManager);
+			                                        tableFactory, tableManager, fileUtil);
 			panelBuilder.buildPanel();
 		}
 
@@ -2405,10 +2408,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	 * @return true if table looks OK.
 	 */
 	private boolean checkDataSourceError() {
-		/*
-		 * Number of ENABLED columns should be 2 or more.
-		 *
-		 */
+		
 		final JTable table = previewPanel.getPreviewTable();
 
 		if ((table == null) || (table.getModel() == null) || (table.getColumnCount() == 0)) {

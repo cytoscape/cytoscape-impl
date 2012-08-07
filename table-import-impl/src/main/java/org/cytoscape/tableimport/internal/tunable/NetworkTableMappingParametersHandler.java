@@ -19,6 +19,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.util.swing.FileUtil;
 import org.osgi.service.event.Event;
 import java.util.Map;
 import java.util.HashMap;
@@ -30,13 +31,14 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
     
 	private ImportTablePanel importTablePanel;
 	private NetworkTableMappingParameters ntmp;
+	private final FileUtil fileUtil;
     
 	protected NetworkTableMappingParametersHandler(Field field,Object instance, Tunable tunable, 
 			final int dialogType, final CyTableManager tableManager) {
 		super(field, instance, tunable);
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
-		
+		this.fileUtil = CytoscapeServices.fileUtil;
 		init();
 	}
 	
@@ -46,7 +48,7 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 		super(getter, setter, instance, tunable);
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
-		
+		this.fileUtil = CytoscapeServices.fileUtil;
 		init();
 	}
 	
@@ -66,7 +68,7 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 			importTablePanel =
 				new ImportTablePanel(dialogType, ntmp.is,
 				                     ntmp.fileType, null,null, null, null,
-				                     null, null, null, tableManager); 
+				                     null, null, null, tableManager, fileUtil); 
             final Map<String,String> props = new HashMap<String,String>();
             props.put("action", "show import table dialog");
             CytoscapeServices.eventAdmin.postEvent(new Event("org/cytoscape/gettingstarted", props));

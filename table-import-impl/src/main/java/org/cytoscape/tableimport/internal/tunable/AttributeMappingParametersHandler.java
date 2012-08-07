@@ -16,6 +16,8 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
@@ -27,6 +29,7 @@ public class AttributeMappingParametersHandler  extends AbstractGUITunableHandle
 	private ImportTablePanel importTablePanel;
 
 	AttributeMappingParameters amp;
+	private final FileUtil fileUtil;
 
 	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable t,
 			final int dialogType, final CyTableManager tableManager) {
@@ -35,7 +38,7 @@ public class AttributeMappingParametersHandler  extends AbstractGUITunableHandle
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
 		//importTablePanel = null;
-		
+		this.fileUtil = CytoscapeServices.fileUtil;
 		init();
 		
 		
@@ -47,6 +50,7 @@ public class AttributeMappingParametersHandler  extends AbstractGUITunableHandle
 		super(getter, setter, instance, tunable);
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
+		this.fileUtil = CytoscapeServices.fileUtil;
 		
 		init();
 		
@@ -69,7 +73,7 @@ public class AttributeMappingParametersHandler  extends AbstractGUITunableHandle
 			importTablePanel =
 				new ImportTablePanel(dialogType, amp.is,
 				                     amp.fileType, null,null, null, null,
-				                     null, null, null, tableManager); 
+				                     null, null, null, tableManager, fileUtil); 
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
 		}

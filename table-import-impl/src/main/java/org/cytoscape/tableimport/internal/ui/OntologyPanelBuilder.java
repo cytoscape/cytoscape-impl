@@ -12,6 +12,7 @@ import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.R
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -39,6 +40,7 @@ import org.cytoscape.property.bookmark.DataSource;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationTaskFactory;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
 
 import org.jdesktop.layout.GroupLayout;
@@ -76,11 +78,13 @@ public class OntologyPanelBuilder {
 	private final CyNetworkManager manager;
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableManager;
+	
+	private final FileUtil fileUtil;
 
 	OntologyPanelBuilder(final ImportTablePanel panel, final CyProperty<Bookmarks> bookmarksProp,
 	                     final BookmarksUtil bkUtil, final TaskManager taskManager,
 	                     final InputStreamTaskFactory factory, final CyNetworkManager manager,
-	                     final CyTableFactory tableFactory, final CyTableManager tableManager)
+	                     final CyTableFactory tableFactory, final CyTableManager tableManager, final FileUtil fileUtil)
 	{
 		this.panel         = panel;
 		this.bookmarksProp = bookmarksProp;
@@ -90,6 +94,7 @@ public class OntologyPanelBuilder {
 		this.manager       = manager;
 		this.tableFactory  = tableFactory;
 		this.tableManager  = tableManager;
+		this.fileUtil = fileUtil;
 	}
 
 	protected void buildPanel() {
@@ -327,7 +332,7 @@ public class OntologyPanelBuilder {
 
 	private void browseAnnotationButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		DataSourceSelectDialog dssd = new DataSourceSelectDialog(DataSourceSelectDialog.ANNOTATION_TYPE,
-				CytoscapeServices.cySwingApplication.getJFrame(), true);
+				CytoscapeServices.cySwingApplication.getJFrame(), Dialog.ModalityType.APPLICATION_MODAL, fileUtil);
 		dssd.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
 		dssd.setVisible(true);
 
@@ -343,7 +348,7 @@ public class OntologyPanelBuilder {
 
 	private void browseOntologyButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		DataSourceSelectDialog dssd = new DataSourceSelectDialog(DataSourceSelectDialog.ONTOLOGY_TYPE,
-				CytoscapeServices.cySwingApplication.getJFrame(), true);
+				CytoscapeServices.cySwingApplication.getJFrame(), Dialog.ModalityType.APPLICATION_MODAL, fileUtil);
 		dssd.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
 		dssd.setVisible(true);
 
