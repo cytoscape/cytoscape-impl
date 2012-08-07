@@ -525,12 +525,14 @@ public class AppManager {
 	 * unable to copy the app to the installed apps directory or to instance the app's entry point class
 	 */
 	public void installApp(App app) throws AppInstallException {
-		
+
+		/*
 		try {
 			System.out.println(getChecksum(app.getAppFile()));
 		} catch (ChecksumException e) {
 			System.out.println(e.getMessage());
 		}
+		*/
 		
 		try {
 			app.moveAppFile(this, new File(getInstalledAppsPath()));
@@ -957,6 +959,6 @@ public class AppManager {
 			result += Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1);
 		}
 		
-	    return "sha512:" + result;
+		return "sha512:" + result;
 	}
 }

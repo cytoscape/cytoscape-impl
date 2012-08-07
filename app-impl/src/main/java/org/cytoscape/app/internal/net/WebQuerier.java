@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.cytoscape.app.internal.exception.AppDownloadException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.manager.AppManager.ChecksumException;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.io.util.StreamUtil;
@@ -533,23 +534,127 @@ public class WebQuerier {
 		return appsByTagNameByUrl.get(currentAppStoreUrl).get(tagName);
 	}
 	
-	public Set<Update> checkForUpdates(Set<App> apps) {
+	public Set<Update> checkForUpdates(Set<App> apps, AppManager appManager) {
 		Set<Update> updates = new HashSet<Update>();
 		
+		Update update;
 		for (App app : apps) {
-			
+			for (String url : appsByUrl.keySet()) {
+				update = checkForUpdate(app, url, appManager);
+				
+				if (update != null) {
+					updates.add(update);
+					break;
+				}
+			}
 		}
 		
 		return updates;
 	}
 	
-	private Update checkForUpdate(App app, String url) {
+	private Update checkForUpdate(App app, String url, AppManager appManager) {
 		Set<WebApp> urlApps = appsByUrl.get(url);
 		
 		if (urlApps != null) {
 			
+			// Look for an app with same name
+			for (WebApp webApp : urlApps) {
+				
+				if (webApp.getName().equalsIgnoreCase(app.getAppName())) {
+					
+					WebApp.Release highestVersionRelease = null;
+					for (WebApp.Release release : webApp.getReleases()) {
+						
+						if (highestVersionRelease == null
+								|| compareVersions(highestVersionRelease.getReleaseVersion(), 
+										release.getReleaseVersion()) > 0) {
+							
+							highestVersionRelease = release;
+						}
+					}
+					
+					if (highestVersionRelease != null
+							&& compareVersions(highestVersionRelease.getReleaseVersion(), app.getVersion()) < 0) {
+						
+						if (app.getSha512Checksum() == null) {
+							try {
+								app.setSha512Checksum(appManager.getChecksum(app.getAppFile()));
+							} catch (ChecksumException e) {
+								app.setSha512Checksum(null);
+							}
+						}
+						
+						if (app.getSha512Checksum() != null) {
+							String checksum = app.getSha512Checksum().substring(app.getSha512Checksum().indexOf(":") + 1);
+							
+							// Check if the app is listed in the releases
+							for (WebApp.Release release : webApp.getReleases()) {
+								if (release.getSha512Checksum().toLowerCase().indexOf(checksum.toLowerCase()) != -1) {
+									
+									Update update = new Update();
+									update.setUpdateVersion(release.getReleaseVersion());
+									update.setApp(app);
+									
+									return update;
+								}
+							}
+						}						
+					}
+				}
+			}
 		}
 		
 		return null;
+	}
+	
+	// Find which version is more recent, assuming versions are in format x.y[.z[tag]]
+	
+	/**
+	 * Compares 2 versions, assuming they are in format x.y[.z[tag]], returning a negative
+	 * number if the first is more recent, a positive number if the second is more recent,
+	 * or 0 if the versions were the same or unable to determine which is more recent.
+	 * 
+	 * @param first The first version
+	 * @param second The second version
+	 * @return A negative integer if first more recent, a positive integer if second more recent,
+	 * or 0 if the versions were the same or unable to determine which is more recent.
+	 */
+	private int compareVersions(String first, String second) {
+		String[] firstSplit = first.split("\\.", 3);
+		String[] secondSplit = second.split("\\.", 3);
+
+		int maxFields = Math.max(firstSplit.length, secondSplit.length);
+		
+		boolean firstHasField, secondHasField;
+		
+		// Remove non-numerical characters
+		for (int i = 0; i < maxFields; i++) {
+			firstHasField = (i < firstSplit.length);
+			secondHasField = (i < secondSplit.length);
+
+			if (firstHasField && secondHasField) {
+				firstSplit[i] = firstSplit[i].replaceAll("[^\\d]", "");
+				secondSplit[i] = secondSplit[i].replaceAll("[^\\d]", "");
+				
+				try {
+					int firstParsed = Integer.parseInt(firstSplit[i]);
+					int secondParsed = Integer.parseInt(secondSplit[i]);
+					
+					if (firstParsed > secondParsed) {
+						return -1;
+					} else if (secondParsed < firstParsed) {
+						return 1;
+					}
+				} catch (NumberFormatException e) {
+					return 0;
+				}
+			} else if (firstHasField) {
+				return -1;
+			} else if (secondHasField) {
+				return 1;
+			}
+		}
+		
+		return 0;
 	}
 }
