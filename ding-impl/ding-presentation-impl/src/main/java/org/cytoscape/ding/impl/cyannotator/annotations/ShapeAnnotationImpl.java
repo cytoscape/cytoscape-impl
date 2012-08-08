@@ -21,7 +21,7 @@ import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 
 public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnnotation {
 	private ShapeType shapeType;
-	private double borderWidth;
+	private double borderWidth = 1.0;
 	private Paint borderColor = Color.BLACK; // These are paint's so we can do gradients
 	private Paint fillColor = null; // These are paint's so we can do gradients
 	private double borderOpacity = 100.0;
@@ -29,6 +29,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	private	Shape shape = null;
 	protected double shapeWidth = 0.0;
 	protected double shapeHeight = 0.0;
+	protected double factor = 1.0;
 
 	public static final String NAME="SHAPE";
 	protected static final String WIDTH="width";
@@ -46,6 +47,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeWidth=width;
 		shapeHeight=height;
 		shapeType = ShapeType.RECTANGLE;
+		borderWidth = 1.0;
 	}
 
 	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height) {
@@ -74,7 +76,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		this.shapeWidth = width;
 		this.shapeHeight = height;
 		this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
-    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
+    setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
   }
 
   public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
@@ -88,12 +90,12 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.shapeWidth = getDouble(argMap, WIDTH, 100.0);
     this.shapeHeight = getDouble(argMap, HEIGHT, 100.0);
 
-    this.borderWidth = getDouble(argMap, EDGETHICKNESS, 0.0);
+    this.borderWidth = getDouble(argMap, EDGETHICKNESS, 1.0);
     this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
     this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
     this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
-    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
+    setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
   }
 
 	public Map<String,String> getArgMap() {
@@ -121,13 +123,13 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	public void setZoom(double zoom) {
 		float factor=(float)(zoom/getZoom());
 
-		borderWidth*=factor;
+		// borderWidth*=factor;
 										
 		shapeWidth*=factor;
 		shapeHeight*=factor;
 		// System.out.println("setZoom: size = "+shapeWidth+"x"+shapeHeight);
 		
-    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
+    setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
 		super.setZoom(zoom);
 	}
 
@@ -138,7 +140,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeWidth*=factor;
 		shapeHeight*=factor;
 
-    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
+    setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
 		super.setSpecificZoom(zoom);		
 	}
 
@@ -163,7 +165,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
   
   public double getBorderWidth() {return borderWidth;}
   public void setBorderWidth(double width) { 
-		borderWidth = width*getZoom();
+		borderWidth = width;
 	}
   
   public Paint getBorderColor() {return borderColor;}
@@ -179,7 +181,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		int height = (int)(shapeHeight*scaleFactor/getZoom());
 
 		double savedBorder = borderWidth;
-		borderWidth = borderWidth*scaleFactor/getZoom();
+		borderWidth = borderWidth*scaleFactor;
 		boolean selected = isSelected();
 		setSelected(false);
 		GraphicsUtilities.drawShape(g, (int)(x*scaleFactor), (int)(y*scaleFactor),
@@ -200,7 +202,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	public void setSize(double width, double height) {
 		shapeWidth = width;
 		shapeHeight = height;
-    setSize((int)(shapeWidth+borderWidth*2), (int)(shapeHeight+borderWidth*2));
+    setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
 	}
 
 	public JFrame getModifyDialog() {

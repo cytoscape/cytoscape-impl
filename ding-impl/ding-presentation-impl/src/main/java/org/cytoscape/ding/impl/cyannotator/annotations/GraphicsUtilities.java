@@ -90,7 +90,7 @@ class GraphicsUtilities {
 		// System.out.println("drawShape: ("+x+","+y+","+width+"x"+height+")");
 
 		// Get the stroke
-		float border = (float)annotation.getBorderWidth();
+		float border = (float)(annotation.getBorderWidth()*annotation.getZoom());
 		if (!isPrinting && border < 1.0f) border = 1.0f;
 		// System.out.println("Border width = "+border+", isPrinting = "+isPrinting);
 
@@ -119,6 +119,8 @@ class GraphicsUtilities {
 			g2.setPaint(Color.YELLOW);
 			g2.draw(strokedShape);
 		} else {
+			g2.setPaint(Color.BLACK);
+			g2.setStroke(new BasicStroke(border));
 			g2.draw(shape);
 		}
 	}
