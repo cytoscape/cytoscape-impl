@@ -6,6 +6,7 @@ import java.util.Set;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
@@ -16,17 +17,23 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Map global annotation table to local tables. This does not create copy, just
+ * add shared columns.
+ * 
+ */
 public class MapGeneAssociationTask extends AbstractTask {
+
+	private static final String MAPPING_KEY = "mapping key";
 
 	private static final Logger logger = LoggerFactory.getLogger(MapGeneAssociationTask.class);
 
-	final CyNetworkManager networkManager;
+	private final CyNetworkManager networkManager;
 	private final CyTableReader tableReader;
 	private final CyTableManager tableManager;
 
-	MapGeneAssociationTask(final CyTableReader tableReader,
-						   final CyTableManager tableManager,
-						   final CyNetworkManager networkManager) {
+	MapGeneAssociationTask(final CyTableReader tableReader, final CyTableManager tableManager,
+			final CyNetworkManager networkManager) {
 		this.tableReader = tableReader;
 		this.tableManager = tableManager;
 		this.networkManager = networkManager;
@@ -36,62 +43,60 @@ public class MapGeneAssociationTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Mapping Global Gene Association Table to Local Network Tabels");
 		taskMonitor.setStatusMessage("Mapping global colums to local...");
-		
+
 		final CyTable[] tables = tableReader.getTables();
 
 		if (tables == null || tables[0] == null)
 			throw new NullPointerException("Could not find table.");
 
 		tableManager.addTable(tables[0]);
+
 		mapping(taskMonitor, tables[0]);
+		taskMonitor.setProgress(1.0d);
 	}
 
 	private void mapping(TaskMonitor taskMonitor, final CyTable globalTable) {
+		taskMonitor.setProgress(0.0d);
 
-		taskMonitor.setProgress(0.0);
-		logger.debug("Target Table = " + globalTable.getTitle());
-		Set<CyNetwork> networks = networkManager.getNetworkSet();
+		final Set<CyNetwork> networks = networkManager.getNetworkSet();
+		if (networks.isEmpty())
+			return;
 
 		int networkCount = 1;
-		
-		for (CyNetwork network : networks) {
+		final double increment = 1.0d / networks.size();
+		double progress = 0d;
+		// Map to all networks.
+		for (final CyNetwork network : networks) {
 			taskMonitor.setStatusMessage("Mapping networks " + networkCount + "/" + networks.size());
-			
+
 			final CyTable networkTable = network.getDefaultNetworkTable();
-			Boolean isDag = networkTable.getRow(network.getSUID()).get(OBOReader.DAG_ATTR, Boolean.class);
+			final Boolean isDag = networkTable.getRow(network.getSUID()).get(OBOReader.DAG_ATTR, Boolean.class);
 			if (isDag == null || isDag == false) {
-				buildMapping(taskMonitor, "SUID " + network.getSUID(), network.getDefaultNodeTable(), globalTable);
+				buildMapping(network, network.getDefaultNodeTable(), globalTable);
 			}
-			networkCount ++;
+			networkCount++;
+			progress += increment;
+			taskMonitor.setProgress(progress);
 		}
 	}
 
-	// TODO: parallelize this
-	private void buildMapping(TaskMonitor taskMonitor, final String networkName, CyTable nodeTable, CyTable globalTable) {
-		final List<String> nodeNames = nodeTable.getColumn(CyNetwork.NAME).getValues(String.class);
+	private void buildMapping(final CyNetwork network, final CyTable nodeTable, final CyTable globalTable) {
 		final List<String> globalKeys = globalTable.getColumn(CyNetwork.NAME).getValues(String.class);
+		nodeTable.createColumn(MAPPING_KEY, String.class, true);
 
-		// Create immutable key column for this mapping
-		final String colName = "Mapping Key for " + networkName;
-		globalTable.createColumn(colName, String.class, true);
-		
-		double nodeCount = nodeNames.size();
-		double count = 0.0;
-		double progress = 0.0;
-		for (final String name : nodeNames) {
+		for (final CyNode node : network.getNodeList()) {
+			final String nodeName = network.getRow(node).get(CyNetwork.NAME, String.class);
 			for (final String key : globalKeys) {
 				final CyRow curRow = globalTable.getRow(key);
-				if (curRow.getList(GeneAssociationReader.SYNONYM_COL_NAME, String.class)
-						.contains(name)) {
-					curRow.set(colName, name);
+
+				if (curRow.getList(GeneAssociationReader.SYNONYM_COL_NAME, String.class).contains(nodeName)) {
+					final CyRow nodeTableRow = nodeTable.getRow(node.getSUID());
+					nodeTableRow.set(MAPPING_KEY, key);
 					break;
 				}
 			}
-			count++;
-			progress = count/nodeCount;
-			taskMonitor.setProgress(progress);
 		}
-		
-		nodeTable.addVirtualColumns(globalTable, CyNetwork.NAME, false);
+
+		nodeTable.addVirtualColumns(globalTable, MAPPING_KEY, true);
 	}
 }

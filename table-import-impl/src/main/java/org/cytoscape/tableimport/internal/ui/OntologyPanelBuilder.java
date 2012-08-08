@@ -1,6 +1,5 @@
 package org.cytoscape.tableimport.internal.ui;
 
-
 import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.DB_OBJECT_SYNONYM;
 import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.TAXON;
 import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogColorTheme.ONTOLOGY_COLOR;
@@ -16,6 +15,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,23 +37,25 @@ import org.cytoscape.property.bookmark.Attribute;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.property.bookmark.DataSource;
-import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationTaskFactory;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
-
 import org.jdesktop.layout.GroupLayout;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class OntologyPanelBuilder {
+	
 	private static final Logger logger = LoggerFactory.getLogger(OntologyPanelBuilder.class);
+
+	// Default server
+	private static final Dimension MIN_SIZE = new Dimension(900, 600);
+	
 	private static final String GENE_ASSOCIATION = "gene_association";
 	private static final String DEF_ANNOTATION_ITEM = "Please select an annotation data source...";
-	private static final Dimension MIN_SIZE = new Dimension(800, 600);
+	
+	
 	private static final String annotationHtml = "<html><body bgcolor=\"white\"><p><strong><font size=\"+1\" face=\"serif\"><u>%DataSourceName%</u></font></strong></p><br>"
 			+ "<p><em>Annotation File URL</em>: <br><font color=\"blue\">%SourceURL%</font></p><br>"
 			+ "<p><em>Data Format</em>: <font color=\"green\">%Format%</font></p><br>"
@@ -61,9 +63,6 @@ public class OntologyPanelBuilder {
 			+ "<table width=\"300\" border=\"0\" cellspacing=\"3\" cellpadding=\"3\">"
 			+ "%AttributeTable%</table></p></body></html>";
 
-	/*
-	 * HTML strings for tool tip text
-	 */
 	private static final String ontologyHtml = "<html><body bgcolor=\"white\"><p><strong><font size=\"+1\" face=\"serif\"><u>%DataSourceName%</u></font></strong></p><br>"
 			+ "<p><em>Data Source URL</em>: <br><font color=\"blue\">%SourceURL%</font></p><br><p><em>Description</em>:<br>"
 			+ "<table width=\"300\" border=\"0\" cellspacing=\"3\" cellpadding=\"3\"><tr>"
@@ -78,22 +77,21 @@ public class OntologyPanelBuilder {
 	private final CyNetworkManager manager;
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableManager;
-	
+
 	private final FileUtil fileUtil;
 
 	OntologyPanelBuilder(final ImportTablePanel panel, final CyProperty<Bookmarks> bookmarksProp,
-	                     final BookmarksUtil bkUtil, final TaskManager taskManager,
-	                     final InputStreamTaskFactory factory, final CyNetworkManager manager,
-	                     final CyTableFactory tableFactory, final CyTableManager tableManager, final FileUtil fileUtil)
-	{
-		this.panel         = panel;
+			final BookmarksUtil bkUtil, final TaskManager taskManager, final InputStreamTaskFactory factory,
+			final CyNetworkManager manager, final CyTableFactory tableFactory, final CyTableManager tableManager,
+			final FileUtil fileUtil) {
+		this.panel = panel;
 		this.bookmarksProp = bookmarksProp;
-		this.bkUtil        = bkUtil;
-		this.taskManager   = taskManager;
-		this.factory       = factory;
-		this.manager       = manager;
-		this.tableFactory  = tableFactory;
-		this.tableManager  = tableManager;
+		this.bkUtil = bkUtil;
+		this.taskManager = taskManager;
+		this.factory = factory;
+		this.manager = manager;
+		this.tableFactory = tableFactory;
+		this.tableManager = tableManager;
 		this.fileUtil = fileUtil;
 	}
 
@@ -130,14 +128,6 @@ public class OntologyPanelBuilder {
 				} else {
 					ontologyItem.setIcon(LOCAL_SOURCE_ICON.getIcon());
 				}
-
-				// if
-				// (Cytoscape.getOntologyServer().getOntologyNames().contains(value))
-				// {
-				// ontologyItem.setForeground(ONTOLOGY_COLOR.getColor());
-				// } else {
-				// ontologyItem.setForeground(NOT_LOADED_COLOR.getColor());
-				// }
 
 				return ontologyItem;
 			}
@@ -284,11 +274,10 @@ public class OntologyPanelBuilder {
 		try {
 			final String selectedSourceName = panel.annotationComboBox.getSelectedItem().toString();
 			final URL sourceURL = new URL(panel.annotationUrlMap.get(selectedSourceName));
-			
-			panel.readAnnotationForPreviewOntology(  sourceURL, panel.checkDelimiter());
+
+			panel.readAnnotationForPreviewOntology(sourceURL, panel.checkDelimiter());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Could not create preview.", e);
 		}
 	}
 
@@ -366,9 +355,6 @@ public class OntologyPanelBuilder {
 		final Bookmarks bookmarks = bookmarksProp.getProperties();
 		final List<DataSource> annotations = bkUtil.getDataSourceList("ontology", bookmarks.getCategory());
 		String key = null;
-
-		// final Set<String> ontologyNames =
-		// Cytoscape.getOntologyServer().getOntologyNames();
 
 		for (DataSource source : annotations) {
 			key = source.getName();
@@ -486,111 +472,40 @@ public class OntologyPanelBuilder {
 				Object.class,
 				new AttributePreviewTableCellRenderer(panel.keyInFile, gaAlias, ontologyCol, TAXON.getPosition(),
 						panel.importFlag, panel.listDelimiter));
-
-//		try {
-//			if ((dialogType == SIMPLE_ATTRIBUTE_IMPORT) || (dialogType == NETWORK_IMPORT)) {
-//				setStatusBar(new URL(targetDataSourceTextField.getText()));
-//			} else {
-//				setStatusBar(new URL(annotationUrlMap.get(annotationComboBox.getSelectedItem().toString())));
-//			}
-//		} catch (MalformedURLException e) {
-//			e.printStackTrace();
-//		}
-
 		panel.previewPanel.repaint();
 	}
 
-
 	/**
 	 * Create task for ontology reader and run the task.<br>
-	 *
+	 * 
 	 * @param dataSource
 	 * @param ontologyName
 	 * @throws IOException
 	 */
-	private void loadOntology(final String dataSource, final String ontologyName,
-	                          final String annotationSource) throws IOException
-	{
-		logger.debug("Target OBO URL = " + dataSource);
-		logger.debug("Gene Association URL = " + annotationSource);
-		logger.debug("Ontology DAG Name ===== " + ontologyName);
+	private void loadOntology(final String dataSource, final String ontologyName, final String annotationSource)
+			throws IOException {
+
 		final URL url = new URL(dataSource);
 		final URL annotationSourceUrl = new URL(annotationSource);
 
-		final GZIPInputStream gzipGAStream = new GZIPInputStream(annotationSourceUrl.openStream());
-		ImportOntologyAndAnnotationTaskFactory taskFactory =
-			new ImportOntologyAndAnnotationTaskFactory(manager, factory,
-			                                           url.openStream(), ontologyName,
-			                                           tableFactory, gzipGAStream,
-			                                           annotationSource, tableManager);
+		InputStream is = null;
+		if(annotationSourceUrl.toString().endsWith("gz")) {
+			is = new GZIPInputStream(annotationSourceUrl.openStream());
+		} else {
+			is = annotationSourceUrl.openStream();
+		}
+		
+		ImportOntologyAndAnnotationTaskFactory taskFactory = new ImportOntologyAndAnnotationTaskFactory(manager,
+				factory, url.openStream(), ontologyName, tableFactory, is, annotationSource, tableManager);
 		taskManager.execute(taskFactory.createTaskIterator());
 	}
 
 	protected void importOntologyAndAnnotation() throws IOException {
 
-		logger.debug("Start loading Ontology and Annotation.");
-
 		final String selectedOntologyName = panel.ontologyComboBox.getSelectedItem().toString();
 		final String ontologySourceLocation = panel.ontologyUrlMap.get(selectedOntologyName);
-
 		final String annotationSource = panel.annotationUrlMap.get(panel.annotationComboBox.getSelectedItem());
 
-
 		loadOntology(ontologySourceLocation, selectedOntologyName, annotationSource);
-
-
-		if(panel.previewPanel.getFileType() == FileTypes.GENE_ASSOCIATION_FILE) {
-			/*
-			 * This is a Gene Association file.
-			 */
-			/*
-			GeneAssociationReader gaReader = null;
-			keyInFile = this.primaryKeyComboBox.getSelectedIndex();
-
-			InputStream is = null;
-			try {
-				is = URLUtil.getInputStream(annotationSourceUrl);
-				gaReader = new GeneAssociationReader(selectedOntologyName,
-													 is, mappingAttribute,
-													 importAll, keyInFile,
-													 caseSensitive);
-			}
-			catch (Exception e) {
-				if (is != null) {
-					is.close();
-				}
-				throw e;
-			}
-
-			loadGeneAssociation(gaReader, selectedOntologyName, annotationSource);
-			*/
-		} else {
-			/*
-			 * This is a custom annotation file.
-			 */
-			/*
-			final int ontologyIndex = ontologyInAnnotationComboBox.getSelectedIndex();
-
-			final AttributeAndOntologyMappingParameters aoMapping = new AttributeAndOntologyMappingParameters(objType,
-			                                                                                                  checkDelimiter(),
-			                                                                                                  listDelimiter,
-			                                                                                                  keyInFile,
-			                                                                                                  mappingAttribute,
-			                                                                                                  aliasList,
-			                                                                                                  attributeNames,
-			                                                                                                  attributeTypes,
-			                                                                                                  listDataTypes,
-			                                                                                                  importFlag,
-			                                                                                                  ontologyIndex,
-			                                                                                                  selectedOntologyName,
-																											  caseSensitive);
-			final OntologyAnnotationReader oaReader = new OntologyAnnotationReader(annotationSourceUrl,
-			                                                                       aoMapping,
-			                                                                       commentChar,
-			                                                                       startLineNumber);
-
-			loadAnnotation(oaReader, annotationSource);
-			*/
-		}
 	}
 }

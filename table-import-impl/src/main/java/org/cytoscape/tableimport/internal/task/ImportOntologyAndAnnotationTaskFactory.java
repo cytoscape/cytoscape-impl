@@ -1,6 +1,5 @@
 package org.cytoscape.tableimport.internal.task;
 
-
 import java.io.InputStream;
 
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -9,7 +8,6 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
-
 
 public class ImportOntologyAndAnnotationTaskFactory extends AbstractTaskFactory {
 	private final InputStreamTaskFactory factory;
@@ -21,14 +19,9 @@ public class ImportOntologyAndAnnotationTaskFactory extends AbstractTaskFactory 
 	private final String gaGlobalTableName;
 	private final CyTableManager tableManager;
 
-	public ImportOntologyAndAnnotationTaskFactory(final CyNetworkManager manager,
-						      final InputStreamTaskFactory factory,
-						      final InputStream is, String ontologyDAGName,
-						      final CyTableFactory tableFactory,
-						      final InputStream gaStream,
-						      final String gaGlobalTableName,
-						      final CyTableManager tableManager)
-	{
+	public ImportOntologyAndAnnotationTaskFactory(final CyNetworkManager manager, final InputStreamTaskFactory factory,
+			final InputStream is, String ontologyDAGName, final CyTableFactory tableFactory,
+			final InputStream gaStream, final String gaGlobalTableName, final CyTableManager tableManager) {
 		this.factory = factory;
 		this.is = is;
 		this.ontologyDAGName = ontologyDAGName;
@@ -41,9 +34,7 @@ public class ImportOntologyAndAnnotationTaskFactory extends AbstractTaskFactory 
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(
-			new ImportOntologyAndAnnotationTask(manager, factory, is, ontologyDAGName,
-			                                    tableFactory, gaStream,
-			                                    gaGlobalTableName, tableManager));
+		return new TaskIterator(new ImportOntologyAndAnnotationTask(manager, factory, is, ontologyDAGName,
+				tableFactory, gaStream, gaGlobalTableName, tableManager));
 	}
 }

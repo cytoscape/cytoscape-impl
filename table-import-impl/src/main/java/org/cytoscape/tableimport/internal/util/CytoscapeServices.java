@@ -3,6 +3,7 @@ package org.cytoscape.tableimport.internal.util;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -21,7 +22,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.service.event.EventAdmin;
 
-public class  CytoscapeServices {
+public class CytoscapeServices {
 
 	public static CyLayoutAlgorithmManager cyLayouts;
 	public static CyRootNetworkManager cyRootNetworkFactory;
@@ -31,8 +32,10 @@ public class  CytoscapeServices {
 	public static CyNetworkManager cyNetworkManager;
 	public static CyTableManager cyTableManager;
 	public static DialogTaskManager dialogTaskManager;
+	@SuppressWarnings("rawtypes")
 	public static CyProperty bookmark;
 	public static BookmarksUtil bookmarksUtil;
+	@SuppressWarnings("rawtypes")
 	public static CyProperty cyProperties;
 	public static FileUtil fileUtil;
 	public static OpenBrowser openBrowser;
@@ -43,5 +46,6 @@ public class  CytoscapeServices {
 	public static StreamUtil streamUtil;
 	public static CyEventHelper cyEventHelper;
 	public static MapGlobalToLocalTableTaskFactory mapGlobalToLocalTableTaskFactory;
-    public static EventAdmin eventAdmin;
+	public static EventAdmin eventAdmin;
+	public static InputStreamTaskFactory inputStreamTaskFactory;
 }
