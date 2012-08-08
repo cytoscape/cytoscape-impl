@@ -619,33 +619,55 @@ public class WebQuerier {
 	 * @return A negative integer if first more recent, a positive integer if second more recent,
 	 * or 0 if the versions were the same or unable to determine which is more recent.
 	 */
-	private int compareVersions(String first, String second) {
+	public int compareVersions(String first, String second) {
 		String[] firstSplit = first.split("\\.", 3);
 		String[] secondSplit = second.split("\\.", 3);
-
+		
 		int maxFields = Math.max(firstSplit.length, secondSplit.length);
 		
 		boolean firstHasField, secondHasField;
-		
+		//System.out.println("test2");
 		// Remove non-numerical characters
 		for (int i = 0; i < maxFields; i++) {
+			
 			firstHasField = (i < firstSplit.length);
 			secondHasField = (i < secondSplit.length);
 
+			/*
+			if (firstHasField) {
+				System.out.println("first: " + firstSplit[i]);
+			}
+			
+			if (secondHasField) {
+				System.out.println("second: " + secondSplit[i]);
+			}
+			*/
+			
 			if (firstHasField && secondHasField) {
-				firstSplit[i] = firstSplit[i].replaceAll("[^\\d]", "");
-				secondSplit[i] = secondSplit[i].replaceAll("[^\\d]", "");
+				firstSplit[i] = firstSplit[i].replaceAll("[^\\d]+.*", "");
+				secondSplit[i] = secondSplit[i].replaceAll("[^\\d]+.*", "");
+				
+				/*
+				System.out.println("firstSplit: " + firstSplit[i]);
+				System.out.println("secondSplit: " + secondSplit[i]);
+				*/
 				
 				try {
 					int firstParsed = Integer.parseInt(firstSplit[i]);
 					int secondParsed = Integer.parseInt(secondSplit[i]);
 					
+					/*
+					System.out.println("firstParsed: " + firstParsed);
+					System.out.println("secondParsed: " + secondParsed);
+					*/
+					
 					if (firstParsed > secondParsed) {
 						return -1;
-					} else if (secondParsed < firstParsed) {
+					} else if (secondParsed > firstParsed) {
 						return 1;
 					}
 				} catch (NumberFormatException e) {
+					// System.out.println("NFE");
 					return 0;
 				}
 			} else if (firstHasField) {
