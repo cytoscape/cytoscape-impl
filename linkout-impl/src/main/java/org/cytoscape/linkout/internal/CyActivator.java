@@ -19,8 +19,6 @@ import org.slf4j.LoggerFactory;
 
 public class CyActivator extends AbstractCyActivator {
 
-	private static final Logger logger = LoggerFactory.getLogger(CyActivator.class);
-
 	public CyActivator() {
 		super();
 	}
@@ -33,11 +31,11 @@ public class CyActivator extends AbstractCyActivator {
 		SynchronousTaskManager synTaskMngrServRef = getService(bc, SynchronousTaskManager.class);
 		PropsReader linkoutProps = new PropsReader("linkout","linkout.props",CyProperty.SavePolicy.CONFIG_DIR);
 
-
-		LinkOut linkout = new LinkOut(linkoutProps,cyServiceRegistrarServiceRef,openBrowserServiceRef,cyApplicationConfigurationServiceRef, synTaskMngrServRef);
+		final LinkOut linkout = new LinkOut(linkoutProps,cyServiceRegistrarServiceRef,openBrowserServiceRef,cyApplicationConfigurationServiceRef, synTaskMngrServRef);
 		
 		Properties linkoutPropsProps = new Properties();
 		linkoutPropsProps.setProperty("cyPropertyName","linkout");
+		
 		registerService(bc,linkoutProps,CyProperty.class, linkoutPropsProps);
 		registerService(bc, linkout, PropertyUpdatedListener.class, linkoutPropsProps);
 		registerServiceListener(bc, linkout, "addCommanLineLinkOut", "removeCommanLineLinkOut", CyProperty.class);

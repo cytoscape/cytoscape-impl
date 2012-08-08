@@ -8,4 +8,3 @@ public class PropsReader extends AbstractConfigDirPropsReader {
 		super(name, fileName, sp);
 	}
 }
-

@@ -36,29 +36,15 @@
 
 package org.cytoscape.linkout.internal;
 
-import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
-import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
-
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.PropertyUpdatedEvent;
-import org.cytoscape.property.PropertyUpdatedListener;
-
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.task.EdgeViewTaskFactory;
-
-import org.cytoscape.util.swing.OpenBrowser;
-
-import static org.cytoscape.work.ServiceProperties.*;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskFactory;
-
+import static org.cytoscape.work.ServiceProperties.EDGE_DYNAMIC_LINKOUTS_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NODE_DYNAMIC_LINKOUTS_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 
 import java.io.File;
 import java.io.FileInputStream;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +53,17 @@ import java.util.Properties;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.property.PropertyUpdatedListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,34 +105,27 @@ public class LinkOut implements PropertyUpdatedListener{
 	private final Map<String, NodeLinkoutTaskFactory> cpropKey2NodeVTF;
 	private final Map<String, EdgeLinkoutTaskFactory> cpropKey2EdgeVTF;
 	
-	/**
-	 * Creates a new LinkOut object.
-	 *
-	 * @param props  DOCUMENT ME!
-	 * @param registrar  DOCUMENT ME!
-	 * @param browser  DOCUMENT ME!
-	 * @param config  DOCUMENT ME!
-	 */
+	
 	public LinkOut(CyProperty<Properties> propService, CyServiceRegistrar registrar, OpenBrowser browser,
-	               final CyApplicationConfiguration config, final SynchronousTaskManager synTaskManager) {
+			final CyApplicationConfiguration config, final SynchronousTaskManager synTaskManager) {
 		this.props = propService.getProperties();
 		this.registrar = registrar;
 		this.browser = browser;
 		this.config = config;
 		this.synTaskManager = synTaskManager;
-		
+
 		propKey2EdgeVTF = new HashMap<String, EdgeLinkoutTaskFactory>();
 		propKey2NodeVTF = new HashMap<String, NodeLinkoutTaskFactory>();
-		
+
 		cpropKey2EdgeVTF = new HashMap<String, EdgeLinkoutTaskFactory>();
 		cpropKey2NodeVTF = new HashMap<String, NodeLinkoutTaskFactory>();
-		
+
 		readLocalProperties();
 
 		addStaticNodeLinks();
 		addStaticEdgeLinks();
 
-		// This has been disabled until we can figure out the right way to 
+		// This has been disabled until we can figure out the right way to
 		// construct these menus and add them to the existing Linkout menu.
 		// The current approach is not used (as far as we know) and adds
 		// significant confusion in the UI
@@ -189,7 +179,7 @@ public class LinkOut implements PropertyUpdatedListener{
 					logger.debug("Bad URL for propKey: " + propKey);
 					continue;
 				}
-				EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser,url);
+				final EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser,url);
 				registrar.registerService(evtf, EdgeViewTaskFactory.class, dict);
 				propKey2EdgeVTF.put(propKey, (EdgeLinkoutTaskFactory) evtf);
 			}
@@ -206,11 +196,12 @@ public class LinkOut implements PropertyUpdatedListener{
 		p = p + marker.length();
 		Properties dict = new Properties();
 		String menuKey;
-		if (marker.equals(NODEMARKER))
+		if (marker.equals(NODEMARKER)) {
 			menuKey = NODE_LINKOUTS_MENU + "." + propKey.substring(p);
-		else 
+		} else { 
 			menuKey = EDGE_LINKOUTS_MENU + "." + propKey.substring(p);
-
+		}
+		
 		dict.setProperty(PREFERRED_MENU, menuKey);
 		dict.setProperty(MENU_GRAVITY, "-1"); // Alphabetic ordering
 		return dict;
@@ -288,9 +279,6 @@ public class LinkOut implements PropertyUpdatedListener{
 
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
-
-
 				if  (e.getSource().getName().equals("linkout")  ) //when linkout prop is changed
 				{
 					final Properties props = (Properties) e.getSource().getProperties();

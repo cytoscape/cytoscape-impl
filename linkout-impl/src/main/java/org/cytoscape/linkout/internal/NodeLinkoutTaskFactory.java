@@ -14,7 +14,7 @@ public class NodeLinkoutTaskFactory extends AbstractNodeViewTaskFactory {
 	private String link;
 	private final OpenBrowser browser;
 
-	public NodeLinkoutTaskFactory(OpenBrowser browser, String link) {
+	public NodeLinkoutTaskFactory(final OpenBrowser browser, final String link) {
 		super();
 		this.link = link;
 		this.browser = browser;
