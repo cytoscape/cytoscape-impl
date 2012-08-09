@@ -328,12 +328,6 @@
 				<attribute name="curator">Sanger GeneDB</attribute>
 				<attribute name="species">Trypanosoma brucei</attribute>
 			</dataSource>
-			<dataSource format="Gene Association"
-				name="Gene Association file for Glossina morsitans"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.GeneDB_tsetse.gz">
-				<attribute name="curator">Sanger GeneDB</attribute>
-				<attribute name="species">Glossina morsitans</attribute>
-			</dataSource>
 		</category>
 	</category>
 	<category name="network">
