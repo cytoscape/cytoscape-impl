@@ -1,6 +1,5 @@
 package org.cytoscape.tableimport.internal.reader.ontology;
 
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
 import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.TAB;
 
 import java.io.BufferedReader;
@@ -13,8 +12,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyNetwork;
@@ -30,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GeneAssociationReader extends AbstractTask implements CyTableReader {
+	
 	private static final Logger logger = LoggerFactory.getLogger(GeneAssociationReader.class);
 
 	private static final String COMPATIBLE_VERSION = "gaf-version: 2.0";
@@ -39,6 +37,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 	// The following columns should be handled as List in GA v2 spec.
 	private static final List<Integer> LIST_INDEX = new ArrayList<Integer>();
 	private static final Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
+	
 	static {
 		LIST_INDEX.add(4);
 		LIST_INDEX.add(8);
@@ -60,26 +59,11 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 	private static final int EXPECTED_COL_COUNT = 15;
 
 	private static final int DB_OBJ_ID = 1;
-	private static final int OBJ_NAME = 9;
 	private static final int ASPECT = 8;
-	private static final int SYNONYM = 10;
-	private static final int GOID = 4;
-
-	private int key = 2;
 
 	private InputStream is;
-	// private Aliases nodeAliases;
-	private Map<String, List<String>> attr2id;
-	private CyTable nodeAttributes;
-	// private GeneOntology geneOntology;
 	private Map<String, String> speciesMap;
-
-	private Map<String, String> uppercaseIDMap;
-
 	private CyNetwork ontologyDAG;
-
-	private CyTable dagTable;
-
 	private final CyTableFactory tableFactory;
 
 	private final String tableName;
@@ -141,7 +125,6 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		if (ontologyDAG == null)
 			logger.warn("Could not find associated Ontology DAG.");
 		else {
-			this.dagTable = ontologyDAG.getDefaultNodeTable();
 			termIDList = ontologyDAG.getDefaultNodeTable().getColumn(CyNetwork.NAME).getValues(String.class);
 		}
 		
@@ -245,9 +228,6 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 				if (currentList.contains(goidString) == false)
 					currentList.add(goidString);
 				row.set(namespace, currentList);
-
-				// TODO: create term name list here.
-
 				break;
 
 			case EVIDENCE:
@@ -321,7 +301,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 	private String convertToName(final String id) {
 		final Collection<CyRow> rows = ontologyDAG.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, id);
-		if (rows != null) {
+		if (!rows.isEmpty()) {
 			final CyRow row = rows.iterator().next();
 			final String termName = row.get(OBOReader.TERM_NAME, String.class);
 			if (termName != null)

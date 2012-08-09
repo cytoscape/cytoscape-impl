@@ -82,7 +82,9 @@ public class MapGeneAssociationTask extends AbstractTask {
 
 	private void buildMapping(final CyNetwork network, final CyTable nodeTable, final CyTable globalTable) {
 		final List<String> globalKeys = globalTable.getColumn(CyNetwork.NAME).getValues(String.class);
-		nodeTable.createColumn(MAPPING_KEY, String.class, true);
+		
+		if(nodeTable.getColumn(MAPPING_KEY) == null)
+			nodeTable.createColumn(MAPPING_KEY, String.class, true);
 
 		for (final CyNode node : network.getNodeList()) {
 			final String nodeName = network.getRow(node).get(CyNetwork.NAME, String.class);
