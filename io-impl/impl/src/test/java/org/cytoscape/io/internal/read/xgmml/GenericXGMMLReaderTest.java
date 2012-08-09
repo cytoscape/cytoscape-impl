@@ -1,8 +1,16 @@
 package org.cytoscape.io.internal.read.xgmml;
 
-import static org.cytoscape.model.CyNetwork.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
+import static org.cytoscape.model.CyNetwork.HIDDEN_ATTRS;
+import static org.cytoscape.model.CyNetwork.NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -22,6 +30,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -44,6 +53,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	CyNetworkViewFactory networkViewFactory;
 	CyNetworkFactory networkFactory;
 	CyRootNetworkManager rootNetworkMgr;
+	CyNetworkTableManager netTablMgr;
 	CyTableFactory tableFactory;
 	RenderingEngineManager renderingEngineMgr;
 	ReadDataManager readDataMgr;
@@ -67,11 +77,12 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
 		networkFactory = networkTestSupport.getNetworkFactory();
 		rootNetworkMgr = networkTestSupport.getRootNetworkFactory();
+		netTablMgr = networkTestSupport.getNetworkTableManager();
 		
 		NetworkViewTestSupport networkViewTestSupport = new NetworkViewTestSupport();
 		networkViewFactory = networkViewTestSupport.getNetworkViewFactory();
 		
-		readCache = new ReadCache();
+		readCache = new ReadCache(netTablMgr);
 		suidUpdater = new SUIDUpdater();
 		readDataMgr = new ReadDataManager(readCache, suidUpdater, mock(EquationCompiler.class), networkFactory, rootNetworkMgr);
 		

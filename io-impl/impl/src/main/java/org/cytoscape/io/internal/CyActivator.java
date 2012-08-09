@@ -189,7 +189,7 @@ public class CyActivator extends AbstractCyActivator {
 		UnrecognizedVisualPropertyManager unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(cyTableFactoryServiceRef,cyTableManagerServiceRef);
 		GMLNetworkReaderFactory gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,renderingEngineManagerServiceRef,unrecognizedVisualPropertyManager);
 		
-		ReadCache readCache = new ReadCache();
+		ReadCache readCache = new ReadCache(cyNetworkTableManagerServiceRef);
 		SUIDUpdater suidUpdater = new SUIDUpdater();
 		ReadDataManager readDataManager = new ReadDataManager(readCache,suidUpdater,equationCompilerServiceRef,cyNetworkFactoryServiceRef,cyRootNetworkManagerServiceRef);
 		

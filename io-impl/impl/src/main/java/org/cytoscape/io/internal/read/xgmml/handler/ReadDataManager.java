@@ -504,8 +504,12 @@ public class ReadDataManager {
         				// Add extra metadata for external edges, so that the information is not lost
         				final CyRow rnRow = getRootNetwork().getRow(grNode, CyNetwork.HIDDEN_ATTRS);
         				
-        				if (rnRow.getTable().getColumn(EXTERNAL_EDGE_ATTRIBUTE) == null)
+        				if (rnRow.getTable().getColumn(EXTERNAL_EDGE_ATTRIBUTE) == null) {
         					rnRow.getTable().createListColumn(EXTERNAL_EDGE_ATTRIBUTE, Long.class, false);
+        					// These are already the new SUIDs. Let's tell the SUIDUpdater to ignore this column,
+        					// in order to prevent it from replacing the correct list by an empty one.
+        					suidUpdater.ignoreColumn(rnRow.getTable(), EXTERNAL_EDGE_ATTRIBUTE);
+        				}
         				
         				extEdgeIds = rnRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
         						

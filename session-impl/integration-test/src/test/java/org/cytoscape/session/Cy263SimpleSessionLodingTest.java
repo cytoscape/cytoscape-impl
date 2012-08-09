@@ -86,8 +86,8 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		// Since this test runs in headless mode, this should be zero.
 		assertEquals(0, renderingEngineManager.getAllRenderingEngines().size());
 
-		assertEquals(42, tableManager.getAllTables(true).size());
-		assertEquals(21, tableManager.getAllTables(false).size());
+		assertEquals(63, tableManager.getAllTables(true).size());
+		assertEquals(42, tableManager.getAllTables(false).size());
 
 	}
 

@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -144,7 +145,9 @@ public class HandleGraphDone extends AbstractHandler {
 	
 	private void updateSUIDAttributes() {
 		if (!manager.isSessionFormat()) {
-			manager.getSUIDUpdater().updateSUIDColumns();
+			final SUIDUpdater updater = manager.getSUIDUpdater();
+			updater.addTables(manager.getCache().getNetworkTables());
+			updater.updateSUIDColumns();
 		}
 	}
 }

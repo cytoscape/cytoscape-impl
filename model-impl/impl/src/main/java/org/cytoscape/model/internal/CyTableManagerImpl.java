@@ -125,10 +125,10 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	}
 
 	void deleteTableInternal(final long suid, boolean force) {
-		CyTableImpl table;
+		CyTable table;
 
 		synchronized (this) {
-			table = (CyTableImpl) tables.get(suid);
+			table = tables.get(suid);
 
 			if (table == null) {
 				return;
@@ -138,7 +138,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
 
 		synchronized (this) {
-			table = (CyTableImpl) tables.get(suid);
+			table = tables.get(suid);
 
 			if (table == null) {
 				return;
@@ -148,7 +148,8 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 				throw new IllegalArgumentException("can't delete an immutable table.");
 			}
 
-			table.removeAllVirtColumns();
+			if ( table instanceof CyTableImpl ) 
+				((CyTableImpl)table).removeAllVirtColumns();
 			tables.remove(suid);
 		}
 

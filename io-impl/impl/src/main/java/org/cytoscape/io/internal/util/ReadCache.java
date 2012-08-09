@@ -28,6 +28,7 @@
 package org.cytoscape.io.internal.util;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -35,7 +36,10 @@ import java.util.WeakHashMap;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +62,15 @@ public class ReadCache {
 	private Map<CyNetwork, Set<Long>> edgeLinkMap;
 	private Map<CyNode, Object/*network's id*/> networkPointerMap;
 	
+	private final CyNetworkTableManager netTblMgr;
+	
 	private static final Logger logger = LoggerFactory.getLogger(ReadCache.class);
 	
+	
+	public ReadCache(final CyNetworkTableManager netTblMgr) {
+		this.netTblMgr = netTblMgr;
+	}
+
 	public void init() {
 		oldIdMap = new HashMap<Long, Object>();
 		nodeByIdMap = new HashMap<Object, CyNode>();
@@ -195,6 +206,34 @@ public class ReadCache {
 
 	public Map<Object, CyNode> getNodeByNameMap() {
 		return nodeByNameMap;
+	}
+	
+	public Set<CyTable> getNetworkTables() {
+		final Set<CyTable> tables = new HashSet<CyTable>();
+		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		final Class<?>[] types = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
+		
+		if (networkByIdMap.values() != null)
+			networks.addAll(networkByIdMap.values());
+		
+		for (final CyNetwork n : networks) {
+			for (final Class t : types) {
+				Map<String, CyTable> tabMap = netTblMgr.getTables(n, t);
+				
+				if (tabMap != null)
+					tables.addAll(tabMap.values());
+				
+				if (n instanceof CySubNetwork) {
+					// Don't forget the root-network tables.
+					tabMap = netTblMgr.getTables(((CySubNetwork) n).getRootNetwork(), t);
+					
+					if (tabMap != null)
+						tables.addAll(tabMap.values());
+				}
+			}
+		}
+			
+		return tables;
 	}
 	
 	public void createNetworkPointers() {

@@ -64,7 +64,6 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 	private SavePolicy savePolicy;
 	
-	private final CyEventHelper eventHelper;
 	private final CyRootNetworkImpl parent;
 	private boolean fireAddedNodesAndEdgesEvents;
 	private final CyTableManager tableMgr;
@@ -80,18 +79,20 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	                 boolean publicTables,
 	                 int tableSizeDeterminer,
 	                 final SavePolicy savePolicy) {
-		super(suid, netTableMgr, tableFactory,publicTables,tableSizeDeterminer);
+		super(suid, netTableMgr, tableFactory,publicTables,tableSizeDeterminer,eventHelper);
 
 		assert(par != null);
 		assert(savePolicy != null);
 		
 		this.parent = par;
-		this.eventHelper = eventHelper;
 		this.tableMgr = tableMgr;
 		this.networkTableMgr = netTableMgr;
 		this.savePolicy = savePolicy;
 		
-		initTables(this);
+		initTables(this, 
+		           (SharedTableFacade)(networkTableMgr.getTable(parent, CyNetwork.class, CyRootNetwork.SHARED_DEFAULT_ATTRS)),
+		           (SharedTableFacade)(networkTableMgr.getTable(parent, CyNode.class, CyRootNetwork.SHARED_DEFAULT_ATTRS)),
+				   (SharedTableFacade)(networkTableMgr.getTable(parent, CyEdge.class, CyRootNetwork.SHARED_DEFAULT_ATTRS)) );
 
 		fireAddedNodesAndEdgesEvents = false;		
 	}

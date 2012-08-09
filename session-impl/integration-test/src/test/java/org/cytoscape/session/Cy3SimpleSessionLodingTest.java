@@ -76,10 +76,10 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		// Since this test runs in headless mode, this should be zero.
 		assertEquals(0, renderingEngineManager.getAllRenderingEngines().size());
 		
-		assertEquals(30, tableManager.getAllTables(true).size());
+		assertEquals(36, tableManager.getAllTables(true).size());
 		
 		// 6 tables per network
-		assertEquals(12, tableManager.getAllTables(false).size());
+		assertEquals(18, tableManager.getAllTables(false).size());
 	}
 	
 	private void checkNetwork(final CyNetwork network) {

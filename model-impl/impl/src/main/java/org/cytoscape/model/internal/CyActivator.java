@@ -36,12 +36,14 @@ public class CyActivator extends AbstractCyActivator {
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		Interpreter InterpreterRef = getService(bc,Interpreter.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
+
+		TableEventHelperFacade tableEventHelper = new TableEventHelperFacade(cyEventHelperServiceRef);
 		
 		CyNetworkManagerImpl cyNetworkManager = new CyNetworkManagerImpl(cyEventHelperServiceRef);
 		CyNetworkTableManagerImpl cyNetworkTableManager = new CyNetworkTableManagerImpl();
 		CyTableManagerImpl cyTableManager = new CyTableManagerImpl(cyEventHelperServiceRef,cyNetworkTableManager,cyNetworkManager);
-		CyTableFactoryImpl cyTableFactory = new CyTableFactoryImpl(cyEventHelperServiceRef,InterpreterRef,cyServiceRegistrarServiceRef);
-		CyNetworkFactoryImpl cyNetworkFactory = new CyNetworkFactoryImpl(cyEventHelperServiceRef,cyTableManager,cyNetworkTableManager,cyTableFactory,cyServiceRegistrarServiceRef);
+		CyTableFactoryImpl cyTableFactory = new CyTableFactoryImpl(tableEventHelper,InterpreterRef,cyServiceRegistrarServiceRef);
+		CyNetworkFactoryImpl cyNetworkFactory = new CyNetworkFactoryImpl(tableEventHelper,cyTableManager,cyNetworkTableManager,cyTableFactory,cyServiceRegistrarServiceRef);
 		CyRootNetworkManagerImpl cyRootNetworkFactory = new CyRootNetworkManagerImpl();
 		
 		registerService(bc,cyNetworkFactory,CyNetworkFactory.class, new Properties());

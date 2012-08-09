@@ -300,7 +300,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			builderFilenameMap.put(builder, filename);
 			
 			// Look for SUID-type columns--only global tables now
-			findSUIDColumns(table);
+			suidUpdater.addTable(table);
 		}
 	}
 
@@ -500,12 +500,12 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			networkTableMgr.setTable(network, type, namespace, src);
 			builder.setCyTable(src);
 			
-			findSUIDColumns(src);
+			suidUpdater.addTable(src);
 		} else {
 			mergeTables(src, tgt, type);
 			builder.setCyTable(tgt);
 			
-			findSUIDColumns(tgt);
+			suidUpdater.addTable(tgt);
 		}
 	}
 	
@@ -558,13 +558,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 				targetRow.set(columnName, value);
 			}
-		}
-	}
-	
-	private void findSUIDColumns(final CyTable table) {
-		for (final CyColumn column : table.getColumns()) {
-			if (SUIDUpdater.isUpdatableSUIDColumn(column.getName()))
-				suidUpdater.addSUIDColumn(table, column.getName());
 		}
 	}
 	

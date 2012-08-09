@@ -251,7 +251,7 @@ public class AttributeValueUtil {
 				break;
 			case REAL:
 				if (name != null) {
-					if (SUIDUpdater.isUpdatableSUIDColumn(name))
+					if (SUIDUpdater.isUpdatableSUIDColumnName(name))
 						setAttribute(row, name, Long.class, (Long) value);
 					else
 						setAttribute(row, name, Double.class, (Double) value);
@@ -276,9 +276,6 @@ public class AttributeValueUtil {
 				if (column != null && List.class.isAssignableFrom(column.getType()))
 					row.set(name, null);
 				
-				if (SUIDUpdater.isUpdatableSUIDColumn(name))
-            		manager.getSUIDUpdater().addSUIDColumn(row.getTable(), name);
-				
 				return ParseState.LIST_ATT;
 		}
 
@@ -299,9 +296,6 @@ public class AttributeValueUtil {
             
             if (value != null) {
             	row.set(name, value);
-            	
-            	if (SUIDUpdater.isUpdatableSUIDColumn(name))
-            		manager.getSUIDUpdater().addSUIDColumn(row.getTable(), name);
             }
         }
     }

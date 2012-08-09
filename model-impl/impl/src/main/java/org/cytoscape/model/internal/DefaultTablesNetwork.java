@@ -42,6 +42,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
+import org.cytoscape.event.CyEventHelper;
 
 
 /**
@@ -56,22 +57,25 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 	private final CyTableFactory tableFactory;
 	private final boolean publicTables;
 	private final int tableSizeDeterminer;
+	protected final CyEventHelper eventHelper;
 
 	DefaultTablesNetwork(final long suid, final CyNetworkTableManager tableManager, final CyTableFactory tableFactory,
-			final boolean publicTables, final int tableSizeDeterminer) {
+			final boolean publicTables, final int tableSizeDeterminer, final CyEventHelper eventHelper) {
 		super(suid);
 		this.networkTableManager = tableManager;
 		this.publicTables = publicTables;
 		this.tableFactory = tableFactory;
 		this.tableSizeDeterminer = tableSizeDeterminer;
+		this.eventHelper = eventHelper;
 	}
 	
-	protected void initTables(final CyNetwork network) {
+	protected void initTables(final CyNetwork network, final SharedTableFacade sharedNetworkTable, 
+	                          final SharedTableFacade sharedNodeTable, final SharedTableFacade sharedEdgeTable) {
 		this.networkRef = new WeakReference<CyNetwork>(network);
 		
-		createNetworkTables(super.getSUID(), tableFactory, publicTables /* table size is always small */);
-		createNodeTables(super.getSUID(), tableFactory, publicTables, tableSizeDeterminer);
-		createEdgeTables(super.getSUID(), tableFactory, publicTables, tableSizeDeterminer);
+		createNetworkTables(super.getSUID(), tableFactory, publicTables /* table size is always small */, sharedNetworkTable);
+		createNodeTables(super.getSUID(), tableFactory, publicTables, tableSizeDeterminer, sharedNodeTable);
+		createEdgeTables(super.getSUID(), tableFactory, publicTables, tableSizeDeterminer, sharedEdgeTable);
 	}
 
 	public CyTable getDefaultNetworkTable() {
@@ -108,9 +112,12 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 				table = networkTableManager.getTable(networkRef.get(), CyNode.class, tableName);
 			else if (entry instanceof CyEdge && containsEdge((CyEdge) entry))
 				table = networkTableManager.getTable(networkRef.get(), CyEdge.class, tableName);
-			else if (entry instanceof CyNetwork && entry.equals(this))
-				table = networkTableManager.getTable(networkRef.get(), CyNetwork.class, tableName);
-			else
+			else if (entry instanceof CyNetwork && entry.equals(this)) {
+				if ( networkRef == null )
+					throw new IllegalArgumentException("asdfasdf");
+				CyNetwork n = networkRef.get();
+				table = networkTableManager.getTable(n, CyNetwork.class, tableName);
+			}else
 				throw new IllegalArgumentException("unrecognized (table entry): " + entry.toString()
 						+ "  (table name): " + tableName);
 		}
@@ -122,10 +129,14 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 	}
 
 
-	private void createNetworkTables(long suidx, CyTableFactory tableFactory, boolean pubTables) {		
+	private void createNetworkTables(long suidx, CyTableFactory tableFactory, boolean pubTables, SharedTableFacade sharedNetworkTable) {		
 		final CyTable defTable = tableFactory.createTable(suidx
 				+ " default network", CyIdentifiable.SUID, Long.class, pubTables, false, InitialTableSize.SMALL);
-		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.DEFAULT_ATTRS, defTable);
+		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.LOCAL_ATTRS, defTable);
+		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedNetworkTable);
+		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.DEFAULT_ATTRS, localTable);
+		if ( eventHelper instanceof TableEventHelperFacade )
+			((TableEventHelperFacade)eventHelper).registerFacade(localTable);
 		
 		final CyTable hiddenTable = tableFactory.createTable(suidx
 				+ " hidden network", CyIdentifiable.SUID, Long.class, false, false, InitialTableSize.SMALL);
@@ -135,10 +146,14 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 		defTable.createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);
 	}
 
-	private void createNodeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num) {
+	private void createNodeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num, SharedTableFacade sharedNodeTable) {
 		final CyTable defTable = tableFactory.createTable(suidx
 				+ " default node", CyIdentifiable.SUID, Long.class, pubTables, false, InitialTableSize.SMALL);
-		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.DEFAULT_ATTRS, defTable);
+		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.LOCAL_ATTRS, defTable);
+		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedNodeTable);
+		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.DEFAULT_ATTRS, localTable);
+		if ( eventHelper instanceof TableEventHelperFacade )
+			((TableEventHelperFacade)eventHelper).registerFacade(localTable);
 		
 		final CyTable hiddenTable = tableFactory.createTable(suidx
 				+ " hidden node", CyIdentifiable.SUID, Long.class, false, false, InitialTableSize.SMALL);
@@ -148,10 +163,15 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 		defTable.createColumn(CyNetwork.SELECTED, Boolean.class, true, Boolean.FALSE);		
 	}
 
-	private void createEdgeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num) {
+	private void createEdgeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num, SharedTableFacade sharedEdgeTable) {
 		final CyTable defTable = tableFactory.createTable(suidx + " default edge", CyIdentifiable.SUID, Long.class,
 				pubTables, false, InitialTableSize.SMALL);
-		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.DEFAULT_ATTRS, defTable);
+		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.LOCAL_ATTRS, defTable);
+
+		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedEdgeTable);
+		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.DEFAULT_ATTRS, localTable);
+		if ( eventHelper instanceof TableEventHelperFacade )
+			((TableEventHelperFacade)eventHelper).registerFacade(localTable);
 		
 		final CyTable hiddenTable = tableFactory.createTable(suidx
 				+ " hidden edge", CyIdentifiable.SUID, Long.class, false, false, InitialTableSize.SMALL);

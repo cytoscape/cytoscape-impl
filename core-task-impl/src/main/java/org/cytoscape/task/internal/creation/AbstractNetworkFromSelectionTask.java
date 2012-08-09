@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -154,15 +155,18 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	}
 
 	private void addColumns(CyTable parentTable, CyTable subTable) {
+		List<CyColumn> colsToAdd = new ArrayList<CyColumn>();
 
-		for (CyColumn col:  parentTable.getColumns()){
-			if (subTable.getColumn(col.getName()) == null){
-				VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
-				if (colInfo.isVirtual())
-					addVirtualColumn(col, subTable);
-				else
-					copyColumn(col, subTable);
-			}
+		for (CyColumn col:  parentTable.getColumns())
+			if (subTable.getColumn(col.getName()) == null)
+				colsToAdd.add( col );
+
+		for (CyColumn col:  colsToAdd) {
+			VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
+			if (colInfo.isVirtual())
+				addVirtualColumn(col, subTable);
+			else
+				copyColumn(col, subTable);
 		}
 	}
 

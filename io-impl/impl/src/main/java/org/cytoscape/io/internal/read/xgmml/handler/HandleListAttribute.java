@@ -53,7 +53,7 @@ public class HandleListAttribute extends AbstractHandler {
                 clazz = Boolean.class;
                 break;
             case REAL:
-                clazz = SUIDUpdater.isUpdatableSUIDColumn(name) ? Long.class : Double.class;
+                clazz = SUIDUpdater.isUpdatableSUIDColumnName(name) ? Long.class : Double.class;
                 break;
             case INTEGER:
                 clazz = Integer.class;

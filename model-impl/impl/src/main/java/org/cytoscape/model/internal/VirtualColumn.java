@@ -100,7 +100,7 @@ final class VirtualColumn {
 		final Object joinKey = targetTable.getValue(targetKey, targetJoinColumn.getName());
 		if (joinKey == null)
 			return null;
-		return sourceTable.getRowNoCreate(joinKey);
+		return sourceTable.getRow(joinKey);
 		/*
 		final Collection<CyRow> sourceRows =
 			sourceTable.getMatchingRows(sourceJoinColumn.getName(),

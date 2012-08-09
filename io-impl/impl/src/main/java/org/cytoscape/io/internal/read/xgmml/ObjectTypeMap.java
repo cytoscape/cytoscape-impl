@@ -44,7 +44,7 @@ public class ObjectTypeMap {
                 break;
             case REAL:
                 if (value != null) {
-                	if (SUIDUpdater.isUpdatableSUIDColumn(name))
+                	if (SUIDUpdater.isUpdatableSUIDColumnName(name))
                 		typedValue = new Long(value);
                 	else
                 		typedValue = new Double(value);

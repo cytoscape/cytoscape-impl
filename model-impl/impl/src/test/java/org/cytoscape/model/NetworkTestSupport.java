@@ -56,4 +56,8 @@ public class NetworkTestSupport {
 	public CyRootNetworkManager getRootNetworkFactory() {
 		return rootNetworkManager;
 	}
+	
+	public CyNetworkTableManager getNetworkTableManager() {
+		return networkTableMgr;
+	}
 }
