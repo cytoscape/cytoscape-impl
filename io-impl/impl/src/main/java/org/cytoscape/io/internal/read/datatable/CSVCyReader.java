@@ -57,7 +57,7 @@ public class CSVCyReader implements CyTableReader {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
 
-		CSVReader reader = new CSVReader(new InputStreamReader(stream, encoding));
+		CSVReader reader = new CSVReader(new InputStreamReader(stream, encoding), ',', '"', '\0');
 		taskMonitor.setProgress(0.2);
 
 		TableInfo info = readHeader(reader);
