@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import javax.swing.table.TableRowSorter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.browser.internal.util.TableColumnStat;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -29,6 +31,10 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -37,7 +43,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Base class for all Table Browsers.
  *
  */
-public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent, ActionListener {
+public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent, ActionListener , SessionLoadedListener, SessionAboutToBeSavedListener{
 
 	private static final long serialVersionUID = 1968196123280466989L;
 	
@@ -67,6 +73,8 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	private final Map<BrowserTableModel,JScrollPane> scrollPanes;
 	private final Map<CyTable,BrowserTableModel> browserTableModels;
 	private JScrollPane currentScrollPane;
+	protected final String appFileName;
+
 	
 	AbstractTableBrowser(final String tabTitle,
 						 final CyTableManager tableManager,
@@ -87,6 +95,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		this.applicationManager = applicationManager;
 		this.popupMenuHelper = popupMenuHelper;
 		this.eventHelper = eventHelper;
+		this.appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
 
 		this.scrollPanes = new HashMap<BrowserTableModel,JScrollPane>();
 		this.browserTableModels = new HashMap<CyTable,BrowserTableModel>();
@@ -184,9 +193,16 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 				updateColumnComparators(rowSorter, browserTableModel);
 				browserTable.setUpdateComparators(true);
 				
-				//hide SUID and selected by default
-				
+				//move and hide SUID and selected by default
 				final List<String> attrList = browserTableModel.getAllAttributeNames();
+
+				BrowserTableColumnModel columnModel = (BrowserTableColumnModel) browserTable.getColumnModel();
+				
+				if(attrList.contains(CyNetwork.SUID))
+					columnModel.moveColumn(browserTable.convertColumnIndexToView(browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
+				if(attrList.contains(CyNetwork.SELECTED))
+					columnModel.moveColumn(browserTable.convertColumnIndexToView(browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
+				
 				attrList.remove(CyNetwork.SUID);
 				attrList.remove( CyNetwork.SELECTED);
 				browserTableModel.setVisibleAttributeNames(attrList);
@@ -214,6 +230,10 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		
 		return btm;
 	}
+	
+	protected Map<CyTable, BrowserTableModel>  getAllBrowserTablesMap (){
+		return browserTableModels;
+	}
 
 	void updateColumnComparators(final TableRowSorter<BrowserTableModel> rowSorter,
 			final BrowserTableModel browserTableModel) {
@@ -227,5 +247,66 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	@Override
 	public String toString() {
 		return "AbstractTableBrowser [tabTitle=" + tabTitle + ", currentTable=" + currentTable + "]";
+	}
+	
+	
+	@Override
+	public void handleEvent(SessionLoadedEvent e) {
+		Map<String, TableColumnStat> tscMap = TableColumnStatFileIO.read(e, appFileName);
+		
+		if (tscMap == null || tscMap.isEmpty())
+			return;
+		
+		Map<CyTable, BrowserTableModel>  browserTableModels = getAllBrowserTablesMap();
+		
+		for (CyTable table : browserTableModels.keySet()){
+			if (! tscMap.containsKey(table.getTitle()))
+				continue;
+			
+			final TableColumnStat tcs = tscMap.get(table.getTitle());
+			
+			final BrowserTableModel btm = browserTableModels.get(table);
+			final BrowserTableColumnModel colM = (BrowserTableColumnModel) btm.getTable().getColumnModel();
+			colM.setAllColumnsVisible();
+			final List<String> orderedCols = tcs.getOrderedCol();
+			final JTable jtable = btm.getTable();
+			
+			for (int i =0; i< orderedCols.size(); i++){
+				final String colName = orderedCols.get(i);
+				colM.moveColumn( jtable.convertColumnIndexToView(btm.mapColumnNameToColumnIndex(colName))  , i);
+			}
+			btm.setVisibleAttributeNames(tcs.getVisibleCols());
+			
+		}
+		
+	}
+
+	@Override
+	public void handleEvent(SessionAboutToBeSavedEvent e) {
+
+		Map<CyTable, BrowserTableModel>  browserTableModels = getAllBrowserTablesMap();
+		List< TableColumnStat> tableColumnStatList = new ArrayList<TableColumnStat>();
+
+		for (CyTable table :  browserTableModels.keySet()){
+
+			TableColumnStat tcs = new TableColumnStat(table.getTitle());
+
+			BrowserTableModel btm = browserTableModels.get(table);
+			BrowserTableColumnModel colM = (BrowserTableColumnModel) btm.getTable().getColumnModel();
+			List<String> visAttrs = btm.getVisibleAttributeNames();
+			colM.setAllColumnsVisible();
+			List<String> attrs =  btm.getAllAttributeNames();
+			JTable jtable = btm.getTable();
+
+			for (String name: attrs){
+				int viewIndex = jtable.convertColumnIndexToView(btm.mapColumnNameToColumnIndex(name));
+				tcs.addColumnStat(name, viewIndex,  visAttrs.contains(name));			
+			}
+
+			btm.setVisibleAttributeNames(visAttrs);
+			tableColumnStatList.add(tcs);
+		}
+		TableColumnStatFileIO.write(tableColumnStatList, e, this.appFileName );	
+
 	}
 }
