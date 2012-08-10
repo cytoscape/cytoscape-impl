@@ -91,6 +91,10 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 	@Override
 	public synchronized void reset() {
+		
+		for (CyTable table : tables.values()){
+			eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
+		}
 		tables.clear();
 	}
 
