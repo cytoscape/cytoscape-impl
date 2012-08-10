@@ -46,10 +46,6 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
-import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.Event;
-
-
 /**
  * Task to load a new network.
  */
@@ -64,11 +60,10 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 	private final TunableSetter tunableSetter;
 	private final VisualMappingManager vmm;
 
-    private final EventAdmin eventAdmin;
 
 	public LoadNetworkFileTaskFactoryImpl(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, CyProperty<Properties> cyProp,
-			CyNetworkNaming cyNetworkNaming, TunableSetter tunableSetter, final VisualMappingManager vmm, final EventAdmin eventAdmin) {
+			CyNetworkNaming cyNetworkNaming, TunableSetter tunableSetter, final VisualMappingManager vmm) {
 		
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -77,16 +72,10 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.cyNetworkNaming = cyNetworkNaming;
 		this.tunableSetter = tunableSetter;
 		this.vmm = vmm;
-        this.eventAdmin = eventAdmin;
 	}
 	
 	public TaskIterator createTaskIterator() {
 		// Load, visualize, and layout.
-        if (eventAdmin != null) {
-            final Map<String,String> eventProps = new HashMap<String,String>();
-            eventProps.put("action", "network file task invoked");
-            eventAdmin.postEvent(new Event("org/cytoscape/gettingstarted", eventProps));
-        }
 		return new TaskIterator(3, new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, vmm));
 	}
 
