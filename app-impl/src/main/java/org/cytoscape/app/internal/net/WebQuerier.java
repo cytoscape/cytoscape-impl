@@ -23,7 +23,8 @@ import org.apache.commons.io.IOUtils;
 import org.cytoscape.app.internal.exception.AppDownloadException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.manager.AppManager.ChecksumException;
+import org.cytoscape.app.internal.manager.AppParser;
+import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.io.util.StreamUtil;
@@ -576,10 +577,12 @@ public class WebQuerier {
 					if (highestVersionRelease != null
 							&& compareVersions(highestVersionRelease.getReleaseVersion(), app.getVersion()) < 0) {
 						
+						// System.out.println(highestVersionRelease.getReleaseVersion() + " won vs " + app.getVersion());
+						
 						if (app.getSha512Checksum() == null) {
 							try {
-								app.setSha512Checksum(appManager.getChecksum(app.getAppFile()));
-							} catch (ChecksumException e) {
+								app.setSha512Checksum(appManager.getAppParser().getChecksum(app.getAppFile()));
+							} catch (AppParser.ChecksumException e) {
 								app.setSha512Checksum(null);
 							}
 						}
@@ -591,9 +594,12 @@ public class WebQuerier {
 							for (WebApp.Release release : webApp.getReleases()) {
 								if (release.getSha512Checksum().toLowerCase().indexOf(checksum.toLowerCase()) != -1) {
 									
+									// System.out.println("Matching hash found");
+									
 									Update update = new Update();
-									update.setUpdateVersion(release.getReleaseVersion());
+									update.setUpdateVersion(highestVersionRelease.getReleaseVersion());
 									update.setApp(app);
+									update.setUpdateUrl(url + highestVersionRelease.getRelativeUrl()); 
 									
 									return update;
 								}

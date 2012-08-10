@@ -14,6 +14,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +39,7 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.AppParser;
 import org.cytoscape.app.internal.net.ResultsFilterer;
+import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
@@ -123,9 +125,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 			public void run(TaskMonitor taskMonitor) throws Exception {
 				WebQuerier webQuerier = appManager.getWebQuerier();
 		    	
-				taskMonitor.setTitle("Obtaining apps from: " + webQuerier.getCurrentAppStoreUrl());
+				taskMonitor.setTitle("Getting available apps");
+				taskMonitor.setStatusMessage("Obtaining apps from: " + webQuerier.getCurrentAppStoreUrl());
 				
-				taskMonitor.setStatusMessage("Getting available apps");
 				Set<WebApp> availableApps = webQuerier.getAllApps();
 			
 				// Once the information is obtained, update the tree
@@ -208,7 +210,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
         descriptionTextPane.setContentType("text/html");
         descriptionTextPane.setEditable(false);
-        descriptionTextPane.setText("<html>\n  <head>\n\n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      App description is displayed here.\n    </p>\n  </body>\n</html>\n");
+        //descriptionTextPane.setText("<html>\n  <head>\n\n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      App description is displayed here.\n    </p>\n  </body>\n</html>\n");
+        descriptionTextPane.setText("");
         descriptionScrollPane.setViewportView(descriptionTextPane);
 
         javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
@@ -649,8 +652,12 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		text += "src=\"" + appManager.getWebQuerier().getDefaultAppStoreUrl() 
     			+ selectedApp.getIconUrl() + "\" alt=\"" + selectedApp.getFullName() + "\"/>";
     		
-    		// App name
-    		text += "<p> <b>" + selectedApp.getFullName() + "</b> </p>";
+    		// App name, version
+    		text += "<p>";
+    		text += "<b>" + selectedApp.getFullName() + "</b>";
+    		text += " " + selectedApp.getReleases().get(selectedApp.getReleases().size() - 1).getReleaseVersion();
+    		text += "</p>";
+    		
     		
     		// App description
     		text += "<p>" + (String.valueOf(selectedApp.getDescription()).equalsIgnoreCase("null") ? "App description not found." : selectedApp.getDescription()) + "</p>";
@@ -745,8 +752,6 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	    		queryForApps();
 	    	}
     	}
-    	
-    	
    
     }
     

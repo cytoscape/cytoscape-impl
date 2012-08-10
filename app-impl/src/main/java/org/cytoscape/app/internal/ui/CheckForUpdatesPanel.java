@@ -2,6 +2,20 @@ package org.cytoscape.app.internal.ui;
 
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+
+import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.net.Update;
+import org.cytoscape.app.internal.net.UpdateManager;
 
 /**
  * This class represents the panel in the App Manager dialog's tab used for checking for app updates.
@@ -23,8 +37,14 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane updatesScrollPane;
     private javax.swing.JTable updatesTable;
 	
-    public CheckForUpdatesPanel() {
+    private UpdateManager updateManager;
+    private AppManager appManager;
+    
+    public CheckForUpdatesPanel(AppManager appManager) {
         initComponents();
+        
+        this.updateManager = new UpdateManager();
+        this.appManager = appManager;
     }
 
     private void initComponents() {
@@ -137,11 +157,26 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
         
-        //
         this.addComponentListener(new ComponentAdapter() {
 		
         	@Override
         	public void componentShown(ComponentEvent e) {
+        		
+        		updateManager.checkForUpdates(appManager.getWebQuerier(), 
+        				appManager.getApps(), 
+        				appManager);
+        		
+        		int updateCount = updateManager.getUpdates().size();
+        		updatesAvailableLabel.setText(updateCount + " " 
+        				+ (updateCount == 1 ? "update" : "updates") + " available.");
+        		
+        		Calendar lastUpdateCheckTime = updateManager.getLastUpdateCheckTime();
+        		updateCheckTimeLabel.setText("Today, at " 
+        			+ lastUpdateCheckTime.get(Calendar.HOUR) + ":"
+        			+ lastUpdateCheckTime.get(Calendar.MINUTE) + " "
+        			+ (lastUpdateCheckTime.get(Calendar.AM_PM) == Calendar.AM ? "am" : "pm"));
+        		
+        		populateUpdatesTable();
         	}
         });
     }
@@ -152,5 +187,86 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 
     private void installAllTableActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
+    }
+    
+    private void populateUpdatesTable() {
+   
+    	SwingUtilities.invokeLater(new Runnable() {
+    		
+			@Override
+			public void run() {
+				
+				updatesTable.setModel(new javax.swing.table.DefaultTableModel(
+			            new Object [][] {
+
+			            },
+			            new String [] {
+			                "App Name", "Current Version", "New Version", "Update URL"
+			            }
+			        ) {
+						private static final long serialVersionUID = 5428723339522445073L;
+						
+						boolean[] canEdit = new boolean [] {
+			                false, false
+			            };
+
+			            public boolean isCellEditable(int rowIndex, int columnIndex) {
+			                return canEdit [columnIndex];
+			            }
+			        });
+				
+				
+				DefaultTableModel tableModel = (DefaultTableModel) updatesTable.getModel();
+				
+				for (Update update : updateManager.getUpdates()) {	
+		    			tableModel.addRow(new Object[]{
+		    				update,
+		    				update.getApp().getVersion(),
+		    				update.getUpdateVersion(),
+		    				update.getUpdateUrl()
+					});
+		    	}
+			}
+    		
+    	});	
+    }
+    
+    /**
+     * Obtain the set of {@link Update} objects corresponding to currently selected entries in the table of apps
+     * @return A set of {@link Update} objects corresponding to selected apps in the table
+     */
+    private Set<Update> getSelectedUpdates() {
+        Set<Update> selectedUpdates = new HashSet<Update>();
+    	 int[] selectedRows = updatesTable.getSelectedRows();
+    	
+        for (int index = 0; index < selectedRows.length; index++) {
+        	
+        	Update update = (Update) updatesTable.getModel().getValueAt(
+        			updatesTable.convertRowIndexToModel(selectedRows[index]), 0);
+        	
+        	selectedUpdates.add(update);
+        }
+    	
+    	return selectedUpdates;
+    }
+    
+    /**
+     * Setup and register a listener to the table to listen for selection changed events in order to update the
+     * description box
+     */
+    private void setupDescriptionListener() {
+    	updatesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				updateDescriptionBox();
+			}
+		});
+    }
+    
+    private void updateDescriptionBox() {
+//    	Set<Update> selectedUpdates = 
+
+//   	descriptionTextArea.setText("Update from ")
     }
 }

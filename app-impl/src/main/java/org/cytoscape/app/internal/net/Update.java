@@ -16,6 +16,8 @@ public class Update {
 	/** The version of the new updated app */
 	private String updateVersion;
 
+	private String updateUrl;
+	
 	/** Obtain the {@link App}pp object that the update is associated with. */
 	public App getApp() {
 		return app;
@@ -31,6 +33,10 @@ public class Update {
 		return updateVersion;
 	}
 
+	public String getUpdateUrl() {
+		return updateUrl;
+	}
+	
 	public void setApp(App app) {
 		this.app = app;
 	}
@@ -43,5 +49,12 @@ public class Update {
 		this.updateVersion = updateVersion;
 	}
 	
+	public void setUpdateUrl(String updateUrl) {
+		this.updateUrl = updateUrl;
+	}
 	
+	@Override
+	public String toString() {
+		return this.app.getAppName();
+	}
 }

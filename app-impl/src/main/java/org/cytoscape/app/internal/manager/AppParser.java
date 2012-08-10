@@ -1,8 +1,13 @@
 package org.cytoscape.app.internal.manager;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -14,17 +19,8 @@ import java.util.jar.Manifest;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.apache.xmlbeans.XmlException;
-import org.apache.xmlbeans.XmlObject;
 import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.util.DebugHelper;
-import org.json.XML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -199,6 +195,14 @@ public class AppParser {
 					+ " major[.minor] (eg. 1 or 1.0) with variable whitespace around versions");
 		}
 		
+		String fileHash;
+		try {
+			fileHash = getChecksum(file);
+			parsedApp.setSha512Checksum(fileHash);
+		} catch (ChecksumException e) {
+			parsedApp.setSha512Checksum(null);
+		}
+		
 		parsedApp.setAppFile(file);
 		parsedApp.setEntryClassName(entryClassName);
 		parsedApp.setAppName(readableName);
@@ -303,4 +307,64 @@ public class AppParser {
 
         return featuresList;
     }
+    
+    public class ChecksumException extends Exception {
+		private static final long serialVersionUID = 7022699404764909882L;
+		
+		public ChecksumException(String text) {
+			super(text);
+		}
+	}
+	
+	/**
+	 * Obtain the SHA-512 checksum of a file, in the following format: sha512:3c1c..
+	 * @param file The file to find the checksum
+	 * @return The SHA-512 checksum, in format: sha512:e1..
+	 * @throws ChecksumException If unable to obtain SHA-512 algorithm implementation,
+	 * file does not exist, or IO error while reading
+	 */
+	public String getChecksum(File file) throws ChecksumException {
+		MessageDigest messageDigest;
+		 
+		try {
+			messageDigest = MessageDigest.getInstance("SHA-512");
+		} catch (NoSuchAlgorithmException e) {
+			throw new ChecksumException("Unable to obtain SHA-512 algorithm implementation");
+		}
+
+		InputStream inputStream;
+		try {
+			inputStream = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			throw new ChecksumException("File " + file.getAbsolutePath() + " does not exist.");
+		}
+		 
+		try {
+			inputStream = new DigestInputStream(inputStream, messageDigest);
+			
+			byte[] byteBuffer = new byte[128];
+			
+			while (inputStream.available() != 0) {
+				inputStream.read(byteBuffer);
+			}
+		} catch (IOException e) {
+			throw new ChecksumException("Error reading from file " + file + ", " + e.getMessage());
+		} finally {
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				// logger.warn("Failed to close input stream on file " + file.getAbsolutePath() + ", " + e.getMessage());
+			}
+		}
+		
+		byte[] digest = messageDigest.digest();
+		
+		String result = "";
+		for (int i = 0; i < digest.length; i++) {
+			// Convert each byte to a 2-digit hex number, adding 0x100 to obtain the 0 if the byte is 0E
+			result += Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1);
+		}
+		
+		return "sha512:" + result;
+	}
 }
