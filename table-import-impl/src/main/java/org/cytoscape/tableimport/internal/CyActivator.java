@@ -41,7 +41,6 @@ import org.cytoscape.application.swing.CyAction;
 
 
 import org.osgi.framework.BundleContext;
-import org.osgi.service.event.EventAdmin;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 
@@ -78,7 +77,6 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
 		CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
 		CytoscapeServices.mapGlobalToLocalTableTaskFactory = getService(bc, MapGlobalToLocalTableTaskFactory.class);
-		CytoscapeServices.eventAdmin = getService(bc, EventAdmin.class);
 
 		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv", "txt", "tab", "net"}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
 		BasicCyFileFilter attrsTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",TABLE,CytoscapeServices.streamUtil);

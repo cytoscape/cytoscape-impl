@@ -52,7 +52,6 @@ import java.util.HashMap;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.osgi.service.event.Event;
 /**
  * GUI Component for specify options for network table import.<br>
  *
@@ -115,11 +114,6 @@ public class NetworkImportOptionsPanel extends JPanel {
 		sourceComboBox.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent evt) {
 					networkColumnsComboBoxActionPerformed(evt);
-
-                    final Map<String,String> props = new HashMap<String,String>();
-                    props.put("action", "set source interaction column");
-                    props.put("column", sourceComboBox.getSelectedItem() == null ? null : sourceComboBox.getSelectedItem().toString());
-                    CytoscapeServices.eventAdmin.postEvent(new Event("org/cytoscape/gettingstarted", props));
 				}
 			});
 
@@ -146,11 +140,6 @@ public class NetworkImportOptionsPanel extends JPanel {
 		targetComboBox.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent evt) {
 					networkColumnsComboBoxActionPerformed(evt);
-
-                    final Map<String,String> props = new HashMap<String,String>();
-					props.put("action", "set target interaction column");
-                    props.put("column", targetComboBox.getSelectedItem() == null ? null : targetComboBox.getSelectedItem().toString());
-                    CytoscapeServices.eventAdmin.postEvent(new Event("org/cytoscape/gettingstarted", props));
 				}
 			});
 

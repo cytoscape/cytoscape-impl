@@ -20,7 +20,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.osgi.service.event.EventAdmin;
 
 public class CytoscapeServices {
 
@@ -46,6 +45,5 @@ public class CytoscapeServices {
 	public static StreamUtil streamUtil;
 	public static CyEventHelper cyEventHelper;
 	public static MapGlobalToLocalTableTaskFactory mapGlobalToLocalTableTaskFactory;
-	public static EventAdmin eventAdmin;
 	public static InputStreamTaskFactory inputStreamTaskFactory;
 }

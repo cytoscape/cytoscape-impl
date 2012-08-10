@@ -20,7 +20,6 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
-import org.osgi.service.event.Event;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -69,9 +68,6 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 				new ImportTablePanel(dialogType, ntmp.is,
 				                     ntmp.fileType, null,null, null, null,
 				                     null, null, null, tableManager, fileUtil); 
-            final Map<String,String> props = new HashMap<String,String>();
-            props.put("action", "show import table dialog");
-            CytoscapeServices.eventAdmin.postEvent(new Event("org/cytoscape/gettingstarted", props));
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
 		}
@@ -84,10 +80,6 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 		try{
 			ntmp = importTablePanel.getNetworkTableMappingParameters();
 			setValue(ntmp);
-
-            final Map<String,String> props = new HashMap<String,String>();
-            props.put("action", "import table dialog ok");
-            CytoscapeServices.eventAdmin.postEvent(new Event("org/cytoscape/gettingstarted", props));
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -132,8 +132,6 @@ import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.JStatusBar;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
-import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.Event;
 import org.jdesktop.layout.GroupLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,7 +232,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private final CyNetworkManager manager;
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableManager;
-    private final EventAdmin eventAdmin;
 	private File tempFile;
 	private final FileUtil fileUtil;
 
@@ -264,7 +261,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		this.manager       = manager;
 		this.tableFactory  = tableFactory;
 		this.tableManager  = tableManager;
-        this.eventAdmin    = CytoscapeServices.eventAdmin;
         this.fileUtil = fileUtil;
 
 		if (dialogType != ONTOLOGY_AND_ANNOTATION_IMPORT) {
@@ -1592,9 +1588,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private void textImportCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
 		if (textImportCheckBox.isSelected()) {
 			textImportOptionPanel.setVisible(true);
-            final Map<String,String> props = new HashMap<String,String>();
-            props.put("action", "show text file import options");
-            eventAdmin.postEvent(new Event("org/cytoscape/gettingstarted", props));
 		} else {
 			textImportOptionPanel.setVisible(false);
 		}
