@@ -2,15 +2,11 @@ package org.cytoscape.io.internal.read.xgmml;
 
 import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
 import static org.cytoscape.model.CyNetwork.HIDDEN_ATTRS;
+import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS;
 import static org.cytoscape.model.CyNetwork.NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_ATTRS;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -102,6 +98,34 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		CyNetwork net = checkSingleNetwork(views, 331, 362);
 		findInteraction(net, "YGR136W", "YGR058W", "pp", 1);
 		assertCustomColumnsAreMutable(net);
+	}
+	
+	@Test
+	public void testSharedAndLocalAttributes() throws Exception {
+		List<CyNetworkView> views = getViews("simple.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 1, 1);
+		assertCustomColumnsAreMutable(net);
+		
+		CyTable defNodeTbl = net.getDefaultNodeTable();
+		CyTable defEdgeTbl = net.getDefaultEdgeTable();
+		CyTable defNetTbl = net.getDefaultNetworkTable();
+		
+		// Assert all custom Node/Edge columns are shared
+		assertTrue(defNodeTbl.getColumn("node_att_1").getVirtualColumnInfo().isVirtual());
+		assertTrue(defNodeTbl.getColumn("node_att_2").getVirtualColumnInfo().isVirtual());
+		assertTrue(defEdgeTbl.getColumn("edge_att_1").getVirtualColumnInfo().isVirtual());
+		assertTrue(defEdgeTbl.getColumn("edge_att_2").getVirtualColumnInfo().isVirtual());
+		// Assert all custom network columns are local
+		assertFalse(defNetTbl.getColumn("net_att_1").getVirtualColumnInfo().isVirtual());
+		assertFalse(defNetTbl.getColumn("net_att_2").getVirtualColumnInfo().isVirtual());
+		// Assert mandatory local attributes
+		assertFalse(defNodeTbl.getColumn(CyNetwork.SELECTED).getVirtualColumnInfo().isVirtual());
+		assertFalse(defNodeTbl.getColumn(CyNetwork.NAME).getVirtualColumnInfo().isVirtual());
+		assertFalse(defEdgeTbl.getColumn(CyNetwork.SELECTED).getVirtualColumnInfo().isVirtual());
+		assertFalse(defEdgeTbl.getColumn(CyNetwork.NAME).getVirtualColumnInfo().isVirtual());
+		assertFalse(defEdgeTbl.getColumn(CyEdge.INTERACTION).getVirtualColumnInfo().isVirtual());
+		assertFalse(defNetTbl.getColumn(CyNetwork.NAME).getVirtualColumnInfo().isVirtual());
+		assertFalse(defNetTbl.getColumn(CyNetwork.SELECTED).getVirtualColumnInfo().isVirtual());
 	}
 	
 	@Test
@@ -201,7 +225,10 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 4, 2);
-		check2xGroupMetadata(net);
+		CyNode grNode = check2xGroupMetadata(net);
+		assertCustomColumnsAreMutable(rootNetworkMgr.getRootNetwork(net));
+		assertCustomColumnsAreMutable(net);
+		assertCustomColumnsAreMutable(grNode.getNetworkPointer());
 	}
 	
 	@Test
@@ -217,6 +244,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 			assertNotNull(grNet.getRow(n, HIDDEN_ATTRS).get("__metanodeHintX", Double.class));
 			assertNotNull(grNet.getRow(n, HIDDEN_ATTRS).get("__metanodeHintY", Double.class));
 		}
+		assertCustomColumnsAreMutable(rootNetworkMgr.getRootNetwork(net));
 		assertCustomColumnsAreMutable(net);
 		assertCustomColumnsAreMutable(grNet);
 	}
@@ -295,20 +323,32 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	
 	private void assertCustomColumnsAreMutable(CyNetwork net) {
 		// User or non-default columns should be immutable
-		CyTable[] tables = new CyTable[] {
-			net.getTable(CyNetwork.class, DEFAULT_ATTRS),
-			net.getTable(CyNetwork.class, HIDDEN_ATTRS),
-			net.getTable(CyNode.class, DEFAULT_ATTRS),
-			net.getTable(CyNode.class, HIDDEN_ATTRS),
-			net.getTable(CyEdge.class, DEFAULT_ATTRS),
-			net.getTable(CyEdge.class, HIDDEN_ATTRS)
-		};
+		List<CyTable> tables = new ArrayList<CyTable>();
+		tables.add(net.getTable(CyNetwork.class, LOCAL_ATTRS));
+		tables.add(net.getTable(CyNetwork.class, HIDDEN_ATTRS));
+		tables.add(net.getTable(CyNetwork.class, DEFAULT_ATTRS));
+		tables.add(net.getTable(CyNode.class, LOCAL_ATTRS));
+		tables.add(net.getTable(CyNode.class, HIDDEN_ATTRS));
+		tables.add(net.getTable(CyNode.class, DEFAULT_ATTRS));
+		tables.add(net.getTable(CyEdge.class, LOCAL_ATTRS));
+		tables.add(net.getTable(CyEdge.class, HIDDEN_ATTRS));
+		tables.add(net.getTable(CyEdge.class, DEFAULT_ATTRS));
+		
+		if (net instanceof CyRootNetwork) {
+			tables.add(net.getTable(CyNetwork.class, SHARED_ATTRS));
+			tables.add(net.getTable(CyNode.class, SHARED_ATTRS));
+			tables.add(net.getTable(CyEdge.class, SHARED_ATTRS));
+		}
+		
 		for (CyTable t : tables) {
 			for (CyColumn c : t.getColumns()) {
 				String name = c.getName();
-				if (!name.equals(CyNetwork.SUID)     && !name.equals(NAME) && 
-					!name.equals(CyNetwork.SELECTED) && !name.equals(CyEdge.INTERACTION) &&
-					!name.equals(CyRootNetwork.SHARED_NAME) && !name.equals(CyRootNetwork.SHARED_INTERACTION)) {
+				if (!name.equals(CyNetwork.SUID)
+						&& !name.equals(NAME)
+						&& !name.equals(CyNetwork.SELECTED)
+						&& !name.equals(CyEdge.INTERACTION)
+						&& !name.equals(CyRootNetwork.SHARED_NAME)
+						&& !name.equals(CyRootNetwork.SHARED_INTERACTION)) {
 					assertFalse("Column " + c.getName() + " should NOT be immutable", c.isImmutable());
 				}
 			}

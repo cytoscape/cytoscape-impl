@@ -178,7 +178,6 @@ public class AttributeValueUtil {
     	final String hiddenStr = atts.getValue("cy:hidden");
     	final boolean isHidden = hiddenStr != null ? Boolean.parseBoolean(hiddenStr) : false;
         
-    	final String tableName = isHidden ? CyNetwork.HIDDEN_ATTRS : CyNetwork.DEFAULT_ATTRS;
 		final CyIdentifiable curElement = manager.getCurrentElement();
 		CyNetwork curNet = manager.getCurrentNetwork();
         
@@ -193,12 +192,27 @@ public class AttributeValueUtil {
 				curNet = manager.getRootNetwork();
 		}
 		
-		CyRow row = curNet.getRow(curElement, tableName);
+		CyRow row = null;
+		
+		if (isHidden) {
+			row = curNet.getRow(curElement, CyNetwork.HIDDEN_ATTRS);
+		} else {
+			// TODO: What are the rules here?
+			// Node/edge attributes are always shared, except "selected"?
+			// Network name must be local, right? What about other network attributes?
+			if (CyNetwork.SELECTED.equals(name) || (curElement instanceof CyNetwork))
+				row = curNet.getRow(curElement, CyNetwork.LOCAL_ATTRS);
+			else
+				row = curNet.getRow(curElement, CyNetwork.DEFAULT_ATTRS); // Will be created in the shared table
+		}		
+		
 		CyTable table = row.getTable();
         CyColumn column = table.getColumn(name);
         
         if (column != null) {
         	// Check if it's a virtual column
+        	// It's necessary because the source row may not exist yet, which would throw an exception
+        	// when the value is set. Doing this forces the creation of the source row.
         	final VirtualColumnInfo info = column.getVirtualColumnInfo();
         	
         	if (info.isVirtual()) {
