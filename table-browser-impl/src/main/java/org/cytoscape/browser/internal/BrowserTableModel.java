@@ -304,7 +304,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 				columnFound = true;
 			}
 			else if (columnFound){ //need to push back the model indexes for all of the columns after this
-				TableColumn nextCol = columnModel.getColumn(table.convertColumnIndexToView( i));
+				
+				TableColumn nextCol = columnModel.getColumnByModelIndex(i); 
 				nextCol.setModelIndex(i- 1);
 			}
 		}
