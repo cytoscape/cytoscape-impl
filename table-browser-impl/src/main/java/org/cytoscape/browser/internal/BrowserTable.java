@@ -322,13 +322,14 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		return false;
 	}
 
-	public void showListContents(int row, int visibleColumnIndex, MouseEvent e) {
+	public void showListContents(int viewRowIndex, int viewColumnIndex, MouseEvent e) {
 		final BrowserTableModel model = (BrowserTableModel) getModel();
-		final Class<?> columnType = model.getColumn(visibleColumnIndex).getType();
+		final Class<?> columnType = model.getColumn(viewColumnIndex).getType();
 
 		if (columnType == List.class) {
-			int modelColumn = getModelColumnIndex(visibleColumnIndex);
-			final ValidatedObjectAndEditString value = (ValidatedObjectAndEditString) model.getValueAt(row, modelColumn);
+			int modelRow = convertRowIndexToModel(viewRowIndex);
+			int modelColumn = convertColumnIndexToModel(viewColumnIndex);
+			final ValidatedObjectAndEditString value = (ValidatedObjectAndEditString) model.getValueAt(modelRow, modelColumn);
 
 			if (value != null) {
 				final List<?> list = (List<?>) value.getValidatedObject();
@@ -338,21 +339,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				}
 			}
 		}
-	}
-
-	private int getModelColumnIndex(int visibleColumnIndex) {
-		final BrowserTableModel model = (BrowserTableModel) getModel();
-		int visibleIndex = -1;
-		for (int i = 0; i < model.getColumnCount(); i++) {
-			String name = model.getColumnName(i);
-			if (model.isColumnVisible(name)) {
-				visibleIndex++;
-			}
-			if (visibleIndex == visibleColumnIndex) {
-				return i;
-			}
-		}
-		return -1;
 	}
 
 	private void getCellContentView(final Class<?> type, final List<?> listItems, final String borderTitle,
