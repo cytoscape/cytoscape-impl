@@ -37,6 +37,7 @@ import java.util.WeakHashMap;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -56,14 +57,16 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 
 	private final Map<CyNetwork, Collection<CyNetworkView>> networkViewMap;
 	private final CyEventHelper cyEventHelper;
+	private final CyNetworkManager netMgr;
 
 	/**
 	 * 
 	 * @param cyEventHelper
 	 */
-	public CyNetworkViewManagerImpl(final CyEventHelper cyEventHelper) {
+	public CyNetworkViewManagerImpl(final CyEventHelper cyEventHelper, final CyNetworkManager netMgr) {
 		networkViewMap = new WeakHashMap<CyNetwork, Collection<CyNetworkView>>();
 		this.cyEventHelper = cyEventHelper;
+		this.netMgr = netMgr;
 	}
 
 	@Override
@@ -156,7 +159,13 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 		}
 		
 		final CyNetwork network = view.getModel();
+		
 		synchronized (this) {
+			if (!netMgr.networkExists(network.getSUID()))
+				throw new IllegalArgumentException(
+						"Network view cannot be added, because its network ("
+								+ network + ") is not registered");
+			
 			Collection<CyNetworkView> existingSet = networkViewMap.get(network);
 
 			if (existingSet == null)
