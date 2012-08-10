@@ -73,7 +73,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		// If ID, return default.
 		//if (((BrowserTableModel)  table.getModel()).getDataTable().getPrimaryKey(). )
 		if (table.getModel() instanceof BrowserTableModel){
-			if (!table.isCellEditable(0, column)){
+			if (!table.isCellEditable(0, table.convertColumnIndexToModel(column))){
 				setFont(labelFont);
 				setBackground(NON_EDITABLE_COLOR);
 			}

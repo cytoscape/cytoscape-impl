@@ -639,7 +639,8 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 	@Override
 	public boolean isCellEditable(final int rowIndex, final int columnIndex) {
-		return !dataTable.getPrimaryKey().getName().equals(getColumnName(table.convertColumnIndexToModel(columnIndex)));
+		CyColumn column = getColumnByModelIndex(columnIndex);
+		return !column.isPrimaryKey();
 	}
 
 }
