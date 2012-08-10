@@ -100,7 +100,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 		parser.setNetwork(network);
 
 		Row row;
-		int rowCount = startLineNumber - 1;
+		int rowCount = startLineNumber;
 		String[] cellsInOneRow;
 
 		while ((row = sheet.getRow(rowCount)) != null) {
