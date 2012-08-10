@@ -94,7 +94,7 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 
 		for (CyNetwork network : networks) {
 			// Non-default columns should not be immutable
-			assertCustomColumnsAreMutable(network);
+			assertCy2CustomColumnsAreMutable(network);
 			
 			if (network instanceof CySubNetwork)
 				rootNetworks.add(((CySubNetwork)network).getRootNetwork());
@@ -114,7 +114,7 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		}
 		
 		for (CyRootNetwork rootNet : rootNetworks)
-			assertCustomColumnsAreMutable(rootNet);
+			assertCy2CustomColumnsAreMutable(rootNet);
 	}
 
 	private void testNetwork1(CyNetwork network) {

@@ -15,10 +15,17 @@
  */
 package org.cytoscape.session;
 
+import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
+import static org.cytoscape.model.CyNetwork.HIDDEN_ATTRS;
+import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS;
+import static org.cytoscape.model.CyNetwork.NAME;
+import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_ATTRS;
 import static org.junit.Assert.*;
 import static org.ops4j.pax.exam.CoreOptions.*;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -211,22 +218,38 @@ public abstract class BasicIntegrationTest {
 		);
 	}
 	
-	protected void assertCustomColumnsAreMutable(CyNetwork net) {
-		// User or non-default columns must be immutable (2.x sessions only)
-		CyTable[] tables = new CyTable[] {
-			net.getTable(CyNetwork.class, CyNetwork.DEFAULT_ATTRS),
-			net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS),
-			net.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS),
-			net.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS),
-			net.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS),
-			net.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS)
-		};
+	/**
+	 * Cy2 sessions only!
+	 * @param net
+	 */
+	protected void assertCy2CustomColumnsAreMutable(CyNetwork net) {
+		// User or non-default columns should be immutable
+		List<CyTable> tables = new ArrayList<CyTable>();
+		tables.add(net.getTable(CyNetwork.class, LOCAL_ATTRS));
+		tables.add(net.getTable(CyNetwork.class, HIDDEN_ATTRS));
+		tables.add(net.getTable(CyNetwork.class, DEFAULT_ATTRS));
+		tables.add(net.getTable(CyNode.class, LOCAL_ATTRS));
+		tables.add(net.getTable(CyNode.class, HIDDEN_ATTRS));
+		tables.add(net.getTable(CyNode.class, DEFAULT_ATTRS));
+		tables.add(net.getTable(CyEdge.class, LOCAL_ATTRS));
+		tables.add(net.getTable(CyEdge.class, HIDDEN_ATTRS));
+		tables.add(net.getTable(CyEdge.class, DEFAULT_ATTRS));
+		
+		if (net instanceof CyRootNetwork) {
+			tables.add(net.getTable(CyNetwork.class, SHARED_ATTRS));
+			tables.add(net.getTable(CyNode.class, SHARED_ATTRS));
+			tables.add(net.getTable(CyEdge.class, SHARED_ATTRS));
+		}
+		
 		for (CyTable t : tables) {
 			for (CyColumn c : t.getColumns()) {
 				String name = c.getName();
-				if (!name.equals(CyNetwork.SUID)     && !name.equals(CyNetwork.NAME) && 
-					!name.equals(CyNetwork.SELECTED) && !name.equals(CyEdge.INTERACTION) &&
-					!name.equals(CyRootNetwork.SHARED_NAME) && !name.equals(CyRootNetwork.SHARED_INTERACTION)) {
+				if (!name.equals(CyNetwork.SUID)
+						&& !name.equals(NAME)
+						&& !name.equals(CyNetwork.SELECTED)
+						&& !name.equals(CyEdge.INTERACTION)
+						&& !name.equals(CyRootNetwork.SHARED_NAME)
+						&& !name.equals(CyRootNetwork.SHARED_INTERACTION)) {
 					assertFalse("Column " + c.getName() + " should NOT be immutable", c.isImmutable());
 				}
 			}
