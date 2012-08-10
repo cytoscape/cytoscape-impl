@@ -49,8 +49,6 @@ import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
 /*
@@ -59,12 +57,11 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
  */
 class DNodeDetails extends NodeDetails {
 	
-	private static final byte DEF_NODE_SHAPE = DNodeShape.getDShape(NodeShapeVisualProperty.RECTANGLE).getNativeShape();
+	// Parent Network View
+	private final DGraphView dGraphView;
+	private final Object m_deletedEntry = new Object();
 	
-	private final DGraphView m_view;
-	
-	final Object m_deletedEntry = new Object();
-
+	// Mapped Values
 	Map<CyNode,Object> m_colorsLowDetail = new WeakHashMap<CyNode,Object>();
 	Map<CyNode,Object> m_selectedColorsLowDetail = new WeakHashMap<CyNode,Object>();
 	
@@ -100,15 +97,12 @@ class DNodeDetails extends NodeDetails {
 	private Color m_selectedColorLowDetailDefault;
 	private Paint m_unselectedPaintDefault; 
 	private Paint m_selectedPaintDefault;
-
 	private DNodeShape m_shapeDefault; 
 	private Float m_borderWidthDefault; 
 	private Paint m_borderPaintDefault; 
 	private Integer m_labelCountDefault; 
-	
 	private String m_labelTextDefault;
 	private String m_tooltipTextDefault;
-	
 	private Font m_labelFontDefault; 
 	private Paint m_labelPaintDefault; 
 	private Byte m_labelTextAnchorDefault; 
@@ -118,12 +112,11 @@ class DNodeDetails extends NodeDetails {
 	private Byte m_labelJustifyDefault; 
 	private Double m_labelWidthDefault;
 
-
 	private boolean isCleared;
-	
-	
+
+
 	DNodeDetails(final DGraphView view) {
-		this.m_view = view;
+		this.dGraphView = view;
 	}
 	
 	void clear() {
@@ -132,7 +125,6 @@ class DNodeDetails extends NodeDetails {
 		
 		m_colorsLowDetail = new WeakHashMap<CyNode,Object>();
 		m_selectedColorsLowDetail = new WeakHashMap<CyNode,Object>();
-		
 		m_shapes = new WeakHashMap<CyNode, Byte>();
 		m_unselectedPaints = new WeakHashMap<CyNode, Paint>();
 		m_borderWidths = new WeakHashMap<CyNode, Float>();
@@ -143,25 +135,22 @@ class DNodeDetails extends NodeDetails {
 		m_labelFonts = new WeakHashMap<CyNode, Font>();
 		m_labelPaints = new WeakHashMap<CyNode, Paint>();
 		m_labelWidths = new WeakHashMap<CyNode, Double>();
-		
 		m_labelTextAnchors = new WeakHashMap<CyNode, Integer>();
 		m_labelNodeAnchors = new WeakHashMap<CyNode, Integer>();
 		m_labelJustifys = new WeakHashMap<CyNode, Integer>();
 		m_labelOffsetXs = new WeakHashMap<CyNode, Double>();
 		m_labelOffsetYs = new WeakHashMap<CyNode, Double>();
 		m_width = new WeakHashMap<CyNode, Double>();
-		
 		m_selectedPaints = new WeakHashMap<CyNode, Paint>();
-		
 		m_customGraphics = new WeakHashMap<CyNode, List<CustomGraphic>>();
-
 		
 		// Clear all Custom Graphics
-		for(final View<CyNode> nv: m_view.getNodeViews())
+		for(final View<CyNode> nv: dGraphView.getNodeViews())
 			((DNodeView) nv).removeAllCustomGraphics();
 	
 		isCleared = true;
 	}
+
 
 	void unregisterNode(final CyNode nodeIdx) {
 		final Object o = m_colorsLowDetail.get(nodeIdx);
@@ -183,16 +172,12 @@ class DNodeDetails extends NodeDetails {
 		m_labelOffsetXs.remove(nodeIdx);
 		m_labelOffsetYs.remove(nodeIdx);
 		m_selectedPaints.remove(nodeIdx);
-		
 		m_tooltipTexts.remove(nodeIdx);
 		selected.remove(nodeIdx);
-
 		m_labelCounts.remove(nodeIdx);
-
 		m_labelTexts.remove(nodeIdx);
 		m_labelFonts.remove(nodeIdx);
 		m_labelPaints.remove(nodeIdx);
-
 	}
 	
 	
@@ -242,7 +227,7 @@ class DNodeDetails extends NodeDetails {
 	
 	public Paint selectedPaint(CyNode node) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_SELECTED_PAINT))
 			return dnv.getVisualProperty(DVisualLexicon.NODE_SELECTED_PAINT);
 		
@@ -292,15 +277,18 @@ class DNodeDetails extends NodeDetails {
 	 * Note: this will be used for BOTH unselected and selected.
 	 */
 	public Paint unselectedPaint(final CyNode node) {
-		final Paint o = m_unselectedPaints.get(node);
+		final Paint unselectedNodeFillPaint = m_unselectedPaints.get(node);
 
-		if (o == null)
+		if (unselectedNodeFillPaint == null) {
+			// Mapped Value does not exist.  Use default
 			if (m_unselectedPaintDefault == null) 
 				return super.fillPaint(node);
-			else
+			else {
 				return m_unselectedPaintDefault;
-
-		return o;
+			}
+		} else {
+			return unselectedNodeFillPaint;
+		}
 	}
 
 	void setUnselectedPaintDefault(Paint p) {
@@ -322,11 +310,13 @@ class DNodeDetails extends NodeDetails {
 		isCleared = false;
 	}
 
+	
+	/**
+	 * This returns actual Color object to the low-level renderer.
+	 */
 	@Override
 	public Paint fillPaint(final CyNode node) {
-		boolean isSelected = selected.contains(node);
-
-		if (isSelected)
+		if (selected.contains(node))
 			return selectedPaint(node);
 		else
 			return unselectedPaint(node);
@@ -343,7 +333,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public float borderWidth(final CyNode node) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_WIDTH))
 			return dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH).floatValue();
 				
@@ -377,7 +367,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public Paint borderPaint(final CyNode node) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if(dnv == null)
 			return DVisualLexicon.NODE_BORDER_PAINT.getDefault();
 		
@@ -443,7 +433,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public String labelText(final CyNode node, final int labelInx) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL))
 			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL);
 				
@@ -480,7 +470,7 @@ class DNodeDetails extends NodeDetails {
 	
 	public String tooltipText(final CyNode node) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_TOOLTIP))
 			return dnv.getVisualProperty(DVisualLexicon.NODE_TOOLTIP);
 		
@@ -517,7 +507,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public Font labelFont(CyNode node, int labelInx) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		
 		Integer size = null;
 		Font fontFace = null;
@@ -574,7 +564,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public Paint labelPaint(CyNode node, int labelInx) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_COLOR))
 			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_COLOR);
 	
@@ -611,14 +601,14 @@ class DNodeDetails extends NodeDetails {
 
 	@Override
 	public int customGraphicCount(final CyNode node) {
-		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);	
+		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);	
 		return dnv.getNumCustomGraphics();
 	}
 
 
 	@Override
 	public Iterator<CustomGraphic> customGraphics (final CyNode node) {
-		final DNodeView dnv = (DNodeView) m_view.getDNodeView(node);
+		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
 		return dnv.customGraphicIterator();
 	}
 	
@@ -627,7 +617,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public byte labelTextAnchor(final CyNode node, final int labelInx) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
 			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
 			final Position anchor = lp.getAnchor();
@@ -661,7 +651,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public byte labelNodeAnchor(final CyNode node, final int labelInx) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
 			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
 			final Position anchor = lp.getTargetAnchor();
@@ -695,7 +685,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public float labelOffsetVectorX(final CyNode node, final int labelInx) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
 			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
 			return (float) lp.getOffsetX();
@@ -728,7 +718,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public float labelOffsetVectorY(final CyNode node, final int labelInx) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
 			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
 			return (float) lp.getOffsetY();
@@ -762,7 +752,7 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public byte labelJustify(final CyNode node, final int labelInx) {
 		// Check bypass
-		final DNodeView dnv = m_view.getDNodeView(node);
+		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
 			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
 			final Justification justify = lp.getJustify();
@@ -825,7 +815,7 @@ class DNodeDetails extends NodeDetails {
 
 	@Override
 	public TexturePaint getNestedNetworkTexturePaint(final CyNode node) {
-		final DNodeView dNodeView = (DNodeView) m_view.getDNodeView(node);
+		final DNodeView dNodeView = (DNodeView) dGraphView.getDNodeView(node);
 		return dNodeView.getNestedNetworkTexturePaint();
 	}
 	
