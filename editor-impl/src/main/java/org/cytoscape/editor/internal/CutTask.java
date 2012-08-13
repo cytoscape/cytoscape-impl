@@ -34,17 +34,20 @@ public class CutTask extends AbstractTask {
 
 	public CutTask(final CyNetworkView netView, final View<?extends CyIdentifiable> objView, 
 	               final ClipboardManagerImpl clipMgr) {
-		this.view = netView;
-		if (objView.getModel() instanceof CyNode) {
-			selEdges = new ArrayList<CyEdge>();
-			selNodes = Collections.singletonList(((View<CyNode>)objView).getModel());
-		} else if (objView.getModel() instanceof CyEdge) {
-			selNodes = new ArrayList<CyNode>();
-			selEdges = Collections.singletonList(((View<CyEdge>)objView).getModel());
-		}
 
-		// Save them in our list
-		mgr = clipMgr;
+		// Get all of the selected nodes and edges first
+		this(netView, clipMgr);
+
+		// Now, make sure we add our
+		if (objView.getModel() instanceof CyNode) {
+			CyNode node = ((View<CyNode>)objView).getModel();
+			if (!selNodes.contains(node))
+				selNodes.add(node);
+		} else if (objView.getModel() instanceof CyEdge) {
+			CyEdge edge = ((View<CyEdge>)objView).getModel();
+			if (!selEdges.contains(edge))
+				selEdges.add(edge);
+		}
 	}
 
 	public void run(TaskMonitor tm) throws Exception {

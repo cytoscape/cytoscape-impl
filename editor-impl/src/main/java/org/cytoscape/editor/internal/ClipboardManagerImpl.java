@@ -26,13 +26,16 @@ public final class ClipboardManagerImpl {
 	private List<View<CyEdge>> edgeViews;
 
 	// Row maps
-	private Map<CyIdentifiable, CyRow> oldDefaultRowMap;
+	private Map<CyIdentifiable, CyRow> oldSharedRowMap;
+	private Map<CyIdentifiable, CyRow> oldLocalRowMap;
 	private Map<CyIdentifiable, CyRow> oldHiddenRowMap;
 
 	private double xCenter, yCenter;
 
 	public boolean clipboardHasData() {
 		if (nodeViews != null && nodeViews.size() > 0)
+			return true;
+		if (edgeViews != null && edgeViews.size() > 0)
 			return true;
 		return false;
 	}
@@ -42,8 +45,12 @@ public final class ClipboardManagerImpl {
 		CyNetwork sourceNetwork = sourceView.getModel();
 		nodeViews = new ArrayList<View<CyNode>>();
 		edgeViews = new ArrayList<View<CyEdge>>();
-		oldDefaultRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
+		oldSharedRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
+		oldLocalRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
 		oldHiddenRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
+
+		// We need the root network to get the shared attributes
+		CyRootNetwork sourceRootNetwork = ((CySubNetwork)sourceNetwork).getRootNetwork();
 
 		xCenter = 0.0;
 		yCenter = 0.0;
@@ -52,16 +59,14 @@ public final class ClipboardManagerImpl {
 			nodeViews.add(nodeView);
 			xCenter += nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 			yCenter += nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-			oldDefaultRowMap.put(node, sourceNetwork.getRow(node, CyNetwork.DEFAULT_ATTRS));
-			oldHiddenRowMap.put(node, sourceNetwork.getRow(node, CyNetwork.HIDDEN_ATTRS));
+			saveRows(node, sourceRootNetwork, sourceNetwork);
 		}
 		xCenter = xCenter / nodes.size();
 		yCenter = yCenter / nodes.size();
 
 		for (CyEdge edge: edges) {
 			edgeViews.add(networkView.getEdgeView(edge));
-			oldDefaultRowMap.put(edge, sourceNetwork.getRow(edge, CyNetwork.DEFAULT_ATTRS));
-			oldHiddenRowMap.put(edge, sourceNetwork.getRow(edge, CyNetwork.HIDDEN_ATTRS));
+			saveRows(edge, sourceRootNetwork, sourceNetwork);
 		}
 	}
 
@@ -76,13 +81,6 @@ public final class ClipboardManagerImpl {
 		List<CyIdentifiable> pastedObjects = new ArrayList<CyIdentifiable>();
 		final Map<CyRow, CyRow> rowMap = new HashMap<CyRow, CyRow>();
 
-		CyNetwork sourceNetwork = sourceView.getModel();
-
-		CyRootNetwork sourceRoot = ((CySubNetwork)sourceNetwork).getRootNetwork();
-
-		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
-		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
-
 		// We need to do this in two passes.  In pass 1, we'll add all of the nodes
 		// and store their (possibly new) SUID.  In pass 2, we'll reposition the
 		// nodes and add the edges.
@@ -91,26 +89,7 @@ public final class ClipboardManagerImpl {
 		final Map<CyNode, CyNode> newNodeMap = new HashMap<CyNode, CyNode>();
 		for (View<CyNode> nodeView: nodeViews) {
 			CyNode node = nodeView.getModel();
-			CyNode newNode = null;
-
-			// Three cases:
-			// 1) We're copying nodes to a new network in a different network tree
-			// 2) We're copying nodes to a new network in the same network tree
-			// 3) We're copying nodes to a new location in the same network
-			if (sourceRoot != targetRoot || targetNetwork.containsNode(node)) {
-				newNode = targetNetwork.addNode();
-				// Copy the attributes over
-				rowMap.put(oldDefaultRowMap.get(node),
-				           targetNetwork.getRow(newNode, CyNetwork.DEFAULT_ATTRS));
-				rowMap.put(oldHiddenRowMap.get(node),
-				           targetNetwork.getRow(newNode, CyNetwork.HIDDEN_ATTRS));
-			} else {
-				// Same node: no need to copy the attributes
-				targetNetwork.addNode(node);
-				newNode = node;
-			}
-
-			// Save the original node and it's new node
+			CyNode newNode = pasteNode(sourceView, targetView, node, rowMap);
 			newNodeMap.put(node, newNode);
 			pastedObjects.add(newNode);
 		}
@@ -118,26 +97,8 @@ public final class ClipboardManagerImpl {
 		// Pass 2: add the edges in
 		for (View<CyEdge> edgeView: edgeViews) {
 			CyEdge edge = edgeView.getModel();
-			CyEdge newEdge = null;
-			if (sourceRoot != targetRoot || targetNetwork.containsEdge(edge)) {
-				CyNode sourceNode = edge.getSource();
-				CyNode targetNode = edge.getTarget();
-				if (!newNodeMap.containsKey(sourceNode) || !newNodeMap.containsKey(targetNode))
-					continue;  // Maybe a dangling edge
+			CyEdge newEdge = pasteEdge(sourceView, targetView, edge, rowMap, newNodeMap);
 
-				// Create the edge
-				newEdge = targetNetwork.addEdge(newNodeMap.get(sourceNode), 
-				                                newNodeMap.get(targetNode), edge.isDirected());
-
-				// Copy the attributes over
-				rowMap.put(oldDefaultRowMap.get(edge),
-				           targetNetwork.getRow(newEdge, CyNetwork.DEFAULT_ATTRS));
-				rowMap.put(oldHiddenRowMap.get(edge),
-				           targetNetwork.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
-			} else {
-				targetNetwork.addEdge(edge);
-				newEdge = edge;
-			}
 			pastedObjects.add(newEdge);
 		}
 
@@ -162,6 +123,145 @@ public final class ClipboardManagerImpl {
 		}
 
 		return pastedObjects;
+	}
+
+	private CyEdge pasteEdge(CyNetworkView sourceView, CyNetworkView targetView, 
+	                         CyEdge edge, Map<CyRow, CyRow> rowMap, Map<CyNode, CyNode> newNodeMap) {
+		CyNetwork sourceNetwork = sourceView.getModel();
+		CyRootNetwork sourceRoot = ((CySubNetwork)sourceNetwork).getRootNetwork();
+
+		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
+		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
+
+		CyEdge newEdge = null;
+		CyNode sourceNode = edge.getSource();
+		CyNode targetNode = edge.getTarget();
+
+		// Same three cases as pasteNode, but we need to be careful to add missing nodes.  If
+		// we paste and edge, but there's no corresponding node, we need to copy the
+		// node in.
+		//
+		// Three cases:
+		// 1) We're copying edges to a new network in a different network tree
+		// 2) We're copying edges to a new network in the same network tree
+		// 3) We're copying edges to a new location in the same network
+		if (sourceRoot != targetRoot) {
+			// Case 1: different root
+
+			if (!newNodeMap.containsKey(sourceNode)) {
+				saveRows(sourceNode, sourceRoot, sourceNetwork);
+				newNodeMap.put(sourceNode, pasteNode(sourceView, targetView, sourceNode, rowMap));
+			}
+
+			if (!newNodeMap.containsKey(targetNode)) {
+				saveRows(targetNode, sourceRoot, sourceNetwork);
+				newNodeMap.put(targetNode, pasteNode(sourceView, targetView, targetNode, rowMap));
+			}
+
+			// Create the edge
+			newEdge = targetNetwork.addEdge(newNodeMap.get(sourceNode), 
+			                                newNodeMap.get(targetNode), edge.isDirected());
+
+			// Copy the attributes over
+			rowMap.put(oldSharedRowMap.get(edge),
+			           targetNetwork.getRow(newEdge, CyNetwork.DEFAULT_ATTRS));
+			rowMap.put(oldLocalRowMap.get(edge),
+			           targetNetwork.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
+			rowMap.put(oldHiddenRowMap.get(edge),
+			           targetNetwork.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
+		// } else if (!targetNetwork.containsEdge(edge)) {
+		} else {
+			// Case 2: different network, same root and
+			// Case 3: same network
+
+			// First, see if we already have the nodes
+			if (!newNodeMap.containsKey(sourceNode)) {
+				saveRows(sourceNode, sourceRoot, sourceNetwork);
+				if (targetNetwork.containsNode(sourceNode)) {
+					newNodeMap.put(sourceNode, sourceNode);
+				} else {
+					newNodeMap.put(sourceNode, pasteNode(sourceView, targetView, sourceNode, rowMap));
+				}
+			}
+
+			if (!newNodeMap.containsKey(targetNode)) {
+				saveRows(targetNode, sourceRoot, sourceNetwork);
+				if (targetNetwork.containsNode(targetNode)) {
+					newNodeMap.put(targetNode, targetNode);
+				} else {
+					newNodeMap.put(targetNode, pasteNode(sourceView, targetView, targetNode, rowMap));
+				}
+			}
+
+			// We want to create another copy of the edge
+			// Create the edge
+			newEdge = targetNetwork.addEdge(newNodeMap.get(sourceNode), 
+			                                newNodeMap.get(targetNode), edge.isDirected());
+
+			// Copy the attributes over
+			rowMap.put(oldLocalRowMap.get(edge),
+			           targetNetwork.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
+			rowMap.put(oldHiddenRowMap.get(edge),
+			           targetNetwork.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
+		} /* else {
+			// Case 3: same network
+			newEdge = edge;
+			// Copy the attributes over
+			rowMap.put(oldLocalRowMap.get(edge),
+			           targetNetwork.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
+			rowMap.put(oldHiddenRowMap.get(edge),
+			           targetNetwork.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
+		}  */
+		return newEdge;
+	}
+
+	// TODO: Need to figure out how to copy LOCAL_ATTRS, SHARED_ATTRS, and HIDDEN_ATTRS
+	// The latter is easy.  The second two are both part of the DEFAULT_ATTRS, but it's
+	// not clear how to create a local attribute specifically....
+	private CyNode pasteNode(CyNetworkView sourceView, CyNetworkView targetView, 
+	                         CyNode node, Map<CyRow, CyRow> rowMap) {
+
+		CyNetwork sourceNetwork = sourceView.getModel();
+		CyRootNetwork sourceRoot = ((CySubNetwork)sourceNetwork).getRootNetwork();
+
+		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
+		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
+
+		CyNode newNode = null;
+
+		// Three cases:
+		// 1) We're copying nodes to a new network in a different network tree
+		// 2) We're copying nodes to a new network in the same network tree
+		// 3) We're copying nodes to a new location in the same network
+		if (sourceRoot != targetRoot) {
+			// Case 1: Different roots
+			newNode = targetNetwork.addNode();
+			// Copy the attributes over
+			rowMap.put(oldSharedRowMap.get(node),
+			           targetNetwork.getRow(newNode, CyNetwork.DEFAULT_ATTRS));
+			rowMap.put(oldLocalRowMap.get(node),
+			           targetNetwork.getRow(newNode, CyNetwork.LOCAL_ATTRS));
+			rowMap.put(oldHiddenRowMap.get(node),
+			           targetNetwork.getRow(newNode, CyNetwork.HIDDEN_ATTRS));
+		} else if (!targetNetwork.containsNode(node)) {
+			// Case 2: different subnetwork, same root
+			newNode = targetNetwork.addNode();
+			rowMap.put(oldLocalRowMap.get(node),
+			           targetNetwork.getRow(newNode, CyNetwork.LOCAL_ATTRS));
+			rowMap.put(oldHiddenRowMap.get(node),
+			           targetNetwork.getRow(newNode, CyNetwork.HIDDEN_ATTRS));
+		} else {
+			// Case 3: Copying the node to the same network
+			newNode = targetNetwork.addNode();
+			// Copy in the hidden attributes
+			rowMap.put(oldHiddenRowMap.get(node),
+			           targetNetwork.getRow(newNode, CyNetwork.HIDDEN_ATTRS));
+			// Copy in the local attributes
+			rowMap.put(oldLocalRowMap.get(node),
+			           targetNetwork.getRow(newNode, CyNetwork.LOCAL_ATTRS));
+			targetNetwork.addNode(node);
+		}
+		return newNode;
 	}
 
 	private void copyRows(Map<CyRow,CyRow> rowMap, boolean createColumns) {
@@ -189,5 +289,11 @@ public final class ClipboardManagerImpl {
 				targetRow.set(colName, oldDataMap.get(colName));
 			}
 		}
+	}
+
+	private void saveRows(CyIdentifiable object, CyRootNetwork sourceRootNetwork, CyNetwork sourceNetwork) {
+		oldSharedRowMap.put(object, sourceRootNetwork.getRow(object, CyRootNetwork.SHARED_ATTRS));
+		oldLocalRowMap.put(object, sourceNetwork.getRow(object, CyNetwork.LOCAL_ATTRS));
+		oldHiddenRowMap.put(object, sourceNetwork.getRow(object, CyNetwork.HIDDEN_ATTRS));
 	}
 }
