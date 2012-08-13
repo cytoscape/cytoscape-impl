@@ -273,7 +273,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	@Override
 	public boolean isCellEditable(final int row, final int column) {
-		return this.getModel().isCellEditable(row, column);
+		return this.getModel().isCellEditable(convertRowIndexToModel(row), convertColumnIndexToModel(column));
 	}
 
 	@Override
