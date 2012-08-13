@@ -489,10 +489,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				return;
 
 			// Ignore clicks on the ID column:
-			if (tableModel.isPrimaryKey(column))
+			if (tableModel.isPrimaryKey(convertColumnIndexToModel(column)))
 				return;
 
-			final CyColumn cyColumn = tableModel.getColumn(column);
+			final CyColumn cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
 			popupMenuHelper.createColumnHeaderMenu(cyColumn, this, event.getX(), event.getY());
 		}
 	}
