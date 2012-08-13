@@ -8,6 +8,8 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.server.AppGetResponder;
 import org.cytoscape.app.internal.net.server.LocalHttpServer;
+import org.cytoscape.app.internal.net.server.ServerSocketFactory;
+import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactoryImpl;
 import org.cytoscape.app.internal.net.server.LocalHttpServer.Response;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyVersion;
@@ -375,7 +377,8 @@ public class CyActivator extends AbstractCyActivator {
 			
 			@Override
 			public void run() {
-				server = new LocalHttpServer(2608, Executors.newSingleThreadExecutor());
+                final ServerSocketFactory serverSocketFactory = new LocalhostServerSocketFactoryImpl(2608);
+				server = new LocalHttpServer(serverSocketFactory, Executors.newSingleThreadExecutor());
 				server.addGetResponder(new AppGetResponder(appManager));
 				
 				server.run();

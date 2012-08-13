@@ -110,8 +110,8 @@ public class LocalHttpServer implements Runnable {
     final List<GetResponder> getResponders = new ArrayList<GetResponder>(); 
     final List<PostResponder> postResponders = new ArrayList<PostResponder>(); 
 
+    final ServerSocketFactory serverSocketFactory;
     final Executor connectionHandlerExecutor;
-    final int port;
 
     final HttpParams params;
     final HttpService service;
@@ -122,12 +122,13 @@ public class LocalHttpServer implements Runnable {
      * than 1024 if the server is being executed by a non-root user.
      * @param connectionHandlerExecutor executes a connection handler when an incoming socket connection is received
      */
-    public LocalHttpServer(final int port, final Executor connectionHandlerExecutor) {
-		if (port <= 0) {
-		    throw new IllegalArgumentException("port <= 0");
-		}
-		
-		this.port = port;
+    public LocalHttpServer(final ServerSocketFactory serverSocketFactory, final Executor connectionHandlerExecutor) {
+        if (serverSocketFactory == null) {
+            throw new IllegalArgumentException("serverSocketFactory == null");
+        }
+
+        this.serverSocketFactory = serverSocketFactory;
+
 		if (connectionHandlerExecutor == null) {
 		    throw new IllegalArgumentException("connectionHandlerExecutor == null");
 		}
@@ -174,13 +175,13 @@ public class LocalHttpServer implements Runnable {
 		// Create a server socket
 		ServerSocket serverSocket = null;
 		try {
-		    serverSocket = new ServerSocket(port, 0, InetAddress.getByName(null));
+		    serverSocket = serverSocketFactory.createServerSocket();
 		} catch (IOException e) {
 		    logger.error("Failed to create server socket", e);
 		    return;
 		}
 	
-		logger.info("Server socket started on {}", String.format("%s:%d", serverSocket.getInetAddress().getHostAddress(), port));
+		logger.info("Server socket started on {}", String.format("%s:%d", serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort()));
 		
 		// Keep servicing incoming connections until this thread is flagged as interrupted
 		while (!Thread.interrupted()) { // TODO: **interrupted is deprecated?
