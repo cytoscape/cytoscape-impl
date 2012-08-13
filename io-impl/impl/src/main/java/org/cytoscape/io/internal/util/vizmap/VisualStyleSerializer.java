@@ -115,7 +115,7 @@ public class VisualStyleSerializer {
 	 * @param styles The collection of VisualStyles that you wish to convert into a serializable object.
 	 * @return A Vizmap object that contains a representation of the collection of visual styles.
 	 */
-	public Vizmap createVizmap(Collection<VisualStyle> styles) {
+	public Vizmap createVizmap(final Collection<VisualStyle> styles) {
 		Vizmap vizmap = new Vizmap();
 		lexicon = renderingEngineManager.getDefaultVisualLexicon();
 
@@ -135,7 +135,7 @@ public class VisualStyleSerializer {
 				createVizmapProperties(vs, BasicVisualLexicon.EDGE, vsModel.getEdge().getVisualProperty());
 				
 				// Create Dependencies
-				createDependency(vs, vsModel);
+				createDependencies(vs, vsModel);
 			}
 		}
 
@@ -183,7 +183,7 @@ public class VisualStyleSerializer {
 					createVisualProperties(vs, CyEdge.class, vsModel.getEdge().getVisualProperty());
 
 				// Restore dependency
-				restoreDependency(vs, vsModel);
+				restoreDependencies(vs, vsModel);
 				
 				// Do not add the modified default style to the list!
 				if (!vs.equals(defStyle)) 
@@ -200,7 +200,7 @@ public class VisualStyleSerializer {
 	 * @param vizmap A Properties object containing a representation of VisualStyles.
 	 * @return A collection of VisualStyle objects.
 	 */
-	public Set<VisualStyle> createVisualStyles(Properties props) {
+	public Set<VisualStyle> createVisualStyles(final Properties props) {
 		// Convert properties to Vizmap:
 		Vizmap vizmap = new Vizmap();
 		List<org.cytoscape.io.internal.util.vizmap.model.VisualStyle> vizmapStyles = vizmap.getVisualStyle();
@@ -256,103 +256,105 @@ public class VisualStyleSerializer {
 		return createVisualStyles(vizmap);
 	}
 
-	@SuppressWarnings("unchecked")
-	private void createVizmapProperties(VisualStyle vs, VisualProperty<Visualizable> root,
-			List<org.cytoscape.io.internal.util.vizmap.model.VisualProperty> vpModelList) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void createVizmapProperties(final VisualStyle vs, final VisualProperty<Visualizable> root,
+			final List<org.cytoscape.io.internal.util.vizmap.model.VisualProperty> vpModelList) {
 		
 		final Collection<VisualProperty<?>> vpList = lexicon.getAllDescendants(root);
 		final Iterator<VisualProperty<?>> iter = vpList.iterator();
 
 		while (iter.hasNext()) {
-			final VisualProperty<Object> vp = (VisualProperty<Object>) iter.next();
-
-			// NETWORK root includes NODES and EDGES, but we want to separate the CyNetwork properties!
-			if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class) continue;
-
-			Object defValue = vs.getDefaultValue(vp);
-			final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
-
-			if (defValue != null || mapping != null) {
-				org.cytoscape.io.internal.util.vizmap.model.VisualProperty vpModel = new org.cytoscape.io.internal.util.vizmap.model.VisualProperty();
-				vpModel.setName(vp.getIdString());
-
-				vpModelList.add(vpModel);
-
-				if (defValue != null) {
-					String sValue = null;
-					
-					sValue = vp.toSerializableString(defValue);
-					
-					if (sValue != null)
-						vpModel.setDefault(sValue);
-				}
-
-				if (mapping instanceof PassthroughMapping<?, ?>) {
-					PassthroughMapping<?, ?> pm = (PassthroughMapping<?, ?>) mapping;
-					AttributeType attrType = toAttributeType(pm.getMappingColumnType());
-
-					org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping pmModel = new org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping();
-					pmModel.setAttributeName(pm.getMappingColumnName());
-					pmModel.setAttributeType(attrType);
-
-					vpModel.setPassthroughMapping(pmModel);
-
-				} else if (mapping instanceof DiscreteMapping<?, ?>) {
-					DiscreteMapping<?, ?> dm = (DiscreteMapping<?, ?>) mapping;
-					AttributeType attrType = toAttributeType(dm.getMappingColumnType());
-
-					org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping dmModel = new org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping();
-					dmModel.setAttributeName(dm.getMappingColumnName());
-					dmModel.setAttributeType(attrType);
-
-					Map<?, ?> map = dm.getAll();
-
-					for (Map.Entry<?, ?> entry : map.entrySet()) {
-						DiscreteMappingEntry entryModel = new DiscreteMappingEntry();
-						entryModel.setAttributeValue(entry.getKey().toString());
-						entryModel.setValue(vp.toSerializableString(entry.getValue()));
-
-						dmModel.getDiscreteMappingEntry().add(entryModel);
+			final VisualProperty vp = iter.next();
+			
+			try {
+				// NETWORK root includes NODES and EDGES, but we want to separate the CyNetwork properties!
+				if (root == BasicVisualLexicon.NETWORK && vp.getTargetDataType() != CyNetwork.class)
+					continue;
+	
+				Object defValue = vs.getDefaultValue(vp);
+				final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
+	
+				if (defValue != null || mapping != null) {
+					org.cytoscape.io.internal.util.vizmap.model.VisualProperty vpModel = new org.cytoscape.io.internal.util.vizmap.model.VisualProperty();
+					vpModel.setName(vp.getIdString());
+	
+					vpModelList.add(vpModel);
+	
+					if (defValue != null) {
+						String sValue = null;
+						
+						sValue = vp.toSerializableString(defValue);
+						
+						if (sValue != null)
+							vpModel.setDefault(sValue);
 					}
-
-					vpModel.setDiscreteMapping(dmModel);
-
-				} else if (mapping instanceof ContinuousMapping<?, ?>) {
-					final ContinuousMapping<?,?> cm = (ContinuousMapping<?, ?>) mapping;
-					AttributeType attrType = toAttributeType(cm.getMappingColumnType());
-
-					org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping cmModel = new org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping();
-					cmModel.setAttributeName(cm.getMappingColumnName());
-					cmModel.setAttributeType(attrType);
-
-					List<?> points = cm.getAllPoints();
-
-					for (Object point : points) {
-						ContinuousMappingPoint<?, ?> continuousPoint = (ContinuousMappingPoint<?, ?>) point;
-						org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint pModel = new org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint();
-
-						Object originalValue = continuousPoint.getValue();
-						
-						final String sValue = originalValue.toString();
-						final BigDecimal value = new BigDecimal(sValue);
-						pModel.setAttrValue(value);
-						
-						Object lesser = continuousPoint.getRange().lesserValue;
-						Object equal = continuousPoint.getRange().equalValue;
-						Object greater = continuousPoint.getRange().greaterValue;
-						
-//						System.out.println(cm.getVisualProperty().getDisplayName() + ": ***Point is "
-//								+ lesser.getClass() + ", " + equal.getClass() +", " + greater.getClass());
-
-						pModel.setLesserValue(vp.toSerializableString(lesser));
-						pModel.setEqualValue(vp.toSerializableString(equal));
-						pModel.setGreaterValue(vp.toSerializableString(greater));
-
-						cmModel.getContinuousMappingPoint().add(pModel);
+	
+					if (mapping instanceof PassthroughMapping<?, ?>) {
+						PassthroughMapping<?, ?> pm = (PassthroughMapping<?, ?>) mapping;
+						AttributeType attrType = toAttributeType(pm.getMappingColumnType());
+	
+						org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping pmModel = new org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping();
+						pmModel.setAttributeName(pm.getMappingColumnName());
+						pmModel.setAttributeType(attrType);
+	
+						vpModel.setPassthroughMapping(pmModel);
+	
+					} else if (mapping instanceof DiscreteMapping<?, ?>) {
+						DiscreteMapping<?, ?> dm = (DiscreteMapping<?, ?>) mapping;
+						AttributeType attrType = toAttributeType(dm.getMappingColumnType());
+	
+						org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping dmModel = new org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping();
+						dmModel.setAttributeName(dm.getMappingColumnName());
+						dmModel.setAttributeType(attrType);
+	
+						Map<?, ?> map = dm.getAll();
+	
+						for (Map.Entry<?, ?> entry : map.entrySet()) {
+							DiscreteMappingEntry entryModel = new DiscreteMappingEntry();
+							entryModel.setAttributeValue(entry.getKey().toString());
+							entryModel.setValue(vp.toSerializableString(entry.getValue()));
+	
+							dmModel.getDiscreteMappingEntry().add(entryModel);
+						}
+	
+						vpModel.setDiscreteMapping(dmModel);
+	
+					} else if (mapping instanceof ContinuousMapping<?, ?>) {
+						final ContinuousMapping<?,?> cm = (ContinuousMapping<?, ?>) mapping;
+						AttributeType attrType = toAttributeType(cm.getMappingColumnType());
+	
+						org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping cmModel = new org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping();
+						cmModel.setAttributeName(cm.getMappingColumnName());
+						cmModel.setAttributeType(attrType);
+	
+						List<?> points = cm.getAllPoints();
+	
+						for (Object point : points) {
+							ContinuousMappingPoint<?, ?> continuousPoint = (ContinuousMappingPoint<?, ?>) point;
+							org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint pModel = new org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint();
+	
+							Object originalValue = continuousPoint.getValue();
+							
+							final String sValue = originalValue.toString();
+							final BigDecimal value = new BigDecimal(sValue);
+							pModel.setAttrValue(value);
+							
+							Object lesser = continuousPoint.getRange().lesserValue;
+							Object equal = continuousPoint.getRange().equalValue;
+							Object greater = continuousPoint.getRange().greaterValue;
+							
+							pModel.setLesserValue(vp.toSerializableString(lesser));
+							pModel.setEqualValue(vp.toSerializableString(equal));
+							pModel.setGreaterValue(vp.toSerializableString(greater));
+	
+							cmModel.getContinuousMappingPoint().add(pModel);
+						}
+	
+						vpModel.setContinuousMapping(cmModel);
 					}
-
-					vpModel.setContinuousMapping(cmModel);
 				}
+			} catch (final Exception e) {
+				logger.error("Cannot save visual property: " + (vp != null ? vp.getDisplayName() : ""), e);
 			}
 		}
 	}
@@ -500,7 +502,7 @@ public class VisualStyleSerializer {
 		}
 	}
 	
-	private void createDependency(final VisualStyle visualStyle,
+	private void createDependencies(final VisualStyle visualStyle,
 			org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel) {
 		// Create serializable Dependency
 		final Set<VisualPropertyDependency<?>> dependencies = visualStyle.getAllVisualPropertyDependencies();
@@ -511,25 +513,28 @@ public class VisualStyleSerializer {
 
 		Collection<VisualProperty<?>> nodeVisualProperties = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
 		Collection<VisualProperty<?>> edgeVisualProperties = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
-		Collection<VisualProperty<?>> networkVisualProperties = lexicon.getAllDescendants(BasicVisualLexicon.NETWORK);
 
 		for (VisualPropertyDependency<?> vpDep : dependencies) {
-			final Dependency newDependency = new Dependency();
-			newDependency.setName(vpDep.getIdString());
-			newDependency.setValue(vpDep.isDependencyEnabled());
-
-			final VisualProperty<?> parent = vpDep.getParentVisualProperty();
-			
-			if (nodeVisualProperties.contains(parent))
-				nodeDep.add(newDependency);
-			else if (edgeVisualProperties.contains(parent))
-				edgeDep.add(newDependency);
-			else
-				networkDep.add(newDependency);
+			try {
+				final Dependency newDependency = new Dependency();
+				newDependency.setName(vpDep.getIdString());
+				newDependency.setValue(vpDep.isDependencyEnabled());
+	
+				final VisualProperty<?> parent = vpDep.getParentVisualProperty();
+				
+				if (nodeVisualProperties.contains(parent))
+					nodeDep.add(newDependency);
+				else if (edgeVisualProperties.contains(parent))
+					edgeDep.add(newDependency);
+				else
+					networkDep.add(newDependency);
+			} catch (final Exception e) {
+				logger.error("Cannot save dependency: " + (vpDep != null ? vpDep.getDisplayName() : ""), e);
+			}
 		}
 	}
 	
-	private void restoreDependency(final VisualStyle visualStyle, org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel) {
+	private void restoreDependencies(final VisualStyle visualStyle, org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel) {
 		final Node nodeSection = vsModel.getNode();
 		final Edge edgeSection = vsModel.getEdge();
 		final Network networkSection = vsModel.getNetwork();
