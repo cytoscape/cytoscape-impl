@@ -54,6 +54,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -98,7 +100,7 @@ import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
  */
 public class VizMapperMainPanel extends AbstractVizMapperPanel implements VisualStyleAddedListener,
 		VisualStyleSetListener, VisualStyleAboutToBeRemovedListener, PopupMenuListener, CytoPanelComponent,
-		PropertyChangeListener, LexiconStateChangedListener, SetCurrentVisualStyleListener {
+		PropertyChangeListener, LexiconStateChangedListener, SetCurrentVisualStyleListener, SessionLoadedListener {
 
 	private final static long serialVersionUID = 1202339867854959L;
 
@@ -108,6 +110,8 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 	private static final String TAB_TITLE = "VizMapper";
 
 	private final DefaultViewMouseListener defaultViewMouseListener;
+	private final ImportDefaultVizmapTaskFactory importDefVizmapTaskFactory;
+	private final TaskManager<?, ?> taskManager;
 
 	/**
 	 * Create new instance of VizMapperMainPanel object. GUI layout is handled
@@ -131,20 +135,22 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 							  final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
 							  final EditorWindowManager editorWindowManager,
 							  final CyApplicationManager applicationManager,
-							  final ImportDefaultVizmapTaskFactory taskFactory,
-							  final TaskManager<?, ?> tManager,
+							  final ImportDefaultVizmapTaskFactory importDefVizmapTaskFactory,
+							  final TaskManager<?, ?> taskManager,
 							  final SetViewModeAction viewModeAction) {
 		super(vsFactory, defViewEditor, iconMgr, colorMgr, vmm, menuMgr, editorFactory, propertySheetPanel,
 				vizMapPropertySheetBuilder, editorWindowManager, applicationManager, viewModeAction);
 
 		this.defaultViewMouseListener = new DefaultViewMouseListener(defViewEditor, this, vmm);
+		this.importDefVizmapTaskFactory = importDefVizmapTaskFactory;
+		this.taskManager = taskManager;
 
 		// Initialize all components
 		initPanel();
 		viewModeAction.addPropertyChangeListener(this);
 
 		// Load default styles
-		tManager.execute(taskFactory.createTaskIterator());
+		loadDefaultStyles();
 	}
 
 	private void initPanel() {
@@ -165,6 +171,10 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		});
 	}
 
+	private void loadDefaultStyles() {
+		taskManager.execute(importDefVizmapTaskFactory.createTaskIterator());
+	}
+	
 	private void resizeImage() {
 		final VisualStyle style = vmm.getCurrentVisualStyle();
 
@@ -391,12 +401,11 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 	}
 
 	@Override
-	public void handleEvent(VisualStyleSetEvent e) {
+	public void handleEvent(final VisualStyleSetEvent e) {
 		final CyNetworkView view = e.getNetworkView();
 
 		if (view.equals(applicationManager.getCurrentNetworkView())) {
-			// Only switch the selected style if the network view is the current
-			// one
+			// Only switch the selected style if the network view is the current one
 			final VisualStyle style = e.getVisualStyle();
 			final VisualStyle lastStyle = (VisualStyle) visualStyleComboBox.getSelectedItem();
 
@@ -406,6 +415,14 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 		}
 	}
 
+	@Override
+	public void handleEvent(final SessionLoadedEvent e) {
+		if (e.getLoadedFileName() == null) {
+			// New empty session: Load the default styles again.
+			loadDefaultStyles();
+		}
+	}
+	
 	@Override
 	public String getTitle() {
 		return TAB_TITLE;

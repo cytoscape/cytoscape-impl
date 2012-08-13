@@ -234,12 +234,10 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	@Override
 	public void setCurrentSession(CySession sess, final String fileName) {
-		boolean emptySession = sess == null;
-		
 		// Always remove the current session first
-		disposeCurrentSession(!emptySession);
+		disposeCurrentSession();
 
-		if (emptySession) {
+		if (sess == null) {
 			logger.debug("Creating empty session...");
 			final Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 			final Set<CyProperty<?>> props = getAllProperties();
@@ -274,17 +272,15 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		cyEventHelper.fireEvent(new SessionLoadedEvent(this, currentSession, getCurrentSessionFileName()));
 	}
 
-
 	/**
 	 * Update current session session object when session is saved.
 	 */
 	@Override
 	public void handleEvent(SessionSavedEvent e) {
-		
-		if(currentSession != e.getSavedSession())
+		if (currentSession != e.getSavedSession())
 			currentSession = e.getSavedSession();
 		
-		if(currentFileName != e.getSavedFileName())
+		if (currentFileName != e.getSavedFileName())
 			currentFileName = e.getSavedFileName();
 	}
 	
@@ -317,7 +313,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 
 	private Set<CyProperty<?>> getAllProperties() {
-		Set<CyProperty<?>> set = new HashSet<CyProperty<?>>(sessionProperties);
+		final Set<CyProperty<?>> set = new HashSet<CyProperty<?>>(sessionProperties);
 		
 		if (bookmarks != null)
 			set.add(bookmarks);
@@ -325,7 +321,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		return set;
 	}
 
-	private void restoreProperties(CySession sess) {
+	private void restoreProperties(final CySession sess) {
 		for (CyProperty<?> cyProps : sess.getProperties()) {
 			final Properties serviceProps = new Properties();
 			serviceProps.setProperty("cyPropertyName", cyProps.getName());
@@ -333,7 +329,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 	
-	private void restoreNetworks(CySession sess) {
+	private void restoreNetworks(final CySession sess) {
 		logger.debug("Restoring networks...");
 		Set<CyNetwork> networks = sess.getNetworks();
 
@@ -342,11 +338,11 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 	
-	private void restoreNetworkViews(CySession sess) {
+	private void restoreNetworkViews(final CySession sess) {
 		logger.debug("Restoring network views...");
 		Set<CyNetworkView> netViews = sess.getNetworkViews();
-		
 		List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+		
 		for (CyNetworkView nv : netViews) {
 			CyNetwork network = nv.getModel();
 			if (network.getRow(network).get(CyNetwork.SELECTED, Boolean.class)) {
@@ -428,13 +424,13 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 
-	private void disposeCurrentSession(boolean removeVisualStyles) {
+	private void disposeCurrentSession() {
 		logger.debug("Disposing current session...");
 		
 		// Destroy network views
-		Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
+		final Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
 
-		for (CyNetworkView nv : netViews) {
+		for (final CyNetworkView nv : netViews) {
 			nvMgr.destroyNetworkView(nv);
 		}
 		
@@ -443,25 +439,20 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// Destroy networks
 		final Set<CyNetwork> networks = netMgr.getNetworkSet();
 		
-		for (CyNetwork n : networks) {
+		for (final CyNetwork n : networks) {
 			netMgr.destroyNetwork(n);
 		}
 		
 		netMgr.reset();
 
 		// Destroy styles
-		if (removeVisualStyles) {
-			logger.debug("Removing current visual styles...");
-			VisualStyle defaultStyle = vmMgr.getDefaultVisualStyle();
-			List<VisualStyle> allStyles = new ArrayList<VisualStyle>(vmMgr.getAllVisualStyles());
+		logger.debug("Removing current visual styles...");
+		final VisualStyle defaultStyle = vmMgr.getDefaultVisualStyle();
+		final List<VisualStyle> allStyles = new ArrayList<VisualStyle>(vmMgr.getAllVisualStyles());
 
-			for (int i = 0; i < allStyles.size(); i++) {
-				VisualStyle vs = allStyles.get(i);
-
-				if (!vs.equals(defaultStyle)) {
-					vmMgr.removeVisualStyle(vs);
-				}
-			}
+		for (final VisualStyle vs : allStyles) {
+			if (!vs.equals(defaultStyle))
+				vmMgr.removeVisualStyle(vs);
 		}
 
 		// Destroy tables

@@ -281,9 +281,7 @@ public class VisualStyleSerializer {
 					vpModelList.add(vpModel);
 	
 					if (defValue != null) {
-						String sValue = null;
-						
-						sValue = vp.toSerializableString(defValue);
+						String sValue = vp.toSerializableString(defValue);
 						
 						if (sValue != null)
 							vpModel.setDefault(sValue);
