@@ -3,7 +3,9 @@ package org.cytoscape.model.internal;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.CyEvent;
 import org.cytoscape.event.CyPayloadEvent;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.TableTitleChangedEvent;
 import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
@@ -77,7 +79,16 @@ public class TableEventHelperFacade implements CyEventHelper {
 			LocalTableFacade facade = facadeMap.get((CyTable)source);
 			if ( facade == null )
 				return;
-			actualHelper.addEventPayload((S)facade,payload,eventType);
+			if (payload instanceof RowSetRecord){
+				@SuppressWarnings("unchecked")
+				P newRSC = (P) new RowSetRecord(facade.getRow(((RowSetRecord) payload).getRow().get(CyNetwork.SUID, Long.class)), 
+						((RowSetRecord) payload).getColumn(), 
+						((RowSetRecord) payload).getValue(), 
+						((RowSetRecord) payload).getRawValue()
+						);
+				actualHelper.addEventPayload((S)facade,newRSC,eventType);
+			}else
+				actualHelper.addEventPayload((S)facade,payload,eventType);
 		}
 	}
 
