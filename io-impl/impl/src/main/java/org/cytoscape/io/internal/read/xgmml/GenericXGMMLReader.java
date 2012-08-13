@@ -29,6 +29,7 @@ package org.cytoscape.io.internal.read.xgmml;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,8 @@ import org.xml.sax.helpers.ParserAdapter;
 
 public class GenericXGMMLReader extends AbstractNetworkReader {
 
+	public static final String REPAIR_BARE_AMPERSANDS_PROPERTY = "cytoscape.xgmml.repair.bare.ampersands";
+	
 	protected final ReadDataManager readDataMgr;
 	protected final XGMMLParser parser;
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
@@ -74,17 +77,24 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
 	
 	public GenericXGMMLReader(final InputStream inputStream,
-							   final CyNetworkViewFactory cyNetworkViewFactory,
-							   final CyNetworkFactory cyNetworkFactory,
-							   final RenderingEngineManager renderingEngineMgr,
-							   final ReadDataManager readDataMgr,
-							   final XGMMLParser parser,
-							   final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
+							  final CyNetworkViewFactory cyNetworkViewFactory,
+							  final CyNetworkFactory cyNetworkFactory,
+							  final RenderingEngineManager renderingEngineMgr,
+							  final ReadDataManager readDataMgr,
+							  final XGMMLParser parser,
+							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
 		super(inputStream, cyNetworkViewFactory, cyNetworkFactory);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
+		
+		// This should only be used when an XGMML file or session cannot be read due to improperly encoded ampersands,
+		// as it slows down the reading process.
+		final boolean attemptRepair = Boolean.getBoolean(REPAIR_BARE_AMPERSANDS_PROPERTY);
+		
+		if (attemptRepair)
+			this.inputStream = new RepairBareAmpersandsInputStream(inputStream, 512);
 	}
 
 	@Override
@@ -288,5 +298,84 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		}
 
 		return s;
+	}
+	
+	private static class RepairBareAmpersandsInputStream extends PushbackInputStream {
+		private final byte[] encodedAmpersand = new byte[] { 'a', 'm', 'p', ';' };
+
+		public RepairBareAmpersandsInputStream(final InputStream in) {
+			super(in);
+		}
+
+		public RepairBareAmpersandsInputStream(final InputStream in, final int size) {
+			super(in, size);
+		}
+
+		@Override
+		public int read() throws IOException {
+			int c;
+
+			c = super.read();
+			if (c == (int) '&') {
+				byte[] b = new byte[7];
+				int cnt;
+
+				cnt = read(b);
+				if (cnt > 0) {
+					boolean isEntity;
+					int i;
+
+					isEntity = false;
+					i = 0;
+					while ((i < cnt) && (!isEntity)) {
+						isEntity = (b[i] == ';');
+						i++;
+					}
+
+					byte[] pb = new byte[cnt];
+					for (int p = 0; p < cnt; p++) {
+						pb[p] = b[p];
+					}
+					unread(pb);
+
+					if (!isEntity) {
+						unread(encodedAmpersand);
+					}
+				}
+			}
+
+			return c;
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException {
+			if (b == null) {
+				throw new NullPointerException();
+			} else if (off < 0 || len < 0 || len > b.length - off) {
+				throw new IndexOutOfBoundsException();
+			} else if (len == 0) {
+				return 0;
+			}
+
+			int cnt;
+			int c = -1;
+
+			cnt = 0;
+			while (cnt < len) {
+				c = read();
+				if (c == -1) {
+					break;
+				}
+				b[off] = (byte) c;
+				off++;
+				cnt++;
+			}
+
+			if ((c == -1) && (cnt == 0)) {
+				cnt = -1;
+			}
+
+			return cnt;
+		}
 	}
 }

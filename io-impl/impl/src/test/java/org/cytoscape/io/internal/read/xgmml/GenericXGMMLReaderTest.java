@@ -11,6 +11,7 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -319,6 +320,22 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertEquals("SansSerif,plain,12", GenericXGMMLReader.convertOldFontValue("SansSerif-0-12.1"));
 		assertEquals("SansSerif,bold,12", GenericXGMMLReader.convertOldFontValue("SansSerif.bold-0.0-12.0"));
 		assertEquals("SansSerif,bold,12", GenericXGMMLReader.convertOldFontValue("SansSerif,bold,12"));
+	}
+	
+	@Test(expected=IOException.class)
+	public void testRepairBareAmpersandsPropertyFalse() throws Exception {
+		System.setProperty(GenericXGMMLReader.REPAIR_BARE_AMPERSANDS_PROPERTY, "false");
+		getViews("bare_ampersands.xgmml");
+	}
+	
+	@Test
+	public void testRepairBareAmpersandsPropertyTrue() throws Exception {
+		System.setProperty(GenericXGMMLReader.REPAIR_BARE_AMPERSANDS_PROPERTY, "true");
+		List<CyNetworkView> views = getViews("bare_ampersands.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 1, 1);
+		assertEquals("&ABC", net.getRow(net).get("&net_att_1", String.class));
+		assertEquals("CDE&", net.getRow(net.getNodeList().get(0)).get("node_att_$1", String.class));
+		assertEquals(25, net.getRow(net.getEdgeList().get(0)).get("edge_att_1$", Integer.class).intValue());
 	}
 	
 	private void assertCustomColumnsAreMutable(CyNetwork net) {

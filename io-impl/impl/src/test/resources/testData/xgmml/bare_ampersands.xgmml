@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<graph label="Network A" xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:cy="http://www.cytoscape.org" xmlns="http://www.cs.rpi.edu/XGMML"
+	directed="1">
+	
+	<att type="string" name="&net_att_1" value="&ABC"/>
+	
+	<node label="node1" id="1">
+		<att type="string" name="node_att_$1" value="CDE&" />
+	</node>
+	<edge label="node1 (DirectedEdge) node1" source="1" target="1">
+		<att type="integer" name="edge_att_1$" value="25" />
+	</edge>
+</graph>
