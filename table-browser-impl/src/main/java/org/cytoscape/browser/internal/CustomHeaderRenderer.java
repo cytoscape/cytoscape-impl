@@ -128,24 +128,24 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		
 		// Set datatype icon if available
 		this.setIcon(getIcon(col.getType(), col));
-		
+
 		String toolTip = null;
-		
-		
-		if(col.getType() == List.class) {
-			toolTip = "<html>Name: " + col.getName() + "<br /> Type: List of "+ getMinimizedType( col.getListElementType().getName()) + "s</html>";
-		} else if(text.equals(CyIdentifiable.SUID))
-			toolTip = "Session-Unique ID (Primary Key).<br /> This column is immutable.";
-		else
+
+		if(text.equals(CyIdentifiable.SUID))
+			toolTip = "<html>Session-Unique ID (Primary Key).<br /> This column is immutable.";
+		else if(col.getType() == List.class) {
+			toolTip = "<html>Name: " + col.getName() + "<br /> Type: List of "+ getMinimizedType( col.getListElementType().getName()) + "s";
+		} else{
 			toolTip = "<html>Name: " + col.getName()+ "<br /> Type: " + getMinimizedType(col.getType().getName());
-		
+		}
 		if (col.getVirtualColumnInfo().isVirtual()) {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_VIRTUAL_COLOR);
-			toolTip = "<html>Name:" + col.getName() + "<br /> Type: " + getMinimizedType(col.getType().getName()) + "<br />Virtual Column</html>";
+			toolTip += "<br />Virtual Column</html>";
 		} else {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_COLOR);
+			toolTip +="</html>";
 		}
 
 		if (text.equals(CyIdentifiable.SUID))
