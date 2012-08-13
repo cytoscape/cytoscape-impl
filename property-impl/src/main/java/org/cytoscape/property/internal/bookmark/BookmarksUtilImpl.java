@@ -178,7 +178,13 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 	 * org.cytoscape.properties.bookmark.DataSource)
 	 */
 	public void saveBookmark(Bookmarks pBookmarks, String pCategoryName,
-			DataSource pDataSource) {
+			DataSource pDataSource) {		
+		saveBookmark(pBookmarks, pCategoryName, pDataSource, "Example");
+	}
+	
+	
+	public 	void saveBookmark(Bookmarks pBookmarks, String pCategoryName,
+			DataSource pDataSource, String pProvider){
 		if (pBookmarks == null) {
 			pBookmarks = new Bookmarks();
 		}
@@ -206,7 +212,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		if(!theObjList.contains(pDataSource))
 			theObjList.add(pDataSource);
 		
-		org.cytoscape.io.datasource.DataSource data = convertToDataSource(pBookmarks,pCategoryName,pDataSource);
+		org.cytoscape.io.datasource.DataSource data = convertToDataSource(pBookmarks,pCategoryName,pDataSource, pProvider);
 
 		if(data != null && !dataSourceMap.containsKey(pDataSource))
 		{
@@ -217,13 +223,20 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		
 	}
 	
+	
 	public org.cytoscape.io.datasource.DataSource convertToDataSource(Bookmarks pBookmarks, 
-			String pCategoryName,DataSource pDataSource){
+			String pCategoryName,DataSource pDataSource){		
+		return convertToDataSource(pBookmarks,pCategoryName, pDataSource, "Example");
+	}
+
+	
+	public org.cytoscape.io.datasource.DataSource convertToDataSource(Bookmarks pBookmarks, 
+			String pCategoryName, DataSource pDataSource, String pProvider){
 		
 		final String location = pDataSource.getHref();
 		final String name = pDataSource.getName();
 		final String description = "From Bookmarks";
-		final String provider = "Example";
+		//final String provider = "Example";
 		DataCategory dataType;
 		URL url = null;
 		
@@ -243,7 +256,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 			return null;
 		}
 
-		return (new DefaultDataSource(name, provider,description, dataType, url));
+		return (new DefaultDataSource(name, pProvider, description, dataType, url));
 	}
 
 	/*
