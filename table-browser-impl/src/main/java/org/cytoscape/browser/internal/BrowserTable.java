@@ -232,7 +232,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			// moved SUID column. However, since the rows might be sorted we
 			// need to convert the index to model
 			final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) btModel.getValueAt(
-					rowsSelected[i], pKeyName);
+					convertRowIndexToModel(rowsSelected[i]), pKeyName);
 			targetRows.add(btModel.getRow(selected.getValidatedObject()));
 		}
 
@@ -920,7 +920,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		final int rowCount = getRowCount();
 		for(int i=0; i<rowCount; i++) {
 			//getting the row from data table solves the problem with hidden or moved SUID column. However, since the rows might be sorted we need to convert the index to model
-			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) model.getValueAt(i, pKeyName );
+			int modelRow = convertRowIndexToModel(i);
+			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) model.getValueAt(modelRow, pKeyName );
 			Long pk = null;
 			try{
 				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
@@ -934,7 +935,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				}else if (suidMapUnselected.keySet().contains(pk)){
 					removeRowSelectionInterval(i, i);
 				}
-
 			}
 		}
 	}
