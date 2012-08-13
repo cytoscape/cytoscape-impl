@@ -96,6 +96,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private static final long serialVersionUID = -508393701912596399L;
 
+	private BrowserTable browserTable;
 	private BrowserTableModel browserTableModel;
 	
 	private static final Dimension TOOLBAR_SIZE = new Dimension(500, 38);
@@ -180,8 +181,13 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		
 	}
 
-	public void setBrowserTableModel(final BrowserTableModel browserTableModel) {
-		this.browserTableModel = browserTableModel;
+	public void setBrowserTable(final BrowserTable browserTable) {
+		this.browserTable = browserTable;
+		if (browserTable != null) {
+			browserTableModel = (BrowserTableModel) browserTable.getModel();
+		} else {
+			browserTableModel = null;
+		}
 		attrListModel.setBrowserTableModel(browserTableModel);
 		updateEnableState();
 	}
@@ -201,7 +207,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				for (final Object selectedValue : selectedValues)
 					visibleAttributes.add((String)selectedValue);
 
-				browserTableModel.setVisibleAttributeNames(visibleAttributes);
+				browserTable.setVisibleAttributeNames(visibleAttributes);
 			}
 		} catch (Exception ex) {
 			attributeList.clearSelection();
@@ -568,7 +574,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				public void mouseClicked(MouseEvent e) {
 					if (browserTableModel == null)
 						return;
-					attributeList.setSelectedItems(browserTableModel.getVisibleAttributeNames());
+					attributeList.setSelectedItems(browserTable.getVisibleAttributeNames());
 					attributeSelectionPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			});
@@ -594,15 +600,13 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 					if (browserTableModel == null)
 						return;
 
-					final JTable table = browserTableModel.getTable();
-
 					// Do not allow opening of the formula builder dialog
 					// while a cell is being edited!
-					if (table.getCellEditor() != null)
+					if (browserTable.getCellEditor() != null)
 						return;
 
-					final int cellRow = table.getSelectedRow();
-					final int cellColumn = table.getSelectedColumn();
+					final int cellRow = browserTable.getSelectedRow();
+					final int cellColumn = browserTable.getSelectedColumn();
 
 					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, cellColumn)) {
 						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
@@ -613,7 +617,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 						final CyTable attrs = browserTableModel.getAttributes();
 						initAttribNameToTypeMap(attrs, attrName, attribNameToTypeMap);
 						final FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler,
-								browserTableModel, rootFrame, attrName);
+								browserTable, rootFrame, attrName);
 						formulaBuilderDialog.setLocationRelativeTo(rootFrame);
 						formulaBuilderDialog.setVisible(true);
 					}
@@ -632,7 +636,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	}
 
 	private String getAttribName(final int cellRow, final int cellColumn) {
-		int colIndexModel = browserTableModel.getTable().convertColumnIndexToModel(cellColumn);
+		int colIndexModel = browserTable.convertColumnIndexToModel(cellColumn);
 		return browserTableModel.getColumnName( colIndexModel);
 	}
 
@@ -696,7 +700,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 						final Set<String> allAttrNames = new HashSet<String>();
 						for (final CyColumn column : table.getColumns())
 							allAttrNames.add(column.getName());
-						browserTableModel.setVisibleAttributeNames(allAttrNames);
+						browserTable.setVisibleAttributeNames(allAttrNames);
 
 						// ***DO NOT *** Resize column
 						//ColumnResizer.adjustColumnPreferredWidths(browserTableModel.getTable());
@@ -723,7 +727,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			unselectAllAttributesButton.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					try {
-						browserTableModel.setVisibleAttributeNames(new HashSet<String>());
+						browserTable.setVisibleAttributeNames(new HashSet<String>());
 					} catch (Exception ex) {
 						attributeList.clearSelection();
 					}
@@ -738,7 +742,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		final String[] attrArray = getAttributeArray();
 
 		final JFrame frame = (JFrame)SwingUtilities.getRoot(this);
-		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getAttributes(), browserTableModel);
+		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getAttributes(), browserTable);
 
 		dDialog.pack();
 		dDialog.setLocationRelativeTo(toolBar);

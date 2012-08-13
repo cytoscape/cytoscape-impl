@@ -35,14 +35,14 @@ public class DeletionDialog extends JDialog {
 	}
 
 	private CyTable attributes;
-	private BrowserTableModel tableModel;
+	private BrowserTable table;
 
 	/** Creates new form DeletionDialog */
-	protected DeletionDialog(final Frame parent, final CyTable attributes, final BrowserTableModel tableModel) {
+	protected DeletionDialog(final Frame parent, final CyTable attributes, final BrowserTable table) {
 		super(parent, "Delete Attributes", /* modal = */ true);
 
 		this.attributes = attributes;
-		this.tableModel  = tableModel;
+		this.table  = table;
 
 		initComponents();
 	}
@@ -67,7 +67,7 @@ public class DeletionDialog extends JDialog {
 				int mutableCount = 0;
 				for (final CyColumn column : attributes.getColumns()) {
 					if (!column.isImmutable())
-						if (tableModel.isColumnVisible(column.getName()))
+						if (table.isColumnVisible(column.getName()))
 							++mutableCount;
 				}
 
@@ -80,7 +80,7 @@ public class DeletionDialog extends JDialog {
 				int k = 0;
 				for (final CyColumn column : attributes.getColumns()) {
 					if (!column.isImmutable()){
-						if (tableModel.isColumnVisible(column.getName()))
+						if (table.isColumnVisible(column.getName()))
 							columnNames[k++] = column.getName();
 					}
 				}

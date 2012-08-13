@@ -111,18 +111,20 @@ public class FormulaBuilderDialog extends JDialog {
 	private ApplicationDomain applicationDomain;
 	private Stack<Integer> undoStack;
 	private final EquationCompiler compiler;
+	private final BrowserTable table;
 	private final BrowserTableModel tableModel;
 	private final String targetAttrName;
 
 	public FormulaBuilderDialog(final EquationCompiler compiler,
-				    final BrowserTableModel tableModel, final Frame parent,
+				    final BrowserTable table, final Frame parent,
 	                            final String targetAttrName)
 	{
 		super(parent);
 		this.setTitle("Creating a formula for: " + targetAttrName);
 
 		this.compiler = compiler;
-		this.tableModel = tableModel;
+		this.table = table;
+		this.tableModel = (BrowserTableModel) table.getModel();
 		this.targetAttrName = targetAttrName;
 		this.stringToFunctionMap = new HashMap<String, Function>();
 		this.leadingArgs = new ArrayList<Class>();
@@ -304,7 +306,7 @@ public class FormulaBuilderDialog extends JDialog {
 	private void initApplyToComboBox(final Container contentPane) {
 		applyToComboBox = new JComboBox();
 
-		final int selectedCellRow = tableModel.getTable().getSelectedRow();
+		final int selectedCellRow = table.getSelectedRow();
 		if (selectedCellRow >= 0)
 			applyToComboBox.addItem(ApplicationDomain.CURRENT_CELL);
 		if (attributesContainBooleanSelected())
@@ -484,7 +486,6 @@ public class FormulaBuilderDialog extends JDialog {
 		if (formula.charAt(formula.length() - 1) != ')')
 			formula = formula + ")";
 
-		final JTable table = tableModel.getTable();
 		final int cellColum = table.convertColumnIndexToModel( table.getSelectedColumn());
 		
 		final String attribName = tableModel.getColumnName(cellColum);

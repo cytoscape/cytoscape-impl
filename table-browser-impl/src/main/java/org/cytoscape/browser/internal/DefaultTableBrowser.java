@@ -142,8 +142,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	private void changeSelectionMode() {
 		//rowSelectionMode = selectionModeButton.isSelected();
-		getCurrentBrowserTableModel().setShowAll(rowSelectionMode);
-		getCurrentBrowserTableModel().updateShowAll();
+		BrowserTableModel model = (BrowserTableModel) getCurrentBrowserTable().getModel();
+		model.setShowAll(rowSelectionMode);
+		model.updateShowAll();
 	}
 	
 	@Override
@@ -187,10 +188,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 		});
 		
-		final BrowserTableModel currentBrowserTableModel = getCurrentBrowserTableModel();
+		final BrowserTable currentBrowserTable = getCurrentBrowserTable();
 		
-		if (currentBrowserTableModel != null)
-			currentBrowserTableModel.setShowAll(rowSelectionMode);
+		if (currentBrowserTable != null) {
+			final BrowserTableModel model = (BrowserTableModel) currentBrowserTable.getModel();
+			model.setShowAll(rowSelectionMode);
+		}
 		
 		showSelectedTable();
 	}

@@ -3,49 +3,30 @@ package org.cytoscape.browser.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
 
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.events.ColumnCreatedEvent;
-import org.cytoscape.model.events.ColumnCreatedListener;
-import org.cytoscape.model.events.ColumnDeletedEvent;
-import org.cytoscape.model.events.ColumnDeletedListener;
-import org.cytoscape.model.events.ColumnNameChangedEvent;
-import org.cytoscape.model.events.ColumnNameChangedListener;
-import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.RowsSetListener;
 
 
-public final class BrowserTableModel extends AbstractTableModel implements ColumnCreatedListener,
-ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedListener {
+public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener {
 
 	private static final long serialVersionUID = -517521404005631245L;
 
-	private final BrowserTable table;
 	private final CyTable dataTable;
 	private final EquationCompiler compiler;
 
@@ -62,18 +43,15 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	private int maxRowIndex;
 
 
-	public BrowserTableModel(final BrowserTable table, final CyTable dataTable, final EquationCompiler compiler,
+	public BrowserTableModel(final CyTable dataTable, final EquationCompiler compiler,
 			final CyTableManager tableManager) {
-		this.table = table;
 		this.dataTable = dataTable;
 		this.compiler = compiler;
 		this.regularViewMode = false; 
 		this.tableManager = tableManager;
 
-		initAttrNamesAndVisibilities();
-
-
-
+		attrNames = getAttributeNames(dataTable);
+		
 		// add each row to an array to allow fast lookup from an index
 		final Collection<CyRow> rows = dataTable.getAllRows();
 		this.rowIndexToPrimaryKey = new Object[rows.size()]; 
@@ -83,23 +61,17 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 			rowIndexToPrimaryKey[maxRowIndex++] = row.getRaw(primaryKey);
 	}
 
+	private List<String> getAttributeNames(CyTable table) {
+		ArrayList<String> names = new ArrayList<String>();
+		for (CyColumn column : table.getColumns()) {
+			names.add(column.getName());
+		}
+		return names;
+	}
+
 	CyTable getDataTable() {
 		return dataTable;
 	}
-
-	private void initAttrNamesAndVisibilities() {
-		attrNames = new ArrayList<String>();
-		int i = 0;
-		for (final CyColumn column : dataTable.getColumns()) {
-			attrNames.add(column.getName());
-			i++;
-		}
-		
-	}
-
-	public JTable getTable() { return table; }
-
-	BrowserTable getBrowserTable() { return table; }
 
 	public CyTable getAttributes() { return dataTable; }
 
@@ -109,47 +81,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	}
 	
 	List<String> getAllAttributeNames() {
-		final List<String> AttrNames = new ArrayList<String>();		
-		
-		for (final String name : attrNames) {
-			AttrNames.add(name);
-		}
-
-		return AttrNames;
-		//Never rerturn the list of attrNames itself, because it will be returned by reference and anychanges to this list will affect the model
-		//return attrNames; 
-	}
-
-	List<String> getVisibleAttributeNames() {
-
-		final List<String> visibleAttrNames = new ArrayList<String>();		
-		for (final String name : attrNames) {
-			if (isColumnVisible(name))
-				visibleAttrNames.add(name);
-		}
-		
-		return visibleAttrNames;
-	}
-
-
-	public Boolean isColumnVisible(String colName){
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) table.getColumnModel();
-		TableColumn column = columnModel.getColumnByModelIndex(mapColumnNameToColumnIndex(colName));
-		return columnModel.isColumnVisible(column);
-	}
-	
-	public void setVisibleAttributeNames(final Collection<String> visibleAttributes) {
-		
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) table.getColumnModel();
-		for (final String name : attrNames) {
-			int col = mapColumnNameToColumnIndex(name);
-			int convCol = table.convertColumnIndexToView(col);
-			TableColumn column = columnModel.getColumnByModelIndex(col);
-			columnModel.setColumnVisible(column, visibleAttributes.contains(name));
-		}
-		
-		//don't fire this, it will reset all the columns based on model
-		//fireTableStructureChanged();
+		return new ArrayList<String>(attrNames);
 	}
 
 	@Override
@@ -174,20 +106,20 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 
 	public Object getValueAt(final int rowIndex, final String columnName) {
-		final CyRow row = mapRowIndexToRow(table.convertRowIndexToModel(rowIndex));
+		final CyRow row = getCyRow(rowIndex);
 		return getValidatedObjectAndEditString(row, columnName);
 	}
 
 	@Override
 	public Object getValueAt(final int rowIndex, final int columnIndex) {	
 		final String columnName = getColumnName(columnIndex);
-		final CyRow row = mapRowIndexToRow(rowIndex);	
+		final CyRow row = getCyRow(rowIndex);	
 		
 		return getValidatedObjectAndEditString(row, columnName);
 	}
 
 	CyColumn getColumn(final int columnIndex)  {
-		final String columnName = getColumnName( table.convertColumnIndexToModel(columnIndex));
+		final String columnName = getColumnName(columnIndex);
 
 		return dataTable.getColumn(columnName);
 	}
@@ -198,7 +130,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		return dataTable.getColumn(columnName);
 	}
 
-	private CyRow mapRowIndexToRow(final int rowIndex) {
+	public CyRow getCyRow(final int rowIndex) {
 		if (regularViewMode) {
 			if (selectedRows == null)
 				selectedRows = dataTable.getMatchingRows(CyNetwork.SELECTED, true);
@@ -257,82 +189,6 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public void handleEvent(final ColumnCreatedEvent e) {
-		if (e.getSource() != dataTable)
-			return;
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) table.getColumnModel();
-
-		attrNames.add(e.getColumnName());
-		
-		int colIndex = columnModel.getColumnCount(false);
-		TableColumn newCol = new TableColumn(colIndex);
-		newCol.setHeaderValue(e.getColumnName());
-		table.setUpdateComparators(false);
-		table.addColumn(newCol);
-		final TableRowSorter<BrowserTableModel> rowSorter = new TableRowSorter<BrowserTableModel>(this);
-		table.setRowSorter(rowSorter);
-		updateColumnComparators(rowSorter, this);
-		table.setUpdateComparators(true);
-
-	}
-
-	void updateColumnComparators(final TableRowSorter<BrowserTableModel> rowSorter,
-			final BrowserTableModel browserTableModel) {
-		for (int column = 0; column < browserTableModel.getColumnCount(); ++column)
-			rowSorter.setComparator(
-					column,
-					new ValidatedObjectAndEditStringComparator(
-							browserTableModel.getColumnByModelIndex(column).getType()));
-	}
-
-	@Override
-	public void handleEvent(final ColumnDeletedEvent e) {
-		if (e.getSource() != dataTable)
-			return;
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) table.getColumnModel();
-
-		final String columnName = e.getColumnName();
-		boolean columnFound = false;
-		int removedColIndex = -1;
-		
-		for (int i = 0; i < attrNames.size(); ++i) {
-			if (attrNames.get(i).equals(columnName)) {
-				removedColIndex = i;
-				columnModel.removeColumn (columnModel.getColumn(table.convertColumnIndexToView( i)));
-				columnFound = true;
-			}
-			else if (columnFound){ //need to push back the model indexes for all of the columns after this
-				
-				TableColumn nextCol = columnModel.getColumnByModelIndex(i); 
-				nextCol.setModelIndex(i- 1);
-			}
-		}
-		
-		if (removedColIndex != -1){//remove the item after the loop is done
-			attrNames.remove(removedColIndex);
-		}
-
-	}
-
-	@Override
-	public void handleEvent(final ColumnNameChangedEvent e) {
-		if (e.getSource() != dataTable)
-			return;
-
-		final String newColumnName = e.getNewColumnName();
-		final int column = mapColumnNameToColumnIndex(e.getOldColumnName());
-		if (isColumnVisible(e.getOldColumnName())){
-			int colIndex = table.convertColumnIndexToView(column);
-			if (colIndex != -1)
-				table.getColumnModel().getColumn(colIndex).setHeaderValue(newColumnName);
-		}
-		
-		renameColumnName(e.getOldColumnName(), newColumnName);
-
-	}
-
 	@Override
 	public synchronized void handleEvent(RowsCreatedEvent e) {
 		if(!e.getSource().equals(this.dataTable))
@@ -349,41 +205,6 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 		fireTableDataChanged();
 	}
-
-	@Override
-	public void handleEvent(final RowsSetEvent e) {
-		if (e.getSource() != dataTable)
-			return;		
-
-		if (regularViewMode) {
-			selectedRows = null;
-			boolean foundANonSelectedColumnName = false;
-			for (final RowSetRecord rowSet : e.getPayloadCollection()) {
-				if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
-					foundANonSelectedColumnName = true;
-					break;
-				}
-			}
-			if (!foundANonSelectedColumnName) {
-				fireTableDataChanged();
-				return;
-			}
-		}
-
-		final Collection<RowSetRecord> rows = e.getPayloadCollection();
-
-		synchronized (this) {
-			if (regularViewMode) {
-				fireTableDataChanged();
-			} else {
-				//table.clearSelection();
-				//fireTableDataChanged();
-				if(tableManager.getGlobalTables().contains(dataTable) == false)
-					bulkUpdate(rows);
-			}
-		}
-	}
-
 
 	/**
 	 * Switch view mode.
@@ -412,63 +233,6 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	}
 
 
-	/**
-	 * Select rows in the table when something selected in the network view.
-	 * @param rows
-	 */
-	private void bulkUpdate(final Collection<RowSetRecord> rows) {
-		final int columnCount = table.getColumnCount();
-
-		final Map<Long, Boolean> suidMapSelected = new HashMap<Long, Boolean>();
-		final Map<Long, Boolean> suidMapUnselected = new HashMap<Long, Boolean>();
-
-		for(RowSetRecord rowSetRecord : rows) {
-			if(rowSetRecord.getColumn().equals(CyNetwork.SELECTED)){
-				if(((Boolean)rowSetRecord.getValue()) == true){
-					suidMapSelected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class), (Boolean) rowSetRecord.getValue());
-				}
-				else{
-					suidMapUnselected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class), (Boolean) rowSetRecord.getValue());
-				}
-			}
-		}
-
-		final BrowserTableModel btmodel =  ((BrowserTableModel) table.getModel() );
-		final String pKeyName = dataTable.getPrimaryKey().getName();
-		final int rowCount = table.getRowCount();
-		for(int i=0; i<rowCount; i++) {
-			//getting the row from data table solves the problem with hidden or moved SUID column. However, since the rows might be sorted we need to convert the index to model
-			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString)  btmodel.getValueAt(i, pKeyName );
-			Long pk = null;
-			try{
-				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
-				pk = Long.parseLong(tableKey.getEditString());
-			} catch (NumberFormatException nfe) {
-				System.out.println("Error parsing long from table " + table.getName() + ": " + nfe.getMessage());
-			}
-			if(pk != null) {
-				if (suidMapSelected.keySet().contains(pk)){
-					table.addRowSelectionInterval(i, i);
-					/*
-					if (table.getColumnCount() > 0)
-						table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
-						*/
-				}else if (suidMapUnselected.keySet().contains(pk)){
-					table.removeRowSelectionInterval(i, i);
-				}
-
-			}
-		}
-	}
-
-	private void handleRowValueUpdate(final CyRow row, final String columnName, final Object newValue,
-			final Object newRawValue) {
-		if (regularViewMode && columnName.equals(CyNetwork.SELECTED)) {
-			fireTableDataChanged();
-		} 
-	}
-
-
 	public String getCyColumnName( final int column){
 		return (String) dataTable.getColumns().toArray()[column];
 	}
@@ -479,27 +243,6 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	}
 	
 	
-
-	private void renameColumnName(final String oldName, final String newName) {
-		
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) table.getColumnModel();
-
-		if (attrNames.contains(oldName)){
-			int index = attrNames.indexOf(oldName);
-			attrNames.set(index, newName);
-			columnModel.getColumn(table.convertColumnIndexToView( index)).setHeaderValue(newName);
-			return;
-		}
-	
-		throw new IllegalStateException("The specified column " + oldName +" does not exist in the model.");
-	}
-
-
-
-	public boolean isPrimaryKey (int col){
-		return dataTable.getPrimaryKey().getName().equals(getColumnName(table.convertColumnIndexToModel(col)));
-	}
-
 
 	int mapColumnNameToColumnIndex(final String columnName) {
 		
@@ -516,16 +259,6 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 
 	}
 
-	// Because tableModel will disappear if user click on open space on canvas, 
-	// we have to remember it before it is gone
-	public Vector getCellData(final int rowIndex, final int columnIndex){
-		Vector cellVect = new Vector();
-		cellVect.add(mapRowIndexToRow(rowIndex));
-		cellVect.add( getColumnName(columnIndex));
-
-		return cellVect;
-	}
-
 	CyRow getRow(final Object suid) {
 		return dataTable.getRow(suid);
 	}
@@ -535,7 +268,7 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 	@Override
 	public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
 		final String text = (String)value;
-		final CyRow row = mapRowIndexToRow(rowIndex);
+		final CyRow row = getCyRow(rowIndex);
 		final String columnName = mapColumnIndexToColumnName(columnIndex);
 		final Class<?> columnType = dataTable.getColumn(columnName).getType();
 
@@ -643,4 +376,24 @@ ColumnDeletedListener, ColumnNameChangedListener, RowsSetListener, RowsCreatedLi
 		return !column.isPrimaryKey();
 	}
 
+	public boolean isPrimaryKey(int columnIndex) {
+		CyColumn column = getColumnByModelIndex(columnIndex);
+		return column.isPrimaryKey();
+	}
+
+	void clearSelectedRows() {
+		selectedRows = null;
+	}
+
+	void setColumnName(int index, String name) {
+		attrNames.set(index, name);
+	}
+
+	void removeColumn(int index) {
+		attrNames.remove(index);
+	}
+
+	void addColumn(String name) {
+		attrNames.add(name);
+	}
 }

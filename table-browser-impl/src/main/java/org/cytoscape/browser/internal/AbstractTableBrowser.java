@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -70,8 +72,8 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 	// Tab title for the CytoPanel
 	private final String tabTitle;
-	private final Map<BrowserTableModel,JScrollPane> scrollPanes;
-	private final Map<CyTable,BrowserTableModel> browserTableModels;
+	private final Map<BrowserTable,JScrollPane> scrollPanes;
+	private final Map<CyTable,BrowserTable> browserTables;
 	private JScrollPane currentScrollPane;
 	protected final String appFileName;
 
@@ -97,8 +99,8 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		this.eventHelper = eventHelper;
 		this.appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
 
-		this.scrollPanes = new HashMap<BrowserTableModel,JScrollPane>();
-		this.browserTableModels = new HashMap<CyTable,BrowserTableModel>();
+		this.scrollPanes = new HashMap<BrowserTable,JScrollPane>();
+		this.browserTables = new HashMap<CyTable,BrowserTable>();
 		
 		this.setLayout(new BorderLayout());
 		this.setPreferredSize(PANEL_SIZE);
@@ -136,14 +138,16 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	
 	// Delete the given table from the JTable
 	public void deleteTable(CyTable cyTable){
-		BrowserTableModel model = browserTableModels.remove(cyTable);
-		if (model == null) {
+		BrowserTable table = browserTables.remove(cyTable);
+		if (table == null) {
 			return;
 		}
-		scrollPanes.remove(model);
+		scrollPanes.remove(table);
+		TableModel model = table.getModel();
+		serviceRegistrar.unregisterAllServices(table);
 		serviceRegistrar.unregisterAllServices(model);
 		
-		model.getBrowserTable().setModel(new DefaultTableModel());
+		table.setModel(new DefaultTableModel());
 		
 		if (currentTable == cyTable) {
 			currentTable = null;
@@ -154,8 +158,8 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		if (currentScrollPane != null)
 			remove(currentScrollPane);
 
-		final BrowserTableModel currentBrowserTableModel = getCurrentBrowserTableModel();
-		final JScrollPane newScrollPane = getScrollPane(currentBrowserTableModel);
+		final BrowserTable currentBrowserTable = getCurrentBrowserTable();
+		final JScrollPane newScrollPane = getScrollPane(currentBrowserTable);
 		
 		if (newScrollPane != null)
 			add(newScrollPane, BorderLayout.CENTER);
@@ -164,7 +168,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 		currentScrollPane = newScrollPane;
 		applicationManager.setCurrentTable(currentTable);
-		attributeBrowserToolBar.setBrowserTableModel(currentBrowserTableModel);
+		attributeBrowserToolBar.setBrowserTable(currentBrowserTable);
 	
 		
 		/* 
@@ -174,14 +178,15 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		 */
 	}
 
-	private JScrollPane getScrollPane(final BrowserTableModel browserTableModel) {
+	private JScrollPane getScrollPane(final BrowserTable browserTable) {
 		JScrollPane scrollPane = null;
 		
-		if (browserTableModel != null) {
-			scrollPane = scrollPanes.get(browserTableModel);
+		if (browserTable != null) {
+			scrollPane = scrollPanes.get(browserTable);
 			
 			if (scrollPane == null) {
-				final BrowserTable browserTable = browserTableModel.getBrowserTable(); 
+				BrowserTableModel browserTableModel = (BrowserTableModel) browserTable.getModel();
+				serviceRegistrar.registerAllServices(browserTable, new Properties());
 				serviceRegistrar.registerAllServices(browserTableModel, new Properties());
 				browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 				browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
@@ -205,34 +210,35 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 				
 				attrList.remove(CyNetwork.SUID);
 				attrList.remove( CyNetwork.SELECTED);
-				browserTableModel.setVisibleAttributeNames(attrList);
+				browserTable.setVisibleAttributeNames(attrList);
 				
 				scrollPane = new JScrollPane(browserTable);
-				scrollPanes.put(browserTableModel, scrollPane);
+				scrollPanes.put(browserTable, scrollPane);
 			}
 		}
 
 		return scrollPane;
 	}
 
-	protected BrowserTableModel getCurrentBrowserTableModel() {
-		BrowserTableModel btm = browserTableModels.get(currentTable);
+	protected BrowserTable getCurrentBrowserTable() {
+		BrowserTable table = browserTables.get(currentTable);
 		
-		if (btm == null && currentTable != null) {
-			final BrowserTable browserTable = new BrowserTable(compiler, popupMenuHelper,
+		if (table == null && currentTable != null) {
+			table = new BrowserTable(compiler, popupMenuHelper,
 					applicationManager, eventHelper, tableManager);
 			BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
-			browserTable.setColumnModel(columnModel);
+			table.setColumnModel(columnModel);
 			
-			btm = new BrowserTableModel(browserTable, currentTable, compiler, tableManager);
-			browserTableModels.put(currentTable, btm);
+			BrowserTableModel model = new BrowserTableModel(currentTable, compiler, tableManager);
+			table.setModel(model);
+			browserTables.put(currentTable, table);
+			return table;
 		}
-		
-		return btm;
+		return table;
 	}
 	
-	protected Map<CyTable, BrowserTableModel>  getAllBrowserTablesMap (){
-		return browserTableModels;
+	protected Map<CyTable, BrowserTable>  getAllBrowserTablesMap (){
+		return browserTables;
 	}
 
 	void updateColumnComparators(final TableRowSorter<BrowserTableModel> rowSorter,
@@ -257,7 +263,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		if (tscMap == null || tscMap.isEmpty())
 			return;
 		
-		Map<CyTable, BrowserTableModel>  browserTableModels = getAllBrowserTablesMap();
+		Map<CyTable, BrowserTable>  browserTableModels = getAllBrowserTablesMap();
 		
 		for (CyTable table : browserTableModels.keySet()){
 			if (! tscMap.containsKey(table.getTitle()))
@@ -265,17 +271,17 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 			
 			final TableColumnStat tcs = tscMap.get(table.getTitle());
 			
-			final BrowserTableModel btm = browserTableModels.get(table);
-			final BrowserTableColumnModel colM = (BrowserTableColumnModel) btm.getTable().getColumnModel();
+			final BrowserTable browserTable = browserTables.get(table);
+			BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
+			final BrowserTableColumnModel colM = (BrowserTableColumnModel)browserTable.getColumnModel();
 			colM.setAllColumnsVisible();
 			final List<String> orderedCols = tcs.getOrderedCol();
-			final JTable jtable = btm.getTable();
 			
 			for (int i =0; i< orderedCols.size(); i++){
 				final String colName = orderedCols.get(i);
-				colM.moveColumn( jtable.convertColumnIndexToView(btm.mapColumnNameToColumnIndex(colName))  , i);
+				colM.moveColumn( browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(colName))  , i);
 			}
-			btm.setVisibleAttributeNames(tcs.getVisibleCols());
+			browserTable.setVisibleAttributeNames(tcs.getVisibleCols());
 			
 		}
 		
@@ -284,26 +290,26 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
 
-		Map<CyTable, BrowserTableModel>  browserTableModels = getAllBrowserTablesMap();
+		Map<CyTable, BrowserTable>  browserTables = getAllBrowserTablesMap();
 		List< TableColumnStat> tableColumnStatList = new ArrayList<TableColumnStat>();
 
-		for (CyTable table :  browserTableModels.keySet()){
+		for (CyTable table :  browserTables.keySet()){
 
 			TableColumnStat tcs = new TableColumnStat(table.getTitle());
 
-			BrowserTableModel btm = browserTableModels.get(table);
-			BrowserTableColumnModel colM = (BrowserTableColumnModel) btm.getTable().getColumnModel();
-			List<String> visAttrs = btm.getVisibleAttributeNames();
+			BrowserTable browserTable = browserTables.get(table);
+			BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
+			BrowserTableColumnModel colM = (BrowserTableColumnModel) browserTable.getColumnModel();
+			List<String> visAttrs = browserTable.getVisibleAttributeNames();
 			colM.setAllColumnsVisible();
-			List<String> attrs =  btm.getAllAttributeNames();
-			JTable jtable = btm.getTable();
+			Collection<String> attrs =  model.getAllAttributeNames();
 
 			for (String name: attrs){
-				int viewIndex = jtable.convertColumnIndexToView(btm.mapColumnNameToColumnIndex(name));
+				int viewIndex = browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(name));
 				tcs.addColumnStat(name, viewIndex,  visAttrs.contains(name));			
 			}
 
-			btm.setVisibleAttributeNames(visAttrs);
+			browserTable.setVisibleAttributeNames(visAttrs);
 			tableColumnStatList.add(tcs);
 		}
 		TableColumnStatFileIO.write(tableColumnStatList, e, this.appFileName );	

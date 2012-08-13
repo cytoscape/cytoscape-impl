@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -58,15 +57,27 @@ import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.ColumnCreatedEvent;
+import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BrowserTable extends JTable implements MouseListener, ActionListener, MouseMotionListener {
+public class BrowserTable extends JTable implements MouseListener, ActionListener, MouseMotionListener,
+													 ColumnCreatedListener, ColumnDeletedListener,
+													 ColumnNameChangedListener, RowsSetListener {
 
 	private static final long serialVersionUID = 4415856756184765301L;
 
@@ -153,29 +164,32 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				final int column = getColumnModel().getColumnIndexAtX(e.getX());
-				final int row = e.getY() / getRowHeight();
+				final int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
+				final int viewRow = e.getY() / getRowHeight();
 
 				final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
 
+				int modelColumn = convertColumnIndexToModel(viewColumn);
+				int modelRow = convertRowIndexToModel(viewRow);
+				
 				// Bail out if we're at the ID column:
-				if (tableModel.isPrimaryKey(column))
+				if (tableModel.isPrimaryKey(modelColumn))
 					return;
 
 				// Make sure the column and row we're clicking on actually
 				// exists!
-				if (column >= tableModel.getColumnCount() || row >= tableModel.getRowCount())
+				if (modelColumn >= tableModel.getColumnCount() || modelRow >= tableModel.getRowCount())
 					return;
 
 				// If action is right click, then show edit pop-up menu
 				if ((SwingUtilities.isRightMouseButton(e)) || (isMacPlatform() && e.isControlDown())) {
-					final CyColumn cyColumn = tableModel.getColumn(column);
-					final Object primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(row,
+					final CyColumn cyColumn = tableModel.getColumn(modelColumn);
+					final Object primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(modelRow,
 							tableModel.getDataTable().getPrimaryKey().getName())).getValidatedObject();
 					popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, table, e.getX(), e.getY());
 				} else if (SwingUtilities.isLeftMouseButton(e) && (getSelectedRows().length != 0)) {
 					// Display List menu.
-					showListContents(row, column, e);
+					showListContents(modelRow, modelColumn, e);
 				}
 			}
 
@@ -285,7 +299,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		// user click on open space on canvas, so we have to remember it before
 		// it is gone
 		BrowserTableModel model = (BrowserTableModel) this.getModel();
-		editorRemover.setCellData(model.getCellData(row, column));
+		CyRow cyRow = model.getCyRow(convertRowIndexToModel(row));
+		String columnName = model.getColumnName(convertColumnIndexToModel(column));
+		editorRemover.setCellData(cyRow, columnName);
 
 		if ((editor != null) && editor.isCellEditable(e)) {
 			// Do this first so that the bounds of the JTextArea editor
@@ -322,13 +338,11 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		return false;
 	}
 
-	public void showListContents(int viewRowIndex, int viewColumnIndex, MouseEvent e) {
+	public void showListContents(int modelRow, int modelColumn, MouseEvent e) {
 		final BrowserTableModel model = (BrowserTableModel) getModel();
-		final Class<?> columnType = model.getColumn(viewColumnIndex).getType();
+		final Class<?> columnType = model.getColumn(modelColumn).getType();
 
 		if (columnType == List.class) {
-			int modelRow = convertRowIndexToModel(viewRowIndex);
-			int modelColumn = convertColumnIndexToModel(viewColumnIndex);
 			final ValidatedObjectAndEditString value = (ValidatedObjectAndEditString) model.getValueAt(modelRow, modelColumn);
 
 			if (value != null) {
@@ -419,7 +433,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				else {
 					final String columnName = tableModel.getColumnName(cellColumn);
 					final Map<String, Class> attribNameToTypeMap = new HashMap<String, Class>();
-					FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler, tableModel,
+					FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler, BrowserTable.this,
 							rootFrame, columnName);
 					formulaBuilderDialog.setLocationRelativeTo(rootFrame);
 					formulaBuilderDialog.setVisible(true);
@@ -566,7 +580,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		private final KeyboardFocusManager focusManager;
 		private BrowserTableModel model;
 		private int row = -1, column = -1;
-		private Vector cellVect = null;
+		private CyRow cyRow;
+		private String columnName;
 
 		public CellEditorRemover(final KeyboardFocusManager fm) {
 			this.focusManager = fm;
@@ -607,20 +622,17 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		// disappear if
 		// user click on open space on canvas, so we have to remember it before
 		// it is gone
-		public void setCellData(Vector cellVect) {
-			this.cellVect = cellVect;
+		public void setCellData(CyRow row, String columnName) {
+			this.cyRow = row;
+			this.columnName = columnName;
 		}
 
 		private void updateAttributeAfterCellLostFocus() {
-
-			CyRow rowObj = (CyRow) cellVect.get(0);
-			String columnName = (String) cellVect.get(1);
-
-			ArrayList parsedData = TableBrowserUtil.parseCellInput(rowObj.getTable(), columnName,
+			ArrayList parsedData = TableBrowserUtil.parseCellInput(cyRow.getTable(), columnName,
 					MultiLineTableCellEditor.lastValueUserEntered);
 
 			if (parsedData.get(0) != null) {
-				rowObj.set(columnName, MultiLineTableCellEditor.lastValueUserEntered);
+				cyRow.set(columnName, MultiLineTableCellEditor.lastValueUserEntered);
 			} else {
 				// Error
 				// discard the change
@@ -711,6 +723,219 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	public boolean isSortedColumnAscending() {
 		return sortedColumnAscending;
 	}
+
+	public void setVisibleAttributeNames(Collection<String> visibleAttributes) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		for (final String name : model.getAllAttributeNames()) {
+			int col = model.mapColumnNameToColumnIndex(name);
+			int convCol = convertColumnIndexToView(col);
+			TableColumn column = columnModel.getColumnByModelIndex(col);
+			columnModel.setColumnVisible(column, visibleAttributes.contains(name));
+		}
+		
+		//don't fire this, it will reset all the columns based on model
+		//fireTableStructureChanged();
+	}
+
+	public List<String> getVisibleAttributeNames() {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		final List<String> visibleAttrNames = new ArrayList<String>();		
+		for (final String name : model.getAllAttributeNames()) {
+			if (isColumnVisible(name))
+				visibleAttrNames.add(name);
+		}
+		
+		return visibleAttrNames;
+	}
+
+	public boolean isColumnVisible(String name) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		TableColumn column = columnModel.getColumnByModelIndex(model.mapColumnNameToColumnIndex(name));
+		return columnModel.isColumnVisible(column);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void handleEvent(final ColumnCreatedEvent e) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+		
+		if (e.getSource() != dataTable)
+			return;
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+
+		model.addColumn(e.getColumnName());
+		
+		int colIndex = columnModel.getColumnCount(false);
+		TableColumn newCol = new TableColumn(colIndex);
+		newCol.setHeaderValue(e.getColumnName());
+		setUpdateComparators(false);
+		addColumn(newCol);
+		final TableRowSorter<BrowserTableModel> rowSorter = new TableRowSorter<BrowserTableModel>(model);
+		setRowSorter(rowSorter);
+		updateColumnComparators(rowSorter, model);
+		setUpdateComparators(true);
+
+	}
+
+	void updateColumnComparators(final TableRowSorter<BrowserTableModel> rowSorter,
+			final BrowserTableModel browserTableModel) {
+		for (int column = 0; column < browserTableModel.getColumnCount(); ++column)
+			rowSorter.setComparator(
+					column,
+					new ValidatedObjectAndEditStringComparator(
+							browserTableModel.getColumnByModelIndex(column).getType()));
+	}
+
+	@Override
+	public void handleEvent(final ColumnDeletedEvent e) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+		
+		if (e.getSource() != dataTable)
+			return;
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+
+		final String columnName = e.getColumnName();
+		boolean columnFound = false;
+		int removedColIndex = -1;
+		
+		List<String> attrNames = model.getAllAttributeNames();
+		for (int i = 0; i < attrNames.size(); ++i) {
+			if (attrNames.get(i).equals(columnName)) {
+				removedColIndex = i;
+				columnModel.removeColumn (columnModel.getColumn(convertColumnIndexToView(i)));
+				columnFound = true;
+			}
+			else if (columnFound){ //need to push back the model indexes for all of the columns after this
+				
+				TableColumn nextCol = columnModel.getColumnByModelIndex(i); 
+				nextCol.setModelIndex(i- 1);
+			}
+		}
+		
+		if (removedColIndex != -1){//remove the item after the loop is done
+			model.removeColumn(removedColIndex);
+		}
+
+	}
+
+	@Override
+	public void handleEvent(final ColumnNameChangedEvent e) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+
+		if (e.getSource() != dataTable)
+			return;
+
+		final String newColumnName = e.getNewColumnName();
+		final int column = model.mapColumnNameToColumnIndex(e.getOldColumnName());
+		if (isColumnVisible(e.getOldColumnName())){
+			int colIndex = convertColumnIndexToView(column);
+			if (colIndex != -1)
+				getColumnModel().getColumn(colIndex).setHeaderValue(newColumnName);
+		}
+		
+		renameColumnName(e.getOldColumnName(), newColumnName);
+
+	}
+
+	private void renameColumnName(final String oldName, final String newName) {
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		
+		int index = model.mapColumnNameToColumnIndex(oldName);
+		if (index >= 0){
+			model.setColumnName(index, newName);
+			columnModel.getColumn(convertColumnIndexToView(index)).setHeaderValue(newName);
+			return;
+		}
 	
+		throw new IllegalStateException("The specified column " + oldName +" does not exist in the model.");
+	}
+
+	@Override
+	public void handleEvent(final RowsSetEvent e) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+
+		if (e.getSource() != dataTable)
+			return;		
+
+		if (!model.isShowAll()) {
+			model.clearSelectedRows();
+			boolean foundANonSelectedColumnName = false;
+			for (final RowSetRecord rowSet : e.getPayloadCollection()) {
+				if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
+					foundANonSelectedColumnName = true;
+					break;
+				}
+			}
+			if (!foundANonSelectedColumnName) {
+				model.fireTableDataChanged();
+				return;
+			}
+		}
+
+		final Collection<RowSetRecord> rows = e.getPayloadCollection();
+
+		synchronized (this) {
+			if (!model.isShowAll()) {
+				model.fireTableDataChanged();
+			} else {
+				//table.clearSelection();
+				//fireTableDataChanged();
+				if(tableManager.getGlobalTables().contains(dataTable) == false)
+					bulkUpdate(rows);
+			}
+		}
+	}
 	
+	/**
+	 * Select rows in the table when something selected in the network view.
+	 * @param rows
+	 */
+	private void bulkUpdate(final Collection<RowSetRecord> rows) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+
+		final Map<Long, Boolean> suidMapSelected = new HashMap<Long, Boolean>();
+		final Map<Long, Boolean> suidMapUnselected = new HashMap<Long, Boolean>();
+
+		for(RowSetRecord rowSetRecord : rows) {
+			if(rowSetRecord.getColumn().equals(CyNetwork.SELECTED)){
+				if(((Boolean)rowSetRecord.getValue()) == true){
+					suidMapSelected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class), (Boolean) rowSetRecord.getValue());
+				}
+				else{
+					suidMapUnselected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class), (Boolean) rowSetRecord.getValue());
+				}
+			}
+		}
+
+		final String pKeyName = dataTable.getPrimaryKey().getName();
+		final int rowCount = getRowCount();
+		for(int i=0; i<rowCount; i++) {
+			//getting the row from data table solves the problem with hidden or moved SUID column. However, since the rows might be sorted we need to convert the index to model
+			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) model.getValueAt(i, pKeyName );
+			Long pk = null;
+			try{
+				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
+				pk = Long.parseLong(tableKey.getEditString());
+			} catch (NumberFormatException nfe) {
+				System.out.println("Error parsing long from table " + getName() + ": " + nfe.getMessage());
+			}
+			if(pk != null) {
+				if (suidMapSelected.keySet().contains(pk)){
+					addRowSelectionInterval(i, i);
+				}else if (suidMapUnselected.keySet().contains(pk)){
+					removeRowSelectionInterval(i, i);
+				}
+
+			}
+		}
+	}
 }
