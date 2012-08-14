@@ -48,6 +48,9 @@ import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
 
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
@@ -130,6 +133,8 @@ import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.command.AvailableCommands;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -146,6 +151,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	@Override
 	public void start(BundleContext bc) throws Exception {
+		setLookAndFeel();
 		
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
@@ -460,6 +466,31 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		registerService(bc, fullScreenAction, CyAction.class, new Properties());
 		
+	}
+
+	private void setLookAndFeel() {
+		Logger logger = LoggerFactory.getLogger(getClass());
+		String lookAndFeel;
+		// update look and feel
+		if (System.getProperty("os.name").startsWith("Mac OS X") ||
+		    System.getProperty("os.name").startsWith("Windows"))
+			lookAndFeel = UIManager.getSystemLookAndFeelClassName();
+		else {
+			// Use Nimbus on Unix systems
+			lookAndFeel = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+		}
+		try {
+			logger.debug("setting look and feel to: " + lookAndFeel);
+			UIManager.setLookAndFeel(lookAndFeel);
+		} catch (ClassNotFoundException e) {
+			logger.error("Unexpected error", e);
+		} catch (InstantiationException e) {
+			logger.error("Unexpected error", e);
+		} catch (IllegalAccessException e) {
+			logger.error("Unexpected error", e);
+		} catch (UnsupportedLookAndFeelException e) {
+			logger.error("Unexpected error", e);
+		}
 	}
 
 	private boolean isMac() {

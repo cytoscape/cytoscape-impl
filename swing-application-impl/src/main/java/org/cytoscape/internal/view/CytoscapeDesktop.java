@@ -48,6 +48,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyShutdown;
@@ -158,22 +159,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 		setJMenuBar(cyMenus.getJMenuBar());
 
-		// update look and feel
-		try {
-			String laf = null;
-			if (System.getProperty("os.name").startsWith("Mac OS X") ||
-			    System.getProperty("os.name").startsWith("Windows"))
-				laf = UIManager.getSystemLookAndFeelClassName();
-			else {
-				// Use Nimbus on Unix systems
-				laf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
-			}
-
-			logger.debug("setting look and feel to: " + laf);
-			UIManager.setLookAndFeel(laf);
-			SwingUtilities.updateComponentTreeUI(this);
-		} catch (Exception e) { /* not really a problem if this fails */ }
-		
 		if(System.getProperty("os.name").startsWith("Mac OS X")) {
 			// Enable full screen mode for 10.7+
 			FullScreenUtilities.setWindowCanFullScreen(this, true);
