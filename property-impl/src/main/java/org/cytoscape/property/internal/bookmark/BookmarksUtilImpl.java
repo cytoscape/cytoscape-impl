@@ -332,4 +332,8 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		return false;
 	}
 
+	
+	public org.cytoscape.io.datasource.DataSource getCyDataSource(DataSource pDataSource){
+		return this.dataSourceMap.get(pDataSource);
+	}
 }
