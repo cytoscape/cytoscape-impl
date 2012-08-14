@@ -62,20 +62,22 @@ public class SUIDUpdater {
 	}
 	
 	public void updateSUIDColumns() {
-		final Set<CyColumn> updated = new HashSet<CyColumn>();
+		final Set<String/*tableName_columnName*/> updated = new HashSet<String>();
 	
 		for (final CyTable tbl : tables) {
 			final Collection<CyColumn> columns = tbl.getColumns();
 			
 			for (final CyColumn c : columns) {
-				if (isUpdatableSUIDColumn(c) && !updated.contains(c)) {
+				final String columnId = tbl.getTitle() + "_" + c.getName();
+				
+				if (isUpdatableSUIDColumn(c) && !updated.contains(columnId)) {
 					Set<String> ignoredNames = ignoredColumns.get(tbl);
 					
 					if (ignoredNames != null && ignoredNames.contains(c.getName()))
 						continue;
 						
 					updateRows(tbl, c);
-					updated.add(c);
+					updated.add(columnId);
 				}
 			}
 		}
