@@ -29,38 +29,10 @@
 package org.cytoscape.model.internal;
 
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import org.cytoscape.equations.Equation;
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.SavePolicy;
-import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.model.VirtualColumnInfo;
-import org.cytoscape.model.events.ColumnCreatedEvent;
-import org.cytoscape.model.events.ColumnDeletedEvent;
-import org.cytoscape.model.events.ColumnNameChangedEvent;
-import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.events.RowsCreatedEvent;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.TableAddedEvent;
-import org.cytoscape.model.events.TableAddedListener;
-import org.cytoscape.model.events.TablePrivacyChangedEvent;
-import org.cytoscape.model.events.TableTitleChangedEvent;
-
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.HashMultimap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,5 +95,10 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 
 	public void addVirtualColumns(CyTable sourceTable, String targetJoinKey, boolean isImmutable) {
 		shared.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);
+	}
+	
+	@Override
+	protected void updateColumnName(String oldName, String newName) {
+		shared.getColumn(oldName).setName(newName);
 	}
 }

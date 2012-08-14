@@ -32,35 +32,15 @@ package org.cytoscape.model.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.cytoscape.equations.Equation;
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.VirtualColumnInfo;
-import org.cytoscape.model.events.ColumnCreatedEvent;
-import org.cytoscape.model.events.ColumnDeletedEvent;
-import org.cytoscape.model.events.ColumnNameChangedEvent;
-import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.events.RowsCreatedEvent;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.TableAddedEvent;
-import org.cytoscape.model.events.TableAddedListener;
-import org.cytoscape.model.events.TablePrivacyChangedEvent;
-import org.cytoscape.model.events.TableTitleChangedEvent;
-
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.HashMultimap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,12 +53,14 @@ public abstract class AbstractTableFacade implements CyTable {
 	private static final Logger logger = LoggerFactory.getLogger(AbstractTableFacade.class);
 	private final CyTable actual;
 	private final Long suid;
-	private final Map<CyRow,CyRow> facadeRows; 
+	private final Map<CyRow,CyRow> facadeRows;
+	private final Map<CyColumn,CyColumn> facadeColumns;
 
 	public AbstractTableFacade(CyTable actual) {
 		this.actual = actual;
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID()); 
 		this.facadeRows = new HashMap<CyRow,CyRow>();
+		this.facadeColumns = new HashMap<CyColumn,CyColumn>();
 	}
 
 	public Long getSUID() {
@@ -110,11 +92,33 @@ public abstract class AbstractTableFacade implements CyTable {
 	}
 
 	public CyColumn getColumn(String columnName) {
-		return actual.getColumn(columnName);
+		CyColumn actualColumn = actual.getColumn(columnName);
+		if ( actualColumn == null )
+			return null;
+		
+		return getFacadeColumn(actualColumn);
+	}
+
+	private CyColumn getFacadeColumn(CyColumn actualColumn) {
+		CyColumn ret = facadeColumns.get(actualColumn);
+		if ( ret == null ) {
+			ret = new ColumnFacade(actualColumn);
+			facadeColumns.put(actualColumn,ret);
+		}
+		
+		return ret;
 	}
 
 	public Collection<CyColumn> getColumns() {
-		return actual.getColumns();
+		return getFacadeColumns(actual.getColumns());
+	}
+
+	private Collection<CyColumn> getFacadeColumns(Collection<CyColumn> columns) {
+		List<CyColumn> facadeColumns = new ArrayList<CyColumn>( columns.size() ); 
+		for ( CyColumn column : columns )
+			facadeColumns.add( getFacadeColumn(column) ); 
+
+		return facadeColumns;
 	}
 
 	public CyRow getRow(Object primaryKey) {
@@ -185,6 +189,8 @@ public abstract class AbstractTableFacade implements CyTable {
 		actual.swap(otherTable);	
 	}
 
+	protected abstract void updateColumnName(String oldName, String newName);
+	
 	private class RowFacade implements CyRow {
 		private final CyRow actualRow;
 		private final CyTable table;
@@ -263,5 +269,64 @@ public abstract class AbstractTableFacade implements CyTable {
 		public String toString() {
 			return "FACADE of: " + actualRow.toString();
 		}
+	}
+	
+	private class ColumnFacade implements CyColumn {
+		private final CyColumn actualColumn;
+
+		public ColumnFacade(CyColumn actualColumn) {
+			this.actualColumn = actualColumn;
+		}
+
+		@Override
+		public String getName() {
+			return actualColumn.getName();
+		}
+
+		@Override
+		public void setName(String newName) {
+			updateColumnName(actualColumn.getName(), newName);
+		}
+
+		@Override
+		public Class<?> getType() {
+			return actualColumn.getType();
+		}
+
+		@Override
+		public Class<?> getListElementType() {
+			return actualColumn.getListElementType();
+		}
+
+		@Override
+		public boolean isPrimaryKey() {
+			return actualColumn.isPrimaryKey();
+		}
+
+		@Override
+		public boolean isImmutable() {
+			return actualColumn.isImmutable();
+		}
+
+		@Override
+		public CyTable getTable() {
+			return AbstractTableFacade.this;
+		}
+
+		@Override
+		public <T> List<T> getValues(Class<? extends T> type) {
+			return actualColumn.getValues(type);
+		}
+
+		@Override
+		public VirtualColumnInfo getVirtualColumnInfo() {
+			return actualColumn.getVirtualColumnInfo();
+		}
+
+		@Override
+		public Object getDefaultValue() {
+			return actualColumn.getDefaultValue();
+		}
+		
 	}
 }
