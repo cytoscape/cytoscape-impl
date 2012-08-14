@@ -52,6 +52,7 @@ public class WebApp {
 	private List<Release> releases;
 	
 	public static class Release implements Comparable<Release> {
+		private String baseUrl;
 		private String relativeUrl;
 		private String releaseDate;
 		private String releaseVersion;
@@ -61,6 +62,10 @@ public class WebApp {
 		@Override
 		public int compareTo(Release other) {
 			return releaseDate.compareToIgnoreCase(other.releaseDate);
+		}
+		
+		public String getBaseUrl() {
+			return baseUrl;
 		}
 		
 		public String getRelativeUrl() {
@@ -81,6 +86,10 @@ public class WebApp {
 		
 		public String getSha512Checksum() {
 			return sha512Checksum;
+		}
+		
+		public void setBaseUrl(String baseUrl) {
+			this.baseUrl = baseUrl;
 		}
 		
 		public void setRelativeUrl(String relativeUrl) {

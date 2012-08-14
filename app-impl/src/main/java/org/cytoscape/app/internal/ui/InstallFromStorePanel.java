@@ -671,7 +671,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 		
     	} else {
     		
-    		descriptionTextPane.setText("App description is displayed here.");
+    		//descriptionTextPane.setText("App description is displayed here.");
+    		descriptionTextPane.setText("");
+    		
     		this.selectedApp = null;
     		
     		installButton.setEnabled(false);

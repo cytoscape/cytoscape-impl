@@ -179,6 +179,8 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         		populateUpdatesTable();
         	}
         });
+        
+        setupDescriptionListener();
     }
 
     private void installSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -207,7 +209,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 						private static final long serialVersionUID = 5428723339522445073L;
 						
 						boolean[] canEdit = new boolean [] {
-			                false, false
+			                false, false, false, false
 			            };
 
 			            public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -223,7 +225,8 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 		    				update,
 		    				update.getApp().getVersion(),
 		    				update.getUpdateVersion(),
-		    				update.getUpdateUrl()
+		    				(update.getRelease().getBaseUrl() 
+		    						+ update.getRelease().getRelativeUrl()).replaceAll("//+", "/").replaceFirst(":/", "://")
 					});
 		    	}
 			}
@@ -259,14 +262,31 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 			
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				updateDescriptionBox();
+				if (!e.getValueIsAdjusting()) {
+					//System.out.println("selection change " + e.getFirstIndex());
+					//System.out.println("selected: " + getSelectedUpdates().size());
+					
+					updateDescriptionBox();
+				}
 			}
 		});
     }
     
     private void updateDescriptionBox() {
-//    	Set<Update> selectedUpdates = 
+    	Set<Update> selectedUpdates = getSelectedUpdates();
 
+    	if (selectedUpdates.size() == 1) {
+    		Update update = selectedUpdates.iterator().next();
+    		descriptionTextArea.setText("Update for " 
+    				+ update.getApp().getAppName() 
+    				+ ": " + update.getApp().getVersion() + " -> " 
+    				+ update.getRelease().getReleaseVersion());
+    		
+    		
+    	} else if (selectedUpdates.size() > 1) {
+    		
+    	}
+    	
 //   	descriptionTextArea.setText("Update from ")
     }
 }

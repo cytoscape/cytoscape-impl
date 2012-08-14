@@ -16,9 +16,11 @@ public class Update {
 	/** The version of the new updated app */
 	private String updateVersion;
 
-	private String updateUrl;
+	private WebApp webApp;
 	
-	/** Obtain the {@link App}pp object that the update is associated with. */
+	private WebApp.Release release;
+	
+	/** Obtain the {@link App} object that the update applies to. */
 	public App getApp() {
 		return app;
 	}
@@ -32,9 +34,20 @@ public class Update {
 	public String getUpdateVersion() {
 		return updateVersion;
 	}
-
-	public String getUpdateUrl() {
-		return updateUrl;
+	
+	/**
+	 * @return The associate {@link WebApp} object containing information from the app 
+	 * store about this app
+	 */
+	public WebApp getWebApp() {
+		return webApp;
+	}
+	
+	/**
+	 * @return The latest release of the app, to be downloaded with this update
+	 */
+	public WebApp.Release getRelease() {
+		return release;
 	}
 	
 	public void setApp(App app) {
@@ -48,9 +61,13 @@ public class Update {
 	public void setUpdateVersion(String updateVersion) {
 		this.updateVersion = updateVersion;
 	}
+
+	public void setWebApp(WebApp webApp) {
+		this.webApp = webApp;
+	}
 	
-	public void setUpdateUrl(String updateUrl) {
-		this.updateUrl = updateUrl;
+	public void setRelease(WebApp.Release release) {
+		this.release = release;
 	}
 	
 	@Override

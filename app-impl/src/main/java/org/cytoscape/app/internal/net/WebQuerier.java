@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -25,6 +26,7 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.AppParser;
 import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
+import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.io.util.StreamUtil;
@@ -334,6 +336,7 @@ public class WebQuerier {
 							
 							WebApp.Release release = new WebApp.Release();
 							
+							release.setBaseUrl(currentAppStoreUrl);
 							release.setRelativeUrl(jsonRelease.optString("release_download_url"));
 							release.setReleaseDate(jsonRelease.optString("created_iso"));
 							release.setReleaseVersion(jsonRelease.optString("version"));							
@@ -347,8 +350,15 @@ public class WebQuerier {
 							releases.add(release);
 						}
 						
-						// Sort releases by release date
-						Collections.sort(releases);
+						// Sort releases by version number
+						Collections.sort(releases, new Comparator<WebApp.Release>() {
+
+							@Override
+							public int compare(Release first, Release second) {
+								return compareVersions(first.getReleaseVersion(), second.getReleaseVersion());
+							}
+							
+						});
 					}
 					
 					webApp.setReleases(releases);
@@ -599,7 +609,8 @@ public class WebQuerier {
 									Update update = new Update();
 									update.setUpdateVersion(highestVersionRelease.getReleaseVersion());
 									update.setApp(app);
-									update.setUpdateUrl(url + highestVersionRelease.getRelativeUrl()); 
+									update.setWebApp(webApp);
+									update.setRelease(highestVersionRelease);
 									
 									return update;
 								}
@@ -626,6 +637,10 @@ public class WebQuerier {
 	 * or 0 if the versions were the same or unable to determine which is more recent.
 	 */
 	public int compareVersions(String first, String second) {
+		if (first == null || second == null) {
+			return 0;
+		}
+		
 		String[] firstSplit = first.split("\\.", 3);
 		String[] secondSplit = second.split("\\.", 3);
 		

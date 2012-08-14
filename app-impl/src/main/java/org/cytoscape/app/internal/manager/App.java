@@ -484,6 +484,11 @@ public abstract class App {
 		// Return false if different app names
 		if (appName.equalsIgnoreCase(other.appName)
 				&& version.equalsIgnoreCase(other.version)) {
+
+			if (sha512Checksum != null && other.sha512Checksum != null) {
+				return (sha512Checksum.equalsIgnoreCase(other.sha512Checksum));
+			}
+			
 			return true;
 		}
 		
