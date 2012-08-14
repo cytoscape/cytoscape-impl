@@ -16,6 +16,7 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
 import static org.cytoscape.work.ServiceProperties.*;
@@ -30,6 +31,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
+		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 		VisualMappingManager visualMappingManagerServiceRef = getService(bc, VisualMappingManager.class);
 		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
@@ -71,7 +73,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Cut node
 		NetworkViewTaskFactory cutTaskFactory = 
-			new CutTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+			new CutTaskFactory(clipboardManager, undoSupportServiceRef, cyNetworkManagerServiceRef);
 		Properties cutTaskFactoryProps = new Properties();
 		cutTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		cutTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -83,7 +85,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Paste node
 		NetworkViewLocationTaskFactory pasteTaskFactory = 
-			new PasteTaskFactory(clipboardManager, cyEventHelperServiceRef, visualMappingManagerServiceRef);
+			new PasteTaskFactory(clipboardManager, cyEventHelperServiceRef, 
+		                       undoSupportServiceRef, visualMappingManagerServiceRef);
 		Properties pasteTaskFactoryProps = new Properties();
 		pasteTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		pasteTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -110,7 +113,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Cut node
 		NodeViewTaskFactory cutNodeTaskFactory = 
-			new CutNodeTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+			new CutNodeTaskFactory(clipboardManager, undoSupportServiceRef, cyNetworkManagerServiceRef);
 		Properties cutNodeTaskFactoryProps = new Properties();
 		cutNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		cutNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
@@ -159,7 +162,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Cut edge
 		EdgeViewTaskFactory cutEdgeTaskFactory = 
-			new CutEdgeTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
+			new CutEdgeTaskFactory(clipboardManager, undoSupportServiceRef, cyNetworkManagerServiceRef);
 		Properties cutEdgeTaskFactoryProps = new Properties();
 		cutEdgeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		cutEdgeTaskFactoryProps.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);

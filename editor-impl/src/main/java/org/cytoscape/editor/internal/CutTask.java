@@ -10,6 +10,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,11 +20,14 @@ public class CutTask extends AbstractTask {
 	CyNetwork net;
 	CyNetworkView view;
 	ClipboardManagerImpl mgr;
+	final UndoSupport undoSupport;
 	List<CyNode> selNodes;
 	List<CyEdge> selEdges;
 	
-	public CutTask(final CyNetworkView netView, final ClipboardManagerImpl clipMgr) {
+	public CutTask(final CyNetworkView netView, final ClipboardManagerImpl clipMgr, 
+	               final UndoSupport undoSupport) {
 		this.view = netView;
+		this.undoSupport = undoSupport;
 		// Get all of the selected nodes and edges
 		selNodes = CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true);
 		selEdges = CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true);
@@ -33,10 +37,10 @@ public class CutTask extends AbstractTask {
 	}
 
 	public CutTask(final CyNetworkView netView, final View<?extends CyIdentifiable> objView, 
-	               final ClipboardManagerImpl clipMgr) {
+	               final ClipboardManagerImpl clipMgr, final UndoSupport undoSupport) {
 
 		// Get all of the selected nodes and edges first
-		this(netView, clipMgr);
+		this(netView, clipMgr, undoSupport);
 
 		// Now, make sure we add our
 		if (objView.getModel() instanceof CyNode) {
@@ -52,5 +56,6 @@ public class CutTask extends AbstractTask {
 
 	public void run(TaskMonitor tm) throws Exception {
 		mgr.cut(view, selNodes, selEdges);
+		undoSupport.postEdit(new CutEdit(mgr, view));
 	}
 }

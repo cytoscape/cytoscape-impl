@@ -9,17 +9,21 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class PasteTaskFactory extends AbstractNetworkViewLocationTaskFactory {
 
 	private final CyEventHelper eh;
 	private final VisualMappingManager vmm;
 	private final ClipboardManagerImpl clipMgr;
+	private final UndoSupport undoSupport;
 	
-	public PasteTaskFactory(final ClipboardManagerImpl mgr, CyEventHelper eh, VisualMappingManager vmm) {
+	public PasteTaskFactory(final ClipboardManagerImpl mgr, CyEventHelper eh, 
+	                        UndoSupport undoSupport, VisualMappingManager vmm) {
 		this.clipMgr = mgr;
 		this.eh = eh;
 		this.vmm = vmm;
+		this.undoSupport = undoSupport;
 	}
 
 	@Override
@@ -33,7 +37,7 @@ public class PasteTaskFactory extends AbstractNetworkViewLocationTaskFactory {
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, 
 	                                       Point2D javaPt, Point2D xformPt) {
-		return new TaskIterator(new PasteTask(vmm, networkView, xformPt, clipMgr));
+		return new TaskIterator(new PasteTask(vmm, networkView, xformPt, clipMgr, undoSupport));
 	}
 
 }

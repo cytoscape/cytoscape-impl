@@ -14,14 +14,18 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class CutTaskFactory extends AbstractNetworkViewTaskFactory {
 	final CyNetworkManager netMgr;
 	final ClipboardManagerImpl clipMgr;
+	final UndoSupport undoSupport;
 
-	public CutTaskFactory(final ClipboardManagerImpl clipboardMgr, final CyNetworkManager netMgr) {
+	public CutTaskFactory(final ClipboardManagerImpl clipboardMgr, final UndoSupport undoSupport, 
+	                      final CyNetworkManager netMgr) {
 		this.netMgr = netMgr;
 		this.clipMgr = clipboardMgr;
+		this.undoSupport = undoSupport;
 	}
 
 	@Override
@@ -38,6 +42,6 @@ public class CutTaskFactory extends AbstractNetworkViewTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView) {
-		return new TaskIterator(new CutTask(networkView, clipMgr));
+		return new TaskIterator(new CutTask(networkView, clipMgr, undoSupport));
 	}
 }
