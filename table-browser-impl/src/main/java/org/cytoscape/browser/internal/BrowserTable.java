@@ -41,6 +41,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.border.Border;
@@ -774,11 +775,12 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		newCol.setHeaderValue(e.getColumnName());
 		setUpdateComparators(false);
 		addColumn(newCol);
+		List<? extends SortKey> sortKeys = getRowSorter().getSortKeys();
 		final TableRowSorter<BrowserTableModel> rowSorter = new TableRowSorter<BrowserTableModel>(model);
 		setRowSorter(rowSorter);
 		updateColumnComparators(rowSorter, model);
 		setUpdateComparators(true);
-
+		rowSorter.setSortKeys(sortKeys);
 	}
 
 	void updateColumnComparators(final TableRowSorter<BrowserTableModel> rowSorter,
