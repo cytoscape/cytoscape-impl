@@ -24,12 +24,17 @@
 package org.cytoscape.browser.internal;
 
 import java.awt.Component;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JTable;
+import javax.swing.RowSorter;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.SortOrder;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
 
 import org.cytoscape.browser.internal.util.SortArrowIcon;
 
@@ -79,13 +84,17 @@ public class SortHeaderRenderer extends DefaultTableCellRenderer {
 		int index = -1;
 		boolean ascending = true;
 
-		if (table instanceof BrowserTable) {
-			BrowserTable sortTable = (BrowserTable) table;
-			index = sortTable.getSortedColumnIndex();
-			ascending = sortTable.isSortedColumnAscending();
-		}
-
 		if (table != null) {
+			RowSorter<? extends TableModel> rowSorter = table.getRowSorter();
+			int modelColumn = table.convertColumnIndexToModel(col);
+			List<? extends SortKey> sortKeys = rowSorter.getSortKeys();
+			if (sortKeys.size() > 0) {
+				SortKey key = sortKeys.get(0);
+				if (key.getColumn() == modelColumn) {
+					index = col;
+					ascending = key.getSortOrder() == SortOrder.ASCENDING;
+				}
+			}
 			JTableHeader header = table.getTableHeader();
 
 			if (header != null) {

@@ -2,7 +2,6 @@ package org.cytoscape.browser.internal;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -27,6 +26,7 @@ import java.util.Collection;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,7 +100,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
-	private boolean updateColumnComparators;
 
 	private final CyApplicationManager applicationManager;
 	private final CyEventHelper eventHelper;
@@ -108,22 +107,18 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private JPopupMenu cellMenu;
 
-	private int sortedColumnIndex;
-	private boolean sortedColumnAscending;
-	
 	public BrowserTable(final EquationCompiler compiler, final PopupMenuHelper popupMenuHelper,
 			final CyApplicationManager applicationManager, final CyEventHelper eventHelper,
 			final CyTableManager tableManager) {
 		this.compiler = compiler;
 		this.popupMenuHelper = popupMenuHelper;
-		this.updateColumnComparators = false;
 		this.applicationManager = applicationManager;
 		this.eventHelper = eventHelper;
 		this.tableManager = tableManager;
-		this.sortedColumnAscending = true;
-		this.sortedColumnIndex = -1;
 		
 		initHeader();
+		setAutoCreateColumnsFromModel(false);
+		setAutoCreateRowSorter(false);
 		setCellSelectionEnabled(true);
 		setDefaultEditor(Object.class, new MultiLineTableCellEditor());
 		getPopupMenu();
@@ -132,8 +127,30 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		setTransferHandler(new BrowserTableTransferHandler());
 	}
 
-	public void setUpdateComparators(final boolean updateColumnComparators) {
-		this.updateColumnComparators = updateColumnComparators;
+	@Override
+	public void setModel(TableModel dataModel) {
+		super.setModel(dataModel);
+		
+ 		BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
+		setColumnModel(columnModel);
+		
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dataModel);
+		setRowSorter(sorter);
+
+		if (!(dataModel instanceof BrowserTableModel)) {
+			return;
+		}
+		
+		BrowserTableModel model = (BrowserTableModel) dataModel;
+		for (int i = 0; i < model.getColumnCount(); i++) {
+			TableColumn tableColumn = new TableColumn(i);
+			tableColumn.setHeaderValue(model.getColumnName(i));
+			columnModel.addColumn(tableColumn);
+			
+			CyColumn column = model.getColumnByModelIndex(i);
+			sorter.setComparator(i, new ValidatedObjectAndEditStringComparator(column.getType()));
+		}
+		
 	}
 
 	/**
@@ -464,24 +481,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	@Override
 	public void mouseClicked(final MouseEvent event) {
-		
-		//*******************Sort header code **********************
-
-		final int cursorType = getTableHeader().getCursor().getType();
-		if ((event.getButton() == MouseEvent.BUTTON1) && (cursorType != Cursor.E_RESIZE_CURSOR)
-				&& (cursorType != Cursor.W_RESIZE_CURSOR)) {
-			final int index = getColumnModel().getColumnIndexAtX(event.getX());
-
-			if (index >= 0) {
-				final int modelIndex = getColumnModel().getColumn(index).getModelIndex();
-				if (sortedColumnIndex == index) {
-					sortedColumnAscending = !sortedColumnAscending;
-				}
-
-				sortedColumnIndex = index;
-			}
-		}//end of sorting
-		else if (event.getButton() == MouseEvent.BUTTON3) {
+		if (event.getButton() == MouseEvent.BUTTON3) {
 			final int column = getColumnModel().getColumnIndexAtX(event.getX());
 			final BrowserTableModel tableModel = (BrowserTableModel) getModel();
 
@@ -641,21 +641,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		}
 	}
 
-	public void addColumn(final TableColumn aColumn) {
-		super.addColumn(aColumn);
-
-		if (!updateColumnComparators)
-			return;
-
-		final TableRowSorter rowSorter = (TableRowSorter) getRowSorter();
-		if (rowSorter == null)
-			return;
-
-		final BrowserTableModel tableModel = (BrowserTableModel)getModel();
-		final Class<?> rowDataType = tableModel.getColumnByModelIndex(aColumn.getModelIndex()).getType();
-		rowSorter.setComparator(aColumn.getModelIndex(), new ValidatedObjectAndEditStringComparator(rowDataType));
-	}
-
 	@Override
 	public void paint(Graphics graphics) {
 		synchronized (getModel()) {
@@ -715,16 +700,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	
-	//*******************Sort header code **********************
-	public int getSortedColumnIndex() {
-		return sortedColumnIndex;
-	}
-
-	
-	public boolean isSortedColumnAscending() {
-		return sortedColumnAscending;
-	}
-
 	public void setVisibleAttributeNames(Collection<String> visibleAttributes) {
 		BrowserTableModel model = (BrowserTableModel) getModel();
 
@@ -766,6 +741,12 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		
 		if (e.getSource() != dataTable)
 			return;
+		
+		TableRowSorter<BrowserTableModel> sorter = (TableRowSorter<BrowserTableModel>) getRowSorter();
+		List<? extends SortKey> sortKeys = sorter.getSortKeys();
+
+		model.fireTableStructureChanged();
+		
 		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
 
 		model.addColumn(e.getColumnName());
@@ -773,24 +754,14 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		int colIndex = columnModel.getColumnCount(false);
 		TableColumn newCol = new TableColumn(colIndex);
 		newCol.setHeaderValue(e.getColumnName());
-		setUpdateComparators(false);
 		addColumn(newCol);
-		List<? extends SortKey> sortKeys = getRowSorter().getSortKeys();
-		final TableRowSorter<BrowserTableModel> rowSorter = new TableRowSorter<BrowserTableModel>(model);
-		setRowSorter(rowSorter);
-		updateColumnComparators(rowSorter, model);
-		setUpdateComparators(true);
-		rowSorter.setSortKeys(sortKeys);
+
+		CyColumn column = model.getColumnByModelIndex(colIndex);
+		sorter.setComparator(colIndex, new ValidatedObjectAndEditStringComparator(column.getType()));
+		sorter.setSortKeys(sortKeys);
+
 	}
 
-	void updateColumnComparators(final TableRowSorter<BrowserTableModel> rowSorter,
-			final BrowserTableModel browserTableModel) {
-		for (int column = 0; column < browserTableModel.getColumnCount(); ++column)
-			rowSorter.setComparator(
-					column,
-					new ValidatedObjectAndEditStringComparator(
-							browserTableModel.getColumnByModelIndex(column).getType()));
-	}
 
 	@Override
 	public void handleEvent(final ColumnDeletedEvent e) {
@@ -799,6 +770,12 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		
 		if (e.getSource() != dataTable)
 			return;
+		
+		TableRowSorter<BrowserTableModel> sorter = (TableRowSorter<BrowserTableModel>) getRowSorter();
+		List<? extends SortKey> sortKeys = new ArrayList<SortKey>(sorter.getSortKeys());
+
+		model.fireTableStructureChanged();
+
 		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
 
 		final String columnName = e.getColumnName();
@@ -823,6 +800,15 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			model.removeColumn(removedColIndex);
 		}
 
+		// Ensure we don't re-add a sort key for the deleted column
+		Iterator<? extends SortKey> keys = sortKeys.iterator();
+		while (keys.hasNext()) {
+			SortKey key = keys.next();
+			if (key.getColumn() == removedColIndex) {
+				keys.remove();
+			}
+		}
+		sorter.setSortKeys(sortKeys);
 	}
 
 	@Override

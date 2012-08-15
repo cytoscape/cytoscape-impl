@@ -36,12 +36,16 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 
 import org.cytoscape.browser.internal.util.SortArrowIcon;
 import org.cytoscape.model.CyColumn;
@@ -161,10 +165,15 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		int index = -1;
 		boolean ascending = true;
 		
-		if (table instanceof BrowserTable) {
-			BrowserTable sortTable = (BrowserTable) table;
-			index = sortTable.getSortedColumnIndex();
-			ascending = sortTable.isSortedColumnAscending();
+		RowSorter<? extends TableModel> rowSorter = table.getRowSorter();
+		int modelColumn = table.convertColumnIndexToModel(vColIndex);
+		List<? extends SortKey> sortKeys = rowSorter.getSortKeys();
+		if (sortKeys.size() > 0) {
+			SortKey key = sortKeys.get(0);
+			if (key.getColumn() == modelColumn) {
+				index = vColIndex;
+				ascending = key.getSortOrder() == SortOrder.ASCENDING;
+			}
 		}
 		
 		Icon icon = ascending ? ASCENDING : DECENDING;

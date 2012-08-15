@@ -19,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -190,13 +189,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 				serviceRegistrar.registerAllServices(browserTableModel, new Properties());
 				browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 				browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
-				browserTable.setUpdateComparators(false);
 				browserTable.setModel(browserTableModel);
-				
-				final TableRowSorter<BrowserTableModel> rowSorter = new TableRowSorter<BrowserTableModel>(browserTableModel);
-				browserTable.setRowSorter(rowSorter);
-				updateColumnComparators(rowSorter, browserTableModel);
-				browserTable.setUpdateComparators(true);
 				
 				//move and hide SUID and selected by default
 				final List<String> attrList = browserTableModel.getAllAttributeNames();
@@ -226,9 +219,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		if (table == null && currentTable != null) {
 			table = new BrowserTable(compiler, popupMenuHelper,
 					applicationManager, eventHelper, tableManager);
-			BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
-			table.setColumnModel(columnModel);
-			
 			BrowserTableModel model = new BrowserTableModel(currentTable, compiler, tableManager);
 			table.setModel(model);
 			browserTables.put(currentTable, table);
@@ -241,14 +231,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		return browserTables;
 	}
 
-	void updateColumnComparators(final TableRowSorter<BrowserTableModel> rowSorter,
-			final BrowserTableModel browserTableModel) {
-		for (int column = 0; column < browserTableModel.getColumnCount(); ++column)
-			rowSorter.setComparator(
-				column,
-				new ValidatedObjectAndEditStringComparator(
-					browserTableModel.getColumn(column).getType()));
-	}
 
 	@Override
 	public String toString() {
