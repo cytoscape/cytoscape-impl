@@ -642,25 +642,36 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         	
     		String text = "";
     		
-    		text += "<html> <head> </head> <body hspace=\"6\" vspace=\"6\">";
+    		// text += "<html> <head> </head> <body hspace=\"4\" vspace=\"4\">";
+    		text += "<html> <body hspace=\"4\" vspace=\"2\">";
+    		
     		
     		// App hyperlink to web store page
     		// text += "<p style=\"margin-top: 0\"> <a href=\"" + selectedApp.getPageUrl() + "\">" + selectedApp.getPageUrl() + "</a> </p>";
+    		
+    		// App name, version
+    		text += "<b>" + selectedApp.getFullName() + "</b>";
+    		text += "<br />" + selectedApp.getReleases().get(selectedApp.getReleases().size() - 1).getReleaseVersion();
+    		/*
+    		text += "<p>";
+    		text += "<b>" + selectedApp.getFullName() + "</b>";
+    		text += "<br />" + selectedApp.getReleases().get(selectedApp.getReleases().size() - 1).getReleaseVersion();
+    		text += "</p>";
+    		*/
+    		text += "<p>";
     		
     		// App image
     		text += "<img border=\"0\" ";
     		text += "src=\"" + appManager.getWebQuerier().getDefaultAppStoreUrl() 
     			+ selectedApp.getIconUrl() + "\" alt=\"" + selectedApp.getFullName() + "\"/>";
     		
-    		// App name, version
-    		text += "<p>";
-    		text += "<b>" + selectedApp.getFullName() + "</b>";
-    		text += " " + selectedApp.getReleases().get(selectedApp.getReleases().size() - 1).getReleaseVersion();
     		text += "</p>";
     		
     		
     		// App description
-    		text += "<p>" + (String.valueOf(selectedApp.getDescription()).equalsIgnoreCase("null") ? "App description not found." : selectedApp.getDescription()) + "</p>";
+    		text += "<p>";
+    		text += (String.valueOf(selectedApp.getDescription()).equalsIgnoreCase("null") ? "App description not found." : selectedApp.getDescription());
+    		text += "</p>";
     		text += "</body> </html>";
     		descriptionTextPane.setText(text);
     		
