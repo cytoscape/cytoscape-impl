@@ -144,24 +144,7 @@ public class AppManager {
 		
 		setupAlterationMonitor();
 
-		// Install previously enabled apps
-		
-		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
-		for (App app: installedFolderApps) {
-			try {
-				boolean appRegistered = false;
-				for (App regApp : apps) {
-					if (regApp.heuristicEquals(app))
-						appRegistered = true;
-				}
-				if (!appRegistered) {
-					apps.add(app);
-					app.install(this);
-				}
-			} catch (AppInstallException e) {
-				logger.warn("Failed to initially install app, " + e);
-			}
-		}
+		// Obtain previously disabled, installed apps
 		
 		Set<App> disabledFolderApps = obtainAppsFromDirectory(new File(getDisabledAppsPath()), false);
 		for (App app: disabledFolderApps) {
@@ -174,7 +157,11 @@ public class AppManager {
 				if (!appRegistered) {
 					apps.add(app);
 					app.disable(this);
-				}				
+				} else {
+					// Delete the copy
+					FileUtils.deleteQuietly(app.getAppFile());
+					app.setAppFile(null);
+				}		
 			} catch (AppDisableException e) {
 			}
 		}
@@ -190,8 +177,33 @@ public class AppManager {
 				if (!appRegistered) {
 					apps.add(app);
 					app.uninstall(this);
+				} else {
+					// Delete the copy
+					FileUtils.deleteQuietly(app.getAppFile());
+					app.setAppFile(null);
 				}
 			} catch (AppUninstallException e) {
+			}
+		}
+		
+		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
+		for (App app: installedFolderApps) {
+			try {
+				boolean appRegistered = false;
+				for (App regApp : apps) {
+					if (regApp.heuristicEquals(app))
+						appRegistered = true;
+				}
+				if (!appRegistered) {
+					apps.add(app);
+					app.install(this);
+				} else {
+					// Delete the copy
+					FileUtils.deleteQuietly(app.getAppFile());
+					app.setAppFile(null);
+				}
+			} catch (AppInstallException e) {
+				logger.warn("Failed to initially install app, " + e);
 			}
 		}
 		
@@ -242,6 +254,14 @@ public class AppManager {
 				for (App app : apps) {
 					if (parsedApp.heuristicEquals(app)) {
 						registeredApp = app;
+						
+						// Delete old file if it was still there
+						// TODO: Possible rename from filename-2 to filename?
+						File oldFile = registeredApp.getAppFile();
+						
+						if (oldFile.exists()) {
+							FileUtils.deleteQuietly(oldFile);
+						}
 						
 						// Update file reference to reflect file having been moved
 						registeredApp.setAppFile(file);
@@ -298,6 +318,14 @@ public class AppManager {
 					if (parsedApp.heuristicEquals(app)) {
 						registeredApp = app;
 						
+						// Delete old file if it was still there
+						// TODO: Possible rename from filename-2 to filename?
+						File oldFile = registeredApp.getAppFile();
+						
+						if (oldFile.exists()) {
+							FileUtils.deleteQuietly(oldFile);
+						}
+						
 						// Update file reference to reflect file having been moved
 						registeredApp.setAppFile(file);
 					}
@@ -334,7 +362,6 @@ public class AppManager {
 			}
 		});
 		
-		
 		FileAlterationObserver uninstallAlterationObserver = new FileAlterationObserver(
 				getUninstalledAppsPath(), new SingleLevelFileFilter(new File(getUninstalledAppsPath())), IOCase.SYSTEM);
 		
@@ -353,6 +380,14 @@ public class AppManager {
 				for (App app : apps) {
 					if (parsedApp.heuristicEquals(app)) {
 						registeredApp = app;
+						
+						// Delete old file if it was still there
+						// TODO: Possible rename from filename-2 to filename?
+						File oldFile = registeredApp.getAppFile();
+						
+						if (oldFile.exists()) {
+							FileUtils.deleteQuietly(oldFile);
+						}
 						
 						// Update file reference to reflect file having been moved
 						registeredApp.setAppFile(file);
@@ -410,6 +445,7 @@ public class AppManager {
 		}
 	}
 	
+	/*
 	private void setupKarafDeployMonitor(FileAlterationMonitor fileAlterationMonitor) {
 		// Set up the FileAlterationMonitor to install/uninstall bundle apps when they are moved
 		// to the Karaf deploy directory
@@ -475,6 +511,7 @@ public class AppManager {
 		
 		fileAlterationMonitor.addObserver(karafDeployObserver);
 	}
+	*/
 	
 	public CySwingAppAdapter getSwingAppAdapter() {
 		return swingAppAdapter;
@@ -709,7 +746,7 @@ public class AppManager {
 		}
 	}
 	
-	
+	/*
 	public String getKarafDeployDirectory() {
 		File directory = new File(System.getProperty("user.home") + File.separator + ".cytoscape" + File.separator + "3.0"
 				+ File.separator + "apps" + File.separator + "deploy");
@@ -718,7 +755,9 @@ public class AppManager {
 		
 		return directory.getAbsolutePath();
 	}
+	*/
 	
+	/*
 	public void cleanKarafDeployDirectory() {
 		String[] bundleAppExtensions = new String[]{"kar"};
 		File karafDeployDirectory = new File(getKarafDeployDirectory());
@@ -732,6 +771,7 @@ public class AppManager {
 			}
 		}
 	}
+	*/
 	
 	private boolean checkIfCytoscapeApp(File file) {
 		JarFile jarFile = null;
@@ -819,28 +859,20 @@ public class AppManager {
 		
 		Set<App> parsedApps = new HashSet<App>();
 		
-		String karafDeployDirectory = getKarafDeployDirectory();
-		
 		App app;
 		for (File potentialApp : files) {
 			
-			if (ignoreDuplicateBundleApps
-					&& (new File(karafDeployDirectory + File.separator + potentialApp.getName())).exists()) {
-				// Skip file
-			} else {
-			
+			app = null;
+			try {
+				app = appParser.parseApp(potentialApp);
+			} catch (AppParsingException e) {
+				DebugHelper.print("Failed to parse " + potentialApp + ", error: " + e.getMessage());
 				app = null;
-				try {
-					app = appParser.parseApp(potentialApp);
-				} catch (AppParsingException e) {
-					DebugHelper.print("Failed to parse " + potentialApp + ", error: " + e.getMessage());
-					app = null;
-				} finally {
-					if (app != null) {
-						parsedApps.add(app);
-						
-						DebugHelper.print("App parsed: " + app);
-					}
+			} finally {
+				if (app != null) {
+					parsedApps.add(app);
+					
+					DebugHelper.print("App parsed: " + app);
 				}
 			}
 		}

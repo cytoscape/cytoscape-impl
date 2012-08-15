@@ -84,15 +84,10 @@ public abstract class App {
 	 */
 	public enum AppStatus{
 		INSTALLED("Installed"),
-		TO_BE_UNINSTALLED("Uninstalled-on-restart"),
-		TO_BE_DISABLED("Disable-on-restart"),
 		DISABLED("Disabled"),
 		UNINSTALLED("Uninstalled"),
 		TO_BE_INSTALLED("Install-on-restart"),
-		FILE_MOVED("File Moved (Uninstalled)"),
-		FILE_MOVED_UNINSTALLED("File Moved (Uninstalled)"),
-		// Currently, simple apps require a restart for uninstall, so we require a restart even if file is moved
-		FILE_MOVED_INSTALLED("File Moved (Uninstall-on-restart)");
+		FILE_MOVED("File Moved (Uninstalled)");
 		
 		String readableStatus;
 		
@@ -180,7 +175,6 @@ public abstract class App {
 			// Do nothing if it is already installed
 			throw new AppInstallException("This app has already been installed.");
 		}
-		
 		
 		for (App app : appManager.getApps()) {
 			if (this.heuristicEquals(app) && this != app) {

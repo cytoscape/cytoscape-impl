@@ -12,10 +12,16 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.cytoscape.app.internal.event.UpdatesChangedEvent;
+import org.cytoscape.app.internal.event.UpdatesChangedListener;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 
 /**
  * This class represents the panel in the App Manager dialog's tab used for checking for app updates.
@@ -29,7 +35,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel descriptionLabel;
     private javax.swing.JScrollPane descriptionScrollPane;
     private javax.swing.JTextArea descriptionTextArea;
-    private javax.swing.JButton installAllTable;
+    private javax.swing.JButton installAllButton;
     private javax.swing.JButton installSelectedButton;
     private javax.swing.JLabel lastCheckForUpdatesLabel;
     private javax.swing.JLabel updateCheckTimeLabel;
@@ -39,19 +45,21 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 	
     private UpdateManager updateManager;
     private AppManager appManager;
+    private TaskManager taskManager;
     
-    public CheckForUpdatesPanel(AppManager appManager) {
-        initComponents();
-        
-        this.updateManager = new UpdateManager();
+    public CheckForUpdatesPanel(AppManager appManager, TaskManager taskManager) {
+    	this.updateManager = new UpdateManager();
         this.appManager = appManager;
+        this.taskManager = taskManager;
+    	
+    	initComponents();
     }
 
     private void initComponents() {
 
         updatesAvailableLabel = new javax.swing.JLabel();
         installSelectedButton = new javax.swing.JButton();
-        installAllTable = new javax.swing.JButton();
+        installAllButton = new javax.swing.JButton();
         updatesScrollPane = new javax.swing.JScrollPane();
         updatesTable = new javax.swing.JTable();
         lastCheckForUpdatesLabel = new javax.swing.JLabel();
@@ -70,11 +78,11 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
             }
         });
 
-        installAllTable.setText("Update All");
-        installAllTable.setEnabled(false);
-        installAllTable.addActionListener(new java.awt.event.ActionListener() {
+        installAllButton.setText("Update All");
+        installAllButton.setEnabled(false);
+        installAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                installAllTableActionPerformed(evt);
+                installAllButtonActionPerformed(evt);
             }
         });
 
@@ -132,7 +140,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(installSelectedButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(installAllTable))
+                                .add(installAllButton))
                             .add(descriptionLabel))
                         .add(0, 0, Short.MAX_VALUE))))
         );
@@ -153,9 +161,30 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(installSelectedButton)
-                    .add(installAllTable))
+                    .add(installAllButton))
                 .addContainerGap())
         );
+        
+        updateManager.addUpdatesChangedListener(new UpdatesChangedListener() {
+			
+			@Override
+			public void appsChanged(UpdatesChangedEvent event) {
+				repopulateUpdatesTable();
+
+				// Enable/disable the update all button depending on update availability
+				if (event.getSource().getUpdates().size() > 0) {
+					if (!installAllButton.isEnabled()) {
+						installAllButton.setEnabled(true);
+					}
+				} else {
+					if (installAllButton.isEnabled()) {
+						installAllButton.setEnabled(false);
+					}
+				}
+			}
+		});
+        
+        installAllButton.setEnabled(true);
         
         this.addComponentListener(new ComponentAdapter() {
 		
@@ -176,7 +205,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         			+ lastUpdateCheckTime.get(Calendar.MINUTE) + " "
         			+ (lastUpdateCheckTime.get(Calendar.AM_PM) == Calendar.AM ? "am" : "pm"));
         		
-        		populateUpdatesTable();
+        		// populateUpdatesTable();
         	}
         });
         
@@ -184,14 +213,70 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     }
 
     private void installSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+        final Set<Update> selectedUpdates = getSelectedUpdates();
+        final int updateCount = selectedUpdates.size();
+        
+        taskManager.execute(new TaskIterator(new Task() {
+
+			@Override
+			public void run(TaskMonitor taskMonitor) throws Exception {
+				taskMonitor.setTitle("Installing updates");
+				
+				double progress = 0;
+				int count = 0;
+				
+				for (Update update : selectedUpdates) {
+					count++;
+					
+					taskMonitor.setStatusMessage("Installing update " 
+							+ update.getRelease().getReleaseVersion() 
+							+ " for " + update.getApp().getAppName() 
+							+ " (" + count + "/" + updateCount + ")");
+					
+		        	updateManager.installUpdate(update, appManager);
+		        }
+			}
+
+			@Override
+			public void cancel() {	
+			}
+        	
+        }));
     }
 
-    private void installAllTableActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+    private void installAllButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        final Set<Update> updates = updateManager.getUpdates();
+        final int updateCount = updates.size();
+        
+        taskManager.execute(new TaskIterator(new Task() {
+
+			@Override
+			public void run(TaskMonitor taskMonitor) throws Exception {
+				taskMonitor.setTitle("Installing updates");
+				
+				double progress = 0;
+				int count = 0;
+				
+				for (Update update : updates) {
+					count++;
+					
+					taskMonitor.setStatusMessage("Installing update " 
+							+ update.getRelease().getReleaseVersion() 
+							+ " for " + update.getApp().getAppName() 
+							+ " (" + count + "/" + updateCount + ")");
+					
+		        	updateManager.installUpdate(update, appManager);
+		        }
+			}
+
+			@Override
+			public void cancel() {
+			}
+        	
+        }));
     }
     
-    private void populateUpdatesTable() {
+    private void repopulateUpdatesTable() {
    
     	SwingUtilities.invokeLater(new Runnable() {
     		
@@ -274,17 +359,26 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     
     private void updateDescriptionBox() {
     	Set<Update> selectedUpdates = getSelectedUpdates();
-
-    	if (selectedUpdates.size() == 1) {
+    	
+    	if (selectedUpdates.size() == 0) {
+    		descriptionTextArea.setText("");
+    		installSelectedButton.setEnabled(false);
+    	} else if (selectedUpdates.size() == 1) {
     		Update update = selectedUpdates.iterator().next();
     		descriptionTextArea.setText("Update for " 
     				+ update.getApp().getAppName() 
     				+ ": " + update.getApp().getVersion() + " -> " 
     				+ update.getRelease().getReleaseVersion());
     		
-    		
+    		if (!installSelectedButton.isEnabled()) {
+    			installSelectedButton.setEnabled(true);
+    		}
     	} else if (selectedUpdates.size() > 1) {
+    		descriptionTextArea.setText("");
     		
+    		if (!installSelectedButton.isEnabled()) {
+    			installSelectedButton.setEnabled(true);
+    		}
     	}
     	
 //   	descriptionTextArea.setText("Update from ")

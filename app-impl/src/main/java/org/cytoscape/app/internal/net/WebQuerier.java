@@ -355,7 +355,7 @@ public class WebQuerier {
 
 							@Override
 							public int compare(Release first, Release second) {
-								return compareVersions(first.getReleaseVersion(), second.getReleaseVersion());
+								return compareVersions(second.getReleaseVersion(), first.getReleaseVersion());
 							}
 							
 						});

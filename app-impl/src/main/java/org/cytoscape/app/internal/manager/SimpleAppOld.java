@@ -16,35 +16,6 @@ import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 
 public class SimpleAppOld extends App {
-	/** 
-	 * The name of the key in the app jar's manifest file that indicates the fully-qualified name 
-	 * of the class to instantiate upon app installation. 
-	 * */
-	public static final String APP_CLASS_TAG = "Cytoscape-App";
-	
-	/**
-	 * The name of the key in the app jar's manifest file indicating the human-readable
-	 * name of the app
-	 */
-	public static final String APP_READABLE_NAME_TAG = "Cytoscape-App-Name";
-
-	/**
-	 * The name of the key in the app jar's manifest file indicating the version of the app
-	 * in the format major.minor.patch[-tag], eg. 3.0.0-SNAPSHOT or 1.2.3
-	 */
-	public static final String APP_VERSION_TAG = "Cytoscape-App-Version";
-	
-	/**
-	 * The name of the key in the app jar's manifest file indicating the major versions of
-	 * Cytoscape that the app is known to be compatible with in comma-delimited form
-	 */
-	public static final String APP_COMPATIBLE_TAG = "Cytoscape-API-Compatibility";
-	
-	/**
-	 * A regular expression representing valid app versions, which are in the format major.minor[.patch][-tag],
-	 * eg. 3.0.0-SNAPSHOT, or 3.0.
-	 */
-	public static final Pattern APP_VERSION_TAG_REGEX = Pattern.compile("(0|([1-9]+\\d*))\\.(\\d)+(\\.(\\d)+)?(.*)?");
 
 	@Override
 	public Object createAppInstance(CySwingAppAdapter appAdapter) throws AppInstanceException {
@@ -127,7 +98,7 @@ public class SimpleAppOld extends App {
 		defaultUninstall(appManager);
 				
 		// Simple apps require a Cytoscape restart to be uninstalled
-		setStatus(AppStatus.TO_BE_UNINSTALLED);
+		setStatus(AppStatus.UNINSTALLED);
 	}
 	
 	@Override

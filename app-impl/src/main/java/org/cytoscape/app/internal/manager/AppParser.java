@@ -16,6 +16,7 @@ import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -36,6 +37,38 @@ import org.xml.sax.XMLReader;
  * to verify the app.
  */
 public class AppParser {
+	
+	/** 
+	 * The name of the key in the app jar's manifest file that indicates the fully-qualified name 
+	 * of the class to instantiate upon app installation. 
+	 * */
+	public static final String APP_CLASS_TAG = "Cytoscape-App";
+	
+	/**
+	 * The name of the key in the app jar's manifest file indicating the human-readable
+	 * name of the app
+	 */
+	public static final String APP_READABLE_NAME_TAG = "Cytoscape-App-Name";
+
+	/**
+	 * The name of the key in the app jar's manifest file indicating the version of the app
+	 * in the format major.minor.patch[-tag], eg. 3.0.0-SNAPSHOT or 1.2.3
+	 */
+	public static final String APP_VERSION_TAG = "Cytoscape-App-Version";
+	
+	/**
+	 * The name of the key in the app jar's manifest file indicating the major versions of
+	 * Cytoscape that the app is known to be compatible with in comma-delimited form
+	 */
+	public static final String APP_COMPATIBLE_TAG = "Cytoscape-API-Compatibility";
+	
+	/**
+	 * A regular expression representing valid app versions, which are in the format major.minor[.patch][-tag],
+	 * eg. 3.0.0-SNAPSHOT, or 3.0.
+	 */
+	public static final Pattern APP_VERSION_TAG_REGEX = Pattern.compile("(0|([1-9]+\\d*))\\.(\\d)+(\\.(\\d)+)?(.*)?");
+
+	
 	/**
 	 * A regular expression representing valid values for the entry containing the major versions of Cytoscape
 	 * that the app is known to work with in, in comma-delimited form. Examples that work are "3.0, 3.1"  or "2, 3.0".
@@ -129,19 +162,19 @@ public class AppParser {
 		// Bundle apps are instantiated by OSGi using their activator classes
 		if (!bundleApp) {
 			// Obtain the fully-qualified name of the class to instantiate upon app installation
-			entryClassName = manifest.getMainAttributes().getValue(SimpleAppOld.APP_CLASS_TAG);
+			entryClassName = manifest.getMainAttributes().getValue(APP_CLASS_TAG);
 			if (entryClassName == null || entryClassName.trim().length() == 0) {
-				throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_CLASS_TAG + " in its manifest file.");
+				throw new AppParsingException("Jar is missing value for entry " + APP_CLASS_TAG + " in its manifest file.");
 			}
 		}
 		
 		// Obtain the human-readable name of the app
 		String readableName = null;
 		if (!bundleApp) {
-			readableName = manifest.getMainAttributes().getValue(SimpleAppOld.APP_READABLE_NAME_TAG);
+			readableName = manifest.getMainAttributes().getValue(APP_READABLE_NAME_TAG);
 			
 			if (readableName == null || readableName.trim().length() == 0) {
-				throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_READABLE_NAME_TAG + " in its manifest file.");
+				throw new AppParsingException("Jar is missing value for entry " + APP_READABLE_NAME_TAG + " in its manifest file.");
 			}
 		} else {
 			readableName = manifest.getMainAttributes().getValue("Bundle-Name");
@@ -158,12 +191,12 @@ public class AppParser {
 		// Obtain the version of the app, in major.minor.patch[-tag] format, ie. 3.0.0-SNAPSHOT or 1.2.3
 		String appVersion = null;
 		if (!bundleApp) {
-			appVersion = manifest.getMainAttributes().getValue(SimpleAppOld.APP_VERSION_TAG);
+			appVersion = manifest.getMainAttributes().getValue(APP_VERSION_TAG);
 			
 			if (appVersion == null || appVersion.trim().length() == 0) {
-				throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_VERSION_TAG + " in its manifiest file.");
-			} else if (!SimpleAppOld.APP_VERSION_TAG_REGEX.matcher(appVersion).matches()) {
-				throw new AppParsingException("The app version specified in its manifest file under the key " + SimpleAppOld.APP_VERSION_TAG
+				throw new AppParsingException("Jar is missing value for entry " + APP_VERSION_TAG + " in its manifiest file.");
+			} else if (!APP_VERSION_TAG_REGEX.matcher(appVersion).matches()) {
+				throw new AppParsingException("The app version specified in its manifest file under the key " + APP_VERSION_TAG
 						+ " was found to not match the format major.minor[.patch][-tag], eg. 2.1, 2.1-test, 3.0.0 or 3.0.0-SNAPSHOT");
 			}
 		} else {
@@ -172,7 +205,7 @@ public class AppParser {
 			if (appVersion == null || appVersion.trim().length() == 0) {
 				
 				// For now, while it hasn't been decided, accept values for Cytoscape-App-Version if Bundle-Version is not found
-				appVersion = manifest.getMainAttributes().getValue(SimpleAppOld.APP_VERSION_TAG);
+				appVersion = manifest.getMainAttributes().getValue(APP_VERSION_TAG);
 				
 				if (appVersion == null || appVersion.trim().length() == 0) {
 					throw new AppParsingException("Bundle jar manifest has no entry for Bundle-Version");
@@ -180,18 +213,18 @@ public class AppParser {
 			}
 		}
 		
-		String compatibleVersions = manifest.getMainAttributes().getValue(SimpleAppOld.APP_COMPATIBLE_TAG);
+		String compatibleVersions = manifest.getMainAttributes().getValue(APP_COMPATIBLE_TAG);
 		if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
             if (bundleApp) {
-                logger.info("Bundle app " + file.getName() + " manifest does not contain the entry \"" + SimpleAppOld.APP_COMPATIBLE_TAG
+                logger.info("Bundle app " + file.getName() + " manifest does not contain the entry \"" + APP_COMPATIBLE_TAG
                         + "\". Assuming default value 3.0.");
                 compatibleVersions = "3.0";
             } else {
-                throw new AppParsingException("Jar is missing value for entry " + SimpleAppOld.APP_COMPATIBLE_TAG + " in its manifest file.");
+                throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
             }
 		} else if (!compatibleVersions.matches(APP_COMPATIBLE_TAG_REGEX)) {
 			throw new AppParsingException("The known compatible versions of Cytoscape specified in the manifest under the"
-					+ " key " + SimpleAppOld.APP_COMPATIBLE_TAG + " does not match the form of a comma-delimited list of versions of the form"
+					+ " key " + APP_COMPATIBLE_TAG + " does not match the form of a comma-delimited list of versions of the form"
 					+ " major[.minor] (eg. 1 or 1.0) with variable whitespace around versions");
 		}
 		

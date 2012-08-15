@@ -13,9 +13,11 @@ import org.cytoscape.app.internal.event.UpdatesChangedListener;
 import org.cytoscape.app.internal.exception.AppDownloadException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppParsingException;
+import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +53,13 @@ public class UpdateManager {
 	}
 	
 	public Set<Update> getUpdates() {
-		return this.updates;
+		Set<Update> updatesCopy = new HashSet<Update>();
+		
+		for (Update update : updates) {
+			updatesCopy.add(update);
+		}
+		
+		return updatesCopy;
 	}
 	
 	/**
@@ -75,11 +83,14 @@ public class UpdateManager {
 		}
 		
 		if (appFile != null) {
-    		
-    		App parsedApp;
+			
+			App parsedApp;
 			try {
 				// Parse app
 				parsedApp = appManager.getAppParser().parseApp(appFile);
+				
+				// Uninstall old app
+				appManager.uninstallApp(update.getApp());
 				
 				// Install app
 				appManager.installApp(parsedApp);
@@ -88,13 +99,26 @@ public class UpdateManager {
 					this.updates.remove(update);
 				}
 				
+				// Remove old app
+				// appManager.removeApp(update.getApp());
+				
 				fireUpdatesChangedEvent();
 			} catch (AppParsingException e) {
 				e.printStackTrace();
 			} catch (AppInstallException e) {
 				e.printStackTrace();
+			} catch (AppUninstallException e) {
+				e.printStackTrace();
 			}    		
 		}
+	}
+	
+	public void addUpdatesChangedListener(UpdatesChangedListener updatesChangedListener) {
+		this.updatesChangedListeners.add(updatesChangedListener);
+	}
+	
+	public void removeUpdatesChangedListener(UpdatesChangedListener updatesChangedListener) {
+		this.updatesChangedListeners.remove(updatesChangedListener);
 	}
 	
 	private void fireUpdatesChangedEvent() {

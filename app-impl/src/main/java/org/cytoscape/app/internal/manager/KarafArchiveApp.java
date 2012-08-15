@@ -63,8 +63,10 @@ public class KarafArchiveApp extends App {
 		return bundle;
 	}
 
+	
 	@Override
 	public void install(AppManager appManager) throws AppInstallException {
+		/*
 		
 		// Check if we already have an app object representing this app registered to the app manager
 		for (App app : appManager.getApps()) {
@@ -120,22 +122,15 @@ public class KarafArchiveApp extends App {
 		//System.out.println("features from app: " + featuresSet.size());
 		//System.out.println("available features: " + featuresService.listFeatures().length);
 		
-		/*
-		if (installedFeatures.size() == featuresSet.size()) {
-			
-		} else {
-			this.getAppTemporaryInstallFile().delete();
-			throw new AppInstallException("Not all Karaf features were successfully installed from the bundle app.");
-		}
-		*/
-		
 		if (!appManager.getApps().contains(this)) {
 			appManager.getApps().add(this);
 		}
 		
 		this.setStatus(AppStatus.INSTALLED);
+		
+		*/
 	}
-
+	
 	private List<Feature> getCorrespondingFeatures(FeaturesService featuresService) {
 		List<Feature> correspondingFeatures = new LinkedList<Feature>();
 		
@@ -193,7 +188,7 @@ public class KarafArchiveApp extends App {
 		
 		this.getAppTemporaryInstallFile().delete();
 		
-		this.setStatus(AppStatus.TO_BE_UNINSTALLED);
+		this.setStatus(AppStatus.UNINSTALLED);
 	}
 
 	@Override

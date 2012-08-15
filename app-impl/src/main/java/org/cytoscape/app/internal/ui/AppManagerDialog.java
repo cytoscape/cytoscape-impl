@@ -34,7 +34,7 @@ public class AppManagerDialog extends javax.swing.JDialog {
     	mainTabbedPane = new javax.swing.JTabbedPane();
         installNewAppsPanel1 = new InstallFromStorePanel(appManager, fileUtil, taskManager, this);
         currentlyInstalledAppsPanel1 = new CurrentlyInstalledAppsPanel(appManager);
-        checkForUpdatesPanel1 = new CheckForUpdatesPanel(appManager);
+        checkForUpdatesPanel1 = new CheckForUpdatesPanel(appManager, taskManager);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("App Manager");
