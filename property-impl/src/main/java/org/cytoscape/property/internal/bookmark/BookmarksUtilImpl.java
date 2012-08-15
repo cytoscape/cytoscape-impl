@@ -332,4 +332,12 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		return false;
 	}
 
+	
+	public String getProvider(DataSource pDataSource){
+		if (pDataSource == null || this.dataSourceMap.get(pDataSource)== null){
+			return null;
+		}
+		
+		return this.dataSourceMap.get(pDataSource).getProvider();
+	}
 }
