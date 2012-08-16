@@ -26,6 +26,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.browser.internal.util.TableColumnStat;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -63,6 +64,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	protected AttributeBrowserToolBar attributeBrowserToolBar;
 		
 	protected CyTable currentTable;
+	protected Class<? extends CyIdentifiable> currentTableType;
 	protected final CyApplicationManager applicationManager;
 	protected final CyNetworkManager networkManager;
 	private final PopupMenuHelper popupMenuHelper; 
@@ -75,6 +77,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	private final Map<CyTable,BrowserTable> browserTables;
 	private JScrollPane currentScrollPane;
 	protected final String appFileName;
+
 
 	
 	AbstractTableBrowser(final String tabTitle,
@@ -150,6 +153,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		
 		if (currentTable == cyTable) {
 			currentTable = null;
+			currentTableType = null;
 		}
 	}
 	
@@ -219,7 +223,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		if (table == null && currentTable != null) {
 			table = new BrowserTable(compiler, popupMenuHelper,
 					applicationManager, eventHelper, tableManager);
-			BrowserTableModel model = new BrowserTableModel(currentTable, compiler, tableManager);
+			BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler, tableManager);
 			table.setModel(model);
 			browserTables.put(currentTable, table);
 			return table;

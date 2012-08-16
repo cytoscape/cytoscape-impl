@@ -171,8 +171,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			} else {
 				currentTable = currentNetwork.getDefaultNetworkTable();
 			}
+			currentTableType = objType;
 		} else {
 			currentTable = null;
+			currentTableType = null;
 		}
 		
 		SwingUtilities.invokeLater(new Runnable() {

@@ -1,8 +1,13 @@
 package org.cytoscape.browser.internal;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import java.awt.event.MouseEvent;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.EquationCompiler;
@@ -10,6 +15,7 @@ import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
@@ -20,9 +26,6 @@ import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskManager;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
 
 public class BrowserTableTest {
 	static final String SHARED_NAME  = "shared name";
@@ -46,7 +49,7 @@ public class BrowserTableTest {
 		createTable();
 		assertEquals(4, table.getColumns().size());
 		
-		btm = new BrowserTableModel(table, equationCompiler, tableManager);
+		btm = new BrowserTableModel(table, CyNode.class, equationCompiler, tableManager);
 		browserTable.setModel(btm);
 		btcm = (BrowserTableColumnModel) browserTable.getColumnModel();
 		btcm.setAllColumnsVisible();

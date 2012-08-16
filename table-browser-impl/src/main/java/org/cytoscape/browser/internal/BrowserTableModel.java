@@ -15,6 +15,7 @@ import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -28,6 +29,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	private static final long serialVersionUID = -517521404005631245L;
 
 	private final CyTable dataTable;
+	private final Class<? extends CyIdentifiable> tableType;
 	private final EquationCompiler compiler;
 
 	private final CyTableManager tableManager;
@@ -43,12 +45,14 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	private int maxRowIndex;
 
 
-	public BrowserTableModel(final CyTable dataTable, final EquationCompiler compiler,
+
+	public BrowserTableModel(final CyTable dataTable, final Class<? extends CyIdentifiable> tableType, final EquationCompiler compiler,
 			final CyTableManager tableManager) {
 		this.dataTable = dataTable;
 		this.compiler = compiler;
 		this.regularViewMode = false; 
 		this.tableManager = tableManager;
+		this.tableType = tableType;
 
 		attrNames = getAttributeNames(dataTable);
 		
@@ -395,5 +399,9 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 
 	void addColumn(String name) {
 		attrNames.add(name);
+	}
+
+	public Class<? extends CyIdentifiable> getTableType() {
+		return tableType;
 	}
 }

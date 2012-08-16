@@ -36,9 +36,12 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
@@ -69,7 +72,7 @@ public class PopupMenuHelper {
 		factoryProvisioner = new StaticTaskFactoryProvisioner();
 	}
 
-	public void createColumnHeaderMenu(final CyColumn column, final Component invoker, final int x, final int y) {
+	public void createColumnHeaderMenu(final CyColumn column, final Class<? extends CyIdentifiable> tableType, final Component invoker, final int x, final int y) {
 		if (tableColumnFactoryMap.isEmpty())
 			return;
 
@@ -79,13 +82,13 @@ public class PopupMenuHelper {
 		for (final Map.Entry<TableColumnTaskFactory, Map> mapEntry : tableColumnFactoryMap.entrySet()) {
 			TableColumnTaskFactory taskFactory = mapEntry.getKey();
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column);
-			createMenuItem(provisioner, tracker, mapEntry.getValue());
+			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
 		}
 
 		menu.show(invoker, x, y);
 	}
 
-	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue, final Component invoker,
+	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue, final Class<? extends CyIdentifiable> tableType, final Component invoker,
 			final int x, final int y) {
 		if (tableCellFactoryMap.isEmpty())
 			return;
@@ -102,7 +105,7 @@ public class PopupMenuHelper {
 		for (final Map.Entry<TableCellTaskFactory, Map> mapEntry : tableCellFactoryMap.entrySet()) {
 			TableCellTaskFactory taskFactory = mapEntry.getKey();
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
-			createMenuItem(provisioner, tracker, mapEntry.getValue());
+			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
 		}
 
 		menu.show(invoker, x, y);
@@ -113,13 +116,43 @@ public class PopupMenuHelper {
 	 * "title" and "preferredMenu" keywords, depending on which are present in
 	 * the service properties.
 	 */
-	private void createMenuItem(final TaskFactory tf, final PopupMenuGravityTracker tracker, final Map props) {
+	private void createMenuItem(final TaskFactory tf, final PopupMenuGravityTracker tracker, final Map props, final Class<? extends CyIdentifiable> tableType) {
+		if (!enabledFor(tableType, props))
+			return;
+		
 		String menuLabel = (String) (props.get("title"));
 		if (menuLabel == null)
 			menuLabel = "Unidentified Task: " + Integer.toString(tf.hashCode());
 
 		if (tf.isReady())
 			tracker.addMenuItem(new JMenuItem(new PopupAction(tf, menuLabel)), GravityTracker.USE_ALPHABETIC_ORDER);
+	}
+
+	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map props) {
+		String types = (String) props.get("tableTypes");
+		if (types == null) {
+			return true;
+		}
+		
+		for (String type : types.split(",")) {
+			type = type.trim();
+			if ("all".equals(type)) {
+				return true;
+			}
+			if ("node".equals(type) && CyNode.class.equals(tableType)) {
+				return true;
+			}
+			if ("edge".equals(type) && CyEdge.class.equals(tableType)) {
+				return true;
+			}
+			if ("network".equals(type) && CyNetwork.class.equals(tableType)) {
+				return true;
+			}
+			if ("unassigned".equals(type) && tableType == null) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void addTableColumnTaskFactory(final TableColumnTaskFactory newFactory, final Map properties) {

@@ -204,7 +204,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 					final CyColumn cyColumn = tableModel.getColumn(modelColumn);
 					final Object primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(modelRow,
 							tableModel.getDataTable().getPrimaryKey().getName())).getValidatedObject();
-					popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, table, e.getX(), e.getY());
+					popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, tableModel.getTableType(), table, e.getX(), e.getY());
 				} else if (SwingUtilities.isLeftMouseButton(e) && (getSelectedRows().length != 0)) {
 					// Display List menu.
 					showListContents(modelRow, modelColumn, e);
@@ -494,7 +494,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				return;
 
 			final CyColumn cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
-			popupMenuHelper.createColumnHeaderMenu(cyColumn, this, event.getX(), event.getY());
+			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableModel.getTableType(), this, event.getX(), event.getY());
 		}
 	}
 
