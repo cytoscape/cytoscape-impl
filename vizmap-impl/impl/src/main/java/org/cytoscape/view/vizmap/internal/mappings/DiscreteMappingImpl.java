@@ -97,7 +97,7 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 					}
 				}
 			} else {
-				Object key = row.get(columnName, columnType);
+				K key = row.get(columnName, columnType);
 
 				if (key != null)
 					value = attribute2visualMap.get(key);
