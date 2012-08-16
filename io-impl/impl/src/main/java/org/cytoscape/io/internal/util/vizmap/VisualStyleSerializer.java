@@ -308,19 +308,18 @@ public class VisualStyleSerializer {
 						Map<?, ?> map = dm.getAll();
 	
 						for (Map.Entry<?, ?> entry : map.entrySet()) {
-							DiscreteMappingEntry entryModel = new DiscreteMappingEntry();
-							entryModel.setAttributeValue(entry.getKey().toString());
 							final Object value = entry.getValue();
 							if (value == null)
 								continue;
 
-							if (value != null && vp.getRange().getType() != value.getClass())
-								logger.warn("Invalid value: Expected Data Type is " + vp.getRange().getType()
-										+ ", but actual value is " + value.getClass());
-							else
+							try {
+								DiscreteMappingEntry entryModel = new DiscreteMappingEntry();
+								entryModel.setAttributeValue(entry.getKey().toString());
 								entryModel.setValue(vp.toSerializableString(value));
-
-							dmModel.getDiscreteMappingEntry().add(entryModel);
+								dmModel.getDiscreteMappingEntry().add(entryModel);
+							} catch (Exception e) {
+								logger.warn("Could not add Discrete Mapping entry: " + value, e);
+							}
 						}
 	
 						vpModel.setDiscreteMapping(dmModel);
