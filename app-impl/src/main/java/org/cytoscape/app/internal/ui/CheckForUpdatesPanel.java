@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableModel;
 import org.cytoscape.app.internal.event.UpdatesChangedEvent;
 import org.cytoscape.app.internal.event.UpdatesChangedListener;
 import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
@@ -169,6 +170,21 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 			
 			@Override
 			public void appsChanged(UpdatesChangedEvent event) {
+
+        		int updateCount = updateManager.getUpdates().size();
+        		updatesAvailableLabel.setText(updateCount + " " 
+        				+ (updateCount == 1 ? "update" : "updates") + " available.");
+        		
+        		Calendar lastUpdateCheckTime = updateManager.getLastUpdateCheckTime();
+        		
+        		int minute = lastUpdateCheckTime.get(Calendar.MINUTE);
+        		
+        		updateCheckTimeLabel.setText("Today, at " 
+        			+ lastUpdateCheckTime.get(Calendar.HOUR) + ":"
+        			+ (minute < 10 ? "0" : "") + minute + " "
+        			+ (lastUpdateCheckTime.get(Calendar.AM_PM) == Calendar.AM ? "am" : "pm"));
+        		
+				
 				repopulateUpdatesTable();
 
 				// Enable/disable the update all button depending on update availability
@@ -191,25 +207,20 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         	@Override
         	public void componentShown(ComponentEvent e) {
         		
+        		Set<App> appsToCheckUpdates = new HashSet<App>();
+        		
+        		for (App app : appManager.getApps()) {
+        			if (app.getStatus() == AppStatus.INSTALLED
+        					|| app.getStatus() == AppStatus.DISABLED) {
+        				appsToCheckUpdates.add(app);
+        			}
+        		}
+        		
         		updateManager.checkForUpdates(appManager.getWebQuerier(), 
-        				appManager.getApps(), 
+        				appsToCheckUpdates, 
         				appManager);
         		
-        		int updateCount = updateManager.getUpdates().size();
-        		updatesAvailableLabel.setText(updateCount + " " 
-        				+ (updateCount == 1 ? "update" : "updates") + " available.");
-        		
-        		Calendar lastUpdateCheckTime = updateManager.getLastUpdateCheckTime();
-        		
-        		int minute = lastUpdateCheckTime.get(Calendar.MINUTE);
-        		
-        		updateCheckTimeLabel.setText("Today, at " 
-        			+ lastUpdateCheckTime.get(Calendar.HOUR) + ":"
-        			+ (minute < 10 ? "0" : "") + minute + " "
-        			+ (lastUpdateCheckTime.get(Calendar.AM_PM) == Calendar.AM ? "am" : "pm"));
-        		
-        		// populateUpdatesTable();
-        	}
+               	}
         });
         
         setupDescriptionListener();

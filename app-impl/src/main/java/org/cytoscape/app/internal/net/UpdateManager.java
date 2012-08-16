@@ -38,6 +38,8 @@ public class UpdateManager {
 	public UpdateManager() {
 		this.updatesChangedListeners = new HashSet<UpdatesChangedListener>();
 		this.updates = null;
+		
+		lastUpdateCheckTime = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
 	}
 	
 	/**
