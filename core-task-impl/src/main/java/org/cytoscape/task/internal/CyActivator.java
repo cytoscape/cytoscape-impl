@@ -282,9 +282,10 @@ public class CyActivator extends AbstractCyActivator {
 		DeleteColumnTaskFactoryImpl deleteColumnTaskFactory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef);
 		RenameColumnTaskFactoryImpl renameColumnTaskFactory = new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef);
 		
-		CopyValueToColumnTaskFactoryImpl copyValueToEntireColumnTaskFactory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, false);
-		CopyValueToColumnTaskFactoryImpl copyValueToSelectedRowsInColumnTaskFactory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, true);
-		
+		CopyValueToColumnTaskFactoryImpl copyValueToEntireColumnTaskFactory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, false, "Apply to entire column");
+		CopyValueToColumnTaskFactoryImpl copyValueToSelectedNodesTaskFactory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, true, "Apply to selected nodes");
+		CopyValueToColumnTaskFactoryImpl copyValueToSelectedEdgesTaskFactory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, true, "Apply to selected edges");
+
 		DeleteTableTaskFactoryImpl deleteTableTaskFactory = new DeleteTableTaskFactoryImpl(cyTableManagerServiceRef);
 		ExportVizmapTaskFactoryImpl exportVizmapTaskFactory = new ExportVizmapTaskFactoryImpl(vizmapWriterManagerServiceRef,visualMappingManagerServiceRef, tunableSetterServiceRef);
 		ConnectSelectedNodesTaskFactoryImpl connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef, cyEventHelperRef, visualMappingManagerServiceRef, cyNetworkViewManagerServiceRef);
@@ -944,14 +945,23 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,renameColumnTaskFactory,RenameColumnTaskFactory.class, renameColumnTaskFactoryProps);
 
 		Properties copyValueToEntireColumnTaskFactoryProps = new Properties();
-		copyValueToEntireColumnTaskFactoryProps.setProperty(TITLE,"Copy to entire column");
+		copyValueToEntireColumnTaskFactoryProps.setProperty(TITLE,copyValueToEntireColumnTaskFactory.getTaskFactoryName());
+		copyValueToEntireColumnTaskFactoryProps.setProperty("tableTypes", "node,edge,network,unassigned");
 		registerService(bc,copyValueToEntireColumnTaskFactory,TableCellTaskFactory.class, copyValueToEntireColumnTaskFactoryProps);
+
+		Properties copyValueToSelectedNodesTaskFactoryProps = new Properties();
+		copyValueToSelectedNodesTaskFactoryProps.setProperty(TITLE,copyValueToSelectedNodesTaskFactory.getTaskFactoryName());
+		copyValueToSelectedNodesTaskFactoryProps.setProperty("tableTypes", "node");
+		registerService(bc,copyValueToSelectedNodesTaskFactory,TableCellTaskFactory.class, copyValueToSelectedNodesTaskFactoryProps);
+		
+		Properties copyValueToSelectedEdgesTaskFactoryProps = new Properties();
+		copyValueToSelectedEdgesTaskFactoryProps.setProperty(TITLE,copyValueToSelectedEdgesTaskFactory.getTaskFactoryName());
+		copyValueToSelectedEdgesTaskFactoryProps.setProperty("tableTypes", "edge");
+		registerService(bc,copyValueToSelectedEdgesTaskFactory,TableCellTaskFactory.class, copyValueToSelectedEdgesTaskFactoryProps);
+		
+		
 		registerService(bc,deleteTableTaskFactory,TableTaskFactory.class, new Properties());
 		registerService(bc,deleteTableTaskFactory,DeleteTableTaskFactory.class, new Properties());
-
-		Properties copyValueToSelectedRowsInColumnTaskFactoryProps = new Properties();
-		copyValueToSelectedRowsInColumnTaskFactoryProps.setProperty(TITLE,"Copy to current selection");
-		registerService(bc,copyValueToSelectedRowsInColumnTaskFactory,TableCellTaskFactory.class, copyValueToSelectedRowsInColumnTaskFactoryProps);
 		
 		// Register as 3 types of service.
 		Properties connectSelectedNodesTaskFactoryProps = new Properties();

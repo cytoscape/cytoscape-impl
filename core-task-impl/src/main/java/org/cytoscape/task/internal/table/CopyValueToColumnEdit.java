@@ -16,9 +16,8 @@ final class CopyValueToColumnEdit extends AbstractCyEdit {
 	private final Class<?> columnType;
 	private final Object value;
 	private SaveColumn savedColumn;
-
-	CopyValueToColumnEdit(final CyColumn column, final Object value) {
-		super("Copy Value to Entire Column");
+	CopyValueToColumnEdit(final CyColumn column, final Object value, String taskFactoryName) {
+		super(taskFactoryName);
 
 		this.table       = column.getTable();
 		this.columnName  = column.getName();

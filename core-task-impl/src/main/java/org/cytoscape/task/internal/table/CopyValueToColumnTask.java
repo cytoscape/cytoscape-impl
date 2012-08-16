@@ -42,13 +42,15 @@ import org.cytoscape.work.undo.UndoSupport;
 final class CopyValueToColumnTask extends AbstractTableCellTask {
 	private final UndoSupport undoSupport;
 	private final boolean selectedOnly;
+	private final String taskFactoryName;
 	
 	CopyValueToColumnTask(final UndoSupport undoSupport, final CyColumn column,
-				    final Object primaryKeyValue, final boolean selectedOnly)
+				    final Object primaryKeyValue, final boolean selectedOnly, String taskFactoryName)
 	{
 		super(column, primaryKeyValue);
 		this.undoSupport = undoSupport;
 		this.selectedOnly = selectedOnly;
+		this.taskFactoryName = taskFactoryName;
 	}
 
 	@Override
@@ -60,7 +62,7 @@ final class CopyValueToColumnTask extends AbstractTableCellTask {
 		final Object sourceValue = sourceRow.getRaw(columnName);
 		
 		undoSupport.postEdit(
-			new CopyValueToColumnEdit(column, sourceValue));
+			new CopyValueToColumnEdit(column, sourceValue, taskFactoryName));
 
 		final List<CyRow> rows = column.getTable().getAllRows();
 		final int total = rows.size() - 1;

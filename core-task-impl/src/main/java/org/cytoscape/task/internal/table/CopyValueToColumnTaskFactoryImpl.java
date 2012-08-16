@@ -37,10 +37,12 @@ import org.cytoscape.work.undo.UndoSupport;
 public final class CopyValueToColumnTaskFactoryImpl extends AbstractTableCellTaskFactory {
 	private final UndoSupport undoSupport;
 	private final boolean selectedOnly;
-
-	public CopyValueToColumnTaskFactoryImpl(final UndoSupport undoSupport, boolean selectedOnly) {
+	private final String taskFactoryName;
+	
+	public CopyValueToColumnTaskFactoryImpl(final UndoSupport undoSupport, boolean selectedOnly, String taskFactoryName ) {
 		this.undoSupport = undoSupport;
 		this.selectedOnly = selectedOnly;
+		this.taskFactoryName = taskFactoryName;
 	}
 	
 	@Override
@@ -50,6 +52,10 @@ public final class CopyValueToColumnTaskFactoryImpl extends AbstractTableCellTas
 		if (primaryKeyValue == null)
 			throw new IllegalStateException("\"primaryKeyValue\" was not set.");
 		return new TaskIterator(new CopyValueToColumnTask(undoSupport, column,
-									primaryKeyValue, selectedOnly));
+									primaryKeyValue, selectedOnly, taskFactoryName));
+	}
+	
+	public String getTaskFactoryName(){
+		return taskFactoryName;
 	}
 }
