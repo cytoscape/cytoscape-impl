@@ -86,7 +86,7 @@ public abstract class App {
 		INSTALLED("Installed"),
 		DISABLED("Disabled"),
 		UNINSTALLED("Uninstalled"),
-		TO_BE_INSTALLED("Install-on-restart"),
+		TO_BE_INSTALLED("Install on Restart"),
 		FILE_MOVED("File Moved (Uninstalled)");
 		
 		String readableStatus;
@@ -681,6 +681,9 @@ public abstract class App {
 	 * Moves an app file to the given directory, copying the app if it is outside one of the local app storage directories
 	 * and moving if it is not. Also assigns filename that does not colliide with any from the local app storage directories.
 	 * 
+	 * Will also add postfix to filename if desired filename already exists in target directory when
+	 * moving app to a directory other than the 3 local app storage directories.
+	 * 
 	 * @param appManager A reference to the app manager
 	 * @param targetDirectory The local storage directory to move to, such as the local sotrage directory
 	 * containing installed apps obtained via the app manager
@@ -696,21 +699,27 @@ public abstract class App {
 		LinkedList<String> uniqueNameDirectories = new LinkedList<String>();
 		
 		if (!parentPath.equals(installDirectoryPath))
-			uniqueNameDirectories.add(installDirectoryPath.getAbsolutePath());
+			uniqueNameDirectories.add(installDirectoryPath.getCanonicalPath());
 		
 		if (!parentPath.equals(disabledDirectoryPath))	
-			uniqueNameDirectories.add(disabledDirectoryPath.getAbsolutePath());
+			uniqueNameDirectories.add(disabledDirectoryPath.getCanonicalPath());
 	
 		if (!parentPath.equals(uninstallDirectoryPath))	
-			uniqueNameDirectories.add(uninstallDirectoryPath.getAbsolutePath());
+			uniqueNameDirectories.add(uninstallDirectoryPath.getCanonicalPath());
+		
+		if (!parentPath.equals(targetDirectory)
+				&& !installDirectoryPath.equals(targetDirectory)
+				&& !disabledDirectoryPath.equals(targetDirectory)
+				&& !uninstallDirectoryPath.equals(targetDirectory))
+			uniqueNameDirectories.add(targetDirectory.getCanonicalPath());
 		
 		// If the app file is in one of these directories, do a move instead of a copy
 		LinkedList<File> moveDirectories = new LinkedList<File>();
 		moveDirectories.add(installDirectoryPath);
 		moveDirectories.add(disabledDirectoryPath);
 		moveDirectories.add(uninstallDirectoryPath);
-		
-		File targetFile = new File(targetDirectory.getAbsolutePath() + File.separator 
+
+		File targetFile = new File(targetDirectory.getCanonicalPath() + File.separator 
 				+ suggestFileName(uniqueNameDirectories, this.getAppFile().getName()));
 		
 		if (!targetDirectory.equals(parentPath)) {

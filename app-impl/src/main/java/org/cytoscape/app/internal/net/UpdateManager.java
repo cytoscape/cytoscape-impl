@@ -1,6 +1,7 @@
 package org.cytoscape.app.internal.net;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Time;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -14,10 +15,14 @@ import org.cytoscape.app.internal.exception.AppDownloadException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
+import org.cytoscape.app.internal.exception.AppUpdateException;
 import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.SimpleApp;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
+import org.omg.CORBA.FREE_MEM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +72,7 @@ public class UpdateManager {
 	 * @param update The update to install
 	 * @param appManager The {@link AppManager} keeping track of current apps
 	 */
-	public void installUpdate(Update update, AppManager appManager) {
+	public void installUpdate(Update update, AppManager appManager) throws AppUpdateException {
 		
 		WebQuerier webQuerier = appManager.getWebQuerier();
 		
@@ -92,8 +97,33 @@ public class UpdateManager {
 				// Uninstall old app
 				appManager.uninstallApp(update.getApp());
 				
-				// Install app
-				appManager.installApp(parsedApp);
+				if (update.getApp() instanceof SimpleApp) {
+					try {
+						parsedApp.moveAppFile(appManager, new File(appManager.getInstallOnRestartAppsPath()));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						throw new AppUpdateException("Unable to move update for simple app " + update.getApp().getAppName() + " to " + appManager.getInstallOnRestartAppsPath() + ", " + e.getMessage());
+					}
+					
+					boolean appAlreadyRegistered = false;
+					
+					for (App app : appManager.getApps()) {
+						if (app.heuristicEquals(parsedApp)) {
+							appAlreadyRegistered = true;
+						}
+					}
+					
+					if (!appAlreadyRegistered) {
+						appManager.addApp(parsedApp);
+						
+						parsedApp.setStatus(AppStatus.TO_BE_INSTALLED);
+						appManager.fireAppsChangedEvent();
+					}
+					
+				} else {
+					// Install app
+					appManager.installApp(parsedApp);
+				}				
 				
 				if (this.updates.contains(update)) {
 					this.updates.remove(update);

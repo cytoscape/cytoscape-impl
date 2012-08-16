@@ -65,6 +65,9 @@ public class AppManager {
 	/** Apps that are loaded are stored in this temporary directory. */
 	private static final String TEMPORARY_LOADED_APPS_DIRECTORY_NAME = ".temp-installed";
 	
+	/** Apps that are to be installed on restart are stored in this directory. */
+	private static final String INSTALL_RESTART_DIRECTORY_NAME = "install-on-restart";
+	
 	/** This subdirectory in the local Cytoscape storage directory is used to store app data, as 
 	 * well as installed and uninstalled apps. */
 	private static final String APPS_DIRECTORY_NAME = "3.0" + File.separator + "apps";
@@ -142,8 +145,23 @@ public class AppManager {
 		purgeTemporaryDirectories();
 		initializeAppsDirectories();
 		
+		// Move apps from install-on-restart directory to install directory
+		Set<App> installOnRestartApps = obtainAppsFromDirectory(new File(getInstallOnRestartAppsPath()), false);
+		for (App app: installOnRestartApps) {
+			try {
+				app.moveAppFile(this, new File(getInstalledAppsPath()));
+			} catch (IOException e) {
+			}
+		}
+		
+		// Remove the install-on-restart directory after apps were moved
+		try {
+			FileUtils.deleteDirectory(new File(getInstallOnRestartAppsPath()));
+		} catch (IOException e) {
+		}
+		
 		setupAlterationMonitor();
-
+		
 		// Obtain previously disabled, installed apps
 		
 		Set<App> disabledFolderApps = obtainAppsFromDirectory(new File(getDisabledAppsPath()), false);
@@ -247,6 +265,7 @@ public class AppManager {
 				try {
 					parsedApp = appParser.parseApp(file);
 				} catch (AppParsingException e) {
+					logger.warn(e.getMessage());
 					return;
 				}
 				
@@ -445,6 +464,12 @@ public class AppManager {
 		}
 	}
 	
+	private void checkForFileChanges() {
+		for (FileAlterationObserver observer : fileAlterationMonitor.getObservers()) {
+			observer.checkAndNotify();
+		}
+	}
+	
 	public CySwingAppAdapter getSwingAppAdapter() {
 		return swingAppAdapter;
 	}
@@ -508,6 +533,8 @@ public class AppManager {
 		} catch (IOException e) {
 			throw new AppInstallException("Unable to move app file, " + e.getMessage());
 		}
+		
+		checkForFileChanges();
 	}
 	
 	/**
@@ -528,6 +555,8 @@ public class AppManager {
 		} catch (IOException e) {
 			throw new AppUninstallException("Unable to move app file, " + e.getMessage());
 		}
+
+		checkForFileChanges();
 	}
 
     public void disableApp(App app) throws AppDisableException {
@@ -537,9 +566,11 @@ public class AppManager {
 		} catch (IOException e) {
 			throw new AppDisableException("Unable to move app file, " + e.getMessage());
 		}
+
+		checkForFileChanges();
     }
 	
-	private void fireAppsChangedEvent() {
+	public void fireAppsChangedEvent() {
 		AppsChangedEvent appEvent = new AppsChangedEvent(this);
 		for (AppsChangedListener appListener : appListeners) {
 			appListener.appsChanged(appEvent);
@@ -678,32 +709,27 @@ public class AppManager {
 		}
 	}
 	
-	/*
-	public String getKarafDeployDirectory() {
-		File directory = new File(System.getProperty("user.home") + File.separator + ".cytoscape" + File.separator + "3.0"
-				+ File.separator + "apps" + File.separator + "deploy");
+	/**
+	 * Return the canonical path of the subdirectory in the local storage directory used to contain apps that
+	 * are installed on restart.
+	 * @return The canonical path of the subdirectory in the local storage directory containing
+	 * apps to install on restart.
+	 */
+	public String getInstallOnRestartAppsPath() {
+		File path = new File(getBaseAppPath() + File.separator + INSTALL_RESTART_DIRECTORY_NAME);
 		
-		directory.mkdirs();
-		
-		return directory.getAbsolutePath();
-	}
-	*/
-	
-	/*
-	public void cleanKarafDeployDirectory() {
-		String[] bundleAppExtensions = new String[]{"kar"};
-		File karafDeployDirectory = new File(getKarafDeployDirectory());
-		Collection<File> files = FileUtils.listFiles(karafDeployDirectory, bundleAppExtensions, false);
-		
-		for (File potentialApp : files) {
-			
-			if (checkIfCytoscapeApp(potentialApp)) {
-				DebugHelper.print("Cleaning: " + potentialApp.getName());
-				potentialApp.delete();
+		try {
+			// Create the directory if it doesn't exist
+			if (!path.exists()) {
+				path.mkdirs();
 			}
+			
+			return path.getCanonicalPath();
+		} catch (IOException e) {
+			logger.warn("Failed to obtain path to directory containing apps to install on restart");
+			return path.getAbsolutePath();
 		}
 	}
-	*/
 	
 	private boolean checkIfCytoscapeApp(File file) {
 		JarFile jarFile = null;
@@ -851,6 +877,12 @@ public class AppManager {
 		File downloadedDirectory = new File(getDownloadedAppsPath());
 		if (!downloadedDirectory.exists()) {
 			created = created && downloadedDirectory.mkdirs();
+		}
+		
+		File installRestartDirectory = new File(getInstallOnRestartAppsPath());
+		if (!installRestartDirectory.exists()) {
+			created = created && installRestartDirectory.mkdirs();
+			logger.info("Creating " + installRestartDirectory + ". Success? " + created);
 		}
 		
 		if (!created) {

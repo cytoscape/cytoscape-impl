@@ -220,7 +220,13 @@ public class AppParser {
                         + "\". Assuming default value 3.0.");
                 compatibleVersions = "3.0";
             } else {
-                throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
+            	
+            	// For now, accept the deprecated field Cytoscape-App-Works-With if the official field was not found
+            	compatibleVersions = manifest.getMainAttributes().getValue("Cytoscape-App-Works-With");
+            	
+            	if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
+            		throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
+            	}
             }
 		} else if (!compatibleVersions.matches(APP_COMPATIBLE_TAG_REGEX)) {
 			throw new AppParsingException("The known compatible versions of Cytoscape specified in the manifest under the"

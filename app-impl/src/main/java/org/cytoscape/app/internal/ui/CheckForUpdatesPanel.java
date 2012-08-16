@@ -200,9 +200,12 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         				+ (updateCount == 1 ? "update" : "updates") + " available.");
         		
         		Calendar lastUpdateCheckTime = updateManager.getLastUpdateCheckTime();
+        		
+        		int minute = lastUpdateCheckTime.get(Calendar.MINUTE);
+        		
         		updateCheckTimeLabel.setText("Today, at " 
         			+ lastUpdateCheckTime.get(Calendar.HOUR) + ":"
-        			+ lastUpdateCheckTime.get(Calendar.MINUTE) + " "
+        			+ (minute < 10 ? "0" : "") + minute + " "
         			+ (lastUpdateCheckTime.get(Calendar.AM_PM) == Calendar.AM ? "am" : "pm"));
         		
         		// populateUpdatesTable();
@@ -365,10 +368,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     		installSelectedButton.setEnabled(false);
     	} else if (selectedUpdates.size() == 1) {
     		Update update = selectedUpdates.iterator().next();
-    		descriptionTextArea.setText("Update for " 
-    				+ update.getApp().getAppName() 
-    				+ ": " + update.getApp().getVersion() + " -> " 
-    				+ update.getRelease().getReleaseVersion());
+    		descriptionTextArea.setText("");
     		
     		if (!installSelectedButton.isEnabled()) {
     			installSelectedButton.setEnabled(true);
