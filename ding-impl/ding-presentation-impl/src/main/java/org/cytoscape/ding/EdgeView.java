@@ -1,203 +1,135 @@
 package org.cytoscape.ding;
 
-
 import java.awt.Paint;
 import java.awt.Stroke;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.presentation.property.values.Bend;
 
-
-public interface EdgeView  extends GraphViewObject {
+public interface EdgeView extends GraphViewObject {
+	
 	/**
 	 * Draws splined curves for edges.
 	 */
-	public static int CURVED_LINES = 1;
-  
+	static final int CURVED_LINES = 1;
+
 	/**
 	 * Draws straight lines for edges.
 	 */
-	public static int STRAIGHT_LINES = 2;
+	static final int STRAIGHT_LINES = 2;
 
-	/**
-	 * @return the index of this edge in the GraphPerspective
-	 */
-	public long getGraphPerspectiveIndex ();
-
-	/**
-	 * @return the index of this edge in the RootGraph
-	 */
-	public long getRootGraphIndex ();
 
 	/**
 	 * @return the Edge to which we are a view on
 	 */
-	public CyEdge getEdge();
+	CyEdge getCyEdge();
 
 
 	/**
-	 * @param width set a new line width for this edge
+	 * @param width
+	 *            set a new line width for this edge
 	 */
-	public void setStrokeWidth ( float width );
+	void setStrokeWidth(float width);
 
 	/**
-	 * @return the currently set edge width
+	 * @param stroke
+	 *            the stroke to use on this edge
 	 */
-	public float getStrokeWidth ();
+	void setStroke(Stroke stroke);
 
 	/**
-	 * @param stroke the stroke to use on this edge
+	 * @param line_type
+	 *            set a new line type for the edge
 	 */
-	public void setStroke ( Stroke stroke );
-
-	/**
-	 * @return the stroke used on this edge
-	 */
-	public Stroke getStroke ();
-
-	/**
-	 * @param line_type set a new line type for the edge
-	 */
-	public void setLineType ( int line_type );
-
-	/**
-	 * @return the currently set edge line type
-	 */
-	public int getLineType ();
-
-	/**
-	 * This really refers to the <B>Stroke</B>, 
-	 * TODO: Make separte stroke methods
-	 * @param paint the paint for this node
-	 */
-	public void setUnselectedPaint ( Paint paint );
-
-	/**
-	 * This really refers to the <B>Stroke</B>, 
-	 * TODO: Make separte stroke methods
-	 * @return the currently set edge Paint
-	 */
-	public Paint getUnselectedPaint ();
-
-	/**
-	 * This really refers to the <B>Stroke</B>, 
-	 * TODO: Make separte stroke methods
-	 * @param paint the paint for this node
-	 */
-	public void setSelectedPaint ( Paint paint );
-
-	/**
-	 * This really refers to the <B>Stroke</B>, 
-	 * TODO: Make separte stroke methods
-	 * @return the currently set edge Selectionpaint
-	 */
-	public Paint getSelectedPaint ();
-
-	/**
-	 * @return the currently set Source Edge End Type
-	 */
-	public Paint getSourceEdgeEndPaint ();
-
-	/**
-	 * @return the currently set Source Edge End Type
-	 */
-	public Paint getSourceEdgeEndSelectedPaint ();
-
-	/**
-	 * @return the currently set Target Edge End Type
-	 */
-	public Paint getTargetEdgeEndPaint ();
-
-	/**
-	 * @return the currently set Target Edge End Type
-	 */
-	public Paint getTargetEdgeEndSelectedPaint ();
-
-	/**
-	 * @param paint set the value for the source edge end  when selected
-	 */
-	public void setSourceEdgeEndSelectedPaint ( Paint paint );
-
-	/**
-	 * @param paint set the value for the target edge end  when selected
-	 */
-	public void setTargetEdgeEndSelectedPaint ( Paint paint );
+	void setLineCurved(int line_type);
 
 
 	/**
-	 * @param paint set the value for the source edge end 
+	 * This really refers to the <B>Stroke</B>, TODO: Make separte stroke
+	 * methods
+	 * 
+	 * @param paint
+	 *            the paint for this node
 	 */
-	public void setSourceEdgeEndPaint ( Paint paint );
-  
+	public void setUnselectedPaint(Paint paint);
+
 	/**
-	 * @param paint set the value for the target edge end 
+	 * This really refers to the <B>Stroke</B>, TODO: Make separte stroke
+	 * methods
+	 * 
+	 * @param paint
+	 *            the paint for this node
 	 */
-	public void setTargetEdgeEndPaint ( Paint paint );
+	void setSelectedPaint(Paint paint);
 
+	/**
+	 * @param paint
+	 *            set the value for the source edge end when selected
+	 */
+	void setSourceEdgeEndSelectedPaint(Paint paint);
 
-	public void select ();
+	/**
+	 * @param paint
+	 *            set the value for the target edge end when selected
+	 */
+	public void setTargetEdgeEndSelectedPaint(Paint paint);
 
-	public void unselect ();
+	/**
+	 * @param paint
+	 *            set the value for the source edge end
+	 */
+	public void setSourceEdgeEndPaint(Paint paint);
+
+	/**
+	 * @param paint
+	 *            set the value for the target edge end
+	 */
+	public void setTargetEdgeEndPaint(Paint paint);
+
 
 	/**
 	 * When we are selected then we draw ourselves red, and draw any handles.
 	 */
-	public boolean setSelected ( boolean state );
+	public boolean setSelected(boolean state);
 
 	/**
 	 * @return selected state
 	 */
-	public boolean isSelected ();
-
-	/**
-	 * @return selected state
-	 */
-	public boolean getSelected ();
-
-	/**
-	 *  @return true if the EdgeView is hidden, else false
-	 */
-	public boolean isHidden();
+	public boolean isSelected();
 
 	/**
 	 * Sets the Drawing style for the edge end.
 	 */
-	public void setSourceEdgeEnd(int type);
+	void setSourceEdgeEnd(int type);
 
 	/**
 	 * Sets the Drawing style for the edge end.
 	 */
-	public void setTargetEdgeEnd(int type);
-
-  
-	/**
-	 * Return the Drawing style for the edge end.
-	 */
-	public int getSourceEdgeEnd();
+	void setTargetEdgeEnd(int type);
 
 	/**
-	 * REturn the Drawing style for the edge end.
+	 * @return the Bend used
 	 */
-	public int getTargetEdgeEnd();
+	Bend getBend();
 
-
-	/**
-	 * @return the Bend used 
-	 */
-	Bend getBend ();
 	void setBend(final Bend bend);
-	
-	void clearBends ();
-
-	public Label getLabel();
 
 	/**
-	 * Sets what the tooltip will be for this EdgeView
+	 * Sets Tooltip text for edge.
 	 */
-	void setToolTip ( String tip );
-	String getToolTip();
+	void setToolTip(final String tip);
 
-	
-	int getTransparency();
+	/**
+	 * Set Transparency of the edge.
+	 * 
+	 * @param transparency Java opacity: 0 to 255
+	 */
 	void setTransparency(final int transparency);
+	
+	/**
+	 * Set Transparency of the edge.
+	 * 
+	 * @param transparency Java opacity: 0 to 255
+	 */
+	void setLabelTransparency(final int transparency);
 }

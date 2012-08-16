@@ -90,11 +90,11 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 		spacialFactory = new RTreeFactory();
 		
 		buildNetwork();
-		view = new DGraphView(network, dataFactory, cyRoot, undo, spacialFactory, dingLexicon,
+		view = new DGraphView(network, cyRoot, undo, spacialFactory, dingLexicon,
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
 				dropEmptySpaceTFs, */
-				manager, eventHelper, tableMgr,annMgr, dingGRaphLOD, vmm, netViewMgr, handleFactory, registrar);
+				manager, eventHelper, annMgr, dingGRaphLOD, vmm, netViewMgr, handleFactory, registrar);
 	}
 	
 	@Override

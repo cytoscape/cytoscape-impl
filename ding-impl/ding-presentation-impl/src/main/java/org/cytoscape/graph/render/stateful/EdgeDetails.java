@@ -76,7 +76,7 @@ public abstract class EdgeDetails {
 	 * rendering mode translucent colors are not supported whereas in full
 	 * detail rendering mode they are.
 	 */
-	public Color colorLowDetail(final CyEdge edge) {
+	public Color getColorLowDetail(final CyEdge edge) {
 		return Color.blue;
 	}
 
@@ -87,7 +87,7 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public byte sourceArrow(final CyEdge edge) {
+	public byte getSourceArrowShape(final CyEdge edge) {
 		return GraphGraphics.ARROW_NONE;
 	}
 
@@ -98,7 +98,7 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public float sourceArrowSize(final CyEdge edge) {
+	public float getSourceArrowSize(final CyEdge edge) {
 		return 0.0f;
 	}
 
@@ -108,7 +108,7 @@ public abstract class EdgeDetails {
 	 * sourceArrow(edge) returns GraphGraphics.ARROW_NONE 
 	 *  it is an error to return null.
 	 */
-	public Paint sourceArrowPaint(final CyEdge edge) {
+	public Paint getSourceArrowPaint(final CyEdge edge) {
 		return null;
 	}
 
@@ -119,7 +119,7 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public byte targetArrow(final CyEdge edge) {
+	public byte getTargetArrowShape(final CyEdge edge) {
 		return GraphGraphics.ARROW_NONE;
 	}
 
@@ -129,7 +129,7 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified
 	 * in GraphGraphics.drawEdgeFull().
 	 */
-	public float targetArrowSize(final CyEdge edge) {
+	public float getTargetArrowSize(final CyEdge edge) {
 		return 0.0f;
 	}
 
@@ -139,7 +139,7 @@ public abstract class EdgeDetails {
 	 * targetArrow(edge) returns GraphGraphics.ARROW_NONE,
 	 * it is an error to return null.
 	 */
-	public Paint targetArrowPaint(final CyEdge edge) {
+	public Paint getTargetArrowPaint(final CyEdge edge) {
 		return null;
 	}
 
@@ -156,7 +156,7 @@ public abstract class EdgeDetails {
 	 * the source node shape or if the last anchor lies inside the target
 	 * node shape, the edge is not rendered.
 	 */
-	public EdgeAnchors anchors(final CyEdge edge) {
+	public EdgeAnchors getAnchors(final CyEdge edge) {
 		return null;
 	}
 
@@ -165,7 +165,7 @@ public abstract class EdgeDetails {
 	 * an anchor, return a positive value in this method.  If zero is returned
 	 * no edge anchor is rendered.  By default this method returns zero.
 	 */
-	public float anchorSize(final CyEdge edge, final int anchorInx) {
+	public float getAnchorSize(final CyEdge edge, final int anchorInx) {
 		return 0.0f;
 	}
 
@@ -175,7 +175,7 @@ public abstract class EdgeDetails {
 	 * otherwise, a non-null value must be returned.  By default this method
 	 * returns null.
 	 */
-	public Paint anchorPaint(final CyEdge edge, final int anchorInx) {
+	public Paint getAnchorPaint(final CyEdge edge, final int anchorInx) {
 		return null;
 	}
 
@@ -185,12 +185,13 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public float segmentThickness(final CyEdge edge) {
-		return 0.0f;
+	public float getWidth(final CyEdge edge) {
+		return 1.0f;
 	}
 
 	private static final Stroke default_stroke = new BasicStroke();
-	public Stroke segmentStroke(final CyEdge edge) {
+	
+	public Stroke getStroke(final CyEdge edge) {
 		return default_stroke;
 	}
 
@@ -199,7 +200,7 @@ public abstract class EdgeDetails {
 	 * By default this method returns Color.blue.  It is an error to
 	 * return null in this method.
 	 */
-	public Paint segmentPaint(final CyEdge edge) {
+	public Paint getPaint(final CyEdge edge) {
 		return Color.blue;
 	}
 
@@ -207,7 +208,7 @@ public abstract class EdgeDetails {
 	 * Returns the number of labels that this edge has.  By default this method
 	 * returns zero.
 	 */
-	public int labelCount(final CyEdge edge) {
+	public int getLabelCount(final CyEdge edge) {
 		return 0;
 	}
 
@@ -221,7 +222,7 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 */
-	public String labelText(final CyEdge edge, final int labelInx) {
+	public String getLabelText(final CyEdge edge, final int labelInx) {
 		return null;
 	}
 
@@ -233,7 +234,7 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 */
-	public Font labelFont(final CyEdge edge, final int labelInx) {
+	public Font getLabelFont(final CyEdge edge, final int labelInx) {
 		return null;
 	}
 
@@ -247,7 +248,7 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 */
-	public double labelScaleFactor(final CyEdge edge, final int labelInx) {
+	public double getLabelScaleFactor(final CyEdge edge, final int labelInx) {
 		return 1.0d;
 	}
 
@@ -259,7 +260,7 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 */
-	public Paint labelPaint(final CyEdge edge, final int labelInx) {
+	public Paint getLabelPaint(final CyEdge edge, final int labelInx) {
 		return null;
 	}
 
@@ -277,11 +278,11 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 * @see NodeDetails#ANCHOR_CENTER
-	 * @see #labelEdgeAnchor(int, int)
-	 * @see #labelOffsetVectorX(int, int)
-	 * @see #labelOffsetVectorY(int, int)
+	 * @see #getLabelEdgeAnchor(int, int)
+	 * @see #getLabelOffsetVectorX(int, int)
+	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public byte labelTextAnchor(final CyEdge edge, final int labelInx) {
+	public byte getLabelTextAnchor(final CyEdge edge, final int labelInx) {
 		return NodeDetails.ANCHOR_CENTER;
 	}
 
@@ -298,11 +299,11 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 * @see #EDGE_ANCHOR_MIDPOINT
-	 * @see #labelTextAnchor(int, int)
-	 * @see #labelOffsetVectorX(int, int)
-	 * @see #labelOffsetVectorY(int, int)
+	 * @see #getLabelTextAnchor(int, int)
+	 * @see #getLabelOffsetVectorX(int, int)
+	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public byte labelEdgeAnchor(final CyEdge edge, final int labelInx) {
+	public byte getLabelEdgeAnchor(final CyEdge edge, final int labelInx) {
 		return EDGE_ANCHOR_MIDPOINT;
 	}
 
@@ -318,11 +319,11 @@ public abstract class EdgeDetails {
 	 * zero.
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
-	 * @see #labelOffsetVectorY(int, int)
-	 * @see #labelTextAnchor(int, int)
-	 * @see #labelEdgeAnchor(int, int)
+	 * @see #getLabelOffsetVectorY(int, int)
+	 * @see #getLabelTextAnchor(int, int)
+	 * @see #getLabelEdgeAnchor(int, int)
 	 */
-	public float labelOffsetVectorX(final CyEdge edge, final int labelInx) {
+	public float getLabelOffsetVectorX(final CyEdge edge, final int labelInx) {
 		return 0.0f;
 	}
 
@@ -338,11 +339,11 @@ public abstract class EdgeDetails {
 	 * zero.
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
-	 * @see #labelOffsetVectorX(int, int)
-	 * @see #labelTextAnchor(int, int)
-	 * @see #labelEdgeAnchor(int, int)
+	 * @see #getLabelOffsetVectorX(int, int)
+	 * @see #getLabelTextAnchor(int, int)
+	 * @see #getLabelEdgeAnchor(int, int)
 	 */
-	public float labelOffsetVectorY(final CyEdge edge, final int labelInx) {
+	public float getLabelOffsetVectorY(final CyEdge edge, final int labelInx) {
 		return 0.0f;
 	}
 
@@ -358,7 +359,7 @@ public abstract class EdgeDetails {
 	 * multiple lines.
 	 * @see NodeDetails#LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	public byte labelJustify(final CyEdge edge, final int labelInx) {
+	public byte getLabelJustify(final CyEdge edge, final int labelInx) {
 		return NodeDetails.LABEL_WRAP_JUSTIFY_CENTER;
 	}
 
@@ -368,7 +369,8 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public double labelWidth(final CyEdge edge) {
+	public double getLabelWidth(final CyEdge edge) {
 		return 100.0;
 	}
+
 }

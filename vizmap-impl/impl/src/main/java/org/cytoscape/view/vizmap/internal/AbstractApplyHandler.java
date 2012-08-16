@@ -27,6 +27,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 	}
 
 	protected void applyValues(final CyRow row, final View<T> view, final Collection<VisualProperty<?>> vps) {
+		
 		for (final VisualProperty<?> vp : vps) {
 			if (!view.isValueLocked(vp)) {
 				// check mapping exists or not
@@ -64,9 +65,6 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 			((VisualStyleImpl) style).getStyleDefaults().put(vp, vp.getDefault());
 			defaultValue = style.getDefaultValue(vp);
 		}
-
-		if (!vp.shouldIgnoreDefault())
-			view.setVisualProperty(vp, defaultValue);
 	}
 
 	private void override(final CyRow row, final View<T> view) {

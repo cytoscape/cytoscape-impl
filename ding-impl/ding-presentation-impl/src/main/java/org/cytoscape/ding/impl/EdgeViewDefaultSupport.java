@@ -24,9 +24,8 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.ding.impl;
-
 
 import java.awt.Color;
 import java.awt.Font;
@@ -37,116 +36,122 @@ import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
 
+import static org.cytoscape.ding.DVisualLexicon.*;
 
-final class EdgeViewDefaultSupport {
+final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 
 	private final Object lock;
 	private final DEdgeDetails edgeDetails;
-	
-	private Font font;
-	private float fontSize;
+
 	private LineType lineType;
-	private float strokeWidth;
-	
-	private int transparency;
-	private Integer labelTransparency = 255;
-	
-	private Paint unselectedPaint;
-	private Paint selectedPaint;
-	
-	private Color labelColor;
-	
+
 	EdgeViewDefaultSupport(final DEdgeDetails edgeDetails, final Object lock) {
 		this.edgeDetails = edgeDetails;
 		this.lock = lock;
 	}
 
-	// TODO: delete
-	<T, V extends T> void setEdgeViewDefault(VisualProperty<? extends T> vpOriginal, V value) {
-		
-		final VisualProperty<?> vp = vpOriginal;
-		if(value == null)
-			value = (V) vp.getDefault();
-		
-		if (vp == DVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
+	/**
+	 * Set default value for visual properties
+	 * 
+	 * @param vp
+	 * @param value
+	 */
+	void setEdgeViewDefault(VisualProperty<?> vp, Object value) {
+		if (value == null)
+			value = vp.getDefault();
+
+		// // Type check:
+		// if(vp.getRange().getType().isAssignableFrom(value.getClass()) ==
+		// false)
+		// return;
+
+		//
+		// Check each Visual Property Type.
+		// Make sure checking ALL!
+		//
+		if (vp == EDGE_STROKE_SELECTED_PAINT) {
 			setSelectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
+		} else if (vp == EDGE_STROKE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
-			// This is the parent of unselected color related visual property.
-			// Will be called if dependency exists.
+		} else if (vp == EDGE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
-			setSourceEdgeEndUnselectedPaint((Paint) value);
-			setTargetEdgeEndUnselectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_TRANSPARENCY) {
+		} else if (vp == EDGE_SELECTED_PAINT) {
+			setSelectedPaint((Paint) value);
+		} else if (vp == EDGE_TRANSPARENCY) {
 			setTransparency(((Number) value).intValue());
-		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
-			final float newWidth = ((Number) value).floatValue();	
-			if(strokeWidth != newWidth) {
-				strokeWidth = newWidth;
+		} else if (vp == EDGE_WIDTH) {
+			final float newWidth = ((Number) value).floatValue();
+			Float currentWidth = edgeDetails.m_segmentThicknessDefault.floatValue();
+			if (currentWidth.floatValue() != newWidth) {
 				setStrokeWidth(newWidth);
 				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth));
 			}
-		} else if (vp == DVisualLexicon.EDGE_LINE_TYPE) {
+		} else if (vp == EDGE_LINE_TYPE) {
 			lineType = (LineType) value;
-			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(strokeWidth);
+			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(edgeDetails.m_segmentThicknessDefault.floatValue());
 			setStroke(newStroke);
-		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
+		} else if (vp == EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
 			setSourceEdgeEndUnselectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
+		} else if (vp == EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
 			setTargetEdgeEndUnselectedPaint((Paint) value);
-		} else if (vp == BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
+		} else if (vp == EDGE_TARGET_ARROW_SHAPE) {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
 			setTargetEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
-		} else if (vp == BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) {
+		} else if (vp == EDGE_SOURCE_ARROW_SHAPE) {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
 			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
-		} else if (vp == BasicVisualLexicon.EDGE_LABEL) {
+		} else if (vp == EDGE_LABEL) {
 			setText((String) value);
-		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {
+		} else if (vp == EDGE_LABEL_FONT_FACE) {
+			final int fontSize = edgeDetails.m_labelFontDefault.getSize();
 			setFont((Font) value, fontSize);
-		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_SIZE) {
-			setFont(font, (((Number) value).floatValue()));
-		} else if (vp == BasicVisualLexicon.EDGE_LABEL_COLOR) {
+		} else if (vp == EDGE_LABEL_FONT_SIZE) {
+			final int currentFontSize = edgeDetails.m_labelFontDefault.getSize();
+			final int newFontSize = ((Number) value).intValue();
+			if (currentFontSize != newFontSize)
+				setFont(edgeDetails.m_labelFontDefault, newFontSize);
+		} else if (vp == EDGE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
-		} else if (vp == BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY) {
-			if (labelColor != null && labelTransparency.equals(value) == false) {
-				labelTransparency = ((Number) value).intValue();
-				setTextPaint(labelColor);
-			}
-		} else if(vp == DVisualLexicon.EDGE_CURVED) {
+		} else if (vp == EDGE_LABEL_TRANSPARENCY) {
+			final int newLabelTransparency = ((Number) value).intValue();
+			final int currentLabelTransparency = edgeDetails.labelTransparencyDefault;
+			if (newLabelTransparency != currentLabelTransparency)
+				setTextPaint(edgeDetails.m_labelPaintDefault);
+		} else if (vp == EDGE_CURVED) {
 			setCurved((Boolean) value);
-		} else if(vp == DVisualLexicon.EDGE_BEND) {
-			setBend((Bend)value);
+		} else if (vp == EDGE_BEND) {
+			setBend((Bend) value);
 		}
 	}
-	
+
 	private void setBend(final Bend bend) {
 		edgeDetails.setEdgeBendDefault(bend);
 	}
 
 	void setCurved(final Boolean curved) {
 		synchronized (lock) {
-			if(curved)
-				edgeDetails.setLineTypeDefault(EdgeView.CURVED_LINES);
+			if (curved)
+				edgeDetails.setLineCurvedDefault(EdgeView.CURVED_LINES);
 			else
-				edgeDetails.setLineTypeDefault(EdgeView.STRAIGHT_LINES);
+				edgeDetails.setLineCurvedDefault(EdgeView.STRAIGHT_LINES);
 		}
 	}
 
-	void setTransparency(int trans) {
-		transparency = trans;
-		setSelectedPaint(selectedPaint);
-		setUnselectedPaint(unselectedPaint);
-	}
+	void setTransparency(final int trans) {
+		if (trans < 0 || trans > 255)
+			edgeDetails.transparencyDefault = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
+		else
+			edgeDetails.transparencyDefault = trans;
 
+		setSelectedPaint(edgeDetails.m_selectedPaintDefault);
+		setUnselectedPaint(edgeDetails.m_unselectedPaintDefault);
+	}
 
 	void setStrokeWidth(float width) {
 		synchronized (lock) {
@@ -160,40 +165,34 @@ final class EdgeViewDefaultSupport {
 		}
 	}
 
-	void setUnselectedPaint(final Paint paint) {		
+	private void setUnselectedPaint(final Paint paint) {
 		synchronized (lock) {
-			unselectedPaint = paint;
-			final Paint transColor = getTransparentColor(paint);
+			final int transparency = edgeDetails.transparencyDefault;
+			final Paint transColor = getTransparentColor(paint, transparency);
 			edgeDetails.setSegmentPaintDefault(transColor);
-			edgeDetails.setColorLowDetailDefault((Color) transColor);			
+			edgeDetails.setColorLowDetailDefault((Color) transColor);
 		}
 	}
 
-	void setSelectedPaint(final Paint paint) {
+	private void setSelectedPaint(final Paint paint) {
 		synchronized (lock) {
-			selectedPaint = paint;
-			final Paint transColor = getTransparentColor(paint);
+			final Paint transColor = getTransparentColor(paint, edgeDetails.transparencyDefault);
 			edgeDetails.setSelectedPaintDefault(transColor);
 			edgeDetails.setSelectedColorLowDetailDefault((Color) transColor);
 		}
 	}
-	
-	private Paint getTransparentColor(Paint p) {
-		if (p != null && p instanceof Color) 
-			return new Color(((Color) p).getRed(), ((Color) p).getGreen(), ((Color) p).getBlue(), transparency);
-		else
-			return p;
-	}
 
-	public void setTargetEdgeEndUnselectedPaint(Paint paint) {
+	private void setTargetEdgeEndUnselectedPaint(Paint paint) {
 		synchronized (lock) {
-			edgeDetails.setTargetArrowPaintDefault(paint);
+			final Paint transColor = getTransparentColor(paint, edgeDetails.transparencyDefault);
+			edgeDetails.setTargetArrowPaintDefault(transColor);
 		}
 	}
 
 	public void setSourceEdgeEndUnselectedPaint(final Paint paint) {
 		synchronized (lock) {
-			edgeDetails.setSourceArrowPaintDefault(paint);
+			final Paint transColor = getTransparentColor(paint, edgeDetails.transparencyDefault);
+			edgeDetails.setSourceArrowPaintDefault(transColor);
 		}
 	}
 
@@ -211,9 +210,8 @@ final class EdgeViewDefaultSupport {
 
 	public void setTextPaint(Paint textPaint) {
 		synchronized (lock) {
-			labelColor = new Color(((Color) textPaint).getRed(), ((Color) textPaint).getGreen(),
-					((Color) textPaint).getBlue(), labelTransparency);
-			edgeDetails.setLabelPaintDefault(labelColor);
+			final Paint transColor = getTransparentColor(textPaint, edgeDetails.labelTransparencyDefault);
+			edgeDetails.setLabelPaintDefault(transColor);
 		}
 	}
 
@@ -223,23 +221,17 @@ final class EdgeViewDefaultSupport {
 		}
 	}
 
-	public void setFont(Font newFont, float newSize) {
+	private void setFont(Font newFont, int newSize) {
 		synchronized (lock) {
-			if ( newFont == null )
+			Font font = edgeDetails.m_labelFontDefault;
+			int fontSize = font.getSize();
+			if (newFont == null)
 				return;
-			if ( font != null && font.equals(newFont) && fontSize == newSize )
+			if (font != null && font.equals(newFont) && fontSize == newSize)
 				return;
-			
+
 			font = newFont.deriveFont(newSize);
-			fontSize = newSize;
 			edgeDetails.setLabelFontDefault(font);
 		}
 	}
-
-	public void setLabelWidth(double width) {
-		synchronized (lock) {
-			edgeDetails.setLabelWidthDefault(width);
-		}
-	}
-
 }

@@ -1,4 +1,3 @@
-
 /*
  Copyright (c) 2006, 2007, 2010, The Cytoscape Consortium (www.cytoscape.org)
 
@@ -39,38 +38,22 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
-// TODO delete or refactor: setNodeViewDefault is redundant with DNodeView.applyVisualProperty
-class NodeViewDefaultSupport {
+
+final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 
 	private final DNodeDetails nodeDetails;
 	private final Object lock;
 
-	
-	// Default values
-	private Integer transparency = 255;
-	private Integer labelTransparency = 255;
-	private Integer borderTransparency = 255;
-	
-	private Paint unselectedPaint;
-	private Paint selectedPaint;
-	
-	private Color labelColor;
-	
-	private float fontSize = 12f;
-	private Font font;
-	private Color borderColor;	
-	
 	NodeViewDefaultSupport(final DNodeDetails nodeDetails, final Object lock) {
 		this.nodeDetails = nodeDetails;
 		this.lock = lock;
 	}
 
-	
 	<V> void setNodeViewDefault(final VisualProperty<?> vpOriginal, V value) {
 		final VisualProperty<?> vp = vpOriginal;
-		
+
 		// Null means set value to VP's default.
-		if(value == null)
+		if (value == null)
 			value = (V) vp.getDefault();
 
 		if (vp == DVisualLexicon.NODE_SHAPE) {
@@ -82,10 +65,7 @@ class NodeViewDefaultSupport {
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
 			setBorderPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_TRANSPARENCY) {
-			if (borderColor != null && borderTransparency.equals(value) == false) {
-				borderTransparency = ((Number) value).intValue();
-				setBorderPaint(borderColor);
-			}
+			setBorderTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
 			setBorderWidth(((Number) value).floatValue());
 		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
@@ -93,20 +73,19 @@ class NodeViewDefaultSupport {
 		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
-			final Font newFont = ((Font) value).deriveFont(fontSize);
-			setFont(newFont,fontSize);
+			final int currentFontSize = nodeDetails.m_labelFontDefault.getSize();
+			final Font newFont = ((Font) value).deriveFont(currentFontSize);
+			setFont(newFont);
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_SIZE) {
-			float newSize = ((Number) value).floatValue();
-			setFont(font,newSize);
+			final float newFontSize = ((Number) value).floatValue();
+			final Font newFont = nodeDetails.m_labelFontDefault.deriveFont(newFontSize);
+			setFont(newFont);
 		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
 			setToolTip((String) value);
 		} else if (vp == BasicVisualLexicon.NODE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
 		} else if (vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY) {
-			if (labelColor != null && labelTransparency.equals(value) == false) {
-				labelTransparency = ((Number) value).intValue();
-				setTextPaint(labelColor);
-			}
+			setLabelTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
 		} else if (vp == DVisualLexicon.NODE_LABEL_WIDTH) {
@@ -121,53 +100,53 @@ class NodeViewDefaultSupport {
 		}
 	}
 
-
 	void setShape(final NodeShape shape) {
 		synchronized (lock) {
-			final DNodeShape dShape;
-			if (NodeShapeVisualProperty.isDefaultShape(shape))
-				dShape = DNodeShape.getDShape(shape);
+			NodeShape dShape;
+			if (!NodeShapeVisualProperty.isDefaultShape(shape))
+				dShape = NodeShapeVisualProperty.RECTANGLE;
 			else
-				dShape = (DNodeShape) shape;
+				dShape = shape;
 
 			nodeDetails.setShapeDefault(dShape);
 		}
 	}
-	
+
 	void setSelectedPaint(Paint paint) {
 		synchronized (lock) {
-			selectedPaint = paint;
-			nodeDetails.setSelectedPaintDefault(getTransparentColor(paint));
-			nodeDetails.setSelectedColorLowDetailDefault((Color)getTransparentColor(paint));
+			nodeDetails.setSelectedPaintDefault(getTransparentColor(paint, nodeDetails.transparencyDefault));
+			nodeDetails.setSelectedColorLowDetailDefault((Color) getTransparentColor(paint,
+					nodeDetails.transparencyDefault));
 		}
 	}
 
 	void setUnselectedPaint(Paint paint) {
 		synchronized (lock) {
-			unselectedPaint = paint;
-			nodeDetails.setUnselectedPaintDefault(getTransparentColor(paint));
-			nodeDetails.setColorLowDetailDefault((Color)getTransparentColor(paint));
+			nodeDetails.setUnselectedPaintDefault(getTransparentColor(paint, nodeDetails.transparencyDefault));
+			nodeDetails.setColorLowDetailDefault((Color) getTransparentColor(paint, nodeDetails.transparencyDefault));
 		}
 	}
 
-	private Paint getTransparentColor(Paint p) {
-		if (p != null && p instanceof Color) 
-			return new Color(((Color) p).getRed(), ((Color) p).getGreen(), ((Color) p).getBlue(), transparency);
-		else
-			return p;
-	}
-
 	void setTransparency(int trans) {
-		transparency = trans;
-		setSelectedPaint(selectedPaint);
-		setUnselectedPaint(unselectedPaint);
+		nodeDetails.setTransparencyDefault(trans);
+
+		setSelectedPaint(nodeDetails.m_selectedPaintDefault);
+		setUnselectedPaint(nodeDetails.m_unselectedPaintDefault);
+	}
+	
+	void setBorderTransparency(int trans) {
+		nodeDetails.setBorderTransparencyDefault(trans);
+		setBorderPaint(nodeDetails.m_borderPaintDefault);
+	}
+	
+	void setLabelTransparency(int trans) {
+		nodeDetails.setLabelTransparencyDefault(trans);
+		setTextPaint(nodeDetails.m_labelPaintDefault);
 	}
 
-	
 	void setBorderPaint(Paint paint) {
 		synchronized (lock) {
-			borderColor = new Color(((Color) paint).getRed(), ((Color) paint).getGreen(),
-					((Color) paint).getBlue(), borderTransparency);
+			final Paint borderColor = getTransparentColor(paint, nodeDetails.transparencyBorderDefault);
 			nodeDetails.setBorderPaintDefault(borderColor);
 		}
 	}
@@ -180,9 +159,8 @@ class NodeViewDefaultSupport {
 
 	void setTextPaint(Paint textPaint) {
 		synchronized (lock) {
-			labelColor = new Color(((Color) textPaint).getRed(), ((Color) textPaint).getGreen(),
-					((Color) textPaint).getBlue(), labelTransparency);
-			nodeDetails.setLabelPaintDefault(labelColor);
+			final Paint trasnparentColor = getTransparentColor(textPaint, nodeDetails.transparencyLabelDefault);
+			nodeDetails.setLabelPaintDefault(trasnparentColor);
 		}
 	}
 
@@ -192,27 +170,17 @@ class NodeViewDefaultSupport {
 		}
 	}
 
-
-	void setFont(Font newFont, float newSize) {
+	void setFont(Font newFont) {
 		synchronized (lock) {
-			if ( newFont == null )
-				return;
-		 	if ( font != null && font.equals(newFont) && fontSize == newSize )
-				return;
-
-			font = newFont.deriveFont(newSize);
-			fontSize = newSize;
-			nodeDetails.setLabelFontDefault(font);
+			nodeDetails.setLabelFontDefault(newFont);
 		}
 	}
-
 
 	void setLabelWidth(double width) {
 		synchronized (lock) {
 			nodeDetails.setLabelWidthDefault(width);
 		}
 	}
-
 
 	public void setLabelPosition(final ObjectPosition labelPosition) {
 		synchronized (lock) {
@@ -222,5 +190,5 @@ class NodeViewDefaultSupport {
 			nodeDetails.setLabelOffsetVectorXDefault(labelPosition.getOffsetX());
 			nodeDetails.setLabelOffsetVectorYDefault(labelPosition.getOffsetY());
 		}
-	}	
+	}
 }

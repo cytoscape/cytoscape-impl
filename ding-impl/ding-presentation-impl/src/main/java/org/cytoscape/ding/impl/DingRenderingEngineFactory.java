@@ -121,9 +121,9 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 				logger.info("%%%%%%% This view is DGV.");
 			}
 			else {
-				dgv = new DGraphView(targetView, dataTableFactory,
+				dgv = new DGraphView(targetView,
 					rootNetworkManager, undo, spacialFactory, dingLexicon,
-					vtfListener,dialogTaskManager, eventHelper, tableMgr, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
+					vtfListener,dialogTaskManager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
 				dgv.registerServices();
 			}
 			logger.info("DGraphView created as a presentation for view model: "

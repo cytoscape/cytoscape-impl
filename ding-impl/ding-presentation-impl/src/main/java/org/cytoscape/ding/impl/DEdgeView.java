@@ -28,13 +28,10 @@
 package org.cytoscape.ding.impl;
 
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
-
 import java.util.List;
 
 import org.cytoscape.ding.DArrowShape;
@@ -43,9 +40,7 @@ import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
-import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
@@ -59,324 +54,221 @@ import org.cytoscape.view.presentation.property.values.LineType;
  * Ding implementation of Edge View.
  */
 public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, Label, EdgeAnchors {
-	
-	private static final int DEFAULT_TRANSPARENCY = 255;
-	
-	static final float DEFAULT_ARROW_SIZE = 8.0f;
-	static final Paint DEFAULT_ARROW_PAINT = Color.BLACK;
-	static final float DEFAULT_EDGE_THICKNESS = 1.0f;
-	static final Stroke DEFAULT_EDGE_STROKE = new BasicStroke(); 
-	static final Color DEFAULT_EDGE_PAINT = Color.black;
-	static final String DEFAULT_LABEL_TEXT = "";
-	static final Font DEFAULT_LABEL_FONT = new Font("SansSerif", Font.PLAIN, 12);
-	static final Paint DEFAULT_LABEL_PAINT = Color.black;
-	
-	// Parent network view.  This view exists only in this network view.
-	final DGraphView m_view;
-	
-	final long m_inx; // Positive index of this edge view.
-	boolean m_selected;
-	
-	private Integer transparency;
-	private Integer labelTransparency;
 
-	Paint m_sourceUnselectedPaint;
-	Paint m_sourceSelectedPaint;
-	Paint m_targetUnselectedPaint;
-	Paint m_targetSelectedPaint;
-	int m_sourceEdgeEnd; // One of the EdgeView edge end constants.
-	int m_targetEdgeEnd; // Ditto.
-		
-	private String m_toolTipText;
-	
-	private LineType lineType;
-	private Float fontSize = DVisualLexicon.EDGE_LABEL_FONT_SIZE.getDefault().floatValue();
-	
+	// Parent network view.  This view exists only in this network view.
+	private final DGraphView dGraphView;
 	private final HandleFactory handleFacgtory;
 
-	/**
-	 * 
-	 * @param view
-	 * @param inx
-	 * @param model
-	 */
-	DEdgeView(final DGraphView view, final long inx, final CyEdge model, final HandleFactory handleFactory) {
+	// Since Fonts are created from size and font face, we need this local value.
+	private Integer fontSize;
+	private LineType lineType;
+	private boolean selected;
+	
+	DEdgeView(final DGraphView dGraphView, final CyEdge model, final HandleFactory handleFactory) {
 		super(model);
 
-		if (view == null)
+		if (dGraphView == null)
 			throw new IllegalArgumentException("Constructor needs its parent DGraphView.");
 
 		this.handleFacgtory = handleFactory;
-		m_view = view;
-		m_inx = inx;
-		m_selected = false;
-		transparency = DEFAULT_TRANSPARENCY;
-		m_sourceUnselectedPaint = DEFAULT_ARROW_PAINT;
-		m_sourceSelectedPaint = Color.red;
-		m_targetUnselectedPaint = DEFAULT_ARROW_PAINT;
-		m_targetSelectedPaint = Color.red;
-		m_sourceEdgeEnd = GraphGraphics.ARROW_NONE;
-		m_targetEdgeEnd = GraphGraphics.ARROW_NONE;
+		this.dGraphView = dGraphView;
+		this.selected = false;
+		this.fontSize = DVisualLexicon.EDGE_LABEL_FONT_SIZE.getDefault();
 	}
 
 	@Override
-	public long getGraphPerspectiveIndex() {
-		return m_inx;
+	public CyEdge getCyEdge() {
+		return model;
 	}
 
-	@Override
-	public long getRootGraphIndex() {
-		return m_inx;
-	}
-
-	@Override
-	public CyEdge getEdge() {
-		return m_view.getNetwork().getEdge(m_inx);
-	}
-
-	public View<CyEdge> getEdgeView() {
-		return this;
-	}
 
 	@Override
 	public GraphView getGraphView() {
-		return m_view;
+		return dGraphView;
 	}
+
 
 	@Override
 	public void setStrokeWidth(final float width) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.overrideSegmentThickness(model, width);
-			m_view.m_contentChanged = true;
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.overrideSegmentThickness(model, width);
+			dGraphView.m_contentChanged = true;
 		}
 	}
 
-	@Override
-	public float getStrokeWidth() {
-		synchronized (m_view.m_lock) {
-			return m_view.m_edgeDetails.segmentThickness(model);
-		}
-	}
 
 	@Override
 	public void setStroke(Stroke stroke) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.overrideSegmentStroke(model, stroke);
-			m_view.m_contentChanged = true;
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.overrideSegmentStroke(model, stroke);
+			dGraphView.m_contentChanged = true;
 		}
 	}
 
-	@Override
-	public Stroke getStroke() {
-		synchronized (m_view.m_lock) {
-			return m_view.m_edgeDetails.segmentStroke(model);
-		}
-	}
 
 	@Override
-	public void setLineType(int lineType) {
+	public void setLineCurved(int lineType) {
 		if ((lineType == EdgeView.CURVED_LINES) || (lineType == EdgeView.STRAIGHT_LINES)) {
-			synchronized (m_view.m_lock) {
-				m_view.m_edgeDetails.m_lineType.put(model, lineType);
-				m_view.m_contentChanged = true;
+			synchronized (dGraphView.m_lock) {
+				dGraphView.m_edgeDetails.overrideLineCurved(model, lineType);
+				dGraphView.m_contentChanged = true;
 			}
 		} else
 			throw new IllegalArgumentException("unrecognized line type");
 	}
 
-	@Override
-	public int getLineType() {
-		return m_view.m_edgeDetails.lineType(model);
-	}
 
 	@Override
 	public void setUnselectedPaint(final Paint paint) {
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
-
-			final Paint transpColor = getTransparentColor(paint, transparency);
-			m_view.m_edgeDetails.setUnselectedPaint(model, transpColor);
 			
-			setSourceEdgeEnd(m_sourceEdgeEnd);
-			setTargetEdgeEnd(m_targetEdgeEnd);
+			final Paint transpColor = getTransparentColor(paint, dGraphView.m_edgeDetails.getTransparency(model));
 			
-			if (!isSelected())
-				m_view.m_contentChanged = true;
+			if (!isSelected()) {
+				dGraphView.m_edgeDetails.setUnselectedPaint(model, transpColor);
+				dGraphView.m_contentChanged = true;
+			}
 		}
 	}
 
-	@Override
-	public Paint getUnselectedPaint() {
-		return m_view.m_edgeDetails.unselectedPaint(model);
-	}
 
 	@Override
 	public void setSelectedPaint(final Paint paint) {
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			final Paint transpColor = getTransparentColor(paint, transparency);
-			m_view.m_edgeDetails.setSelectedPaint(model, transpColor);
+			final Paint transpColor = getTransparentColor(paint, dGraphView.m_edgeDetails.getTransparency(model));
 			
-			if (isSelected())
-				m_view.m_contentChanged = true;
+			if (isSelected()) {
+				dGraphView.m_edgeDetails.setSelectedPaint(model, transpColor);
+				dGraphView.m_contentChanged = true;
+			}
 		}
-	}
-	
-	@Override
-	public Paint getSelectedPaint() {
-		return m_view.m_edgeDetails.selectedPaint(model);
-	}
-
-	@Override
-	public Paint getSourceEdgeEndPaint() {
-		return m_sourceUnselectedPaint;
-	}
-
-	@Override
-	public Paint getSourceEdgeEndSelectedPaint() {
-		return m_sourceSelectedPaint;
-	}
-
-	@Override
-	public Paint getTargetEdgeEndPaint() {
-		return m_targetUnselectedPaint;
-	}
-
-	@Override
-	public Paint getTargetEdgeEndSelectedPaint() {
-		return m_targetSelectedPaint;
 	}
 
 	@Override
 	public void setSourceEdgeEndSelectedPaint(Paint paint) {
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			m_sourceSelectedPaint = paint;
-
+			final Paint transpColor = getTransparentColor(paint, dGraphView.m_edgeDetails.getTransparency(model));
 			if (isSelected()) {
-				m_view.m_edgeDetails.overrideSourceArrowPaint(model,
-						m_sourceSelectedPaint);
-				m_view.m_contentChanged = true;
+				dGraphView.m_edgeDetails.overrideSourceArrowSelectedPaint(model, transpColor);
+				dGraphView.m_contentChanged = true;
 			}
 		}
 	}
 
 	@Override
 	public void setTargetEdgeEndSelectedPaint(Paint paint) {
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			m_targetSelectedPaint = paint;
-
+			final Paint transpColor = getTransparentColor(paint, dGraphView.m_edgeDetails.getTransparency(model));
 			if (isSelected()) {
-				m_view.m_edgeDetails.overrideTargetArrowSelectedPaint(model, paint); // TODO delete?
-				m_view.m_contentChanged = true;
+				dGraphView.m_edgeDetails.overrideTargetArrowSelectedPaint(model, transpColor);
+				dGraphView.m_contentChanged = true;
 			}
 		}
 	}
 
 	@Override
 	public void setSourceEdgeEndPaint(final Paint paint) {
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			final Paint transpColor = getTransparentColor(paint, transparency);
-			m_sourceUnselectedPaint = transpColor;
+			final Paint transpColor = getTransparentColor(paint, dGraphView.m_edgeDetails.getTransparency(model));
 			
 			if (!isSelected()) {
-				m_view.m_edgeDetails.overrideSourceArrowPaint(model, transpColor); // TODO delete?
-				m_view.m_contentChanged = true;
+				dGraphView.m_edgeDetails.overrideSourceArrowPaint(model, transpColor);
+				dGraphView.m_contentChanged = true;
 			}
 		}
 	}
 
 	@Override
 	public void setTargetEdgeEndPaint(Paint paint) {
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			if (paint == null)
 				throw new NullPointerException("paint is null");
 
-			final Paint transpColor = getTransparentColor(paint, transparency);
-			m_targetUnselectedPaint = transpColor;
-
+			final Paint transpColor = getTransparentColor(paint, dGraphView.m_edgeDetails.getTransparency(model));
+			dGraphView.m_edgeDetails.overrideTargetArrowPaint(model, transpColor);
+			
 			if (!isSelected()) {
-				m_view.m_edgeDetails.overrideTargetArrowPaint(model, transpColor); // TODO delete?
-				m_view.m_contentChanged = true;
+				dGraphView.m_contentChanged = true;
 			}
 		}
 	}
 
-	@Override
-	public void select() {
+	private final void select() {
 		final boolean somethingChanged;
 
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			somethingChanged = selectInternal(false);
 
 			if (somethingChanged)
-				m_view.m_contentChanged = true;
+				dGraphView.m_contentChanged = true;
 		}
 	}
 
 	// Should synchronize around m_view.m_lock.
 	boolean selectInternal(boolean selectAnchors) {
-		if (m_selected)
+		if (selected)
 			return false;
 
-		m_selected = true;
-		m_view.m_edgeDetails.select(model);		
-		m_view.m_selectedEdges.insert(m_inx);
+		selected = true;
+		dGraphView.m_edgeDetails.select(model);		
+		dGraphView.m_selectedEdges.insert(model.getSUID());
 
-		List<Handle> handles = m_view.m_edgeDetails.bend(model).getAllHandles();
+		List<Handle> handles = dGraphView.m_edgeDetails.getBend(model).getAllHandles();
 		for (int j = 0; j < handles.size(); j++) {
 			final Handle handle = handles.get(j);
-			final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),this);
+			final Point2D newPoint = handle.calculateHandleLocation(dGraphView.getViewModel(),this);
 			final double x = newPoint.getX();
 			final double y = newPoint.getY();
-			final double halfSize = m_view.getAnchorSize() / 2.0;
+			final double halfSize = dGraphView.getAnchorSize() / 2.0;
 			
-			m_view.m_spacialA.insert((m_inx << 6) | j,
+			dGraphView.m_spacialA.insert((model.getSUID() << 6) | j,
 					(float) (x - halfSize), (float) (y - halfSize),
 					(float) (x + halfSize), (float) (y + halfSize));
 
 			if (selectAnchors)
-				m_view.m_selectedAnchors.insert((m_inx << 6) | j);
+				dGraphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
 		}
 		return true;
 	}
 
-	@Override
 	public void unselect() {
 		final boolean somethingChanged;
 
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			somethingChanged = unselectInternal();
 
 			if (somethingChanged)
-				m_view.m_contentChanged = true;
+				dGraphView.m_contentChanged = true;
 		}
 	}
 
 	// Should synchronize around m_view.m_lock.
 	boolean unselectInternal() {
-		if (!m_selected)
+		if (!selected)
 			return false;
 
-		m_selected = false;
-		m_view.m_edgeDetails.unselect(model);
-		m_view.m_selectedEdges.delete(m_inx);
+		selected = false;
+		dGraphView.m_edgeDetails.unselect(model);
+		dGraphView.m_selectedEdges.delete(model.getSUID());
 
-		final int numHandles = m_view.m_edgeDetails.bend(model).getAllHandles().size();
+		final int numHandles = dGraphView.m_edgeDetails.getBend(model).getAllHandles().size();
 		for (int j = 0; j < numHandles; j++) {
-			m_view.m_selectedAnchors.delete((m_inx << 6) | j);
-			m_view.m_spacialA.delete((m_inx << 6) | j);
+			dGraphView.m_selectedAnchors.delete((model.getSUID() << 6) | j);
+			dGraphView.m_spacialA.delete((model.getSUID() << 6) | j);
 		}
 		return true;
 	}
@@ -393,132 +285,98 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	@Override
 	public boolean isSelected() {
-		return m_selected;
+		return selected;
 	}
 
-	@Override
-	public boolean getSelected() {
-		return m_selected;
-	}
-
-	@Override
-	final public boolean isHidden() {
-		return m_view.isHidden(this);
-	}
 	
 	@Override
 	public void setSourceEdgeEnd(final int rendererTypeID) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.overrideSourceArrow(model, (byte) rendererTypeID);
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.overrideSourceArrow(model, (byte) rendererTypeID);
 		}
 
-		m_sourceEdgeEnd = rendererTypeID;
-		m_view.m_contentChanged = true;
+		dGraphView.m_contentChanged = true;
 	}
 
 	@Override
 	public void setTargetEdgeEnd(final int rendererTypeID) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.overrideTargetArrow(model, (byte) rendererTypeID);
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.overrideTargetArrow(model, (byte) rendererTypeID);
 		}
 
-		m_targetEdgeEnd = rendererTypeID;
-		m_view.m_contentChanged = true;
+		dGraphView.m_contentChanged = true;
 
 	}
 
-	@Override
-	public int getSourceEdgeEnd() {
-		return m_sourceEdgeEnd;
-	}
-
-	@Override
-	public int getTargetEdgeEnd() {
-		return m_targetEdgeEnd;
-	}
-
-	@Override
-	public void clearBends() {
-		removeAllHandles();
-	}
-
-	@Override
-	public Label getLabel() {
-		return this;
-	}
 
 	@Override
 	public void setToolTip(String tip) {
-		m_toolTipText = tip;
+		dGraphView.m_edgeDetails.m_edgeTooltips.put(model, tip);
 	}
 
-	@Override
-	public String getToolTip() {
-		return m_toolTipText;
-	}
 
 	@Override
 	public Paint getTextPaint() {
-		synchronized (m_view.m_lock) {
-			return m_view.m_edgeDetails.labelPaint(model, 0);
+		synchronized (dGraphView.m_lock) {
+			return dGraphView.m_edgeDetails.getLabelPaint(model, 0);
 		}
 	}
 
 	@Override
 	public void setTextPaint(Paint textPaint) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.overrideLabelPaint(model, 0, textPaint);
-			m_view.m_contentChanged = true;
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.overrideLabelPaint(model, 0, textPaint);
+			dGraphView.m_contentChanged = true;
 		}
 	}
 
 	@Override
 	public String getText() {
-		synchronized (m_view.m_lock) {
-			return m_view.m_edgeDetails.labelText(model, 0);
+		synchronized (dGraphView.m_lock) {
+			return dGraphView.m_edgeDetails.getLabelText(model, 0);
 		}
 	}
 
 	@Override
 	public void setText(final String text) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.overrideLabelText(model, 0, text);
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.overrideLabelText(model, 0, text);
 
-			if (DEFAULT_LABEL_TEXT.equals(m_view.m_edgeDetails.labelText(model, 0)))
-				m_view.m_edgeDetails.overrideLabelCount(model, 0); // TODO is this correct?
+			if ("".equals(dGraphView.m_edgeDetails.getLabelText(model, 0)))
+				dGraphView.m_edgeDetails.overrideLabelCount(model, 0); // TODO is this correct?
 			else
-				m_view.m_edgeDetails.overrideLabelCount(model, 1);
+				dGraphView.m_edgeDetails.overrideLabelCount(model, 1);
 
-			m_view.m_contentChanged = true;
+			dGraphView.m_contentChanged = true;
 		}
 	}
 
 	@Override
 	public Font getFont() {
-		synchronized (m_view.m_lock) {
-			return m_view.m_edgeDetails.labelFont(model, 0);
+		synchronized (dGraphView.m_lock) {
+			return dGraphView.m_edgeDetails.getLabelFont(model, 0);
 		}
 	}
 	
 	@Override
 	public void setFont(final Font font) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.overrideLabelFont(model, 0, font);
-			m_view.m_contentChanged = true;
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.overrideLabelFont(model, 0, font);
+			dGraphView.m_contentChanged = true;
 		}
 	}
 
 	protected final void moveHandleInternal(final int inx, double x, double y) {
-		final Bend bend = m_view.m_edgeDetails.bend(model);
+		final Bend bend = dGraphView.m_edgeDetails.getBend(model);
 		final HandleImpl handle = (HandleImpl) bend.getAllHandles().get(inx);
-		handle.defineHandle(m_view.getViewModel(), this, x, y);
+		handle.defineHandle(dGraphView.getViewModel(), this, x, y);
 
-		if (m_view.m_spacialA.delete((m_inx << 6) | inx))
-			m_view.m_spacialA.insert((m_inx << 6) | inx,
-					(float) (x - (m_view.getAnchorSize() / 2.0d)),
-					(float) (y - (m_view.getAnchorSize() / 2.0d)),
-					(float) (x + (m_view.getAnchorSize() / 2.0d)),
-					(float) (y + (m_view.getAnchorSize() / 2.0d)));
+		if (dGraphView.m_spacialA.delete((model.getSUID() << 6) | inx))
+			dGraphView.m_spacialA.insert((model.getSUID() << 6) | inx,
+					(float) (x - (dGraphView.getAnchorSize() / 2.0d)),
+					(float) (y - (dGraphView.getAnchorSize() / 2.0d)),
+					(float) (x + (dGraphView.getAnchorSize() / 2.0d)),
+					(float) (y + (dGraphView.getAnchorSize() / 2.0d)));
 	}
 
 	/**
@@ -528,10 +386,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	 * @return new handle index.
 	 */
 	protected int addHandlePoint(final Point2D pt) {
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
 			
 			// Obtain existing Bend object
-			final Bend bend = m_view.m_edgeDetails.bend(model, true);
+			final Bend bend = dGraphView.m_edgeDetails.getBend(model, true);
 			
 			if (bend.getAllHandles().size() == 0) {
 				// anchors object is empty. Add first handle.
@@ -540,18 +398,18 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				return 0;
 			}
 
-			final Point2D sourcePt = m_view.getDNodeView(getEdge().getSource()).getOffset();
-			final Point2D targetPt = m_view.getDNodeView(getEdge().getTarget()).getOffset();
+			final Point2D sourcePt = dGraphView.getDNodeView(getCyEdge().getSource()).getOffset();
+			final Point2D targetPt = dGraphView.getDNodeView(getCyEdge().getTarget()).getOffset();
 			final Handle firstHandle = bend.getAllHandles().get(0); 
-			final Point2D point = firstHandle.calculateHandleLocation(m_view.getViewModel(),this);
+			final Point2D point = firstHandle.calculateHandleLocation(dGraphView.getViewModel(),this);
 			double bestDist = (pt.distance(sourcePt) + pt.distance(point)) - sourcePt.distance(point);
 			int bestInx = 0;
 
 			for (int i = 1; i < bend.getAllHandles().size(); i++) {
 				final Handle handle1 = bend.getAllHandles().get(i);
 				final Handle handle2 = bend.getAllHandles().get(i-1);
-				final Point2D point1 = handle1.calculateHandleLocation(m_view.getViewModel(),this);
-				final Point2D point2 = handle2.calculateHandleLocation(m_view.getViewModel(),this);
+				final Point2D point1 = handle1.calculateHandleLocation(dGraphView.getViewModel(),this);
+				final Point2D point2 = handle2.calculateHandleLocation(dGraphView.getViewModel(),this);
 
 				final double distCand = (pt.distance(point2) + pt.distance(point1)) - point1.distance(point2);
 
@@ -563,7 +421,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 			final int lastIndex = bend.getAllHandles().size() - 1;
 			final Handle lastHandle = bend.getAllHandles().get(lastIndex);
-			final Point2D lastPoint = lastHandle.calculateHandleLocation(m_view.getViewModel(),this);
+			final Point2D lastPoint = lastHandle.calculateHandleLocation(dGraphView.getViewModel(),this);
 			
 			final double lastCand = (pt.distance(targetPt) + pt.distance(lastPoint)) - targetPt.distance(lastPoint);
 
@@ -585,72 +443,58 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	 * @param handleLocation
 	 */
 	private void addHandleInternal(final int insertInx, final Point2D handleLocation) {
-		synchronized (m_view.m_lock) {
-			final Bend bend = m_view.m_edgeDetails.bend(model);			
-			final Handle handle = handleFacgtory.createHandle(m_view, this, handleLocation.getX(), handleLocation.getY());
+		synchronized (dGraphView.m_lock) {
+			final Bend bend = dGraphView.m_edgeDetails.getBend(model);			
+			final Handle handle = handleFacgtory.createHandle(dGraphView, this, handleLocation.getX(), handleLocation.getY());
 			bend.insertHandleAt(insertInx, handle);
 
-			if (m_selected) {
+			if (selected) {
 				for (int j = bend.getAllHandles().size() - 1; j > insertInx; j--) {
-					m_view.m_spacialA.exists((m_inx << 6) | (j - 1),
-							m_view.m_extentsBuff, 0);
-					m_view.m_spacialA.delete((m_inx << 6) | (j - 1));
-					m_view.m_spacialA.insert((m_inx << 6) | j,
-							m_view.m_extentsBuff[0], m_view.m_extentsBuff[1],
-							m_view.m_extentsBuff[2], m_view.m_extentsBuff[3]);
+					dGraphView.m_spacialA.exists((model.getSUID() << 6) | (j - 1),
+							dGraphView.m_extentsBuff, 0);
+					dGraphView.m_spacialA.delete((model.getSUID() << 6) | (j - 1));
+					dGraphView.m_spacialA.insert((model.getSUID() << 6) | j,
+							dGraphView.m_extentsBuff[0], dGraphView.m_extentsBuff[1],
+							dGraphView.m_extentsBuff[2], dGraphView.m_extentsBuff[3]);
 
-					if (m_view.m_selectedAnchors.delete((m_inx << 6) | (j - 1)))
-						m_view.m_selectedAnchors.insert((m_inx << 6) | j);
+					if (dGraphView.m_selectedAnchors.delete((model.getSUID() << 6) | (j - 1)))
+						dGraphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
 				}
 				
-				m_view.m_spacialA.insert((m_inx << 6) | insertInx,
-						(float) (handleLocation.getX() - (m_view.getAnchorSize() / 2.0d)),
-						(float) (handleLocation.getY() - (m_view.getAnchorSize() / 2.0d)),
-						(float) (handleLocation.getX() + (m_view.getAnchorSize() / 2.0d)),
-						(float) (handleLocation.getY() + (m_view.getAnchorSize() / 2.0d)));
+				dGraphView.m_spacialA.insert((model.getSUID() << 6) | insertInx,
+						(float) (handleLocation.getX() - (dGraphView.getAnchorSize() / 2.0d)),
+						(float) (handleLocation.getY() - (dGraphView.getAnchorSize() / 2.0d)),
+						(float) (handleLocation.getX() + (dGraphView.getAnchorSize() / 2.0d)),
+						(float) (handleLocation.getY() + (dGraphView.getAnchorSize() / 2.0d)));
 			}
 
-			m_view.m_contentChanged = true;
+			dGraphView.m_contentChanged = true;
 		}
 	}
 
 	void removeHandle(int inx) {
-		synchronized (m_view.m_lock) {
-			final Bend bend = m_view.m_edgeDetails.bend(model);
+		synchronized (dGraphView.m_lock) {
+			final Bend bend = dGraphView.m_edgeDetails.getBend(model);
 			bend.removeHandleAt(inx);
 			//m_anchors.remove(inx);
 
-			if (m_selected) {
-				m_view.m_spacialA.delete((m_inx << 6) | inx);
-				m_view.m_selectedAnchors.delete((m_inx << 6) | inx);
+			if (selected) {
+				dGraphView.m_spacialA.delete((model.getSUID() << 6) | inx);
+				dGraphView.m_selectedAnchors.delete((model.getSUID() << 6) | inx);
 
 				for (int j = inx; j < bend.getAllHandles().size(); j++) {
-					m_view.m_spacialA.exists((m_inx << 6) | (j + 1),
-							m_view.m_extentsBuff, 0);
-					m_view.m_spacialA.delete((m_inx << 6) | (j + 1));
-					m_view.m_spacialA.insert((m_inx << 6) | j,
-							m_view.m_extentsBuff[0], m_view.m_extentsBuff[1],
-							m_view.m_extentsBuff[2], m_view.m_extentsBuff[3]);
+					dGraphView.m_spacialA.exists((model.getSUID() << 6) | (j + 1),
+							dGraphView.m_extentsBuff, 0);
+					dGraphView.m_spacialA.delete((model.getSUID() << 6) | (j + 1));
+					dGraphView.m_spacialA.insert((model.getSUID() << 6) | j,
+							dGraphView.m_extentsBuff[0], dGraphView.m_extentsBuff[1],
+							dGraphView.m_extentsBuff[2], dGraphView.m_extentsBuff[3]);
 
-					if (m_view.m_selectedAnchors.delete((m_inx << 6) | (j + 1)))
-						m_view.m_selectedAnchors.insert((m_inx << 6) | j);
+					if (dGraphView.m_selectedAnchors.delete((model.getSUID() << 6) | (j + 1)))
+						dGraphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
 				}
 			}
-			m_view.m_contentChanged = true;
-		}
-	}
-
-	private void removeAllHandles() {
-		synchronized (m_view.m_lock) {
-			final Bend bend = m_view.m_edgeDetails.bend(model);
-			
-			if (m_selected) {
-				for (int j = 0; j < bend.getAllHandles().size(); j++) {
-					m_view.m_spacialA.delete((m_inx << 6) | j);
-					m_view.m_selectedAnchors.delete((m_inx << 6) | j);
-				}
-			}
-			m_view.m_contentChanged = true;
+			dGraphView.m_contentChanged = true;
 		}
 	}
 
@@ -661,14 +505,14 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		if(isValueLocked(DVisualLexicon.EDGE_BEND))
 			bend = this.getVisualProperty(DVisualLexicon.EDGE_BEND);
 		else
-			bend = m_view.m_edgeDetails.bend(model);
+			bend = dGraphView.m_edgeDetails.getBend(model);
 		
 		final int numHandles = bend.getAllHandles().size();
 		
 		if (numHandles == 0)
 			return 0;
 		
-		if (m_view.m_edgeDetails.lineType(model) == EdgeView.CURVED_LINES)
+		if (dGraphView.m_edgeDetails.getLineCurved(model) == EdgeView.CURVED_LINES)
 			return numHandles;
 		else
 			return 2 * numHandles;
@@ -683,67 +527,85 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		if(isValueLocked(DVisualLexicon.EDGE_BEND))
 			bend = this.getVisualProperty(DVisualLexicon.EDGE_BEND);
 		else
-			bend = m_view.m_edgeDetails.bend(model);
+			bend = dGraphView.m_edgeDetails.getBend(model);
 		
 		final Handle handle;
-		if (m_view.m_edgeDetails.lineType(model) == EdgeView.CURVED_LINES)
+		if (dGraphView.m_edgeDetails.getLineCurved(model) == EdgeView.CURVED_LINES)
 			handle = bend.getAllHandles().get(anchorIndex);
 		else
 			handle = bend.getAllHandles().get(anchorIndex/2);
 
-		final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),this);
+		final Point2D newPoint = handle.calculateHandleLocation(dGraphView.getViewModel(),this);
 		anchorArr[offset] = (float) newPoint.getX();
 		anchorArr[offset + 1] = (float) newPoint.getY();
 	}
 
 	public void setLabelWidth(double width) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.overrideLabelWidth(model, width);
-			m_view.m_contentChanged = true;
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.overrideLabelWidth(model, width);
+			dGraphView.m_contentChanged = true;
 		}
 	}
 
-	public double getLabelWidth() {
-		synchronized (m_view.m_lock) {
-			return m_view.m_edgeDetails.labelWidth(model);
-		}
-	}
-
-	@Override
-	public int getTransparency() {
-		return transparency;
-	}
 
 	@Override
 	public void setTransparency(final int trans) {
-		synchronized (m_view.m_lock) {
+		synchronized (dGraphView.m_lock) {
+			Integer transparency;
 			if (trans < 0 || trans > 255) {
 				// If out of range, use default value.
 				transparency = BasicVisualLexicon.EDGE_TRANSPARENCY.getDefault();
 			} else {
 				transparency = trans;
 			}
-
-			setUnselectedPaint(getUnselectedPaint());
-			setSelectedPaint(getSelectedPaint());
+			dGraphView.m_edgeDetails.overrideTransparency(model, transparency);
+			
+			setUnselectedPaint(dGraphView.m_edgeDetails.getUnselectedPaint(model));
+			setSelectedPaint(dGraphView.m_edgeDetails.getSelectedPaint(model));
+			setTargetEdgeEndPaint(dGraphView.m_edgeDetails.getTargetArrowPaint(model));
+			setSourceEdgeEndPaint(dGraphView.m_edgeDetails.getSourceArrowPaint(model));
+			
+			dGraphView.m_contentChanged = true;
+		}
+	}
+	
+	@Override
+	public void setLabelTransparency(final int trans) {
+		synchronized (dGraphView.m_lock) {
+			Integer transparency;
+			if (trans < 0 || trans > 255) {
+				// If out of range, use default value.
+				transparency = BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
+			} else {
+				transparency = trans;
+			}
+			
+			dGraphView.m_edgeDetails.overrideLabelTransparency(model, transparency);
+			setTextPaint(dGraphView.m_edgeDetails.getLabelPaint(model, 0));
+			
+			dGraphView.m_contentChanged = true;
 		}
 	}
 	
 	@Override
 	public void setBend(final Bend bend) {
-		synchronized (m_view.m_lock) {
-			m_view.m_edgeDetails.m_edgeBends.put(model, bend);
+		synchronized (dGraphView.m_lock) {
+			dGraphView.m_edgeDetails.m_edgeBends.put(model, bend);
 		}
-		m_view.m_contentChanged = true;
+		dGraphView.m_contentChanged = true;
 	}
 	
 	@Override
 	public Bend getBend() {
-		synchronized (m_view.m_lock) {
-			return m_view.m_edgeDetails.bend(model);
+		synchronized (dGraphView.m_lock) {
+			return dGraphView.m_edgeDetails.getBend(model);
 		}
 	}
 
+	
+	/**
+	 * This method sets a mapped value.  NOT Defaults.
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
@@ -754,25 +616,17 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			value = (V) vp.getDefault();
 
 		if (vp == DVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
-			if (value != null)
-				setSelectedPaint((Paint) value);
+			setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
-			if (value != null)
-				setUnselectedPaint((Paint) value);
+			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
-			if (value != null) {
-				setSelectedPaint((Paint) value);
-//				setSourceEdgeEndSelectedPaint((Paint) value); // TODO delete?
-//				setTargetEdgeEndSelectedPaint((Paint) value);
-			}
+			setSelectedPaint((Paint) value);
+			setSourceEdgeEndSelectedPaint((Paint) value);
+			setTargetEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
-			if (value != null) {
-//				setSourceEdgeEndPaint((Paint) value); // TODO
-//				setTargetEdgeEndPaint((Paint) value);
-				setUnselectedPaint((Paint) value);
-			}
+			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
-			final float currentWidth = this.getStrokeWidth();
+			final float currentWidth = dGraphView.m_edgeDetails.getWidth(model);
 			final float newWidth = ((Number) value).floatValue();
 			
 			if (currentWidth != newWidth) {
@@ -781,15 +635,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			}
 		} else if (vp == DVisualLexicon.EDGE_LINE_TYPE) {
 			lineType = (LineType) value;
-			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(getStrokeWidth());
+			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(dGraphView.m_edgeDetails.getWidth(model));
 			setStroke(newStroke);
 		} else if (vp == DVisualLexicon.EDGE_TRANSPARENCY) {
 			setTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.EDGE_LABEL_TRANSPARENCY) {
-			labelTransparency = ((Number) value).intValue();
-			final Color c = (Color) getTextPaint();
-			if (c != null && c.getAlpha() != labelTransparency)
-				setTextPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), labelTransparency));
+			final int labelTransparency = ((Number) value).intValue();
+			setLabelTransparency(labelTransparency);
 		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SELECTED_PAINT) {
 			setSourceEdgeEndSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SELECTED_PAINT) {
@@ -816,7 +668,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			final Font newFont = ((Font) value).deriveFont(fontSize);
 			setFont(newFont);
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_SIZE) {
-			float newSize = ((Number) value).floatValue();
+			int newSize = ((Number) value).intValue();
 			if (newSize != fontSize) {
 				fontSize = newSize;
 				final Font f = getFont();
@@ -827,17 +679,22 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			setTextPaint((Paint) value);
 		} else if (vp == BasicVisualLexicon.EDGE_VISIBLE) {
 			if (((Boolean) value).booleanValue())
-				m_view.showGraphObject(this);
+				dGraphView.showGraphObject(this);
 			else
-				m_view.hideGraphObject(this);
+				dGraphView.hideGraphObject(this);
 		} else if (vp == DVisualLexicon.EDGE_CURVED) {
 			final Boolean curved = (Boolean) value;
 			if (curved)
-				setLineType(EdgeView.CURVED_LINES);
+				setLineCurved(EdgeView.CURVED_LINES);
 			else
-				setLineType(EdgeView.STRAIGHT_LINES);
+				setLineCurved(EdgeView.STRAIGHT_LINES);
 		} else if (vp == DVisualLexicon.EDGE_BEND) {
 			setBend((Bend) value);
 		}
+	}
+
+	@Override
+	protected <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
+		return dGraphView.m_edgeDetails.getDefaultValue(vp);
 	}
 }

@@ -37,7 +37,6 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.geom.Point2D;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -94,11 +93,11 @@ public class ViewState {
 			anchors = new WeakHashMap<CyEdge, List>();
 			linetype = new WeakHashMap<CyEdge, Integer>();
 			for (CyEdge e: view.getNetwork().getEdgeList()) {
-				EdgeView ev = view.getDEdgeView(e);
-				
+				final DEdgeView ev = view.getDEdgeView(e);
+				DGraphView gView = (DGraphView) ev.getGraphView();
 				// FIXME!
 				//anchors.put(e, ev.getBend().getHandles());
-				linetype.put(e, ev.getLineType());
+				linetype.put(e, gView.m_edgeDetails.getLineCurved(e));
 			}
 		}
 
@@ -122,10 +121,11 @@ public class ViewState {
 			Iterator<CyEdge> edgeIter = view.getSelectedEdges().iterator();
 			while (edgeIter.hasNext()) {
 				CyEdge e = edgeIter.next();
-				EdgeView ev = view.getDEdgeView(e);
+				final DEdgeView ev = view.getDEdgeView(e);
+				DGraphView gView = (DGraphView) ev.getGraphView();
 				// FIXME!
 				//anchors.put(e, ev.getBend().getHandles());
-				linetype.put(e, ev.getLineType());
+				linetype.put(e, gView.m_edgeDetails.getLineCurved(e));
 			}
 		}
 	}
@@ -214,7 +214,7 @@ public class ViewState {
 				final EdgeView ev = view.getDEdgeView(e);
 				// FIXME!
 				//ev.getBend().setHandles( anchors.get(e) );
-				ev.setLineType( linetype.get(e).intValue() );
+				ev.setLineCurved( linetype.get(e).intValue() );
 			}
 		}
 	}

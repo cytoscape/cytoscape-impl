@@ -337,7 +337,7 @@ public final class GraphRenderer {
 							                  // accuracy and performance.
 							                  (floatBuff2[0] + floatBuff2[2]) / 2,
 							                  (floatBuff2[1] + floatBuff2[3]) / 2,
-							                  edgeDetails.colorLowDetail(edge));
+							                  edgeDetails.getColorLowDetail(edge));
 						}
 					}
 
@@ -347,7 +347,7 @@ public final class GraphRenderer {
 				while (nodeHits.numRemaining() > 0) {
 					final long node = nodeHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
-					final byte nodeShape = nodeDetails.shape(cyNode);
+					final byte nodeShape = nodeDetails.getShape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
 					for (final CyEdge edge : touchingEdges ) {
 						final long otherNode = node ^ edge.getSource().getSUID()
@@ -359,7 +359,7 @@ public final class GraphRenderer {
 							if (!nodePositions.exists(otherNode, floatBuff2, 0))
 								throw new IllegalStateException("nodePositions not recognizing node that exists in graph");
 
-							final byte otherNodeShape = nodeDetails.shape(otherCyNode);
+							final byte otherNodeShape = nodeDetails.getShape(otherCyNode);
 
 							// Compute node shapes, center positions, and extents.
 							final byte srcShape;
@@ -381,9 +381,9 @@ public final class GraphRenderer {
 							}
 
 							// Compute visual attributes that do not depend on LOD.
-							final float thickness = edgeDetails.segmentThickness(edge);
-							final Stroke edgeStroke = edgeDetails.segmentStroke(edge);
-							final Paint segPaint = edgeDetails.segmentPaint(edge);
+							final float thickness = edgeDetails.getWidth(edge);
+							final Stroke edgeStroke = edgeDetails.getStroke(edge);
+							final Paint segPaint = edgeDetails.getPaint(edge);
 
 							// Compute arrows.
 							final byte srcArrow;
@@ -400,24 +400,24 @@ public final class GraphRenderer {
 								trgArrowSize = srcArrowSize = 0.0f;
 								trgArrowPaint = srcArrowPaint = null;
 							} else { // Rendering edge arrows.
-								srcArrow = edgeDetails.sourceArrow(edge);
-								trgArrow = edgeDetails.targetArrow(edge);
+								srcArrow = edgeDetails.getSourceArrowShape(edge);
+								trgArrow = edgeDetails.getTargetArrowShape(edge);
 								srcArrowSize = ((srcArrow == GraphGraphics.ARROW_NONE) 
 								                 ? 0.0f
-								                 : edgeDetails.sourceArrowSize(edge));
+								                 : edgeDetails.getSourceArrowSize(edge));
 								trgArrowSize = ((trgArrow == GraphGraphics.ARROW_NONE)
 								                 ? 0.0f
-								                 : edgeDetails.targetArrowSize(edge));
+								                 : edgeDetails.getTargetArrowSize(edge));
 								srcArrowPaint = ((srcArrow == GraphGraphics.ARROW_NONE)
-								                 ? null : edgeDetails.sourceArrowPaint(edge));
+								                 ? null : edgeDetails.getSourceArrowPaint(edge));
 								trgArrowPaint = ((trgArrow == GraphGraphics.ARROW_NONE)
-								                 ? null : edgeDetails.targetArrowPaint(edge));
+								                 ? null : edgeDetails.getTargetArrowPaint(edge));
 							}
 
 							// Compute the anchors to use when rendering edge.
 							final EdgeAnchors anchors = (((lodBits & LOD_EDGE_ANCHORS) == 0) ? null
 							                                                                 : edgeDetails
-							                                                                   .anchors(edge));
+							                                                                   .getAnchors(edge));
 
 							if (!computeEdgeEndpoints(grafx, srcExtents, srcShape, srcArrow,
 							                          srcArrowSize, anchors, trgExtents, trgShape,
@@ -438,7 +438,7 @@ public final class GraphRenderer {
 								for (int k = 0; k < anchors.numAnchors(); k++) {
 									final float anchorSize;
 
-									if ((anchorSize = edgeDetails.anchorSize(edge, k)) > 0.0f) {
+									if ((anchorSize = edgeDetails.getAnchorSize(edge, k)) > 0.0f) {
 										anchors.getAnchor(k, floatBuff4, 0);
 										grafx.drawNodeFull(GraphGraphics.SHAPE_RECTANGLE,
 										                   (float) (floatBuff4[0]
@@ -449,7 +449,7 @@ public final class GraphRenderer {
 										                   + (anchorSize / 2.0d)),
 										                   (float) (floatBuff4[1]
 										                   + (anchorSize / 2.0d)),
-										                   edgeDetails.anchorPaint(edge, k), 0.0f,
+										                   edgeDetails.getAnchorPaint(edge, k), 0.0f,
 										                   null);
 									}
 								}
@@ -458,27 +458,27 @@ public final class GraphRenderer {
 							// Take care of label rendering.
 							if ((lodBits & LOD_EDGE_LABELS) != 0) {
 								
-								final int labelCount = edgeDetails.labelCount(edge);
+								final int labelCount = edgeDetails.getLabelCount(edge);
 								for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-									final String text = edgeDetails.labelText(edge, labelInx);
-									final Font font = edgeDetails.labelFont(edge, labelInx);
-									final double fontScaleFactor = edgeDetails.labelScaleFactor(edge, labelInx);
-									final Paint paint = edgeDetails.labelPaint(edge, labelInx);
-									final byte textAnchor = edgeDetails.labelTextAnchor(edge, labelInx);
-									final byte edgeAnchor = edgeDetails.labelEdgeAnchor(edge, labelInx);
-									final float offsetVectorX = edgeDetails.labelOffsetVectorX(edge, labelInx);
-									final float offsetVectorY = edgeDetails.labelOffsetVectorY(edge, labelInx);
+									final String text = edgeDetails.getLabelText(edge, labelInx);
+									final Font font = edgeDetails.getLabelFont(edge, labelInx);
+									final double fontScaleFactor = edgeDetails.getLabelScaleFactor(edge, labelInx);
+									final Paint paint = edgeDetails.getLabelPaint(edge, labelInx);
+									final byte textAnchor = edgeDetails.getLabelTextAnchor(edge, labelInx);
+									final byte edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge, labelInx);
+									final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge, labelInx);
+									final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge, labelInx);
 									final byte justify;
 
 									if (text.indexOf('\n') >= 0)
-										justify = edgeDetails.labelJustify(edge, labelInx);
+										justify = edgeDetails.getLabelJustify(edge, labelInx);
 									else
 										justify = NodeDetails.LABEL_WRAP_JUSTIFY_CENTER;
 
 									final double edgeAnchorPointX;
 									final double edgeAnchorPointY;
 
-									final double edgeLabelWidth = edgeDetails.labelWidth(edge);
+									final double edgeLabelWidth = edgeDetails.getLabelWidth(edge);
 
 									if (edgeAnchor == EdgeDetails.EDGE_ANCHOR_SOURCE) {
 										edgeAnchorPointX = srcXAdj;
@@ -654,7 +654,7 @@ public final class GraphRenderer {
 
 						for (int labelInx = 0; labelInx < labelCount; labelInx++) {
 							final String text = nodeDetails.labelText(cyNode, labelInx);
-							final Font font = nodeDetails.labelFont(cyNode, labelInx);
+							final Font font = nodeDetails.getLabelFont(cyNode, labelInx);
 							final double fontScaleFactor = nodeDetails.labelScaleFactor(cyNode,
 							                                                            labelInx);
 							final Paint paint = nodeDetails.labelPaint(cyNode, labelInx);
@@ -1044,8 +1044,8 @@ public final class GraphRenderer {
 		if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
 						
 			// Compute visual attributes that do not depend on LOD.
-			final byte shape = nodeDetails.shape(cyNode);
-			final Paint fillPaint = nodeDetails.fillPaint(cyNode);
+			final byte shape = nodeDetails.getShape(cyNode);
+			final Paint fillPaint = nodeDetails.getFillPaint(cyNode);
 
 			// Compute node border information.
 			final float borderWidth;
@@ -1060,7 +1060,7 @@ public final class GraphRenderer {
 				if (borderWidth == 0.0f)
 					borderPaint = null;
 				else
-					borderPaint = nodeDetails.borderPaint(cyNode);
+					borderPaint = nodeDetails.getBorderPaint(cyNode);
 			}
 
 			// Draw the node.

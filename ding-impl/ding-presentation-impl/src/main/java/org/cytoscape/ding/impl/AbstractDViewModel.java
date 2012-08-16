@@ -58,7 +58,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	@Override
 	public <T, V extends T> void setLockedValue(final VisualProperty<? extends T> vp, final V value) {
 		visualPropertyLocks.put(vp, value);
-		applyVisualProperty(vp, value);
 	}
 
 	@Override
@@ -69,28 +68,36 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	@Override
 	public void clearValueLock(final VisualProperty<?> vp) {
 		visualPropertyLocks.remove(vp);
-		// Re-apply the regular visual property value
-		Object newValue = getVisualProperty(vp);
-		applyVisualProperty(vp, newValue);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getVisualProperty(final VisualProperty<T> vp) {
 		if (visualPropertyLocks.get(vp) == null) {
-			if (visualProperties.get(vp) == null)
-				return vp.getDefault();
-			else
+			if (visualProperties.get(vp) == null) {
+				// Mapped value is null.  Try default
+				final T viewDefault = this.getDefaultValue(vp);
+				if(viewDefault != null)
+					return viewDefault;
+				else
+					return vp.getDefault();
+			} else
 				return (T) visualProperties.get(vp);
-		} else
+		} else {
+			// Visual Property is LOCKED.  Return Locked value.
 			return (T) this.visualPropertyLocks.get(vp);
+		}
 	}
 	
 	protected abstract <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value);
+	protected abstract <T, V extends T> V getDefaultValue(final VisualProperty<T> vp);
 	
-	protected Paint getTransparentColor(final Paint p, final int alpha) {
+	protected final Paint getTransparentColor(final Paint p, final int alpha) {
+		if(p == null)
+			return p;
+		
 		if (p instanceof Color && ((Color) p).getAlpha() != alpha) {
-			Color c = (Color) p;
+			final Color c = (Color) p;
 			return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
 		} else {
 			return p;

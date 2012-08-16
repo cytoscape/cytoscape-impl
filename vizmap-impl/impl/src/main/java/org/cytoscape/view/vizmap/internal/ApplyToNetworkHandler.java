@@ -52,7 +52,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		applyMappings(netView, edgeViews, lexManager.getEdgeVisualProperties(), dependencyMap);
 		applyMappings(netView, networkViewSet, lexManager.getNetworkVisualProperties(), dependencyMap);
 
-		logger.info("Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
+		logger.debug("Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
 	}
 
 	private void applyViewDefaults(final CyNetworkView netView, final Collection<VisualProperty<?>> vps) {
@@ -102,6 +102,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	}
 	
 	private Map<VisualProperty<?>, VisualPropertyDependency<?>> applyDependencies(final CyNetworkView netView) {
+		
 		final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap = 
 				new HashMap<VisualProperty<?>, VisualPropertyDependency<?>>();
 		final Set<VisualPropertyDependency<?>> dependencies = style.getAllVisualPropertyDependencies();
@@ -111,19 +112,18 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 			dependencyMap.put(parentVP, dep); // Index the dependencies by their visual properties
 			
 			if (dep.isDependencyEnabled()) {
+				// Dependency is enabled.  Need to use parent value instead.
 				final Set<VisualProperty<?>> vpSet = new HashSet<VisualProperty<?>>(dep.getVisualProperties());
 				vpSet.add(parentVP);
 				
 				Object defaultValue = style.getDefaultValue(parentVP);
+				if (defaultValue == null)
+					defaultValue = parentVP.getDefault();
+				
 				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(parentVP);
 				
 				for (VisualProperty<?> vp : vpSet) {
 					dependencyMap.put(vp, dep);
-// TODO delete?					
-//					if (defaultValue == null) {
-//						((VisualStyleImpl) style).getStyleDefaults().put(vp, vp.getDefault());
-//						defaultValue = style.getDefaultValue(vp);
-//					}
 					
 					netView.setViewDefault(vp, defaultValue);
 					

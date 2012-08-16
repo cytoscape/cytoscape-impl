@@ -154,7 +154,7 @@ public class NodeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull() that pertain to rounded rectangles.
 	 */
-	public byte shape(final CyNode node) {
+	public byte getShape(final CyNode node) {
 		return GraphGraphics.SHAPE_RECTANGLE;
 	}
 
@@ -162,7 +162,7 @@ public class NodeDetails {
 	 * Returns the paint of the interior of the node shape. By default this
 	 * method returns Color.red. It is an error to return null in this method.
 	 */
-	public Paint fillPaint(final CyNode node) {
+	public Paint getFillPaint(final CyNode node) {
 		return Color.red;
 	}
 
@@ -181,7 +181,7 @@ public class NodeDetails {
 	 * zero; it is an error to return null if borderWidth(node) returns a value
 	 * greater than zero.
 	 */
-	public Paint borderPaint(final CyNode node) {
+	public Paint getBorderPaint(final CyNode node) {
 		return Color.DARK_GRAY;
 	}
 
@@ -220,7 +220,7 @@ public class NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 */
-	public Font labelFont(final CyNode node, final int labelInx) {
+	public Font getLabelFont(final CyNode node, final int labelInx) {
 		return null;
 	}
 

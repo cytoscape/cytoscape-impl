@@ -4,8 +4,8 @@ package org.cytoscape.ding;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
-import java.util.List;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
@@ -15,28 +15,8 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
  */
 public interface NodeView extends GraphViewObject {
 
-	/**
-	 * @return the index of this node in the perspective to which we are in a view on.
-	 */
-	long getGraphPerspectiveIndex();
+	CyNode getCyNode();
 
-
-	/**
-	 * @return The list of EdgeViews connecting these two nodes. Possibly null.
-	 */
-	List<EdgeView> getEdgeViewsList(final NodeView otherNode);
-	
-
-	/**
-	 * Shape is currently defined via predefined variables in
-	 * the NodeView interface. To get the actual java.awt.Shape
-	 * use getPathReference()
-	 * 
-	 * @return the current int-tpye shape
-	 */
-	int getShape() ;
-
-	
 	/**
 	 * This sets the Paint that will be used by this node
 	 * when it is painted as selected.
@@ -44,45 +24,23 @@ public interface NodeView extends GraphViewObject {
 	 */
 	void setSelectedPaint(Paint paint) ;
 
-	
-	/**
-	 * @return the currently set selection Paint
-	 */
-	Paint getSelectedPaint() ;
 
-	
 	/**
 	 * Set the default paint of this node
 	 * @param paint the default Paint of this node
 	 */
 	void setUnselectedPaint(final Paint paint ) ;
 
-	
-	/**
-	 * @return the currently set paint
-	 */
-	Paint getUnselectedPaint();
-	
-
 	/**
 	 * @param b_paint the paint the border will use
 	 */
 	void setBorderPaint( Paint b_paint ) ;
 
-	/**
-	 * @return the currently set BOrder Paint
-	 */
-	Paint getBorderPaint() ;
-
+	
 	/**
 	 * @param border_width The width of the border.
 	 */
 	void setBorderWidth( float border_width ) ;
-
-	/**
-	 * @return the currently set Border width
-	 */
-	float getBorderWidth () ;
 
 
 	/**
@@ -92,19 +50,9 @@ public interface NodeView extends GraphViewObject {
 
 
 	/**
-	 * @return the current border
-	 */
-	Stroke getBorder();
-
-	/**
 	 * @param trans new value for the transparency
 	 */
 	void setTransparency ( int trans );
-
-	/**
-	 * @return the value for the transparency for this node
-	 */
-	int getTransparency ();
 
 
 	/**
@@ -131,10 +79,6 @@ public interface NodeView extends GraphViewObject {
 	 */
 	public double getHeight () ;
 
-	/**
-	 * @return The Value of the label
-	 */
-	public Label getLabel ();
 
 	public void setOffset ( double x, double y );
 	public Point2D getOffset ();
@@ -206,7 +150,6 @@ public interface NodeView extends GraphViewObject {
 	void setToolTip ( String tip );
 	String getToolTip();
 	
-	ObjectPosition getLabelPosition();
 	void setLabelPosition(final ObjectPosition p);
 	
 }

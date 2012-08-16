@@ -2,6 +2,7 @@ package org.cytoscape.ding;
 
 import java.awt.Shape;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -58,7 +59,10 @@ public class DNodeShape implements NodeShape {
 	}
 
 	public static final DNodeShape getDShape(final NodeShape shape) {
-		return DEF_SHAPE_MAP.get(shape);
+		if(DEF_SHAPE_MAP.get(shape) == null)
+			return RECTANGLE;
+		else
+			return DEF_SHAPE_MAP.get(shape);
 	}
 
 	private final Byte rendererShapeID;
