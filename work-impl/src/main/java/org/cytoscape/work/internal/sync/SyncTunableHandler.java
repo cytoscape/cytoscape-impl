@@ -22,7 +22,9 @@ public class SyncTunableHandler extends AbstractTunableHandler {
 	@Override
 	public void handle() {
 		try {
-			setValue(valueMap.get(getName()));
+			if (valueMap.containsKey(getName())) {
+				setValue(valueMap.get(getName()));
+			}
 		} catch (Exception e) {
 			throw new RuntimeException("Exception setting tunable value.", e);
 		}
