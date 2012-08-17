@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.swing.ImageIcon;
 
+import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
 
 /**
@@ -50,6 +51,8 @@ public class WebApp {
 	private ImageIcon imageIcon;
 	
 	private List<Release> releases;
+	
+	private App correspondingApp;
 	
 	public static class Release implements Comparable<Release> {
 		private String baseUrl;
@@ -117,6 +120,8 @@ public class WebApp {
 	public WebApp() {
 		appTags = new HashSet<AppTag>();
 		releases = new LinkedList<Release>();
+		
+		correspondingApp = null;
 	}
 	
 	/** 
@@ -216,6 +221,10 @@ public class WebApp {
 		return releases;
 	}
 	
+	public App getCorrespondingApp() {
+		return correspondingApp;
+	}
+	
 	public void setFullName(String fullName) {
 		this.fullName = fullName;
 	}
@@ -268,10 +277,12 @@ public class WebApp {
 		this.releases = releases;
 	}
 	
+	public void setCorrespondingApp(App app) {
+		this.correspondingApp = app;
+	}
+	
 	@Override
 	public String toString() {
 		return fullName;
 	}
-
-	
 }

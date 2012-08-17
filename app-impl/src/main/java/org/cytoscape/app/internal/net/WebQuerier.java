@@ -563,6 +563,38 @@ public class WebQuerier {
 		return updates;
 	}
 	
+	public void checkWebAppInstallStatus(Set<WebApp> webApps, AppManager appManager) {
+		
+		for (App app : appManager.getApps()) {
+			
+			if (app.getSha512Checksum() == null) {
+				try {
+					app.setSha512Checksum(appManager.getAppParser().getChecksum(app.getAppFile()));
+				} catch (ChecksumException e) {
+					app.setSha512Checksum(null);
+				}
+			}
+			
+			if (app.getSha512Checksum() != null) {
+
+				String sha512checksum = app.getSha512Checksum().toLowerCase();
+				
+				for (WebApp webApp : webApps) {
+					
+					List<Release> releases = webApp.getReleases();
+					
+					for (Release release : releases) {
+						
+						if (sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
+							
+							webApp.setCorrespondingApp(app);
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	private Update checkForUpdate(App app, String url, AppManager appManager) {
 		Set<WebApp> urlApps = appsByUrl.get(url);
 		
