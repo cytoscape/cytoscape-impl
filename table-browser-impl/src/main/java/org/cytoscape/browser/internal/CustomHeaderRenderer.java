@@ -136,7 +136,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		String toolTip = null;
 
 		if(text.equals(CyIdentifiable.SUID))
-			toolTip = "<html>Session-Unique ID (Primary Key).<br /> This column is immutable.";
+			toolTip = "<html>Session-Unique ID (Primary Key).<br /> This column is uneditable.";
 		else if(col.getType() == List.class) {
 			toolTip = "<html>Name: " + col.getName() + "<br /> Type: List of "+ getMinimizedType( col.getListElementType().getName()) + "s";
 		} else{
@@ -145,7 +145,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		if (col.getVirtualColumnInfo().isVirtual()) {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_VIRTUAL_COLOR);
-			toolTip += "<br />Virtual Column</html>";
+			toolTip += "<br />Shared Attribute</html>";
 		} else {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_COLOR);
