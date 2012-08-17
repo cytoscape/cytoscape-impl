@@ -390,17 +390,19 @@ public class VisualStyleSerializer {
 					final String attrName = pmModel.getAttributeName();
 					final AttributeType attrType = pmModel.getAttributeType();
 					final Class<?> columnDataType;
-					if(attrType==AttributeType.BOOLEAN)
+					
+					if (attrType == AttributeType.BOOLEAN)
 						columnDataType = Boolean.class;
-					else if(attrType==AttributeType.FLOAT)
+					else if (attrType == AttributeType.FLOAT)
 						columnDataType = Double.class;
-					else if(attrType==AttributeType.INTEGER)
+					else if (attrType == AttributeType.INTEGER)
 						columnDataType = Integer.class;
-					else if(attrType==AttributeType.LIST)
+					else if (attrType == AttributeType.LONG)
+						columnDataType = Long.class;
+					else if (attrType == AttributeType.LIST)
 						columnDataType = List.class;
-					else {
+					else
 						columnDataType = String.class;
-					}
 					
 					try {
 						PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) passthroughMappingFactory
@@ -420,6 +422,7 @@ public class VisualStyleSerializer {
 					try {
 						Class<?> attrClass = null;
 
+						// TODO refactor attr type assignment
 						switch (attrType) {
 							case BOOLEAN:
 								attrClass = Boolean.class;
@@ -428,8 +431,10 @@ public class VisualStyleSerializer {
 								attrClass = Double.class;
 								break;
 							case INTEGER:
-								// TODO: what about Long attrs?
 								attrClass = Integer.class;
+								break;
+							case LONG:
+								attrClass = Long.class;
 								break;
 							default:
 								attrClass = String.class;
@@ -454,8 +459,10 @@ public class VisualStyleSerializer {
 										attrValue = Double.parseDouble(sAttrValue);
 										break;
 									case INTEGER:
-										// TODO: what if it is a Long?
 										attrValue = Integer.parseInt(sAttrValue);
+										break;
+									case LONG:
+										attrValue = Long.parseLong(sAttrValue);
 										break;
 									default:
 										// Note: Always handle List type as String!
@@ -581,9 +588,10 @@ public class VisualStyleSerializer {
 
 		if (attrClass == Boolean.class) {
 			attrType = AttributeType.BOOLEAN;
-		} else if (attrClass == Byte.class || attrClass == Short.class || attrClass == Integer.class ||
-				   attrClass == Long.class) {
+		} else if (attrClass == Byte.class || attrClass == Short.class || attrClass == Integer.class) {
 			attrType = AttributeType.INTEGER;
+		} else if (attrClass == Long.class) {
+			attrType = AttributeType.LONG;
 		} else if (Number.class.isAssignableFrom(attrClass)) {
 			attrType = AttributeType.FLOAT;
 		}

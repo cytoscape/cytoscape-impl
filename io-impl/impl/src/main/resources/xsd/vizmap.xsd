@@ -104,6 +104,7 @@
 			<xs:enumeration value="string" />
 			<xs:enumeration value="boolean" />
 			<xs:enumeration value="integer" />
+			<xs:enumeration value="long" />
 			<xs:enumeration value="float" />
 			<xs:enumeration value="list" />
 		</xs:restriction>
