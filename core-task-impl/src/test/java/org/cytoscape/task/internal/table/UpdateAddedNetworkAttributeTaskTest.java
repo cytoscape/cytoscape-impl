@@ -28,9 +28,11 @@ import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTaskManager;
 import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTunableMutator;
+import org.cytoscape.work.internal.sync.SyncTunableMutatorFactory;
 import org.cytoscape.work.internal.sync.TunableRecorderManager;
 import org.cytoscape.work.internal.sync.TunableSetterImpl;
 import org.junit.Before;
@@ -47,10 +49,10 @@ public class UpdateAddedNetworkAttributeTaskTest {
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
 	private SyncTunableMutator stm = new SyncTunableMutator();
-	private TunableSetterImpl ts = new  TunableSetterImpl(stm, new TunableRecorderManager());
+	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
+	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager()); // new  TunableSetterImpl(stm, new TunableRecorderManager());
 	CyTableManager tabMgr = new CyTableManagerImpl(eventHelper, new CyNetworkTableManagerImpl(), netMgr);
 	private UpdateAddedNetworkAttributes up = new UpdateAddedNetworkAttributes(new MapGlobalToLocalTableTaskFactoryImpl(tabMgr, netMgr, ts), new SyncTaskManager(stm));
-	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 	Properties syncFactoryProp = new Properties();
 
 	@Test

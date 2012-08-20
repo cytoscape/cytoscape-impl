@@ -20,6 +20,7 @@ import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableHandlerFactory;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
@@ -48,8 +49,8 @@ public class MapTableToNetworkTableTaskTest {
 	private static CyEventHelper eventHelper = new DummyCyEventHelper();
 	private static CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
 	private static SyncTunableMutator stm = new SyncTunableMutator();
-	private static TunableSetterImpl ts = new  TunableSetterImpl(stm, new TunableRecorderManager());
-	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
+	private static SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
+	private static TunableSetterImpl ts =new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager()); // new  TunableSetterImpl(stm, new TunableRecorderManager());
 	Properties syncFactoryProp = new Properties();
 	
 	@Test
