@@ -50,7 +50,7 @@ public class MapTableToNetworkTableTaskTest {
 	private static CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
 	private static SyncTunableMutator stm = new SyncTunableMutator();
 	private static SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
-	private static TunableSetterImpl ts =new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager()); // new  TunableSetterImpl(stm, new TunableRecorderManager());
+	private static TunableSetterImpl ts =new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
 	Properties syncFactoryProp = new Properties();
 	
 	@Test
