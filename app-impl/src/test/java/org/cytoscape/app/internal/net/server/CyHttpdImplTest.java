@@ -1,0 +1,131 @@
+package org.cytoscape.app.internal.net.server;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+import org.apache.http.HttpStatus;
+
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class CyHttpdImplTest {
+
+	@Test
+	public void testHttpd() throws Exception
+    {
+        final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607)); // why 2607? 'cuz it's my birfday
+        final CyHttpResponseFactory responseFactory = new CyHttpResponseFactoryImpl();
+        httpd.addResponder(new CyHttpResponder()
+        {
+            public Pattern getURIPattern()
+            {
+                return Pattern.compile("^/testA$");
+            }
+
+            public CyHttpResponse respond(CyHttpRequest request, Matcher matchedURI)
+            {
+                return responseFactory.createHttpResponse(HttpStatus.SC_OK, "testA response ok", "text/html");
+            }
+        });
+
+        httpd.addResponder(new CyHttpResponder()
+        {
+            public Pattern getURIPattern()
+            {
+                return Pattern.compile("^/testB$");
+            }
+
+            public CyHttpResponse respond(CyHttpRequest request, Matcher matchedURI)
+            {
+                return responseFactory.createHttpResponse(HttpStatus.SC_OK, "testB response ok", "text/html");
+            }
+        });
+
+        httpd.addBeforeResponse(new CyHttpBeforeResponse()
+        {
+            public CyHttpResponse intercept(CyHttpRequest request)
+            {
+                if (request.getMethod().equals("OPTIONS"))
+                    return responseFactory.createHttpResponse(HttpStatus.SC_OK, "options intercepted", "text/html");
+                else
+                    return null;
+            }
+        });
+
+        httpd.addAfterResponse(new CyHttpAfterResponse()
+        {
+            public CyHttpResponse intercept(CyHttpRequest request, CyHttpResponse response)
+            {
+                response.getHeaders().put("SomeRandomHeader", "WowInterceptWorks");
+                return response;
+            }
+        });
+
+
+        assertFalse(httpd.isRunning());
+        httpd.start();
+        assertTrue(httpd.isRunning());
+
+        // test if normal response works
+        HttpURLConnection connection = connectToURL("http://localhost:2607/testA", "GET");
+        assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
+        assertEquals(readConnection(connection), "testA response ok");
+
+        connection = connectToURL("http://localhost:2607/testB", "GET");
+        assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
+        assertEquals(readConnection(connection), "testB response ok");
+
+        // test if 404 response works
+        connection = connectToURL("http://localhost:2607/testX", "GET");
+        assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND);
+
+        // test if before intercept works
+        connection = connectToURL("http://localhost:2607/testA", "OPTIONS");
+        assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
+        assertEquals(readConnection(connection), "options intercepted");
+
+        // test if after intercept works
+        connection = connectToURL("http://localhost:2607/testA", "GET");
+        assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
+        assertEquals(connection.getHeaderField("SomeRandomHeader"), "WowInterceptWorks");
+
+        httpd.stop();
+        assertFalse(httpd.isRunning());
+	}
+
+    private static HttpURLConnection connectToURL(String urlString, String method) throws Exception
+    {
+        final URL url = new URL(urlString);
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(method);
+        connection.setDoOutput(true);
+        connection.connect();
+        return connection;
+    }
+
+    private static String readConnection(HttpURLConnection connection) throws Exception
+    {
+        final StringBuffer buffer = new StringBuffer();
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        while (true)
+        {
+            final String line = reader.readLine();
+            if (line == null)
+                break;
+            buffer.append(line);
+        }
+
+        return buffer.toString();
+    }
+}

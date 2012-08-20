@@ -8,11 +8,11 @@ import java.net.InetAddress;
  * An implementation of {@link ServerSocketFactory} that only accepts connections
  * from localhost.
  */
-public class LocalhostServerSocketFactoryImpl implements ServerSocketFactory
+public class LocalhostServerSocketFactory implements ServerSocketFactory
 {
     final int port;
 
-    public LocalhostServerSocketFactoryImpl(int port)
+    public LocalhostServerSocketFactory(int port)
     {
         if (port <= 0)
             throw new IllegalArgumentException("port <= 0");
