@@ -21,6 +21,9 @@ public class WebApp {
 	/** The name of the app that is displayed to the user. */
 	private String fullName;
 	
+	/** The name of the app to be used for listing available apps from the app store. May contain postfixes */
+	private String appListDisplayName;
+	
 	/** A short description of the app. */
 	private String description;
 	
@@ -139,6 +142,14 @@ public class WebApp {
 	public String getFullName() {
 		return fullName;
 	}
+	
+	/**
+	 * Obtain the name of the app to be used in the available apps listing
+	 * @return The name of the app to be used for the available apps listing
+	 */
+	public String getAppListDisplayName() {
+		return appListDisplayName;
+	}
 
 	/** 
 	 * Obtain a short description of the app 
@@ -232,6 +243,10 @@ public class WebApp {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public void setAppListDisplayName(String appListDisplayName) {
+		this.appListDisplayName = appListDisplayName;
+	}
 
 	public void setDescription(String description) {
 		this.description = description;
@@ -283,6 +298,6 @@ public class WebApp {
 	
 	@Override
 	public String toString() {
-		return fullName;
+		return appListDisplayName;
 	}
 }

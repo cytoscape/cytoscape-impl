@@ -576,7 +576,6 @@ public class WebQuerier {
 			}
 			
 			if (app.getSha512Checksum() != null) {
-
 				String sha512checksum = app.getSha512Checksum().toLowerCase();
 				
 				for (WebApp webApp : webApps) {
@@ -585,7 +584,8 @@ public class WebQuerier {
 					
 					for (Release release : releases) {
 						
-						if (sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
+						if (release.getSha512Checksum().trim().length() > 0
+								&& sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
 							
 							webApp.setCorrespondingApp(app);
 						}

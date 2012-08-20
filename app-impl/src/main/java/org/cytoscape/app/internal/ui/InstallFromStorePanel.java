@@ -1,5 +1,6 @@
 package org.cytoscape.app.internal.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
@@ -36,6 +37,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.AppParser;
 import org.cytoscape.app.internal.net.ResultsFilterer;
@@ -609,6 +611,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     }
     
     private void fillResultsTree(Set<WebApp> webApps) {
+    	appManager.getWebQuerier().checkWebAppInstallStatus(
+    			appManager.getWebQuerier().getAllApps(), appManager);
+    	
     	Set<WebApp> appsToShow = webApps;
     	List<WebApp> sortedApps = new LinkedList<WebApp>(appsToShow);
     	
@@ -625,6 +630,13 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	
     	DefaultMutableTreeNode treeNode;
     	for (WebApp webApp : sortedApps) {
+    		if (webApp.getCorrespondingApp() != null
+    				&& webApp.getCorrespondingApp().getStatus() == AppStatus.INSTALLED) {
+    			webApp.setAppListDisplayName(webApp.getFullName() + " (Installed)");
+    		} else {
+    			webApp.setAppListDisplayName(webApp.getFullName());
+    		}
+
     		treeNode = new DefaultMutableTreeNode(webApp);
     		root.add(treeNode);
     	}
@@ -640,6 +652,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) resultsTree.getSelectionPath().getLastPathComponent();
     		WebApp selectedApp = (WebApp) selectedNode.getUserObject();
         	
+    		boolean appAlreadyInstalled = (selectedApp.getCorrespondingApp() != null
+    				&& selectedApp.getCorrespondingApp().getStatus() == AppStatus.INSTALLED);
+    		
     		String text = "";
     		
     		// text += "<html> <head> </head> <body hspace=\"4\" vspace=\"4\">";
@@ -651,7 +666,15 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		
     		// App name, version
     		text += "<b>" + selectedApp.getFullName() + "</b>";
-    		text += "<br />" + selectedApp.getReleases().get(selectedApp.getReleases().size() - 1).getReleaseVersion();
+    		String latestReleaseVersion = selectedApp.getReleases().get(selectedApp.getReleases().size() - 1).getReleaseVersion();
+    		text += "<br />" + latestReleaseVersion;
+    		
+    		if (appAlreadyInstalled) {
+    			if (!selectedApp.getCorrespondingApp().getVersion().equalsIgnoreCase(latestReleaseVersion)) {
+    				text += " (installed: " + selectedApp.getCorrespondingApp().getVersion() + ")";
+    			}
+    		}
+    		
     		/*
     		text += "<p>";
     		text += "<b>" + selectedApp.getFullName() + "</b>";
@@ -677,7 +700,12 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     		
     		this.selectedApp = selectedApp;
     		
-    		installButton.setEnabled(true);
+    		if (appAlreadyInstalled) {
+    			installButton.setEnabled(false);
+    		} else {
+    			installButton.setEnabled(true);
+    		}
+    		
     		viewOnAppStoreButton.setEnabled(true);
 		
     	} else {
