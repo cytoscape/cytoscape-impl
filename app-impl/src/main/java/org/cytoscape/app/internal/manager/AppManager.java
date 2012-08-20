@@ -294,12 +294,10 @@ public class AppManager {
 					} else {
 						registeredApp.install(appManager);
 					}
-					
-					fireAppsChangedEvent();
 				} catch (AppInstallException e) {
 				}
-				
-				// System.out.println(file + " on create");
+
+				fireAppsChangedEvent();
 			}
 			
 			@Override
@@ -357,8 +355,9 @@ public class AppManager {
 					} else {
 						registeredApp.disable(appManager);
 					}
-					
+
 					fireAppsChangedEvent();
+					
 				} catch (AppDisableException e) {
 				}
 				
@@ -422,6 +421,7 @@ public class AppManager {
 					}
 					
 					fireAppsChangedEvent();
+					
 				} catch (AppUninstallException e) {
 				}
 				

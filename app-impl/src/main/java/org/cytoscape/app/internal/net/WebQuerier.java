@@ -588,6 +588,11 @@ public class WebQuerier {
 								&& sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
 							
 							webApp.setCorrespondingApp(app);
+							
+							// For convenience, set the app's description field
+							if (app.getDescription() == null) {
+								app.setDescription(webApp.getDescription());
+							}
 						}
 					}
 				}
@@ -731,5 +736,25 @@ public class WebQuerier {
 		}
 		
 		return 0;
+	}
+	
+	public String findAppDescriptions(Set<App> apps) {
+		 
+		//String appChecksum = app.getSha512Checksum().toLowerCase();
+		
+		
+		for (String url : appsByUrl.keySet()) {
+			
+			Set<WebApp> urlApps = appsByUrl.get(url);
+			for (WebApp webApp : urlApps) {
+				
+				List<Release> releases = webApp.getReleases();
+				for (Release release : releases) {
+					
+				}
+			}
+		}
+		
+		return null;
 	}
 }

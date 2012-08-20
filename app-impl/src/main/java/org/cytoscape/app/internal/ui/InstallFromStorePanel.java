@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.cytoscape.app.internal.event.AppsChangedEvent;
+import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
@@ -90,6 +93,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	private WebApp selectedApp;
 	private WebQuerier.AppTag currentSelectedAppTag;
 	
+	private Set<WebApp> resultsTreeApps;
+	
     public InstallFromStorePanel(final AppManager appManager, FileUtil fileUtil, TaskManager taskManager, Container parent) {
         this.appManager = appManager;
         this.fileUtil = fileUtil;
@@ -102,6 +107,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
 				updateResultsTree();
+				updateDescriptionBox();
 			}
 		});
     	
@@ -116,6 +122,23 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 		setupTextFieldListener();
     	
 		queryForApps();
+		
+		appManager.addAppListener(new AppsChangedListener() {
+			
+			@Override
+			public void appsChanged(AppsChangedEvent event) {
+				// System.out.println("apps changed, updating box");
+				resultsTree.getSelectionPath();
+
+				TreePath[] selectionPaths = resultsTree.getSelectionPaths();
+
+				updateDescriptionBox();
+				
+				fillResultsTree(resultsTreeApps);
+				
+				resultsTree.setSelectionPaths(selectionPaths);
+			}
+		});
     }
     
     // Queries the currently set app store url for available apps.
@@ -442,7 +465,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	        		app = appParser.parseApp(files[index]);
 						appManager.installApp(app);
     	        	}
-    	        		
+    	        	
     	        	taskMonitor.setProgress(1.0);
     			}
 
@@ -527,7 +550,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         			// Log error: no download links were found for app
         			DebugHelper.print("Unable to find download url for: " + appToDownload.getFullName());
         		}
-	        		
+	        	
 	        	taskMonitor.setProgress(1.0);
 			}
 
@@ -607,6 +630,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	    		// Clear tree
 	    		resultsTree.setModel(new DefaultTreeModel(null));	    		
 	    	}
+    	} else {
+    		// fillResultsTree(appManager.getWebQuerier().getAllApps());
+//    		System.out.println("selection path null, not updating results tree");
     	}
     }
     
@@ -642,6 +668,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	}
     	
     	resultsTree.setModel(new DefaultTreeModel(root));
+    	
+    	resultsTreeApps = new HashSet<WebApp>(webApps);
+  
     }
     
     private void updateDescriptionBox() {
