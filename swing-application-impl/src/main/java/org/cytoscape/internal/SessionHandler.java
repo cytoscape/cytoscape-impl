@@ -139,6 +139,11 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			}
 			else
 				file = new File(sessionFileName);
+			if (file == null){ //just check the file again in casee the file chooser dialoge task is cancled.
+				e.abortShutdown("User canceled the shutdown request.");
+				return;
+			}
+			
 			syncTaskMgr.execute(saveTaskFactory.createTaskIterator(file));
 			return;
 		} else {
