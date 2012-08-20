@@ -55,6 +55,9 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 
 	@Override
 	public Collection<DataSource> getDataSources(DataCategory category) {
+		if (this.dataSourceMap.get(category) == null){
+			return new HashSet<DataSource>();
+		}
 		return this.dataSourceMap.get(category).values();		
 	}
 
@@ -90,6 +93,11 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		}
 		
 		return sources;		
+	}
+
+	@Override
+	public Collection<DataCategory> getAllCategories(){
+		return this.dataSourceMap.keySet();
 	}
 
 	
