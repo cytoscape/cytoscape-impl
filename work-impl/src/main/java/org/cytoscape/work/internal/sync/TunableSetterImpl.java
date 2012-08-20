@@ -24,5 +24,11 @@ public class TunableSetterImpl implements TunableSetter {
 	public TaskIterator createTaskIterator(TaskIterator ti, Map<String,Object> tunableValues) {
 		return new TaskIterator(ti.getNumTasks(), new DelegateTask(stm,trm,ti,tunableValues) );
 	}
+	
+	@Override
+	public void applyTunables(Object object, Map<String, Object> tunableValues) {
+		stm.setConfigurationContext(tunableValues);
+		stm.validateAndWriteBack(object);
+	}
 }
 
