@@ -70,7 +70,7 @@ public class AppManager {
 	
 	/** This subdirectory in the local Cytoscape storage directory is used to store app data, as 
 	 * well as installed and uninstalled apps. */
-	private static final String APPS_DIRECTORY_NAME = "3.0" + File.separator + "apps";
+	private static final String APPS_DIRECTORY_NAME = "3" + File.separator + "apps";
 	
 	/** The set of all apps, represented by {@link App} objects, registered to this App Manager. */
 	private Set<App> apps;

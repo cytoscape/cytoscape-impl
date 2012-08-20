@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Dictionary;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.property.CyProperty;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class CyApplicationConfigurationImpl implements CyApplicationConfiguration {
 	
 	/** Default configuration directory used for all Cytoscape configuration files */
-	public static final String DEFAULT_CONFIG_DIR = ".cytoscape";
+	public static final String DEFAULT_CONFIG_DIR = CyProperty.DEFAULT_PROPS_CONFIG_DIR ;
 
 	private static final Logger logger = LoggerFactory.getLogger(CyApplicationConfigurationImpl.class);
 	
@@ -29,7 +30,7 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 		
 		if(configFileLocation.exists() == false) {
 			configFileLocation.mkdir();
-			logger.warn(".cytoscape directory was not available.  New directory created.");
+			logger.warn("CytoscapeConfiguration directory was not available.  New directory created.");
 		} else {
 			logger.info("Setting file directory = " + configFileLocation.getAbsolutePath());
 		}

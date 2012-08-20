@@ -31,6 +31,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 import org.cytoscape.application.CyVersion;
+import org.cytoscape.property.CyProperty;
 
 
 /**
@@ -45,7 +46,7 @@ public class Plugin {
 	/**
 	 * Name of directory that contains Cytoscape plugins as a path relative to Cytoscape's root directory.
 	 */
-	public static final String cytoscapeDir = System.getProperty("user.home") + File.separator + ".cytoscape";
+	public static final String cytoscapeDir = System.getProperty("user.home") + File.separator + CyProperty.DEFAULT_PROPS_CONFIG_DIR ;
 
 	/**
 	 * Name of XML settings file. Both the internal and external setting files have this name.

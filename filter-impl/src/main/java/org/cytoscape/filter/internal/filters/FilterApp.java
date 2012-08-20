@@ -188,7 +188,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 		InputStream is = null;
 		
 		try {
-			// Load global filters from ".cytoscape" directory.
+			// Load global filters from CyProperty.DEFAULT_PROPS_CONFIG_DIR  directory.
 			final File file = getGlobalFilterFile();
 			
 			if (file.exists()) {
@@ -234,7 +234,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 				globalFilters.add(cf);
 		}
 		
-		// Save global filters in the ".cytoscape" directory
+		// Save global filters in the CyProperty.DEFAULT_PROPS_CONFIG_DIR  directory
 		final File file = getGlobalFilterFile();
 		writer.saveGlobalPropFile(globalFilters, file);
 	}
@@ -242,8 +242,8 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	private File getGlobalFilterFile() {
 		String cyConfigVerDir = new File(
 				ServicesUtil.cyApplicationConfigurationServiceRef.getConfigurationDirectoryLocation(),
-				File.separator + ServicesUtil.cytoscapeVersionService.getMajorVersion() + "."
-						+ ServicesUtil.cytoscapeVersionService.getMinorVersion()).getAbsolutePath();
+				File.separator + ServicesUtil.cytoscapeVersionService.getMajorVersion()).getAbsolutePath(); // + "."
+						//+ ServicesUtil.cytoscapeVersionService.getMinorVersion()).getAbsolutePath();
 		
 		final File file = new File(cyConfigVerDir + File.separator + FilterUtil.DEFAULT_FILE_NAME);
 		
