@@ -129,6 +129,9 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 				setEdgeViewProperties(netView, edgeView);
 		}
 
+		if (!readDataMgr.isSessionFormat())
+			readDataMgr.updateGroupNodes(netView);
+		
 		netView.updateView();
 
 		return netView;

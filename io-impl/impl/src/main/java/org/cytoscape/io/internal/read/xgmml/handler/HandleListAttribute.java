@@ -30,9 +30,9 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.ObjectType;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.xml.sax.Attributes;
@@ -53,7 +53,7 @@ public class HandleListAttribute extends AbstractHandler {
                 clazz = Boolean.class;
                 break;
             case REAL:
-                clazz = SUIDUpdater.isUpdatableSUIDColumnName(name) ? Long.class : Double.class;
+                clazz = SUIDUpdater.isUpdatable(name) ? Long.class : Double.class;
                 break;
             case INTEGER:
                 clazz = Integer.class;

@@ -57,12 +57,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.read.datatable.CyTablesXMLReader;
 import org.cytoscape.io.internal.read.session.CyTableMetadataImpl.CyTableMetadataBuilder;
 import org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkViewReader;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CyNetworkReader;
@@ -127,6 +128,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 	public Cy3SessionReaderImpl(final InputStream sourceInputStream,
 							    final ReadCache cache,
+							    final GroupUtil groupUtil,
 							    final SUIDUpdater suidUpdater,
 							    final CyNetworkReaderManager networkReaderMgr,
 							    final CyPropertyReaderManager propertyReaderMgr,
@@ -134,7 +136,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 							    final CSVCyReaderFactory csvCyReaderFactory,
 							    final CyNetworkTableManager networkTableMgr,
 							    final CyRootNetworkManager rootNetworkMgr) {
-		super(sourceInputStream, cache);
+		super(sourceInputStream, cache, groupUtil);
 
 		if (suidUpdater == null) throw new NullPointerException("SUID updater is null.");
 		this.suidUpdater = suidUpdater;

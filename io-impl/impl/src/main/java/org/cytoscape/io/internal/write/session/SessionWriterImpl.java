@@ -62,6 +62,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.internal.write.datatable.CyTablesXMLWriter;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
@@ -114,6 +115,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private final CyFileFilter propertiesFilter;
 	private final CyFileFilter tableFilter;
 	private final CyFileFilter vizmapFilter;
+	private final GroupUtil groupUtils;
 	private Map<Long, String> tableFilenamesBySUID;
 	private Map<String, VisualStyle> tableVisualStylesByName;
 
@@ -127,7 +129,8 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	                         final CyFileFilter bookmarksFilter,
 	                         final CyFileFilter propertiesFilter,
 	                         final CyFileFilter tableFilter,
-	                         final CyFileFilter vizmapFilter) {
+	                         final CyFileFilter vizmapFilter,
+	                         final GroupUtil groupUtils) {
 		this.outputStream = outputStream;
 		this.session = session;
 		this.rootNetworkManager = rootNetworkMgr;
@@ -139,6 +142,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		this.propertiesFilter = propertiesFilter;
 		this.tableFilter = tableFilter;
 		this.vizmapFilter = vizmapFilter;
+		this.groupUtils = groupUtils;
 
 		// For now, session ID is time and date
 		final DateFormat df = new SimpleDateFormat("yyyy_MM_dd-HH_mm");
@@ -159,36 +163,38 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 * @throws Exception
 	 */
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-		taskMonitor.setProgress(0.0);
-		zos = new ZipOutputStream(outputStream); 
-
-		taskMonitor.setStatusMessage("Zip networks...");
+	public void run(TaskMonitor tm) throws Exception {
+		this.taskMonitor = tm;
+		tm.setProgress(0.0);
+		tm.setTitle("Writing Session File");
+		tm.setStatusMessage("Preparing...");
+		zos = new ZipOutputStream(outputStream);
+		prepareGroups();
 		zipVersion();
-		taskMonitor.setProgress(0.1);
+		tm.setStatusMessage("Zip networks...");
+		tm.setProgress(0.1);
 		zipNetworks();
-		taskMonitor.setProgress(0.3);
+		tm.setProgress(0.3);
 		zipNetworkViews();
-		taskMonitor.setProgress(0.4);
-		taskMonitor.setStatusMessage("Zip tables...");
+		tm.setProgress(0.4);
+		tm.setStatusMessage("Zip tables...");
 		zipTables();
-		taskMonitor.setProgress(0.5);
-		taskMonitor.setStatusMessage("Zip table properties...");
+		tm.setProgress(0.5);
+		tm.setStatusMessage("Zip table properties...");
 		zipTableProperties();
-		taskMonitor.setProgress(0.6);
-		taskMonitor.setStatusMessage("Zip Vizmap...");
+		tm.setProgress(0.6);
+		tm.setStatusMessage("Zip Vizmap...");
 		zipVizmap();
-		taskMonitor.setProgress(0.7);
-		taskMonitor.setStatusMessage("Zip Cytoscape properties...");
+		tm.setProgress(0.7);
+		tm.setStatusMessage("Zip Cytoscape properties...");
 		zipProperties();
-		taskMonitor.setProgress(0.8);
-		taskMonitor.setStatusMessage("Zip apps...");
+		tm.setProgress(0.8);
+		tm.setStatusMessage("Zip apps...");
 		zipFileListMap();
-		taskMonitor.setProgress(0.9);
+		tm.setProgress(0.9);
 		zos.close();
-		taskMonitor.setStatusMessage("Done.");
-		taskMonitor.setProgress(1.0);
+		tm.setStatusMessage("Done.");
+		tm.setProgress(1.0);
 	}
 
 	/**
@@ -374,5 +380,9 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		} finally {
 			zos.closeEntry();
 		}
+	}
+	
+	private void prepareGroups() {
+		groupUtils.prepareGroupsForSerialization(session.getNetworks());
 	}
 }

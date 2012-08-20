@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.write.CyWriter;
@@ -138,6 +139,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
     protected final CyNetworkManager networkMgr;
     protected final CyRootNetworkManager rootNetworkMgr;
+    private final GroupUtil groupUtil;
 
     protected final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<CyNode, CyNode>();
     protected final Map<CyEdge, CyEdge> writtenEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
@@ -155,9 +157,10 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 							  final CyNetworkManager networkMgr,
 							  final CyRootNetworkManager rootNetworkMgr,
-							  final VisualMappingManager vmMgr) {
+							  final VisualMappingManager vmMgr,
+							  final GroupUtil groupUtil) {
 		this(outputStream, renderingEngineMgr, networkView.getModel(), unrecognizedVisualPropertyMgr, networkMgr,
-				rootNetworkMgr);
+				rootNetworkMgr, groupUtil);
 		this.networkView = networkView;
 		
 		setVisualStyle(vmMgr.getVisualStyle(networkView));
@@ -168,12 +171,14 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 							  final CyNetwork network,
 							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 							  final CyNetworkManager networkMgr,
-							  final CyRootNetworkManager rootNetworkMgr) {
+							  final CyRootNetworkManager rootNetworkMgr,
+							  final GroupUtil groupUtil) {
 		this.outputStream = outputStream;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 		this.networkMgr = networkMgr;
 		this.rootNetworkMgr = rootNetworkMgr;
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
+		this.groupUtil = groupUtil;
 		
 		if (network instanceof CyRootNetwork) {
 			this.network = this.rootNetwork = (CyRootNetwork) network;
@@ -194,7 +199,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 	@Override
     public void run(TaskMonitor taskMonitor) throws Exception {
     	taskMonitor.setProgress(0.0);
-        writer = new OutputStreamWriter(outputStream);
+    	init(taskMonitor);
 
         writeRootElement();
         taskMonitor.setProgress(0.2);
@@ -220,6 +225,23 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         taskMonitor.setProgress(1.0);
     }
 	
+	protected void init(TaskMonitor tm) {
+		writer = new OutputStreamWriter(outputStream);
+		prepareGroupsForSerialization();
+	}
+	
+	/**
+	 * Necessary only when exporting to XGMML.
+	 */
+	protected void prepareGroupsForSerialization() {
+		// Don't do this when saving the session-type XGMML files
+		if (groupUtil != null) {
+			Set<CyNetwork> netSet = new HashSet<CyNetwork>();
+			netSet.add(network);
+			groupUtil.prepareGroupsForSerialization(netSet);
+		}
+	}
+
 	/**
      * Output the XML preamble.  This includes the XML line as well as the initial
      * &lt;graph&gt; element, along with all of our namespaces.
@@ -292,6 +314,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      */
 	protected void writeRootGraphAttributes() throws IOException {
 		writeAttributes(network.getRow(network));
+		writeAttributes(network.getRow(network, CyNetwork.HIDDEN_ATTRS));
 		writeGraphics(networkView, false);
 	}
 
@@ -323,6 +346,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 				depth++;
 		
 				writeAttributes(net.getRow(net));
+				writeAttributes(net.getRow(net, CyNetwork.HIDDEN_ATTRS));
 				
 				for (CyNode childNode : net.getNodeList())
 					writeNode(net, childNode);
@@ -413,6 +437,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 			
 			// Output the node attributes
 			writeAttributes(net.getRow(node));
+			writeAttributes(net.getRow(node, CyNetwork.HIDDEN_ATTRS));
 			
 			// Write node's sub-graph
 			final CyNetwork netPointer = node.getNetworkPointer();
@@ -458,6 +483,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 
 			// Write the edge attributes
 			writeAttributes(net.getRow(edge));
+			writeAttributes(net.getRow(edge, CyNetwork.HIDDEN_ATTRS));
 	
 			// Write the edge graphics
 			if (networkView != null)
@@ -563,12 +589,12 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             	String v = entry.getValue();
             	
             	if (v != null)
-            		writeAttributeXML(k, ObjectType.STRING, v, true);
+            		writeAttributeXML(k, ObjectType.STRING, v, false, true);
             }
 			
             // serialize locked properties as <att> tags inside <graphics>
             if (!lockedProperties.isEmpty()) {
-            	writeAttributeXML("lockedVisualProperties", ObjectType.LIST, null, false);
+            	writeAttributeXML("lockedVisualProperties", ObjectType.LIST, null, false, false);
             	depth++;
             	
 	            for (VisualProperty vp : lockedProperties) {
@@ -590,7 +616,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     	value = vp.toSerializableString(value);
     	
     	if (value != null) {
-    		writeAttributeXML(vp.getIdString(), ObjectType.STRING, value, true);
+    		writeAttributeXML(vp.getIdString(), ObjectType.STRING, value, false, true);
     	}
     }
     
@@ -673,22 +699,24 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      */
     protected void writeAttribute(final CyRow row, final String attName) throws IOException {
     	// create an attribute and its type:
-		final CyColumn column = row.getTable().getColumn(attName);
+    	final CyTable table = row.getTable();
+    	final CyColumn column = table.getColumn(attName);
 		
 		if (column == null)
 			return;
 		
+		final boolean hidden = !table.isPublic();
 		final Class<?> attType = column.getType();
 
 		if (attType == Double.class) {
 			Double dAttr = row.get(attName, Double.class);
-			writeAttributeXML(attName, ObjectType.REAL, dAttr, true);
+			writeAttributeXML(attName, ObjectType.REAL, dAttr, hidden, true);
 		} else if (attType == Integer.class) {
 			Integer iAttr = row.get(attName, Integer.class);
-			writeAttributeXML(attName, ObjectType.INTEGER, iAttr, true);
+			writeAttributeXML(attName, ObjectType.INTEGER, iAttr, hidden, true);
 		} else if (attType == Long.class) {
 			Long lAttr = row.get(attName, Long.class);
-			writeAttributeXML(attName, ObjectType.REAL, lAttr, true);
+			writeAttributeXML(attName, ObjectType.REAL, lAttr, hidden, true);
 		} else if (attType == String.class) {
 			String sAttr = row.get(attName, String.class);
 			// Protect tabs and returns
@@ -697,13 +725,13 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 				sAttr = sAttr.replace("\t", "\\t");
 			}
 
-			writeAttributeXML(attName, ObjectType.STRING, sAttr, true);
+			writeAttributeXML(attName, ObjectType.STRING, sAttr, hidden, true);
 		} else if (attType == Boolean.class) {
 			Boolean bAttr = row.get(attName, Boolean.class);
-			writeAttributeXML(attName, ObjectType.BOOLEAN, ObjectTypeMap.toXGMMLBoolean(bAttr), true);
+			writeAttributeXML(attName, ObjectType.BOOLEAN, ObjectTypeMap.toXGMMLBoolean(bAttr), hidden, true);
 		} else if (attType == List.class) {
 			final List<?> listAttr = row.getList(attName, column.getListElementType());
-			writeAttributeXML(attName, ObjectType.LIST, null, false);
+			writeAttributeXML(attName, ObjectType.LIST, null, hidden, false);
 
 			if (listAttr != null) {
 				depth++;
@@ -722,12 +750,12 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 						}
 					}
 					// set child attribute value & label
-					writeAttributeXML(attName, checkType(obj), sAttr, true);
+					writeAttributeXML(attName, checkType(obj), sAttr, hidden, true);
 				}
 				depth--;
 			}
 			
-			writeAttributeXML(null, null, null, true);
+			writeAttributeXML(null, null, null, hidden, true);
 		}
 	}
 
@@ -740,7 +768,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      * @param end is a flag to tell us if the attribute should include a tag end
      * @throws IOException
      */
-    protected void writeAttributeXML(String name, ObjectType type, Object value, boolean end) throws IOException {
+    protected void writeAttributeXML(String name, ObjectType type, Object value, boolean hidden, boolean end) throws IOException {
         if (name == null && type == null)
             writeElement("</att>\n");
         else {
@@ -752,6 +780,9 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             	writeAttributePair("value", value);
 
             writeAttributePair("type", type);
+            
+            if (hidden)
+            	writeAttributePair("cy:hidden", ObjectTypeMap.toXGMMLBoolean(hidden));
             
             if (end)
                 write("/>\n");

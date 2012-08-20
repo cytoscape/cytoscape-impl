@@ -30,9 +30,10 @@ package org.cytoscape.io.internal.read.session;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
@@ -44,6 +45,7 @@ import org.cytoscape.work.TaskIterator;
 public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory {
 
 	private final ReadCache cache;
+	private final GroupUtil groupUtil;
 	private final SUIDUpdater suidUpdater;
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
@@ -54,6 +56,7 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 
 	public Cy3SessionReaderFactoryImpl(final CyFileFilter filter,
 									   final ReadCache cache,
+									   final GroupUtil groupUtil,
 									   final SUIDUpdater suidUpdater,
 									   final CyNetworkReaderManager networkReaderMgr,
 									   final CyPropertyReaderManager propertyReaderMgr,
@@ -63,6 +66,7 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 									   final CyRootNetworkManager rootNetworkMgr) {
 		super(filter);
 		this.cache = cache;
+		this.groupUtil = groupUtil;
 		this.suidUpdater = suidUpdater;
 		this.networkReaderMgr = networkReaderMgr;
 		this.propertyReaderMgr = propertyReaderMgr;
@@ -74,7 +78,7 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new Cy3SessionReaderImpl(inputStream, cache, suidUpdater, networkReaderMgr,
+		return new TaskIterator(new Cy3SessionReaderImpl(inputStream, cache, groupUtil, suidUpdater, networkReaderMgr,
 				propertyReaderMgr, vizmapReaderMgr, csvCyReaderFactory, networkTableMgr, rootNetworkMgr));
 	}
 }

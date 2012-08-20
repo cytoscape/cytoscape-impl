@@ -208,6 +208,7 @@ public class ReadCache {
 		return nodeByNameMap;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Set<CyTable> getNetworkTables() {
 		final Set<CyTable> tables = new HashSet<CyTable>();
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();

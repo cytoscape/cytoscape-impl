@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.io.internal.read.SUIDUpdater;
+import org.cytoscape.io.internal.util.SUIDUpdater;
 
 public class ObjectTypeMap {
 
@@ -44,7 +44,7 @@ public class ObjectTypeMap {
                 break;
             case REAL:
                 if (value != null) {
-                	if (SUIDUpdater.isUpdatableSUIDColumnName(name))
+                	if (SUIDUpdater.isUpdatable(name))
                 		typedValue = new Long(value);
                 	else
                 		typedValue = new Double(value);
@@ -68,13 +68,13 @@ public class ObjectTypeMap {
         return typedValue;
     }
     
-    public static boolean fromXGMMLBoolean(String s) {
+    public static boolean fromXGMMLBoolean(final String s) {
     	// should be only "1", but let's be nice and also accept "true"
     	// http://www.cs.rpi.edu/research/groups/pb/punin/public_html/XGMML/draft-xgmml-20001006.html#BT
     	return s != null && s.matches("(?i)1|true");
     }
 
-    public static String toXGMMLBoolean(boolean value) {
-    	return value ? "1" : "0";
+    public static String toXGMMLBoolean(final Boolean value) {
+    	return value != null && value ? "1" : "0";
     }
 }

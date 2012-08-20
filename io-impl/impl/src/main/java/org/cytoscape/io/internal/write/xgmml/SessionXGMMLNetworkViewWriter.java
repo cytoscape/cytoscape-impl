@@ -33,7 +33,7 @@ public class SessionXGMMLNetworkViewWriter extends GenericXGMMLWriter {
 										 final CyRootNetworkManager rootNetworkMgr,
 										 final VisualMappingManager vmMgr) {
 		super(outputStream, renderingEngineMgr, networkView, unrecognizedVisualPropertyMgr, networkMgr, rootNetworkMgr,
-				vmMgr);
+				vmMgr, null);
 	}
 	
 	@Override

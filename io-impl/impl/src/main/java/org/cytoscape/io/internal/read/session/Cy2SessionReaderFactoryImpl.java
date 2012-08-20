@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.session;
 import java.io.InputStream;
 
 import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
@@ -44,16 +45,19 @@ public class Cy2SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final ReadCache cache;
+	private final GroupUtil groupUtil;
 	private final CyRootNetworkManager rootNetworkManager;
 
 	public Cy2SessionReaderFactoryImpl(final CyFileFilter filter,
 									   final ReadCache cache,
+									   final GroupUtil groupUtil,
 									   final CyNetworkReaderManager networkReaderMgr,
 									   final CyPropertyReaderManager propertyReaderMgr,
 									   final VizmapReaderManager vizmapReaderMgr,
 									   final CyRootNetworkManager rootNetworkManager) {
 		super(filter);
 		this.cache = cache;
+		this.groupUtil = groupUtil;
 		this.networkReaderMgr = networkReaderMgr;
 		this.propertyReaderMgr = propertyReaderMgr;
 		this.vizmapReaderMgr = vizmapReaderMgr;
@@ -62,7 +66,7 @@ public class Cy2SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new Cy2SessionReaderImpl(inputStream, cache, networkReaderMgr, propertyReaderMgr,
-				vizmapReaderMgr, rootNetworkManager));
+		return new TaskIterator(new Cy2SessionReaderImpl(inputStream, cache, groupUtil, networkReaderMgr,
+				propertyReaderMgr, vizmapReaderMgr, rootNetworkManager));
 	}
 }

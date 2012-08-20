@@ -30,8 +30,8 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -108,6 +108,7 @@ public class HandleGraphDone extends AbstractHandler {
 		resolveEquations();
 		resolveNetworkPointers();
 		updateSUIDAttributes();
+		createGroups(); // TODO: we should not create (and specially register) groups here!
 		
 		return ParseState.NONE;
 	}
@@ -149,5 +150,10 @@ public class HandleGraphDone extends AbstractHandler {
 			updater.addTables(manager.getCache().getNetworkTables());
 			updater.updateSUIDColumns();
 		}
+	}
+	
+	private void createGroups() {
+		if (!manager.isSessionFormat())
+			manager.createGroups();
 	}
 }

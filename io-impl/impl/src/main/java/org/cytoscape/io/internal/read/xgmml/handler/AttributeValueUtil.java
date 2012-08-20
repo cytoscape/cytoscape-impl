@@ -32,12 +32,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.MetadataEntries;
 import org.cytoscape.io.internal.read.xgmml.MetadataParser;
 import org.cytoscape.io.internal.read.xgmml.ObjectType;
 import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -265,7 +265,7 @@ public class AttributeValueUtil {
 				break;
 			case REAL:
 				if (name != null) {
-					if (SUIDUpdater.isUpdatableSUIDColumnName(name))
+					if (SUIDUpdater.isUpdatable(name))
 						setAttribute(row, name, Long.class, (Long) value);
 					else
 						setAttribute(row, name, Double.class, (Double) value);

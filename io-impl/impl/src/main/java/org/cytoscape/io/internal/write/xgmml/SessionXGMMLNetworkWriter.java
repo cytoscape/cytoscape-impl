@@ -29,7 +29,8 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 									 final CyNetworkManager networkMgr,
 									 final CyRootNetworkManager rootNetworkMgr) {
-		super(outputStream, renderingEngineMgr, network, unrecognizedVisualPropertyMgr, networkMgr, rootNetworkMgr);
+		super(outputStream, renderingEngineMgr, network, unrecognizedVisualPropertyMgr, networkMgr, rootNetworkMgr, 
+				null);
 
 		if (rootNetwork.getSavePolicy() != SavePolicy.SESSION_FILE)
 			throw new IllegalArgumentException(

@@ -62,6 +62,7 @@ import java.util.regex.Pattern;
 import javax.xml.bind.JAXBException;
 
 import org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkReader;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.model.Child;
 import org.cytoscape.io.internal.util.session.model.Cysession;
@@ -134,11 +135,12 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 	public Cy2SessionReaderImpl(final InputStream sourceInputStream,
 								final ReadCache cache,
+								final GroupUtil groupUtil,
 								final CyNetworkReaderManager networkReaderMgr,
 								final CyPropertyReaderManager propertyReaderMgr,
 								final VizmapReaderManager vizmapReaderMgr,
 								final CyRootNetworkManager rootNetworkManager) {
-		super(sourceInputStream, cache);
+		super(sourceInputStream, cache, groupUtil);
 		
 		if (networkReaderMgr == null)
 			throw new NullPointerException("network reader manager is null.");

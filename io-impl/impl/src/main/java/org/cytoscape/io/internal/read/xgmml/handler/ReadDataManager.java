@@ -41,9 +41,10 @@ import java.util.Stack;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -55,6 +56,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -131,6 +133,7 @@ public class ReadDataManager {
 	private final EquationCompiler equationCompiler;
 	private final CyNetworkFactory networkFactory;
 	private final CyRootNetworkManager rootNetworkManager;
+	private final GroupUtil groupUtil;
 
 	private static final Logger logger = LoggerFactory.getLogger(ReadDataManager.class);
 
@@ -138,12 +141,14 @@ public class ReadDataManager {
 						   final SUIDUpdater suidUpdater,
 						   final EquationCompiler equationCompiler,
 						   final CyNetworkFactory networkFactory,
-						   final CyRootNetworkManager rootNetworkManager) {
+						   final CyRootNetworkManager rootNetworkManager,
+						   final GroupUtil groupUtil) {
 		this.cache = cache;
 		this.suidUpdater = suidUpdater;
 		this.equationCompiler = equationCompiler;
 		this.networkFactory = networkFactory;
 		this.rootNetworkManager = rootNetworkManager;
+		this.groupUtil = groupUtil;
 		init();
 	}
 
@@ -533,6 +538,14 @@ public class ReadDataManager {
         cache.cache(id, edge);
 
 		return edge;
+	}
+
+	protected void createGroups() {
+		groupUtil.createGroups(publicNetworks, null);
+	}
+	
+	public void updateGroupNodes(final CyNetworkView view) {
+		groupUtil.updateGroupNodes(view);
 	}
 	
 	protected void addNetwork(Object oldId, CyNetwork net, boolean isRegistered) {

@@ -20,7 +20,7 @@ public class SessionXGMMLWriterFactory extends GenericXGMMLWriterFactory {
 									 final CyNetworkManager netMgr,
 									 final CyRootNetworkManager rootNetMgr,
 									 final VisualMappingManager vmMgr) {
-		super(filter, renderingEngineMgr, unrecognizedVisualPropMgr, netMgr, rootNetMgr, vmMgr);
+		super(filter, renderingEngineMgr, unrecognizedVisualPropMgr, netMgr, rootNetMgr, vmMgr, null);
 	}
 
 	@Override

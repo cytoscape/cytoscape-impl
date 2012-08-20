@@ -41,11 +41,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.cytoscape.io.internal.read.MarkSupportedInputStream;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CySessionReader;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
@@ -62,6 +63,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 	protected InputStream sourceInputStream;
 	protected final ReadCache cache;
+	protected final GroupUtil groupUtil;
 	
 	protected DummyTaskMonitor taskMonitor;
 	
@@ -75,17 +77,17 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected final Map<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>> objectMap = new HashMap<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>>();
 	
 	private boolean inputStreamRead;
-	
-	public AbstractSessionReader(final InputStream sourceInputStream,
-								 final ReadCache cache) {
-		if (sourceInputStream == null)
-			throw new NullPointerException("input stream is null.");
-		// So it can be read multiple times:
-		this.sourceInputStream = new ReusableInputStream(sourceInputStream);
 
-		if (cache == null)
-			throw new NullPointerException("cache is null.");
+	public AbstractSessionReader(final InputStream sourceInputStream,
+								 final ReadCache cache,
+								 final GroupUtil groupUtil) {
+		assert sourceInputStream != null;
+		assert cache != null;
+		assert groupUtil != null;
+		
+		this.sourceInputStream = new ReusableInputStream(sourceInputStream); // So it can be read multiple times
 		this.cache = cache;
+		this.groupUtil = groupUtil;
 		
 		this.logger = LoggerFactory.getLogger(this.getClass());
 	}
@@ -139,14 +141,15 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		tm.setStatusMessage("Processing network pointers...");
 		processNetworkPointers();
 		
-		tm.setProgress(0.98);
+		tm.setProgress(0.95);
 		tm.setTitle("Finalize");
 		tm.setStatusMessage("Finalizing...");
 		createObjectMap();
+		createGroups();
 		
 		tm.setProgress(1.0);
 	}
-
+	
 	/**
 	 * Use this methods to dispose temporary resources.
 	 */
@@ -261,6 +264,10 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 	abstract void createObjectMap();
 
+	protected void createGroups() {
+		groupUtil.createGroups(networks, networkViews);
+	}
+	
 	/**
 	 *  We need this class to avoid the progress-bar showing back-forth  when extract zipEntries.
 	 */

@@ -1,9 +1,10 @@
-package org.cytoscape.io.internal.read;
+package org.cytoscape.io.internal.util;
 
 import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyColumnTest;
 import org.cytoscape.model.CyTable;
@@ -14,30 +15,30 @@ public class SUIDUpdaterTest {
 
 	@Test
 	public void testIsUpdatableSUIDColumn() {
-		assertTrue(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.SUID", Long.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.SUID", Integer.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.SUID", Double.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.SUID", String.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.SUID", Boolean.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.SUID", Long.class, true, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.SUID", Long.class, false, true)));
+		assertTrue(SUIDUpdater.isUpdatable(newColumn("name.SUID", Long.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.SUID", Integer.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.SUID", Double.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.SUID", String.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.SUID", Boolean.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.SUID", Long.class, true, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.SUID", Long.class, false, true)));
 		
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.suid", Long.class, false, false))); // Case sensitive!
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.Suid", Long.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("name.id", Long.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("SUID", Long.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("suid", Long.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn("", Long.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newColumn(null, Long.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.suid", Long.class, false, false))); // Case sensitive!
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.Suid", Long.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("name.id", Long.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("SUID", Long.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("suid", Long.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn("", Long.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newColumn(null, Long.class, false, false)));
 		
 		// List column
-		assertTrue(SUIDUpdater.isUpdatableSUIDColumn(newListColumn("list.SUID", Long.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newListColumn("list.SUID", Integer.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newListColumn("list.SUID", Double.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newListColumn("list.SUID", String.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newListColumn("list.SUID", Boolean.class, false, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newListColumn("list.SUID", Long.class, true, false)));
-		assertFalse(SUIDUpdater.isUpdatableSUIDColumn(newListColumn("list.SUID", Long.class, false, true)));
+		assertTrue(SUIDUpdater.isUpdatable(newListColumn("list.SUID", Long.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newListColumn("list.SUID", Integer.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newListColumn("list.SUID", Double.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newListColumn("list.SUID", String.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newListColumn("list.SUID", Boolean.class, false, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newListColumn("list.SUID", Long.class, true, false)));
+		assertFalse(SUIDUpdater.isUpdatable(newListColumn("list.SUID", Long.class, false, true)));
 	}
 	
 	private CyColumn newColumn(final String name, final Class<?> type, final boolean isPK, final boolean isVirtual) {

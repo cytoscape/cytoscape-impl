@@ -19,6 +19,10 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.GroupTestSupport;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -64,6 +68,16 @@ public abstract class AbstractXGMMLWriterTest {
 	protected CyNetworkManager netMgr;
 	protected CyNetworkFactory netFactory;
 	protected VisualMappingManager vmMgr;
+	protected GroupTestSupport grTestSupport;
+	protected CyGroupManager grMgr;
+	protected CyGroupFactory grFactory;
+	protected GroupUtil groupUtil;
+
+	
+	
+	public AbstractXGMMLWriterTest() {
+		grTestSupport = new GroupTestSupport();
+	}
 
 	@Before
 	public void init() {
@@ -84,6 +98,10 @@ public abstract class AbstractXGMMLWriterTest {
 		
 		this.unrecogVisPropMgr = mock(UnrecognizedVisualPropertyManager.class);
 		this.tm = mock(TaskMonitor.class);
+		
+		this.grMgr = mock(CyGroupManager.class);
+		this.grFactory = grTestSupport.getGroupFactory();
+		this.groupUtil = new GroupUtil(grMgr, grFactory);
 		
 		createBaseNetwork();
 		
@@ -172,10 +190,10 @@ public abstract class AbstractXGMMLWriterTest {
 		
 		if (netOrView instanceof CyNetworkView)
 			writer = new GenericXGMMLWriter(out, renderingEngineMgr, (CyNetworkView) netOrView, unrecogVisPropMgr,
-					netMgr, rootNetMgr, vmMgr);
+					netMgr, rootNetMgr, vmMgr, null);
 		else if (netOrView instanceof CyNetwork)
 			writer = new GenericXGMMLWriter(out, renderingEngineMgr, (CyNetwork) netOrView, unrecogVisPropMgr, netMgr,
-					rootNetMgr);
+					rootNetMgr, groupUtil);
 		else
 			throw new IllegalArgumentException("netOrView must be a CyNetworkView or a CyNetwork!");
 		

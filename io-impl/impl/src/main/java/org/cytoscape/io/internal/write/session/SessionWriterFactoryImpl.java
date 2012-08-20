@@ -3,6 +3,7 @@ package org.cytoscape.io.internal.write.session;
 import java.io.OutputStream;
 
 import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyPropertyWriterManager;
@@ -24,6 +25,7 @@ public class SessionWriterFactoryImpl extends AbstractCyWriterFactory implements
 	private final CyPropertyWriterManager propertyWriterMgr;
 	private final CyTableWriterManager tableWriterMgr;
 	private final VizmapWriterManager vizmapWriterMgr;
+	private final GroupUtil groupUtil;
 
 	private OutputStream outputStream;
 	private CySession session;
@@ -38,7 +40,8 @@ public class SessionWriterFactoryImpl extends AbstractCyWriterFactory implements
 	                                final CyRootNetworkManager rootNetworkManager,
 	                                final CyPropertyWriterManager propertyWriterMgr,
 	                                final CyTableWriterManager tableWriterMgr,
-	                                final VizmapWriterManager vizmapWriterMgr) {
+	                                final VizmapWriterManager vizmapWriterMgr,
+	                                final GroupUtil groupUtil) {
 		super(thisFilter);
 		this.bookmarksFilter = bookmarksFilter;
 		this.propertiesFilter = propertiesFilter;
@@ -49,12 +52,14 @@ public class SessionWriterFactoryImpl extends AbstractCyWriterFactory implements
 		this.propertyWriterMgr = propertyWriterMgr;
 		this.tableWriterMgr = tableWriterMgr;
 		this.vizmapWriterMgr = vizmapWriterMgr;
+		this.groupUtil = groupUtil;
 	}
 	
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CySession session) {
 		return new SessionWriterImpl(outputStream, session, rootNetworkManager, propertyWriterMgr, tableWriterMgr,
-				vizmapWriterMgr, networkViewWriterFactory, bookmarksFilter, propertiesFilter, tableFilter, vizmapFilter);
+				vizmapWriterMgr, networkViewWriterFactory, bookmarksFilter, propertiesFilter, tableFilter, vizmapFilter,
+				groupUtil);
 	}
 
 }

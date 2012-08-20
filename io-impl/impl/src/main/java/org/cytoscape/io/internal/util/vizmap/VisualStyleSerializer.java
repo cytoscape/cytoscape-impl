@@ -45,6 +45,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.internal.util.vizmap.model.AttributeType;
 import org.cytoscape.io.internal.util.vizmap.model.Dependency;
 import org.cytoscape.io.internal.util.vizmap.model.DiscreteMappingEntry;
@@ -85,10 +86,10 @@ public class VisualStyleSerializer {
 	private final VisualStyleFactory visualStyleFactory;
 	private final VisualMappingManager visualMappingManager;
 	private final RenderingEngineManager renderingEngineManager;
-	
 	private final VisualMappingFunctionFactory discreteMappingFactory;
 	private final VisualMappingFunctionFactory continuousMappingFactory;
 	private final VisualMappingFunctionFactory passthroughMappingFactory;
+	private final SUIDUpdater suidUpdater;
 
 	private VisualLexicon lexicon;
 
@@ -100,7 +101,8 @@ public class VisualStyleSerializer {
 								 final RenderingEngineManager renderingEngineManager,
 								 final VisualMappingFunctionFactory discreteMappingFactory,
 								 final VisualMappingFunctionFactory continuousMappingFactory,
-								 final VisualMappingFunctionFactory passthroughMappingFactory) {
+								 final VisualMappingFunctionFactory passthroughMappingFactory,
+								 final SUIDUpdater suidUpdater) {
 		this.calculatorConverterFactory = calculatorConverterFactory;
 		this.visualStyleFactory = visualStyleFactory;
 		this.visualMappingManager = visualMappingManager;
@@ -108,6 +110,7 @@ public class VisualStyleSerializer {
 		this.discreteMappingFactory = discreteMappingFactory;
 		this.continuousMappingFactory = continuousMappingFactory;
 		this.passthroughMappingFactory = passthroughMappingFactory;
+		this.suidUpdater = suidUpdater;
 	}
 
 	/**
@@ -171,8 +174,9 @@ public class VisualStyleSerializer {
 					// but just modify the current default object!
 					vs = defStyle;
 					// TODO: delete mappings?
-				} else
+				} else {
 					vs = visualStyleFactory.createVisualStyle(styleName);
+				}
 
 				// Set the visual properties and mappings:
 				if (vsModel.getNetwork() != null)
@@ -379,8 +383,6 @@ public class VisualStyleSerializer {
 				if (defValue != null) {
 					V value = parseValue(defValue, vp);
 					vs.setDefaultValue(vp, value);
-
-					// TODO: dependencies
 				}
 
 				// Any mapping?
@@ -418,7 +420,10 @@ public class VisualStyleSerializer {
 					org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping dmModel = vpModel.getDiscreteMapping();
 					String attrName = dmModel.getAttributeName();
 					AttributeType attrType = dmModel.getAttributeType();
-
+					
+					// If it's maps to an SUID-type column, the old SUID values must be updated first
+					suidUpdater.update(dmModel);
+					
 					try {
 						Class<?> attrClass = null;
 
@@ -471,7 +476,9 @@ public class VisualStyleSerializer {
 								}
 
 								V vpValue = parseValue(sValue, vp);
-								if (vpValue != null) dm.putMapValue((K) attrValue, vpValue);
+								
+								if (vpValue != null)
+									dm.putMapValue((K) attrValue, vpValue);
 							}
 						}
 

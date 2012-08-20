@@ -12,6 +12,7 @@ import javax.xml.xpath.XPathConstants;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.View;
@@ -118,6 +119,32 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 	
 	@Test
 	public void testSUIDAttNotSaved() throws UnsupportedEncodingException {
+		CyNetwork net = netFactory.createNetwork();
+		CyNode n1 = net.addNode();
+		CyNode n2 = net.addNode();
+		CyEdge e = net.addEdge(n1, n2, false);
+		// Create hidden attributes
+		CyTable nnt = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable nt = net.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable et = net.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
+		nnt.createColumn("_att_1", String.class, false);
+		nt.createColumn("_att_2", Integer.class, false);
+		et.createColumn("_att_3", Boolean.class, false);
+		net.getRow(net, CyNetwork.HIDDEN_ATTRS).set("_att_1", "v1");
+		net.getRow(n1, CyNetwork.HIDDEN_ATTRS).set("_att_2", 50);
+		net.getRow(e, CyNetwork.HIDDEN_ATTRS).set("_att_3", false);
+		// Test
+		write(net);
+		assertEquals("v1", evalString("/x:graph/x:att[@name=\"_att_1\"]/@value"));
+		assertEquals("1", evalString("/x:graph/x:att[@name=\"_att_1\"]/@cy:hidden"));
+		assertEquals("50", evalString("/x:graph/x:node[@id=\""+n1.getSUID()+"\"]/x:att[@name=\"_att_2\"]/@value"));
+		assertEquals("1", evalString("/x:graph/x:node[@id=\""+n1.getSUID()+"\"]/x:att[@name=\"_att_2\"]/@cy:hidden"));
+		assertEquals("0", evalString("/x:graph/x:edge[@id=\""+e.getSUID()+"\"]/x:att[@name=\"_att_3\"]/@value"));
+		assertEquals("1", evalString("/x:graph/x:edge[@id=\""+e.getSUID()+"\"]/x:att[@name=\"_att_3\"]/@cy:hidden"));
+	}
+	
+	@Test
+	public void testHiddenAttributesSaved() throws UnsupportedEncodingException {
 		// The SUID should NEVER be saved as an att tag 
 		CyNetwork newNet = netFactory.createNetwork(SavePolicy.DO_NOT_SAVE);
 		setRegistered(newNet, false); // It shouldn't make any difference either

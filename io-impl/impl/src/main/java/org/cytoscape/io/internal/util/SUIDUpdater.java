@@ -1,4 +1,4 @@
-package org.cytoscape.io.internal.read;
+package org.cytoscape.io.internal.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.io.internal.util.vizmap.model.AttributeType;
+import org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping;
+import org.cytoscape.io.internal.util.vizmap.model.DiscreteMappingEntry;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -37,6 +40,10 @@ public class SUIDUpdater {
 	public void addSUIDMapping(final Long oldSUID, final Long newSUID) {
 		if (oldSUID != null && newSUID != null)
 			suidMap.put(oldSUID, newSUID);
+	}
+	
+	public Long getNewSUID(final Long oldSUID) {
+		return suidMap.get(oldSUID);
 	}
 	
 	public void addTable(final CyTable table) {
@@ -70,7 +77,7 @@ public class SUIDUpdater {
 			for (final CyColumn c : columns) {
 				final String columnId = tbl.getTitle() + "_" + c.getName();
 				
-				if (isUpdatableSUIDColumn(c) && !updated.contains(columnId)) {
+				if (isUpdatable(c) && !updated.contains(columnId)) {
 					Set<String> ignoredNames = ignoredColumns.get(tbl);
 					
 					if (ignoredNames != null && ignoredNames.contains(c.getName()))
@@ -83,19 +90,47 @@ public class SUIDUpdater {
 		}
 	}
 	
-	public static boolean isUpdatableSUIDColumn(final CyColumn column) {
+	public void update(final DiscreteMapping dm) {
+		if (isUpdatable(dm)) {
+			final List<DiscreteMappingEntry> invalidEntries = new ArrayList<DiscreteMappingEntry>();
+			
+			for (final DiscreteMappingEntry entry : dm.getDiscreteMappingEntry()) {
+				final String attrVal = entry.getAttributeValue();
+				// TODO hanlde list od SUIDs
+				final Long oldSUID = attrVal != null ? Long.parseLong(attrVal) : null;
+				final Long newSUID = getNewSUID(oldSUID);
+				
+				if (newSUID != null)
+					entry.setAttributeValue(newSUID.toString());
+				else
+					invalidEntries.add(entry);
+			}
+			
+			dm.getDiscreteMappingEntry().removeAll(invalidEntries);
+		}
+	}
+	
+	public static boolean isUpdatable(final CyColumn column) {
 		if (column != null
 				&& !column.isPrimaryKey()
 				&& !column.getVirtualColumnInfo().isVirtual()
 				&& (column.getType() == Long.class ||
 						(Collection.class.isAssignableFrom(column.getType()) &&
 								column.getListElementType() == Long.class)))
-			return isUpdatableSUIDColumnName(column.getName());
+			return isUpdatable(column.getName());
 		
 		return false;
     }
 	
-	public static boolean isUpdatableSUIDColumnName(final String columnName) {
+	public static boolean isUpdatable(final DiscreteMapping dm) {
+		if (dm != null
+				&& (dm.getAttributeType() == AttributeType.LONG || dm.getAttributeType() == AttributeType.LIST))
+			return isUpdatable(dm.getAttributeName());
+		
+		return false;
+	}
+	
+	public static boolean isUpdatable(final String columnName) {
 		return columnName != null && columnName.endsWith(SUID_COLUMN_SUFFIX);
 	}
 	
@@ -138,9 +173,5 @@ public class SUIDUpdater {
 				}
 			}
 		}
-	}
-	
-	private Long getNewSUID(final Long oldSUID) {
-		return suidMap.get(oldSUID);
 	}
 }

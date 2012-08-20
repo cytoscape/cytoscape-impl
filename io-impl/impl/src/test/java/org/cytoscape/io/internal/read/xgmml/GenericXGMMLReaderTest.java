@@ -17,10 +17,14 @@ import java.util.List;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.GroupTestSupport;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
-import org.cytoscape.io.internal.read.SUIDUpdater;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
+import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyColumn;
@@ -55,6 +59,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	RenderingEngineManager renderingEngineMgr;
 	ReadDataManager readDataMgr;
 	ReadCache readCache;
+	GroupUtil groupUtil;
 	SUIDUpdater suidUpdater;
 	UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	XGMMLParser parser;
@@ -79,9 +84,15 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		NetworkViewTestSupport networkViewTestSupport = new NetworkViewTestSupport();
 		networkViewFactory = networkViewTestSupport.getNetworkViewFactory();
 		
+		GroupTestSupport groupTestSupport = new GroupTestSupport();
+		CyGroupFactory grFactory = groupTestSupport.getGroupFactory();
+		CyGroupManager grMgr = mock(CyGroupManager.class);
+		
 		readCache = new ReadCache(netTablMgr);
+		groupUtil = new GroupUtil(grMgr, grFactory);
 		suidUpdater = new SUIDUpdater();
-		readDataMgr = new ReadDataManager(readCache, suidUpdater, mock(EquationCompiler.class), networkFactory, rootNetworkMgr);
+		readDataMgr = new ReadDataManager(readCache, suidUpdater, mock(EquationCompiler.class), networkFactory, 
+				rootNetworkMgr, groupUtil);
 		
 		HandlerFactory handlerFactory = new HandlerFactory(readDataMgr);
 		handlerFactory.init();
