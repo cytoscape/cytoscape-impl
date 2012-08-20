@@ -31,7 +31,7 @@ public class CyActivator extends AbstractCyActivator {
 		SessionEventsListener sessionListener= new SessionEventsListener(cyGroupFactoryRef, cyGroupManager, 
 		                                                                 cyNetworkManagerServiceRef, cyRootNetworkManagerServiceRef);
 
-		registerService(bc, sessionListener, SessionLoadedListener.class, new Properties());
-		registerService(bc, sessionListener, SessionAboutToBeSavedListener.class, new Properties());
+//		registerService(bc, sessionListener, SessionLoadedListener.class, new Properties());
+//		registerService(bc, sessionListener, SessionAboutToBeSavedListener.class, new Properties());
 	}
 }
