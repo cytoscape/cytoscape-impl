@@ -127,9 +127,6 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 			
 			@Override
 			public void appsChanged(AppsChangedEvent event) {
-				// System.out.println("apps changed, updating box");
-				resultsTree.getSelectionPath();
-
 				TreePath[] selectionPaths = resultsTree.getSelectionPaths();
 
 				updateDescriptionBox();

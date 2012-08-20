@@ -105,7 +105,7 @@ public abstract class App {
 		this.appName = "";
 		this.version = "";
 		this.authors = "";
-		this.description = "";
+		this.description = null;
 		this.appFile = null;
 		
 		appValidated = false;

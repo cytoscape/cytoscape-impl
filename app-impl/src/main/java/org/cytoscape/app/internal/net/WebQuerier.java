@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.ImageIcon;
 
@@ -565,6 +566,11 @@ public class WebQuerier {
 	
 	public void checkWebAppInstallStatus(Set<WebApp> webApps, AppManager appManager) {
 		
+		// This method contains a nest structure with 3 for loops. However,
+		// there isn't much other way to check every hash of every WebApp with every
+		// installed app. Runtime performance is
+		// (num_installed_apps * num_web_apps * releases_per_web_app)
+		
 		for (App app : appManager.getApps()) {
 			
 			if (app.getSha512Checksum() == null) {
@@ -738,23 +744,55 @@ public class WebQuerier {
 		return 0;
 	}
 	
-	public String findAppDescriptions(Set<App> apps) {
-		 
-		//String appChecksum = app.getSha512Checksum().toLowerCase();
+	public void findAppDescriptions(Set<App> apps) {
+		// TODO: Perhaps modify this method to do the check with a given app store
+		// as a parameter, instead of all app stores
 		
+		
+		// Find the set of all available apps
+		Set<WebApp> allWebApps = new HashSet<WebApp>(
+				appsByUrl.get(DEFAULT_APP_STORE_URL).size());
 		
 		for (String url : appsByUrl.keySet()) {
 			
 			Set<WebApp> urlApps = appsByUrl.get(url);
 			for (WebApp webApp : urlApps) {
 				
-				List<Release> releases = webApp.getReleases();
-				for (Release release : releases) {
-					
-				}
+				allWebApps.add(webApp);
 			}
 		}
 		
-		return null;
+		// Find set of all app releases
+		Map<Release, WebApp> allReleases = new HashMap<Release, WebApp>(
+				appsByUrl.get(DEFAULT_APP_STORE_URL).size());
+		
+		List<Release> appReleases = null;
+		for (WebApp webApp : allWebApps) {
+			
+			appReleases = webApp.getReleases();
+			
+			for (Release appRelease : appReleases) {
+				allReleases.put(appRelease, webApp);
+			}
+		}
+		
+		// Find matching app hashes
+		for (Release release : allReleases.keySet()) {
+			
+			for (App app : apps) {
+				String checksum = app.getSha512Checksum().toLowerCase();
+				
+				// TODO: Currently, this will give the app the description from the
+				// first app store providing the matching hash. Perhaps
+				// we could give the default app store the priority in providing the description,
+				// in cases where multiple stores give the same hash.
+				if (checksum.indexOf(release.getSha512Checksum().toLowerCase()) != -1
+						&& app.getDescription() == null) {
+					
+					System.out.println("Found description: " + allReleases.get(release).getDescription());
+					app.setDescription(allReleases.get(release).getDescription());
+				}
+			}
+		}
 	}
 }

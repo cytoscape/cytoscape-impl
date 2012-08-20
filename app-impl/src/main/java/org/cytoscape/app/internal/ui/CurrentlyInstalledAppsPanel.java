@@ -1,5 +1,7 @@
 package org.cytoscape.app.internal.ui;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -158,6 +160,15 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
                     .add(uninstallSelectedButton))
                 .addContainerGap())
         );
+        
+        // Add listener to obtain descriptions for available apps
+        this.addComponentListener(new ComponentAdapter() {
+    		
+        	@Override
+        	public void componentShown(ComponentEvent e) {
+        		appManager.getWebQuerier().findAppDescriptions(appManager.getApps());
+        	}
+        });
     }
         
     private void enableSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -347,8 +358,11 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     	} else if (numSelected == 1){
     		App selectedApp = selectedApps.iterator().next();
     		
-    		String text = "App description not found.";
+    		String text = selectedApp.getDescription() == null ? 
+    			"App description not found." : selectedApp.getDescription();
     		descriptionTextArea.setText(text);
+    		
+    		
     		
     		// Enable/disable the appropriate button
     		if (selectedApp.getStatus() == AppStatus.INSTALLED) {
