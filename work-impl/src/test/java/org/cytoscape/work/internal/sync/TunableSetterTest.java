@@ -2,7 +2,6 @@ package org.cytoscape.work.internal.sync;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import junit.framework.Assert;
 
@@ -16,18 +15,14 @@ import org.junit.Test;
 
 public class TunableSetterTest {
 	private TunableSetter setter;
+	private SyncTunableMutatorFactory mutatorFactory;
 
-	private SyncTunableMutator<?> createMutator() {
-		SyncTunableMutator<?> mutator = new SyncTunableMutator<Object>();		
-		mutator.addTunableHandlerFactory(new SyncTunableHandlerFactory(), new Properties());
-		return mutator;
-	}
-	
 	@Before
 	public void setUp() {
+		mutatorFactory = new SyncTunableMutatorFactory(new SyncTunableHandlerFactory());
+		
 		TunableRecorderManager recorderManager = new TunableRecorderManager();
-		SyncTunableMutator<?> mutator = createMutator();
-		setter = new TunableSetterImpl(mutator, recorderManager);
+		setter = new TunableSetterImpl(mutatorFactory, recorderManager);
 	}
 	
 	@Test
@@ -53,7 +48,7 @@ public class TunableSetterTest {
 		settings.put("lastTask", "new value2");
 		TaskIterator taskIterator2 = setter.createTaskIterator(taskIterator, settings);
 		
-		SyncTunableMutator<?> mutator = createMutator();
+		SyncTunableMutator<?> mutator = mutatorFactory.createMutator();
 		SyncTaskManager taskManager = new SyncTaskManager(mutator);
 		taskManager.execute(taskIterator2);
 		
