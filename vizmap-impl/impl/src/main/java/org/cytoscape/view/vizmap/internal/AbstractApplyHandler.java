@@ -59,12 +59,16 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		if (children.size() != 0)
 			return;
 
+		// This is the view default value.
 		Object defaultValue = style.getDefaultValue(vp);
 
 		if (defaultValue == null) {
 			((VisualStyleImpl) style).getStyleDefaults().put(vp, vp.getDefault());
 			defaultValue = style.getDefaultValue(vp);
 		}
+		
+		// TODO: is this correct?
+		view.setVisualProperty(vp, defaultValue);
 	}
 
 	private void override(final CyRow row, final View<T> view) {

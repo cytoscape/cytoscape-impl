@@ -239,7 +239,7 @@ public class DGraphViewApplyTest {
 		assertEquals(8, dgv.m_nodeDetails.getLabelFont(node2, 0).getSize());
 		assertEquals(20, dgv.m_nodeDetails.getLabelFont(node3, 0).getSize());
 
-		final Font defFont = new Font("SansSerif", Font.BOLD, 22);
+		final Font defFont = new Font("SansSerif", Font.PLAIN, 22);
 		final Font mapFont = new Font("Serif", Font.PLAIN, 40);
 		dgv.setViewDefault(DVisualLexicon.NODE_LABEL_FONT_FACE, defFont);
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_LABEL_FONT_FACE, mapFont);
@@ -248,6 +248,7 @@ public class DGraphViewApplyTest {
 		assertEquals(mapFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node1, 0).getFontName());
 		assertEquals(mapFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node2, 0).getFontName());
 		assertEquals(defFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node3, 0).getFontName());
+
 	}
 
 	@Test
