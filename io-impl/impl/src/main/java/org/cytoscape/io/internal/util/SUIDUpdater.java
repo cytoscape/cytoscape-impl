@@ -69,22 +69,15 @@ public class SUIDUpdater {
 	}
 	
 	public void updateSUIDColumns() {
-		final Set<String/*tableName_columnName*/> updated = new HashSet<String>();
-	
 		for (final CyTable tbl : tables) {
 			final Collection<CyColumn> columns = tbl.getColumns();
 			
 			for (final CyColumn c : columns) {
-				final String columnId = tbl.getTitle() + "_" + c.getName();
-				
-				if (isUpdatable(c) && !updated.contains(columnId)) {
+				if (isUpdatable(c)) {
 					Set<String> ignoredNames = ignoredColumns.get(tbl);
 					
-					if (ignoredNames != null && ignoredNames.contains(c.getName()))
-						continue;
-						
-					updateRows(tbl, c);
-					updated.add(columnId);
+					if (ignoredNames == null || !ignoredNames.contains(c.getName()))
+						updateRows(tbl, c);
 				}
 			}
 		}
@@ -96,7 +89,7 @@ public class SUIDUpdater {
 			
 			for (final DiscreteMappingEntry entry : dm.getDiscreteMappingEntry()) {
 				final String attrVal = entry.getAttributeValue();
-				// TODO hanlde list od SUIDs
+				// TODO handle list of SUIDs
 				final Long oldSUID = attrVal != null ? Long.parseLong(attrVal) : null;
 				final Long newSUID = getNewSUID(oldSUID);
 				

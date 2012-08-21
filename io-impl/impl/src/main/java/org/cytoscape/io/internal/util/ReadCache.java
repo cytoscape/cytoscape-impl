@@ -39,6 +39,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
@@ -208,6 +209,9 @@ public class ReadCache {
 		return nodeByNameMap;
 	}
 	
+	/**
+	 * @return All network tables, except DEFAULT_ATTRS and SHARED_DEFAULT_ATTRS ones.
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Set<CyTable> getNetworkTables() {
 		final Set<CyTable> tables = new HashSet<CyTable>();
@@ -219,17 +223,20 @@ public class ReadCache {
 		
 		for (final CyNetwork n : networks) {
 			for (final Class t : types) {
-				Map<String, CyTable> tabMap = netTblMgr.getTables(n, t);
+				Map<String, CyTable> tblMap = new HashMap<String, CyTable>(netTblMgr.getTables(n, t));
+				tblMap.remove(CyNetwork.DEFAULT_ATTRS);
 				
-				if (tabMap != null)
-					tables.addAll(tabMap.values());
+				if (tblMap != null)
+					tables.addAll(tblMap.values());
 				
 				if (n instanceof CySubNetwork) {
 					// Don't forget the root-network tables.
-					tabMap = netTblMgr.getTables(((CySubNetwork) n).getRootNetwork(), t);
+					tblMap = new HashMap<String, CyTable>(netTblMgr.getTables(((CySubNetwork) n).getRootNetwork(), t));
+					tblMap.remove(CyRootNetwork.DEFAULT_ATTRS);
+					tblMap.remove(CyRootNetwork.SHARED_DEFAULT_ATTRS);
 					
-					if (tabMap != null)
-						tables.addAll(tabMap.values());
+					if (tblMap != null)
+						tables.addAll(tblMap.values());
 				}
 			}
 		}
