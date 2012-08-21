@@ -36,6 +36,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.internal.dialogs.BookmarkDialogImpl;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
+import org.cytoscape.io.datasource.DataSourceManager;
 
 
 public class BookmarkAction extends AbstractCyAction {
@@ -43,6 +44,7 @@ public class BookmarkAction extends AbstractCyAction {
 	private CySwingApplication desktop;
 
 	private BookmarkDialogFactoryImpl bookmarkDialogFactory;
+	
 	/**
 	 * Creates a new BookmarkAction object.
 	 */

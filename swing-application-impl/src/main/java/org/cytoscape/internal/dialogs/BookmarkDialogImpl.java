@@ -55,11 +55,20 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.DataSource;
+//import org.cytoscape.property.bookmark.Bookmarks;
+//import org.cytoscape.property.bookmark.DataSource;
 import org.cytoscape.property.bookmark.BookmarksUtil;
-
-
+//import org.cytoscape.io.DataCategory;
+//import org.cytoscape.io.datasource.DataSource;
+import org.cytoscape.io.datasource.DataSourceManager;
+import java.util.Collection;
+import java.util.Iterator;
+import org.cytoscape.io.DataCategory;
+import java.util.Set;
+import java.util.HashSet;
+import org.cytoscape.io.datasource.DefaultDataSource;
+import java.net.URL;
+import java.net.MalformedURLException;
 /**
  *
  */
@@ -67,17 +76,19 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 		ListSelectionListener, ItemListener {
 
 	private String bookmarkCategory;
-	private Bookmarks bookmarks;
-	private BookmarksUtil bkUtil;
+	//private Bookmarks bookmarks;
+	//private BookmarksUtil bkUtil;
 
 	// private Category theCategory = new Category();;
-	private String[] bookmarkCategories = { "network", "annotation", "apps" };
+	private String[] bookmarkCategories = { "network", "table", "image","properties","session","script","vizmap", "unspecified" };
+	private DataSourceManager dsManagerServiceRef;
 	private final static long serialVersionUID = 1202339873340615L;
 
-	public BookmarkDialogImpl(Frame pParent, Bookmarks bookmarks, BookmarksUtil bkUtil) {
+	public BookmarkDialogImpl(Frame pParent, /*Bookmarks bookmarks, BookmarksUtil bkUtil,*/ DataSourceManager dsManagerServiceRef) {
 		super(pParent, true);
-		this.bookmarks = bookmarks;
-		this.bkUtil = bkUtil;
+		//this.bookmarks = bookmarks;
+		//this.bkUtil = bkUtil;
+		this.dsManagerServiceRef = dsManagerServiceRef;
 		basicInit();
 		this.setLocationRelativeTo(pParent);
 	}
@@ -204,10 +215,44 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 		// pack();
 	} // </editor-fold>
 
-	private void loadBookmarks() {
-		List<DataSource> theDataSourceList = bkUtil.getDataSourceList(
-				bookmarkCategory, bookmarks.getCategory());
+	public void loadBookmarks() {
 
+		Collection<org.cytoscape.io.datasource.DataSource> theDataSourceCollection = new HashSet<org.cytoscape.io.datasource.DataSource>();
+		if (this.cmbCategory.getSelectedItem().equals("network")){
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.NETWORK); 			
+		}
+		else if (this.cmbCategory.getSelectedItem().equals("table")){
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.TABLE); 						
+		}
+		else if (this.cmbCategory.getSelectedItem().equals("image")){
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.IMAGE); 						
+		}
+		else if (this.cmbCategory.getSelectedItem().equals("properties")){
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.PROPERTIES);			
+		}
+		else if (this.cmbCategory.getSelectedItem().equals("session")){
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.SESSION);
+		}
+		else if (this.cmbCategory.getSelectedItem().equals("script")){
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.SCRIPT);
+		}
+		else if (this.cmbCategory.getSelectedItem().equals("vizmap")){
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.VIZMAP);
+		}
+		else if (this.cmbCategory.getSelectedItem().equals("unspecified")){
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
+		}
+		else {
+			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
+		}
+		 
+		Iterator<org.cytoscape.io.datasource.DataSource> it = theDataSourceCollection.iterator();
+		
+		ArrayList<org.cytoscape.io.datasource.DataSource> theDataSourceList = new ArrayList(theDataSourceCollection.size());
+		while(it.hasNext()){
+			theDataSourceList.add(it.next());
+		}
+				
 		MyListModel theModel = new MyListModel(theDataSourceList);
 		listBookmark.setModel(theModel);
 	}
@@ -230,17 +275,17 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 				this.dispose();
 			} else if (_btn == btnAddBookmark) {
 				EditBookmarkDialog theNewDialog = new EditBookmarkDialog(this,
-						true, bookmarks, bookmarkCategory, "new", null);
+						true, /* bookmarks,*/ bookmarkCategory, "new", null);
 				theNewDialog.setSize(400, 300);
 				theNewDialog.setLocationRelativeTo(this);
 
 				theNewDialog.setVisible(true);
 				loadBookmarks(); // reload is required to update the GUI
 			} else if (_btn == btnEditBookmark) {
-				DataSource theDataSource = (DataSource) listBookmark
+				org.cytoscape.io.datasource.DataSource theDataSource = (org.cytoscape.io.datasource.DataSource) listBookmark
 						.getSelectedValue();
 				EditBookmarkDialog theEditDialog = new EditBookmarkDialog(this,
-						true, bookmarks, bookmarkCategory, "edit",
+						true, /*bookmarks,*/ bookmarkCategory, "edit",
 						theDataSource);
 				theEditDialog.setSize(400, 300);
 				theEditDialog.setLocationRelativeTo(this);
@@ -248,14 +293,13 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 				theEditDialog.setVisible(true);
 				loadBookmarks(); // reload is required to update the GUI
 			} else if (_btn == btnDeleteBookmark) {
-				DataSource theDataSource = (DataSource) listBookmark
+				org.cytoscape.io.datasource.DataSource theDataSource = (org.cytoscape.io.datasource.DataSource) listBookmark
 						.getSelectedValue();
 
 				MyListModel theModel = (MyListModel) listBookmark.getModel();
 				theModel.removeElement(listBookmark.getSelectedIndex());
 
-				bkUtil.deleteBookmark(bookmarks, bookmarkCategory,
-						theDataSource);
+				this.dsManagerServiceRef.deleteDataSource(theDataSource);
 
 				if (theModel.getSize() == 0) {
 					btnEditBookmark.setEnabled(false);
@@ -284,9 +328,9 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 
 	class MyListModel extends javax.swing.AbstractListModel {
 		private final static long serialVersionUID = 1202339873199984L;
-		List<DataSource> theDataSourceList = new ArrayList<DataSource>(0);
+		List<org.cytoscape.io.datasource.DataSource> theDataSourceList = new ArrayList<org.cytoscape.io.datasource.DataSource>(0);
 
-		public MyListModel(List<DataSource> pDataSourceList) {
+		public MyListModel(List<org.cytoscape.io.datasource.DataSource> pDataSourceList) {
 			theDataSourceList = pDataSourceList;
 		}
 
@@ -306,7 +350,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 			return theDataSourceList.get(i);
 		}
 
-		public void addElement(DataSource pDataSource) {
+		public void addElement(org.cytoscape.io.datasource.DataSource pDataSource) {
 			theDataSourceList.add(pDataSource);
 		}
 
@@ -326,9 +370,9 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 
 		public Component getListCellRendererComponent(JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
-			DataSource theDataSource = (DataSource) value;
+			org.cytoscape.io.datasource.DataSource theDataSource = (org.cytoscape.io.datasource.DataSource) value;
 			setText(theDataSource.getName());
-			setToolTipText(theDataSource.getHref());
+			setToolTipText(theDataSource.getLocation().toString());
 			setBackground(isSelected ? Color.blue : Color.white);
 			setForeground(isSelected ? Color.white : Color.black);
 
@@ -342,18 +386,18 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 		private String URLstr;
 		private String provider = "";
 		private JDialog parent;
-		private Bookmarks theBookmarks;
+		//private Bookmarks theBookmarks;
 		private String categoryName;
 		private String mode = "new"; // new/edit
-		private DataSource dataSource = null;
+		private org.cytoscape.io.datasource.DataSource dataSource = null;
 
 		/** Creates new form NewBookmarkDialog */
 		public EditBookmarkDialog(JDialog parent, boolean modal,
-				Bookmarks pBookmarks, String categoryName, String pMode,
-				DataSource pDataSource) {
+				/*Bookmarks pBookmarks,*/ String categoryName, String pMode,
+				org.cytoscape.io.datasource.DataSource pDataSource) {
 			super(parent, modal);
 			this.parent = parent;
-			this.theBookmarks = pBookmarks;
+			//this.theBookmarks = pBookmarks;
 			this.categoryName = categoryName;
 			this.mode = pMode;
 			this.dataSource = pDataSource;
@@ -370,13 +414,8 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 				this.setTitle("Edit bookmark");
 				tfName.setText(dataSource.getName());
 				tfName.setEditable(false);
-				tfURL.setText(dataSource.getHref());
-				if (BookmarkDialogImpl.this.bkUtil.getProvider(dataSource) != null){
-					tfProvider.setText(bkUtil.getProvider(dataSource));					
-				}
-				else {
-					tfProvider.setText("");
-				}
+				tfURL.setText(dataSource.getLocation().toString());
+				tfProvider.setText(dataSource.getProvider());				
 			}
 		}
 
@@ -401,22 +440,29 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 						return;
 					}
 
-					DataSource theDataSource = new DataSource();
-					theDataSource.setName(name);
-					theDataSource.setHref(URLstr);
+					URL newURL;
+					try {
+						newURL = new URL(URLstr);
+					}
+					catch (MalformedURLException ex){
+						JOptionPane.showMessageDialog(parent, "Invalid URL", "Warning",
+								JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
 
-					if (bkUtil.containsBookmarks(bookmarks, categoryName,
-							theDataSource)) {
+					org.cytoscape.io.datasource.DataSource theDataSource = new DefaultDataSource(name, 
+							provider, "", getCategoryByName(this.categoryName), newURL);
+
+					
+					if (BookmarkDialogImpl.this.dsManagerServiceRef.containsDataSource(theDataSource)){
 						String msg = "Bookmark already existed.";
 						// display info dialog
 						JOptionPane.showMessageDialog(parent, msg, "Warning",
 								JOptionPane.INFORMATION_MESSAGE);
-
-						return;
+						return;						
 					}
-
-					bkUtil.saveBookmark(theBookmarks, categoryName,
-							theDataSource, provider);
+										
+					BookmarkDialogImpl.this.dsManagerServiceRef.saveDataSource(theDataSource);	
 					this.dispose();
 				}
 
@@ -424,33 +470,69 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 					name = tfName.getText();
 					URLstr = tfURL.getText();
 					provider = tfProvider.getText().trim();
-
+					URL newURL;
+					
 					if (URLstr.trim().equals("")) {
 						String msg = "URL is empty.";
 						// display info dialog
 						JOptionPane.showMessageDialog(parent, msg, "Warning",
 								JOptionPane.INFORMATION_MESSAGE);
-
 						return;
 					}
 
-					DataSource theDataSource = new DataSource();
-					theDataSource.setName(name);
-					theDataSource.setHref(URLstr);
+					try {
+						newURL = new URL(URLstr);
+					}
+					catch (MalformedURLException ex){
+						JOptionPane.showMessageDialog(parent, "Invalid URL", "Warning",
+								JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
 
-					// first dellete the old one, then add (note: name is key of
-					// DataSource)
-					bkUtil.deleteBookmark(theBookmarks,
-							bookmarkCategory, theDataSource);
-					bkUtil.saveBookmark(theBookmarks, categoryName,
-							theDataSource, this.provider);
+					org.cytoscape.io.datasource.DataSource theDataSource = new DefaultDataSource(name, 
+							provider, this.dataSource.getDescription(), this.dataSource.getDataCategory(), newURL);
+					
+					BookmarkDialogImpl.this.dsManagerServiceRef.deleteDataSource(this.dataSource);
+					BookmarkDialogImpl.this.dsManagerServiceRef.saveDataSource(theDataSource);		
+
 					this.dispose();
+					
 				} else if (_btn == btnCancel) {
 					this.dispose();
 				}
 			}
 		} // End of actionPerformed()
 
+		
+		private DataCategory getCategoryByName(String categoryName){
+
+			if (categoryName.equalsIgnoreCase("network")){
+				return DataCategory.NETWORK;
+			}
+			else if (categoryName.equalsIgnoreCase("table")){
+				return DataCategory.TABLE;
+			}
+			else if (categoryName.equalsIgnoreCase("image")){
+				return DataCategory.IMAGE;
+			}
+			else if (categoryName.equalsIgnoreCase("properties")){
+				return DataCategory.PROPERTIES;
+			}
+			else if (categoryName.equalsIgnoreCase("session")){
+				return DataCategory.SESSION;
+			}
+			else if (categoryName.equalsIgnoreCase("script")){
+				return DataCategory.SCRIPT;
+			}
+			else if (categoryName.equalsIgnoreCase("vizmap")){
+				return DataCategory.VIZMAP;
+			}
+			else if (categoryName.equalsIgnoreCase("unspecified")){
+				return DataCategory.UNSPECIFIED;
+			}
+			return DataCategory.UNSPECIFIED;
+		}
+		
 		/**
 		 * This method is called from within the constructor to initialize the
 		 * form. WARNING: Do NOT modify this code. The content of this method is

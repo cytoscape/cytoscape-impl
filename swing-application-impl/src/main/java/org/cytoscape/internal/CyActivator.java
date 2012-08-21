@@ -99,6 +99,7 @@ import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
+import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
@@ -192,15 +193,17 @@ public class CyActivator extends AbstractCyActivator {
 		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, 
 		                                                                                   DynamicTaskFactoryProvisioner.class);
 		
+		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
 		
+		//////////////		
 		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
 		RedoAction redoAction = new RedoAction(undoSupportServiceRef);
 		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(dialogTaskManagerServiceRef,
 		                                                                              cyApplicationConfigurationServiceRef);
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
 		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(cyEventHelperServiceRef);
-		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(bookmarkServiceRef,
-		                                                                                bookmarksUtilServiceRef);
+		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(/*bookmarkServiceRef,
+                              bookmarksUtilServiceRef,*/ dsManagerServiceRef);
 		
 		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class, new Properties());
 		
