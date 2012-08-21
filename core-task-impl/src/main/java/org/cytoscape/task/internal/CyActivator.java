@@ -815,10 +815,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,createNetworkViewTaskFactory,CreateNetworkViewTaskFactory.class, createNetworkViewTaskFactoryProps);
 
 		Properties exportNetworkImageTaskFactoryProps = new Properties();
-		exportNetworkImageTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export.Network View");
+		exportNetworkImageTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
 		exportNetworkImageTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/img_file_export.png").toString());
 		exportNetworkImageTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
-		exportNetworkImageTaskFactoryProps.setProperty(TITLE,"Graphics...");
+		exportNetworkImageTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
+		exportNetworkImageTaskFactoryProps.setProperty(TITLE,"Network View...");
 		exportNetworkImageTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.7");
 		exportNetworkImageTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		exportNetworkImageTaskFactoryProps.setProperty(TOOLTIP,"Export Network Image to File");
@@ -830,10 +831,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties exportNetworkViewTaskFactoryProps = new Properties();
 		exportNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
-		exportNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export.Network View");
-		exportNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"5.1");
+		exportNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
+		exportNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
 		exportNetworkViewTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.5");
-		exportNetworkViewTaskFactoryProps.setProperty(TITLE,"File...");
+		exportNetworkViewTaskFactoryProps.setProperty(TITLE,"Network...");
 		exportNetworkViewTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/net_file_export.png").toString());
 		exportNetworkViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		exportNetworkViewTaskFactoryProps.setProperty(TOOLTIP,"Export Network to File");
@@ -844,10 +845,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties exportCurrentTableTaskFactoryProps = new Properties();
 		exportCurrentTableTaskFactoryProps.setProperty(ENABLE_FOR,"table");
-		exportCurrentTableTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export.Table");
-		exportCurrentTableTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
+		exportCurrentTableTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
+		exportCurrentTableTaskFactoryProps.setProperty(MENU_GRAVITY,"1.3");
 		exportCurrentTableTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.6");
-		exportCurrentTableTaskFactoryProps.setProperty(TITLE,"File...");
+		exportCurrentTableTaskFactoryProps.setProperty(TITLE,"Table...");
 		exportCurrentTableTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_file_export.png").toString());
 		exportCurrentTableTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		exportCurrentTableTaskFactoryProps.setProperty(TOOLTIP,"Export Table to File");
@@ -858,9 +859,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties exportVizmapTaskFactoryProps = new Properties();
 		exportVizmapTaskFactoryProps.setProperty(ENABLE_FOR,"vizmap");
-		exportVizmapTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export.Vizmap");
-		exportVizmapTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
-		exportVizmapTaskFactoryProps.setProperty(TITLE,"File...");
+		exportVizmapTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
+		exportVizmapTaskFactoryProps.setProperty(MENU_GRAVITY,"1.4");
+		exportVizmapTaskFactoryProps.setProperty(TITLE,"Vizmap...");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND,"export-vizmap");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		registerService(bc,exportVizmapTaskFactory,TaskFactory.class, exportVizmapTaskFactoryProps);
