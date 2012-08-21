@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -462,8 +463,12 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     	        		app = appParser.parseApp(files[index]);
 						appManager.installApp(app);
     	        	}
-    	        	
+    				
     	        	taskMonitor.setProgress(1.0);
+    	        	
+    	        	if (parent instanceof AppManagerDialog) {
+    	        		((AppManagerDialog) parent).changeTab(1);	
+    	        	}
     			}
 
     			@Override

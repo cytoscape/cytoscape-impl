@@ -784,28 +784,6 @@ public class AppManager {
 		}
 	}
 	
-	private void installAppsInDirectory(File directory, boolean ignoreDuplicateBundleApps) {
-        // Temporary fix to get the App Manager working--this should be removed later (Samad)
-        if (!directory.exists()) {
-            logger.error("Attempting to load from a directory that does not exist: " + directory.getAbsolutePath());
-            return;
-        }
-
-		// Parse App objects from the given directory
-		Set<App> parsedApps = obtainAppsFromDirectory(directory, ignoreDuplicateBundleApps);
-		
-		// Install each app
-		for (App parsedApp : parsedApps) {
-			try {
-				installApp(parsedApp);
-			} catch (AppInstallException e) {
-				logger.warn("Unable to install app from installed apps directory: " + e.getMessage());
-			}
-		}
-		
-		DebugHelper.print("Number of apps installed from directory: " + parsedApps.size());
-	}
-	
 	/**
 	 * Obtain a set of {@link App} objects through attempting to parse files found in the first level of the given directory.
 	 * @param directory The directory used to parse {@link App} objects

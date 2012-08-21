@@ -1,5 +1,7 @@
 package org.cytoscape.app.internal.ui;
 
+import org.cytoscape.app.internal.event.AppsChangedEvent;
+import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
@@ -59,7 +61,11 @@ public class AppManagerDialog extends javax.swing.JDialog {
                 .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE)
                 .addContainerGap())
         );
-
+        
         pack();
+    }
+    
+    public void changeTab(int index) {
+    	mainTabbedPane.setSelectedIndex(index);
     }
 }

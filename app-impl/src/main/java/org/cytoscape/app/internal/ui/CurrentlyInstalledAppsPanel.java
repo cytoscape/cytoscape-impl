@@ -116,7 +116,10 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 
         descriptionLabel.setText("App Information:");
 
+        descriptionScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
         descriptionTextArea.setEditable(false);
+        descriptionTextArea.setLineWrap(true);
         descriptionTextArea.setFocusable(false);
         descriptionScrollPane.setViewportView(descriptionTextArea);
 
