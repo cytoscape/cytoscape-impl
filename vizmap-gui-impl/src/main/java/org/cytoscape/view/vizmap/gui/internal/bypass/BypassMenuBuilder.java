@@ -92,7 +92,7 @@ final class BypassMenuBuilder {
 					edit.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							editValue(netView, nodeView, vp);
+							applBypassValue(netView, nodeView, vp);
 						}
 					});
 					menu.add(clear);
@@ -119,7 +119,7 @@ final class BypassMenuBuilder {
 					menu.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							editValue(netView, nodeView, vp);
+							applBypassValue(netView, nodeView, vp);
 						}
 					});
 				}
@@ -156,13 +156,27 @@ final class BypassMenuBuilder {
 		return rootMenu;
 	}
 
-	private final void editValue(final CyNetworkView netView, final View<? extends CyIdentifiable> nodeView,
+	
+	/**
+	 * Apply bypass
+	 * 
+	 * @param netView
+	 * @param graphObjectView
+	 * @param vp
+	 */
+	private final void applBypassValue(final CyNetworkView netView, final View<? extends CyIdentifiable> graphObjectView,
 			VisualProperty<?> vp) {
 		final ValueEditor<Object> editor = (ValueEditor<Object>) editorManager.getValueEditor(vp.getRange().getType());
-		final Object newValue = editor.showEditor(null, nodeView.getVisualProperty(vp));
-		nodeView.setLockedValue(vp, newValue);
-		final CyRow row = netView.getModel().getRow(nodeView.getModel());
-		vmm.getCurrentVisualStyle().apply(row, nodeView);
+		final Object bypassValue = editor.showEditor(null, graphObjectView.getVisualProperty(vp));
+		
+		// Set lock for the vp
+		graphObjectView.setLockedValue(vp, bypassValue);
+		
+		// Apply the new value only for the given view
+		final CyRow row = netView.getModel().getRow(graphObjectView.getModel());
+		vmm.getCurrentVisualStyle().apply(row, graphObjectView);
+		
+		// Redraw the view
 		netView.updateView();
 	}
 
