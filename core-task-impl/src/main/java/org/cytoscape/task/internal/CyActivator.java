@@ -819,7 +819,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkImageTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/img_file_export.png").toString());
 		exportNetworkImageTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
 		exportNetworkImageTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
-		exportNetworkImageTaskFactoryProps.setProperty(TITLE,"Network View...");
+		exportNetworkImageTaskFactoryProps.setProperty(TITLE,"Network View as Graphics...");
 		exportNetworkImageTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.7");
 		exportNetworkImageTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		exportNetworkImageTaskFactoryProps.setProperty(TOOLTIP,"Export Network Image to File");
