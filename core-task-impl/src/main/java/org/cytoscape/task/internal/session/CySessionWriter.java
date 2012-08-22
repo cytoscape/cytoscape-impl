@@ -24,6 +24,7 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 	private File outputFile; 
 
 	Logger logger = LoggerFactory.getLogger(CySessionWriter.class);
+	
 	/**
 	 * Constructs this CySessionWriter.
 	 * @param writerMgr The {@link org.cytoscape.io.write.CySessionWriterManager} contains single expected
@@ -32,15 +33,15 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 	 * @param outputFile The file the {@link org.cytoscape.session.CySession} should be written to.
  	 */
 	public CySessionWriter(CySessionWriterManager writerMgr, CySession session, File outputFile) {
-		if ( writerMgr == null )
+		if (writerMgr == null)
 			throw new NullPointerException("Writer Manager is null");
 		this.writerMgr = writerMgr;
 
-		if ( session == null )
+		if (session == null)
 			throw new NullPointerException("Session Manager is null");
 		this.session = session;
 
-		if ( outputFile == null )
+		if (outputFile == null)
 			throw new NullPointerException("Output File is null");
 		this.outputFile = outputFile;
 	}
@@ -51,27 +52,63 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 	 * @param tm The {@link org.cytoscape.work.TaskMonitor} provided by the TaskManager execution environment.
 	 */
 	public final void run(TaskMonitor tm) throws Exception {
-		List<CyFileFilter> filters = writerMgr.getAvailableWriterFilters();
-		if ( filters == null || filters.size() < 1)
+		final List<CyFileFilter> filters = writerMgr.getAvailableWriterFilters();
+		
+		if (filters == null || filters.size() < 1)
 			throw new NullPointerException("No Session file filters found");
-		if ( filters.size() > 1 )
+		if (filters.size() > 1)
 			throw new IllegalArgumentException("Found too many session filters.");
 
-		if (!outputFile.getName().endsWith(".cys")){
+		if (!outputFile.getName().endsWith(".cys")) {
 			outputFile = new File(outputFile.getPath() + ".cys");
 			logger.warn("File name is changed to " + outputFile.getName());
 		}
 
-		CyWriter writer = writerMgr.getWriter(session,filters.get(0),outputFile); 
-		if ( writer == null )
+		// Write to a temporary file first, to prevent the original file from being damaged, in case there is any error
+		final String filename = outputFile.getName() + ".tmp";
+		final File tmpFile = new File(System.getProperty("java.io.tmpdir"), filename);
+		tmpFile.deleteOnExit();
+		
+		final CyWriter writer = writerMgr.getWriter(session, filters.get(0), tmpFile);
+		
+		if (writer == null)
 			throw new NullPointerException("No CyWriter found for specified file type.");
 
-		insertTasksAfterCurrentTask( writer );
+		// If the main task is successfully executed, this task will move the temp file to the actual output path
+		final ReplaceFileTask replaceFileTask = new ReplaceFileTask(tmpFile, outputFile);
+		
+		insertTasksAfterCurrentTask(writer, replaceFileTask);
 	}
 
 	static boolean HasFileExtension(final String pathName) {
 		final int lastDotPos = pathName.lastIndexOf('.');
 		final int lastSlashPos = pathName.lastIndexOf(File.separatorChar);
 		return lastSlashPos < lastDotPos; // Yes, this also works if one or both of lastSlashPos and lastDotPos are -1!
+	}
+	
+	private class ReplaceFileTask extends AbstractTask {
+		private final File source;
+		private final File target;
+		
+		public ReplaceFileTask(final File source, final File target) {
+			this.source = source;
+			this.target = target;
+		}
+
+		@Override
+		public void run(TaskMonitor taskMonitor) throws Exception {
+			boolean success = source.renameTo(target);
+			
+			if (success) {
+				try {
+					source.delete();
+				} catch (Exception e) {
+					logger.warn("Cannot delete temp file: " + source.getAbsolutePath(), e);
+				}
+			} else {
+				throw new RuntimeException("Session not saved: Cannot copy temporary file to " + 
+						target.getAbsolutePath());
+			}
+		}
 	}
 }

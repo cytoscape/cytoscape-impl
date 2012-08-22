@@ -168,35 +168,78 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		tm.setProgress(0.0);
 		tm.setTitle("Writing Session File");
 		tm.setStatusMessage("Preparing...");
-		zos = new ZipOutputStream(outputStream);
-		prepareGroups();
-		zipVersion();
-		tm.setStatusMessage("Zip networks...");
-		tm.setProgress(0.1);
-		zipNetworks();
-		tm.setProgress(0.3);
-		zipNetworkViews();
-		tm.setProgress(0.4);
-		tm.setStatusMessage("Zip tables...");
-		zipTables();
-		tm.setProgress(0.5);
-		tm.setStatusMessage("Zip table properties...");
-		zipTableProperties();
-		tm.setProgress(0.6);
-		tm.setStatusMessage("Zip Vizmap...");
-		zipVizmap();
-		tm.setProgress(0.7);
-		tm.setStatusMessage("Zip Cytoscape properties...");
-		zipProperties();
-		tm.setProgress(0.8);
-		tm.setStatusMessage("Zip apps...");
-		zipFileListMap();
-		tm.setProgress(0.9);
-		zos.close();
+		
+		try {
+			init(tm);
+			write(tm);
+		} finally {
+			complete(tm);
+		}
+		
 		tm.setStatusMessage("Done.");
 		tm.setProgress(1.0);
 	}
 
+	private void init(TaskMonitor tm) throws Exception {
+		zos = new ZipOutputStream(outputStream);
+		prepareGroups(); // Groups require specific metadata
+	}
+	
+	private void write(TaskMonitor tm) throws Exception {
+		zipVersion();
+		tm.setProgress(0.1);
+		
+		if (cancelled) return;
+		
+		tm.setStatusMessage("Saving networks...");
+		zipNetworks();
+		tm.setProgress(0.3);
+		
+		if (cancelled) return;
+		
+		tm.setStatusMessage("Saving network views...");
+		zipNetworkViews();
+		tm.setProgress(0.4);
+		
+		if (cancelled) return;
+		
+		tm.setStatusMessage("Saving tables...");
+		zipTables();
+		tm.setProgress(0.5);
+		
+		if (cancelled) return;
+		
+		tm.setStatusMessage("Saving table properties...");
+		zipTableProperties();
+		tm.setProgress(0.6);
+		
+		if (cancelled) return;
+		
+		tm.setStatusMessage("Saving visual styles...");
+		zipVizmap();
+		tm.setProgress(0.7);
+		
+		if (cancelled) return;
+		
+		tm.setStatusMessage("Saving Cytoscape properties...");
+		zipProperties();
+		tm.setProgress(0.8);
+		
+		if (cancelled) return;
+		
+		zipFileListMap();
+		tm.setProgress(0.9);
+	}
+	
+	private void complete(TaskMonitor tm) {
+		try {
+			if (zos != null)
+				zos.close();
+		} catch (Exception e) {
+			logger.error("Error closing zip output stream", e);
+		}
+	}
+	
 	/**
 	 * Writes the version file, which has no content. The file name itself gives the CYS version.
 	 */
