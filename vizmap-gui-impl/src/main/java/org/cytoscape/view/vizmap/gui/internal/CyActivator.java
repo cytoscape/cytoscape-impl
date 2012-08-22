@@ -147,7 +147,7 @@ public class CyActivator extends AbstractCyActivator {
 		filledBoxRenderer.setBackground(Color.white);
 		filledBoxRenderer.setForeground(Color.blue);
 		
-		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyNetworkManagerServiceRef, editorManager, emptyBoxRenderer, filledBoxRenderer);
+		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyNetworkManagerServiceRef, cyApplicationManagerServiceRef, editorManager, emptyBoxRenderer, filledBoxRenderer);
 		VizMapPropertySheetBuilder vizMapPropertySheetBuilder = new VizMapPropertySheetBuilder(menuManager,propertySheetPanel,editorManager,defaultViewPanel,vizMapperUtil,vmmServiceRef, vizMapPropertyBuilder);
 		EditorWindowManager editorWindowManager = new EditorWindowManager(editorManager,propertySheetPanel);
 		

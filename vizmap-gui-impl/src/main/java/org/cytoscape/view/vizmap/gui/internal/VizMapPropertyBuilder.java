@@ -41,6 +41,7 @@ import java.util.TreeSet;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -79,10 +80,12 @@ public class VizMapPropertyBuilder {
 
 	private final EditorManager editorManager;
 	private final CyNetworkManager cyNetworkManager;
+	private final CyApplicationManager appManager;
 
-	public VizMapPropertyBuilder(CyNetworkManager cyNetworkManager, EditorManager editorManager,
+	public VizMapPropertyBuilder(CyNetworkManager cyNetworkManager, CyApplicationManager appManager, EditorManager editorManager,
 			DefaultTableCellRenderer emptyBoxRenderer, DefaultTableCellRenderer filledBoxRenderer) {
 		this.cyNetworkManager = cyNetworkManager;
+		this.appManager = appManager;
 		this.editorManager = editorManager;
 		this.emptyBoxRenderer = emptyBoxRenderer;
 		this.filledBoxRenderer = filledBoxRenderer;
@@ -146,58 +149,53 @@ public class VizMapPropertyBuilder {
 		((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory()).registerEditor(mappingHeader,
 				editorManager.getDefaultComboBoxEditor("mappingTypeEditor"));
 
-		final Set<CyNetwork> networks = cyNetworkManager.getNetworkSet();
-		final Map<CyNetwork, Set<CyIdentifiable>> graphObjectSet = new HashMap<CyNetwork, Set<CyIdentifiable>>();
+		final CyNetwork network = appManager.getCurrentNetwork();
+		final Set<CyIdentifiable> graphObjects = new HashSet<CyIdentifiable>();
 
-		for (CyNetwork targetNetwork : networks) {
-			Iterator<? extends CyIdentifiable> it = null;
-			graphObjectSet.put(targetNetwork, new HashSet<CyIdentifiable>());
-
-			((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory()).registerEditor(topProperty,
-					editorManager.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) vp.getTargetDataType()));
+		if (network != null) {
 			if (vp.getTargetDataType().equals(CyNode.class)) {
-				it = targetNetwork.getNodeList().iterator();
+				graphObjects.addAll(network.getNodeList());
 			} else if (vp.getTargetDataType().equals(CyEdge.class)) {
-				it = targetNetwork.getEdgeList().iterator();
+				graphObjects.addAll(network.getEdgeList());
 			} else if (vp.getTargetDataType().equals(CyNetwork.class)) {
-				it = cyNetworkManager.getNetworkSet().iterator();
+				graphObjects.add(network);
 			} else {
 				throw new IllegalArgumentException("Data type not supported: " + vp.getTargetDataType());
 			}
-
-			while (it.hasNext())
-				graphObjectSet.get(targetNetwork).add(it.next());
 		}
 
+		((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory()).registerEditor(topProperty,
+				editorManager.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) vp.getTargetDataType()));
+		
 		final VisualPropertyEditor<V> vpEditor = editorManager.getVisualPropertyEditor(vp);
 
-		if (visualMapping instanceof DiscreteMapping && (attrName != null)) {
+		if (visualMapping instanceof DiscreteMapping && attrName != null) {
 			// Discrete Mapping
 			// This set should not contain null!
 			final SortedSet<Object> attrSet = new TreeSet<Object>();
-
-			for (CyNetwork net : graphObjectSet.keySet()) {
+			
+			if (network != null) {
 				if (vp.getTargetDataType() == CyNetwork.class) {
-					final CyRow row = net.getRow(net);
+					final CyRow row = network.getRow(network);
 					final CyColumn column = row.getTable().getColumn(attrName);
+					
 					if (column != null)
 						processDiscretValues(row, attrName, column, column.getType(), attrSet);
 				} else {
-					// Assule all data sets are same data type.
-					final Set<CyIdentifiable> graphObjects = graphObjectSet.get(net);
-					if (graphObjects.isEmpty())
-						continue;
-
-					CyIdentifiable firstEntry = graphObjects.iterator().next();
-					final CyRow firstRow = net.getRow(firstEntry);
-					final CyColumn column = firstRow.getTable().getColumn(attrName);
-					if (column == null)
-						continue;
-
-					final Class<?> type = column.getType();
-					for (final CyIdentifiable go : graphObjects) {
-						final CyRow row = net.getRow(go);
-						processDiscretValues(row, attrName, column, type, attrSet);
+					// Make sure all data sets have the same data type.
+					if (!graphObjects.isEmpty()) {
+						CyIdentifiable firstEntry = graphObjects.iterator().next();
+						final CyRow firstRow = network.getRow(firstEntry);
+						final CyColumn column = firstRow.getTable().getColumn(attrName);
+						
+						if (column != null) {
+							final Class<?> type = column.getType();
+							
+							for (final CyIdentifiable go : graphObjects) {
+								final CyRow row = network.getRow(go);
+								processDiscretValues(row, attrName, column, type, attrSet);
+							}
+						}
 					}
 				}
 			}
@@ -206,9 +204,11 @@ public class VizMapPropertyBuilder {
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, topProperty, propertySheetPanel);
 
 		} else if (visualMapping instanceof ContinuousMapping && (attrName != null)) {
-			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
-					CellType.CONTINUOUS, visualMapping.getVisualProperty().getDisplayName() + "_"
-							+ AbstractVizMapperPanel.GRAPHICAL_MAP_VIEW, visualMapping.getClass());
+			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
+					new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
+							CellType.CONTINUOUS,
+							visualMapping.getVisualProperty().getDisplayName() + "_" + AbstractVizMapperPanel.GRAPHICAL_MAP_VIEW,
+							visualMapping.getClass());
 
 			graphicalView.setShortDescription("Continuous Mapping from " + visualMapping.getMappingColumnName()
 					+ " to " + visualMapping.getVisualProperty().getDisplayName());
