@@ -37,6 +37,8 @@ public class WebQuerierTest {
 		assertTrue(webQuerier.compareVersions("3.1", "") == 0);
 		assertTrue(webQuerier.compareVersions("", "3.1") == 0);
 		assertTrue(webQuerier.compareVersions("", "") == 0);
+		
+		assertTrue(webQuerier.compareVersions("1.7", "3.0.0.alpha9-SNAPSHOT") > 0);
 	}
 	
 	@Test

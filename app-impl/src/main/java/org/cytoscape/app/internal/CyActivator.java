@@ -21,6 +21,7 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.property.bookmark.DataSource;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -125,6 +126,7 @@ import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -382,7 +384,8 @@ public class CyActivator extends AbstractCyActivator {
         httpd.addResponder(appGetResponder.new StatusResponder());
         httpd.addResponder(appGetResponder.new InstallResponder());
         httpd.start();
-		
+
+        Object o = cyPropertyRef;
 //		cyPropertyRef.getProperties().put("testkey1", "testval1");
 //		cyPropertyRef.getProperties().setProperty("testkey2", "testval2");
 		
