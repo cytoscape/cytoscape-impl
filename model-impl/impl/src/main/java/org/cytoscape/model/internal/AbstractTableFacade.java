@@ -71,7 +71,7 @@ public abstract class AbstractTableFacade implements CyTable {
 		return actual.isPublic();
 	}
 	
-	public void setPublic (boolean isPublic) {
+	public void setPublic(boolean isPublic) {
 		actual.setPublic(isPublic);	
 	}
 
@@ -169,7 +169,6 @@ public abstract class AbstractTableFacade implements CyTable {
 
 	public int countMatchingRows(String columnName, Object value) {
 		return actual.countMatchingRows(columnName, value);
-
 	}
 
 	public int getRowCount() {
@@ -177,11 +176,12 @@ public abstract class AbstractTableFacade implements CyTable {
 	}
 
 	public SavePolicy getSavePolicy() {
-		return actual.getSavePolicy();
+		return SavePolicy.DO_NOT_SAVE;
 	}
 
 	public void setSavePolicy(SavePolicy policy) {
-		actual.setSavePolicy(policy);
+		if (policy != SavePolicy.DO_NOT_SAVE)
+			throw new IllegalArgumentException("This table cannot be saved");
 	}
 
 	public void swap(CyTable otherTable) {
