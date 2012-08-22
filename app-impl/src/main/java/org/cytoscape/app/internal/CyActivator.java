@@ -7,10 +7,13 @@ import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.server.AppGetResponder;
-import org.cytoscape.app.internal.net.server.LocalHttpServer;
+import org.cytoscape.app.internal.net.server.CyHttpd;
+import org.cytoscape.app.internal.net.server.CyHttpdFactoryImpl;
 import org.cytoscape.app.internal.net.server.ServerSocketFactory;
 import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
-import org.cytoscape.app.internal.net.server.LocalHttpServer.Response;
+import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
+import org.cytoscape.app.internal.net.server.AddAccessControlAllowOriginHeaderAfterResponse;
+import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.session.CySessionManager;
@@ -369,23 +372,16 @@ public class CyActivator extends AbstractCyActivator {
 				fileUtilServiceRef, dialogTaskManagerRef, cyServiceRegistrarRef);
 		registerService(bc, appManagerAction, CyAction.class, new Properties());
 		
-		// Start thread for local server that reports app installation status to the app store when requested,
+		// Start local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store
-		Thread serverThread = new Thread() {
-			
-			private LocalHttpServer server;
-			
-			@Override
-			public void run() {
-                final ServerSocketFactory serverSocketFactory = new LocalhostServerSocketFactory(2608);
-				server = new LocalHttpServer(serverSocketFactory, Executors.newSingleThreadExecutor());
-				server.addGetResponder(new AppGetResponder(appManager));
-				
-				server.run();
-			}
-		};
-		serverThread.setDaemon(true);
-		Executors.newSingleThreadExecutor().execute(serverThread);
+        final AppGetResponder appGetResponder = new AppGetResponder(appManager);
+        final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607));
+        httpd.addBeforeResponse(new ScreenOriginsBeforeResponse("http://apps.cytoscape.org", "http://apps3.nrnb.org"));
+        httpd.addBeforeResponse(new OriginOptionsBeforeResponse("x-csrftoken"));
+        httpd.addAfterResponse(new AddAccessControlAllowOriginHeaderAfterResponse());
+        httpd.addResponder(appGetResponder.new StatusResponder());
+        httpd.addResponder(appGetResponder.new InstallResponder());
+        httpd.start();
 		
 //		cyPropertyRef.getProperties().put("testkey1", "testval1");
 //		cyPropertyRef.getProperties().setProperty("testkey2", "testval2");

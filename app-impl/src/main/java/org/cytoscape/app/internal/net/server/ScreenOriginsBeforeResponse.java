@@ -2,13 +2,17 @@ package org.cytoscape.app.internal.net.server;
 
 import org.apache.http.HttpStatus;
 
+/**
+ * Reject requests if the client does not send an {@code Origin} header
+ * and if its {@code Origin} is not allowed.
+ */
 public class ScreenOriginsBeforeResponse implements CyHttpBeforeResponse
 {
     static final CyHttpResponseFactory responseFactory = new CyHttpResponseFactoryImpl();
     final String[] allowedOrigins;
 
     /**
-     * @param allowedOrigins 
+     * @param allowedOrigins A list of strings containing the full URLs of allowed origins.
      */
     public ScreenOriginsBeforeResponse(final String... allowedOrigins)
     {

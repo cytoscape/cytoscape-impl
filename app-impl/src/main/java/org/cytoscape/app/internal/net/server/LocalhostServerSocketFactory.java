@@ -5,7 +5,7 @@ import java.net.ServerSocket;
 import java.net.InetAddress;
 
 /**
- * An implementation of {@link ServerSocketFactory} that only accepts connections
+ * Creates {@link ServerSocket}s that only accepts connections
  * from localhost.
  */
 public class LocalhostServerSocketFactory implements ServerSocketFactory

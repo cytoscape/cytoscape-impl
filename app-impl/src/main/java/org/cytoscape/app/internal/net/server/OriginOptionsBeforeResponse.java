@@ -6,7 +6,7 @@ import org.apache.http.HttpStatus;
  * Supports responses to the {@code OPTIONS} http method requests.
  * This is not a completely accurate implementation of {@code OPTIONS}.
  * If the client requests {@code OPTIONS} on a non-existant URL, this will not
- * return 404. But that's okay. If the client later requests {@code GET} on the
+ * return 404. But that's okay. If the client subsequently requests {@code GET} on the
  * same, non-existant URL, it will get the 404.
  */
 public class OriginOptionsBeforeResponse implements CyHttpBeforeResponse

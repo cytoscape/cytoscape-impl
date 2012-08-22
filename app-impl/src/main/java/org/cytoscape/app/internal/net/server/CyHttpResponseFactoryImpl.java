@@ -1,4 +1,5 @@
 package org.cytoscape.app.internal.net.server;
+import org.apache.http.HttpStatus;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -8,6 +9,11 @@ public class CyHttpResponseFactoryImpl implements CyHttpResponseFactory
     public CyHttpResponse createHttpResponse(final int statusCode)
     {
         return createHttpResponse(statusCode, null, null);
+    }
+
+    public CyHttpResponse createHttpResponse(final String content, final String contentType)
+    {
+        return createHttpResponse(HttpStatus.SC_OK, content, contentType);
     }
 
     public CyHttpResponse createHttpResponse(final int statusCode, final String content, final String contentType)

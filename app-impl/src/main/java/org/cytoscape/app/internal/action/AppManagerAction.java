@@ -10,7 +10,6 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.net.server.LocalHttpServer;
 import org.cytoscape.app.internal.ui.AppManagerDialog;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
@@ -52,8 +51,6 @@ public class AppManagerAction extends AbstractCyAction {
 	 * A reference to the {@link CyServiceRegistrar} service used to add listeners for handling shutdown-related events
 	 */
 	private CyServiceRegistrar serviceRegistrar;
-	
-	private LocalHttpServer server;
 	
 	private AppManagerDialog appManagerDialog = null;
 	

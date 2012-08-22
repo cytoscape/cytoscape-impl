@@ -3,7 +3,12 @@ package org.cytoscape.app.internal.net.server;
 import java.util.Map;
 
 /**
- * The response the server sends back to the client.
+ * The http response the server sends back to the client.
+ * This interface assumes that all responses are in text.
+ * This makes it easier to work with responses. However,
+ * sending binary data back to the client is not possible
+ * unless the data is encoded into a string that the client
+ * understands.
  */
 public interface CyHttpResponse 
 {

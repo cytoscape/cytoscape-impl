@@ -1,5 +1,7 @@
 package org.cytoscape.app.internal.net.server;
 
+import java.util.Collection;
+
 /**
  * The http server.
  * 
@@ -12,7 +14,7 @@ package org.cytoscape.app.internal.net.server;
  *   If any of them return a {@link CyHttpResponse}, the server 
  *   immediately responds to the client with the
  *   {@code CyHttpBeforeResponse}'s {@code CyHttpResponse}.
- *   In this case, no {@code CyHttpResponder}s are invoked.
+ *   When this happens, no {@code CyHttpResponder}s are invoked.
  *  </li>
  *  <li>
  *   If all of the {@code CyHttpBeforeResponse}s return null,
@@ -28,7 +30,7 @@ package org.cytoscape.app.internal.net.server;
  *   process the response.
  *  </li>
  *  <li>
- *   The {@code CyHttpResponder} is sent to the client.
+ *   The {@code CyHttpResponse} is sent to the client.
  *  </li>
  * </ol>
  *
@@ -64,13 +66,13 @@ public interface CyHttpd
 
     void addResponder(CyHttpResponder responder);
     void removeResponder(CyHttpResponder responder);
-    Iterable<CyHttpResponder> getResponders();
+    Collection<CyHttpResponder> getResponders();
 
     void addBeforeResponse(CyHttpBeforeResponse beforeResponse);
     void removeBeforeResponse(CyHttpBeforeResponse beforeResponse);
-    Iterable<CyHttpBeforeResponse> getBeforeResponses();
+    Collection<CyHttpBeforeResponse> getBeforeResponses();
 
     void addAfterResponse(CyHttpAfterResponse afterResponse);
     void removeAfterResponse(CyHttpAfterResponse afterResponse);
-    Iterable<CyHttpAfterResponse> getAfterResponses();
+    Collection<CyHttpAfterResponse> getAfterResponses();
 }

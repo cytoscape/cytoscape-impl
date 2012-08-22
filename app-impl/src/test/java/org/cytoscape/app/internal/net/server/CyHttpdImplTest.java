@@ -24,7 +24,7 @@ public class CyHttpdImplTest {
 	@Test
 	public void testHttpd() throws Exception
     {
-        final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607)); // why 2607? 'cuz it's my birfday
+        final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2608));
         final CyHttpResponseFactory responseFactory = new CyHttpResponseFactoryImpl();
         httpd.addResponder(new CyHttpResponder()
         {
@@ -77,26 +77,28 @@ public class CyHttpdImplTest {
         httpd.start();
         assertTrue(httpd.isRunning());
 
+        final String url = "http://localhost:2608/";
+
         // test if normal response works
-        HttpURLConnection connection = connectToURL("http://localhost:2607/testA", "GET");
+        HttpURLConnection connection = connectToURL(url + "testA", "GET");
         assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
         assertEquals(readConnection(connection), "testA response ok");
 
-        connection = connectToURL("http://localhost:2607/testB", "GET");
+        connection = connectToURL(url + "testB", "GET");
         assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
         assertEquals(readConnection(connection), "testB response ok");
 
         // test if 404 response works
-        connection = connectToURL("http://localhost:2607/testX", "GET");
+        connection = connectToURL(url + "testX", "GET");
         assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND);
 
         // test if before intercept works
-        connection = connectToURL("http://localhost:2607/testA", "OPTIONS");
+        connection = connectToURL(url + "testA", "OPTIONS");
         assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
         assertEquals(readConnection(connection), "options intercepted");
 
         // test if after intercept works
-        connection = connectToURL("http://localhost:2607/testA", "GET");
+        connection = connectToURL(url + "testA", "GET");
         assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
         assertEquals(connection.getHeaderField("SomeRandomHeader"), "WowInterceptWorks");
 

@@ -7,7 +7,7 @@ Get App Status
 URL
 ---
 
-GET  http://127.0.0.1:2608/status?appname=<app_name>
+GET  http://127.0.0.1:2607/status/<app_name>
 
 Notes: App_name is the full app name. For web-downloaded apps, it will be the same 
 as the Cytoscape-App-Name entry in the manifest.
@@ -30,7 +30,7 @@ Install an App
 URL
 ---
 
-GET  http://127.0.0.1:2608/install?appname=<app_name>&version=<version>
+GET  http://127.0.0.1:2607/install/<app_name>/<version>
 
 Response
 --------

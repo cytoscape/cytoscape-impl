@@ -3,7 +3,12 @@ package org.cytoscape.app.internal.net.server;
 import java.util.Map;
 
 /**
- * An Http request issued by the client.
+ * An http request issued by the client.
+ * This interface assumes that the client is
+ * sending text. This assumption greatly simplifies
+ * this interface. In reality, the client could
+ * be sending binary data, which is not properly
+ * handled by this interface.
  */
 public interface CyHttpRequest
 {

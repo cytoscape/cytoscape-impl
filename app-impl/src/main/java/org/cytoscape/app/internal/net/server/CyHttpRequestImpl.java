@@ -12,6 +12,10 @@ import java.net.URLDecoder;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+/**
+ * This is used internally to translate HttpCore's {@link HttpRequest}
+ * into a {@link CyHttpRequest}.
+ */
 public class CyHttpRequestImpl implements CyHttpRequest
 {
     final String uri;

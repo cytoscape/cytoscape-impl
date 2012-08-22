@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.regex.Matcher;
 
 import java.util.concurrent.ExecutorService;
@@ -141,7 +142,7 @@ class CyHttpdImpl implements CyHttpd
         responders.remove(responder);
     }
 
-    public Iterable<CyHttpResponder> getResponders()
+    public Collection<CyHttpResponder> getResponders()
     {
         return responders;
     }
@@ -156,7 +157,7 @@ class CyHttpdImpl implements CyHttpd
         beforeResponses.remove(beforeResponse);
     }
 
-    public Iterable<CyHttpBeforeResponse> getBeforeResponses()
+    public Collection<CyHttpBeforeResponse> getBeforeResponses()
     {
         return beforeResponses;
     }
@@ -171,7 +172,7 @@ class CyHttpdImpl implements CyHttpd
         afterResponses.remove(afterResponse);
     }
 
-    public Iterable<CyHttpAfterResponse> getAfterResponses()
+    public Collection<CyHttpAfterResponse> getAfterResponses()
     {
         return afterResponses;
     }
