@@ -1095,7 +1095,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setBorderWidth(((Number) value).floatValue());
 		} else if (vp == DVisualLexicon.NODE_BORDER_LINE_TYPE) {
 			final DLineType dLineType = DLineType.getDLineType((LineType) value);
-			final float currentBorderWidth = graphView.m_nodeDetails.borderWidth(model);
+			final float currentBorderWidth = graphView.m_nodeDetails.getBorderWidth(model);
 			setBorder(dLineType.getStroke(currentBorderWidth));
 		} else if (vp == DVisualLexicon.NODE_TRANSPARENCY) {
 			setTransparency(((Number) value).intValue());

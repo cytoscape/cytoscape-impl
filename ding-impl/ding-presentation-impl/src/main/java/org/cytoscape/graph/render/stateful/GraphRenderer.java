@@ -1055,7 +1055,7 @@ public final class GraphRenderer {
 				borderWidth = 0.0f;
 				borderPaint = null;
 			} else { // Rendering node borders.
-				borderWidth = nodeDetails.borderWidth(cyNode);
+				borderWidth = nodeDetails.getBorderWidth(cyNode);
 
 				if (borderWidth == 0.0f)
 					borderPaint = null;

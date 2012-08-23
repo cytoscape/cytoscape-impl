@@ -366,17 +366,17 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	@Override
-	public float borderWidth(final CyNode node) {
+	public float getBorderWidth(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_WIDTH))
 			return dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH).floatValue();
 
 		final Float o = m_borderWidths.get(node);
-
+		
 		if (o == null)
 			if (m_borderWidthDefault == null)
-				return super.borderWidth(node);
+				return DVisualLexicon.NODE_BORDER_WIDTH.getDefault().floatValue();
 			else
 				return m_borderWidthDefault.floatValue();
 
@@ -393,7 +393,7 @@ class DNodeDetails extends NodeDetails {
 	 * width.
 	 */
 	void overrideBorderWidth(final CyNode node, final float width) {
-		if ((width < 0.0f) || (width == super.borderWidth(node)))
+		if ((width < 0.0f) || (width == super.getBorderWidth(node)))
 			m_borderWidths.remove(node);
 		else {
 			m_borderWidths.put(node, width);

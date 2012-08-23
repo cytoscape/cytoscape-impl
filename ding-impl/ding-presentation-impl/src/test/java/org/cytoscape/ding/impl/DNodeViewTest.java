@@ -209,7 +209,7 @@ public class DNodeViewTest {
 	public void testSetBorderWidth() {
 		float width = 10f;
 		dnv1.setBorderWidth(width);
-		float newWidth = ((DGraphView)dnv1.getGraphView()).m_nodeDetails.borderWidth(dnv1.getCyNode());
+		float newWidth = ((DGraphView)dnv1.getGraphView()).m_nodeDetails.getBorderWidth(dnv1.getCyNode());
 		assertTrue(width == newWidth);
 		
 		// Make sure stroke is also updated.

@@ -27,6 +27,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
@@ -182,7 +183,8 @@ final class BypassMenuBuilder {
 
 	private final void clearAll(final CyNetworkView netView, final View<? extends CyIdentifiable> nodeView) {
 		boolean needToUpdateView = false;
-
+		final VisualStyle style = vmm.getCurrentVisualStyle();
+		
 		for (VisualProperty<?> vp : vpSet) {
 			final boolean lock = nodeView.isValueLocked(vp);
 			if (lock) {
@@ -191,8 +193,10 @@ final class BypassMenuBuilder {
 			}
 		}
 
-		if (needToUpdateView)
+		if (needToUpdateView) {
+			style.apply(netView);
 			netView.updateView();
+		}
 	}
 
 	private static final class VisualLexiconNodeComparator implements Comparator<VisualLexiconNode> {

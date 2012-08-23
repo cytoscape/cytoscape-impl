@@ -34,8 +34,8 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 	
 				if (mapping != null) {
-					Object value = mapping.getMappedValue(row);
-					
+					// Mapping rexists.
+					final Object value = mapping.getMappedValue(row);
 					if (value != null)
 						view.setVisualProperty(vp, value);
 				} else {
@@ -68,7 +68,8 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		}
 		
 		// TODO: is this correct?
-		view.setVisualProperty(vp, defaultValue);
+		if(!vp.shouldIgnoreDefault())
+			view.setVisualProperty(vp, defaultValue);
 	}
 
 	private void override(final CyRow row, final View<T> view) {

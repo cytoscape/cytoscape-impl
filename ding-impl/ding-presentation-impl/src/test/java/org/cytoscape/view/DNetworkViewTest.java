@@ -4,17 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
+import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
@@ -35,8 +33,6 @@ import org.mockito.MockitoAnnotations;
 
 public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 
-
-	private CyTableFactory dataFactory;
 	private CyRootNetworkManager cyRoot;
 	private SpacialIndex2DFactory spacialFactory;
 
@@ -77,15 +73,11 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 	@Mock
 	private CyServiceRegistrar registrar;
 	
-	private final TableTestSupport tableSupport = new TableTestSupport();
 	private final NetworkTestSupport netSupport = new NetworkTestSupport();
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		
-		
-		dataFactory = tableSupport.getTableFactory();
 		cyRoot = netSupport.getRootNetworkFactory();
 		spacialFactory = new RTreeFactory();
 		

@@ -171,7 +171,7 @@ public class NodeDetails {
 	 * returns zero. Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull().
 	 */
-	public float borderWidth(final CyNode node) {
+	public float getBorderWidth(final CyNode node) {
 		return 0.0f;
 	}
 
