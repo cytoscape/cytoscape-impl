@@ -2,6 +2,7 @@ package org.cytoscape.editor.internal;
 
 import java.util.List;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -27,6 +28,9 @@ public class CopyTaskFactory extends AbstractNetworkViewTaskFactory {
 		// Make sure we've got something selected
 		List<CyNode> selNodes = CyTableUtil.getNodesInState(networkView.getModel(), CyNetwork.SELECTED, true);
 		if (selNodes != null && selNodes.size() > 0) return true;
+
+		List<CyEdge> selEdges = CyTableUtil.getEdgesInState(networkView.getModel(), CyNetwork.SELECTED, true);
+		if (selEdges != null && selEdges.size() > 0) return true;
 
 		return false;
 	}
