@@ -14,6 +14,10 @@ import org.cytoscape.property.CyProperty;
  */
 public class DownloadSitesManager {
 	
+	public static final String DOWNLOAD_SITES_COUNT_KEY = "appStoreDownloadSiteCount";
+	public static final String DOWNLOAD_SITE_NAME_KEY_PREFIX = "appStoreDownloadSiteName";
+	public static final String DOWNLOAD_SITE_URL_KEY_PREFIX = "appStoreDownloadSiteUrl";
+	
 	private List<DownloadSite> downloadSites = new LinkedList<DownloadSite>();
 	
 	/** A reference to the {@link CyProperty} object 
@@ -38,7 +42,7 @@ public class DownloadSitesManager {
 		boolean loadFailed = false;
 		
 		String downloadSiteCountString = 
-				cyProperty.getProperties().getProperty("appStoreDownloadSiteCount");
+				cyProperty.getProperties().getProperty(DOWNLOAD_SITES_COUNT_KEY);
 		
 		int downloadSiteCount = 0;
 		
@@ -58,8 +62,8 @@ public class DownloadSitesManager {
 			for (int i = 0; i < downloadSiteCount; i++) {
 				siteNumber = i + 1;
 				
-				siteName = cyProperty.getProperties().getProperty("appStoreDownloadSite" + siteNumber + "Name");
-				siteUrl = cyProperty.getProperties().getProperty("appStoreDownloadSite" + siteNumber);
+				siteName = cyProperty.getProperties().getProperty(DOWNLOAD_SITE_NAME_KEY_PREFIX + siteNumber);
+				siteUrl = cyProperty.getProperties().getProperty(DOWNLOAD_SITE_URL_KEY_PREFIX + siteNumber);
 				
 				if (siteName != null && siteUrl != null) {
 					DownloadSite downloadSite = new DownloadSite();
@@ -68,6 +72,8 @@ public class DownloadSitesManager {
 					newDownloadSites.add(downloadSite);
 				}
 			}
+			
+			this.downloadSites = newDownloadSites;
 			
 			return true;
 		} else {
@@ -80,13 +86,27 @@ public class DownloadSitesManager {
 		// Example, have 2 sites a and b. Use following properties.
 		//
 		// appStoreDownloadSiteCount=2
-		// appStoreDownloadSite1=http://a
-		// appStoreDownloadSite1Name=test
-		// appStoreDownloadSite2=http://b
-		// appStoreDownloadSite2Name=test_2
+		// appStoreDownloadSiteUrl1=http://a
+		// appStoreDownloadSiteName1=test
+		// appStoreDownloadSiteUrl2=http://b
+		// appStoreDownloadSiteName2=test_2
 		
+		int siteCount = downloadSites.size();
+		int siteNumber;
 		
+		cyProperty.getProperties().setProperty(DOWNLOAD_SITES_COUNT_KEY, String.valueOf(siteCount));
 		
+		String siteName, siteUrl;
+		
+		for (int i = 0; i < siteCount; i++) {
+			siteNumber = i + 1;
+			
+			siteName = downloadSites.get(i).getSiteName();
+			siteUrl = downloadSites.get(i).getSiteUrl();
+			
+			cyProperty.getProperties().setProperty(DOWNLOAD_SITE_NAME_KEY_PREFIX + siteNumber, siteName);
+			cyProperty.getProperties().setProperty(DOWNLOAD_SITE_URL_KEY_PREFIX + siteNumber, siteUrl);
+		}
 	}
 	
 	public List<DownloadSite> getDownloadSites() {

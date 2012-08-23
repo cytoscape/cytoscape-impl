@@ -39,11 +39,12 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     private javax.swing.JButton installAllButton;
     private javax.swing.JButton installSelectedButton;
     private javax.swing.JLabel lastCheckForUpdatesLabel;
+    private javax.swing.JButton manageUpdateSites;
     private javax.swing.JLabel updateCheckTimeLabel;
     private javax.swing.JLabel updatesAvailableLabel;
     private javax.swing.JScrollPane updatesScrollPane;
     private javax.swing.JTable updatesTable;
-	
+    
     private UpdateManager updateManager;
     private AppManager appManager;
     private TaskManager taskManager;
@@ -259,9 +260,9 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     }
 
     private void installAllButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        final Set<Update> updates = updateManager.getUpdates();
+        final Set<Update> updates = new HashSet<Update>(updateManager.getUpdates());
         final int updateCount = updates.size();
-        
+
         taskManager.execute(new TaskIterator(new Task() {
 
 			@Override
