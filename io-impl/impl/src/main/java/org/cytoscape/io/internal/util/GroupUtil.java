@@ -115,7 +115,7 @@ public class GroupUtil {
 			final CyRow hnRow = net.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			final CyRow rnRow = rootNet.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			if (!dnRow.isSet(GROUP_STATE_ATTRIBUTE) && !hnRow.isSet(GROUP_STATE_ATTRIBUTE)
-			    && !rnRow.isSet(GROUP_COLLAPSED_ATTRIBUTE))
+			    && !hnRow.isSet(GROUP_COLLAPSED_ATTRIBUTE))
 				return;
 
 			boolean collapsed = false;
@@ -132,22 +132,13 @@ public class GroupUtil {
 			} 
 
 			// Check to make sure the column exists
-			if (rnRow.getTable().getColumn(GROUP_COLLAPSED_ATTRIBUTE) == null) {
-				rnRow.getTable().createListColumn(GROUP_COLLAPSED_ATTRIBUTE, String.class, false);
+			if (hnRow.getTable().getColumn(GROUP_COLLAPSED_ATTRIBUTE) == null) {
+				hnRow.getTable().createColumn(GROUP_COLLAPSED_ATTRIBUTE, Boolean.class, false);
 			}
 
-			if (!rnRow.isSet(GROUP_COLLAPSED_ATTRIBUTE)) {
+			if (!hnRow.isSet(GROUP_COLLAPSED_ATTRIBUTE)) {
 				// This is a 2.x group.  We need to recreate the 3.x structure
-				List<String> collapsedList = rnRow.getList(GROUP_COLLAPSED_ATTRIBUTE, String.class);
-				if (collapsedList == null) collapsedList = new ArrayList<String>();
-
-				String netName = net.getDefaultNetworkTable().getRow(net.getSUID()).get(CyNetwork.NAME, String.class);
-				
-				if (netName == null)
-					netName = "(null)";
-
-				collapsedList.add(netName+":"+collapsed);
-				rnRow.set(GROUP_COLLAPSED_ATTRIBUTE, collapsedList);
+				hnRow.set(GROUP_COLLAPSED_ATTRIBUTE, collapsed);
 			}
 			
 			// Create the group
