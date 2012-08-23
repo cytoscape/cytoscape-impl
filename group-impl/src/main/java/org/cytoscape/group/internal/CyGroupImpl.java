@@ -738,23 +738,10 @@ class CyGroupImpl implements CyGroup {
 
 		List<String> newList = new ArrayList<String>();
 		if (stateColumn == null) {
-			hiddenTable.createListColumn(GROUP_COLLAPSED_ATTR, String.class, true);
+			hiddenTable.createColumn(GROUP_COLLAPSED_ATTR, Boolean.class, false, Boolean.FALSE);
 		}
 
-		List<String> stateList = groupRow.getList(GROUP_COLLAPSED_ATTR, String.class);
-		if (stateList == null) {
-			newList.add(netName+":"+collapsed);
-		} else {
-			for (String s: stateList) {
-				String[] tokens = s.split(":");
-				if (netName.equals(tokens[0])) {
-					newList.add(netName+":"+collapsed);
-				} else {
-					newList.add(s);
-				}
-			}
-		}
-		groupRow.set(GROUP_COLLAPSED_ATTR, newList);
+		groupRow.set(GROUP_COLLAPSED_ATTR, collapsed);
 		return;
 	}
 
@@ -772,14 +759,8 @@ class CyGroupImpl implements CyGroup {
 		if (stateColumn == null) {
 			return false;
 		}
-		List<String> stateList = groupRow.getList(GROUP_COLLAPSED_ATTR, String.class);
-		for (String s: stateList) {
-			String[] tokens = s.split(":");
-			if (netName.equals(tokens[0])) {
-				return Boolean.valueOf(tokens[1]).booleanValue();
-			}
-		}
-		return false;
+
+		return groupRow.get(GROUP_COLLAPSED_ATTR, Boolean.class);
 	}
 
 	public void updateCountAttributes(CyNetwork net) {
