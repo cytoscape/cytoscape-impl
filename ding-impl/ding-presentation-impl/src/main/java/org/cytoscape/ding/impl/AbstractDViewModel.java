@@ -51,8 +51,8 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		else
 			visualProperties.put(vp, value);
 
-		if (value != null && !isValueLocked(vp))
-			applyVisualProperty(vp, value);
+		// In any case, it should be applied to PRESENTATION (NodeView and EdgeView).
+		applyVisualProperty(vp, value);
 	}
 
 	@Override

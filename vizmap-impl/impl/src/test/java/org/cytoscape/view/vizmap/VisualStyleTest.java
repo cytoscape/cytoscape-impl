@@ -41,8 +41,6 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 
 	@Before
 	public void setUp() throws Exception {
-		final Class<String> type = String.class;
-		CyProperty<Properties> cyProperties = mock(CyProperty.class);
 		
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		network = nvts.getNetworkFactory().createNetwork();
@@ -223,35 +221,39 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		nodeView1.clearValueLock(DVisualLexicon.NODE_FILL_COLOR);
 		nodeView1.clearValueLock(DVisualLexicon.NODE_WIDTH);
 		nodeView1.clearValueLock(DVisualLexicon.NODE_HEIGHT);
+
 		nodeView1.clearValueLock(DVisualLexicon.NODE_BORDER_PAINT);
 		nodeView1.clearValueLock(DVisualLexicon.NODE_BORDER_TRANSPARENCY);
 		nodeView1.clearValueLock(DVisualLexicon.NODE_BORDER_WIDTH);
 		
-		final CyRow row = networkView.getModel().getRow(nodeView1.getModel());
-		style.apply(networkView);
-		networkView.updateView();
 		
-		// FIXME
-//		assertEquals(nodeSize, nodeView1.getVisualProperty(DVisualLexicon.NODE_SIZE));
-//		assertEquals(nodeWidth, nodeView1.getVisualProperty(DVisualLexicon.NODE_WIDTH));
-//		assertEquals(nodeHeight, nodeView1.getVisualProperty(DVisualLexicon.NODE_HEIGHT));
-//		assertEquals(nodeBWidth, nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH));
-//		assertEquals(trans, nodeView1.getVisualProperty(DVisualLexicon.NODE_TRANSPARENCY));
-//		assertEquals(bordertrans, nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_TRANSPARENCY));
-//		assertEquals(Color.magenta.getRed(),
-//				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR)).getRed());
-//		assertEquals(Color.magenta.getGreen(),
-//				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR)).getGreen());
-//		assertEquals(Color.magenta.getBlue(),
-//				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR)).getBlue());
-//		assertEquals(Color.pink.getRed(),
-//				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getRed());
-//		assertEquals(Color.pink.getGreen(),
-//				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getGreen());
-//		assertEquals(Color.pink.getBlue(),
-//				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getBlue());
-//		assertEquals(Double.valueOf(100d), nodeView1.getVisualProperty(DVisualLexicon.NODE_X_LOCATION));
-//		assertEquals(Double.valueOf(123d), nodeView1.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION));
+		style.apply(networkView);
+
+		
+		// Everything should be back to default EXCEPT Transparency
+		assertEquals(style.getDefaultValue(DVisualLexicon.NODE_WIDTH), nodeView1.getVisualProperty(DVisualLexicon.NODE_WIDTH));
+		assertEquals(style.getDefaultValue(DVisualLexicon.NODE_HEIGHT), nodeView1.getVisualProperty(DVisualLexicon.NODE_HEIGHT));
+		
+		assertEquals(style.getDefaultValue(DVisualLexicon.NODE_BORDER_WIDTH), nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH));
+		assertEquals(style.getDefaultValue(DVisualLexicon.NODE_BORDER_TRANSPARENCY), nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_TRANSPARENCY));
+		assertEquals(((Color) style.getDefaultValue(DVisualLexicon.NODE_FILL_COLOR)).getRed(),
+				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR)).getRed());
+		assertEquals(((Color) style.getDefaultValue(DVisualLexicon.NODE_FILL_COLOR)).getGreen(),
+				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR)).getGreen());
+		assertEquals(((Color) style.getDefaultValue(DVisualLexicon.NODE_FILL_COLOR)).getBlue(),
+				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR)).getBlue());
+		assertEquals(((Color) style.getDefaultValue(DVisualLexicon.NODE_BORDER_PAINT)).getRed(),
+				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getRed());
+		assertEquals(((Color) style.getDefaultValue(DVisualLexicon.NODE_BORDER_PAINT)).getGreen(),
+				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getGreen());
+		assertEquals(((Color) style.getDefaultValue(DVisualLexicon.NODE_BORDER_PAINT)).getBlue(),
+				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getBlue());
+		assertEquals(Double.valueOf(100d), nodeView1.getVisualProperty(DVisualLexicon.NODE_X_LOCATION));
+		assertEquals(Double.valueOf(123d), nodeView1.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION));
+
+		// This should return locked value
+		assertEquals(Integer.valueOf(33), nodeView1.getVisualProperty(DVisualLexicon.NODE_TRANSPARENCY));
+
 		
 	}
 	
