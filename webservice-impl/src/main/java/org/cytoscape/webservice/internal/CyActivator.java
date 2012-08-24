@@ -11,9 +11,11 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.WebServiceClient;
+import org.cytoscape.io.webservice.swing.WebServiceGUI;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.webservice.internal.task.ShowImportDialogAction;
+import org.cytoscape.webservice.internal.ui.WebServiceGUIImpl;
 import org.cytoscape.webservice.internal.ui.WebServiceImportDialog;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -38,6 +40,10 @@ public class CyActivator extends AbstractCyActivator {
 		WebServiceImportDialog<TableImportWebServiceClient> unifiedTableImportDialog = new WebServiceImportDialog<TableImportWebServiceClient>(
 				TableImportWebServiceClient.class, "Import Data Table from Web Service", taskManagerServiceRef, openBrowser);
 
+		WebServiceGUIImpl webServiceGui = new WebServiceGUIImpl();
+		webServiceGui.addClient(NetworkImportWebServiceClient.class, unifiedNetworkImportDialog);
+		webServiceGui.addClient(TableImportWebServiceClient.class, unifiedTableImportDialog);
+		
 		// ALT (for Mac, it's Option)
 		final KeyStroke networkImportShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
 		final KeyStroke tableImportShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_DOWN_MASK);
@@ -54,6 +60,7 @@ public class CyActivator extends AbstractCyActivator {
 				showImportNetworkFromWebServiceDialogActionProps);
 		registerService(bc, showImportTableFromWebServiceDialogAction, CyAction.class,
 				new Properties());
+		registerService(bc, webServiceGui, WebServiceGUI.class, new Properties());
 
 		registerServiceListener(bc, unifiedNetworkImportDialog, "addClient", "removeClient",
 				WebServiceClient.class);
