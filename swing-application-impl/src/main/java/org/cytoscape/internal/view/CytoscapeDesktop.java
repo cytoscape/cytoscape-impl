@@ -159,9 +159,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 		setJMenuBar(cyMenus.getJMenuBar());
 
-		if(System.getProperty("os.name").startsWith("Mac OS X")) {
-			// Enable full screen mode for 10.7+
-			FullScreenUtilities.setWindowCanFullScreen(this, true);
+		if(MacFullScreenEnabler.supportsNativeFullScreenMode()) {
+			MacFullScreenEnabler.setEnabled(this, true);
 		}
 
 		//don't automatically close window. Let shutdown.exit(returnVal)

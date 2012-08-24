@@ -91,6 +91,7 @@ import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
+import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
 import org.cytoscape.internal.view.ToolBarEnableUpdater;
@@ -463,7 +464,11 @@ public class CyActivator extends AbstractCyActivator {
 		// Full screen actions.  This is platform dependent
 		FullScreenAction fullScreenAction = null;
 		if(isMac()) {
-			fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
+			if (MacFullScreenEnabler.supportsNativeFullScreenMode()) {
+				fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
+			} else {
+				fullScreenAction = new FullScreenAction(cytoscapeDesktop);
+			}
 		} else {
 			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
 		}
