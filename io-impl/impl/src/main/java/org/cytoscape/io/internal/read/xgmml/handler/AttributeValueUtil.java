@@ -173,10 +173,8 @@ public class AttributeValueUtil {
     	
     	final String name = atts.getValue("name");
     	final String type = atts.getValue("type");
-    	final String equationStr = atts.getValue("cy:equation");
-    	final boolean isEquation = equationStr != null ? Boolean.parseBoolean(equationStr) : false;
-    	final String hiddenStr = atts.getValue("cy:hidden");
-    	final boolean isHidden = hiddenStr != null ? Boolean.parseBoolean(hiddenStr) : false;
+    	final boolean isEquation = ObjectTypeMap.fromXGMMLBoolean(atts.getValue("cy:equation"));
+    	final boolean isHidden = ObjectTypeMap.fromXGMMLBoolean(atts.getValue("cy:hidden"));
         
 		final CyIdentifiable curElement = manager.getCurrentElement();
 		CyNetwork curNet = manager.getCurrentNetwork();

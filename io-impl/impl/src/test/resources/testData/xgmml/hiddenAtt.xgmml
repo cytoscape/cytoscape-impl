@@ -4,12 +4,12 @@
 	xmlns:cy="http://www.cytoscape.org" xmlns="http://www.cs.rpi.edu/XGMML"
 	directed="1">
 	
-	<att type="boolean" name="test" value="1" cy:hidden="false" />
-	<att type="integer" name="_private_int" value="1" cy:hidden="true" />
+	<att type="boolean" name="test" value="1" cy:hidden="0" />
+	<att type="integer" name="_private_int" value="1" cy:hidden="1" />
 	
 	<node label="node1" id="-1">
-		<att type="string" name="name" value="node 1" />
-		<att type="string" name="_private_str" value="_v1" cy:hidden="true" />
+		<att type="string" name="name" value="node 1" cy:hidden="false" />
+		<att type="string" name="_private_str" value="_v1" cy:hidden="true" /> <!-- should also accept true/false -->
 		<att type="list" name="list_1">
 			<att type="string" value="a" />
 			<att type="string" value="b" />
@@ -17,14 +17,14 @@
 	</node>
 	<node label="node2" id="-2">
 		<att type="string" name="name" value="node 2" />
-		<att type="string" name="_private_str" value="_v2" cy:hidden="true" />
-		<att type="list" name="_private_list" cy:hidden="true">
+		<att type="string" name="_private_str" value="_v2" cy:hidden="1" />
+		<att type="list" name="_private_list" cy:hidden="1">
 			<att type="string" value="c" />
 			<att type="string" value="d" />
 		</att>
 	</node>
 	<edge label="node1 (DirectedEdge) node2" source="-1" target="-2">
 		<att type="string" name="name" value="node1 (DirectedEdge) node2" />
-		<att type="real" name="_private_real" value="0.1" cy:hidden="true" />
+		<att type="real" name="_private_real" value="0.1" cy:hidden="1" />
 	</edge>
 </graph>
