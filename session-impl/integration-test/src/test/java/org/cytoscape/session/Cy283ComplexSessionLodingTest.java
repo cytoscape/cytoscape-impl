@@ -81,7 +81,7 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 
 		// 6 tables per network
 		assertEquals(45, tableManager.getAllTables(true).size());
-		assertEquals(30, tableManager.getAllTables(false).size());
+		assertEquals(15, tableManager.getAllTables(false).size());
 
 		// Visual Style
 		assertEquals(7, vmm.getAllVisualStyles().size());

@@ -87,7 +87,7 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(0, renderingEngineManager.getAllRenderingEngines().size());
 
 		assertEquals(63, tableManager.getAllTables(true).size());
-		assertEquals(42, tableManager.getAllTables(false).size());
+		assertEquals(21, tableManager.getAllTables(false).size());
 
 	}
 

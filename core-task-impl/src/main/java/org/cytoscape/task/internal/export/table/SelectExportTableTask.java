@@ -45,11 +45,7 @@ public class SelectExportTableTask extends AbstractTask {
 		final List<String> options = new ArrayList<String>();
 		
 		for ( CyTable tbl : cyTableManagerServiceRef.getAllTables(false)) {
-
-			CyNetwork net = this.tableNetworkMap.get(tbl);
-			
 			String title = tbl.getTitle();
-		
 			options.add(title);			
 			this.titleTableMap.put(title, tbl);
 		}

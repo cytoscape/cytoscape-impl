@@ -55,6 +55,7 @@ public abstract class AbstractTableFacade implements CyTable {
 	private final Long suid;
 	private final Map<CyRow,CyRow> facadeRows;
 	private final Map<CyColumn,CyColumn> facadeColumns;
+	private boolean isPublic = true;
 
 	public AbstractTableFacade(CyTable actual) {
 		this.actual = actual;
@@ -68,11 +69,11 @@ public abstract class AbstractTableFacade implements CyTable {
 	}
 
 	public boolean isPublic() {
-		return actual.isPublic();
+		return isPublic;
 	}
 	
 	public void setPublic(boolean isPublic) {
-		actual.setPublic(isPublic);	
+		this.isPublic = isPublic;
 	}
 
 	public CyTable.Mutability getMutability() {

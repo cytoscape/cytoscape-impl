@@ -78,8 +78,8 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		
 		assertEquals(36, tableManager.getAllTables(true).size());
 		
-		// 6 tables per network
-		assertEquals(18, tableManager.getAllTables(false).size());
+		// 3 tables per network
+		assertEquals(6, tableManager.getAllTables(false).size());
 	}
 	
 	private void checkNetwork(final CyNetwork network) {

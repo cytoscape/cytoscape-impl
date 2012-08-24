@@ -128,15 +128,17 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 		return table.getRow(entry.getSUID());
 	}
 
-
+	
 	private void createNetworkTables(long suidx, CyTableFactory tableFactory, boolean pubTables, SharedTableFacade sharedNetworkTable) {		
 		final CyTable defTable = tableFactory.createTable(suidx
-				+ " default network", CyIdentifiable.SUID, Long.class, pubTables, false, InitialTableSize.SMALL);
+				+ " default network", CyIdentifiable.SUID, Long.class, false /* all local tables are private*/, false, InitialTableSize.SMALL);
+		
 		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.LOCAL_ATTRS, defTable);
 		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedNetworkTable);
+		localTable.setPublic(pubTables); //Set the privacy of facade tables based on the given flag
 		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.DEFAULT_ATTRS, localTable);
 		if ( eventHelper instanceof TableEventHelperFacade )
-			((TableEventHelperFacade)eventHelper).registerFacade(localTable);
+			((TableEventHelperFacade)eventHelper).registerFacade(localTable);		
 		
 		final CyTable hiddenTable = tableFactory.createTable(suidx
 				+ " hidden network", CyIdentifiable.SUID, Long.class, false, false, InitialTableSize.SMALL);
@@ -148,9 +150,12 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 
 	private void createNodeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num, SharedTableFacade sharedNodeTable) {
 		final CyTable defTable = tableFactory.createTable(suidx
-				+ " default node", CyIdentifiable.SUID, Long.class, pubTables, false, InitialTableSize.SMALL);
+				+ " default node", CyIdentifiable.SUID, Long.class, false /* all local tables are private*/, false, InitialTableSize.SMALL);
+		
 		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.LOCAL_ATTRS, defTable);
 		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedNodeTable);
+		localTable.setPublic(pubTables); //Set the privacy of facade tables based on the given flag
+
 		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.DEFAULT_ATTRS, localTable);
 		if ( eventHelper instanceof TableEventHelperFacade )
 			((TableEventHelperFacade)eventHelper).registerFacade(localTable);
@@ -165,10 +170,12 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 
 	private void createEdgeTables(long suidx, CyTableFactory tableFactory, boolean pubTables, int num, SharedTableFacade sharedEdgeTable) {
 		final CyTable defTable = tableFactory.createTable(suidx + " default edge", CyIdentifiable.SUID, Long.class,
-				pubTables, false, InitialTableSize.SMALL);
+				false /* all local tables are private*/, false, InitialTableSize.SMALL);
 		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.LOCAL_ATTRS, defTable);
 
 		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedEdgeTable);
+		localTable.setPublic(pubTables); //Set the privacy of facade tables based on the given flag
+
 		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.DEFAULT_ATTRS, localTable);
 		if ( eventHelper instanceof TableEventHelperFacade )
 			((TableEventHelperFacade)eventHelper).registerFacade(localTable);
