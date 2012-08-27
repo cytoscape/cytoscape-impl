@@ -67,6 +67,10 @@ public abstract class AbstractTableFacade implements CyTable {
 	public Long getSUID() {
 		return suid;	
 	}
+	
+	public String toString() {
+		return actual.toString();
+	}
 
 	public boolean isPublic() {
 		return isPublic;
