@@ -1,5 +1,6 @@
 package org.cytoscape.app.internal.ui;
 
+import java.awt.Container;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Calendar;
@@ -45,16 +46,20 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane updatesScrollPane;
     private javax.swing.JTable updatesTable;
     
+    Container parent;
+    
     private UpdateManager updateManager;
     private AppManager appManager;
     private TaskManager taskManager;
     
-    public CheckForUpdatesPanel(AppManager appManager, TaskManager taskManager) {
+    public CheckForUpdatesPanel(AppManager appManager, TaskManager taskManager, Container parent) {
     	this.updateManager = new UpdateManager();
         this.appManager = appManager;
         this.taskManager = taskManager;
     	
     	initComponents();
+    	
+    	this.parent = parent;
     }
 
     private void initComponents() {
@@ -69,6 +74,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         descriptionLabel = new javax.swing.JLabel();
         descriptionScrollPane = new javax.swing.JScrollPane();
         descriptionTextArea = new javax.swing.JTextArea();
+        manageUpdateSites = new javax.swing.JButton();
 
         updatesAvailableLabel.setText("0 updates available.");
 
@@ -118,52 +124,62 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         descriptionTextArea.setFocusable(false);
         descriptionScrollPane.setViewportView(descriptionTextArea);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        manageUpdateSites.setText("Manage Update Sites");
+        manageUpdateSites.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageUpdateSitesActionPerformed(evt);
+            }
+        });
+        
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(updatesAvailableLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(lastCheckForUpdatesLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(updateCheckTimeLabel)
-                                .add(0, 0, Short.MAX_VALUE))
-                            .add(updatesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
-                            .add(descriptionScrollPane))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(updatesAvailableLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lastCheckForUpdatesLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(updateCheckTimeLabel)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(updatesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
+                            .addComponent(descriptionScrollPane))
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(installSelectedButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(installAllButton))
-                            .add(descriptionLabel))
-                        .add(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(installSelectedButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(installAllButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(manageUpdateSites))
+                            .addComponent(descriptionLabel))
+                        .addGap(0, 219, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(updatesAvailableLabel)
-                    .add(lastCheckForUpdatesLabel)
-                    .add(updateCheckTimeLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(updatesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(descriptionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(descriptionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(installSelectedButton)
-                    .add(installAllButton))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(updatesAvailableLabel)
+                    .addComponent(lastCheckForUpdatesLabel)
+                    .addComponent(updateCheckTimeLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(updatesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(descriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(descriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(installSelectedButton)
+                    .addComponent(installAllButton)
+                    .addComponent(manageUpdateSites))
                 .addContainerGap())
         );
         
@@ -289,6 +305,12 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 			}
         	
         }));
+    }
+    
+    private void manageUpdateSitesActionPerformed(java.awt.event.ActionEvent evt) {
+    	if (parent instanceof AppManagerDialog) {
+    		((AppManagerDialog) parent).showManageDownloadSitesDialog();
+    	}
     }
     
     private void repopulateUpdatesTable() {

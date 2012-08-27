@@ -3,6 +3,8 @@ package org.cytoscape.app.internal.ui;
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.app.internal.ui.downloadsites.ManageDownloadSitesDialog;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
 
@@ -15,12 +17,20 @@ public class AppManagerDialog extends javax.swing.JDialog {
     private CurrentlyInstalledAppsPanel currentlyInstalledAppsPanel1;
     private InstallFromStorePanel installNewAppsPanel1;
     private javax.swing.JTabbedPane mainTabbedPane;
+
+    private ManageDownloadSitesDialog manageDownloadSitesDialog;
+    private DownloadSitesManager downloadSitesManager;
     
     private AppManager appManager;
 	private FileUtil fileUtil;
 	private TaskManager taskManager;
     
-    public AppManagerDialog(AppManager appManager, FileUtil fileUtil, TaskManager taskManager, java.awt.Frame parent, boolean modal) {
+    public AppManagerDialog(AppManager appManager, 
+    		DownloadSitesManager downloadSitesManager,
+    		FileUtil fileUtil, 
+    		TaskManager taskManager, 
+    		java.awt.Frame parent, 
+    		boolean modal) {
         super(parent, modal);
         
         this.appManager = appManager;
@@ -30,13 +40,18 @@ public class AppManagerDialog extends javax.swing.JDialog {
         
         this.setLocationRelativeTo(parent);
         this.setVisible(true);
+        
+        // Create new manage download sites dialog
+        manageDownloadSitesDialog = new ManageDownloadSitesDialog(
+        		parent, false, downloadSitesManager);
+        manageDownloadSitesDialog.setLocationRelativeTo(this);
     }
    
     private void initComponents() {
     	mainTabbedPane = new javax.swing.JTabbedPane();
         installNewAppsPanel1 = new InstallFromStorePanel(appManager, fileUtil, taskManager, this);
         currentlyInstalledAppsPanel1 = new CurrentlyInstalledAppsPanel(appManager);
-        checkForUpdatesPanel1 = new CheckForUpdatesPanel(appManager, taskManager);
+        checkForUpdatesPanel1 = new CheckForUpdatesPanel(appManager, taskManager, this);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("App Manager");
@@ -67,5 +82,11 @@ public class AppManagerDialog extends javax.swing.JDialog {
     
     public void changeTab(int index) {
     	mainTabbedPane.setSelectedIndex(index);
+    }
+    
+    public void showManageDownloadSitesDialog() {
+    	manageDownloadSitesDialog.setLocationRelativeTo(this);
+    	manageDownloadSitesDialog.pack();
+    	manageDownloadSitesDialog.setVisible(true);
     }
 }

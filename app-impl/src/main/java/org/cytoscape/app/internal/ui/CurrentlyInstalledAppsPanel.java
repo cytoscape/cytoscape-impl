@@ -1,5 +1,6 @@
 package org.cytoscape.app.internal.ui;
 
+import java.awt.Container;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.HashSet;

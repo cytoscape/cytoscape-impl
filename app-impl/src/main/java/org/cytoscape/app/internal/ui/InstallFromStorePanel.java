@@ -167,7 +167,6 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 					}
 					
 				});
-				
 			}
 
 			@Override
@@ -295,7 +294,12 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
             }
         });
 
-        manageSitesButton.setText("Manage...");
+        manageSitesButton.setText("Manage Sites...");
+        manageSitesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageSitesButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -838,6 +842,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
     }
     
     private void manageSitesButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+        if (parent instanceof AppManagerDialog) {
+        	((AppManagerDialog) parent).showManageDownloadSitesDialog();
+        }
     }
 }

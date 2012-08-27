@@ -11,6 +11,7 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.ui.AppManagerDialog;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -38,6 +39,11 @@ public class AppManagerAction extends AbstractCyAction {
 	private AppManager appManager;
 	
 	/**
+	 * A reference to the {@link DownloadSitesManager}
+	 */
+	private DownloadSitesManager downloadSitesManager;
+	
+	/**
 	 * A reference to the {@link FileUtil} OSGi service used for displaying a filechooser dialog
 	 */
 	private FileUtil fileUtil;
@@ -59,13 +65,18 @@ public class AppManagerAction extends AbstractCyAction {
 	 * Creates and sets up the AbstractCyAction, placing an item into the menu.
 	 */
 	public AppManagerAction(AppManager appManager, 
-			CySwingApplication swingApplication, FileUtil fileUtil, TaskManager taskManager, CyServiceRegistrar serviceRegistrar) {
+			DownloadSitesManager downloadSitesManager,
+			CySwingApplication swingApplication, 
+			FileUtil fileUtil, 
+			TaskManager taskManager, 
+			CyServiceRegistrar serviceRegistrar) {
 		super("App Manager");
 		
 		setPreferredMenu("Apps");
 		setMenuGravity(1.0f);
 		
 		this.appManager = appManager;
+		this.downloadSitesManager = downloadSitesManager;
 		this.swingApplication = swingApplication;
 		this.fileUtil = fileUtil;
 		this.taskManager = taskManager;
@@ -98,7 +109,7 @@ public class AppManagerAction extends AbstractCyAction {
 				
 		// Create and display the App Manager dialog
 		if (appManagerDialog == null) {
-			appManagerDialog = new AppManagerDialog(appManager, fileUtil, taskManager, swingApplication.getJFrame(), false);
+			appManagerDialog = new AppManagerDialog(appManager, downloadSitesManager, fileUtil, taskManager, swingApplication.getJFrame(), false);
 		} else {
 			appManagerDialog.pack();
 			appManagerDialog.setVisible(true);

@@ -113,6 +113,34 @@ public class DownloadSitesManager {
 		return downloadSites;
 	}
 	
+	public void addDownloadSitesChangedListener(DownloadSitesChangedListener listener) {
+		this.downloadSitesChangedListeners.add(listener);
+	}
+	
+	public void removeDownloadSitesChangedListener(DownloadSitesChangedListener listener) {
+		this.downloadSitesChangedListeners.remove(listener);
+	}
+	
+	public void addDownloadSite(DownloadSite downloadSite) {
+		this.downloadSites.add(downloadSite);
+		
+		notifyDownloadSitesChanged();
+	}
+	
+	public void removeDownloadSite(DownloadSite downloadSite) {
+		this.downloadSites.remove(downloadSite);
+		
+		notifyDownloadSitesChanged();
+	}
+	
+	private void notifyDownloadSitesChanged() {
+		DownloadSitesChangedEvent event = new DownloadSitesChangedEvent(this);
+		
+		for (DownloadSitesChangedListener listener : this.downloadSitesChangedListeners) {
+			listener.downloadSitesChanged(event);
+		}
+	}
+	
 	public class DownloadSitesChangedEvent {
 		
 		private DownloadSitesManager source;

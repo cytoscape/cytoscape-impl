@@ -748,6 +748,9 @@ public class WebQuerier {
 		// TODO: Perhaps modify this method to do the check with a given app store
 		// as a parameter, instead of all app stores
 		
+		if (appsByUrl.get(DEFAULT_APP_STORE_URL) == null) {
+			return;
+		}
 		
 		// Find the set of all available apps
 		Set<WebApp> allWebApps = new HashSet<WebApp>(

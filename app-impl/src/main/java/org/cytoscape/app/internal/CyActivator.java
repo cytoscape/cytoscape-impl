@@ -14,6 +14,7 @@ import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
 import org.cytoscape.app.internal.net.server.AddAccessControlAllowOriginHeaderAfterResponse;
 import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.session.CySessionManager;
@@ -369,9 +370,13 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, appManager, AppManager.class, new Properties());
 		appManager.setFeaturesService(featuresService);
 		
+		final DownloadSitesManager downloadSitesManager = new DownloadSitesManager(cyPropertyRef);
+		
 		// AbstractCyAction implementation for updated app manager
-		AppManagerAction appManagerAction = new AppManagerAction(appManager, cySwingApplicationRef, 
-				fileUtilServiceRef, dialogTaskManagerRef, cyServiceRegistrarRef);
+		AppManagerAction appManagerAction = new AppManagerAction(
+				appManager, downloadSitesManager,
+				cySwingApplicationRef, fileUtilServiceRef,
+				dialogTaskManagerRef, cyServiceRegistrarRef);
 		registerService(bc, appManagerAction, CyAction.class, new Properties());
 		
 		// Start local server that reports app installation status to the app store when requested,
