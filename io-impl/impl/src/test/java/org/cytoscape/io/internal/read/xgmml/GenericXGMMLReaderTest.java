@@ -404,16 +404,15 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertEquals(1, np.getEdgeCount());
 		
 		// Check if the nested graph's attribute was imported to the network pointer
-		CyRow grNetrow = np.getRow(np);
-		assertEquals("Lorem Ipsum", grNetrow.get("gr_att_1", String.class));
+		CyRow npRow = np.getRow(np);
+		assertEquals("Lorem Ipsum", npRow.get("gr_att_1", String.class));
 		
 		// Check external edges metadata (must be added by the reader!)
-		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(np);
-		CyRow rnRow = rootNet.getRow(gn, HIDDEN_ATTRS);
-		List<Long> extEdgeIds = rnRow.getList(ReadDataManager.EXTERNAL_EDGE_ATTRIBUTE, Long.class);
-		
-		assertNotNull(extEdgeIds);
+		CyRow nphRow = np.getRow(np, HIDDEN_ATTRS);
+		List<Long> extEdgeIds = nphRow.getList(ReadDataManager.EXTERNAL_EDGE_ATTRIBUTE, Long.class);
 		assertEquals(1, extEdgeIds.size());
+		
+		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(np);
 		assertNotNull(rootNet.getEdge(extEdgeIds.get(0)));
 		
 		return gn;

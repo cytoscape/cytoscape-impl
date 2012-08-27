@@ -488,42 +488,45 @@ public class ReadDataManager {
 						+ "\" to the expected sub-network, because it does not contain the source or target node." +
 						" Will try to add the edge to the root-network instead.");
         		
-        		net = getRootNetwork();
+        		final CyRootNetwork rootNet = getRootNetwork();
 				
         		if (actualSrc == null)
-        			actualSrc = net.getNode(source.getSUID());
+        			actualSrc = rootNet.getNode(source.getSUID());
         		if (actualTgt == null)
-        			actualTgt = net.getNode(target.getSUID());
+        			actualTgt = rootNet.getNode(target.getSUID());
         		
         		// Does the current subnetwork belong to a 2.x group?
         		if (getDocumentVersion() < 3.0 && !compoundNodeStack.isEmpty() && networkStack.size() > 1) {
         			// Get the current compound node
         			final CyNode grNode = compoundNodeStack.peek();
         			// Get the network of that node (the current one is its network pointer)
-        			final CyNetwork grNet = cache.getNetwork(networkStack.elementAt(networkStack.size() - 2));
+        			final CyNetwork parentNet = cache.getNetwork(networkStack.elementAt(networkStack.size() - 2));
         			
         			// Check for the group's metadata attribute
-        			final CyRow grhRow = grNet.getRow(grNode, CyNetwork.HIDDEN_ATTRS);
+        			final CyRow gnhRow = parentNet.getRow(grNode, CyNetwork.HIDDEN_ATTRS);
         			
-        			if (grhRow.isSet(GROUP_STATE_ATTRIBUTE)) { // It's a group!
-        				// Add extra metadata for external edges, so that the information is not lost
-        				final CyRow rnRow = getRootNetwork().getRow(grNode, CyNetwork.HIDDEN_ATTRS);
+        			if (gnhRow.isSet(GROUP_STATE_ATTRIBUTE)) { // It's a group!
+        				// Get the network pointer's hidden row
+        				final CyRow nphRow = net.getRow(net, CyNetwork.HIDDEN_ATTRS);
         				
-        				if (rnRow.getTable().getColumn(EXTERNAL_EDGE_ATTRIBUTE) == null) {
-        					rnRow.getTable().createListColumn(EXTERNAL_EDGE_ATTRIBUTE, Long.class, false);
+        				// Add extra metadata for external edges, so that the information is not lost
+        				if (nphRow.getTable().getColumn(EXTERNAL_EDGE_ATTRIBUTE) == null) {
+        					nphRow.getTable().createListColumn(EXTERNAL_EDGE_ATTRIBUTE, Long.class, false);
         					// These are already the new SUIDs. Let's tell the SUIDUpdater to ignore this column,
         					// in order to prevent it from replacing the correct list by an empty one.
-        					suidUpdater.ignoreColumn(rnRow.getTable(), EXTERNAL_EDGE_ATTRIBUTE);
+        					suidUpdater.ignoreColumn(nphRow.getTable(), EXTERNAL_EDGE_ATTRIBUTE);
         				}
         				
-        				extEdgeIds = rnRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
+        				extEdgeIds = nphRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
         						
         				if (extEdgeIds == null) {
         					extEdgeIds = new ArrayList<Long>();
-        					rnRow.set(EXTERNAL_EDGE_ATTRIBUTE, extEdgeIds);
+        					nphRow.set(EXTERNAL_EDGE_ATTRIBUTE, extEdgeIds);
         				}
         			}
         		}
+        		
+        		net = rootNet;
         	}
         	
         	edge = net.addEdge(actualSrc, actualTgt, directed);
