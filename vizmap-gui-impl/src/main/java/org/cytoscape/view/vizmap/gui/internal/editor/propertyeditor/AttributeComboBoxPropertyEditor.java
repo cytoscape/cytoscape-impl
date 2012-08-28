@@ -5,7 +5,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -85,8 +87,9 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		for (CyNetwork net : networks) {
 			final AttributeSet currentSet = this.attrManager.getAttributeSet(net, graphObjectType);
 			
-			for (String attrName : currentSet.getAttrMap().keySet())
-				sortedName.add(attrName);
+			for (Entry<String, Class<?>> entry: currentSet.getAttrMap().entrySet())
+				if (columnIsAllowed(entry.getKey(), entry.getValue()))
+					sortedName.add(entry.getKey());
 		}
 
 		for (final String attrName : sortedName)
@@ -97,6 +100,13 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 
 		logger.debug(graphObjectType + " attribute Combobox Updated: New Names = "
 				+ targetSet.getAttrMap().keySet());
+	}
+
+	private boolean columnIsAllowed(String name, Class<?> type) {
+		if (!Long.class.equals(type) && !List.class.equals(type)) {
+			return true;
+		}
+		return !CyIdentifiable.SUID.equals(name) && !name.endsWith(".SUID");
 	}
 
 	private final class AttributeComboBoxCellRenderer extends BasicComboBoxRenderer {
