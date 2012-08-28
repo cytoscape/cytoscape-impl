@@ -45,7 +45,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.internal.util.vizmap.model.AttributeType;
 import org.cytoscape.io.internal.util.vizmap.model.Dependency;
 import org.cytoscape.io.internal.util.vizmap.model.DiscreteMappingEntry;
@@ -89,7 +88,6 @@ public class VisualStyleSerializer {
 	private final VisualMappingFunctionFactory discreteMappingFactory;
 	private final VisualMappingFunctionFactory continuousMappingFactory;
 	private final VisualMappingFunctionFactory passthroughMappingFactory;
-	private final SUIDUpdater suidUpdater;
 
 	private VisualLexicon lexicon;
 
@@ -101,8 +99,7 @@ public class VisualStyleSerializer {
 								 final RenderingEngineManager renderingEngineManager,
 								 final VisualMappingFunctionFactory discreteMappingFactory,
 								 final VisualMappingFunctionFactory continuousMappingFactory,
-								 final VisualMappingFunctionFactory passthroughMappingFactory,
-								 final SUIDUpdater suidUpdater) {
+								 final VisualMappingFunctionFactory passthroughMappingFactory) {
 		this.calculatorConverterFactory = calculatorConverterFactory;
 		this.visualStyleFactory = visualStyleFactory;
 		this.visualMappingManager = visualMappingManager;
@@ -110,7 +107,6 @@ public class VisualStyleSerializer {
 		this.discreteMappingFactory = discreteMappingFactory;
 		this.continuousMappingFactory = continuousMappingFactory;
 		this.passthroughMappingFactory = passthroughMappingFactory;
-		this.suidUpdater = suidUpdater;
 	}
 
 	/**
@@ -420,9 +416,6 @@ public class VisualStyleSerializer {
 					org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping dmModel = vpModel.getDiscreteMapping();
 					String attrName = dmModel.getAttributeName();
 					AttributeType attrType = dmModel.getAttributeType();
-					
-					// If it's maps to an SUID-type column, the old SUID values must be updated first
-					suidUpdater.update(dmModel);
 					
 					try {
 						Class<?> attrClass = null;

@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.io.internal.util.vizmap.model.AttributeType;
-import org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping;
-import org.cytoscape.io.internal.util.vizmap.model.DiscreteMappingEntry;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -83,26 +80,6 @@ public class SUIDUpdater {
 		}
 	}
 	
-	public void update(final DiscreteMapping dm) {
-		if (isUpdatable(dm)) {
-			final List<DiscreteMappingEntry> invalidEntries = new ArrayList<DiscreteMappingEntry>();
-			
-			for (final DiscreteMappingEntry entry : dm.getDiscreteMappingEntry()) {
-				final String attrVal = entry.getAttributeValue();
-				// TODO handle list of SUIDs
-				final Long oldSUID = attrVal != null ? Long.parseLong(attrVal) : null;
-				final Long newSUID = getNewSUID(oldSUID);
-				
-				if (newSUID != null)
-					entry.setAttributeValue(newSUID.toString());
-				else
-					invalidEntries.add(entry);
-			}
-			
-			dm.getDiscreteMappingEntry().removeAll(invalidEntries);
-		}
-	}
-	
 	public static boolean isUpdatable(final CyColumn column) {
 		if (column != null
 				&& !column.isPrimaryKey()
@@ -114,14 +91,6 @@ public class SUIDUpdater {
 		
 		return false;
     }
-	
-	public static boolean isUpdatable(final DiscreteMapping dm) {
-		if (dm != null
-				&& (dm.getAttributeType() == AttributeType.LONG || dm.getAttributeType() == AttributeType.LIST))
-			return isUpdatable(dm.getAttributeName());
-		
-		return false;
-	}
 	
 	public static boolean isUpdatable(final String columnName) {
 		return columnName != null && columnName.endsWith(SUID_COLUMN_SUFFIX);

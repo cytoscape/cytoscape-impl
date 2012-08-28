@@ -1,6 +1,6 @@
 package org.cytoscape.io.internal.util.vizmap;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -13,7 +13,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 
-import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.internal.util.vizmap.model.Vizmap;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -33,13 +32,11 @@ public class VisualStyleSerializerTest {
 	private VisualStyleSerializer serializer;
 	private Map<VisualStyle, String> styleNames;
 	private Map<VisualStyle, Map<VisualProperty<?>, ?>> styleProperties;
-	private SUIDUpdater suidUpdater;
 
 	@Before
 	public void setUp() throws Exception {
 		styleNames = new Hashtable<VisualStyle, String>();
 		styleProperties = new Hashtable<VisualStyle, Map<VisualProperty<?>, ? extends Object>>();
-		suidUpdater = new SUIDUpdater();
 
 		final VisualMappingManager visualMappingManager = mock(VisualMappingManager.class);
 		final VisualMappingFunctionFactory discreteMappingFactory = mock(VisualMappingFunctionFactory.class);
@@ -64,8 +61,7 @@ public class VisualStyleSerializerTest {
 		final CalculatorConverterFactory calcFactory = new CalculatorConverterFactory();
 
 		serializer = new VisualStyleSerializer(calcFactory, visualStyleFactory, visualMappingManager,
-				renderingEngineManager, discreteMappingFactory, continuousMappingFactory, passthroughMappingFactory,
-				suidUpdater);
+				renderingEngineManager, discreteMappingFactory, continuousMappingFactory, passthroughMappingFactory);
 	}
 
 	@Test
