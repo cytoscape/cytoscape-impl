@@ -70,6 +70,8 @@ import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.undo.UndoSupport;
@@ -86,7 +88,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private String currentFileName;
 	private CySession currentSession;
 
-	private final CyEventHelper cyEventHelper;
+	private final CyEventHelper eventHelper;
 	private final CyApplicationManager appMgr;
 	private final CyNetworkManager netMgr;
 	private final CyTableManager tblMgr;
@@ -102,7 +104,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	private static final Logger logger = LoggerFactory.getLogger(CySessionManagerImpl.class);
 
-	public CySessionManagerImpl(final CyEventHelper cyEventHelper,
+	public CySessionManagerImpl(final CyEventHelper eventHelper,
 								final CyApplicationManager appMgr,
 								final CyNetworkManager netMgr,
 								final CyTableManager tblMgr,
@@ -112,7 +114,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 								final CyRootNetworkManager rootNetMgr,
 								final CyServiceRegistrar registrar,
 								final UndoSupport undo) {
-		this.cyEventHelper = cyEventHelper;
+		this.eventHelper = eventHelper;
 		this.appMgr = appMgr;
 		this.netMgr = netMgr;
 		this.tblMgr = tblMgr;
@@ -130,7 +132,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// Apps who want to save anything to a session will have to listen for this event
 		// and will then be responsible for adding files through SessionAboutToBeSavedEvent.addAppFiles(..)
 		final SessionAboutToBeSavedEvent savingEvent = new SessionAboutToBeSavedEvent(this);
-		cyEventHelper.fireEvent(savingEvent);
+		eventHelper.fireEvent(savingEvent);
 
 		final Set<CyNetwork> networks = getSerializableNetworks();
 		final Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
@@ -269,7 +271,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		currentSession = sess;
 		currentFileName = fileName;
 
-		cyEventHelper.fireEvent(new SessionLoadedEvent(this, currentSession, getCurrentSessionFileName()));
+		eventHelper.fireEvent(new SessionLoadedEvent(this, currentSession, getCurrentSessionFileName()));
 	}
 
 	/**
@@ -345,18 +347,41 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		
 		for (CyNetworkView nv : netViews) {
 			CyNetwork network = nv.getModel();
+			
 			if (network.getRow(network).get(CyNetwork.SELECTED, Boolean.class)) {
 				selectedViews.add(nv);
 			}
 		}
 		
+		Map<CyNetworkView, Map<VisualProperty<?>, Object>> viewVPMap = 
+				new HashMap<CyNetworkView, Map<VisualProperty<?>,Object>>();
+		
 		if (netViews != null) {
 			for (CyNetworkView nv : netViews) {
-				if (nv != null)
+				if (nv != null) {
+					// Save the original values of these visual properties,
+					// because we will have to set them again after the views are rendered
+					Map<VisualProperty<?>, Object> vpMap = new HashMap<VisualProperty<?>, Object>();
+					viewVPMap.put(nv, vpMap);
+					vpMap.put(BasicVisualLexicon.NETWORK_HEIGHT, nv.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT));
+					vpMap.put(BasicVisualLexicon.NETWORK_WIDTH, nv.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH));
+					
 					nvMgr.addNetworkView(nv);
+				}
 			}
 		}
 
+		// Let's guarantee the network views are rendered
+		eventHelper.flushPayloadEvents();
+		
+		// Set the saved visual properties again, because the renderer may have overwritten the original values
+		for (Entry<CyNetworkView, Map<VisualProperty<?>, Object>> entry1 : viewVPMap.entrySet()) {
+			CyNetworkView nv = entry1.getKey();
+			
+			for (Entry<VisualProperty<?>, Object> entry2 : entry1.getValue().entrySet())
+				nv.setVisualProperty(entry2.getKey(), entry2.getValue());
+		}
+		
 		appMgr.setSelectedNetworkViews(selectedViews);
 	}
 
