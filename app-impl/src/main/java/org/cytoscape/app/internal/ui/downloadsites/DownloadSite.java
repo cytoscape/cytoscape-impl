@@ -14,6 +14,11 @@ public class DownloadSite {
 	 */
 	private String siteUrl;	
 	
+	public DownloadSite() {
+		this.siteName = "";
+		this.siteUrl = "";
+	}
+	
 	public String getSiteName() {
 		return siteName;
 	}

@@ -64,7 +64,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 
     private void initComponents() {
 
-        updatesAvailableLabel = new javax.swing.JLabel();
+    	updatesAvailableLabel = new javax.swing.JLabel();
         installSelectedButton = new javax.swing.JButton();
         installAllButton = new javax.swing.JButton();
         updatesScrollPane = new javax.swing.JScrollPane();
@@ -102,9 +102,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
                 "App Name", "Version"
             }
         ) {
-			private static final long serialVersionUID = 5428723339522445073L;
-			
-			boolean[] canEdit = new boolean [] {
+            boolean[] canEdit = new boolean [] {
                 false, false
             };
 
@@ -124,13 +122,13 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         descriptionTextArea.setFocusable(false);
         descriptionScrollPane.setViewportView(descriptionTextArea);
 
-        manageUpdateSites.setText("Manage Update Sites");
+        manageUpdateSites.setText("Manage Sites");
         manageUpdateSites.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageUpdateSitesActionPerformed(evt);
             }
         });
-        
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -159,7 +157,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(manageUpdateSites))
                             .addComponent(descriptionLabel))
-                        .addGap(0, 219, Short.MAX_VALUE))))
+                        .addGap(0, 267, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -186,7 +184,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         updateManager.addUpdatesChangedListener(new UpdatesChangedListener() {
 			
 			@Override
-			public void appsChanged(UpdatesChangedEvent event) {
+			public void updatesChanged(UpdatesChangedEvent event) {
 
         		int updateCount = updateManager.getUpdates().size();
         		updatesAvailableLabel.setText(updateCount + " " 
@@ -197,11 +195,10 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         		int minute = lastUpdateCheckTime.get(Calendar.MINUTE);
         		
         		updateCheckTimeLabel.setText("Today, at " 
-        			+ lastUpdateCheckTime.get(Calendar.HOUR) + ":"
+        			+ (lastUpdateCheckTime.get(Calendar.HOUR) == 0 ? "12" : lastUpdateCheckTime.get(Calendar.HOUR)) + ":"
         			+ (minute < 10 ? "0" : "") + minute + " "
         			+ (lastUpdateCheckTime.get(Calendar.AM_PM) == Calendar.AM ? "am" : "pm"));
         		
-				
 				repopulateUpdatesTable();
 
 				// Enable/disable the update all button depending on update availability

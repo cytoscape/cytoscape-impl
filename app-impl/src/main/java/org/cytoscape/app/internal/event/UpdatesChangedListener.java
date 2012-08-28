@@ -10,5 +10,5 @@ public interface UpdatesChangedListener {
 	 * Notifies the listener that updates have been updated, or added/removed from the list of available updates.
 	 * @param event The {@link UpdatesChangedEvent} containing information about the change event.
 	 */
-	public void appsChanged(UpdatesChangedEvent event);
+	public void updatesChanged(UpdatesChangedEvent event);
 }

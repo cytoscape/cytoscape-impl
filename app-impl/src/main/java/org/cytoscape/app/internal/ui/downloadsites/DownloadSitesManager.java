@@ -31,6 +31,8 @@ public class DownloadSitesManager {
 	
 	public DownloadSitesManager(CyProperty<Properties> cyProperty) {
 		this.cyProperty = cyProperty;
+		
+		this.downloadSitesChangedListeners = new HashSet<DownloadSitesChangedListener>();
 	}
 	
 	/**
@@ -133,7 +135,10 @@ public class DownloadSitesManager {
 		notifyDownloadSitesChanged();
 	}
 	
-	private void notifyDownloadSitesChanged() {
+	/**
+	 * Notify listeners that a site has been added, removed, or has its fields changed
+	 */
+	public void notifyDownloadSitesChanged() {
 		DownloadSitesChangedEvent event = new DownloadSitesChangedEvent(this);
 		
 		for (DownloadSitesChangedListener listener : this.downloadSitesChangedListeners) {

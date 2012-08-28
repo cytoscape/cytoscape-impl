@@ -818,7 +818,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	        					// comboBoxModel.insertElementAt(listElement, 1);
 	        				}
 	        				
-	        				break;	
+	        				break;
 	        			}
 	        		}
 	        		

@@ -157,7 +157,7 @@ public class UpdateManager {
 		UpdatesChangedEvent updatesChangedEvent = new UpdatesChangedEvent(this);
 		
 		for (UpdatesChangedListener updatesChangedListener : updatesChangedListeners) {
-			updatesChangedListener.appsChanged(updatesChangedEvent);
+			updatesChangedListener.updatesChanged(updatesChangedEvent);
 		}
 	}
 	
