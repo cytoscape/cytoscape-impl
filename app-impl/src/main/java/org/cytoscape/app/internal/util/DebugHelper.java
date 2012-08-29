@@ -5,10 +5,11 @@ package org.cytoscape.app.internal.util;
  */
 public class DebugHelper {
 	private static boolean debug = false;
+//	private static boolean debug = true;
 	
 	public static void print(String message) {
 		if (debug) {
-			System.out.println(message);
+			System.out.println("DebugHelper: " + message);
 		}
 	}
 	

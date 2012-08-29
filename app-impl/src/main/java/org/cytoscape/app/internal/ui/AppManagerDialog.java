@@ -87,7 +87,6 @@ public class AppManagerDialog extends javax.swing.JDialog {
     public void showManageDownloadSitesDialog() {
     	if (manageDownloadSitesDialog != null) {
     		manageDownloadSitesDialog.setLocationRelativeTo(this);
-    		manageDownloadSitesDialog.pack();
     		manageDownloadSitesDialog.setVisible(true);
     	}
     }

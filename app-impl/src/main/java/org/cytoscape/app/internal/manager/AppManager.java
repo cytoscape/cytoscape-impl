@@ -269,6 +269,8 @@ public class AppManager {
 					return;
 				}
 				
+				DebugHelper.print(this + " installObserverCreate", parsedApp.getAppName() + " parsed");
+				
 				App registeredApp = null;
 				for (App app : apps) {
 					if (parsedApp.heuristicEquals(app)) {
@@ -278,7 +280,12 @@ public class AppManager {
 						// TODO: Possible rename from filename-2 to filename?
 						File oldFile = registeredApp.getAppFile();
 						
-						if (oldFile.exists()) {
+						if (oldFile.exists() && !registeredApp.getAppFile().equals(parsedApp.getAppFile())) {
+							DebugHelper.print(this + " installObserverCreate", 
+									registeredApp.getAppName() + " moved from " 
+									+ registeredApp.getAppFile().getAbsolutePath() + " to " 
+									+ parsedApp.getAppFile().getAbsolutePath() + ". deleting: " + oldFile);
+							
 							FileUtils.deleteQuietly(oldFile);
 						}
 						
@@ -303,6 +310,8 @@ public class AppManager {
 			@Override
 			public void onFileDelete(File file) {
 				// System.out.println(file + " on delete");
+				
+				DebugHelper.print(this + " installObserverDelete", file.getAbsolutePath() + " deleted.");
 				
 				for (App app : apps) {
 					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
@@ -330,6 +339,8 @@ public class AppManager {
 					return;
 				}
 				
+				DebugHelper.print(this + " disableObserverCreate", parsedApp.getAppName() + " parsed");
+				
 				App registeredApp = null;
 				for (App app : apps) {
 					if (parsedApp.heuristicEquals(app)) {
@@ -339,7 +350,12 @@ public class AppManager {
 						// TODO: Possible rename from filename-2 to filename?
 						File oldFile = registeredApp.getAppFile();
 						
-						if (oldFile.exists()) {
+						if (oldFile.exists() && !registeredApp.getAppFile().equals(parsedApp.getAppFile())) {
+							DebugHelper.print(this + " disableObserverCreate", 
+									registeredApp.getAppName() + " moved from " 
+									+ registeredApp.getAppFile().getAbsolutePath() + " to " 
+									+ parsedApp.getAppFile().getAbsolutePath() + ". deleting: " + oldFile);
+							
 							FileUtils.deleteQuietly(oldFile);
 						}
 						
@@ -368,6 +384,8 @@ public class AppManager {
 			public void onFileDelete(File file) {
 				// System.out.println(file + " on delete");
 				
+				DebugHelper.print(this + " disableObserverDelete", file.getAbsolutePath() + " deleted.");
+				
 				for (App app : apps) {
 					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
 					if (app.getAppFile().equals(file)) {
@@ -394,6 +412,8 @@ public class AppManager {
 					return;
 				}
 				
+				DebugHelper.print(this + " uninstallObserverCreate", parsedApp.getAppName() + " parsed");
+				
 				App registeredApp = null;
 				for (App app : apps) {
 					if (parsedApp.heuristicEquals(app)) {
@@ -403,7 +423,12 @@ public class AppManager {
 						// TODO: Possible rename from filename-2 to filename?
 						File oldFile = registeredApp.getAppFile();
 						
-						if (oldFile.exists()) {
+						if (oldFile.exists() && !registeredApp.getAppFile().equals(parsedApp.getAppFile())) {
+							DebugHelper.print(this + " uninstallObserverCreate", 
+									registeredApp.getAppName() + " moved from " 
+									+ registeredApp.getAppFile().getAbsolutePath() + " to " 
+									+ parsedApp.getAppFile().getAbsolutePath() + ". deleting: " + oldFile);
+							
 							FileUtils.deleteQuietly(oldFile);
 						}
 						
@@ -431,6 +456,8 @@ public class AppManager {
 			@Override
 			public void onFileDelete(File file) {
 				// System.out.println(file + " on delete");
+				
+				DebugHelper.print(this + " uninstallObserverDelete", file.getAbsolutePath() + " deleted.");
 				
 				for (App app : apps) {
 					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
