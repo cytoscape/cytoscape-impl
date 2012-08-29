@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Collections;
 import java.util.Comparator;
@@ -504,7 +505,28 @@ public class WebQuerier {
 					outputFile.createNewFile();
 					
 				    FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-				    fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, 1 << 24);
+				    FileChannel fileChannel = fileOutputStream.getChannel();
+				    
+				    long currentDownloadPosition = 0;
+				    long bytesTransferred;
+				    
+				    do {
+				    	bytesTransferred = fileChannel.transferFrom(readableByteChannel, currentDownloadPosition, 1 << 20);
+//				    	System.out.println("Position: " + currentDownloadPosition + " new bytes: " + bytesTransferred);
+				    	currentDownloadPosition += bytesTransferred;
+				    } while (bytesTransferred > 0);
+				    
+//				    System.out.println("outfile: " + outputFile.getAbsolutePath());
+				    
+				    try {
+				    	fileOutputStream.close();
+				    } catch (IOException e) {
+				    }
+				    
+				    try {
+				    	readableByteChannel.close();
+				    } catch (IOException e) {
+				    }
 				    
 				    return outputFile;
 				} catch (IOException e) {
