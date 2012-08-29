@@ -67,6 +67,8 @@ public class WebApp {
 		
 		@Override
 		public int compareTo(Release other) {
+//			return WebQuerier.compareVersions(other., second)
+			
 			return releaseDate.compareToIgnoreCase(other.releaseDate);
 		}
 		

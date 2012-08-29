@@ -679,7 +679,7 @@ public class WebQuerier {
 	 * @return A negative integer if first more recent, a positive integer if second more recent,
 	 * or 0 if the versions were the same or unable to determine which is more recent.
 	 */
-	public int compareVersions(String first, String second) {
+	public static int compareVersions(String first, String second) {
 		if (first == null || second == null) {
 			return 0;
 		}

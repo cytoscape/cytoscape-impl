@@ -111,12 +111,14 @@ public class AppParser {
 		
 	
 		// Look for features specified in an xml file
+		/*
 		List<KarafArchiveApp.KarafFeature> featuresList = Collections.emptyList();
         try {
             featuresList = getFeaturesXmlFromJar(jarFile);
         } catch (AppParsingException e) {
             xmlParseFailed = true;
         }
+        */
 		
 		// Check if a manifest that contains OSGi metadata is present
 		try {
@@ -133,6 +135,11 @@ public class AppParser {
 		}
 		
 		// If an XML parsing error occurred, continue to attempt to parse the app as a simple app
+		/*
+		 * 
+		 * Commented out, no longer uses Karaf. see if (osgiMetadataFound) block 
+		 * below this commented block.
+		
 		if (featuresList.size() > 0 && !xmlParseFailed) {
 			bundleApp = true;
 			parsedApp = new KarafArchiveApp();
@@ -141,6 +148,12 @@ public class AppParser {
 				((KarafArchiveApp) parsedApp).getFeaturesList().put(feature.featureName, feature);
 			}
 		} else if (osgiMetadataFound) {
+			bundleApp = true;
+			parsedApp = new BundleApp();
+		}
+		*/
+		
+		if (osgiMetadataFound) {
 			bundleApp = true;
 			parsedApp = new BundleApp();
 		}

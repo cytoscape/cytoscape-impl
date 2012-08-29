@@ -229,8 +229,17 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
 
     private void addSiteButtonActionPerformed(java.awt.event.ActionEvent evt) {
     	final DownloadSite downloadSite = new DownloadSite();
-    	downloadSite.setSiteName(getEnteredSiteName());
-    	downloadSite.setSiteUrl(getEnteredUrl());
+    	
+    	String enteredSiteName = getEnteredSiteName();
+    	String enteredSiteUrl = getEnteredUrl();
+    	
+    	downloadSite.setSiteName(enteredSiteName);
+    	downloadSite.setSiteUrl(enteredSiteUrl);
+    	
+    	if (enteredSiteName.trim().length() == 0
+    			|| enteredSiteUrl.trim().length() == 0) {
+    		return;
+    	}
     	
     	downloadSitesManager.addDownloadSite(downloadSite);
     	
