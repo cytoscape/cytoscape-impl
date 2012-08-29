@@ -221,7 +221,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableWriterManager cyTableWriterManagerRef = getService(bc,CyTableWriterManager.class);
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc,SynchronousTaskManager.class);
 		TunableSetter tunableSetterServiceRef = getService(bc,TunableSetter.class);
-		
+		CyRootNetworkManager rootNetworkManagerServiceRef  = getService(bc, CyRootNetworkManager.class);
 		
 		CyGroupManager cyGroupManager = getService(bc, CyGroupManager.class);
 		CyGroupFactory cyGroupFactory = getService(bc, CyGroupFactory.class);
@@ -300,8 +300,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, updateAddedNetworkAttributes, SessionLoadedListener.class, new Properties());
 		
 
-		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef,cyNetworkManagerServiceRef, cyTableManagerServiceRef, updateAddedNetworkAttributes);
-		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef, updateAddedNetworkAttributes);
+		LoadAttributesFileTaskFactoryImpl loadAttrsFileTaskFactory = new LoadAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef,cyNetworkManagerServiceRef, cyTableManagerServiceRef, updateAddedNetworkAttributes,rootNetworkManagerServiceRef );
+		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef, updateAddedNetworkAttributes, rootNetworkManagerServiceRef);
 		
 		// Apply Visual Style Task
 		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
@@ -1067,7 +1067,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// TODO: remove from group...
 
-		MapTableToNetworkTablesTaskFactoryImpl mapNetworkToTables = new MapTableToNetworkTablesTaskFactoryImpl(cyNetworkManagerServiceRef, tunableSetterServiceRef, updateAddedNetworkAttributes);
+		MapTableToNetworkTablesTaskFactoryImpl mapNetworkToTables = new MapTableToNetworkTablesTaskFactoryImpl(cyNetworkManagerServiceRef, tunableSetterServiceRef, updateAddedNetworkAttributes, rootNetworkManagerServiceRef);
 		Properties mapNetworkToTablesProps = new Properties();
 		registerService(bc, mapNetworkToTables, MapTableToNetworkTablesTaskFactory.class, mapNetworkToTablesProps);
 		

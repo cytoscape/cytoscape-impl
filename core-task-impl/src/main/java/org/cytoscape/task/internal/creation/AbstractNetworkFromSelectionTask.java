@@ -115,10 +115,11 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 
 		// create subnetwork and add selected nodes and appropriate edges
 		final CySubNetwork newNet = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();
-
-		addColumns(parentNetwork.getDefaultNodeTable(), newNet.getDefaultNodeTable() );
-		addColumns(parentNetwork.getDefaultEdgeTable(), newNet.getDefaultEdgeTable() );
-		addColumns(parentNetwork.getDefaultNetworkTable(), newNet.getDefaultNetworkTable());
+		
+		//We need to cpy the columns to local tables, since copying them to default table will duplicate the virtual columns.
+		addColumns(parentNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
+		addColumns(parentNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS) );
+		addColumns(parentNetwork.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
 
 		tm.setProgress(0.3);
 		
@@ -174,13 +175,13 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
 		CyColumn checkCol= subTable.getColumn(col.getName());
 		if(checkCol == null)
-			subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
+			subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), col.isImmutable());
 
 		else
 			if(!checkCol.getVirtualColumnInfo().isVirtual() ||
 					!checkCol.getVirtualColumnInfo().getSourceTable().equals(colInfo.getSourceTable()) ||
 					!checkCol.getVirtualColumnInfo().getSourceColumn().equals(colInfo.getSourceColumn()))
-				subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), true);
+				subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), col.isImmutable());
 	}
 
 	private void copyColumn(CyColumn col, CyTable subTable) {

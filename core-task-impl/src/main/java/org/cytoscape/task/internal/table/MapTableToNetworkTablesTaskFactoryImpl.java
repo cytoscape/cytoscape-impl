@@ -9,6 +9,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.AbstractTableTaskFactory;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTask.TableType;
@@ -23,17 +24,19 @@ public final class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTableT
 	private final CyNetworkManager networkManager;
 	private final TunableSetter tunableSetter; 
 	private final UpdateAddedNetworkAttributes updateAddedNetworkAttributes;
+	private final CyRootNetworkManager rootNetMgr;
 	
-	public MapTableToNetworkTablesTaskFactoryImpl( final CyNetworkManager networkManager, final TunableSetter tunableSetter, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes ){
+	public MapTableToNetworkTablesTaskFactoryImpl( final CyNetworkManager networkManager, final TunableSetter tunableSetter, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes, final CyRootNetworkManager rootNetMgr ){
 	
 		this.networkManager = networkManager;
 		this.tunableSetter = tunableSetter;
 		this.updateAddedNetworkAttributes = updateAddedNetworkAttributes;
+		this.rootNetMgr = rootNetMgr;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTable globalTable) {
-		return new TaskIterator(new MapTableToNetworkTablesTask(networkManager, globalTable, updateAddedNetworkAttributes));
+		return new TaskIterator(new MapTableToNetworkTablesTask(networkManager, globalTable, updateAddedNetworkAttributes, rootNetMgr));
 	}
 
 	@Override

@@ -22,6 +22,7 @@ import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
+import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CySubNetworkImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
@@ -47,7 +48,9 @@ public class UpdateAddedNetworkAttributeTaskTest {
 
 
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
-	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
+	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);
+	private CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
+	
 	private SyncTunableMutator stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
@@ -172,7 +175,7 @@ public class UpdateAddedNetworkAttributeTaskTest {
 	
 	public void mapping(CyTable table, CyNetwork net, boolean selectedOnly ) throws Exception{
 		
-		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up);
+		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		

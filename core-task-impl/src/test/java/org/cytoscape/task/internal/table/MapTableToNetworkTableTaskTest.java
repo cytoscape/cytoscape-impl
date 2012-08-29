@@ -16,11 +16,11 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
+import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TunableHandlerFactory;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
@@ -48,6 +48,8 @@ public class MapTableToNetworkTableTaskTest {
 
 	private static CyEventHelper eventHelper = new DummyCyEventHelper();
 	private static CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
+	private static CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
+	
 	private static SyncTunableMutator stm = new SyncTunableMutator();
 	private static SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 	private static TunableSetterImpl ts =new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
@@ -88,7 +90,7 @@ public class MapTableToNetworkTableTaskTest {
 	
 	public static void mapping(CyTable table, CyNetwork net, boolean selectedOnly) throws Exception{
 		UpdateAddedNetworkAttributes up = new UpdateAddedNetworkAttributes(new MapGlobalToLocalTableTaskFactoryImpl(mock(CyTableManager.class), netMgr, ts), new SyncTaskManager(stm));
-		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up);
+		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up , rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		

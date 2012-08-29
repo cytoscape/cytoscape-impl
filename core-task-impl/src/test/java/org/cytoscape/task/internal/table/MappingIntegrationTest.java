@@ -26,9 +26,11 @@ import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
+import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CySubNetworkImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTask;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -56,6 +58,8 @@ public class MappingIntegrationTest {
 
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
+	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
+	
 	private SyncTunableMutator stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 
@@ -142,6 +146,7 @@ public class MappingIntegrationTest {
 		
 		((CySubNetworkImpl) subnet1).handleEvent(new NetworkAddedEvent(netMgr, subnet1));
 		
+		
 		assertEquals(2, subnet1.getNodeList().size());
 		
 		assertNotNull(subnet1.getDefaultNodeTable().getColumn(table1sCol));
@@ -163,8 +168,8 @@ public class MappingIntegrationTest {
 		//check the mapping by task
 		assertNotNull(net1.getDefaultNodeTable().getColumn(table2sCol));
 		assertEquals(table2sRow1, net1.getDefaultNodeTable().getRow(node1.getSUID()).get(table2sCol, String.class) );
-		// TODO!!!
-		//assertNull(subnet1.getDefaultNodeTable().getColumn(table2sCol)); //subnet1 should not be mapped 
+		
+		assertNull(subnet1.getDefaultNodeTable().getColumn(table2sCol)); //subnet1 should not be mapped 
 
 		//creating another subnetwork (subnet2) to check that bot virtual columns will be added
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
@@ -201,7 +206,7 @@ public class MappingIntegrationTest {
 	
 	public void mapping(CyTable table, CyNetwork net, boolean selectedOnly) throws Exception{
 		
-		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up);
+		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		

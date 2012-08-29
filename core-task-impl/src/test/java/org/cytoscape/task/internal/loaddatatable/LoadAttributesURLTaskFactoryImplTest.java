@@ -9,6 +9,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -39,6 +40,9 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	@Mock 
 	UpdateAddedNetworkAttributes updateAddedNetworkAttributes;
 
+	@Mock
+	CyRootNetworkManager rootNetMgr;
+	
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
@@ -48,7 +52,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesURLTaskFactory() throws Exception {
 
-		final LoadAttributesURLTaskFactoryImpl factory = new LoadAttributesURLTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, updateAddedNetworkAttributes);
+		final LoadAttributesURLTaskFactoryImpl factory = new LoadAttributesURLTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, updateAddedNetworkAttributes, rootNetMgr);
 		
 		final TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
