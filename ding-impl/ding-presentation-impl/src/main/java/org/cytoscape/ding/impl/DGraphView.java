@@ -1065,7 +1065,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Should synchronize around m_lock.
 	 */
 	private DEdgeView removeEdgeViewInternal(CyEdge edge) {
-		final DEdgeView returnThis = (DEdgeView)m_edgeViewMap.remove(edge);
+		// We can't remove this yet, because the map is used
+		// later in unselectInternal...
+		final DEdgeView returnThis = (DEdgeView)m_edgeViewMap.get(edge);
 
 		if (returnThis == null) {
 			return returnThis;
@@ -1073,6 +1075,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		returnThis.unselectInternal();
 
+		// Now we can remove it
+		m_edgeViewMap.remove(edge);
 		m_drawPersp.removeEdges(Collections.singletonList(edge)); 
 		m_edgeDetails.unregisterEdge(edge);
 
