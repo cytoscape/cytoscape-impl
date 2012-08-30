@@ -30,6 +30,7 @@
 package org.cytoscape.group.view.internal;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -79,10 +80,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	private static final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
 	private static final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
 
-	private static final String X_OFFSET_ATTR = "__xOffset";
-	private static final String Y_OFFSET_ATTR = "__yOffset";
 	private static final String X_LOCATION_ATTR = "__xLocation";
 	private static final String Y_LOCATION_ATTR = "__yLocation";
+	private static final String NETWORK_SUID_ATTR = "__groupNetworks.SUID";
 
 	/**
 	 * 
@@ -121,14 +121,14 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 			if (center != null) {
 				// Save it in the groupNode attribute
-				updateGroupLocation(rootNetwork, group.getGroupNode(), center);
+				updateGroupLocation(network, group, center);
 
 				// For each member node,
 				// 	calculate the offset for each member node from the center
 				// 	save it in the node's attribute
 				for (CyNode node: group.getNodeList()) {
 					Dimension offset = calculateOffset(center, view, node);
-					updateNodeOffset(rootNetwork, node, offset);
+					updateNodeOffset(network, group, node, offset);
 				}
 			}
 		} else {
@@ -137,7 +137,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			double x = nView.getVisualProperty(xLoc);
 			double y = nView.getVisualProperty(yLoc);
 			// Save it in the groupNode attribute
-			updateGroupLocation(rootNetwork, group.getGroupNode(), getDim(x,y));
+			updateGroupLocation(network, group, getDim(x,y));
 		}
 	}
 
@@ -157,7 +157,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 		if (e.collapsed()) {
 			// Get the location to move the group node to
-			Dimension d = getLocation(rootNetwork, group.getGroupNode());
+			Dimension d = getLocation(network, group);
 			// Move it.
 			moveNode(view, group.getGroupNode(), d);
 			View<CyNode> nView = view.getNodeView(group.getGroupNode());
@@ -190,7 +190,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			CyNode groupNode = group.getGroupNode();
 
 			// Get the location of the group node before it went away
-			Dimension center = getLocation(rootNetwork, groupNode);
+			Dimension center = getLocation(network, group);
 			moveNodes(group, view, center);
 
 			// If we're asked to, show the group node
@@ -212,7 +212,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			}
 		}
 		
-		viewStyle.apply(view);
+//		viewStyle.apply(view);
 //		view.updateView();
 	}
 
@@ -233,9 +233,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	}
 
 	private void moveNodes(CyGroup group, CyNetworkView view, Dimension center) {
-		CyRootNetwork rootNetwork = group.getRootNetwork();
+		CyNetwork net = view.getModel();
 		for (CyNode node: group.getNodeList()) {
-			Dimension location = getOffsetLocation(rootNetwork, node, center);
+			Dimension location = getOffsetLocation(net, group, node, center);
 			moveNode(view, node, location);
 		}
 	}
@@ -247,34 +247,34 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		return getDim(xOffset, yOffset);
 	}
 
-	private Dimension getLocation(CyNetwork network, CyNode node) {
-		CyRow nodeRow = network.getRow(node, CyNetwork.HIDDEN_ATTRS);
-		double x = nodeRow.get(X_LOCATION_ATTR, Double.class);
-		double y = nodeRow.get(Y_LOCATION_ATTR, Double.class);
-		return getDim(x,y);
+	/**
+   * Get the saved location of the group node
+   */
+	private Dimension getLocation(CyNetwork network, CyGroup group) {
+		CyNetwork groupNetwork = group.getGroupNetwork();
+		CyTable netTable = groupNetwork.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		return getNodeLocation(netTable, network, groupNetwork.getSUID());
 	}
 
-	private Dimension getOffsetLocation(CyNetwork network, CyNode node, Dimension center) {
-		CyRow nodeRow = network.getRow(node, CyNetwork.HIDDEN_ATTRS);
-		double xLocation = nodeRow.get(X_OFFSET_ATTR, Double.class) + center.getWidth();
-		double yLocation = nodeRow.get(Y_OFFSET_ATTR, Double.class) + center.getHeight();
-		return getDim(xLocation, yLocation);
+	/**
+   * Get the saved offset of a member node
+   */
+	private Dimension getOffsetLocation(CyNetwork network, CyGroup group, CyNode node, Dimension center) {
+		CyTable nodeTable = group.getGroupNetwork().getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		Dimension d = getNodeLocation(nodeTable, network, node.getSUID());
+		d.setSize(d.getWidth()+center.getWidth(), d.getHeight()+center.getHeight());
+		return d;
 	}
 
-	private void updateNodeOffset(CyNetwork network, CyNode node, Dimension offset) {
-		CyRow nodeRow = network.getRow(node, CyNetwork.HIDDEN_ATTRS);
-		createColumnIfNeeded(nodeRow.getTable(), X_OFFSET_ATTR, Double.class);
-		createColumnIfNeeded(nodeRow.getTable(), Y_OFFSET_ATTR, Double.class);
-		nodeRow.set(X_OFFSET_ATTR, new Double(offset.getWidth()));
-		nodeRow.set(Y_OFFSET_ATTR, new Double(offset.getHeight()));
+	private void updateNodeOffset(CyNetwork network, CyGroup group, CyNode node, Dimension offset) {
+		CyTable nodeTable = group.getGroupNetwork().getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		updateNodeLocation(nodeTable, network, node.getSUID(), offset);
 	}
 
-	private void updateGroupLocation(CyNetwork network, CyNode node, Dimension offset) {
-		CyRow nodeRow = network.getRow(node, CyNetwork.HIDDEN_ATTRS);
-		createColumnIfNeeded(nodeRow.getTable(), X_LOCATION_ATTR, Double.class);
-		createColumnIfNeeded(nodeRow.getTable(), Y_LOCATION_ATTR, Double.class);
-		nodeRow.set(X_LOCATION_ATTR, new Double(offset.getWidth()));
-		nodeRow.set(Y_LOCATION_ATTR, new Double(offset.getHeight()));
+	private void updateGroupLocation(CyNetwork network, CyGroup group, Dimension offset) {
+		CyNetwork groupNetwork = group.getGroupNetwork();
+		CyTable netTable = groupNetwork.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		updateNodeLocation(netTable, network, groupNetwork.getSUID(), offset);
 	}
 
 	private void moveNode(CyNetworkView view, CyNode node, Dimension location) {
@@ -283,9 +283,78 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		nView.setVisualProperty(yLoc, location.getHeight());
 	}
 
+	/**
+	 * Saves the location of a group node or a member node as part of a list associated with
+	 * a particular network.  The idea is that the group node or member nodes might have different
+	 * locations in different networks, so we need to keep a mapping.  We store all of this information
+	 * in the CySubnetwork that represents the group so that it will get serialized properly
+	 *
+	 * @param table group node locations are stored in the network table, 
+	 *              member nodes are in the node table
+	 * @param network the network we're updating the location for
+	 * @param suid if this is a group node, suid will be the SUID of the 
+	 *             group subnetwork, otherwise it's the SUID of the node.
+	 * @param location the location of the node to save
+	 */
+	private void updateNodeLocation(CyTable table, CyNetwork network, Long suid, Dimension location) {
+		List<Long> networkSUIDs;
+		List<Double> xLocations;
+		List<Double> yLocations;
+
+		// Make sure our three columns are available
+		createListColumnIfNeeded(table, NETWORK_SUID_ATTR, Long.class);
+		createListColumnIfNeeded(table, X_LOCATION_ATTR, Double.class);
+		createListColumnIfNeeded(table, Y_LOCATION_ATTR, Double.class);
+
+		CyRow row = table.getRow(suid);
+		networkSUIDs = getList(row, NETWORK_SUID_ATTR, Long.class);
+		xLocations = getList(row, X_LOCATION_ATTR, Double.class);
+		yLocations = getList(row, Y_LOCATION_ATTR, Double.class);
+
+		int index = networkSUIDs.indexOf(network.getSUID());
+		if (index == -1) {
+			networkSUIDs.add(network.getSUID());
+			xLocations.add(location.getWidth());
+			yLocations.add(location.getHeight());
+		} else {
+			xLocations.set(index, location.getWidth());
+			yLocations.set(index, location.getHeight());
+		}
+
+		row.set(NETWORK_SUID_ATTR, networkSUIDs);
+		row.set(X_LOCATION_ATTR, xLocations);
+		row.set(Y_LOCATION_ATTR, yLocations);
+	}
+
+	private Dimension getNodeLocation(CyTable table, CyNetwork network, Long suid) {
+		if (!table.rowExists(suid))
+			return null;
+
+		CyRow row = table.getRow(suid);
+		List<Long> networkSUIDs = getList(row, NETWORK_SUID_ATTR, Long.class);
+		List<Double>xLocations = getList(row, X_LOCATION_ATTR, Double.class);
+		List<Double>yLocations = getList(row, Y_LOCATION_ATTR, Double.class);
+		int index = networkSUIDs.indexOf(network.getSUID());
+		if (index == -1)
+			return null;
+		return getDim(xLocations.get(index), yLocations.get(index));
+	}
+
 	private void createColumnIfNeeded(CyTable table, String name, Class type) {
 		if (table.getColumn(name) == null)
 			table.createColumn(name, type, false);
+	}
+
+	private void createListColumnIfNeeded(CyTable table, String name, Class type) {
+		if (table.getColumn(name) == null)
+			table.createListColumn(name, type, false);
+	}
+
+	private <T> List<T> getList(CyRow row, String column, Class<T> type) {
+		List<T> l = row.getList(column, type);
+		if (l == null)
+			l = new ArrayList<T>();
+		return l;
 	}
 
 	private Dimension getDim(double x, double y) {
