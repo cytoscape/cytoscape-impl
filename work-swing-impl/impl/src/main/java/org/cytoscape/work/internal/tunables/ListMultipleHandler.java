@@ -1,8 +1,12 @@
 package org.cytoscape.work.internal.tunables;
 
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.LayoutManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,9 +20,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneLayout;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.xml.ws.handler.MessageContext.Scope;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -73,13 +79,14 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 
 		final Border padding = BorderFactory.createEmptyBorder(5, 10, 5, 10);
 		panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		BorderLayout layout = new BorderLayout();
+		panel.setLayout(layout);
 		final JTextArea jta = new JTextArea(getDescription());
 		jta.setPreferredSize(new Dimension(200, 50));
 		jta.setLineWrap(true);
 		jta.setWrapStyleWord(true);
 		jta.setBorder(padding);
-		panel.add(jta);
+		panel.add(jta, BorderLayout.PAGE_START);
 		jta.setBackground(null);
 		jta.setEditable(false);
 
@@ -106,10 +113,12 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		itemsContainerList.setSelectedIndices(selectedIdx);
 		
 		//use a JscrollPane to visualize the items
+		
 		final JScrollPane scrollpane = new JScrollPane(itemsContainerList);
+		scrollpane.setAutoscrolls(true);
 		scrollpane.setOpaque(false);
 		scrollpane.setBorder(padding);
-		panel.add(scrollpane);
+		panel.add(scrollpane, BorderLayout.CENTER);
 	}
 
 	
