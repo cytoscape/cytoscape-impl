@@ -3,6 +3,7 @@ package org.cytoscape.work.internal;
 import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.TunableSetter;
@@ -28,7 +29,7 @@ public class CyActivator extends AbstractCyActivator {
 		SyncTunableMutatorFactory mutatorFactory = new SyncTunableMutatorFactory(syncTunableHandlerFactory);
 		
 		SyncTaskManager syncTaskManager = new SyncTaskManager(mutatorFactory.createMutator());
-		registerAllServices(bc,syncTaskManager, new Properties());
+		registerService(bc,syncTaskManager,SynchronousTaskManager.class, syncFactoryProp);
 		
 
 		registerServiceListener(bc,syncTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
