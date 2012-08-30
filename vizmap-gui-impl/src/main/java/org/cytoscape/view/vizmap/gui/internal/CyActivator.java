@@ -64,12 +64,10 @@ import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMapp
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
-
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -81,7 +79,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
-		TaskManager dialogTaskManagerServiceRef = getService(bc,TaskManager.class);
+		DialogTaskManager dialogTaskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
 		VisualMappingManager vmmServiceRef = getService(bc,VisualMappingManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
