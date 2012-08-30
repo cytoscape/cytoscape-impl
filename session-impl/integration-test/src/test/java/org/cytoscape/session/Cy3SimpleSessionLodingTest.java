@@ -108,19 +108,11 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		final Color backgroungColor = (Color) view.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 		assertEquals(Color.WHITE, backgroungColor);
 		
-		// All nodes should have same width:
-
-		// TODO: This check seems wrong because by this point the visual style for the network has
-		// already been applied.  This happens in CySessionManager.setCurrentSession, which is called
-		// from the open session task.
-//		Double nodeWidth = view.getNodeView(network.getNodeList().iterator().next()).getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
-//		assertEquals(Double.valueOf(60.0d), nodeWidth);
-		
-		// Apply the given style
-		style.apply(view);
-		
+		// All nodes should have same width/height:
 		Double nodeWidth = view.getNodeView(network.getNodeList().iterator().next()).getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
 		assertEquals(Double.valueOf(70.0d), nodeWidth);
+		Double nodeHeight = view.getNodeView(network.getNodeList().iterator().next()).getVisualProperty(BasicVisualLexicon.NODE_HEIGHT);
+		assertEquals(Double.valueOf(40.0d), nodeHeight);
 	}
 	
 	private void checkVisualStyle(final VisualStyle style) {
