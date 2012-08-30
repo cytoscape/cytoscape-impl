@@ -181,6 +181,7 @@ public abstract class AbstractXGMMLWriterTest {
 		} catch (IllegalArgumentException e) {
 			throw e;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
@@ -190,7 +191,7 @@ public abstract class AbstractXGMMLWriterTest {
 		
 		if (netOrView instanceof CyNetworkView)
 			writer = new GenericXGMMLWriter(out, renderingEngineMgr, (CyNetworkView) netOrView, unrecogVisPropMgr,
-					netMgr, rootNetMgr, vmMgr, null);
+					netMgr, rootNetMgr, vmMgr, groupUtil);
 		else if (netOrView instanceof CyNetwork)
 			writer = new GenericXGMMLWriter(out, renderingEngineMgr, (CyNetwork) netOrView, unrecogVisPropMgr, netMgr,
 					rootNetMgr, groupUtil);

@@ -1,6 +1,7 @@
 package org.cytoscape.io.internal.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +25,8 @@ public class GroupUtil {
 
 	// 3.x group attributes
 	private final String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges.SUID";
-	private final String GROUP_COLLAPSED_ATTRIBUTE="__groupCollapsed";
+	private final String GROUP_COLLAPSED_ATTRIBUTE="__groupCollapsed.SUID";
+	private final String GROUP_ATTRIBUTE="__isGroup";
 	// 2.x group attributes
 	private final String GROUP_STATE_ATTRIBUTE="__groupState";
 	private final String GROUP_ISLOCAL_ATTRIBUTE="__groupIsLocal";
@@ -61,31 +63,53 @@ public class GroupUtil {
 
 			// For each group, save the list of external edges
 			for (CyGroup group: groupSet) {
-				// Get the group node
-				CyNode groupNode = group.getGroupNode();
-
-				// Get the list of external edges
-				Set<CyEdge> externalEdges = group.getExternalEdgeList();
-
-				// Save the SUIDs for each edge
-				List<Long> externalEdgeSUIDs = new ArrayList<Long>();
-				for (CyEdge edge: externalEdges) {
-					externalEdgeSUIDs.add(edge.getSUID());
-				}
-
-				// We need to use the sub network to get the row because the group might be expanded
-				final CyNetwork netPointer = groupNode.getNetworkPointer();
-				final CyRow snRow = netPointer.getRow(netPointer, CyNetwork.HIDDEN_ATTRS);
-
-				// Make sure our column exists
-				CyTable groupNetTable = snRow.getTable();
-				if (groupNetTable.getColumn(EXTERNAL_EDGE_ATTRIBUTE) == null) {
-					groupNetTable.createListColumn(EXTERNAL_EDGE_ATTRIBUTE, Long.class, false);
-				}
-
-				snRow.set(EXTERNAL_EDGE_ATTRIBUTE, externalEdgeSUIDs);
+				updateExternalEdgeAttribute(group);
+				updateCollapsedGroupsAttribute(group);
+				updateGroupAttribute(net, group);
 			}
 		}
+	}
+
+	public List<CyNode> getExpandedGroups(final CyNetwork network) {
+		// Get all of our groups in this network
+		Set<CyGroup> groupSet = groupMgr.getGroupSet(network);
+
+		// For each group see if it's expanded, but present
+		List<CyNode> groupNodes = new ArrayList<CyNode>();
+		for (CyGroup group: groupSet) {
+			if (!group.isCollapsed(network)) {
+				if (network.containsNode(group.getGroupNode())) {
+					// We're expanded, but present in the network.  Remove ourselves
+					groupNodes.add(group.getGroupNode());
+				}
+			}
+		}
+		return groupNodes;
+	}
+
+	public List<CyEdge> getGroupNodeEdges(final CyNetwork network) {
+		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
+		// Don't need to worry about this for collapsed groups
+		List<CyNode> groupNodes = getExpandedGroups(network);
+		List<CyEdge> groupNodeEdges = new ArrayList<CyEdge>();
+		for (CyNode groupNode : groupNodes) {
+			groupNodeEdges.addAll(rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY));
+		}
+		return groupNodeEdges;
+	}
+
+	public List<CyEdge> getExternalEdges(final CyNetwork network) {
+		// Get all of our groups in this network
+		Set<CyGroup> groupSet = groupMgr.getGroupSet(network);
+
+		List<CyEdge> externalEdges = new ArrayList<CyEdge>();
+		for (CyGroup group: groupSet) {
+			// Don't need to worry about this for expanded groups
+			if (group.isCollapsed(network)) {
+				externalEdges.addAll(group.getExternalEdgeList());
+			}
+		}
+		return externalEdges;
 	}
 	
 	/**
@@ -116,7 +140,7 @@ public class GroupUtil {
 			final CyRow hnRow = net.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			final CyRow snRow = netPointer.getRow(netPointer, CyNetwork.HIDDEN_ATTRS);
 			if (!dnRow.isSet(GROUP_STATE_ATTRIBUTE) && !hnRow.isSet(GROUP_STATE_ATTRIBUTE)
-			    && !snRow.isSet(GROUP_COLLAPSED_ATTRIBUTE))
+			    && !hnRow.isSet(GROUP_ATTRIBUTE))
 				return;
 
 			boolean collapsed = false;
@@ -130,24 +154,41 @@ public class GroupUtil {
 				Integer grState = dnRow.get(GROUP_STATE_ATTRIBUTE, Integer.class); // 2.x metadata
 				cy2group = true;
 				if (grState.intValue() == 2) collapsed = true;
-			} 
-
-			// Check to make sure the column exists
-			if (snRow.getTable().getColumn(GROUP_COLLAPSED_ATTRIBUTE) == null) {
-				CyTable snTable = snRow.getTable();
-				snTable.createListColumn(GROUP_COLLAPSED_ATTRIBUTE, String.class, false);
+			} else {
+				List<Long> collapsedList = snRow.getList(GROUP_COLLAPSED_ATTRIBUTE, Long.class);
+				if (collapsedList != null) {
+					// Are we collapsed in this network?
+					for (Long suid: collapsedList) {
+						if (suid.equals(net.getSUID())) {
+							collapsed = true;
+							break;
+						}
+					}
+				}
 			}
 
-			// If we're a Cy2 import, create the Cy3 structure
-			if (cy2group) {
-		    String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
-		    if (netName == null) netName = "(null)"; // Handle the unnamed network
+			// If we're not collapsed, remove the group node from the network before
+			// we create the group
+			if (!collapsed) {
+				net.removeNodes(Collections.singletonList(n));
 
-				List<String> list = new ArrayList<String>();
-				list.add(netName+":"+collapsed);
-				snRow.set(GROUP_COLLAPSED_ATTRIBUTE, list);
+				// Add our internal edges into the network (if they aren't already)
+				for (CyEdge edge: netPointer.getEdgeList()) {
+					if (net.containsEdge(edge))
+						continue;
+					net.addEdge(edge);
+				}
+
+				// If we're a cy2 group, remember our state
+				if (cy2group) {
+					CyTable hnTable = rootNet.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+					if (hnTable.getColumn(GROUP_STATE_ATTRIBUTE) == null) {
+						hnTable.createColumn(GROUP_STATE_ATTRIBUTE, Integer.class, false);
+					}
+					hnTable.getRow(n.getSUID()).set(GROUP_STATE_ATTRIBUTE, 1);
+				}
 			}
-			
+
 			// Create the group
 			final CyGroup group = groupFactory.createGroup(net, n, true);
 
@@ -211,6 +252,68 @@ public class GroupUtil {
 			if (group.isCollapsed(network))
 				updateGroupNodeLocation(view, group.getGroupNode());
 		}
+	}
+
+	private void updateExternalEdgeAttribute(final CyGroup group) {
+		// Get the group node
+		CyNode groupNode = group.getGroupNode();
+
+		// Get the list of external edges
+		Set<CyEdge> externalEdges = group.getExternalEdgeList();
+
+		// Save the SUIDs for each edge
+		List<Long> externalEdgeSUIDs = new ArrayList<Long>();
+		for (CyEdge edge: externalEdges) {
+			externalEdgeSUIDs.add(edge.getSUID());
+		}
+
+		// We need to use the sub network to get the row because the group might be expanded
+		final CyNetwork netPointer = groupNode.getNetworkPointer();
+		final CyRow snRow = netPointer.getRow(netPointer, CyNetwork.HIDDEN_ATTRS);
+
+		// Make sure our column exists
+		CyTable groupNetTable = snRow.getTable();
+		if (groupNetTable.getColumn(EXTERNAL_EDGE_ATTRIBUTE) == null) {
+			groupNetTable.createListColumn(EXTERNAL_EDGE_ATTRIBUTE, Long.class, false);
+		}
+
+		snRow.set(EXTERNAL_EDGE_ATTRIBUTE, externalEdgeSUIDs);
+		return;
+	}
+
+	private void updateCollapsedGroupsAttribute(final CyGroup group) {
+		// Get our subnetwork
+		CySubNetwork np = (CySubNetwork)group.getGroupNode().getNetworkPointer();
+		CyTable hiddenTable = np.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		CyRow netRow = hiddenTable.getRow(np.getSUID());  // We use our embedded network table for this
+		CyColumn stateColumn = hiddenTable.getColumn(GROUP_COLLAPSED_ATTRIBUTE);
+		if (stateColumn == null)
+			hiddenTable.createListColumn(GROUP_COLLAPSED_ATTRIBUTE, Long.class, true);
+
+		List<Long> collapsedList = new ArrayList<Long>();
+		for (CyNetwork net: group.getNetworkSet()) {
+			if(group.isCollapsed(net))
+				collapsedList.add(net.getSUID());
+		}
+		netRow.set(GROUP_COLLAPSED_ATTRIBUTE, collapsedList);
+		return;
+	}
+
+	private void updateGroupAttribute(final CyNetwork net, final CyGroup group) {
+		CyNode node = group.getGroupNode();
+		
+		// Expanded groups won't show in the network.  If it's not there, we need
+		// to add it so that it will get serialized
+		if (!net.containsNode(node)) {
+			// Node not in this network.  Add it and mark it....
+			CySubNetwork subNet = (CySubNetwork)net;
+			subNet.addNode(node); // Temporarily add this to the network so we can serialize it
+		}
+
+		CyTable hiddenTable = net.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		if (hiddenTable.getColumn(GROUP_ATTRIBUTE) == null)
+			hiddenTable.createColumn(GROUP_ATTRIBUTE, Boolean.class, false);
+		hiddenTable.getRow(node.getSUID()).set(GROUP_ATTRIBUTE, Boolean.TRUE);
 	}
 	
 	private void copyTables(CyNetwork netPointer, CyNetwork net, CyNode groupNode) {

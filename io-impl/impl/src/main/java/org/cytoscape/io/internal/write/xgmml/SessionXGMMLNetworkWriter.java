@@ -60,6 +60,15 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 			}
 		}
 	}
+
+	@Override
+	protected void writeNodes() throws IOException {
+		for (CyNode node : network.getNodeList()) {
+			// Only if not already written inside a nested graph
+			if (!writtenNodeMap.containsKey(node))
+				writeNode(network, node);
+		}
+	}
 	
 	@Override
 	protected void writeNode(final CyNetwork net, final CyNode node) throws IOException {
@@ -101,6 +110,15 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 				depth--;
 				writeElement("</node>\n");
 			}
+		}
+	}
+
+	@Override
+    protected void writeEdges() throws IOException {
+		for (CyEdge edge : network.getEdgeList()) {
+			// Only if not already written inside a nested graph
+			if (!writtenEdgeMap.containsKey(edge))
+				writeEdge(network, edge);
 		}
 	}
 	

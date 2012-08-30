@@ -390,10 +390,33 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 	 * @throws IOException
 	 */
 	protected void writeNodes() throws IOException {
+		List<CyNode> pointerNodes = new ArrayList<CyNode>();
+
 		for (CyNode node : network.getNodeList()) {
+			// Save all of the nodes with network pointers until last
+			// this allows us to have embedded networks...
+			if (node.getNetworkPointer() != null) {
+				pointerNodes.add(node);
+				continue;
+			}
+
 			// Only if not already written inside a nested graph
 			if (!writtenNodeMap.containsKey(node))
 				writeNode(network, node);
+		}
+
+		for (CyNode node : pointerNodes) {
+			if (!writtenNodeMap.containsKey(node))
+				writeNode(network, node);
+		}
+
+		// Now, output nodes for expanded groups.  We'll clean
+		// these up on import...
+		if (groupUtil != null) {
+			for (CyNode node : groupUtil.getExpandedGroups(network)) {
+				if (!writtenNodeMap.containsKey(node))
+					writeNode(network, node);
+			}
 		}
 	}
 	
@@ -406,7 +429,23 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 			// Only if not already written inside a nested graph
 			if (!writtenEdgeMap.containsKey(edge))
 				writeEdge(network, edge);
-        }
+		}
+
+		// Now, output hidden edges groups.  
+		// For collapsed groups, we need to output external edges,
+		// for expanded groups, we need to output edges to the group node
+		if (groupUtil != null) {
+			// Handle edges to the group node
+			for (CyEdge edge : groupUtil.getGroupNodeEdges(network)) {
+				if (!writtenEdgeMap.containsKey(edge))
+					writeEdge(network, edge);
+			}
+			// Now handle external edges
+			for (CyEdge edge : groupUtil.getExternalEdges(network)) {
+				if (!writtenEdgeMap.containsKey(edge))
+					writeEdge(network, edge);
+			}
+		}
     }
 
     /**
@@ -482,8 +521,8 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 			depth++;
 
 			// Write the edge attributes
-			writeAttributes(net.getRow(edge));
-			writeAttributes(net.getRow(edge, CyNetwork.HIDDEN_ATTRS));
+			writeAttributes(getRowFromNetOrRoot(net, edge, null));
+			writeAttributes(getRowFromNetOrRoot(net, edge, CyNetwork.HIDDEN_ATTRS));
 	
 			// Write the edge graphics
 			if (networkView != null)
@@ -847,7 +886,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     }
 
     protected String getLabel(CyNetwork network, CyIdentifiable entry) {
-        String label = encode(network.getRow(entry).get(CyNetwork.NAME, String.class));
+        String label = encode(getRowFromNetOrRoot(network,entry,null).get(CyNetwork.NAME, String.class));
         
         if (label == null || label.isEmpty())
         	label = Long.toString(entry.getSUID());
@@ -862,6 +901,24 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         	label = Long.toString(view.getSUID());
         
 		return label;
+	}
+
+	protected CyRow getRowFromNetOrRoot(CyNetwork network, CyIdentifiable entry, String namespace) {
+		CyRow row = null;
+		try {
+			if (namespace == null)
+				row = network.getRow(entry);
+			else
+				row = network.getRow(entry, namespace);
+		} catch (IllegalArgumentException e) {
+			// Doesn't exist in network.  Try to get it from the root
+			CyRootNetwork root = ((CySubNetwork)network).getRootNetwork();
+			if (namespace == null)
+				row = root.getRow(entry);
+			else
+				row = root.getRow(entry, namespace);
+		}
+		return row;
 	}
 
     /**

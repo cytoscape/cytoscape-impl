@@ -30,8 +30,10 @@
 package org.cytoscape.group.internal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
@@ -42,6 +44,8 @@ import org.cytoscape.group.events.GroupAddedEvent;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +56,15 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	private final CyEventHelper cyEventHelper;
 
 	private Set<CyGroup> groupSet;
+	private Map<CyRootNetwork, Set<CyGroup>> rootMap;
+	private static final String GROUP_LIST_ATTRIBUTE = "__groupList.SUID";
 	/**
 	 * 
 	 * @param cyEventHelper
 	 */
 	public CyGroupManagerImpl(final CyEventHelper cyEventHelper) {
 		this.groupSet = new HashSet<CyGroup>();
+		this.rootMap = new HashMap<CyRootNetwork, Set<CyGroup>>();
 		this.cyEventHelper = cyEventHelper;
 	}
 
@@ -75,6 +82,8 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	public synchronized void addGroup(final CyGroup group) {
 		if (!groupSet.contains(group)) {
 			groupSet.add(group);
+			addGroupToRootMap(group);
+			// updateGroupAttribute(group);
 			cyEventHelper.fireEvent(new GroupAddedEvent(CyGroupManagerImpl.this, group));
 		}
 	}
@@ -84,6 +93,8 @@ public class CyGroupManagerImpl implements CyGroupManager {
 		for (CyGroup group: groups) {
 			if (!groupSet.contains(group)) {
 				groupSet.add(group);
+				addGroupToRootMap(group);
+				// updateGroupAttribute(group);
 			}
 		}
 		// Fire GroupsAddedEvent?
@@ -140,7 +151,10 @@ public class CyGroupManagerImpl implements CyGroupManager {
 
 		cyEventHelper.fireEvent(new GroupAboutToBeDestroyedEvent(CyGroupManagerImpl.this, group));
 		((CyGroupImpl)group).destroyGroup();
+		if (rootMap.containsKey(group.getRootNetwork()))
+			rootMap.get(group.getRootNetwork()).remove(group);
 		groupSet.remove(group);
+		// updateGroupAttribute(group);
 	}
 
 	@Override
@@ -148,4 +162,49 @@ public class CyGroupManagerImpl implements CyGroupManager {
 		this.groupSet = new HashSet<CyGroup>();
 	}
 
+	public Set<CyGroup> getAllGroups() {
+		return groupSet;
+	}
+
+	public Set<CyGroup> getGroupSet(CyRootNetwork root) {
+		if (rootMap.containsKey(root))
+			return rootMap.get(root);
+		return null;
+	}
+
+	/**
+ 	 * Get the SUIDs for all group nodes in this root network.  This is public so that
+ 	 * we can call it from our network added listener.
+ 	 */
+	public List<Long> getGroupAttribute(CyRootNetwork rootNet) {
+		CyRow rhRow = rootNet.getRow(rootNet, CyNetwork.HIDDEN_ATTRS); // Get the network row
+		if (rhRow.getTable().getColumn(GROUP_LIST_ATTRIBUTE) == null) {
+			return null;
+		}
+		return rhRow.getList(GROUP_LIST_ATTRIBUTE, Long.class);
+	}
+
+	private void addGroupToRootMap(CyGroup group) {
+		if (rootMap.containsKey(group.getRootNetwork()))
+			rootMap.get(group.getRootNetwork()).add(group);
+		else {
+			Set<CyGroup>groupNetSet = new HashSet<CyGroup>();
+			groupNetSet.add(group);
+			rootMap.put(group.getRootNetwork(),groupNetSet);
+		}
+	}
+
+	private void updateGroupAttribute(CyGroup group) {
+		CyRootNetwork rootNet = group.getRootNetwork();
+		CyRow rhRow = rootNet.getRow(rootNet, CyNetwork.HIDDEN_ATTRS); // Get the network row
+		if (rhRow.getTable().getColumn(GROUP_LIST_ATTRIBUTE) == null) {
+			rhRow.getTable().createListColumn(GROUP_LIST_ATTRIBUTE, Long.class, false);
+		}
+
+		List<Long> groupSUIDs = new ArrayList<Long>();
+		for (CyGroup g: getGroupSet(rootNet)) {
+			groupSUIDs.add(g.getGroupNode().getSUID());
+		}
+		rhRow.set(GROUP_LIST_ATTRIBUTE, groupSUIDs);
+	}
 }

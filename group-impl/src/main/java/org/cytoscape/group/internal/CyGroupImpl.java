@@ -63,7 +63,6 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 class CyGroupImpl implements CyGroup {
 	final private static String CHILDREN_ATTR = "NumChildren";
 	final private static String DESCENDENTS_ATTR = "NumDescendents";
-	final private static String GROUP_COLLAPSED_ATTR = "__groupCollapsed";
 	final private static String ISMETA_EDGE_ATTR = "__isMetaEdge";
 
 	final private CyEventHelper cyEventHelper;
@@ -74,7 +73,7 @@ class CyGroupImpl implements CyGroup {
 	private Set<CyEdge> metaEdges;
 	private CyRootNetwork rootNetwork = null;
 	private Set<CyNetwork> networkSet = null;
-	private Set<CyNetwork> collapseSet = null;
+	private Set<Long> collapseSet = null;
 	private boolean nodeProvided = false;  // We'll need this when we destroy ourselves
 
 	CyGroupImpl(final CyEventHelper eventHelper, 
@@ -94,7 +93,7 @@ class CyGroupImpl implements CyGroup {
 		this.externalEdges = new HashSet<CyEdge>();
 		this.metaEdges = new HashSet<CyEdge>();
 		this.networkSet = new HashSet<CyNetwork>();
-		this.collapseSet = new HashSet<CyNetwork>();
+		this.collapseSet = new HashSet<Long>();
 
 		networkSet.add(rootNetwork);
 		networkSet.add(network);
@@ -146,9 +145,9 @@ class CyGroupImpl implements CyGroup {
 			CySubNetwork groupNet = np;
 
 			// See if we're already collapsed
-			if (getGroupCollapsedAttribute(network)) {
-				// Yes, reflect it...
-				collapseSet.add(network);
+			if (network.containsNode(groupNode)) {
+				// Yes, note it
+				collapseSet.add(network.getSUID());
 			}
 		} else {
 			// Create the subnetwork
@@ -161,7 +160,6 @@ class CyGroupImpl implements CyGroup {
 
 		// Initialize our attributes
 		updateCountAttributes(rootNetwork);
-		setGroupCollapsedAttribute(network, false);
 	}
 
 	/**
@@ -254,7 +252,7 @@ class CyGroupImpl implements CyGroup {
 			}
 		}
 		updateMetaEdges(false);
-		for (CyNetwork net: collapseSet) {
+		for (CyNetwork net: networkSet) {
 			updateCountAttributes(net);
 		}
 		cyEventHelper.fireEvent(new GroupNodesAddedEvent(CyGroupImpl.this, nodes));
@@ -298,7 +296,7 @@ class CyGroupImpl implements CyGroup {
 			getGroupNetwork().removeEdges(netEdges);
 		getGroupNetwork().removeNodes(nodes);
 		updateMetaEdges(false);
-		for (CyNetwork net: collapseSet) {
+		for (CyNetwork net: networkSet) {
 			updateCountAttributes(net);
 		}
 		cyEventHelper.fireEvent(new GroupNodesRemovedEvent(CyGroupImpl.this, nodes));
@@ -416,10 +414,9 @@ class CyGroupImpl implements CyGroup {
 			subnet.addEdge(e);
 		}
 
-		collapseSet.add(net);
+		collapseSet.add(net.getSUID());
 
 		// Update attributes?
-		setGroupCollapsedAttribute(net, true);
 		updateCountAttributes(net);
 
 		// OK, all done
@@ -464,10 +461,7 @@ class CyGroupImpl implements CyGroup {
 			}
 		}
 
-		collapseSet.remove(net);
-
-		// Update attributes
-		setGroupCollapsedAttribute(net, false);
+		collapseSet.remove(net.getSUID());
 
 		// Finish up
 		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, false));
@@ -478,7 +472,7 @@ class CyGroupImpl implements CyGroup {
 	 */
 	@Override
 	public boolean isCollapsed(CyNetwork net) {
-		return collapseSet.contains(net);
+		return collapseSet.contains(net.getSUID());
 	}
 
 	/**
@@ -721,48 +715,6 @@ class CyGroupImpl implements CyGroup {
 		return;
 	}
 
-	/**
- 	 * Set the state attribute for this group.  The problem is that a group might be in
- 	 * different states in different networks, so this is a list of the form: 
- 	 * [network1:state,network2:state,...]
- 	 */
-	private void setGroupCollapsedAttribute(CyNetwork net, boolean collapsed) {
-		String netName = net.getDefaultNetworkTable().getRow(net.getSUID()).get(CyNetwork.NAME, String.class);
-		if (netName == null) netName = "(null)"; // Handle the unnamed network
-		CyRow groupRow = rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS);
-		if (groupRow == null) return;
-
-		CyTable hiddenTable = groupRow.getTable();
-
-		CyColumn stateColumn = hiddenTable.getColumn(GROUP_COLLAPSED_ATTR);
-
-		List<String> newList = new ArrayList<String>();
-		if (stateColumn == null) {
-			hiddenTable.createColumn(GROUP_COLLAPSED_ATTR, Boolean.class, false, Boolean.FALSE);
-		}
-
-		groupRow.set(GROUP_COLLAPSED_ATTR, collapsed);
-		return;
-	}
-
-	// This is public so we can call it from our session loaded events
-	public boolean getGroupCollapsedAttribute(CyNetwork net) {
-		String netName = net.getDefaultNetworkTable().getRow(net.getSUID()).get(net.NAME, String.class);
-		if (netName == null) netName = "(null)";
-		CyRow groupRow = rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS);
-		if (groupRow == null) return false;
-
-		CyTable hiddenTable = groupRow.getTable();
-
-		CyColumn stateColumn = hiddenTable.getColumn(GROUP_COLLAPSED_ATTR);
-
-		if (stateColumn == null) {
-			return false;
-		}
-
-		return groupRow.get(GROUP_COLLAPSED_ATTR, Boolean.class);
-	}
-
 	public void updateCountAttributes(CyNetwork net) {
 		CyTable nodeTable = net.getDefaultNodeTable();
 		CyColumn childrenColumn = nodeTable.getColumn(CHILDREN_ATTR);
@@ -792,5 +744,4 @@ class CyGroupImpl implements CyGroup {
 		}
 		groupRow.set(DESCENDENTS_ATTR, nDescendents);
 	}
-
 }

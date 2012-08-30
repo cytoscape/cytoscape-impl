@@ -41,6 +41,7 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -236,8 +237,8 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		List<CyNetworkView> views = getViews("group_2x_expanded.xgmml");
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
-		CyNetwork net = checkSingleNetwork(views, 4, 2);
-		CyNode grNode = check2xGroupMetadata(net);
+		CyNetwork net = checkSingleNetwork(views, 3, 2);
+		CyNode grNode = check2xGroupMetadata(net, true);
 		assertCustomColumnsAreMutable(rootNetworkMgr.getRootNetwork(net));
 		assertCustomColumnsAreMutable(net);
 		assertCustomColumnsAreMutable(grNode.getNetworkPointer());
@@ -249,7 +250,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 2, 1);
-		CyNode grNode = check2xGroupMetadata(net);
+		CyNode grNode = check2xGroupMetadata(net, false);
 		// Check group network data
 		CyNetwork grNet = grNode.getNetworkPointer();
 		for (CyNode n : grNet.getNodeList()) {
@@ -383,17 +384,30 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		}
 	}
 	
-	private CyNode check2xGroupMetadata(final CyNetwork net) {
+	private CyNode check2xGroupMetadata(final CyNetwork net, final boolean expanded) {
 		// Test 2.x group parsed as network pointer
 		CyNode gn = null;
-		int npCount = 0;
 		
-		for (CyNode n : net.getNodeList()) {
-			if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet(ReadDataManager.GROUP_STATE_ATTRIBUTE)) {
-				gn = n;
-				if (++npCount > 1) fail("There should be only one group node!");
-			} else { // The other nodes have no network pointer!
-				assertNull(n.getNetworkPointer());
+		if (!expanded) {
+			int npCount = 0;
+			for (CyNode n : net.getNodeList()) {
+				if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet(ReadDataManager.GROUP_STATE_ATTRIBUTE)) {
+					gn = n;
+					if (++npCount > 1) fail("There should be only one group node!");
+				} else { // The other nodes have no network pointer!
+					assertNull(n.getNetworkPointer());
+				}
+			}
+		} else {
+			int npCount = 0;
+			CyRootNetwork rootNet = ((CySubNetwork)net).getRootNetwork();
+			for (CyNode n : rootNet.getNodeList()) {
+				if (rootNet.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet(ReadDataManager.GROUP_STATE_ATTRIBUTE)) {
+					gn = n;
+					if (++npCount > 1) fail("There should be only one group node!");
+				} else { // The other nodes have no network pointer!
+					assertNull(n.getNetworkPointer());
+				}
 			}
 		}
 		
