@@ -238,17 +238,7 @@ public class BiomartRestClient {
 		return databases;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param martName
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 * 
-	 * @throws Exception
-	 *             DOCUMENT ME!
-	 */
+
 	public Map<String, String> getAvailableDatasets(final String martName)
 			throws IOException {
 		try {
@@ -267,8 +257,8 @@ public class BiomartRestClient {
 				+ detail.get("port") + detail.get("path")
 				+ "?type=datasets&mart=" + detail.get("name");
 
-		// System.out.println("Connection start:  DB name = " + martName +
-		// ", Target URL = " + urlStr + "\n");
+//		 System.out.println("Connection start:  DB name = " + martName +
+//		 ", Target URL = " + urlStr + "\n");
 
 		URL url = new URL(urlStr);
 		// TODO: use Proxy is available
@@ -278,17 +268,8 @@ public class BiomartRestClient {
 		connection.setReadTimeout(READ_TIMEOUT);
 		connection.setConnectTimeout(CONNECTION_TIMEOUT);
 
-		InputStream is = null;
-		try {
-			is = connection.getInputStream();
-		} catch (Exception e) {
-			// Could not create connection.
-			is.close();
-			throw new IOException("Could not create connection.");
-		} finally {
-			is.close();
-		}
-
+		InputStream is = connection.getInputStream();
+		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 		String s;
 
