@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -49,6 +50,10 @@ import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedEvent;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedListener;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -88,6 +93,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	private JFileChooser fileChooser;
 	
 	private AppManager appManager;
+	private DownloadSitesManager downloadSitesManager;
 	private FileUtil fileUtil;
 	private TaskManager taskManager;
 	private Container parent;
@@ -97,8 +103,11 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 	
 	private Set<WebApp> resultsTreeApps;
 	
-    public InstallFromStorePanel(final AppManager appManager, FileUtil fileUtil, TaskManager taskManager, Container parent) {
+    public InstallFromStorePanel(final AppManager appManager, 
+    		DownloadSitesManager downloadSitesManager, 
+    		FileUtil fileUtil, TaskManager taskManager, Container parent) {
         this.appManager = appManager;
+        this.downloadSitesManager = downloadSitesManager;
         this.fileUtil = fileUtil;
         this.taskManager = taskManager;
         this.parent = parent;
@@ -122,6 +131,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 		});
 		
 		setupTextFieldListener();
+    	setupDownloadSitesChangedListener();
     	
 		queryForApps();
 		
@@ -140,6 +150,29 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 		});
     }
     
+    private void setupDownloadSitesChangedListener() {
+    
+    	downloadSitesManager.addDownloadSitesChangedListener(new DownloadSitesChangedListener() {
+			
+			@Override
+			public void downloadSitesChanged(
+					DownloadSitesChangedEvent downloadSitesChangedEvent) {
+				
+				final DefaultComboBoxModel defaultComboBoxModel = new DefaultComboBoxModel(
+						new Vector<DownloadSite>(downloadSitesManager.getDownloadSites()));
+				
+				SwingUtilities.invokeLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						downloadSiteComboBox.setModel(defaultComboBoxModel);
+					}
+				});
+				
+			}
+		});
+    }
+    
     // Queries the currently set app store url for available apps.
     private void queryForApps() {
     	taskManager.execute(new TaskIterator(new Task() {
@@ -150,7 +183,8 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 				WebQuerier webQuerier = appManager.getWebQuerier();
 		    	
 				taskMonitor.setTitle("Getting available apps");
-				taskMonitor.setStatusMessage("Obtaining apps from: " + webQuerier.getCurrentAppStoreUrl());
+				taskMonitor.setStatusMessage("Obtaining apps from: " 
+						+ webQuerier.getCurrentAppStoreUrl());
 				
 				Set<WebApp> availableApps = webQuerier.getAllApps();
 			
@@ -269,7 +303,6 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
         downloadSiteLabel.setText("Download Site:");
 
-        downloadSiteComboBox.setEditable(true);
         downloadSiteComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "http://apps3.nrnb.org/", "http://apps.cytoscape.org/" }));
         downloadSiteComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {

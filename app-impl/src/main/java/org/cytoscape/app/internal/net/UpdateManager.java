@@ -39,7 +39,7 @@ public class UpdateManager {
 		this.updatesChangedListeners = new HashSet<UpdatesChangedListener>();
 		this.updates = null;
 		
-		lastUpdateCheckTime = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
+		lastUpdateCheckTime = null;
 	}
 	
 	/**
@@ -53,10 +53,10 @@ public class UpdateManager {
 		
 		this.updates = potentialUpdates;
 		
-		fireUpdatesChangedEvent();
-		
 		// Update last update check time
 		lastUpdateCheckTime = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
+		
+		fireUpdatesChangedEvent();
 	}
 	
 	public Set<Update> getUpdates() {

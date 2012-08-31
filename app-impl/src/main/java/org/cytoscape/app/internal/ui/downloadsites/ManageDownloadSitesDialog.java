@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.net.Update;
+import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedEvent;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedListener;
 
@@ -59,9 +60,6 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
 			}
 		};
 		
-        downloadSitesManager.addDownloadSitesChangedListener(
-        		downloadSitesChangedListener);
-        
         DownloadSite site1 = new DownloadSite();
         site1.setSiteName("site1");
         site1.setSiteUrl("url1");
@@ -73,6 +71,23 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
         DownloadSite site3 = new DownloadSite();
         site3.setSiteName("site3");
         site3.setSiteUrl("url3");
+        
+        downloadSitesManager.loadDownloadSites();
+        
+        // System.out.println("Sites loaded, count: " + downloadSitesManager.getDownloadSites().size());
+        if (downloadSitesManager.getDownloadSites().size() == 0) {
+        	for (DownloadSite downloadSite : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
+        		downloadSitesManager.addDownloadSite(downloadSite);
+        	}
+        
+        	// System.out.println("Sites added, count: " + downloadSitesManager.getDownloadSites().size());
+        	downloadSitesManager.saveDownloadSites();
+        }
+
+        downloadSitesManager.addDownloadSitesChangedListener(
+        		downloadSitesChangedListener);
+        
+        repopulateTable();
         
         /*
         downloadSitesManager.addDownloadSite(site1);
@@ -242,7 +257,9 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
     	}
     	
     	downloadSitesManager.addDownloadSite(downloadSite);
-    	
+
+		downloadSitesManager.saveDownloadSites();
+		
     	if (sitesTable.getModel() instanceof DefaultTableModel) {
     		
     		// Make the added site selected
@@ -293,12 +310,17 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
     	
     	if (downloadSite == null) {
     		JOptionPane.showMessageDialog(this, "Select a site to edit it");
-    	} else {
+    	} else if (isLastCopyOfDefaultSite(downloadSite)) {
+    		JOptionPane.showMessageDialog(this, "That is a default site, cannot edit");
+    		
+    	} else {    		
     		downloadSite.setSiteName(getEnteredSiteName());
     		downloadSite.setSiteUrl(getEnteredUrl());
     		
     		// Tell the manager one of its sites changed
     		downloadSitesManager.notifyDownloadSitesChanged();
+
+    		downloadSitesManager.saveDownloadSites();
     	}
     }
 
@@ -307,6 +329,11 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
         
         if (downloadSite == null) {
         	JOptionPane.showMessageDialog(this, "Select a site to remove it");
+        
+        // If it is the last copy of a default download site, don't allow removing it
+        } else if (isLastCopyOfDefaultSite(downloadSite)) {
+        	JOptionPane.showMessageDialog(this, "That is a default site, cannot remove");
+        	
         } else {
         	final int selectionIndex = sitesTable.getSelectedRow();
         	
@@ -322,6 +349,8 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
         	
         	if (siteToRemove != null) {
         		downloadSitesManager.removeDownloadSite(siteToRemove);
+
+        		downloadSitesManager.saveDownloadSites();
         		
         		SwingUtilities.invokeLater(new Runnable() {
 					
@@ -339,10 +368,41 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
 						}
 					}
 				});
+        		
         	}
         }
     }
 
+    /**
+     * Checks if a download site corresponds to the last copy of a default site
+     * in the {@link DownloadSitesManager}.
+     * @param downloadSite The site used to perform the check
+     * @return Whether the site corresponds to the last copy of a default site
+     * in the {@link DownloadSitesManager}
+     */
+    private boolean isLastCopyOfDefaultSite(DownloadSite downloadSite) {
+    	boolean isDefaultSite = false;
+		int copiesOfSite = 0;
+		
+		// Don't allow editing if it's one of default sites, and it's the last
+		// copy of that default site
+		for (DownloadSite defaultSite : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
+			if (downloadSite.sameSiteAs(defaultSite)) {
+				isDefaultSite = true;
+			}
+		}
+		
+		if (isDefaultSite) {
+    		for (DownloadSite registeredSite : downloadSitesManager.getDownloadSites()) {
+    			if (registeredSite.sameSiteAs(downloadSite)) {
+    				copiesOfSite++;
+    			}
+    		}
+		}
+		
+		return (isDefaultSite && copiesOfSite <= 1);
+    }
+    
     private void siteUrlTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
     }
     
@@ -395,7 +455,7 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
 			public void run() {
 		    	sitesTable.setModel(tableModel);
 		    	
-		    	sitesTable.getColumnModel().getColumn(0).setPreferredWidth(80);
+		    	sitesTable.getColumnModel().getColumn(0).setPreferredWidth(140);
 		        sitesTable.getColumnModel().getColumn(1).setPreferredWidth(285);
 		        
 		        listedSitesLabel.setText("Listed sites: " + downloadSites.size());

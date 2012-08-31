@@ -34,6 +34,7 @@ public class AppManagerDialog extends javax.swing.JDialog {
         super(parent, modal);
         
         this.appManager = appManager;
+        this.downloadSitesManager = downloadSitesManager;
         this.fileUtil = fileUtil;
         this.taskManager = taskManager;
         initComponents();
@@ -49,9 +50,9 @@ public class AppManagerDialog extends javax.swing.JDialog {
    
     private void initComponents() {
     	mainTabbedPane = new javax.swing.JTabbedPane();
-        installNewAppsPanel1 = new InstallFromStorePanel(appManager, fileUtil, taskManager, this);
+        installNewAppsPanel1 = new InstallFromStorePanel(appManager, downloadSitesManager, fileUtil, taskManager, this);
         currentlyInstalledAppsPanel1 = new CurrentlyInstalledAppsPanel(appManager);
-        checkForUpdatesPanel1 = new CheckForUpdatesPanel(appManager, taskManager, this);
+        checkForUpdatesPanel1 = new CheckForUpdatesPanel(appManager, downloadSitesManager, taskManager, this);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("App Manager");

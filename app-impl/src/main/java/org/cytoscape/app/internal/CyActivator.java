@@ -14,6 +14,7 @@ import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
 import org.cytoscape.app.internal.net.server.AddAccessControlAllowOriginHeaderAfterResponse;
 import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyVersion;
@@ -396,6 +397,12 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Fire event "start up mostly finished". This seems to close the Cytoscape splash screen and show the actual UI.
 		cyEventHelperRef.fireEvent(new CyStartEvent(this));
+		
+		/*
+		for (DownloadSite site : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
+			System.out.println(site.getSiteName());
+		}
+		*/
 	}
 }
 

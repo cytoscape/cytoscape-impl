@@ -20,6 +20,11 @@ import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
+import org.cytoscape.app.internal.net.WebApp;
+import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.app.internal.ui.downloadsites.ManageDownloadSitesDialog;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -50,11 +55,16 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     
     private UpdateManager updateManager;
     private AppManager appManager;
+    private DownloadSitesManager downloadSitesManager;
     private TaskManager taskManager;
     
-    public CheckForUpdatesPanel(AppManager appManager, TaskManager taskManager, Container parent) {
+    public CheckForUpdatesPanel(AppManager appManager, 
+    		DownloadSitesManager downloadSitesManager, 
+    		TaskManager taskManager, Container parent) {
+    	
     	this.updateManager = new UpdateManager();
         this.appManager = appManager;
+        this.downloadSitesManager = downloadSitesManager;
         this.taskManager = taskManager;
     	
     	initComponents();
@@ -221,7 +231,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         	@Override
         	public void componentShown(ComponentEvent e) {
         		
-        		Set<App> appsToCheckUpdates = new HashSet<App>();
+        		final Set<App> appsToCheckUpdates = new HashSet<App>();
         		
         		for (App app : appManager.getApps()) {
         			if (app.getStatus() == AppStatus.INSTALLED
@@ -230,11 +240,55 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         			}
         		}
         		
-        		updateManager.checkForUpdates(appManager.getWebQuerier(), 
-        				appsToCheckUpdates, 
-        				appManager);
+        		taskManager.execute(new TaskIterator(new Task() {
+					
+					@Override
+					public void run(TaskMonitor taskMonitor) throws Exception {
+
+						taskMonitor.setTitle("Checking for updates");
+						
+						WebQuerier webQuerier = appManager.getWebQuerier();
+						
+						String siteName, siteUrl;
+						
+						double progress = 0.0;
+						
+//						System.out.println("dlsite mgr: " + downloadSitesManager);
+//						System.out.println("dlsite mgr's sites: " + downloadSitesManager.getDownloadSites());
+						
+						// Obtain apps listing from each site if not done so
+						for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+							
+							siteName = downloadSite.getSiteName();
+							siteUrl = downloadSite.getSiteUrl();
+							
+							taskMonitor.setStatusMessage("Obtaining apps listing from " 
+									+ siteName + "(" + siteUrl + ") ...");
+							taskMonitor.setProgress(progress);
+							
+							progress += 1.0 / (downloadSitesManager.getDownloadSites().size() + 1);
+							
+							webQuerier.setCurrentAppStoreUrl(siteUrl);
+							Set<WebApp> webApps = webQuerier.getAllApps();
+						}
+						
+						taskMonitor.setStatusMessage("Reading listings for new versions");
+						taskMonitor.setProgress(0.98); // We're 98% done.
+						
+						updateManager.checkForUpdates(appManager.getWebQuerier(), 
+		        				appsToCheckUpdates, 
+		        				appManager);
+					}
+					
+					@Override
+					public void cancel() {
+						// TODO Auto-generated method stub
+						
+					}
+				}));
         		
-               	}
+        		
+        	}
         });
         
         setupDescriptionListener();

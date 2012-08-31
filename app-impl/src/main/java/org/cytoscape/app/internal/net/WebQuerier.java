@@ -30,6 +30,7 @@ import org.cytoscape.app.internal.manager.AppParser;
 import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.json.JSONArray;
@@ -43,6 +44,20 @@ import org.slf4j.LoggerFactory;
  * information about available apps and app updates.
  */
 public class WebQuerier {
+	
+	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<DownloadSite>();
+	
+	static {
+		DownloadSite site = new DownloadSite();
+		site.setSiteName("Cytoscape App Store Beta");
+		site.setSiteUrl("http://apps3.nrnb.org/");
+		DEFAULT_DOWNLOAD_SITES.add(site);
+		
+		site = new DownloadSite();
+		site.setSiteName("Cytoscape App Store");
+		site.setSiteUrl("http://apps.cytoscape.org/");
+		DEFAULT_DOWNLOAD_SITES.add(site);
+	}
 	
 	private static final String DEFAULT_APP_STORE_URL = "http://apps3.nrnb.org/";
 	
@@ -225,7 +240,6 @@ public class WebQuerier {
 			} else {
 				currentAppStoreUrl = url;
 			}
-			
 			
 			if (appsByUrl.get(currentAppStoreUrl) == null) {
 				appsByUrl.put(currentAppStoreUrl, null);
@@ -511,7 +525,7 @@ public class WebQuerier {
 				    long bytesTransferred;
 				    
 				    do {
-				    	bytesTransferred = fileChannel.transferFrom(readableByteChannel, currentDownloadPosition, 1 << 20);
+				    	bytesTransferred = fileChannel.transferFrom(readableByteChannel, currentDownloadPosition, 1 << 24);
 //				    	System.out.println("Position: " + currentDownloadPosition + " new bytes: " + bytesTransferred);
 				    	currentDownloadPosition += bytesTransferred;
 				    } while (bytesTransferred > 0);

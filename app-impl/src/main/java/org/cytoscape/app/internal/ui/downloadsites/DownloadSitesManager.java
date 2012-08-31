@@ -1,6 +1,7 @@
 package org.cytoscape.app.internal.ui.downloadsites;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -75,6 +76,42 @@ public class DownloadSitesManager {
 				}
 			}
 			
+			// Remove extra entries
+			boolean isExtraKey;
+			
+			Set<Object> keysToRemove = new HashSet<Object>();
+			
+			for (Object key : cyProperty.getProperties().keySet()) {
+				
+				if (key instanceof String) {
+					String keyString = (String) key;
+
+					siteNumber = 0;
+					isExtraKey = false;
+					
+					try {
+						if (keyString.startsWith(DOWNLOAD_SITE_NAME_KEY_PREFIX)) {
+							siteNumber = Integer.parseInt(keyString.substring(DOWNLOAD_SITE_NAME_KEY_PREFIX.length()).trim());
+						}
+						
+						if (keyString.startsWith(DOWNLOAD_SITE_URL_KEY_PREFIX)) {
+							siteNumber = Integer.parseInt(keyString.substring(DOWNLOAD_SITE_URL_KEY_PREFIX.length()).trim());
+						}
+					} catch (NumberFormatException e) {
+						siteNumber = 0;
+					}
+					
+					if (siteNumber >= downloadSiteCount + 1) {
+						isExtraKey = true;
+						keysToRemove.add(key);
+					}
+				}
+			}
+			
+			for (Object keyToRemove : keysToRemove) {
+				cyProperty.getProperties().remove(keyToRemove);
+			}
+			
 			this.downloadSites = newDownloadSites;
 			
 			return true;
@@ -139,6 +176,7 @@ public class DownloadSitesManager {
 	 * Notify listeners that a site has been added, removed, or has its fields changed
 	 */
 	public void notifyDownloadSitesChanged() {
+		
 		DownloadSitesChangedEvent event = new DownloadSitesChangedEvent(this);
 		
 		for (DownloadSitesChangedListener listener : this.downloadSitesChangedListeners) {

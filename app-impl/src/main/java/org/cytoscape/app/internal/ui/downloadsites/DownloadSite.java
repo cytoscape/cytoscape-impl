@@ -12,7 +12,7 @@ public class DownloadSite {
 	
 	/** The site's url.
 	 */
-	private String siteUrl;	
+	private String siteUrl;
 	
 	public DownloadSite() {
 		this.siteName = "";
@@ -38,5 +38,19 @@ public class DownloadSite {
 	@Override
 	public String toString() {
 		return this.siteName;
+	}
+	
+	/**
+	 * Returns true if the given site has same name and Url.
+	 * @param downloadSite Other site
+	 * @return <code>true</code> if other site has same name and Url, <code>false</code> otherwise.
+	 */
+	public boolean sameSiteAs(DownloadSite downloadSite) {
+		if (downloadSite.siteName.equals(this.siteName)
+				&& downloadSite.siteUrl.equals(this.siteUrl)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
