@@ -2,47 +2,41 @@ package org.cytoscape.ding;
 
 import java.awt.Shape;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
+/**
+ * Ding Implementation of node shapes
+ * 
+ */
 public class DNodeShape implements NodeShape {
 
-	private static final DNodeShape RECTANGLE = new DNodeShape(
-			GraphGraphics.SHAPE_RECTANGLE,
+	private static final DNodeShape RECTANGLE = new DNodeShape(GraphGraphics.SHAPE_RECTANGLE,
 			NodeShapeVisualProperty.RECTANGLE.getDisplayName(),
 			NodeShapeVisualProperty.RECTANGLE.getSerializableString());
-	private static final DNodeShape ROUND_RECTANGLE = new DNodeShape(
-			GraphGraphics.SHAPE_ROUNDED_RECTANGLE, 
+	private static final DNodeShape ROUND_RECTANGLE = new DNodeShape(GraphGraphics.SHAPE_ROUNDED_RECTANGLE,
 			NodeShapeVisualProperty.ROUND_RECTANGLE.getDisplayName(),
 			NodeShapeVisualProperty.ROUND_RECTANGLE.getSerializableString());
-	private static final DNodeShape TRIANGLE = new DNodeShape(
-			GraphGraphics.SHAPE_TRIANGLE,
-			NodeShapeVisualProperty.TRIANGLE.getDisplayName(),
-			NodeShapeVisualProperty.TRIANGLE.getSerializableString());
-	private static final DNodeShape PARALLELOGRAM = new DNodeShape(
-			GraphGraphics.SHAPE_PARALLELOGRAM,
+	private static final DNodeShape TRIANGLE = new DNodeShape(GraphGraphics.SHAPE_TRIANGLE,
+			NodeShapeVisualProperty.TRIANGLE.getDisplayName(), NodeShapeVisualProperty.TRIANGLE.getSerializableString());
+	private static final DNodeShape PARALLELOGRAM = new DNodeShape(GraphGraphics.SHAPE_PARALLELOGRAM,
 			NodeShapeVisualProperty.PARALLELOGRAM.getDisplayName(),
 			NodeShapeVisualProperty.PARALLELOGRAM.getSerializableString());
-	private static final DNodeShape DIAMOND = new DNodeShape(
-			GraphGraphics.SHAPE_DIAMOND,
-			NodeShapeVisualProperty.DIAMOND.getDisplayName(),
-			NodeShapeVisualProperty.DIAMOND.getSerializableString());
-	private static final DNodeShape ELLIPSE = new DNodeShape(
-			GraphGraphics.SHAPE_ELLIPSE,
-			NodeShapeVisualProperty.ELLIPSE.getDisplayName(),
-			NodeShapeVisualProperty.ELLIPSE.getSerializableString());
-	private static final DNodeShape HEXAGON = new DNodeShape(
-			GraphGraphics.SHAPE_HEXAGON,
-			NodeShapeVisualProperty.HEXAGON.getDisplayName(),
-			NodeShapeVisualProperty.HEXAGON.getSerializableString());
-	private static final DNodeShape OCTAGON = new DNodeShape(
-			GraphGraphics.SHAPE_OCTAGON,
-			NodeShapeVisualProperty.OCTAGON.getDisplayName(),
-			NodeShapeVisualProperty.OCTAGON.getSerializableString());
+	private static final DNodeShape DIAMOND = new DNodeShape(GraphGraphics.SHAPE_DIAMOND,
+			NodeShapeVisualProperty.DIAMOND.getDisplayName(), NodeShapeVisualProperty.DIAMOND.getSerializableString());
+	private static final DNodeShape ELLIPSE = new DNodeShape(GraphGraphics.SHAPE_ELLIPSE,
+			NodeShapeVisualProperty.ELLIPSE.getDisplayName(), NodeShapeVisualProperty.ELLIPSE.getSerializableString());
+	private static final DNodeShape HEXAGON = new DNodeShape(GraphGraphics.SHAPE_HEXAGON,
+			NodeShapeVisualProperty.HEXAGON.getDisplayName(), NodeShapeVisualProperty.HEXAGON.getSerializableString());
+	private static final DNodeShape OCTAGON = new DNodeShape(GraphGraphics.SHAPE_OCTAGON,
+			NodeShapeVisualProperty.OCTAGON.getDisplayName(), NodeShapeVisualProperty.OCTAGON.getSerializableString());
+
+	// Ding specific node shapes.
+	private static final DNodeShape VEE = new DNodeShape(GraphGraphics.SHAPE_VEE, "V", "VEE");
 
 	private static final Map<NodeShape, DNodeShape> DEF_SHAPE_MAP;
 
@@ -56,10 +50,14 @@ public class DNodeShape implements NodeShape {
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.PARALLELOGRAM, PARALLELOGRAM);
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.ROUND_RECTANGLE, ROUND_RECTANGLE);
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.TRIANGLE, TRIANGLE);
+
+		// Register special shape to range
+		((DiscreteRange<NodeShape>) DVisualLexicon.NODE_SHAPE.getRange()).addRangeValue(VEE);
+		DEF_SHAPE_MAP.put(VEE, VEE);
 	}
 
 	public static final DNodeShape getDShape(final NodeShape shape) {
-		if(DEF_SHAPE_MAP.get(shape) == null)
+		if (DEF_SHAPE_MAP.get(shape) == null)
 			return RECTANGLE;
 		else
 			return DEF_SHAPE_MAP.get(shape);

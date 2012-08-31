@@ -246,9 +246,6 @@ public class DVisualLexicon extends BasicVisualLexicon {
 //			ObjectPositionImpl.DEFAULT_POSITION, "EDGE_LABEL_POSITION",
 //			"Edge Label Position", CyEdge.class);
 
-	// Ding specific node shapes.
-	private static final NodeShape VEE = new DNodeShape(GraphGraphics.SHAPE_VEE, "V", "VEE");
-
 	// Ding-local line types
 	private static final DLineType ZIGZAG = new DLineType("Zigzag", "ZIGZAG",
 			new ZigzagStroke(1.0f));
@@ -336,9 +333,6 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 	public DVisualLexicon(final CustomGraphicsManager manager) {
 		super(DING_ROOT);
-
-		// Add new Shapes to the default
-		((DiscreteRange<NodeShape>) NODE_SHAPE.getRange()).addRangeValue(VEE);
 
 		// Add Ding-dependent line types.
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(ZIGZAG);

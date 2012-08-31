@@ -34,14 +34,22 @@ import java.awt.geom.GeneralPath;
 import java.awt.Shape;
 
 
-public class VeeNodeShape extends AbstractNodeShape {
+
+/**
+ * Ding local node shape.
+ * This represents V-like shape.
+ *
+ */
+public final class VeeNodeShape extends AbstractNodeShape {
+	
 	private final GeneralPath path; 
 
 	public VeeNodeShape() {
 		super(GraphGraphics.SHAPE_VEE);
 		path = new GeneralPath(); 
 	}
-		
+	
+	@Override
 	public Shape getShape(float xMin, float yMin, float xMax, float yMax) {
 
 		path.reset();

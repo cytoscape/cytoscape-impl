@@ -102,13 +102,10 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 
 	void setShape(final NodeShape shape) {
 		synchronized (lock) {
-			NodeShape dShape;
-			if (!NodeShapeVisualProperty.isDefaultShape(shape))
-				dShape = NodeShapeVisualProperty.RECTANGLE;
+			if (shape == null)
+				nodeDetails.setShapeDefault(NodeShapeVisualProperty.RECTANGLE);
 			else
-				dShape = shape;
-
-			nodeDetails.setShapeDefault(dShape);
+				nodeDetails.setShapeDefault(shape);
 		}
 	}
 
