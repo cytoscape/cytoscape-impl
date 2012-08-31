@@ -75,8 +75,6 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.model.events.NetworkViewChangedEvent;
-import org.cytoscape.view.model.events.NetworkViewChangedListener;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -95,7 +93,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
-		NetworkViewChangedListener, RowsSetListener, VisualStyleChangedListener {
+		RowsSetListener, VisualStyleChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -459,47 +457,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		iframe.setVisible(true);
 	}
 	
-	@Override
-	public void handleEvent(final NetworkViewChangedEvent e) {
-		final Collection<ViewChangeRecord<CyNetwork>> records = e.getPayloadCollection();
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				updateInternalFrame(records);
-			}
-		});
-	}
-	
-	private final void updateInternalFrame(final Collection<ViewChangeRecord<CyNetwork>> records) {
-		for (final ViewChangeRecord<CyNetwork> record : records) {
-			CyNetworkView view = (CyNetworkView)(record.getView());
-			JInternalFrame iframe = presentationContainerMap.get(view);
-			if ( iframe == null )
-				return;
-			
-			if (record.getVisualProperty().equals(BasicVisualLexicon.NETWORK_WIDTH)) {
-				int w = ((Double) record.getValue()).intValue();
-				int h = iframe.getSize().height;
-				updateNetworkSize(view, w, h);
-			} else if (record.getVisualProperty().equals(BasicVisualLexicon.NETWORK_HEIGHT)) {
-				int w = iframe.getSize().width;
-				int h = ((Double) record.getValue()).intValue();
-				updateNetworkSize(view, w, h);
-			} else if (record.getVisualProperty().equals(BasicVisualLexicon.NETWORK_TITLE)) {
-				updateNetworkTitle(view);
-			}
-		}
-	}
-	
-	private void updateNetworkTitle(CyNetworkView view) {
-		JInternalFrame frame = presentationContainerMap.get(view);
-
-		if (frame != null) {
-			final String title = getTitle(view);
-			frame.setTitle(title);
-			frame.repaint();
-		}
-	}
 
 	private String getTitle(CyNetworkView view) {
 		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
