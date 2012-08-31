@@ -64,15 +64,11 @@ import java.util.Stack;
 
 import org.cytoscape.browser.internal.BrowserTableModel;
 
-import org.cytoscape.equations.BooleanList;
-import org.cytoscape.equations.DoubleList;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.equations.Function;
-import org.cytoscape.equations.LongList;
-import org.cytoscape.equations.StringList;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -220,8 +216,7 @@ public class FormulaBuilderDialog extends JDialog {
 			return true;
 
 		if (requiredType == List.class
-		    && (returnType == DoubleList.class || returnType == BooleanList.class
-			|| returnType == LongList.class || returnType == StringList.class))
+		    && List.class.isAssignableFrom(returnType))
 			return true;
 
 		return false;

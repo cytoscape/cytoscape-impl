@@ -34,7 +34,7 @@ import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
-import org.cytoscape.equations.StringList;
+import org.cytoscape.equations.internal.StringList;
 
 
 public class Concatenate extends AbstractFunction {

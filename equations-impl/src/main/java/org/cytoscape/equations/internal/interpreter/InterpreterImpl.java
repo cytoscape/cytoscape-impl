@@ -34,15 +34,15 @@ import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.Stack;
 
-import org.cytoscape.equations.BooleanList;
-import org.cytoscape.equations.DoubleList;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.FunctionError;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
-import org.cytoscape.equations.LongList;
-import org.cytoscape.equations.StringList;
+import org.cytoscape.equations.internal.BooleanList;
+import org.cytoscape.equations.internal.DoubleList;
+import org.cytoscape.equations.internal.LongList;
+import org.cytoscape.equations.internal.StringList;
 
 
 public class InterpreterImpl implements Interpreter {

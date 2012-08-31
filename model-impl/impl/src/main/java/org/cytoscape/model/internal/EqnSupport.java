@@ -36,13 +36,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.cytoscape.equations.BooleanList;
-import org.cytoscape.equations.DoubleList;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
-import org.cytoscape.equations.LongList;
-import org.cytoscape.equations.StringList;
 
 import org.cytoscape.model.internal.tsort.TopoGraphNode;
 import org.cytoscape.model.internal.tsort.TopologicalSort;
@@ -77,15 +73,15 @@ class EqnSupport {
 
 	static boolean listEquationIsCompatible(final Equation equation, final Class listElementType)
 	{
-		final Class<?> eqnReturnType = equation.getType();
-		if (eqnReturnType == BooleanList.class)
-			return listElementType == Boolean.class;
-		if (eqnReturnType == DoubleList.class)
-			return listElementType == Double.class;
-		if (eqnReturnType == StringList.class)
-			return listElementType == String.class;
-		if (eqnReturnType == LongList.class)
-			return listElementType == Long.class;
+//		final Class<?> eqnReturnType = equation.getType();
+//		if (eqnReturnType == BooleanList.class)
+//			return listElementType == Boolean.class;
+//		if (eqnReturnType == DoubleList.class)
+//			return listElementType == Double.class;
+//		if (eqnReturnType == StringList.class)
+//			return listElementType == String.class;
+//		if (eqnReturnType == LongList.class)
+//			return listElementType == Long.class;
 		// TODO: Add support for a hypothetical IntegerList type.
 
 		return false;

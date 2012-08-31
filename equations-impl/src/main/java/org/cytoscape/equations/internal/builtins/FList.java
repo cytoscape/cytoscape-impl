@@ -34,7 +34,7 @@ import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
-import org.cytoscape.equations.DoubleList;
+import org.cytoscape.equations.internal.DoubleList;
 
 
 public class FList extends AbstractFunction {
