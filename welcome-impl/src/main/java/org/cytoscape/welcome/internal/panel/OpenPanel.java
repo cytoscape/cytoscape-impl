@@ -2,6 +2,7 @@ package org.cytoscape.welcome.internal.panel;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -83,8 +84,10 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 				continue;
 			}
 			final File targetFile = new File(fileURI);
-			final JLabel fileLabel = new JLabel(target.toString());
+			final JLabel fileLabel = new JLabel();
+			FontMetrics fm = fileLabel.getFontMetrics(REGULAR_FONT);
 			fileLabel.setMaximumSize(new Dimension(300, 18));
+			fileLabel.setText(getTruncatedPath( target.toString(),250, fm ) );
 			fileLabel.setForeground(REGULAR_FONT_COLOR);
 			fileLabel.setFont(LINK_FONT);
 			fileLabel.setBorder(padLine);
@@ -119,5 +122,25 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 		});
 
 		this.add(open);
+	}
+
+	private String getTruncatedPath(String path, double width, FontMetrics fm ) {
+
+		String fileName = path.substring(path.lastIndexOf('/'));
+		if (fm.stringWidth("..."+fileName) > width){
+			int startIndex = 4;
+			fileName = "..." + fileName.substring(startIndex);
+			while (fm.stringWidth(fileName) > width){
+				fileName = "..." + fileName.substring(startIndex);
+			}
+			return fileName;
+		}
+		
+		String address = path.substring(0, path.lastIndexOf('/'));
+		while (fm.stringWidth(address + fileName) > width){
+			address = address.substring(0, address.length() - 4) + "...";
+		}
+		
+		return address + fileName;
 	}
 }
