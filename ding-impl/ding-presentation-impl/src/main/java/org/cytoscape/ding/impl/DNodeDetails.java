@@ -30,6 +30,7 @@ package org.cytoscape.ding.impl;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
+import java.awt.Stroke;
 import java.awt.TexturePaint;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,6 +51,7 @@ import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
 /*
@@ -71,6 +73,7 @@ class DNodeDetails extends NodeDetails {
 	Map<CyNode, Paint> m_unselectedPaints = new WeakHashMap<CyNode, Paint>();
 	Map<CyNode, Paint> m_selectedPaints = new WeakHashMap<CyNode, Paint>();
 	Map<CyNode, Float> m_borderWidths = new WeakHashMap<CyNode, Float>();
+	Map<CyNode, Stroke> m_borderStrokes = new WeakHashMap<CyNode, Stroke>();
 	Map<CyNode, Paint> m_borderPaints = new WeakHashMap<CyNode, Paint>();
 	Map<CyNode, Integer> m_labelCounts = new WeakHashMap<CyNode, Integer>();
 	Map<CyNode, String> m_labelTexts = new WeakHashMap<CyNode, String>();
@@ -98,6 +101,7 @@ class DNodeDetails extends NodeDetails {
 	Paint m_selectedPaintDefault = DVisualLexicon.NODE_SELECTED_PAINT.getDefault();
 	NodeShape m_shapeDefault = DVisualLexicon.NODE_SHAPE.getDefault();
 	Double m_borderWidthDefault = DVisualLexicon.NODE_BORDER_WIDTH.getDefault();
+	LineType m_borderStrokeDefault = DVisualLexicon.NODE_BORDER_LINE_TYPE.getDefault();
 	Paint m_borderPaintDefault = DVisualLexicon.NODE_BORDER_PAINT.getDefault();
 	Integer m_labelCountDefault;  // TODO: remove?
 	String m_labelTextDefault = DVisualLexicon.NODE_LABEL.getDefault();;
@@ -130,6 +134,7 @@ class DNodeDetails extends NodeDetails {
 		m_shapes = new WeakHashMap<CyNode, NodeShape>();
 		m_unselectedPaints = new WeakHashMap<CyNode, Paint>();
 		m_borderWidths = new WeakHashMap<CyNode, Float>();
+		m_borderStrokes = new WeakHashMap<CyNode, Stroke>();
 		m_borderPaints = new WeakHashMap<CyNode, Paint>();
 		m_labelCounts = new WeakHashMap<CyNode, Integer>();
 		m_labelTexts = new WeakHashMap<CyNode, String>();
@@ -168,6 +173,7 @@ class DNodeDetails extends NodeDetails {
 		m_shapes.remove(nodeIdx);
 		m_unselectedPaints.remove(nodeIdx);
 		m_borderWidths.remove(nodeIdx);
+		m_borderStrokes.remove(nodeIdx);
 		m_borderPaints.remove(nodeIdx);
 		m_labelWidths.remove(nodeIdx);
 		m_labelTextAnchors.remove(nodeIdx);
@@ -400,6 +406,49 @@ class DNodeDetails extends NodeDetails {
 			isCleared = false;
 		}
 	}
+	
+	
+	@Override
+	public Stroke getBorderStroke(final CyNode node) {
+		final float borderWidth = getBorderWidth(node);
+		// Check bypass
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_LINE_TYPE)) {
+			final LineType lockedLineType = dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_LINE_TYPE);
+			return DLineType.getDLineType(lockedLineType).getStroke(borderWidth);
+		}
+
+		final Stroke stroke = m_borderStrokes.get(node);
+		
+		if (stroke == null) {
+			if (m_borderStrokeDefault == null) {
+				final LineType vpDefaultLineType = dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_LINE_TYPE);
+				return DLineType.getDLineType(vpDefaultLineType).getStroke(borderWidth);
+			} else {
+				
+				return DLineType.getDLineType(m_borderStrokeDefault).getStroke(borderWidth);
+			}
+		} else {
+			return stroke;
+		}
+	}
+
+	void setBorderLineTypeDefault(final LineType lineType) {
+		m_borderStrokeDefault = lineType;
+		defaultValues.put(DVisualLexicon.NODE_BORDER_LINE_TYPE, m_borderStrokeDefault);
+	}
+
+	
+	void overrideBorderStroke(final CyNode node, final Stroke stroke) {
+		if (stroke == null)
+			m_borderStrokes.remove(node);
+		else {
+			m_borderStrokes.put(node, stroke);
+			isCleared = false;
+		}
+	}
+	
+	
 
 	@Override
 	public Paint getBorderPaint(final CyNode node) {

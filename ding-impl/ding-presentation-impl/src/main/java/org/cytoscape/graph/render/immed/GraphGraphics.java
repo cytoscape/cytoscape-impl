@@ -170,16 +170,10 @@ public final class GraphGraphics {
 	 */
 	private static final double CURVE_ELLIPTICAL = (4.0d * (Math.sqrt(2.0d) - 1.0d)) / 3.0d;
 
-	/*
-	 * Added by kono: This is for returning shapes
-	 */
-	private static final GraphGraphics dummyGraphics;
-
+	// Mapping from node to its border stroke object.
 	private static final Map<Float,Stroke> borderStrokes = new HashMap<Float,Stroke>();
 
-	static {
-		dummyGraphics = new GraphGraphics(null, false);
-		
+	static {		
 		nodeShapes = new HashMap<Byte,NodeShape>();
 
 		nodeShapes.put(SHAPE_RECTANGLE, new RectangleNodeShape()); 
@@ -573,7 +567,7 @@ public final class GraphGraphics {
 	 */
 	public final void drawNodeFull(final byte nodeShape, final float xMin,
 			final float yMin, final float xMax, final float yMax,
-			final Paint fillPaint, final float borderWidth,
+			final Paint fillPaint, final float borderWidth, final Stroke borderStroke,
 			final Paint borderPaint) {
 		if (m_debug) {
 			checkDispatchThread();
@@ -597,9 +591,14 @@ public final class GraphGraphics {
 		final float off = borderWidth/2.0f; // border offset
 		final Shape sx = getShape(nodeShape,xMin+off,yMin+off,xMax-off,yMax-off);
 
+		// Draw border only when width is not zero.
 		if (borderWidth > 0.0f) {
 			m_g2d.setPaint(borderPaint);
-			m_g2d.setStroke(getStroke(borderWidth));
+			if(borderStroke != null)
+				m_g2d.setStroke(borderStroke);
+			else
+				m_g2d.setStroke(getStroke(borderWidth));
+			
 			m_g2d.draw(sx);
 		}
 
@@ -2037,7 +2036,13 @@ public final class GraphGraphics {
 		m_g2d.setTransform(m_currNativeXform);
 	}
 
-	private Stroke getStroke(float borderWidth) {
+	/**
+	 * Create border stroke for given width value.
+	 * 
+	 * @param borderWidth
+	 * @return Actual node border stroke
+	 */
+	private final Stroke getStroke(final float borderWidth) {
 		Stroke s = borderStrokes.get(borderWidth);
 		if ( s == null ) {
 			s = new BasicStroke(borderWidth);

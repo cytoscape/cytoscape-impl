@@ -449,7 +449,7 @@ public final class GraphRenderer {
 										                   + (anchorSize / 2.0d)),
 										                   (float) (floatBuff4[1]
 										                   + (anchorSize / 2.0d)),
-										                   edgeDetails.getAnchorPaint(edge, k), 0.0f,
+										                   edgeDetails.getAnchorPaint(edge, k), 0.0f, null,
 										                   null);
 									}
 								}
@@ -1050,13 +1050,14 @@ public final class GraphRenderer {
 			// Compute node border information.
 			final float borderWidth;
 			final Paint borderPaint;
+			Stroke borserStroke = null;
 
 			if ((lodBits & LOD_NODE_BORDERS) == 0) { // Not rendering borders.
 				borderWidth = 0.0f;
 				borderPaint = null;
 			} else { // Rendering node borders.
 				borderWidth = nodeDetails.getBorderWidth(cyNode);
-
+				borserStroke = nodeDetails.getBorderStroke(cyNode);
 				if (borderWidth == 0.0f)
 					borderPaint = null;
 				else
@@ -1064,7 +1065,7 @@ public final class GraphRenderer {
 			}
 
 			// Draw the node.
-			grafx.drawNodeFull(shape, floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], fillPaint, borderWidth, borderPaint);
+			grafx.drawNodeFull(shape, floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], fillPaint, borderWidth, borserStroke, borderPaint);
 		}
 
 		// Take care of custom graphic rendering.

@@ -30,6 +30,7 @@ package org.cytoscape.ding.impl;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
+import java.awt.Stroke;
 
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.DVisualLexicon;
@@ -37,6 +38,7 @@ import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
 final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
@@ -64,6 +66,8 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
 			setBorderPaint((Paint) value);
+		} else if (vp == DVisualLexicon.NODE_BORDER_LINE_TYPE) {
+			setBorderLineType((LineType) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_TRANSPARENCY) {
 			setBorderTransparency(((Number) value).intValue());
 		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
@@ -151,6 +155,12 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 	void setBorderWidth(float width) {
 		synchronized (lock) {
 			nodeDetails.setBorderWidthDefault(width);
+		}
+	}
+	
+	void setBorderLineType(final LineType lineType) {
+		synchronized (lock) {
+			nodeDetails.setBorderLineTypeDefault(lineType);
 		}
 	}
 

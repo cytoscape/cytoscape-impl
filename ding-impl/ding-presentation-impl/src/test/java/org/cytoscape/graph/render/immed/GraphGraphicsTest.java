@@ -147,7 +147,7 @@ public class GraphGraphicsTest extends TestCase {
 							(x + (rand.nextFloat() * nodeSizeFactor)),	
 							(y + (rand.nextFloat() * nodeSizeFactor)),
 							Color.blue,
-							1.0f + (i % 10),
+							1.0f + (i % 10), null,
 					    	Color.yellow);
 		}
 		long end = System.nanoTime();

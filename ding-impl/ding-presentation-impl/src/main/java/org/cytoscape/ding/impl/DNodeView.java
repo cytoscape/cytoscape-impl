@@ -262,25 +262,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	@Override
-	public void setBorder(Stroke stroke) {
-		if (stroke instanceof BasicStroke) {
-			synchronized (graphView.m_lock) {
-				setBorderWidth(((BasicStroke) stroke).getLineWidth());
-
-				final float[] dashArray = ((BasicStroke) stroke).getDashArray();
-
-				if ((dashArray != null) && (dashArray.length > 1)) {
-					m_borderDash = dashArray[0];
-					m_borderDash2 = dashArray[1];
-				} else {
-					m_borderDash = 0.0f;
-					m_borderDash2 = 0.0f;
-				}
-
-				fixBorder();
-			}
+	public void setBorder(final Stroke stroke) {
+		synchronized (graphView.m_lock) {
+			graphView.m_nodeDetails.overrideBorderStroke(model, stroke);
+			graphView.m_contentChanged = true;
 		}
 	}
 

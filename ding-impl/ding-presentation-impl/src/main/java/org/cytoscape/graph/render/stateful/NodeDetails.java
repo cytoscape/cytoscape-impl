@@ -30,9 +30,11 @@ package org.cytoscape.graph.render.stateful;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
+import java.awt.Stroke;
 import java.awt.TexturePaint;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -125,6 +127,8 @@ public class NodeDetails {
 	 * rightmost point with similar X coordinate.
 	 */
 	public static final byte LABEL_WRAP_JUSTIFY_RIGHT = 66;
+	
+	private static final Stroke DEF_BORDER_STROKE = new BasicStroke(2.0f);
 
 	/**
 	 * Hashmap which records selected state of nodes - information used by
@@ -173,6 +177,10 @@ public class NodeDetails {
 	 */
 	public float getBorderWidth(final CyNode node) {
 		return 0.0f;
+	}
+	
+	public Stroke getBorderStroke(final CyNode node) {
+		return DEF_BORDER_STROKE;
 	}
 
 	/**

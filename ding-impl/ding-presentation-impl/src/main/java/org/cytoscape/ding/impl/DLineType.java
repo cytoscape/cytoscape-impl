@@ -13,7 +13,6 @@ import org.cytoscape.ding.impl.strokes.WidthStroke;
 import org.cytoscape.ding.impl.strokes.ZeroStroke;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
-import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 
 public class DLineType implements LineType {
 
