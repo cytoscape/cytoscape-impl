@@ -40,6 +40,8 @@ public class CyActivator extends AbstractCyActivator {
 		WebServiceImportDialog<TableImportWebServiceClient> unifiedTableImportDialog = new WebServiceImportDialog<TableImportWebServiceClient>(
 				TableImportWebServiceClient.class, "Import Data Table from Web Service", taskManagerServiceRef, openBrowser);
 
+		unifiedTableImportDialog.setModal(true);
+		
 		WebServiceGUIImpl webServiceGui = new WebServiceGUIImpl();
 		webServiceGui.addClient(NetworkImportWebServiceClient.class, unifiedNetworkImportDialog);
 		webServiceGui.addClient(TableImportWebServiceClient.class, unifiedTableImportDialog);
