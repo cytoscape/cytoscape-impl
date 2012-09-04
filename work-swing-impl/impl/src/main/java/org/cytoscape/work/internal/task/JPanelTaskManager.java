@@ -43,6 +43,11 @@ public class JPanelTaskManager extends AbstractTaskManager<JPanel,JPanel> implem
 	}
 
 	@Override
+	public boolean validateAndApplyTunables(Object tunableContext) {
+		return panelTunableMutator.validateAndWriteBack(tunableContext);
+	}
+	
+	@Override
 	public void setExecutionContext(final JPanel tunablePanel) {
 		panelTunableMutator.setConfigurationContext(tunablePanel);
 	}

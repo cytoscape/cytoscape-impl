@@ -157,7 +157,10 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		if (command.equals("done"))
 			setVisible(false);
 		else if (command.equals("execute")) {
-			taskManager.execute(currentAction.createTaskIterator());
+			Object context = currentLayout.getDefaultLayoutContext();
+			if (taskManager.validateAndApplyTunables(context)) {
+				taskManager.execute(currentAction.createTaskIterator());
+			}
 		} else {
 			// OK, initialize and display
 			if (isVisible()) {
