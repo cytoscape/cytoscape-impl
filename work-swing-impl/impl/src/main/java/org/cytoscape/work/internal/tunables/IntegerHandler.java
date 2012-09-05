@@ -106,6 +106,9 @@ public class IntegerHandler extends AbstractGUITunableHandler implements ActionL
 				newValue = (Integer)getValue();
 				JOptionPane.showMessageDialog(null, "An Integer was expected!\nThe value will be set to the default: "
 							      + newValue, "Error", JOptionPane.ERROR_MESSAGE);
+				
+				textField.setValue(getValue().toString());
+				textField.setBackground(Color.white);
 			} catch(final Exception e) {
 				e.printStackTrace();
 			}
