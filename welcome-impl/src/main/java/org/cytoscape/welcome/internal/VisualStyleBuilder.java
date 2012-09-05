@@ -72,7 +72,7 @@ public class VisualStyleBuilder {
 	public final VisualStyle buildVisualStyle(final CyNetworkView networkView) {
 		final CyNetwork network = networkView.getModel();
 		final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-		final VisualStyle visualStyle = vsFactory.createVisualStyle("Network Analyzer Style: " + networkName);
+		final VisualStyle visualStyle = vsFactory.createVisualStyle("NetworkAnalyzer Style: " + networkName);
 
 		// Network VP
 		final Color backGroundColor = Color.white;
