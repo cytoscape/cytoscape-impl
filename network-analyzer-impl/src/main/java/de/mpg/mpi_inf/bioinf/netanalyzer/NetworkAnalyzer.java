@@ -39,7 +39,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.SumCountPair;
  */
 public abstract class NetworkAnalyzer {
 
-	protected static final String PARENT_MENU = "Tools.Network Analyzer.";
+	protected static final String PARENT_MENU = "Tools.NetworkAnalyzer.";
 	
 	/**
 	 * Gets the title of the network being analyzed.

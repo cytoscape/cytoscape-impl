@@ -218,7 +218,7 @@ public abstract class Messages {
 	public static String SM_CLOSEWARN = "<html>You have not saved the network statistics. " +
 			"They will be lost when you close this window." +
 			"<br /><br />Are you sure you want to close the window?<br /><br />" +
-			"(Note: Statistics will be saved as normal table data, not the Network Analyzer property file)</html>";
+			"(Note: Statistics will be saved as normal table data, not the NetworkAnalyzer property file)</html>";
 
 	public static String SM_CONNECTED = " is connected, i.e. has a single connected component.";
 
@@ -266,7 +266,7 @@ public abstract class Messages {
 
 	public static String SM_LOADSETTINGSFAIL2 = " failed.";
 
-	public static String SM_LOGERROR = "Network Analyzer - Internal Error";
+	public static String SM_LOGERROR = "NetworkAnalyzer - Internal Error";
 
 	public static String SM_NETWORKEMPTY = "Network contains no nodes.";
 

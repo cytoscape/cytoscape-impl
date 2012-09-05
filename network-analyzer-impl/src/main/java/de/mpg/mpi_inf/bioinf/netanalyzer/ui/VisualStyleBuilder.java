@@ -21,7 +21,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 
 public class VisualStyleBuilder {
 
-	private static final String VS_NAME_PREFIX = "Network Analyzer Style: ";
+	private static final String VS_NAME_PREFIX = "NetworkAnalyzer Style: ";
 
 	// Preset defaults
 	private static final Color NODE_COLOR = Color.WHITE;
