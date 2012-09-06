@@ -1,15 +1,12 @@
 package org.cytoscape.model;
 
 
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.event.CyEventHelper;
+import static org.mockito.Mockito.mock;
+
+import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
-
-import static org.mockito.Mockito.*;
 
 
 public class TableTestSupport {
@@ -18,7 +15,7 @@ public class TableTestSupport {
 
 	public TableTestSupport() {
 		eventHelper = new DummyCyEventHelper();
-		tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class),
+		tableFactory = new CyTableFactoryImpl(eventHelper, new InterpreterImpl(),
 		                                      mock(CyServiceRegistrar.class));
 	}
 

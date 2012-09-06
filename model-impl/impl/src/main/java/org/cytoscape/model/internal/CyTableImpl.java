@@ -339,6 +339,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				if (virtColumn != null) {
 					final CyColumn cyColumn = types.get(normalizedColName);
 					virtualColumnMap.remove(normalizedColName);
+					attributes.remove(normalizedColName);
 					types.remove(normalizedColName);
 					--((CyTableImpl)cyColumn.getVirtualColumnInfo().getSourceTable()).virtualColumnReferenceCount;
 				} else {
@@ -619,6 +620,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
 			if (virtColumn != null) {
 				virtColumn.setValue(key, value);
+			}
+			if (virtColumn != null && !(value instanceof Equation)) {
 				newValue = virtColumn.getValue(key);
 				newRawValue = virtColumn.getRawValue(key);
 			} else {
@@ -691,6 +694,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			
 			if (virtColumn != null) {
 				virtColumn.setValue(key, value);
+			}
+			if (virtColumn != null && !(value instanceof Equation)) {
 				newValue = virtColumn.getListValue(key);
 			} else {
 				Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
@@ -762,13 +767,17 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (primaryKey.equalsIgnoreCase(normalizedColName))
 			return key;
 
+		Object virtualValue = null;
 		if (virtColumn != null)
-			return virtColumn.getRawValue(key);
-
+			virtualValue = virtColumn.getRawValue(key);
+		
+		if (virtualValue != null && !(virtualValue instanceof Equation))
+			return virtualValue;
+		
 		Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 		if (keyToValueMap == null)
 			return null;
-
+		
 		return keyToValueMap.get(key);
 	}
 
@@ -792,10 +801,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private Object getValue(Object key, String columnName, Class<?> type) {
 		final String normalizedColName = normalizeColumnName(columnName);
 		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
-		if (virtColumn != null)
+		final Object vl = getValueOrEquation(key, columnName, virtColumn);
+		if (virtColumn != null && vl == null)
 			return virtColumn.getValue(key);
 
-		final Object vl = getValueOrEquation(key, columnName, virtColumn);
 		if (vl == null)
 			return null;
 
@@ -856,10 +865,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		lastInternalError = null;
 
 		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
-		if (virtColumn != null)
+		final Object vl = getValueOrEquation(key, columnName, virtColumn);
+		if (virtColumn != null && vl == null)
 			return (List<T>)virtColumn.getListValue(key);
 
-		final Object vl = getValueOrEquation(key, columnName, virtColumn);
 		if (vl == null)
 			return getDefaultValue(columnName,defaultValue);
 
@@ -956,6 +965,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			                                               /* isPrimaryKey = */ false, isImmutable, null);
 			final String normalizedTargetName = normalizeColumnName(targetName);
 			types.put(normalizedTargetName, targetColumn);
+			attributes.put(normalizedTargetName, new HashMap<Object, Object>(defaultInitSize));
 			virtualColumnMap.put(normalizedTargetName, new VirtualColumn((CyTableImpl)sourceTable, sourceColumnName, this,
 			                                                             sourceTable.getPrimaryKey().getName(), 
 			                                                             targetJoinKeyName));

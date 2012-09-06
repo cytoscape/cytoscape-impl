@@ -39,10 +39,8 @@ import java.util.TreeSet;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
-
 import org.cytoscape.model.internal.tsort.TopoGraphNode;
 import org.cytoscape.model.internal.tsort.TopologicalSort;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,18 +71,10 @@ class EqnSupport {
 
 	static boolean listEquationIsCompatible(final Equation equation, final Class listElementType)
 	{
-//		final Class<?> eqnReturnType = equation.getType();
-//		if (eqnReturnType == BooleanList.class)
-//			return listElementType == Boolean.class;
-//		if (eqnReturnType == DoubleList.class)
-//			return listElementType == Double.class;
-//		if (eqnReturnType == StringList.class)
-//			return listElementType == String.class;
-//		if (eqnReturnType == LongList.class)
-//			return listElementType == Long.class;
-		// TODO: Add support for a hypothetical IntegerList type.
-
-		return false;
+		// TODO: We no longer support strongly typed lists so this always
+		// returns true.  If we ever re-introduce strongly typed lists, we
+		// should modify this to do the appropriate checks.
+		return true;
 	}
 
 	static Object convertEqnResultToColumnType(final Class<?> columnType, final Object result) {
