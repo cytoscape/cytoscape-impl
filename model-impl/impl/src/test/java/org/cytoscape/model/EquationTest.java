@@ -38,10 +38,13 @@ public class EquationTest {
 		CyTableFactory factory = support.getTableFactory();
 		CyTable table1 = factory.createTable("Table 1", "SUID", Long.class, true, true);
 		CyTable table2 = factory.createTable("Table 2", "SUID", Long.class, true, true);
+		CyTable table3 = factory.createTable("Table 3", "SUID", Long.class, true, true);
 		table1.createColumn("name", String.class, false);
 		table1.createColumn("real", String.class, false);
 		table2.createColumn("name", String.class, false);
 		table2.addVirtualColumn("virtual", "real", table1, "SUID", false);
+		table3.createColumn("name", String.class, false);
+		table3.addVirtualColumn("virtual2", "virtual", table2, "SUID", false);
 		
 		CyRow row1 = table1.getRow(1L);
 		row1.set("name", "1");
@@ -49,21 +52,27 @@ public class EquationTest {
 		CyRow row2 = table2.getRow(1L);
 		row2.set("name", "2");
 		
-		row2.set("virtual", parseEquation("=$name", table2));
+		CyRow row3 = table3.getRow(1L);
+		row3.set("name", "3");
+
+		row3.set("virtual2", parseEquation("=$name", table3));
 		
-		// Equation should be propagated to both tables
+		// Equation should be propagated to all tables
 		Assert.assertNotNull(row1.getRaw("real"));
 		Assert.assertNotNull(row2.getRaw("virtual"));
+		Assert.assertNotNull(row3.getRaw("virtual2"));
 		
 		// Equation should yield different values depending on context
 		Assert.assertEquals("1", row1.get("real", String.class));
 		Assert.assertEquals("2", row2.get("virtual", String.class));
+		Assert.assertEquals("3", row3.get("virtual2", String.class));
 
 		// Overwrite equation with normal attribute.  Both ends of
 		// VirtualColumn should give the same answer.
-		row1.set("real", "3");
-		Assert.assertEquals("3", row1.get("real", String.class));
-		Assert.assertEquals("3", row2.get("virtual", String.class));
+		row1.set("real", "other");
+		Assert.assertEquals("other", row1.get("real", String.class));
+		Assert.assertEquals("other", row2.get("virtual", String.class));
+		Assert.assertEquals("other", row3.get("virtual2", String.class));
 	}
 	
 	@Test
@@ -71,10 +80,13 @@ public class EquationTest {
 		CyTableFactory factory = support.getTableFactory();
 		CyTable table1 = factory.createTable("Table 1", "SUID", Long.class, true, true);
 		CyTable table2 = factory.createTable("Table 2", "SUID", Long.class, true, true);
+		CyTable table3 = factory.createTable("Table 3", "SUID", Long.class, true, true);
 		table1.createListColumn("name", String.class, false);
 		table1.createListColumn("real", String.class, false);
 		table2.createListColumn("name", String.class, false);
 		table2.addVirtualColumn("virtual", "real", table1, "SUID", false);
+		table3.createListColumn("name", String.class, false);
+		table3.addVirtualColumn("virtual2", "virtual", table2, "SUID", false);
 		
 		List<String> list1 = new ArrayList<String>();
 		list1.add("1");
@@ -82,17 +94,24 @@ public class EquationTest {
 		List<String> list2 = new ArrayList<String>();
 		list2.add("2");
 		
+		List<String> list3 = new ArrayList<String>();
+		list3.add("3");
+
 		CyRow row1 = table1.getRow(1L);
 		row1.set("name", list1);
 		
 		CyRow row2 = table2.getRow(1L);
 		row2.set("name", list2);
 		
-		row2.set("virtual", parseEquation("=SLIST($name)", table2));
+		CyRow row3 = table3.getRow(1L);
+		row3.set("name", list3);
+
+		row3.set("virtual2", parseEquation("=SLIST($name)", table3));
 		
-		// Equation should be propagated to both tables
+		// Equation should be propagated to all tables
 		Assert.assertNotNull(row1.getRaw("real"));
 		Assert.assertNotNull(row2.getRaw("virtual"));
+		Assert.assertNotNull(row3.getRaw("virtual2"));
 		
 		// Equation should yield different values depending on context
 		List<String> result1 = row1.getList("real", String.class);
@@ -104,21 +123,31 @@ public class EquationTest {
 		Assert.assertNotNull(result2);
 		Assert.assertEquals(1, result2.size());
 		Assert.assertEquals("2", result2.get(0));
-		
+
+		List<String> result3 = row3.getList("virtual2", String.class);
+		Assert.assertNotNull(result3);
+		Assert.assertEquals(1, result3.size());
+		Assert.assertEquals("3", result3.get(0));
+
 		// Overwrite equation with normal attribute.  Both ends of
 		// VirtualColumn should give the same answer.
-		List<String> list3 = new ArrayList<String>();
-		list3.add("3");
-		row1.set("real", list3);
+		List<String> other = new ArrayList<String>();
+		other.add("other");
+		row1.set("real", other);
 		
-		List<String> result3a = row1.getList("real", String.class);
-		Assert.assertNotNull(result3a);
-		Assert.assertEquals(1, result3a.size());
-		Assert.assertEquals("3", result3a.get(0));
+		List<String> resultOther1 = row1.getList("real", String.class);
+		Assert.assertNotNull(resultOther1);
+		Assert.assertEquals(1, resultOther1.size());
+		Assert.assertEquals("other", resultOther1.get(0));
 
-		List<String> result3b = row2.getList("virtual", String.class);
-		Assert.assertNotNull(result3b);
-		Assert.assertEquals(1, result3b.size());
-		Assert.assertEquals("3", result3b.get(0));
-	}
+		List<String> resultOther2 = row2.getList("virtual", String.class);
+		Assert.assertNotNull(resultOther2);
+		Assert.assertEquals(1, resultOther2.size());
+		Assert.assertEquals("other", resultOther2.get(0));
+
+		List<String> resultOther3 = row3.getList("virtual2", String.class);
+		Assert.assertNotNull(resultOther3);
+		Assert.assertEquals(1, resultOther3.size());
+		Assert.assertEquals("other", resultOther3.get(0));
+}
 }
