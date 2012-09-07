@@ -33,6 +33,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.create.CloneNetworkTaskFactory;
@@ -49,11 +51,18 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
     private final CyNetworkViewFactory netViewFactory;
     private final CyNetworkNaming naming;
     private final CyApplicationManager appMgr;
+    private final CyNetworkTableManager netTableMgr;
+    private final CyRootNetworkManager rootNetMgr;
 
-    public CloneNetworkTaskFactoryImpl(final CyNetworkManager networkMgr, final CyNetworkViewManager networkViewMgr, 
-    		final VisualMappingManager vmm, final CyNetworkFactory netFactory, 
-    		final CyNetworkViewFactory netViewFactory, final CyNetworkNaming naming, 
-    		final CyApplicationManager appMgr) {
+    public CloneNetworkTaskFactoryImpl(final CyNetworkManager networkMgr,
+    								   final CyNetworkViewManager networkViewMgr,
+    								   final VisualMappingManager vmm,
+    								   final CyNetworkFactory netFactory,
+    								   final CyNetworkViewFactory netViewFactory,
+    								   final CyNetworkNaming naming,
+    								   final CyApplicationManager appMgr,
+    								   final CyNetworkTableManager netTableMgr,
+    								   final CyRootNetworkManager rootNetMgr) {
     	this.networkMgr = networkMgr;
 		this.networkViewMgr = networkViewMgr;
 		this.vmm = vmm;
@@ -61,10 +70,12 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
 		this.netViewFactory = netViewFactory;
 		this.naming = naming;
 		this.appMgr = appMgr;
+		this.netTableMgr = netTableMgr;
+		this.rootNetMgr = rootNetMgr;
     }
 
     public TaskIterator createTaskIterator(CyNetwork network) {
     	return new TaskIterator(2,new CloneNetworkTask(network, networkMgr, networkViewMgr, vmm, netFactory, 
-    			netViewFactory, naming, appMgr));
+    			netViewFactory, naming, appMgr, netTableMgr, rootNetMgr));
     }
 }
