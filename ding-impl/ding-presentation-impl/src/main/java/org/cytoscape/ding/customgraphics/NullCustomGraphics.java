@@ -9,6 +9,8 @@ import javax.imageio.ImageIO;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 /**
  * Null object for Custom Graphics. This is used to reset custom graphics on
  * node views.

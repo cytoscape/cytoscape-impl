@@ -2,6 +2,7 @@ package org.cytoscape.ding.customgraphics;
 
 import org.cytoscape.ding.customgraphics.vector.CustomGraphicsProperty;
 
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 public class CustomGraphicsPropertyImpl<T> implements
 		CustomGraphicsProperty<T> {

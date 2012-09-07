@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.SortedSet;
 
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 public interface CustomGraphicsManager {
 	
 	void addCustomGraphics(CyCustomGraphics cg, URL source);

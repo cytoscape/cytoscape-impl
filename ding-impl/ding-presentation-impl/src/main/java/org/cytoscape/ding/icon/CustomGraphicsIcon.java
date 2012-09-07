@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> {
 

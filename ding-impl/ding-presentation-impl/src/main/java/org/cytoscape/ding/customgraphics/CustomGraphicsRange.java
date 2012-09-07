@@ -6,6 +6,8 @@ import java.util.Set;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.view.model.DiscreteRange;
 
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
 	public CustomGraphicsRange() {

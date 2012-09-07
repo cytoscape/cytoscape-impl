@@ -3,6 +3,8 @@ package org.cytoscape.ding.customgraphics;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 public class DefaultCyCustomGraphicsParser implements CyCustomGraphicsParser {
 	
 	private final CustomGraphicsManager manager;

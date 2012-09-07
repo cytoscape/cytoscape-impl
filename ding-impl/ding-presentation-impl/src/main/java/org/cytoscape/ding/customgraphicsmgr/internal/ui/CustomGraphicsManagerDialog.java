@@ -15,7 +15,7 @@ import javax.swing.LayoutStyle;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -37,7 +37,7 @@ import java.util.Set;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.ding.impl.ObjectPositionImpl;
@@ -75,7 +75,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	private static final Set<VisualProperty<?>> CG_POSITIONS = new HashSet<VisualProperty<?>>();
 	private static final Set<VisualProperty<CyCustomGraphics>> CG = new HashSet<VisualProperty<CyCustomGraphics>>();
 	private static final Set<VisualProperty<?>> CG_SIZE = new HashSet<VisualProperty<?>>();
-	private static final Map<VisualProperty<?>, VisualProperty<?>> CG_TO_SIZE = new HashMap<VisualProperty<?>, VisualProperty<?>>();
+	private static final Map<VisualProperty<?>, VisualProperty<Double>> CG_TO_SIZE = new HashMap<VisualProperty<?>, VisualProperty<Double>>();
 	private static final Map<VisualProperty<?>, VisualProperty<ObjectPosition>> CG_TO_POSITION = new HashMap<VisualProperty<?>, VisualProperty<ObjectPosition>>();
 
 	// Root of Ding's VP tree.
@@ -461,7 +461,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		return CG_SIZE;
 	}
 
-	public static VisualProperty<?> getAssociatedCustomGraphicsSizeVP(
+	public static VisualProperty<Double> getAssociatedCustomGraphicsSizeVP(
 			VisualProperty<?> cgVP) {
 		return CG_TO_SIZE.get(cgVP);
 	}

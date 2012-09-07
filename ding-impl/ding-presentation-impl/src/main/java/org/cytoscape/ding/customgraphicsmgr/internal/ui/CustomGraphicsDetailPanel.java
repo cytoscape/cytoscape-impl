@@ -10,7 +10,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.Taggable;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.jdesktop.swingx.JXImageView;

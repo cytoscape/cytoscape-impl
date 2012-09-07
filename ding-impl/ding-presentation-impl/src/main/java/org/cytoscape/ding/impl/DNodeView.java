@@ -59,8 +59,7 @@ import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
-import org.cytoscape.ding.customgraphics.Layer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.VectorCustomGraphics;
 import org.cytoscape.ding.impl.customgraphics.CustomGraphicsPositionCalculator;
@@ -1141,14 +1140,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (customGraphics == null || customGraphics instanceof NullCustomGraphics)
 			return;
 
-		final List<Layer<CustomGraphic>> layers = customGraphics.getLayers();
+		final List<CustomGraphic> layers = customGraphics.getLayers();
 
 		// No need to update
 		if (layers == null || layers.size() == 0)
 			return;
 
 		// Check dependency. Sync size or not.
-		final VisualProperty<?> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
+		final VisualProperty<Double> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
 		Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
 		boolean sync = false;
 		
@@ -1161,15 +1160,18 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		final VisualProperty<ObjectPosition> cgPositionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(vp);
 		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
+		final Double customSize = getVisualProperty(cgSizeVP);
 
-		for (Layer<CustomGraphic> layer : layers) {
+		for (CustomGraphic newCG : layers) {
 			// Assume it's a Ding layer
-			CustomGraphic newCG = layer.getLayerObject();
 			CustomGraphic finalCG = newCG;
 
 			if (sync) {
 				// Size is locked to node size.				
-				finalCG = syncSize(customGraphics, newCG);
+				finalCG = syncSize(customGraphics, newCG, this.getWidth(), this.getHeight());
+			} else if (customSize != null) {
+				// Size should be set to customSize
+				finalCG = syncSize(customGraphics, newCG, customSize, customSize);
 			}
 			finalCG = moveCustomGraphicsToNewPosition(finalCG, positionValue);
 
@@ -1216,9 +1218,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.cgMap.put(parent, currentCG);
 	}
 
-	private CustomGraphic syncSize(CyCustomGraphics<?> graphics, final CustomGraphic cg) {
-		final double nodeW = this.getWidth();
-		final double nodeH = this.getHeight();
+	private CustomGraphic syncSize(CyCustomGraphics<?> graphics, 
+	                               final CustomGraphic cg, double width, double height) {
+		// final double nodeW = this.getWidth();
+		// final double nodeH = this.getHeight();
 
 		final Shape originalShape = cg.getShape();
 		final Rectangle2D originalBounds = originalShape.getBounds2D();
@@ -1226,7 +1229,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final double cgH = originalBounds.getHeight();
 
 		// In case size is same, return the original.
-		if (nodeW == cgW && nodeH == cgH)
+		if (width == cgW && height == cgH)
 			return cg;
 
 		final AffineTransform scale;
@@ -1234,13 +1237,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		// Case 1: if custom graphic is a vector fit width and length
 		if (graphics instanceof VectorCustomGraphics) {
-			scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * nodeH / cgH);
+			scale = AffineTransform.getScaleInstance(fit * width / cgW, fit * height / cgH);
 		} else {
 			// Case 2: node height value is larger than width
-			if (nodeW >= nodeH) {
-				scale = AffineTransform.getScaleInstance(fit * (nodeW / cgW) * (nodeH / nodeW), fit * nodeH / cgH);
+			if (width >= height) {
+				scale = AffineTransform.getScaleInstance(fit * (width / cgW) * (height / width), fit * height / cgH);
 			} else {
-				scale = AffineTransform.getScaleInstance(fit * nodeW / cgW, fit * (nodeH / cgH) * (nodeW / nodeH));
+				scale = AffineTransform.getScaleInstance(fit * width / cgW, fit * (height / cgH) * (width / height));
 			}
 		}
 		

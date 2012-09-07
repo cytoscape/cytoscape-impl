@@ -15,7 +15,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsUtil;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.jdesktop.swingx.JXImagePanel;
 
 /**

@@ -12,7 +12,6 @@ import javax.imageio.ImageIO;
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
-import org.cytoscape.ding.impl.customgraphics.DLayer;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.PaintFactory;
 
@@ -75,9 +74,7 @@ public class URLImageCustomGraphics extends AbstractDCustomGraphics {
 
 		cg = new CustomGraphic(bound, paintFactory);
 		
-		// This object is always one layer, so simply add without sorting.
-		DLayer layer = new DLayer(cg, 1);
-		layers.add(layer);
+		layers.add(cg);
 	}
 
 	private void createImage(String url) throws MalformedURLException {

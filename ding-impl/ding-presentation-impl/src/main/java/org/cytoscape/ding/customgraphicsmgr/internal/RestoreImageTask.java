@@ -29,7 +29,7 @@ import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.Taggable;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;

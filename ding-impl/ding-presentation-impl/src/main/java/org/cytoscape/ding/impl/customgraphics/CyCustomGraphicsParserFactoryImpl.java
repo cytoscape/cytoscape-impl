@@ -3,7 +3,7 @@ package org.cytoscape.ding.impl.customgraphics;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.ding.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.CyCustomGraphicsParser;
 import org.cytoscape.ding.customgraphics.CyCustomGraphicsParserFactory;
 

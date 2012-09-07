@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphic;
 
 public abstract class AbstractDCustomGraphics implements
@@ -21,7 +22,7 @@ public abstract class AbstractDCustomGraphics implements
 	protected final Long id;
 	
 	// Layers of Ding Custom Graphic objects.
-	protected List<Layer<CustomGraphic>> layers;
+	protected List<CustomGraphic> layers;
 	
 	// Human readable name
 	protected String displayName;
@@ -47,7 +48,7 @@ public abstract class AbstractDCustomGraphics implements
 	public AbstractDCustomGraphics(final Long id, final String displayName) {
 		this.id = id;
 		
-		this.layers = new ArrayList<Layer<CustomGraphic>>();
+		this.layers = new ArrayList<CustomGraphic>();
 		this.displayName = displayName;
 
 		this.tags = new TreeSet<String>();
@@ -76,7 +77,7 @@ public abstract class AbstractDCustomGraphics implements
 	}
 
 	
-	public List<Layer<CustomGraphic>> getLayers() {
+	public List<CustomGraphic> getLayers() {
 		return layers;
 	}
 

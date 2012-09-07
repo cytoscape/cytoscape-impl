@@ -87,6 +87,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>custom-graphics-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
 		</dependency>
 		<dependency>
@@ -150,6 +154,12 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>custom-graphics-api</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

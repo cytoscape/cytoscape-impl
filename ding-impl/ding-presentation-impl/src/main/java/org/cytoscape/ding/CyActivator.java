@@ -32,8 +32,10 @@ import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
-// Annotation api
 import org.cytoscape.ding.impl.customgraphics.CustomGraphicsTranslator;
+//
+// Annotation api
+//
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 // Annotation creation
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
