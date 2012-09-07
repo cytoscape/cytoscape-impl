@@ -263,16 +263,20 @@ class CyGroupImpl implements CyGroup {
 	 */
 	@Override
 	public synchronized void addEdges(List<CyEdge> edges) {
+		boolean updateMeta = false;
 		for (CyEdge edge: edges) {
 			CyNode source = edge.getSource();
 			CyNode target = edge.getTarget();
 			if(getGroupNetwork().containsNode(source) && getGroupNetwork().containsNode(target))
 				getGroupNetwork().addEdge(edge);
-			else if (getGroupNetwork().containsNode(source) || getGroupNetwork().containsNode(target))
+			else if (getGroupNetwork().containsNode(source) || getGroupNetwork().containsNode(target)) {
 				externalEdges.add(edge);
-			else
+				updateMeta = true;
+			} else
 				throwIllegalArgumentException("Attempted to add an edge that has no node in the group");
 		}
+		if (updateMeta)
+			updateMetaEdges(true);
 		cyEventHelper.fireEvent(new GroupEdgesAddedEvent(CyGroupImpl.this, edges));
 	}
 
@@ -567,6 +571,17 @@ class CyGroupImpl implements CyGroup {
 			if (edge.getSource() == groupNode || edge.getTarget() == groupNode)
 				continue;
 
+			// If our group node already points to this node, and we're collapsed, we may
+			// be adding a new edge from the XGMML reader.  Not a clean special case,
+			// but there you have it...
+			if (rootNetwork.containsEdge(edge.getSource(), groupNode)
+				  && metaAlreadyExists(edge.getSource(), groupNode))
+					continue;
+
+			if (rootNetwork.containsEdge(groupNode, edge.getTarget())
+				  && metaAlreadyExists(groupNode, edge.getTarget()))
+					continue;
+
 			// Create the meta-edge to the external node, but maintain the directionality
 			// of the original edge
 			CyEdge metaEdge = createMetaEdge(edge, node, groupNode);
@@ -743,5 +758,15 @@ class CyGroupImpl implements CyGroup {
 			}
 		}
 		groupRow.set(DESCENDENTS_ATTR, nDescendents);
+	}
+
+	public boolean metaAlreadyExists(CyNode source, CyNode target) {
+		List<CyEdge> edges = rootNetwork.getConnectingEdgeList(source, target, CyEdge.Type.OUTGOING);
+		for (CyEdge groupEdge: edges) {
+			if (isMeta(groupEdge)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
