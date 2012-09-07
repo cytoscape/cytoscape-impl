@@ -33,6 +33,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -89,6 +91,7 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.util.swing.JTreeTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -142,6 +145,9 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 	private boolean ignoreTreeSelectionEvents;
 
+	private final EditNetworkTitleTaskFactory rootNetworkTitleEditor;
+	private final JPopupMenu rootPopupMenu;	
+	private CyRootNetwork selectedRoot;
 	/**
 	 * 
 	 * @param appMgr
@@ -155,7 +161,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 						final CyNetworkViewManager netViewMgr,
 						final BirdsEyeViewHandler bird,
 						final DialogTaskManager taskMgr,
-						DynamicTaskFactoryProvisioner factoryProvisioner) {
+						DynamicTaskFactoryProvisioner factoryProvisioner,
+						final EditNetworkTitleTaskFactory networkTitleEditor) {
 		super();
 
 		this.treeNodeMap = new HashMap<Long, NetworkTreeNode>();
@@ -165,7 +172,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		this.netViewMgr = netViewMgr;
 		this.taskMgr = taskMgr;
 		this.factoryProvisioner = factoryProvisioner;
-
+		
+		
 		root = new NetworkTreeNode("Network Root", null);
 		treeTableModel = new NetworkTreeTableModel(this, root);
 		treeTable = new JTreeTable(treeTableModel);
@@ -181,6 +189,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		nodeEdgeTables = new WeakHashMap<CyTable, CyNetwork>();
 		this.network2nodeMap = new WeakHashMap<CyNetwork, NetworkTreeNode>();
 
+		
 		setNavigator(bird.getBirdsEyeView());
 
 		/*
@@ -194,6 +203,30 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				treeTable.setInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, map);
 			}
 		}
+		
+
+		this.rootNetworkTitleEditor = networkTitleEditor;
+		rootPopupMenu = new JPopupMenu();
+		JMenuItem editRootNetworTitle = new JMenuItem("Rename Network Collection...");
+		editRootNetworTitle.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				taskMgr.execute( rootNetworkTitleEditor.createTaskIterator(selectedRoot));
+			}
+		});
+		rootPopupMenu.add(editRootNetworTitle);
+		
+		JMenuItem selectAllSubNetsMenuItem = new JMenuItem("Select All Networks");
+		selectAllSubNetsMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				selectAllSubnetwork();
+			}
+		});
+		rootPopupMenu.add(selectAllSubNetsMenuItem);
 	}
 
 	protected void initialize() {
@@ -538,8 +571,11 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 				parentTreeNode = this.treeNodeMap.get(parentNetwork.getSUID());
 			}
 
-			if (parentTreeNode == null)
-				parentTreeNode = new NetworkTreeNode("", null);
+			if (parentTreeNode == null){
+				parentTreeNode = new NetworkTreeNode(parentNetwork.getRow(parentNetwork).get(CyNetwork.NAME, String.class) , parentNetwork);
+				nameTables.put(parentNetwork.getDefaultNetworkTable(), parentNetwork);
+				network2nodeMap.put(parentNetwork, parentTreeNode);
+			}
 
 			// Actual tree node for this network
 			String netName = network.getRow(network).get(CyNetwork.NAME, String.class);
@@ -627,12 +663,13 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 		CyNetwork cn = node.getNetwork();
 		final List<CyNetwork> selectedNetworks = new LinkedList<CyNetwork>();
-		
-		if (cn == null) {
+	
+		/*
+		if (cn instanceof CyRootNetwork) {
 			// This is a "network set" node...
 			// When selecting root node, all of the subnetworks are selected.
-			CyRootNetwork root = ((CySubNetwork) ((NetworkTreeNode) node.getFirstChild()).getNetwork())
-					.getRootNetwork();
+			CyRootNetwork root = (CyRootNetwork) cn; 
+					//((NetworkTreeNode) node.getFirstChild()).getNetwork()).getRootNetwork();
 
 			// Creates a list of all selected networks
 			List<CySubNetwork> subNetworks = root.getSubNetworkList();
@@ -645,7 +682,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			// Determine the current network
 			if (!selectedNetworks.isEmpty())
 				cn = ((NetworkTreeNode) node.getFirstChild()).getNetwork();
-		} else {
+		} else { */
 			// Regular multiple networks selection...
 			try {
 				// Create a list of all selected networks
@@ -658,7 +695,61 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			} catch (Exception ex) {
 				logger.error("Error creating the list of selected networks", ex);
 			}
+	//	}
+		
+		final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+		
+		for (final CyNetwork n : selectedNetworks) {
+			final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(n);
+			
+			if (!views.isEmpty())
+				selectedViews.addAll(views);
 		}
+		
+		// No need to set the same network again. It should prevent infinite loops.
+		// Also check if the network still exists (it could have been removed by another thread).
+		if (cn == null || netMgr.networkExists(cn.getSUID())) {
+			if (cn == null || !cn.equals(appMgr.getCurrentNetwork()))
+				appMgr.setCurrentNetwork(cn);
+		
+			CyNetworkView cv = null;
+			
+			// Try to get the first view of the current network
+			final Collection<CyNetworkView> cnViews = cn != null ? netViewMgr.getNetworkViews(cn) : null;
+			cv = (cnViews == null || cnViews.isEmpty()) ? null : cnViews.iterator().next();
+			
+			if (cv == null || !cv.equals(appMgr.getCurrentNetworkView()))
+				appMgr.setCurrentNetworkView(cv);
+			
+			appMgr.setSelectedNetworks(selectedNetworks);
+			appMgr.setSelectedNetworkViews(selectedViews);
+		}
+	}
+	
+	private void selectAllSubnetwork(){
+		
+		final List<CyNetwork> selectedNetworks = new LinkedList<CyNetwork>();
+		
+		// This is a "network set" node...
+		// When selecting root node, all of the subnetworks are selected.
+		CyRootNetwork root = selectedRoot;
+
+		final NetworkTreeNode node = this.network2nodeMap.get(root);
+		
+		// Creates a list of all selected networks
+		List<CySubNetwork> subNetworks = root.getSubNetworkList();
+		
+		for (CySubNetwork sn : subNetworks) {
+			if (netMgr.networkExists(sn.getSUID()))
+				selectedNetworks.add(sn);
+		}
+		
+		CyNetwork cn = root;
+		
+		// Determine the current network
+		if (!selectedNetworks.isEmpty())
+			cn = ((NetworkTreeNode) node.getFirstChild()).getNetwork();
+		
 		
 		final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
 		
@@ -713,7 +804,7 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 		 * display the popup
 		 */
 		private final void maybeShowPopup(final MouseEvent e) {
-
+			
 			// Ignore if not valid trigger.
 			if (!e.isPopupTrigger())
 				return;
@@ -725,15 +816,24 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 
 			final JTree tree = treeTable.getTree();
 			final TreePath treePath = tree.getPathForRow(row);
-
+			CyNetwork rootnetwork;
+			
 			Long networkID = -1L;
 			try {
-				networkID = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetwork().getSUID();
+				rootnetwork = ((NetworkTreeNode) treePath.getLastPathComponent()).getNetwork();
+				networkID = rootnetwork.getSUID();
 			} catch (NullPointerException nullExp) {
 				// The tree root does not represent a network, ignore it.
 				return;
 			}
 
+			if (rootnetwork instanceof CyRootNetwork)
+			{
+				selectedRoot = (CyRootNetwork) rootnetwork;
+				rootPopupMenu.show(e.getComponent(), e.getX(), e.getY());
+				return;
+			}
+			
 			final CyNetwork network = netMgr.getNetwork(networkID);
 
 			if (network != null) {

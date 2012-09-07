@@ -117,6 +117,7 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -196,6 +197,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
 		
+		EditNetworkTitleTaskFactory editNetworkTitleTFServiceRef  = getService(bc, EditNetworkTitleTaskFactory.class);
+		
 		//////////////		
 		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
 		RedoAction redoAction = new RedoAction(undoSupportServiceRef);
@@ -229,7 +232,8 @@ public class CyActivator extends AbstractCyActivator {
 		                                             cyNetworkViewManagerServiceRef,
 		                                             birdsEyeViewHandler,
 		                                             dialogTaskManagerServiceRef,
-		                                             dynamicTaskFactoryProvisionerServiceRef);
+		                                             dynamicTaskFactoryProvisionerServiceRef,
+		                                             editNetworkTitleTFServiceRef);
 
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
 		                                                         networkViewManager, networkPanel,

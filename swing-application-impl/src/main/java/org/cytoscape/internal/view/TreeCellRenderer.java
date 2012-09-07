@@ -12,6 +12,8 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.util.swing.JTreeTable;
 
 final class TreeCellRenderer extends DefaultTreeCellRenderer {
@@ -23,6 +25,7 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 
 	private static final Font TABLE_FONT = new Font("SansSerif", Font.PLAIN, 12);
 	private static final Font TABLE_FONT_SELECTED = new Font("SansSerif", Font.BOLD, 12);
+	private static final Font TABLE_FONT_ROOT = new Font("SansSerif", Font.ITALIC, 12);
 	
 	private static final Dimension CELL_SIZE = new Dimension(1200, 40);
 
@@ -63,17 +66,19 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 
 		if (selected) {
 			this.setFont(TABLE_FONT_SELECTED);
-			this.setBackgroundSelectionColor(Color.lightGray);			
+			this.setBackgroundSelectionColor( new Color(0, 100, 255, 40));		
 			}
 		else {
 			this.setFont(TABLE_FONT);
 			this.setBackgroundNonSelectionColor(Color.white); 
 		}
 
-		if(treeNode.getNetwork() == null) {
+		if(treeNode.getNetwork() == null || (treeNode.getNetwork() instanceof CyRootNetwork) ) {
 			setForeground(treeTable.getForeground());
+			this.setFont(TABLE_FONT_ROOT);
 			return this;
 		}
+			
 		
 		setForeground(treeNode.getNodeColor());
 		try {
