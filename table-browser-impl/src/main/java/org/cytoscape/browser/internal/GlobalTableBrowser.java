@@ -4,10 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.util.Properties;
 
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.browser.internal.TableChooser.GlobalTableComboBoxModel;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
@@ -43,7 +45,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 			CyApplicationManager applicationManager, CyEventHelper eventHelper){//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, networkManager,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
-
+		
 		tableChooser = new TableChooser();
 		tableChooser.addActionListener(this);
 		tableChooser.setMaximumSize(SELECTOR_SIZE);
@@ -84,6 +86,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 				tableChooser.setEnabled(false);
 				// The last table is deleted, refresh the browser table (this is a special case)
 				deleteTable(cyTable);
+				serviceRegistrar.unregisterService(this, CytoPanelComponent.class);
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -108,7 +111,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 				comboBoxModel.addAndSetSelectedItem(newTable);
 			}
-	
+			
+			if (tableChooser.getItemCount() == 1)
+				serviceRegistrar.registerService(this, CytoPanelComponent.class, new Properties());
+			
 			if (tableChooser.getItemCount() != 0)
 				tableChooser.setEnabled(true);
 		}

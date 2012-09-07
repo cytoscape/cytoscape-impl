@@ -1,5 +1,6 @@
 package org.cytoscape.browser.internal;
 
+import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -11,8 +12,13 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.events.TablePrivacyChangedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
@@ -51,7 +57,14 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,nodeTableBrowser, new Properties());
 		registerAllServices(bc,edgeTableBrowser, new Properties());
 		registerAllServices(bc,networkTableBrowser, new Properties());
-		registerAllServices(bc,globalTableBrowser, new Properties());
+		//registerAllServices(bc,globalTableBrowser, new Properties());
+		Properties globalTableProp = new Properties();
+		registerService(bc, globalTableBrowser, ActionListener.class, globalTableProp);
+		registerService(bc, globalTableBrowser, SessionLoadedListener.class, globalTableProp);
+		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class, globalTableProp);
+		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class, globalTableProp);
+		registerService(bc, globalTableBrowser, TableAddedListener.class, globalTableProp);
+		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class, globalTableProp);
 
 		registerServiceListener(bc,popupMenuHelper,"addTableColumnTaskFactory","removeTableColumnTaskFactory",TableColumnTaskFactory.class);
 		registerServiceListener(bc,popupMenuHelper,"addTableCellTaskFactory","removeTableCellTaskFactory",TableCellTaskFactory.class);
