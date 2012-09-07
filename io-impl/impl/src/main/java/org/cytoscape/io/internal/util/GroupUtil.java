@@ -26,14 +26,16 @@ public class GroupUtil {
 	// 3.x group attributes
 	private final String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges.SUID";
 	private final String GROUP_COLLAPSED_ATTRIBUTE="__groupCollapsed.SUID";
+	private final String GROUP_NETWORKS_ATTRIBUTE="__groupNetworks.SUID";
 	private final String GROUP_ATTRIBUTE="__isGroup";
+	private final String ISMETA_EDGE_ATTR="__isMetaEdge";
+	private final String X_LOCATION_ATTR="__xLocation";
+	private final String Y_LOCATION_ATTR="__yLocation";
 	// 2.x group attributes
 	private final String GROUP_STATE_ATTRIBUTE="__groupState";
 	private final String GROUP_ISLOCAL_ATTRIBUTE="__groupIsLocal";
 	private final String GROUP_NODEX_ATTRIBUTE="__metanodeHintX";
 	private final String GROUP_NODEY_ATTRIBUTE="__metanodeHintY";
-	private final String X_LOCATION_ATTR="__xLocation";
-	private final String Y_LOCATION_ATTR="__yLocation";
 	private final String X_OFFSET_ATTR="__xOffset";
 	private final String Y_OFFSET_ATTR="__yOffset";
 	
@@ -167,6 +169,17 @@ public class GroupUtil {
 				}
 			}
 
+			/*
+			System.out.print("Node "+n+": is ");
+			if (!collapsed) System.out.print("not ");
+			System.out.print("collapsed and is ");
+			if (cy2group) 
+				System.out.println("a cy2 group");
+			else
+				System.out.println("a cy3 group");
+			*/
+
+
 			// If we're not collapsed, remove the group node from the network before
 			// we create the group
 			if (!collapsed) {
@@ -187,6 +200,7 @@ public class GroupUtil {
 					}
 					hnTable.getRow(n.getSUID()).set(GROUP_STATE_ATTRIBUTE, 1);
 				}
+
 			}
 
 			// Create the group
@@ -200,28 +214,27 @@ public class GroupUtil {
 				
 				for (Long suid: externalIDs) {
 					CyEdge newEdge = rootNet.getEdge(suid);
-					if (newEdge != null)
+					if (newEdge != null) {
+						// Don't add the edge if it already exists
 						externalEdges.add(newEdge);
+					}
 				}
 				
+				if (cy2group && collapsed) {
+					updateMetaEdges(net, n);
+				}
+
 				group.addEdges(externalEdges);
 			}
-			
-			/*
-			// Disable nested network
-			final boolean nestedNetVisible = dnRow.get("nested_network_is_visible", Boolean.class, Boolean.FALSE);
-			if (dnRow.getTable().getColumn("nested_network_is_visible") == null) {
-				dnRow.getTable().createColumn("nested_network_is_visible", Boolean.class, false);
-			}
-			dnRow.set("nested_network_is_visible", Boolean.FALSE);
-			*/
 			
 			// TODO: restore group's settings
 			// Some special handling for cy2 groups.  We need to restore the X,Y coordinates of the nodes
 			// if we're collapsed.
 			if (cy2group) {
-				// Copy all of the tables for the group
-				copyTables(netPointer, net, n);
+				if (collapsed) {
+					// Update the locations of child nodes
+					updateChildOffsets(netPointer, net, n);
+				}
 // TODO add groups to a cached map: xgmmlreader has to access all groups and update their node locations when creating new views
 				// If the group is collapsed, we need to provide the location information so we can expand it
 				if (viewSet != null) {
@@ -229,6 +242,7 @@ public class GroupUtil {
 						for (CyNetworkView view : viewSet) {
 							if (view.getModel().equals(net))
 								updateGroupNodeLocation(view, n);
+								disableNestedNetworkIcon(view, n);
 						}
 					}
 				}
@@ -316,50 +330,65 @@ public class GroupUtil {
 		hiddenTable.getRow(node.getSUID()).set(GROUP_ATTRIBUTE, Boolean.TRUE);
 	}
 	
-	private void copyTables(CyNetwork netPointer, CyNetwork net, CyNode groupNode) {
-		// Copy the tables from the subnetwork
-		CyTable subTable = netPointer.getDefaultNodeTable();
-		CyTable nodeTable = net.getDefaultNodeTable();
-
+	private void updateChildOffsets(CyNetwork netPointer, CyNetwork net, CyNode groupNode) {
 		CyTable hiddenSubTable = netPointer.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
-		CyTable hiddenTable = net.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
 
-		// The group code stores location information in the root table
-		CyRootNetwork rootNetwork = ((CySubNetwork)net).getRootNetwork();
-		CyTable hiddenRootTable = rootNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		// Create our columns, if we need to
+		createListColumn(hiddenSubTable, X_LOCATION_ATTR, Double.class);
+		createListColumn(hiddenSubTable, Y_LOCATION_ATTR, Double.class);
+		createListColumn(hiddenSubTable, GROUP_NETWORKS_ATTRIBUTE, Long.class);
+
 
 		for (CyNode child: netPointer.getNodeList()) {
-			CyRow row = netPointer.getRow(child);
-			CyRow nodeRow = nodeTable.getRow(child.getSUID());
-			
-			for (CyColumn col: subTable.getColumns()) {
-				String name = col.getName();
-				if (nodeTable.getColumn(name) != null && 
-				    !nodeTable.getColumn(name).getVirtualColumnInfo().isVirtual()) {
-					nodeRow.set(col.getName(), row.get(name, col.getType()));
-				}
+			CyRow row = hiddenSubTable.getRow(child.getSUID());
+
+			// Load the existing information in, if any
+			List<Long> networks = new ArrayList<Long>();
+			List<Double> xLocation = new ArrayList<Double>();
+			List<Double> yLocation = new ArrayList<Double>();
+
+			if (row.isSet(GROUP_NETWORKS_ATTRIBUTE))
+				networks = row.getList(GROUP_NETWORKS_ATTRIBUTE, Long.class);
+			if (row.isSet(X_LOCATION_ATTR))
+				xLocation = row.getList(X_LOCATION_ATTR, Double.class);
+			if (row.isSet(Y_LOCATION_ATTR))
+				yLocation = row.getList(Y_LOCATION_ATTR, Double.class);
+
+			networks.add(net.getSUID());
+
+			// Look for child node location information
+			if ((hiddenSubTable.getColumn(GROUP_NODEX_ATTRIBUTE) != null)
+			    && (row.isSet(GROUP_NODEX_ATTRIBUTE))) {
+				xLocation.add(row.get(GROUP_NODEX_ATTRIBUTE, Double.class));
+			} else {
+				xLocation.add(0.0d);
 			}
 
-			CyRow hiddenRow = hiddenTable.getRow(child.getSUID());
-			CyRow hiddenSubRow = hiddenSubTable.getRow(child.getSUID());
-			CyRow hiddenRootRow = hiddenRootTable.getRow(child.getSUID());
-			
-			for (CyColumn col: hiddenSubTable.getColumns()) {
-				String name = col.getName();
-				
-				// Look for child node location information
-				if (name.equals(GROUP_NODEX_ATTRIBUTE)) {
-					Double offset = hiddenSubRow.get(name, Double.class);
-					createColumn(hiddenRootRow, X_OFFSET_ATTR, Double.class);
-					hiddenRootRow.set(X_OFFSET_ATTR, offset);
-				} else if (name.equals(GROUP_NODEY_ATTRIBUTE)) {
-					Double offset = hiddenSubRow.get(name, Double.class);
-					createColumn(hiddenRootRow, Y_OFFSET_ATTR, Double.class);
-					hiddenRootRow.set(Y_OFFSET_ATTR, offset);
-				} else if (hiddenTable.getColumn(name) != null && 
-				           !hiddenTable.getColumn(name).getVirtualColumnInfo().isVirtual()) {
-					hiddenSubRow.set(col.getName(), hiddenRow.get(name, col.getType()));
-				}
+			if ((hiddenSubTable.getColumn(GROUP_NODEY_ATTRIBUTE) != null)
+			    && (row.isSet(GROUP_NODEY_ATTRIBUTE))) {
+				yLocation.add(row.get(GROUP_NODEY_ATTRIBUTE, Double.class));
+			} else {
+				yLocation.add(0.0d);
+			}
+
+			row.set(GROUP_NETWORKS_ATTRIBUTE, networks);
+			row.set(X_LOCATION_ATTR, xLocation);
+			row.set(Y_LOCATION_ATTR, yLocation);
+		}
+	}
+
+	private void updateMetaEdges(final CyNetwork net, final CyNode groupNode) {
+		CyRootNetwork rootNetwork = ((CySubNetwork)net).getRootNetwork();
+
+		// Find all of the edges from the group node and if they are
+		// meta-edges, mark them as such
+		List<CyEdge> edgeList = net.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
+		for (CyEdge edge: edgeList) {
+			String interaction = net.getRow(edge).get(CyEdge.INTERACTION, String.class);
+			if (interaction.startsWith("meta-")) {
+				createColumn(rootNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS), 
+				             ISMETA_EDGE_ATTR, Boolean.class);
+				rootNetwork.getRow(edge, CyNetwork.HIDDEN_ATTRS).set(ISMETA_EDGE_ATTR, Boolean.TRUE);
 			}
 		}
 	}
@@ -375,16 +404,25 @@ public class GroupUtil {
 		// Save it
 		// TODO these attributes will not work with multiple views per network!
 		CyRow hRow = rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS);
-		createColumn(hRow, X_LOCATION_ATTR, Double.class);
-		createColumn(hRow, Y_LOCATION_ATTR, Double.class);
+		createColumn(hRow.getTable(), X_LOCATION_ATTR, Double.class);
+		createColumn(hRow.getTable(), Y_LOCATION_ATTR, Double.class);
 		hRow.set(X_LOCATION_ATTR, new Double(x));
 		hRow.set(Y_LOCATION_ATTR, new Double(y));
 	}
+
+	public void disableNestedNetworkIcon(final CyNetworkView view, CyNode n) {
+		View<CyNode> nView = view.getNodeView(n);
+		nView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, 
+		                     Boolean.FALSE);
+	}
 	
-	private void createColumn(CyRow row, String column, Class<?> type) {
-		CyTable table = row.getTable();
-		
+	private void createColumn(CyTable table, String column, Class<?> type) {
 		if (table.getColumn(column) == null)
 			table.createColumn(column, type, false);
+	}
+	
+	private void createListColumn(CyTable table, String column, Class<?> type) {
+		if (table.getColumn(column) == null)
+			table.createListColumn(column, type, false);
 	}
 }
