@@ -37,7 +37,6 @@ import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;

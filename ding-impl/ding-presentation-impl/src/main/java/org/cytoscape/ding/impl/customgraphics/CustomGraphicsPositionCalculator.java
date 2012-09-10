@@ -8,7 +8,7 @@ import java.util.Map;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
 import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
 import org.cytoscape.graph.render.stateful.PaintFactory;
 
 public class CustomGraphicsPositionCalculator {
@@ -51,8 +51,8 @@ public class CustomGraphicsPositionCalculator {
 		
 		final double nodeW = nv.getWidth();
 		final double nodeH = nv.getHeight();
-		final double cgW = cg.getShape().getBounds().getWidth();
-		final double cgH = cg.getShape().getBounds().getHeight();
+		final double cgW = cg.getBounds().getWidth();
+		final double cgH = cg.getBounds().getHeight();
 		
 		final Float[] disp1 = DISPLACEMENT_MAP.get(anc);
 		final Float[] disp2 = DISPLACEMENT_MAP.get(ancN);
@@ -69,11 +69,7 @@ public class CustomGraphicsPositionCalculator {
 		double totalDispY = dispY + dispNY + p.getOffsetY();
 		
 		final AffineTransform tf = AffineTransform.getTranslateInstance(totalDispX, totalDispY);
-		final Shape newShape = tf.createTransformedShape(cg.getShape());
-		
-		final PaintFactory newFactory = cg.getPaintFactory();
-		
-		return new CustomGraphic(newShape, newFactory); 
-		
+
+		return cg.transform(tf);
 	}
 }

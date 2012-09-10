@@ -44,6 +44,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -59,6 +60,10 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
@@ -1997,6 +2002,68 @@ public final class GraphGraphics {
 		}
 
 		return m_fontRenderContextFull;
+	}
+
+	public final void drawCustomGraphicImage(final Shape shape,
+			final float xOffset, final float yOffset, final TexturePaint paint) {
+		if (m_debug) {
+			checkDispatchThread();
+			checkCleared();
+		}
+		
+		m_g2d.translate(xOffset, yOffset);
+		if(paint instanceof TexturePaint) {
+			final BufferedImage bImg = ((TexturePaint) paint).getImage();
+			m_g2d.drawImage(bImg,
+			                shape.getBounds().x, shape.getBounds().y, 
+			                shape.getBounds().width, shape.getBounds().height, null);
+		}
+		m_g2d.setTransform(m_currNativeXform);
+	}
+
+	/**
+	 * Fills an arbitrary graphical shape with high detail.
+	 * <p>
+	 * This method will not work unless clear() has been called at least once
+	 * previously.
+	 * 
+	 * @param cg
+	 *            the CustomGraphic
+	 * @param xOffset
+	 *            in node coordinates, a value to add to the X coordinates of
+	 *            the shape's definition.
+	 * @param yOffset
+	 *            in node coordinates, a value to add to the Y coordinates of
+	 *            the shape's definition.
+	 */
+	public final void drawCustomGraphicFull(final CustomGraphic cg,
+	                                        final float xOffset, final float yOffset) {
+		if (m_debug) {
+			checkDispatchThread();
+			checkCleared();
+		}
+		
+		m_g2d.translate(xOffset, yOffset);
+		if (cg instanceof PaintedShape) {
+			PaintedShape ps = (PaintedShape)cg;
+			Shape shape = ps.getShape();
+
+			if (ps.getStroke() != null) {
+				Paint strokePaint = ps.getStrokePaint();
+				if (strokePaint == null) strokePaint = Color.BLACK;
+				m_g2d.setPaint(strokePaint);
+				m_g2d.setStroke(ps.getStroke());
+				m_g2d.draw(shape);
+			}
+			m_g2d.setPaint(ps.getPaint());
+			m_g2d.fill(shape);
+		} else if(cg instanceof ImageCustomGraphic) {
+			Rectangle bounds = cg.getBounds();
+			final BufferedImage bImg = ((ImageCustomGraphic)cg).getPaint(bounds).getImage();
+			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
+		}
+
+		m_g2d.setTransform(m_currNativeXform);
 	}
 
 	/**

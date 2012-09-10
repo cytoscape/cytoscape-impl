@@ -60,13 +60,13 @@ import org.cytoscape.ding.Label;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.VectorCustomGraphics;
 import org.cytoscape.ding.impl.customgraphics.CustomGraphicsPositionCalculator;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -1223,8 +1223,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		// final double nodeW = this.getWidth();
 		// final double nodeH = this.getHeight();
 
-		final Shape originalShape = cg.getShape();
-		final Rectangle2D originalBounds = originalShape.getBounds2D();
+		final Rectangle2D originalBounds = cg.getBounds2D();
 		final double cgW = originalBounds.getWidth();
 		final double cgH = originalBounds.getHeight();
 
@@ -1247,7 +1246,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			}
 		}
 		
-		return new CustomGraphic(scale.createTransformedShape(originalShape), cg.getPaintFactory());
+		return cg.transform(scale);
 	}
 
 	@Override

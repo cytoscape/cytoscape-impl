@@ -5,7 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
 
 import org.cytoscape.ding.customgraphics.paint.GradientPaintFactory;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
 
 public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 	
@@ -24,7 +24,7 @@ public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 		final Graphics2D g2d = (Graphics2D) graphics;
 		// Render
 		update();
-		g2d.setPaint(paintFactory.getPaint(bound.getBounds2D()));
+		g2d.setPaint(paintFactory.getPaint(shape.getBounds2D()));
 		g2d.fillRoundRect(rendered.getMinX(), rendered.getMinY(), 
 				rendered.getWidth(), rendered.getHeight(), r, r);
 	}
@@ -35,10 +35,10 @@ public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 		layers.clear();
 		
 		r = (int)(Math.min(width, height)/4f);
-		bound = new RoundRectangle2D.Double(-width / 2, -height / 2,
+		shape = new RoundRectangle2D.Double(-width / 2, -height / 2,
 																	width, height, r, r);
 		paintFactory = new GradientPaintFactory(c1.getValue(), c2.getValue());
-		final CustomGraphic cg = new CustomGraphic(bound, paintFactory);
+		final PaintCustomGraphic cg = new PaintCustomGraphic(shape, paintFactory);
 		layers.add(cg);
 	}
 

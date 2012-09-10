@@ -29,6 +29,7 @@ package org.cytoscape.graph.render.stateful;
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 
 /**
  * Defines visual properties of a node modulo the node size and location Even

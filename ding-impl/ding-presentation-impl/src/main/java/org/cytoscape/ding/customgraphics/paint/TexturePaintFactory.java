@@ -16,7 +16,7 @@ public class TexturePaintFactory implements PaintFactory {
 	}
 
 
-	public Paint getPaint(Rectangle2D bound) {
+	public TexturePaint getPaint(Rectangle2D bound) {
 		return new TexturePaint(img, bound);
 	}
 

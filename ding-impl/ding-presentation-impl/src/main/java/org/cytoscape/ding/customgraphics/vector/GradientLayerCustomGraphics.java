@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,8 +24,8 @@ public abstract class GradientLayerCustomGraphics extends AbstractDCustomGraphic
 	// Paint fot this graphics
 	protected PaintFactory paintFactory;
 	
-	// Bound of this graphics
-	protected Shape bound;
+	// Shape of this paint
+	protected Shape shape;
 	
 	private static final float FIT = 0.9f;
 	

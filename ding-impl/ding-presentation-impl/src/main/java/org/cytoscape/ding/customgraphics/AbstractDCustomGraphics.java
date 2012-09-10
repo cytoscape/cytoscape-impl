@@ -8,10 +8,10 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
 
-public abstract class AbstractDCustomGraphics implements
-		CyCustomGraphics<CustomGraphic>, Taggable {
+public abstract class AbstractDCustomGraphics<T extends CustomGraphic> implements
+		CyCustomGraphics<T>, Taggable {
 
 	protected static final String DELIMITER = ",";
 	public static final String LIST_DELIMITER = "|";
@@ -22,7 +22,7 @@ public abstract class AbstractDCustomGraphics implements
 	protected final Long id;
 	
 	// Layers of Ding Custom Graphic objects.
-	protected List<CustomGraphic> layers;
+	protected List<T> layers;
 	
 	// Human readable name
 	protected String displayName;
@@ -48,7 +48,7 @@ public abstract class AbstractDCustomGraphics implements
 	public AbstractDCustomGraphics(final Long id, final String displayName) {
 		this.id = id;
 		
-		this.layers = new ArrayList<CustomGraphic>();
+		this.layers = new ArrayList<T>();
 		this.displayName = displayName;
 
 		this.tags = new TreeSet<String>();
@@ -77,7 +77,7 @@ public abstract class AbstractDCustomGraphics implements
 	}
 
 	
-	public List<CustomGraphic> getLayers() {
+	public List<T> getLayers() {
 		return layers;
 	}
 

@@ -1,6 +1,7 @@
 package org.cytoscape.ding.customgraphics.bitmap;
 
 import java.awt.Image;
+import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -11,11 +12,13 @@ import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.ImageUtil;
+import org.cytoscape.ding.customgraphics.bitmap.ImageCustomGraphicImpl;
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.PaintFactory;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphic;
 
-public class URLImageCustomGraphics extends AbstractDCustomGraphics {
+public class URLImageCustomGraphics <ImageCustomGraphic> 
+        extends AbstractDCustomGraphics {
 
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
 	private static BufferedImage DEF_IMAGE;
@@ -31,7 +34,7 @@ public class URLImageCustomGraphics extends AbstractDCustomGraphics {
 	
 	private static final String DEF_TAG = "bitmap image";
 
-	private CustomGraphic cg;
+	private ImageCustomGraphic icg;
 
 	private BufferedImage originalImage;
 	private BufferedImage scaledImage;
@@ -70,9 +73,9 @@ public class URLImageCustomGraphics extends AbstractDCustomGraphics {
 		height = targetImg.getHeight();
 
 		bound = new Rectangle2D.Double(-width / 2, -height / 2, width, height);
-		final PaintFactory paintFactory = new TexturePaintFactory(targetImg);
+		final TexturePaintFactory paintFactory = new TexturePaintFactory(targetImg);
 
-		cg = new CustomGraphic(bound, paintFactory);
+		ImageCustomGraphicImpl cg = new ImageCustomGraphicImpl(bound, paintFactory);
 		
 		layers.add(cg);
 	}

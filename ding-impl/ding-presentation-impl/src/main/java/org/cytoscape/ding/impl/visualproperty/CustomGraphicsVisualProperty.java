@@ -3,8 +3,8 @@ package org.cytoscape.ding.impl.visualproperty;
 import org.cytoscape.ding.DummyCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
 

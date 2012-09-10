@@ -46,11 +46,11 @@ import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
-import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 

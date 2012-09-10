@@ -3,7 +3,6 @@ package org.cytoscape.ding.customgraphics;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.graph.render.stateful.CustomGraphic;
 import org.cytoscape.view.model.DiscreteRange;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
