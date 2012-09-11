@@ -87,12 +87,15 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 	}
 
 	public void update() {
+		
+		int selectedIndex = combobox.getSelectedIndex();
 		combobox.removeAllItems();
 		for ( T value : getSingleSelection().getPossibleValues() ) 
 			combobox.addItem(value);
 		
-		if(combobox.getModel().getSize() != 0)
-			combobox.setSelectedIndex(0);
+		//this is to solve the problem with calling update at run
+		if (combobox.getItemCount() > selectedIndex)
+			combobox.setSelectedIndex(selectedIndex);
 	}
 
 	/**
@@ -112,8 +115,8 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 				
 			} catch (final Exception e) {
 				combobox.setBackground(Color.red);
-				JOptionPane.showMessageDialog(null, "The value entered cannot be set.", "Error", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "The value entered cannot be set for " + getName() + "!", "Error", JOptionPane.ERROR_MESSAGE);
 				combobox.setBackground(Color.white);
 				return;
 			}
