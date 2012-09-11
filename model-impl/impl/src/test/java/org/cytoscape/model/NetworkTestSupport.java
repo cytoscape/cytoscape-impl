@@ -29,16 +29,17 @@ public class NetworkTestSupport {
 	protected CyTableManagerImpl tableMgr;
 	protected CyNetworkTableManagerImpl networkTableMgr;
 	protected CyRootNetworkManager rootNetworkManager;
-
+	protected CyNetworkManager networkMgr;
+	
 	public NetworkTestSupport() {
 		eventHelper = new DummyCyEventHelper();
 		networkTableMgr = new CyNetworkTableManagerImpl();
 		
 		// Mock objects.
-		final CyNetworkManager networkManager = new CyNetworkManagerImpl(eventHelper);
+		networkMgr = new CyNetworkManagerImpl(eventHelper);
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		
-		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkManager); 
+		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkMgr); 
 		
 		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);
 		networkFactory = new CyNetworkFactoryImpl(eventHelper, tableMgr, networkTableMgr, tableFactory, serviceRegistrar);
@@ -59,5 +60,9 @@ public class NetworkTestSupport {
 	
 	public CyNetworkTableManager getNetworkTableManager() {
 		return networkTableMgr;
+	}
+	
+	public CyNetworkManager getNetworkManager() {
+		return networkMgr;
 	}
 }
