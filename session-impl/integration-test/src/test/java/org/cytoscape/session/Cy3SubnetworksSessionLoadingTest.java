@@ -1,22 +1,11 @@
 package org.cytoscape.session;
 
-import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
-import static org.cytoscape.model.CyNetwork.HIDDEN_ATTRS;
-import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS;
-import static org.cytoscape.model.CyNetwork.NAME;
-import static org.cytoscape.model.CyNetwork.SELECTED;
-import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_ATTRS;
-import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_DEFAULT_ATTRS;
 import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Set;
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.work.TaskIterator;
@@ -108,43 +97,5 @@ public class Cy3SubnetworksSessionLoadingTest extends BasicIntegrationTest {
 		assertEquals("Minimal", vmm.getVisualStyle(viewManager.getNetworkViews(na1).iterator().next()).getTitle());
 		assertEquals("Directed", vmm.getVisualStyle(viewManager.getNetworkViews(nb).iterator().next()).getTitle());
 		assertEquals("Ripple", vmm.getVisualStyle(viewManager.getNetworkViews(nb1).iterator().next()).getTitle());
-	}
-	
-	private void checkNodeEdgeCount(CyNetwork net, int nodeCount, int edgeCount, int selectedNodes, int selectedEdges) {
-		assertEquals(net + ": incorrect selection", nodeCount, net.getNodeCount());
-		assertEquals(net + ": incorrect selection", edgeCount, net.getEdgeCount());
-		assertEquals(net + ": incorrect selection", selectedNodes, net.getTable(CyNode.class, LOCAL_ATTRS).getMatchingRows(SELECTED, true).size());
-		assertEquals(net + ": incorrect selection", selectedEdges, net.getTable(CyEdge.class, LOCAL_ATTRS).getMatchingRows(SELECTED, true).size());
-	}
-	
-	private void checkSelection(CyNetwork net, CyIdentifiable element, boolean selected) {
-		assertEquals(selected, net.getRow(element, LOCAL_ATTRS).get(SELECTED, Boolean.class));
-	}
-	
-	private CyNetwork getNetworkByName(String name) {
-		for (CyNetwork net : networkManager.getNetworkSet()) {
-			if (name.equals(net.getRow(net).get(NAME, String.class)))
-				return net;
-		}
-		
-		return null;
-	}
-	
-	private CyNode getNodeByName(CyNetwork net, String name) {
-		for (CyNode n : net.getNodeList()) {
-			if (name.equals(net.getRow(n).get(NAME, String.class)))
-				return n;
-		}
-		
-		return null;
-	}
-	
-	private CyEdge getEdgeByName(CyNetwork net, String name) {
-		for (CyEdge e : net.getEdgeList()) {
-			if (name.equals(net.getRow(e).get(NAME, String.class)))
-				return e;
-		}
-		
-		return null;
 	}
 }

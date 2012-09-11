@@ -19,7 +19,9 @@ import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
 import static org.cytoscape.model.CyNetwork.HIDDEN_ATTRS;
 import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS;
 import static org.cytoscape.model.CyNetwork.NAME;
+import static org.cytoscape.model.CyNetwork.SELECTED;
 import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_ATTRS;
+import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_NAME;
 import static org.junit.Assert.*;
 import static org.ops4j.pax.exam.CoreOptions.*;
 
@@ -30,9 +32,11 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -73,42 +77,32 @@ public abstract class BasicIntegrationTest {
 	
 	@Inject
 	protected CyNetworkManager networkManager;
-	
 	@Inject
 	protected CyTableManager tableManager;
-	
 	@Inject
 	protected CyNetworkTableManager networkTableManager;
-	
 	@Inject
 	protected CyNetworkViewManager viewManager;
-	
 	@Inject
 	protected CyNetworkFactory networkFactory;
-	
 	@Inject
 	protected CySessionManager sessionManager;
-	
 	@Inject
 	protected VisualMappingManager vmm;
-	
 	@Inject
 	protected RenderingEngineManager renderingEngineManager;
-	
 	@Inject @Filter("(id=ding)") // Use DING
 	protected VisualLexicon lexicon;
-	
 	@Inject
 	protected OpenSessionTaskFactory openSessionTF;
-	
 	@Inject
 	protected SynchronousTaskManager<?> tm;
-	
 	@Inject
 	protected CyApplicationManager applicationManager;
-	
 	@Inject
 	protected CySessionReaderManager sessionReaderManager;
+	@Inject
+	protected CyGroupManager groupManager;
 	
 	
 	// Target file name.  Assume we always have one test session file per test class.
@@ -277,6 +271,48 @@ public abstract class BasicIntegrationTest {
 		assertNotNull(openSessionTF);
 		assertNotNull(applicationManager);
 		assertNotNull(sessionReaderManager);
+		assertNotNull(groupManager);
+	}
+	
+	protected void checkNodeEdgeCount(CyNetwork net, int nodeCount, int edgeCount, int selectedNodes, int selectedEdges) {
+		assertEquals(net + ": incorrect selection", nodeCount, net.getNodeCount());
+		assertEquals(net + ": incorrect selection", edgeCount, net.getEdgeCount());
+		assertEquals(net + ": incorrect selection", selectedNodes, net.getTable(CyNode.class, LOCAL_ATTRS).getMatchingRows(SELECTED, true).size());
+		assertEquals(net + ": incorrect selection", selectedEdges, net.getTable(CyEdge.class, LOCAL_ATTRS).getMatchingRows(SELECTED, true).size());
+	}
+	
+	protected void checkSelection(CyNetwork net, CyIdentifiable element, boolean selected) {
+		assertEquals(selected, net.getRow(element, LOCAL_ATTRS).get(SELECTED, Boolean.class));
+	}
+	
+	protected CyNetwork getNetworkByName(String name) {
+		for (CyNetwork net : networkManager.getNetworkSet()) {
+			if (name.equals(net.getRow(net).get(NAME, String.class)))
+				return net;
+		}
 		
+		return null;
+	}
+	
+	protected CyNode getNodeByName(CyNetwork net, String name) {
+		String colName = net instanceof CyRootNetwork ? SHARED_NAME : NAME;
+		
+		for (CyNode n : net.getNodeList()) {
+			if (name.equals(net.getRow(n).get(colName, String.class)))
+				return n;
+		}
+		
+		return null;
+	}
+	
+	protected CyEdge getEdgeByName(CyNetwork net, String name) {
+		String colName = net instanceof CyRootNetwork ? SHARED_NAME : NAME;
+		
+		for (CyEdge e : net.getEdgeList()) {
+			if (name.equals(net.getRow(e).get(colName, String.class)))
+				return e;
+		}
+		
+		return null;
 	}
 }
