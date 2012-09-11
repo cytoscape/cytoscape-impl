@@ -4,16 +4,21 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
-public class DefaultCyCustomGraphicsParser implements CyCustomGraphicsParser {
+public class DefaultCyCustomGraphicsFactory implements CyCustomGraphicsFactory {
 	
 	private final CustomGraphicsManager manager;
 	
-	public DefaultCyCustomGraphicsParser(final CustomGraphicsManager manager) {
+	public DefaultCyCustomGraphicsFactory(final CustomGraphicsManager manager) {
 		if(manager == null)
 			throw new NullPointerException("CustomGraphicsManager is null.");
 		
 		this.manager = manager;
+	}
+
+	public CyCustomGraphics parseSerializableString(String string) {
+		return getInstance(string);
 	}
 
 	public CyCustomGraphics getInstance(String entry) {
@@ -65,7 +70,7 @@ public class DefaultCyCustomGraphicsParser implements CyCustomGraphicsParser {
 		return cg;
 	}
 
-	public Class<? extends CyCustomGraphics> getTargetClass() {
+	public Class <? extends CyCustomGraphics> getSupportedClass() {
 		return null;
 	}
 

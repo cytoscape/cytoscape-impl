@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> implements
@@ -30,7 +31,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 	protected int width = 50;
 	protected int height = 50;
 	
-	protected CyCustomGraphicsParser parser;
+	protected CyCustomGraphicsFactory factory;
 
 	//protected ObjectPosition position;
 
