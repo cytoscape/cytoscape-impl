@@ -45,6 +45,7 @@ public class NNFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 	private final CyNetworkManager cyNetworkManagerServiceRef;
 	private final CyRootNetworkManager cyRootNetworkFactory;
 
+
 	public NNFNetworkReaderFactory(CyFileFilter filter, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
 			 CyNetworkManager cyNetworkManagerServiceRef,CyRootNetworkManager cyRootNetworkFactory) {

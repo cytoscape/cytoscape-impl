@@ -34,6 +34,8 @@ import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.TaskIterator;
@@ -47,6 +49,8 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 	private final XGMMLParser parser;
 	private final ReadDataManager readDataMgr;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
+	private final CyNetworkManager cyNetworkManager;;
+	private final CyRootNetworkManager cyRootNetworkManager;
 
 	public GenericXGMMLReaderFactory(final CyFileFilter filter,
 			                         final CyNetworkViewFactory cyNetworkViewFactory,
@@ -54,17 +58,21 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 									 final RenderingEngineManager renderingEngineMgr,
 									 final ReadDataManager readDataMgr,
 									 final XGMMLParser parser,
-									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
+									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
+									 final CyNetworkManager cyNetworkManager, 
+									 final CyRootNetworkManager cyRootNetworkManager) {
 		super(filter, cyNetworkViewFactory, cyNetworkFactory);
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
+		this.cyNetworkManager = cyNetworkManager;
+		this.cyRootNetworkManager = cyRootNetworkManager;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new GenericXGMMLReader(inputStream, cyNetworkViewFactory, cyNetworkFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr));
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr,this.cyNetworkManager, this.cyRootNetworkManager));
 	}
 }

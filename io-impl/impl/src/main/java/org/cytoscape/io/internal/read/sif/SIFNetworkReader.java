@@ -40,6 +40,7 @@ import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -51,7 +52,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 
 /**
  * Reader for graphs in the interactions file format. Given the filename,
@@ -68,11 +69,11 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 	private final StringBuilder edgeNameBuilder = new StringBuilder();
 	
 	private TaskMonitor parentTaskMonitor;
-
+	
 	public SIFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			final CyEventHelper eventHelper) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory);
+			final CyEventHelper eventHelper, CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
+		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.layouts = layouts;
 		this.eventHelper = eventHelper;
 	}
@@ -98,7 +99,17 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 			new BufferedReader(new InputStreamReader(inputStream), 128*1024);
 		Map<String, CyNode> nMap = new HashMap<String, CyNode>(10000);
 
-		CyNetwork network = cyNetworkFactory.createNetwork();
+		String networkCollectionName =  networkCollection.getSelectedValue().toString();
+
+		CyNetwork network;
+		if (networkCollectionName.equalsIgnoreCase("new Collection")){
+			network = cyNetworkFactory.createNetwork();
+		}
+		else {
+			// Create a subNetwork of a give collection
+			network = this.name2RootMap.get(networkCollectionName).addSubNetwork();
+		}
+		
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		final CyTable edgeTable = network.getDefaultEdgeTable();
 

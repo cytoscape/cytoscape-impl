@@ -45,8 +45,10 @@ import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -82,8 +84,11 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 							  final RenderingEngineManager renderingEngineMgr,
 							  final ReadDataManager readDataMgr,
 							  final XGMMLParser parser,
-							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
-		super(inputStream, cyNetworkViewFactory, cyNetworkFactory);
+							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
+							  final CyNetworkManager cyNetworkManager, 
+							  final CyRootNetworkManager cyRootNetworkManager
+							  ) {
+		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;

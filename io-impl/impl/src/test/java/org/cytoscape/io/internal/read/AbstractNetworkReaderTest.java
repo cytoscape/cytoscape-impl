@@ -16,8 +16,10 @@ import org.cytoscape.io.internal.util.StreamUtilImpl;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.property.SimpleCyProperty;
@@ -44,6 +46,8 @@ public class AbstractNetworkReaderTest {
 	protected CyNetworkViewFactory viewFactory;
 	protected ReadUtils readUtil;
 	protected CyLayoutAlgorithmManager layouts;
+	protected CyNetworkManager networkManager;;
+	protected CyRootNetworkManager rootNetworkManager;
 
 	private Properties properties;
 
@@ -63,6 +67,9 @@ public class AbstractNetworkReaderTest {
 		NetworkTestSupport nts = new NetworkTestSupport();
 		netFactory = nts.getNetworkFactory();
 
+		networkManager = nts.getNetworkManager();
+		rootNetworkManager = nts.getRootNetworkFactory();
+		
 		properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);		
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();

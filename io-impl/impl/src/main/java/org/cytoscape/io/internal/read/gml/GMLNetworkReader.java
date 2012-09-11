@@ -42,9 +42,11 @@ import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -168,8 +170,9 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 							CyNetworkFactory networkFactory,
 							CyNetworkViewFactory viewFactory,
 							RenderingEngineManager renderingEngineManager,
-							UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr) {
-		super(inputStream, viewFactory, networkFactory);
+							UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr
+							, CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
+		super(inputStream, viewFactory, networkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.renderingEngineManager = renderingEngineManager;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 
@@ -192,7 +195,16 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		taskMonitor.setProgress(0.1);
 		readGML(keyVals, taskMonitor); // read the GML file
 		taskMonitor.setProgress(0.3);
-		network = cyNetworkFactory.createNetwork();
+		
+		String networkCollectionName =  networkCollection.getSelectedValue().toString();
+		if (networkCollectionName.equalsIgnoreCase("new Collection")){
+			network = cyNetworkFactory.createNetwork();
+		}
+		else {
+			// Create a subNetwork of a give collection
+			network = this.name2RootMap.get(networkCollectionName).addSubNetwork();
+		}
+		
 		createGraph(taskMonitor);
 		taskMonitor.setProgress(0.8);
 		this.cyNetworks = new CyNetwork[] { network };

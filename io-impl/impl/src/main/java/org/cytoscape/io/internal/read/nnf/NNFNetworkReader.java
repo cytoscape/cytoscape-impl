@@ -73,7 +73,7 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 	public NNFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
 			CyNetworkManager cyNetworkManagerServiceRef, CyRootNetworkManager cyRootNetworkFactory) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory);
+		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManagerServiceRef, cyRootNetworkFactory);
 		this.layouts = layouts;
 
 		this.parser = new NNFParser(cyNetworkManagerServiceRef, cyNetworkFactory,cyRootNetworkFactory);
