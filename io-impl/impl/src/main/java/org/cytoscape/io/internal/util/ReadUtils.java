@@ -42,8 +42,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.HashMap;
 
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskMonitor;
 
 /**
@@ -147,4 +152,18 @@ public class ReadUtils {
 
 		return sb.toString();
 	}
+	
+	public static HashMap<String, CyRootNetwork> getRootNetworkMap(CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
+
+		HashMap<String, CyRootNetwork> name2RootMap = new HashMap<String, CyRootNetwork>();
+
+		for (CyNetwork net : cyNetworkManager.getNetworkSet()){
+			final CyRootNetwork rootNet = cyRootNetworkManager.getRootNetwork(net);
+			if (!name2RootMap.containsValue(rootNet ) )
+				name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
+		}
+
+		return name2RootMap;
+	}
+
 }
