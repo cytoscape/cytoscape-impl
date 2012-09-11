@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -71,6 +73,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private final CyApplicationManager appMgr;
 	private final CyNetworkTableManager netTableMgr;
 	private final CyRootNetworkManager rootNetMgr;
+	private final CyGroupManager groupMgr;
+	private final CyGroupFactory groupFactory;
 
 	public CloneNetworkTask(final CyNetwork net,
 							final CyNetworkManager netmgr,
@@ -81,7 +85,9 @@ public class CloneNetworkTask extends AbstractCreationTask {
 							final CyNetworkNaming naming,
 							final CyApplicationManager appMgr,
 							final CyNetworkTableManager netTableMgr,
-							final CyRootNetworkManager rootNetMgr) {
+							final CyRootNetworkManager rootNetMgr,
+							final CyGroupManager groupMgr,
+							final CyGroupFactory groupFactory) {
 		super(net, netmgr, networkViewManager);
 
 		this.vmm = vmm;
@@ -91,6 +97,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		this.appMgr = appMgr;
 		this.netTableMgr = netTableMgr;
 		this.rootNetMgr = rootNetMgr;
+		this.groupMgr = groupMgr;
+		this.groupFactory = groupFactory;
 	}
 
 	public void run(TaskMonitor tm) {
@@ -143,7 +151,9 @@ public class CloneNetworkTask extends AbstractCreationTask {
 			orig2NewNodeMap.put(origNode, newNode);
 			new2OrigNodeMap.put(newNode, origNode);
 			cloneRow(newNet, CyNode.class, origNet.getRow(origNode, CyNetwork.LOCAL_ATTRS), newNet.getRow(newNode, CyNetwork.LOCAL_ATTRS));
-			newNode.setNetworkPointer(origNode.getNetworkPointer());
+			
+			if (!groupMgr.isGroup(origNode, origNet))
+				cloneNetworkPointer(origNet, newNet, newNode, origNode.getNetworkPointer());
 		}
 	}
 
@@ -157,6 +167,18 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 
+	private void cloneNetworkPointer(final CyNetwork origNet, final CyNetwork newNet, final CyNode newNode,
+			CyNetwork netPointer) {
+		if (netPointer != null) {
+			// If the referenced network is the original network itself, do the same with the new network,
+			// rather than pointing to the original one.
+			if (origNet.equals(netPointer))
+				netPointer = newNet;
+			
+			newNode.setNetworkPointer(netPointer);
+		}
+	}
+	
 	private void addColumns(final CyNetwork origNet,
 							final CyNetwork newNet, 
 							final Class<? extends CyIdentifiable> tableType,
