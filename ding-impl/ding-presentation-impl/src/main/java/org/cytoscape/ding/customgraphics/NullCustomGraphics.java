@@ -9,14 +9,14 @@ import javax.imageio.ImageIO;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 /**
  * Null object for Custom Graphics. This is used to reset custom graphics on
  * node views.
  * 
  */
-public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphic> {
+public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphicLayer> {
 	
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
 	public static BufferedImage DEF_IMAGE;
@@ -30,9 +30,9 @@ public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphic> {
 		}
 	}
 
-	static final CyCustomGraphics<CustomGraphic> NULL = new NullCustomGraphics();
+	static final CyCustomGraphics<CustomGraphicLayer> NULL = new NullCustomGraphics();
 
-	public static CyCustomGraphics<CustomGraphic> getNullObject() {
+	public static CyCustomGraphics<CustomGraphicLayer> getNullObject() {
 		return NULL;
 	}
 

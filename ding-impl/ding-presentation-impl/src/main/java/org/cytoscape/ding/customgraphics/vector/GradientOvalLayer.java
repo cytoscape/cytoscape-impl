@@ -5,12 +5,12 @@ import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 
 import org.cytoscape.ding.customgraphics.paint.GradientPaintFactory;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public class GradientOvalLayer extends GradientLayerCustomGraphics {
 	
 	// Name of this custom graphics.
-	private static final String NAME = "Glossy Oval Layer";
+	private static final String NAME = "Oval Gradient";
 	
 	
 	public GradientOvalLayer(final Long id) {
@@ -33,7 +33,7 @@ public class GradientOvalLayer extends GradientLayerCustomGraphics {
 		layers.clear();
 		shape = new Ellipse2D.Double(-width / 2, -height / 2, width, height);
 		paintFactory = new GradientPaintFactory(c1.getValue(), c2.getValue());
-		final CustomGraphic cg = new PaintCustomGraphic(shape, paintFactory);
+		final CustomGraphicLayer cg = new PaintCustomGraphic(shape, paintFactory);
 		
 		layers.add(cg);
 	}

@@ -2,10 +2,7 @@ package org.cytoscape.ding.customgraphics;
 
 import org.cytoscape.ding.customgraphics.vector.CustomGraphicsProperty;
 
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
-public class CustomGraphicsPropertyImpl<T> implements
-		CustomGraphicsProperty<T> {
+public class CustomGraphicsPropertyImpl<T> implements CustomGraphicsProperty<T> {
 	
 	private T value;
 	private final T defaultValue;
@@ -15,19 +12,13 @@ public class CustomGraphicsPropertyImpl<T> implements
 		this.value = defaultValue;
 	}
 	
-	
-
 	public T getDefaultValue() {
 		return defaultValue;
 	}
 
-	
-
 	public T getValue() {
 		return value;
 	}
-
-	
 
 	public void setValue(Object value) {
 		if(this.value.getClass().isAssignableFrom(value.getClass()) == false)

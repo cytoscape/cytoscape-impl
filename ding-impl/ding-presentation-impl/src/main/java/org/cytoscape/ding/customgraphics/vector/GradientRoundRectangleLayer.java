@@ -5,12 +5,12 @@ import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
 
 import org.cytoscape.ding.customgraphics.paint.GradientPaintFactory;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 	
 	// Name of this custom graphics.
-	private static final String NAME = "Glossy Round Rectangle Layer";
+	private static final String NAME = "Round Rectangle Gradient";
 	private int r =20;
 
 	

@@ -50,7 +50,7 @@ import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
@@ -87,7 +87,7 @@ class DNodeDetails extends NodeDetails {
 	Map<CyNode, Double> m_labelOffsetXs = new WeakHashMap<CyNode, Double>();
 	Map<CyNode, Double> m_labelOffsetYs = new WeakHashMap<CyNode, Double>();
 	Map<CyNode, Double> m_width = new WeakHashMap<CyNode, Double>();
-	Map<CyNode, List<CustomGraphic>> m_customGraphics = new WeakHashMap<CyNode, List<CustomGraphic>>();
+	Map<CyNode, List<CustomGraphicLayer>> m_customGraphics = new WeakHashMap<CyNode, List<CustomGraphicLayer>>();
 	Map<CyNode, Integer> m_nodeTansparencies = new WeakHashMap<CyNode, Integer>();
 	Map<CyNode, Integer> m_nodeBorderTansparencies = new WeakHashMap<CyNode, Integer>();
 	Map<CyNode, Integer> m_nodeLabelTansparencies = new WeakHashMap<CyNode, Integer>();
@@ -149,7 +149,7 @@ class DNodeDetails extends NodeDetails {
 		m_labelOffsetYs = new WeakHashMap<CyNode, Double>();
 		m_width = new WeakHashMap<CyNode, Double>();
 		m_selectedPaints = new WeakHashMap<CyNode, Paint>();
-		m_customGraphics = new WeakHashMap<CyNode, List<CustomGraphic>>();
+		m_customGraphics = new WeakHashMap<CyNode, List<CustomGraphicLayer>>();
 		this.m_nodeTansparencies = new WeakHashMap<CyNode, Integer>();
 		this.m_nodeBorderTansparencies = new WeakHashMap<CyNode, Integer>();
 		this.m_nodeLabelTansparencies = new WeakHashMap<CyNode, Integer>();
@@ -679,7 +679,7 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	@Override
-	public Iterator<CustomGraphic> customGraphics(final CyNode node) {
+	public Iterator<CustomGraphicLayer> customGraphics(final CyNode node) {
 		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
 		return dnv.customGraphicIterator();
 	}

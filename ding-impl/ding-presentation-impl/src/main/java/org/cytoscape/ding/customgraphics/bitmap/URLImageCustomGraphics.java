@@ -15,9 +15,9 @@ import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.bitmap.ImageCustomGraphicImpl;
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
 import org.cytoscape.graph.render.stateful.PaintFactory;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
 
-public class URLImageCustomGraphics <ImageCustomGraphic> 
+public class URLImageCustomGraphics <ImageCustomGraphicLayer> 
         extends AbstractDCustomGraphics {
 
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
@@ -34,7 +34,7 @@ public class URLImageCustomGraphics <ImageCustomGraphic>
 	
 	private static final String DEF_TAG = "bitmap image";
 
-	private ImageCustomGraphic icg;
+	private ImageCustomGraphicLayer icg;
 
 	private BufferedImage originalImage;
 	private BufferedImage scaledImage;
@@ -142,6 +142,16 @@ public class URLImageCustomGraphics <ImageCustomGraphic>
 
 	public URL getSourceURL() {
 		return this.sourceUrl;
+	}
+
+	@Override
+	public String toString() {
+		if (this.sourceUrl == null && displayName == null) {
+			return "Empty image";
+		} else if (this.sourceUrl != null) {
+			return "Image: "+this.sourceUrl.toString();
+		} else
+			return "Image: "+displayName;
 	}
 
 }

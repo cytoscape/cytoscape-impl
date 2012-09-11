@@ -29,7 +29,7 @@ package org.cytoscape.graph.render.stateful;
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -422,13 +422,13 @@ public class NodeDetails {
 	}
 
 	/**
-	 * Return a non-null, read-only Iterator over all CustomGraphics contained
-	 * in this Node. The Iterator will return each CustomGraphic in draw order.
+	 * Return a non-null, read-only Iterator over all CustomGraphicLayers contained
+	 * in this Node. The Iterator will return each CustomGraphicLayer in draw order.
 	 * The Iterator cannot be used to modify the underlying set of
-	 * CustomGraphics. NOTE: This method should be abstract, but since it isn't,
+	 * CustomGraphicLayers. NOTE: This method should be abstract, but since it isn't,
 	 * any real use should override this method in a subclass.
 	 * 
-	 * @return The CustomGraphics Iterator. If no CustomGraphics are associated
+	 * @return The CustomGraphicLayers Iterator. If no CustomGraphicLayers are associated
 	 *         with this Node, an empty Iterator is returned.
 	 * @throws UnsupportedOperationException
 	 *             if an attempt is made to use the Iterator's remove() method.
@@ -437,15 +437,15 @@ public class NodeDetails {
 	 */
 	// Should probably be getCustomGraphics(), but all the methods
 	// seem to have this form.
-	public Iterator<CustomGraphic> customGraphics(final CyNode node) {
-		return new Iterator<CustomGraphic>() {
-			private Iterator<CustomGraphic> _iterator = new ArrayList<CustomGraphic>(0).iterator();
+	public Iterator<CustomGraphicLayer> customGraphics(final CyNode node) {
+		return new Iterator<CustomGraphicLayer>() {
+			private Iterator<CustomGraphicLayer> _iterator = new ArrayList<CustomGraphicLayer>(0).iterator();
 
 			public boolean hasNext() {
 				return _iterator.hasNext();
 			}
 
-			public CustomGraphic next() {
+			public CustomGraphicLayer next() {
 				return _iterator.next();
 			}
 
@@ -459,13 +459,13 @@ public class NodeDetails {
 	 * Return the object used for synchronizing custom graphics operations for a
 	 * given Node. This is used in conjunction with the customGraphics()
 	 * Iterator to allow iteration over the custom graphics without fear of the
-	 * underlying CustomGraphics mutating. For example:
+	 * underlying CustomGraphicLayers mutating. For example:
 	 * 
 	 * <PRE>
 	 *    NodeDetails nd = ...;
 	 *    synchronized (nd.customGraphicsLock(node)) {
-	 *       Iterator<CustomGraphic> dNodeIt = nodeDetails.customGraphics (node);
-	 *       CustomGraphic cg = null;
+	 *       Iterator<CustomGraphicLayer> dNodeIt = nodeDetails.customGraphics (node);
+	 *       CustomGraphicLayer cg = null;
 	 *       while (dNodeIt.hasNext()) {
 	 *          cg = dNodeIt.next();
 	 *          // DO STUFF WITH cg HERE.

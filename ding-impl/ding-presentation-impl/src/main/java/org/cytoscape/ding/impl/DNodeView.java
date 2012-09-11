@@ -60,7 +60,7 @@ import org.cytoscape.ding.Label;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.VectorCustomGraphics;
 import org.cytoscape.ding.impl.customgraphics.CustomGraphicsPositionCalculator;
@@ -85,7 +85,7 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
  */
 public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, Label {
 	
-	private final static Set<CustomGraphic> EMPTY_CUSTOM_GRAPHICS = new LinkedHashSet<CustomGraphic>(0);
+	private final static Set<CustomGraphicLayer> EMPTY_CUSTOM_GRAPHICS = new LinkedHashSet<CustomGraphicLayer>(0);
 
 	// Affects size of the nested network image relative to the node size:
 	private static final float NESTED_IMAGE_SCALE_FACTOR = 0.6f;
@@ -157,7 +157,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// custom graphics is important. For space considerations, we
 	// keep _customGraphics null when there are no custom
 	// graphics--event though this is a bit more complicated:
-	private LinkedHashSet<CustomGraphic> orderedCustomGraphicLayers;
+	private LinkedHashSet<CustomGraphicLayer> orderedCustomGraphicLayers;
 
 	// CG_LOCK is used for synchronizing custom graphics operations on this
 	// DNodeView.
@@ -166,12 +166,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// object assuming it takes up the least amount of memory:
 	private final Object[] CG_LOCK = new Object[0];
 
-	// Map from NodeCustomGraphics Visual Property to native CustomGraphics
+	// Map from NodeCustomGraphics Visual Property to native CustomGraphicLayers
 	// objects.
-	private final Map<VisualProperty<?>, Set<CustomGraphic>> cgMap;
+	private final Map<VisualProperty<?>, Set<CustomGraphicLayer>> cgMap;
 
 	// Locations of Custom Graphics
-	private Map<CustomGraphic, ObjectPosition> graphicsPositions;
+	private Map<CustomGraphicLayer, ObjectPosition> graphicsPositions;
 
 	// Label position
 	private ObjectPosition labelPosition;
@@ -199,7 +199,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.netViewMgr = netViewMgr;
 		
 		// Initialize custom graphics pool.
-		cgMap = new HashMap<VisualProperty<?>, Set<CustomGraphic>>();
+		cgMap = new HashMap<VisualProperty<?>, Set<CustomGraphicLayer>>();
 
 		this.graphView = graphView;
 	}
@@ -734,33 +734,33 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	/**
-	 * Adds a given CustomGraphic, <EM>in draw order</EM>, to this DNodeView in
-	 * a thread-safe way. Each CustomGraphic will be drawn in the order is was
+	 * Adds a given CustomGraphicLayer, <EM>in draw order</EM>, to this DNodeView in
+	 * a thread-safe way. Each CustomGraphicLayer will be drawn in the order is was
 	 * added. So, if you care about draw order (as for overlapping graphics),
 	 * make sure you add them in the order you desire. Note that since
-	 * CustomGraphics may be added by multiple apps, your additions may be
+	 * CustomGraphicLayers may be added by multiple apps, your additions may be
 	 * interleaved with others.
 	 * 
 	 * <P>
-	 * A CustomGraphic can only be associated with a DNodeView once. If you wish
+	 * A CustomGraphicLayer can only be associated with a DNodeView once. If you wish
 	 * to have a custom graphic, with the same paint and shape information,
 	 * occur in multiple places in the draw order, simply create a new
-	 * CustomGraphic and add it.
+	 * CustomGraphicLayer and add it.
 	 * 
 	 * @since Cytoscape 2.6
 	 * @throws IllegalArgumentException
 	 *             if shape or paint are null.
-	 * @return true if the CustomGraphic was added to this DNodeView. false if
-	 *         this DNodeView already contained this CustomGraphic.
-	 * @see org.cytoscape.graph.render.stateful.CustomGraphic
+	 * @return true if the CustomGraphicLayer was added to this DNodeView. false if
+	 *         this DNodeView already contained this CustomGraphicLayer.
+	 * @see org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer
 	 */
-	public boolean addCustomGraphic(final CustomGraphic cg) {
+	public boolean addCustomGraphic(final CustomGraphicLayer cg) {
 		boolean retVal = false;
 		synchronized (CG_LOCK) {
 			// Lazy instantiation
 			if (orderedCustomGraphicLayers == null) {
-				orderedCustomGraphicLayers = new LinkedHashSet<CustomGraphic>();
-				graphicsPositions = new HashMap<CustomGraphic, ObjectPosition>();
+				orderedCustomGraphicLayers = new LinkedHashSet<CustomGraphicLayer>();
+				graphicsPositions = new HashMap<CustomGraphicLayer, ObjectPosition>();
 			}
 
 			if (orderedCustomGraphicLayers.contains(cg))
@@ -777,10 +777,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	 * graphic.
 	 * 
 	 * @param cg
-	 *            the CustomGraphic for which we are checking containment.
+	 *            the CustomGraphicLayer for which we are checking containment.
 	 * @since Cytoscape 2.6
 	 */
-	public boolean containsCustomGraphic(final CustomGraphic cg) {
+	public boolean containsCustomGraphic(final CustomGraphicLayer cg) {
 		synchronized (CG_LOCK) {
 			if (orderedCustomGraphicLayers == null)
 				return false;
@@ -789,25 +789,25 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	/**
-	 * Return a read-only Iterator over all CustomGraphics contained
-	 * in this DNodeView. The Iterator will return each CustomGraphic in draw
+	 * Return a read-only Iterator over all CustomGraphicLayers contained
+	 * in this DNodeView. The Iterator will return each CustomGraphicLayer in draw
 	 * order. The Iterator cannot be used to modify the underlying set of
-	 * CustomGraphics.
+	 * CustomGraphicLayers.
 	 * 
-	 * @return The CustomGraphics Iterator. If no CustomGraphics are associated
+	 * @return The CustomGraphicLayers Iterator. If no CustomGraphicLayers are associated
 	 *         with this DNOdeView, null is returned.
 	 * @throws UnsupportedOperationException
 	 *             if an attempt is made to use the Iterator's remove() method.
 	 */
-	public Iterator<CustomGraphic> customGraphicIterator() {
+	public Iterator<CustomGraphicLayer> customGraphicIterator() {
 		synchronized (CG_LOCK) {
-			final Set<CustomGraphic> toIterate;
+			final Set<CustomGraphicLayer> toIterate;
 			if (orderedCustomGraphicLayers == null)
 				toIterate = EMPTY_CUSTOM_GRAPHICS;
 			else
 				toIterate = orderedCustomGraphicLayers;
 			
-			return new ReadOnlyIterator<CustomGraphic>(toIterate);
+			return new ReadOnlyIterator<CustomGraphicLayer>(toIterate);
 		}
 	}
 
@@ -820,7 +820,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	 *         DNodeView.
 	 * @since Cytoscape 2.6
 	 */
-	public boolean removeCustomGraphic(CustomGraphic cg) {
+	public boolean removeCustomGraphic(CustomGraphicLayer cg) {
 		boolean retVal = false;
 		synchronized (CG_LOCK) {
 			if (orderedCustomGraphicLayers != null) {
@@ -1035,14 +1035,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	private CustomGraphic moveCustomGraphicsToNewPosition(final CustomGraphic cg, final ObjectPosition newPosition) {
+	private CustomGraphicLayer moveCustomGraphicsToNewPosition(final CustomGraphicLayer cg, final ObjectPosition newPosition) {
 		if (cg == null || newPosition == null)
-			throw new NullPointerException("CustomGraphic and Position cannot be null.");
+			throw new NullPointerException("CustomGraphicLayer and Position cannot be null.");
 
 		removeCustomGraphic(cg);
 
 		// Create new graphics
-		final CustomGraphic newCg = CustomGraphicsPositionCalculator.transform(newPosition, this, cg);
+		final CustomGraphicLayer newCg = CustomGraphicsPositionCalculator.transform(newPosition, this, cg);
 
 		this.addCustomGraphic(newCg);
 		graphicsPositions.put(newCg, newPosition);
@@ -1120,19 +1120,19 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
 		} else if (vp instanceof CustomGraphicsVisualProperty) {
-			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphic>) value);
+			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphicLayer>) value);
 		} else if (vp instanceof ObjectPositionVisualProperty) {
 			applyCustomGraphicsPosition(vp, (ObjectPosition) value);
 		}
 	}
 
-	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphic> customGraphics) {
-		Set<CustomGraphic> dCustomGraphicsSet = cgMap.get(vp);
+	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphicLayer> customGraphics) {
+		Set<CustomGraphicLayer> dCustomGraphicsSet = cgMap.get(vp);
 		
 		if (dCustomGraphicsSet == null)
-			dCustomGraphicsSet = new HashSet<CustomGraphic>();
+			dCustomGraphicsSet = new HashSet<CustomGraphicLayer>();
 
-		for (final CustomGraphic cg : dCustomGraphicsSet)
+		for (final CustomGraphicLayer cg : dCustomGraphicsSet)
 			removeCustomGraphic(cg);
 
 		dCustomGraphicsSet.clear();
@@ -1140,7 +1140,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (customGraphics == null || customGraphics instanceof NullCustomGraphics)
 			return;
 
-		final List<CustomGraphic> layers = customGraphics.getLayers();
+		final List<CustomGraphicLayer> layers = customGraphics.getLayers();
 
 		// No need to update
 		if (layers == null || layers.size() == 0)
@@ -1162,9 +1162,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
 		final Double customSize = getVisualProperty(cgSizeVP);
 
-		for (CustomGraphic newCG : layers) {
+		for (CustomGraphicLayer newCG : layers) {
 			// Assume it's a Ding layer
-			CustomGraphic finalCG = newCG;
+			CustomGraphicLayer finalCG = newCG;
 
 			if (sync) {
 				// Size is locked to node size.				
@@ -1202,14 +1202,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (parent == null)
 			throw new NullPointerException("Associated Custom Graphics VP is missing for " + vp.getDisplayName());
 
-		final Set<CustomGraphic> currentCG = cgMap.get(parent);
+		final Set<CustomGraphicLayer> currentCG = cgMap.get(parent);
 
 		if (currentCG == null || currentCG.size() == 0)
 			return;
 
-		final Set<CustomGraphic> newList = new HashSet<CustomGraphic>();
+		final Set<CustomGraphicLayer> newList = new HashSet<CustomGraphicLayer>();
 		
-		for (CustomGraphic g : currentCG)
+		for (CustomGraphicLayer g : currentCG)
 			newList.add(moveCustomGraphicsToNewPosition(g, position));
 
 		currentCG.clear();
@@ -1218,8 +1218,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.cgMap.put(parent, currentCG);
 	}
 
-	private CustomGraphic syncSize(CyCustomGraphics<?> graphics, 
-	                               final CustomGraphic cg, double width, double height) {
+	private CustomGraphicLayer syncSize(CyCustomGraphics<CustomGraphicLayer> graphics, 
+	                               final CustomGraphicLayer cg, double width, double height) {
 		// final double nodeW = this.getWidth();
 		// final double nodeH = this.getHeight();
 

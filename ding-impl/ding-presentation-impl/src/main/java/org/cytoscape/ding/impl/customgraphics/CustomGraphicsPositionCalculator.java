@@ -8,7 +8,7 @@ import java.util.Map;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
 import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.graph.render.stateful.PaintFactory;
 
 public class CustomGraphicsPositionCalculator {
@@ -45,7 +45,7 @@ public class CustomGraphicsPositionCalculator {
 	 * @param cg
 	 * @return
 	 */
-	public static CustomGraphic transform(final ObjectPosition p, final DNodeView nv, final CustomGraphic cg) {		
+	public static CustomGraphicLayer transform(final ObjectPosition p, final DNodeView nv, final CustomGraphicLayer cg) {		
 		final Position anc = p.getAnchor();
 		final Position ancN = p.getTargetAnchor();
 		

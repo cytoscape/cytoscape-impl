@@ -67,6 +67,7 @@ public class PersistImageTask implements Task {
 		for (final CyCustomGraphics<?> cg : manager.getAllCustomGraphics()) {
 
 			// Save ONLY bitmap image Custom Graphics.
+			// TODO: Why?
 			if (cg instanceof NullCustomGraphics
 					|| cg instanceof URLImageCustomGraphics == false)
 				continue;

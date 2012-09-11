@@ -26,6 +26,9 @@ public abstract class GradientLayerCustomGraphics extends AbstractDCustomGraphic
 	
 	// Shape of this paint
 	protected Shape shape;
+
+	// User-visible name of this graphic
+	private final String NAME;
 	
 	private static final float FIT = 0.9f;
 	
@@ -49,6 +52,7 @@ public abstract class GradientLayerCustomGraphics extends AbstractDCustomGraphic
 	
 	public GradientLayerCustomGraphics(final Long id, final String name) {
 		super(id, name);
+		NAME = name;
 		width = DEF_W;
 		height = DEF_H;
 		props = new HashMap<String, CustomGraphicsProperty<?>>();
@@ -88,5 +92,9 @@ public abstract class GradientLayerCustomGraphics extends AbstractDCustomGraphic
 		}
 		
 		return rendered;
+	}
+
+	public String toString() {
+		return NAME;
 	}
 }

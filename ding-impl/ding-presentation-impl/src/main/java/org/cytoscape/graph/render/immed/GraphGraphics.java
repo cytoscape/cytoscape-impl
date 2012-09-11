@@ -61,8 +61,8 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 
 import org.cytoscape.graph.render.immed.arrow.Arrow;
@@ -2028,7 +2028,7 @@ public final class GraphGraphics {
 	 * previously.
 	 * 
 	 * @param cg
-	 *            the CustomGraphic
+	 *            the CustomGraphicLayer
 	 * @param xOffset
 	 *            in node coordinates, a value to add to the X coordinates of
 	 *            the shape's definition.
@@ -2036,7 +2036,7 @@ public final class GraphGraphics {
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
 	 */
-	public final void drawCustomGraphicFull(final CustomGraphic cg,
+	public final void drawCustomGraphicFull(final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset) {
 		if (m_debug) {
 			checkDispatchThread();
@@ -2057,9 +2057,9 @@ public final class GraphGraphics {
 			}
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
-		} else if(cg instanceof ImageCustomGraphic) {
+		} else if(cg instanceof ImageCustomGraphicLayer) {
 			Rectangle bounds = cg.getBounds();
-			final BufferedImage bImg = ((ImageCustomGraphic)cg).getPaint(bounds).getImage();
+			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
 			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
 		}
 

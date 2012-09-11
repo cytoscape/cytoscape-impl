@@ -8,9 +8,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
-public abstract class AbstractDCustomGraphics<T extends CustomGraphic> implements
+public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> implements
 		CyCustomGraphics<T>, Taggable {
 
 	protected static final String DELIMITER = ",";
@@ -98,7 +98,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphic> implement
 
 
 	// This will be used prop file.
-	public String toString() {
+	public String toSerializableString() {
 		String tagStr = "";
 		// Build tags as a string
 		if (tags.size() != 0) {

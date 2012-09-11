@@ -7,11 +7,11 @@ import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
 
-public class ImageCustomGraphicImpl implements ImageCustomGraphic {
+public class ImageCustomGraphicImpl implements ImageCustomGraphicLayer {
 	private Rectangle2D bounds;
 	private TexturePaintFactory pf;
 
@@ -30,7 +30,7 @@ public class ImageCustomGraphicImpl implements ImageCustomGraphic {
 		return pf.getPaint(bounds);
 	}
 
-	public CustomGraphic transform(AffineTransform xform) {
+	public CustomGraphicLayer transform(AffineTransform xform) {
 		Shape s = xform.createTransformedShape(bounds);
 		return new ImageCustomGraphicImpl(s.getBounds2D(), pf);
 	}

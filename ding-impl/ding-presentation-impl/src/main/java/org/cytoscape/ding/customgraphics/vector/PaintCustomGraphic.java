@@ -7,7 +7,7 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
-import org.cytoscape.view.presentation.customgraphics.CustomGraphic;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 import org.cytoscape.graph.render.stateful.PaintFactory;
 
@@ -37,7 +37,7 @@ public class PaintCustomGraphic implements PaintedShape {
 	public Stroke getStroke() { return null; }
 	public Paint getStrokePaint() { return null; }
 
-	public CustomGraphic transform(AffineTransform xform) {
+	public CustomGraphicLayer transform(AffineTransform xform) {
 		Shape s = xform.createTransformedShape(shape);
 		return new PaintCustomGraphic(s, pf);
 	}
