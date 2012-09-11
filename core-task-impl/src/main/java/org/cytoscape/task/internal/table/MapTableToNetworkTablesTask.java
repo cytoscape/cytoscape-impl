@@ -83,7 +83,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
 		this.updateAddedNetworkAttributes = updateAddedNetworkAttributes;
 		this.rootNetworkManager = rootNetworkManager;
-
+		
 		initTunable(networkManager);
 
 	}
@@ -207,9 +207,9 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		if (globalTable.getPrimaryKey().getType() != String.class)
 			throw new IllegalStateException("Local table's primary key should be type String.");
 
-		final CyColumn trgCol = localTable.getColumn(CyNetwork.NAME);
+		final CyColumn trgCol = localTable.getColumn(CyRootNetwork.SHARED_NAME);
 		if (trgCol != null){
-			localTable.addVirtualColumns(globalTable, CyNetwork.NAME, false);
+			localTable.addVirtualColumns(globalTable, CyRootNetwork.SHARED_NAME, false);
 			globalTable.setPublic(false);
 		}
 		else

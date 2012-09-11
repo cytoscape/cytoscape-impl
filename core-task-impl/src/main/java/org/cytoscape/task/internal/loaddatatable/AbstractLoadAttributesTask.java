@@ -45,7 +45,8 @@ abstract class AbstractLoadAttributesTask extends AbstractTask {
 
 		taskMonitor.setStatusMessage("Importing Data Table...");
 		
-		insertTasksAfterCurrentTask(new CombineReaderAndMappingTask( reader, netMgr, updateAddedNetworkAttributes, rootNetMgr) , new AddImportedTableTask(tableMgr, reader));
+		insertTasksAfterCurrentTask(new CombineReaderAndMappingTask( reader, netMgr, updateAddedNetworkAttributes, rootNetMgr));
+		//, new AddImportedTableTask(tableMgr, reader)); //imported tables are not getting registered anymore
 		
 	}
 }

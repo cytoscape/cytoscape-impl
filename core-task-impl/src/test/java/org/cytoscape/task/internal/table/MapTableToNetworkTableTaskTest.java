@@ -18,6 +18,10 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
+import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
+import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -66,8 +70,8 @@ public class MapTableToNetworkTableTaskTest {
 		node2 =  net1.addNode();
 		net1.addEdge(node1, node2, true);
 		
-		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.NAME, node1Name);
-		net1.getDefaultNodeTable().getRow(node2.getSUID()).set(CyNetwork.NAME, node2Name);
+		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyRootNetwork.SHARED_NAME, node1Name);
+		net1.getDefaultNodeTable().getRow(node2.getSUID()).set(CyRootNetwork.SHARED_NAME, node2Name);
 		
 		netMgr.addNetwork(net1);
 		

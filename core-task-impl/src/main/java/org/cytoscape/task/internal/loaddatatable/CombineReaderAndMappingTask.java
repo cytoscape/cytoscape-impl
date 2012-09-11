@@ -5,6 +5,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTask;
+import org.cytoscape.task.internal.table.JoinTablesTask;
 import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
@@ -21,16 +22,23 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	}
 
 
-	@ContainsTunables
-	public MapTableToNetworkTablesTask mappingTask;
+	
+//	@ContainsTunables
+//	public MapTableToNetworkTablesTask mappingTask;
 
+	
+
+	@ContainsTunables
+	public JoinTablesTask mergeTablesTask;
+	
 	@ContainsTunables
 	public CyTableReader readerTask;
 
 	
 	public CombineReaderAndMappingTask(CyTableReader readerTask , CyNetworkManager networkManager, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes, final CyRootNetworkManager rootNetMgr){
 		this.readerTask = readerTask;
-		this.mappingTask = new MapTableToNetworkTablesTask(networkManager, readerTask, updateAddedNetworkAttributes, rootNetMgr);
+		this.mergeTablesTask = new JoinTablesTask(readerTask, rootNetMgr, networkManager);
+	//	this.mappingTask = new MapTableToNetworkTablesTask(networkManager, readerTask, updateAddedNetworkAttributes, rootNetMgr);
 	}
 
 	@Override
@@ -45,14 +53,15 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 		// If MapTableToNetworkTablesTask implemented TunableValidator, then
 		// this is what we'd do:
 		// return mappingTask.getValidationState(errMsg);
-
+		
 		return OK;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		readerTask.run(taskMonitor);
-		mappingTask.run(taskMonitor);
+		this.mergeTablesTask.run(taskMonitor);
+	//	mappingTask.run(taskMonitor);
 	}
 
 }
