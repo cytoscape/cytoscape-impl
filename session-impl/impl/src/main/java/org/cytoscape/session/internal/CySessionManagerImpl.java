@@ -57,6 +57,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -372,14 +373,33 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		appMgr.setSelectedNetworkViews(selectedViews);
 	}
 
-	private void restoreTables(CySession sess) {
-		// Register all tables, if not already registered
-		for (CyTableMetadata metadata : sess.getTables()) {
-			final CyTable tbl = metadata.getTable();
+	private void restoreTables(final CySession sess) {
+		final Set<CyTable> allTables = new HashSet<CyTable>();
+		
+		// Register all tables sent through the CySession, if not already registered
+		for (final CyTableMetadata metadata : sess.getTables()) {
+			allTables.add(metadata.getTable());
+		}
+		
+		// There may be other network tables in the CyNetworkTableManager that were not serialized in the session file
+		// (e.g. Table Facades), so it's necessary to add them to CyTableManager as well
+		for (final CyNetwork net : sess.getNetworks()) {
+			allTables.addAll(netTblMgr.getTables(net, CyNetwork.class).values());
+			allTables.addAll(netTblMgr.getTables(net, CyNode.class).values());
+			allTables.addAll(netTblMgr.getTables(net, CyEdge.class).values());
 			
-			if (tblMgr.getTable(tbl.getSUID()) == null) {
-				tblMgr.addTable(tbl);
+			if (!(net instanceof CyRootNetwork)) {
+				final CyRootNetwork root = rootNetMgr.getRootNetwork(net);
+				allTables.addAll(netTblMgr.getTables(root, CyNetwork.class).values());
+				allTables.addAll(netTblMgr.getTables(root, CyNode.class).values());
+				allTables.addAll(netTblMgr.getTables(root, CyEdge.class).values());
 			}
+		}
+		
+		// Register all tables sent through the CySession, if not already registered
+		for (final CyTable tbl : allTables) {
+			if (tblMgr.getTable(tbl.getSUID()) == null)
+				tblMgr.addTable(tbl);
 		}
 	}
 	

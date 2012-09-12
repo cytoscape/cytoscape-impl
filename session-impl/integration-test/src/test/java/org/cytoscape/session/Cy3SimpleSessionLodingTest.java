@@ -82,12 +82,6 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		// TODO why not root-network tables?
 		final int totalNet = networkTableManager.getNetworkSet().size();
 		assertTrue(totalNet >= 2); // At least root+base-network; there can be other (private) networks
-		assertEquals(6 * totalNet, tableManager.getAllTables(true).size());
-//		assertEquals(totalNet, tableManager.getLocalTables(CyNetwork.class).size());
-//		assertEquals(totalNet, tableManager.getLocalTables(CyNode.class).size());
-//		assertEquals(totalNet, tableManager.getLocalTables(CyEdge.class).size());
-		// No global tables in this example
-		assertEquals(0, tableManager.getGlobalTables().size());
 		
 		for (CyNetwork net : networkTableManager.getNetworkSet())
 			checkNetworkTables(net);
@@ -172,8 +166,8 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertNotNull(net.getTable(CyNetwork.class, SHARED_ATTRS));
 		
 		Set<CyTable> allTables = tableManager.getAllTables(true);
-//		assertTrue(allTables.contains(net.getTable(CyNetwork.class, DEFAULT_ATTRS))); // TODO Why does it fail?
-//		assertTrue(allTables.contains(net.getTable(CyNetwork.class, SHARED_DEFAULT_ATTRS)));
+		assertTrue(allTables.contains(net.getTable(CyNetwork.class, DEFAULT_ATTRS)));
+		assertTrue(allTables.contains(net.getTable(CyNetwork.class, SHARED_DEFAULT_ATTRS)));
 		assertTrue(allTables.contains(net.getTable(CyNetwork.class, LOCAL_ATTRS)));
 		assertTrue(allTables.contains(net.getTable(CyNetwork.class, HIDDEN_ATTRS)));
 		assertTrue(allTables.contains(net.getTable(CyNetwork.class, SHARED_ATTRS)));

@@ -1,6 +1,7 @@
 package org.cytoscape.session;
 
 import static org.junit.Assert.*;
+
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
@@ -69,16 +70,18 @@ public class Cy270SimpleSessionLodingTest extends BasicIntegrationTest {
 	}
 
 	private void checkGlobalStatus() {
-		assertEquals(2, networkManager.getNetworkSet().size());
+		final int ROOTNET_COUNT = 1;
+		final int SUBNET_COUNT = 2;
+		
+		assertEquals(SUBNET_COUNT, networkManager.getNetworkSet().size());
 		assertEquals(1, viewManager.getNetworkViewSet().size());
 
 		// Since this test runs in headless mode, this should be zero.
 		assertEquals(0, renderingEngineManager.getAllRenderingEngines().size());
 
-		assertEquals(18, tableManager.getAllTables(true).size());
-		assertEquals(6, tableManager.getAllTables(false).size());
+		assertEquals(3*SUBNET_COUNT, tableManager.getAllTables(false).size());
+		assertEquals((9*SUBNET_COUNT) + (15*ROOTNET_COUNT), tableManager.getAllTables(true).size());
 	}
-
 
 	private void checkNetworkView(CyNetwork network){
 		// View test

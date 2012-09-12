@@ -62,7 +62,6 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		CyNetwork network = itr.next();
 
 		checkNetwork(network);
-
 	}
 
 	private void checkGlobalStatus() {
@@ -72,9 +71,10 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		// Since this test runs in headless mode, this should be zero.
 		assertEquals(0, renderingEngineManager.getAllRenderingEngines().size());
 
-		assertEquals(9, tableManager.getAllTables(true).size());
+		// 3 public tables per registered subnetwork
 		assertEquals(3, tableManager.getAllTables(false).size());
-
+		// 15 regular tables + 9 table facades (sub+root-networks)
+		assertEquals(24, tableManager.getAllTables(true).size());
 	}
 
 	private void checkNetwork(final CyNetwork network) {
@@ -194,5 +194,4 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 				BasicVisualLexicon.NODE_WIDTH);
 		assertEquals(Double.valueOf(80.0d), nodeWidth);
 	}
-
 }
