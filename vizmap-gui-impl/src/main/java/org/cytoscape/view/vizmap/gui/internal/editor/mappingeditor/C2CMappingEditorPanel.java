@@ -283,4 +283,9 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 			slider.repaint();
 		}
 	}
+	
+	@Override
+	protected void cancelChanges() {
+		initSlider();
+	}
 }

@@ -294,4 +294,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		return rend.drawIcon(iconWidth, iconHeight, detail);
 	}
+	
+	@Override
+	protected void cancelChanges() {
+		initSlider();
+	}
 }

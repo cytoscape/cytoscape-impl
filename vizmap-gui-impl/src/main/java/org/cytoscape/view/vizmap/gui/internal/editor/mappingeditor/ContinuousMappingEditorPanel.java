@@ -209,7 +209,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 					@Override
 					public void windowClosed(WindowEvent event) {
 						if (!commitChanges) {
-							cancelChanges();
+							cancelChangesInternal();
 						}
 					}
 					
@@ -694,7 +694,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		}
 	}
 
-	void cancelChanges() {
+	void cancelChangesInternal() {
 		while (mapping.getPointCount() > 0) {
 			mapping.removePoint(0);
 		}
@@ -702,7 +702,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		for (ContinuousMappingPoint<K, V> point : original.getAllPoints()) {
 			mapping.addPoint(point.getValue(), point.getRange());
 		}
+		cancelChanges();
+		slider.repaint();
 	}
+	
+	protected abstract void cancelChanges();
 
 	// End of variables declaration
 	protected class ThumbMouseListener extends MouseAdapter {

@@ -294,4 +294,9 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 
 		return rend.getLegend(width, height);
 	}
+	
+	@Override
+	protected void cancelChanges() {
+		initSlider();
+	}
 }
