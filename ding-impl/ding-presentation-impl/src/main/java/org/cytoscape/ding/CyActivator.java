@@ -16,6 +16,11 @@ import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphics.CustomGraphicsTranslator;
+import org.cytoscape.ding.customgraphics.NullCustomGraphicsFactory;
+import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphicsFactory;
+import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleFactory;
+import org.cytoscape.ding.customgraphics.vector.GradientOvalFactory;
 import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
 import org.cytoscape.ding.customgraphicsmgr.internal.action.CustomGraphicsManagerAction;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
@@ -32,7 +37,6 @@ import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
-import org.cytoscape.ding.impl.customgraphics.CustomGraphicsTranslator;
 //
 // Annotation api
 //
@@ -468,6 +472,22 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerAllServices(bc, customGraphicsManager, new Properties());
 		registerService(bc, customGraphicsManagerAction, CyAction.class, new Properties());
+
+		// Create and register our built-in factories.
+		// TODO:  When the CustomGraphicsFactory service stuff is set up, just
+		// register these as services
+		NullCustomGraphicsFactory nullFactory = new NullCustomGraphicsFactory(customGraphicsManager);
+		customGraphicsManager.addCustomGraphicsFactory(nullFactory);
+
+		URLImageCustomGraphicsFactory imageFactory = new URLImageCustomGraphicsFactory(customGraphicsManager);
+		customGraphicsManager.addCustomGraphicsFactory(imageFactory);
+
+		GradientOvalFactory ovalFactory = new GradientOvalFactory(customGraphicsManager);
+		customGraphicsManager.addCustomGraphicsFactory(ovalFactory);
+
+		GradientRoundRectangleFactory rectangleFactory = 
+		     new GradientRoundRectangleFactory(customGraphicsManager);
+		customGraphicsManager.addCustomGraphicsFactory(rectangleFactory);
 	}
 	
 	/**

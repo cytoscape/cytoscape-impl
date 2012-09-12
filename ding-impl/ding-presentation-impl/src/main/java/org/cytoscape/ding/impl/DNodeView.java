@@ -63,7 +63,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.VectorCustomGraphics;
-import org.cytoscape.ding.impl.customgraphics.CustomGraphicsPositionCalculator;
+import org.cytoscape.ding.customgraphics.CustomGraphicsPositionCalculator;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;

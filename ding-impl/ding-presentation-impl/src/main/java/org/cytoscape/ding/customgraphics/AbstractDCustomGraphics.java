@@ -91,6 +91,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 	}
 
 	@Override abstract public Image getRenderedImage();
+	@Override abstract public String toString();
 
 
 	public Collection<String> getTags() {
@@ -116,7 +117,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 			name = displayName.replace(",", "___");
 		}
 
-		return this.getClass().getName() + DELIMITER + this.getIdentifier()
+		return this.getClass().getCanonicalName() + DELIMITER + this.getIdentifier()
 				+ DELIMITER + name + DELIMITER + tagStr;
 	}
 	

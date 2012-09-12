@@ -45,6 +45,18 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 		}
 
 		final String imageName = entry[1];
+		final String sourceURL = entry[2];
+		// Try using the URL first
+		if (sourceURL != null) {
+			try {
+				URL url = new URL(sourceURL);
+				CyCustomGraphics cg = manager.getCustomGraphicsBySourceURL(url);
+				cg.setDisplayName(entry[2]);
+				return cg;
+			} catch (Exception e) {
+				// This just means that "sourceURL" is malformed.  That may be OK.
+			}
+		}
 		CyCustomGraphics cg = manager.getCustomGraphicsByID(Long.parseLong(imageName));
 		cg.setDisplayName(entry[2]);
 		return cg;
@@ -54,6 +66,7 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 		Long id = manager.getNextAvailableID();
 		URL url = null;
 		CyCustomGraphics ccg = null;
+		// System.out.println("URLImageCustomGraphicsFactory: input = "+input);
 
 		try {
 			ccg = new URLImageCustomGraphics(id, input);

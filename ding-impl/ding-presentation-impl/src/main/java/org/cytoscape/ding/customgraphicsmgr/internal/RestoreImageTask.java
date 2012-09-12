@@ -78,7 +78,8 @@ public class RestoreImageTask implements Task {
 			DEF_VECTORS_NAMES.add(cls.getName());
 	}
 	
-	RestoreImageTask(final Set<URL> defaultImageURLs, final File imageLocaiton, final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
+	RestoreImageTask(final Set<URL> defaultImageURLs, final File imageLocaiton, 
+	                 final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
 		this.manager = manager;
 		this.eventHelper = eventHelper;
 
@@ -117,8 +118,7 @@ public class RestoreImageTask implements Task {
 					}
 					
 					if (isExist == false) {
-						manager.graphicsMap.put(cg.getIdentifier(), cg);
-						manager.isUsedCustomGraphics.put(cg, false);
+						manager.addCustomGraphics(cg, null);
 					}
 				}
 			} catch (InstantiationException e) {
@@ -255,15 +255,12 @@ public class RestoreImageTask implements Task {
 					if (cg instanceof Taggable && metatagMap.get(f) != null)
 						((Taggable) cg).getTags().addAll(metatagMap.get(f));
 
-					manager.graphicsMap.put(cg.getIdentifier(), cg);
-					manager.isUsedCustomGraphics.put(cg, false);
-
 					try {
 						final URL source = new URL(fMap.get(f));
 						if (source != null)
-							manager.sourceMap.put(source, cg.getIdentifier());
+							manager.addCustomGraphics(cg, source);
 					} catch (MalformedURLException me) {
-						continue;
+						manager.addCustomGraphics(cg, null);
 					}
 				}
 			} catch (IOException ioe) {
@@ -285,7 +282,7 @@ public class RestoreImageTask implements Task {
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
 		logger.info("Image loading process finished in " + sec + " sec.");
-		logger.info("Currently,  " + (manager.graphicsMap.size() - 1) + " images are available.");
+		logger.info("Currently,  " + (manager.getAllCustomGraphics().size() - 1) + " images are available.");
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics;
+package org.cytoscape.ding.customgraphics;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;

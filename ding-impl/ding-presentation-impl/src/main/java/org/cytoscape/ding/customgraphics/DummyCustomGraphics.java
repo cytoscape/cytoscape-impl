@@ -1,4 +1,4 @@
-package org.cytoscape.ding;
+package org.cytoscape.ding.customgraphics;
 
 import java.awt.Image;
 
@@ -14,5 +14,10 @@ public final class DummyCustomGraphics extends AbstractDCustomGraphics {
 	@Override
 	public Image getRenderedImage() {
 		return NullCustomGraphics.DEF_IMAGE;
+	}
+
+	@Override
+	public String toString() {
+		return "DummyCustomGraphics ("+id+") "+displayName;
 	}
 }

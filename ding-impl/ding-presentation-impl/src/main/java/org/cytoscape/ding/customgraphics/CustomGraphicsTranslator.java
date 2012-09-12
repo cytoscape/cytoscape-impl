@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.customgraphics;
+package org.cytoscape.ding.customgraphics;
 
 import java.io.IOException;
 import java.net.URL;
@@ -40,6 +40,9 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 	private final CyCustomGraphics parse(String value) {
 		if(value == null)
 			return null;
+
+		// TODO: this needs to be made generic.  If we have a URL, then we can
+		// hand it to the appropriate factory
 		
 		try {
 			final URL url = new URL(value);

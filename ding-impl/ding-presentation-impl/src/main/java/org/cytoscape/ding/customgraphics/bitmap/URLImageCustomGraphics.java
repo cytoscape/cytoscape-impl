@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.SortedSet;
 
 import javax.imageio.ImageIO;
 
@@ -43,7 +44,7 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 	
 	public URLImageCustomGraphics(Long id, String url) throws IOException {
 		super(id, url);
-		this.tags.add(DEF_TAG);
+		tags.add(DEF_TAG);
 		createImage(url);
 		buildCustomGraphics(originalImage);
 	}
@@ -60,7 +61,8 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 		if (img == null)
 			throw new IllegalArgumentException("Image cannot be null.");
 
-		this.tags.add(DEF_TAG);
+		// System.out.println("URLImageCustomGraphics: name = "+name);
+		tags.add(DEF_TAG);
 		this.originalImage = img;
 		buildCustomGraphics(originalImage);
 	}
@@ -145,10 +147,35 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 	}
 
 	@Override
+	public String toSerializableString() {
+		String tagStr = "";
+		// Build tags as a string
+		if (tags.size() != 0) {
+			final StringBuilder builder = new StringBuilder();
+			for (String tag : (SortedSet<String>)tags)
+				builder.append(tag + LIST_DELIMITER);
+			String temp = builder.toString();
+			tagStr = temp.substring(0, temp.length() - 1);
+		}
+
+		String name = sourceUrl.toString();
+		if (name == null)
+			name = displayName;
+
+		if (name.contains(",")) {
+			// Replace delimiter
+			name = name.replace(",", "___");
+		}
+
+		return this.getClass().getCanonicalName() + DELIMITER + this.getIdentifier()
+				+ DELIMITER + name + DELIMITER + tagStr;
+	}
+
+	@Override
 	public String toString() {
 		if (this.sourceUrl == null && displayName == null) {
 			return "Empty image";
-		} else if (this.sourceUrl != null) {
+		} else if (this.sourceUrl != null && !this.sourceUrl.toString().startsWith("bundle")) {
 			return "Image: "+this.sourceUrl.toString();
 		} else
 			return "Image: "+displayName;

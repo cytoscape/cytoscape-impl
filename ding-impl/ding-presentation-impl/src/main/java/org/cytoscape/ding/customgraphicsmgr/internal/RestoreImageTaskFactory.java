@@ -34,8 +34,6 @@ public class RestoreImageTaskFactory extends AbstractTaskFactory {
 	public TaskIterator createTaskIterator() {
 		final RestoreImageTask firstTask = new RestoreImageTask(defaultImageURLs, imageLocation, manager, eventHelper);
 		final TaskIterator itr = new TaskIterator(firstTask);
-		
-		itr.insertTasksAfter(firstTask, new ReplaceDummyGraphicsTask(vmm, manager, applicationManager));
 		return itr;
 	}
 

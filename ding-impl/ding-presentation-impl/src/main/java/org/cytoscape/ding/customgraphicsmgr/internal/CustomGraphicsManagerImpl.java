@@ -20,6 +20,7 @@ import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.DGraphView;
@@ -45,7 +46,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private static final String IMAGE_DIR_NAME = "images3";
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";
 
-	protected final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>();
+	private final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>();
 
 	// URL to hash code map. For images associated with URL.
 	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<URL, Long>();
@@ -54,27 +55,35 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private static final CyCustomGraphics NULL = NullCustomGraphics.getNullObject();
 
 	private final File imageHomeDirectory;
-	protected final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
+	private final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
+	private final Map<String, CyCustomGraphicsFactory> factoryMap;
 	private final DialogTaskManager taskManager;
 
 	private final CyEventHelper eventHelper;
 
 	private final VisualMappingManager vmm;
 	private final CyApplicationManager applicationManager;
+	private static CustomGraphicsManagerImpl instance = null;
 
 	/**
 	 * Creates an image pool object and restore existing images from user
 	 * resource directory.
 	 */
-	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, final DialogTaskManager taskManager,
-			final CyApplicationConfiguration config, final CyEventHelper eventHelper, final VisualMappingManager vmm,
-			final CyApplicationManager applicationManager, final Set<URL> defaultImageURLs) {
+	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, 
+	                                 final DialogTaskManager taskManager, 
+	                                 final CyApplicationConfiguration config, 
+	                                 final CyEventHelper eventHelper, 
+	                                 final VisualMappingManager vmm, 
+	                                 final CyApplicationManager applicationManager, 
+	                                 final Set<URL> defaultImageURLs) {
 
 		this.taskManager = taskManager;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
 		this.applicationManager = applicationManager;
 		this.isUsedCustomGraphics = new HashMap<CyCustomGraphics, Boolean>();
+		this.factoryMap = new HashMap<String, CyCustomGraphicsFactory>();
+		// Add build-in factories?
 
 		if (properties == null)
 			throw new NullPointerException("Property object is null.");
@@ -92,9 +101,39 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		this.isUsedCustomGraphics.put(NULL, false);
 
 		// Restore Custom Graphics from the directory.
-		final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(defaultImageURLs, imageHomeDirectory, this, eventHelper,
-				vmm, applicationManager);
+		final RestoreImageTaskFactory taskFactory = 
+		                 new RestoreImageTaskFactory(defaultImageURLs, imageHomeDirectory, this, eventHelper,
+		                                             vmm, applicationManager);
 		taskManager.execute(taskFactory.createTaskIterator());
+		instance = this;
+	}
+
+	public static CustomGraphicsManagerImpl getInstance() { return instance; }
+
+	public void addCustomGraphicsFactory(CyCustomGraphicsFactory factory) {
+		if (factory == null) return;
+		factoryMap.put(factory.getSupportedClass().getName(), factory);
+	}
+
+	public void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory) {
+		if (factory == null) return;
+		factoryMap.remove(factory.getSupportedClass());
+	}
+
+	public CyCustomGraphicsFactory getCustomGraphicsFactory(Class<? extends CyCustomGraphics> cls) {
+		if (factoryMap.containsKey(cls.getName()))
+			return factoryMap.get(cls.getName());
+		return null;
+	}
+
+	public CyCustomGraphicsFactory getCustomGraphicsFactory(String className) {
+		if (factoryMap.containsKey(className))
+			return factoryMap.get(className);
+		return null;
+	}
+
+	public Collection<CyCustomGraphicsFactory> getAllCustomGraphicsFactories() {
+		return factoryMap.values();
 	}
 
 	/**
@@ -205,7 +244,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		// This means all CyCustomGraphics implementations should have a special
 		// toString method.
 		for (final CyCustomGraphics graphics : graphicsMap.values())
-			props.setProperty(graphics.getIdentifier().toString(), graphics.toString());
+			props.setProperty(graphics.getIdentifier().toString(), graphics.toSerializableString());
 		graphicsMap.put(NULL.getIdentifier(), NULL);
 		return props;
 	}
