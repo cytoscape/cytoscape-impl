@@ -26,6 +26,7 @@ import javax.swing.border.MatteBorder;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2CMappingEditorPanel;
@@ -50,9 +51,10 @@ public class ContinuousMappingLegendPanel extends JPanel {
 	final CyTable table;
 	final CyApplicationManager appManager;
 	final VisualMappingManager vmm;
+	final VisualMappingFunctionFactory continuousMappingFactory;
 
 	public ContinuousMappingLegendPanel(final VisualStyle style, final ContinuousMapping<?, ?> mapping,
-			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm) {
+			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm, VisualMappingFunctionFactory continuousMappingFactory) {
 		super();
 
 		this.style = style;
@@ -61,6 +63,7 @@ public class ContinuousMappingLegendPanel extends JPanel {
 		this.appManager = appManager;
 		this.vmm = vmm;
 		this.vp = mapping.getVisualProperty();
+		this.continuousMappingFactory = continuousMappingFactory;
 
 		// this.points = points;
 		// this.type = vpt;
@@ -106,16 +109,16 @@ public class ContinuousMappingLegendPanel extends JPanel {
 
 		if (Paint.class.isAssignableFrom(vp.getRange().getType())) {
 			final GradientEditorPanel gPanel = new GradientEditorPanel(style,
-					(ContinuousMapping<Double, Color>) mapping, table, appManager, null, vmm);
+					(ContinuousMapping<Double, Color>) mapping, table, appManager, null, vmm, continuousMappingFactory);
 			legend = new JLabel(gPanel.getLegend(trackW, 100));
 		} else if (Number.class.isAssignableFrom(vp.getRange().getType())) {
 			final C2CMappingEditorPanel numberPanel = new C2CMappingEditorPanel(style,
-					mapping, table, appManager, vmm);
+					mapping, table, appManager, vmm, continuousMappingFactory);
 			legend = new JLabel(numberPanel.getLegend(trackW, 150));
 		} else {
 			try {
 				C2DMappingEditorPanel discretePanel = new C2DMappingEditorPanel(style, mapping, table, appManager, vmm,
-						null);
+						null, continuousMappingFactory);
 				legend = new JLabel(discretePanel.getLegend(trackW, 150));
 			} catch (Exception ex) {
 				legend = new JLabel("Legend Generator not available");

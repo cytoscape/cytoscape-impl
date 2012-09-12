@@ -51,6 +51,7 @@ import javax.swing.JComponent;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
@@ -82,9 +83,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	protected final ValueEditor<Paint> colorEditor;
 
 	public GradientEditorPanel(final VisualStyle style, final ContinuousMapping<T, Color> mapping, final CyTable attr,
-			final CyApplicationManager appManager, final ValueEditor<Paint> colorEditor, final VisualMappingManager vmm) {
+			final CyApplicationManager appManager, final ValueEditor<Paint> colorEditor, final VisualMappingManager vmm, final VisualMappingFunctionFactory continuousMappingFactory) {
 
-		super(style, mapping, attr, appManager, vmm);
+		super(style, mapping, attr, appManager, vmm, continuousMappingFactory);
 
 		this.colorEditor = colorEditor;
 		this.appManager = appManager;
@@ -278,8 +279,6 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		// Add tooltip as help for users.
 		slider.setToolTipText("Double-click handles to edit boundary colors.");
-
-		updateMap();
 	}
 
 	void updateView() {

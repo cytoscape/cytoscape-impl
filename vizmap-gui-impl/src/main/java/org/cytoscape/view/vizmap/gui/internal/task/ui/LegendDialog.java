@@ -22,6 +22,7 @@ import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.legend.ContinuousMappingLegendPanel;
@@ -54,13 +55,16 @@ public class LegendDialog extends JDialog {
 	private JButton jButton2;
 	private JScrollPane jScrollPane1;
 
-	public LegendDialog(final VisualStyle vs, final CyApplicationManager appManager, final VisualMappingManager vmm) {
+	private VisualMappingFunctionFactory continuousMappingFactory;
+
+	public LegendDialog(final VisualStyle vs, final CyApplicationManager appManager, final VisualMappingManager vmm, VisualMappingFunctionFactory continuousMappingFactory) {
 		super();
 		this.setModal(true);
 
 		visualStyle = vs;
 		this.appManager = appManager;
 		this.vmm = vmm;
+		this.continuousMappingFactory = continuousMappingFactory;
 
 		initComponents();
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -94,7 +98,7 @@ public class LegendDialog extends JDialog {
 
 			if (map instanceof ContinuousMapping) {
 				mappingLenegd = new ContinuousMappingLegendPanel(visualStyle, (ContinuousMapping) map, appManager
-						.getCurrentNetwork().getDefaultNodeTable(), appManager, vmm);
+						.getCurrentNetwork().getDefaultNodeTable(), appManager, vmm, continuousMappingFactory);
 			} else if (map instanceof DiscreteMapping) {
 				mappingLenegd = new DiscreteLegend((DiscreteMapping<?, ?>) map, appManager);
 			} else if (map instanceof DiscreteMapping) {

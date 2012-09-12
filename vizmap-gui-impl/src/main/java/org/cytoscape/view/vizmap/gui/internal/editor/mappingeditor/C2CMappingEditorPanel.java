@@ -49,6 +49,7 @@ import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.NumberConverter;
@@ -80,8 +81,8 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	
 
 	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping, final CyTable attr,
-			final CyApplicationManager appManager, final VisualMappingManager vmm) {
-		super(style, mapping, attr, appManager, vmm);
+			final CyApplicationManager appManager, final VisualMappingManager vmm, final VisualMappingFunctionFactory continuousMappingFactory) {
+		super(style, mapping, attr, appManager, vmm, continuousMappingFactory);
 		
 		abovePanel.setVisible(false);
 		belowPanel.setVisible(false);
@@ -232,8 +233,6 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		slider.setThumbRenderer(thumbRend);
 		slider.setTrackRenderer(cRend);
 		slider.addMouseListener(new ThumbMouseListener());
-		
-		updateMap();
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {

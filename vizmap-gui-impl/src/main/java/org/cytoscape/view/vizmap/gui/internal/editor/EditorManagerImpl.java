@@ -59,6 +59,7 @@ import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -100,17 +101,19 @@ public class EditorManagerImpl implements EditorManager {
 
 	private final CyNetworkTableManager tableManager;
 	private final VisualMappingManager vmm;
+	private final VisualMappingFunctionFactory continuousMappingFactory;
 
 	/**
 	 * Creates a new EditorFactory object.
 	 */
 	public EditorManagerImpl(final CyApplicationManager appManager, final AttributeSetManager attrManager,
 			final VisualMappingManager vmm, final CyNetworkTableManager tableManager,
-			final CyNetworkManager networkManager) {
+			final CyNetworkManager networkManager, VisualMappingFunctionFactory continuousMappingFactory) {
 
 		this.appManager = appManager;
 		this.tableManager = tableManager;
 		this.vmm = vmm;
+		this.continuousMappingFactory = continuousMappingFactory;
 
 		editors = new HashMap<Class<?>, VisualPropertyEditor<?>>();
 
@@ -304,11 +307,11 @@ public class EditorManagerImpl implements EditorManager {
 		final ContinuousEditorType editorType = this.getVisualPropertyEditor(vp).getContinuousEditorType();
 
 		if (editorType == ContinuousEditorType.COLOR)
-			return new GradientEditor(tableManager, appManager, this, vmm);
+			return new GradientEditor(tableManager, appManager, this, vmm, continuousMappingFactory);
 		else if (editorType == ContinuousEditorType.CONTINUOUS)
-			return new C2CEditor(tableManager, appManager, this, vmm);
+			return new C2CEditor(tableManager, appManager, this, vmm, continuousMappingFactory);
 		else if (editorType == ContinuousEditorType.DISCRETE)
-			return new C2DEditor(tableManager, appManager, this, vmm);
+			return new C2DEditor(tableManager, appManager, this, vmm, continuousMappingFactory);
 
 		return null;
 	}

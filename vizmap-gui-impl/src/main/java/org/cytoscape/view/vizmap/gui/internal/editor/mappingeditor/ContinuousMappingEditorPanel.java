@@ -38,6 +38,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
 import java.util.List;
@@ -67,6 +69,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.NumberConverter;
@@ -122,13 +125,16 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	protected final Class<K> columnType;
 	protected final Class<V> vpValueType;
+	
+	private final ContinuousMapping<K, V> original;
+	boolean commitChanges;
 
 	/**
 	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual
 	 * property type T.
 	 */
 	public ContinuousMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping,
-			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm) {
+			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm, final VisualMappingFunctionFactory continuousMappingFactory) {
 		if (mapping == null)
 			throw new NullPointerException("ContinuousMapping should not be null.");
 		if (table == null)
@@ -140,10 +146,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 		this.tracer = new EditorValueRangeTracer(vmm);
 		this.mapping = mapping;
+		this.original = createCopy(continuousMappingFactory, mapping);
 		this.type = mapping.getVisualProperty();
 		this.appManager = appManager;
 		this.style = style;
-		this.mainPanel = new JPanel();
+		this.mainPanel = createMainPanel();
 		this.dataTable = table;
 
 		columnType = mapping.getMappingColumnType();
@@ -169,6 +176,63 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		initComponents();
 		initRangeValues();
 		setSpinner();
+	}
+
+	private JPanel createMainPanel() {
+		return new JPanel() {
+			@Override
+			public void addNotify() {
+				super.addNotify();
+				
+				final JDialog dialog = (JDialog) getRootPane().getParent();
+				dialog.addWindowListener(new WindowListener() {
+					@Override
+					public void windowOpened(WindowEvent event) {
+					}
+					
+					@Override
+					public void windowIconified(WindowEvent event) {
+					}
+					
+					@Override
+					public void windowDeiconified(WindowEvent event) {
+					}
+					
+					@Override
+					public void windowDeactivated(WindowEvent event) {
+					}
+					
+					@Override
+					public void windowClosing(WindowEvent event) {
+					}
+					
+					@Override
+					public void windowClosed(WindowEvent event) {
+						if (!commitChanges) {
+							cancelChanges();
+						}
+					}
+					
+					@Override
+					public void windowActivated(WindowEvent arg0) {
+					}
+				});
+			}
+		};
+	}
+
+	@SuppressWarnings("unchecked")
+	private ContinuousMapping<K, V> createCopy(VisualMappingFunctionFactory continuousMappingFactory, ContinuousMapping<K, V> source) {
+		String attribute = source.getMappingColumnName();
+		Class<?> attributeType = source.getMappingColumnType();
+		VisualProperty<?> visualProperty = source.getVisualProperty();
+		ContinuousMapping<K, V> mapping = (ContinuousMapping<K, V>) continuousMappingFactory.createVisualMappingFunction(attribute, attributeType, visualProperty);
+		
+		for (ContinuousMappingPoint<K, V> point : source.getAllPoints()) {
+			BoundaryRangeValues<V> range = new BoundaryRangeValues<V>(point.getRange());
+			mapping.addPoint(point.getValue(), range);
+		}
+		return mapping;
 	}
 
 	private void setSpinner() {
@@ -261,8 +325,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		cancelButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				final JDialog parentComponent = (JDialog) mainPanel.getRootPane().getParent();
-				parentComponent.dispose();
+				final JDialog dialog = (JDialog) mainPanel.getRootPane().getParent();
+				dialog.dispose();
 			}
 		});
 
@@ -270,11 +334,12 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		okButton.setMargin(new Insets(2, 2, 2, 2));
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				final JDialog parentComponent = (JDialog) mainPanel.getRootPane().getParent();
-				parentComponent.dispose();
+				commitChanges = true;
+				final JDialog dialog = (JDialog) mainPanel.getRootPane().getParent();
+				dialog.dispose();
 			}
 		});
-
+		
 		// Property value editor components
 		final JPanel propValuePanel = new JPanel();
 		propValuePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -626,6 +691,16 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (Number.class.isAssignableFrom(dataType)) {
 			propertySpinner.setEnabled(false);
 			propertySpinner.setValue(0);
+		}
+	}
+
+	void cancelChanges() {
+		while (mapping.getPointCount() > 0) {
+			mapping.removePoint(0);
+		}
+		
+		for (ContinuousMappingPoint<K, V> point : original.getAllPoints()) {
+			mapping.addPoint(point.getValue(), point.getRange());
 		}
 	}
 

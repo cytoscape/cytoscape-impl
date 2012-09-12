@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -35,6 +36,7 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 	protected final EditorManager editorManager;
 
 	protected final VisualMappingManager vmm;
+	protected final VisualMappingFunctionFactory continuousMappingFactory;
 
 	private final JLabel iconLabel;
 
@@ -42,7 +44,7 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 	private JDialog currentDialog;
 
 	public AbstractContinuousMappingEditor(final CyNetworkTableManager manager, final CyApplicationManager appManager,
-			final EditorManager editorManager, final VisualMappingManager vmm) {
+			final EditorManager editorManager, final VisualMappingManager vmm, VisualMappingFunctionFactory continuousMappingFactory) {
 
 		this.isEditorDialogActive = false;
 		this.iconLabel = new JLabel();
@@ -50,6 +52,7 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 		this.manager = manager;
 		this.appManager = appManager;
 		this.editorManager = editorManager;
+		this.continuousMappingFactory = continuousMappingFactory;
 
 		editor = new JPanel();
 		((JPanel) editor).setLayout(new BorderLayout());

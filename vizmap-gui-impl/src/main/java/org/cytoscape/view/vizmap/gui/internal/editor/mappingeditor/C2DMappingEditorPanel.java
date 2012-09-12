@@ -48,6 +48,7 @@ import javax.swing.ImageIcon;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -72,8 +73,8 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 	private final EditorManager editorManager;
 
 	public C2DMappingEditorPanel(final VisualStyle style, final ContinuousMapping<Number, V> mapping, CyTable attr,
-			final CyApplicationManager appManager, final VisualMappingManager vmm, final EditorManager editorManager) {
-		super(style, mapping, attr, appManager, vmm);
+			final CyApplicationManager appManager, final VisualMappingManager vmm, final EditorManager editorManager, final VisualMappingFunctionFactory continuousMappingFactory) {
+		super(style, mapping, attr, appManager, vmm, continuousMappingFactory);
 
 		this.editorManager = editorManager;
 
