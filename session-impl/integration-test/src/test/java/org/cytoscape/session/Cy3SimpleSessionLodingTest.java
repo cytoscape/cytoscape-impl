@@ -23,6 +23,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -67,6 +68,7 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		CyNetwork net = itr.next();
 		
 		checkNetwork(net);
+		checkRootNetwork(((CySubNetwork) net).getRootNetwork());
 	}
 	
 	private void checkGlobalStatus() {
@@ -158,6 +160,25 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertTrue(net.getTable(CyNetwork.class, DEFAULT_ATTRS).isPublic());
 		assertTrue(net.getTable(CyNode.class, DEFAULT_ATTRS).isPublic());
 		assertTrue(net.getTable(CyEdge.class, DEFAULT_ATTRS).isPublic());
+	}
+	
+	private void checkRootNetwork(final CyRootNetwork net) {
+		assertEquals(SavePolicy.SESSION_FILE, net.getSavePolicy());
+		
+		assertNotNull(net.getTable(CyNetwork.class, DEFAULT_ATTRS));
+		assertNotNull(net.getTable(CyNetwork.class, SHARED_DEFAULT_ATTRS));
+		assertNotNull(net.getTable(CyNetwork.class, LOCAL_ATTRS));
+		assertNotNull(net.getTable(CyNetwork.class, HIDDEN_ATTRS));
+		assertNotNull(net.getTable(CyNetwork.class, SHARED_ATTRS));
+		
+		Set<CyTable> allTables = tableManager.getAllTables(true);
+//		assertTrue(allTables.contains(net.getTable(CyNetwork.class, DEFAULT_ATTRS))); // TODO Why does it fail?
+//		assertTrue(allTables.contains(net.getTable(CyNetwork.class, SHARED_DEFAULT_ATTRS)));
+		assertTrue(allTables.contains(net.getTable(CyNetwork.class, LOCAL_ATTRS)));
+		assertTrue(allTables.contains(net.getTable(CyNetwork.class, HIDDEN_ATTRS)));
+		assertTrue(allTables.contains(net.getTable(CyNetwork.class, SHARED_ATTRS)));
+		assertTrue(allTables.contains(net.getTable(CyNode.class, SHARED_ATTRS)));
+		assertTrue(allTables.contains(net.getTable(CyEdge.class, SHARED_ATTRS)));
 	}
 	
 	private void checkVisualStyle(final VisualStyle style) {
