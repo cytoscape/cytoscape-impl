@@ -21,7 +21,9 @@ import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -46,6 +48,8 @@ public class PerfTest {
     protected CyNetworkFactory netFactory;
     protected CyNetworkViewFactory viewFactory;
     protected ReadUtils readUtil;
+    protected CyNetworkManager netMgr;
+    protected CyRootNetworkManager rootMgr;
     protected CyLayoutAlgorithmManager layouts;
 
 	public PerfTest() {
@@ -55,10 +59,13 @@ public class PerfTest {
 
 		NetworkTestSupport nts = new NetworkTestSupport();
 		netFactory = nts.getNetworkFactory();
+		netMgr = nts.getNetworkManager();
+		rootMgr = nts.getRootNetworkFactory();
 
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 	
 		viewFactory = nvts.getNetworkViewFactory();
+
 
 		Properties properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test",properties,Properties.class,DO_NOT_SAVE);	
@@ -68,7 +75,8 @@ public class PerfTest {
 	private  SIFNetworkReader readFile(String file) throws Exception {
 		InputStream is = getClass().getResource("/testData/sif/" + file).openStream();
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, eventHelper);
+		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, 
+		                                             eventHelper, netMgr, rootMgr);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
