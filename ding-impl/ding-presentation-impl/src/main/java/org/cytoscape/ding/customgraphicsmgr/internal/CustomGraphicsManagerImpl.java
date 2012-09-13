@@ -57,6 +57,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private final File imageHomeDirectory;
 	private final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
+	private final Map<CyCustomGraphicsFactory, Map> factoryPropsMap;
 	private final DialogTaskManager taskManager;
 
 	private final CyEventHelper eventHelper;
@@ -83,7 +84,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		this.applicationManager = applicationManager;
 		this.isUsedCustomGraphics = new HashMap<CyCustomGraphics, Boolean>();
 		this.factoryMap = new HashMap<String, CyCustomGraphicsFactory>();
-		// Add build-in factories?
+		this.factoryPropsMap = new HashMap<CyCustomGraphicsFactory, Map>();
 
 		if (properties == null)
 			throw new NullPointerException("Property object is null.");
@@ -110,14 +111,16 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	public static CustomGraphicsManagerImpl getInstance() { return instance; }
 
-	public void addCustomGraphicsFactory(CyCustomGraphicsFactory factory) {
+	public void addCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map props) {
 		if (factory == null) return;
 		factoryMap.put(factory.getSupportedClass().getName(), factory);
+		factoryPropsMap.put(factory, props);
 	}
 
-	public void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory) {
+	public void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map props) {
 		if (factory == null) return;
 		factoryMap.remove(factory.getSupportedClass());
+		factoryPropsMap.remove(factory);
 	}
 
 	public CyCustomGraphicsFactory getCustomGraphicsFactory(Class<? extends CyCustomGraphics> cls) {

@@ -83,6 +83,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -477,17 +478,23 @@ public class CyActivator extends AbstractCyActivator {
 		// TODO:  When the CustomGraphicsFactory service stuff is set up, just
 		// register these as services
 		NullCustomGraphicsFactory nullFactory = new NullCustomGraphicsFactory(customGraphicsManager);
-		customGraphicsManager.addCustomGraphicsFactory(nullFactory);
+		customGraphicsManager.addCustomGraphicsFactory(nullFactory, new Properties());
 
 		URLImageCustomGraphicsFactory imageFactory = new URLImageCustomGraphicsFactory(customGraphicsManager);
-		customGraphicsManager.addCustomGraphicsFactory(imageFactory);
+		customGraphicsManager.addCustomGraphicsFactory(imageFactory, new Properties());
 
 		GradientOvalFactory ovalFactory = new GradientOvalFactory(customGraphicsManager);
-		customGraphicsManager.addCustomGraphicsFactory(ovalFactory);
+		customGraphicsManager.addCustomGraphicsFactory(ovalFactory, new Properties());
 
 		GradientRoundRectangleFactory rectangleFactory = 
 		     new GradientRoundRectangleFactory(customGraphicsManager);
-		customGraphicsManager.addCustomGraphicsFactory(rectangleFactory);
+		customGraphicsManager.addCustomGraphicsFactory(rectangleFactory, new Properties());
+
+		// Now register our service listener so that app writers can
+		// provide their own CustomGraphics factory methods
+		registerServiceListener(bc, customGraphicsManager, 
+		                        "addCustomGraphicsFactory", "removeCustomGraphicsFactory", 
+		                        CyCustomGraphicsFactory.class);
 	}
 	
 	/**

@@ -2,6 +2,7 @@ package org.cytoscape.ding.customgraphics;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -11,8 +12,8 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
 public interface CustomGraphicsManager {
 
-	void addCustomGraphicsFactory(CyCustomGraphicsFactory factory);
-	void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory);
+	void addCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map props);
+	void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map props);
 	CyCustomGraphicsFactory getCustomGraphicsFactory(Class<? extends CyCustomGraphics> cls);
 	CyCustomGraphicsFactory getCustomGraphicsFactory(String className);
 	Collection<CyCustomGraphicsFactory> getAllCustomGraphicsFactories();
