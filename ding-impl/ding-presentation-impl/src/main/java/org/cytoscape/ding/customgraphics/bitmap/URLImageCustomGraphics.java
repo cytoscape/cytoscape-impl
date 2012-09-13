@@ -158,9 +158,9 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 			tagStr = temp.substring(0, temp.length() - 1);
 		}
 
-		String name = sourceUrl.toString();
-		if (name == null)
-			name = displayName;
+		String name = displayName;
+		if (sourceUrl != null)
+			name = sourceUrl.toString();
 
 		if (name.contains(",")) {
 			// Replace delimiter
