@@ -198,7 +198,7 @@ public class AttributeLineParser {
 
 				curList.addAll(buildList(entry, listType));
 				try {
-					setListAttribute(table,AttributeTypes.TYPE_SIMPLE_LIST,key, mapping.getAttributeNames()[index], curList);
+					setListAttribute(table,mapping.getListAttributeTypes()[index],key, mapping.getAttributeNames()[index], curList);
 
 					//mapping.setAttribute(key, mapping.getAttributeNames()[index], curList);
 
@@ -251,8 +251,11 @@ public class AttributeLineParser {
 				tbl.createListColumn(attributeName, Boolean.class, false);
 			else if (type == AttributeTypes.TYPE_FLOATING)
 				tbl.createListColumn(attributeName, Double.class, false);
+			else if (type == AttributeTypes.TYPE_STRING){
+				tbl.createListColumn(attributeName, String.class, false);
+			}
 			else
-				;// type is String, do nothing
+				;//invalid type
 		}
 		CyRow row = tbl.getRow(key);
 		row.set(attributeName, elmsBuff);

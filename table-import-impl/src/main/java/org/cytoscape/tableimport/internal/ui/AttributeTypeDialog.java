@@ -435,7 +435,7 @@ public class AttributeTypeDialog extends javax.swing.JDialog {
 		} else if (dataType == AttributeTypes.TYPE_BOOLEAN) {
 			delimiterButtonGroup.setSelected(booleanRadioButton.getModel(), true);
 		} else if (dataType == AttributeTypes.TYPE_SIMPLE_LIST) {
-			delimiterButtonGroup.setSelected(booleanRadioButton.getModel(), true);
+			delimiterButtonGroup.setSelected(listRadioButton.getModel(), true);
 			listDelimiterComboBox.setEnabled(true);
 			listTypeComboBox.setEnabled(true);
 			otherTextField.setEnabled(false);
