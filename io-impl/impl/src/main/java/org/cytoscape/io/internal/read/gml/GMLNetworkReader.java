@@ -197,7 +197,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		taskMonitor.setProgress(0.3);
 		
 		String networkCollectionName =  networkCollection.getSelectedValue().toString();
-		if (networkCollectionName.equalsIgnoreCase("new Collection")){
+		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
 			network = cyNetworkFactory.createNetwork();
 		}
 		else {

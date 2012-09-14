@@ -23,6 +23,11 @@ import org.cytoscape.work.util.ListSingleSelection;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 
 public abstract class AbstractNetworkReader extends AbstractTask implements CyNetworkReader {
+	
+	/**
+	 * If this option is selected, reader should create new CyRootNetwork.
+	 */
+	public static final String CRERATE_NEW_COLLECTION_STRING ="Create new network collection";
 
 	protected CyNetwork[] cyNetworks;
 
@@ -61,11 +66,11 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		Iterator<String> it = name2RootMap.keySet().iterator();
 		
 		final List<Object> networkList = new ArrayList<Object>();
-		networkList.add("new Collection");
+		networkList.add(CRERATE_NEW_COLLECTION_STRING);
 		
-		while (it.hasNext()){
-			networkList.add(it.next());			
-		}
+		while (it.hasNext())
+			networkList.add(it.next());
+		
 		networkCollection = new ListSingleSelection<Object>(networkList);
 	}
 

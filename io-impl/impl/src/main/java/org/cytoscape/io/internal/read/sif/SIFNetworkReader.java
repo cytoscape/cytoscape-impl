@@ -102,7 +102,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		String networkCollectionName =  networkCollection.getSelectedValue().toString();
 
 		CyNetwork network;
-		if (networkCollectionName.equalsIgnoreCase("new Collection")){
+		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
 			network = cyNetworkFactory.createNetwork();
 		}
 		else {
