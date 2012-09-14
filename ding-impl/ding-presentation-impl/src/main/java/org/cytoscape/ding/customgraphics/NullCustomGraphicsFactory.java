@@ -1,10 +1,7 @@
 package org.cytoscape.ding.customgraphics;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -25,14 +22,27 @@ public class NullCustomGraphicsFactory implements CyCustomGraphicsFactory {
 		this.manager = manager;
 	}
 	
+	@Override
+	public String getPrefix() { return "null"; }
+	
+	@Override
+	public boolean supportsMime(String mimeType) { return false; }
+
 	/**
 	 * Generate Custom Graphics object from a string.
 	 */
+	@Override
 	public CyCustomGraphics parseSerializableString(String entryStr) {
 		return new NullCustomGraphics();
 	}
 
+	@Override
 	public CyCustomGraphics getInstance(String input) {
+		return new NullCustomGraphics();
+	}
+
+	@Override
+	public CyCustomGraphics getInstance(URL input) {
 		return new NullCustomGraphics();
 	}
 

@@ -23,26 +23,26 @@ public class GradientOvalFactory implements CyCustomGraphicsFactory {
 	public GradientOvalFactory(final CustomGraphicsManager manager) {
 		this.manager = manager;
 	}
+
+	public String getPrefix() { return "ovalgradient"; }
+	public boolean supportsMime(String mimeType) { return false; }
 	
 	/**
 	 * Generate Custom Graphics object from a string.
 	 */
 	public CyCustomGraphics parseSerializableString(String entryStr) {
 		String[] entry = entryStr.split(",");
-		if (entry == null || entry.length < 3) {
+		if (entry == null || entry.length < 2) {
 			return null;
 		}
-
-		if (entry[0].trim().equals(
-				GradientOvalLayer.class.getCanonicalName()) == false) {
-			return null;
-		}
-		return new GradientOvalLayer(Long.parseLong(entry[1]));
+		return new GradientOvalLayer(Long.parseLong(entry[0]));
 	}
 
 	public CyCustomGraphics getInstance(String input) {
 		return new GradientOvalLayer(manager.getNextAvailableID());
 	}
+
+	public CyCustomGraphics getInstance(URL input) { return null; }
 
 	public Class<? extends CyCustomGraphics> getSupportedClass() { return TARGET_CLASS; }
 

@@ -20,7 +20,7 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 
 	@Override
 	public String toSerializableString(final CyCustomGraphics value) {
-		return value.toSerializableString();
+		return value.getClass().getCanonicalName()+","+value.toSerializableString();
 	}
 
 	// Parse the string associated with our visual property.  Note that we depend on the first
@@ -45,7 +45,9 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 			}
 
 			// System.out.println("Creating new "+parts[0]);
-			return factory.parseSerializableString(value);
+			// Skip over the class name
+			int offset = value.indexOf(",");
+			return factory.parseSerializableString(value.substring(offset+1));
 		}
 	}
 }

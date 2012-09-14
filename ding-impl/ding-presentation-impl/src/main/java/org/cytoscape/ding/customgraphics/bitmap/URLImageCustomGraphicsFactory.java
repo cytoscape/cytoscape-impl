@@ -24,6 +24,26 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 	public URLImageCustomGraphicsFactory(final CustomGraphicsManager manager) {
 		this.manager = manager;
 	}
+
+	@Override
+	public String getPrefix() { return "image"; }
+
+	@Override
+	public boolean supportsMime(String mimeType) {
+		if (mimeType.equals("image/bmp"))
+			return true;
+		if (mimeType.equals("image/x-windows-bmp"))
+			return true;
+		if (mimeType.equals("image/gif"))
+			return true;
+		if (mimeType.equals("image/jpeg"))
+			return true;
+		if (mimeType.equals("image/png"))
+			return true;
+		if (mimeType.equals("image/vnd.wap.wbmp"))
+			return true;
+		return false;
+	}
 	
 	/**
 	 * Generate Custom Graphics object from a string.
@@ -44,22 +64,26 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 			return null;
 		}
 
-		final String imageName = entry[1];
-		final String sourceURL = entry[2];
+		final String imageName = entry[0];
+		final String sourceURL = entry[1];
 		// Try using the URL first
 		if (sourceURL != null) {
 			try {
 				URL url = new URL(sourceURL);
 				CyCustomGraphics cg = manager.getCustomGraphicsBySourceURL(url);
-				cg.setDisplayName(entry[2]);
+				cg.setDisplayName(entry[1]);
 				return cg;
 			} catch (Exception e) {
 				// This just means that "sourceURL" is malformed.  That may be OK.
 			}
 		}
 		CyCustomGraphics cg = manager.getCustomGraphicsByID(Long.parseLong(imageName));
-		cg.setDisplayName(entry[2]);
+		cg.setDisplayName(entry[1]);
 		return cg;
+	}
+
+	public CyCustomGraphics getInstance(URL url) {
+		return getInstance(url.toString());
 	}
 
 	public CyCustomGraphics getInstance(String input) {
@@ -85,13 +109,7 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 
 	private boolean validate(final String entryStr) {
 		entry = entryStr.split(",");
-		if (entry == null || entry.length < 3) {
-			return false;
-		}
-
-		// Check class name
-		if (entry[0].trim().equals(
-				URLImageCustomGraphics.class.getCanonicalName()) == false) {
+		if (entry == null || entry.length < 2) {
 			return false;
 		}
 		return true;

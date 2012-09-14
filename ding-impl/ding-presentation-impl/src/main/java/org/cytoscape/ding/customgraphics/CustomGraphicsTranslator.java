@@ -1,12 +1,15 @@
 package org.cytoscape.ding.customgraphics;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 
 public class CustomGraphicsTranslator implements ValueTranslator<String, CyCustomGraphics>{
@@ -20,7 +23,18 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 	
 	@Override
 	public CyCustomGraphics translate(String inputValue) {
-		return parse(inputValue);
+		// Start by assuming this is a URL
+		CyCustomGraphics cg = translateURL(inputValue);
+		if (cg != null) return cg;
+
+		// Nope, so hand it to each factory that has a matching prefix
+		for (CyCustomGraphicsFactory factory: cgManager.getAllCustomGraphicsFactories()) {
+			if (factory.getPrefix() != null && inputValue.startsWith(factory.getPrefix()+":")) {
+				cg = factory.getInstance(inputValue.substring(factory.getPrefix().length()+1));
+				if (cg != null) return cg;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -28,6 +42,24 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		return CyCustomGraphics.class;
 	}
 	
+	private CyCustomGraphics translateURL(String inputValue) {
+		try {
+			final URL url = new URL(inputValue);
+			URLConnection conn = url.openConnection();
+			if (conn == null) return null;
+			String mimeType = conn.getContentType();
+			for (CyCustomGraphicsFactory factory: cgManager.getAllCustomGraphicsFactories()) {
+				if (factory.supportsMime(mimeType)) {
+					CyCustomGraphics cg = factory.getInstance(url);
+					if (cg != null) return cg;
+				}
+			}
+		
+		} catch (MalformedURLException e) {
+		} catch (IOException e) {
+		}
+		return null;
+	}
 	
 	/**
 	 * Create a custom graphics from the given URL string.
@@ -43,7 +75,6 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 
 		// TODO: this needs to be made generic.  If we have a URL, then we can
 		// hand it to the appropriate factory
-		
 		try {
 			final URL url = new URL(value);
 			CyCustomGraphics graphics = cgManager.getCustomGraphicsBySourceURL(url);

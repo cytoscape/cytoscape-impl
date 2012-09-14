@@ -117,8 +117,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 			name = displayName.replace(",", "___");
 		}
 
-		return this.getClass().getCanonicalName() + DELIMITER + this.getIdentifier()
-				+ DELIMITER + name + DELIMITER + tagStr;
+		return this.getIdentifier() + DELIMITER + name + DELIMITER + tagStr;
 	}
 	
 	public void setFitRatio(float fitRatio) {

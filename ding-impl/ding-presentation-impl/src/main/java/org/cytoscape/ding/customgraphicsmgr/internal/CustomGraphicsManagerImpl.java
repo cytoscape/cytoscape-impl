@@ -246,8 +246,10 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		// toString() method.
 		// This means all CyCustomGraphics implementations should have a special
 		// toString method.
-		for (final CyCustomGraphics graphics : graphicsMap.values())
-			props.setProperty(graphics.getIdentifier().toString(), graphics.toSerializableString());
+		for (final CyCustomGraphics graphics : graphicsMap.values()) {
+			props.setProperty(graphics.getIdentifier().toString(), 
+			                  graphics.getClass().getCanonicalName()+","+graphics.toSerializableString());
+		}
 		graphicsMap.put(NULL.getIdentifier(), NULL);
 		return props;
 	}

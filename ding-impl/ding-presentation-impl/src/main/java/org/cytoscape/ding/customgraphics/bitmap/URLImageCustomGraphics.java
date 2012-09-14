@@ -167,8 +167,7 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 			name = name.replace(",", "___");
 		}
 
-		return this.getClass().getCanonicalName() + DELIMITER + this.getIdentifier()
-				+ DELIMITER + name + DELIMITER + tagStr;
+		return this.getIdentifier() + DELIMITER + name + DELIMITER + tagStr;
 	}
 
 	@Override
