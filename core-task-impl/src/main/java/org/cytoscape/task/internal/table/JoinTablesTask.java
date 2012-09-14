@@ -70,16 +70,6 @@ public class JoinTablesTask extends AbstractTask{
 		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue())  , dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
 	}
 
-
-	public boolean selectedNetworksOnly = false;
-	@Tunable(description = "Apply to Selected Networks Only")
-	public boolean getSelectedNetworksOnly (){
-		return selectedNetworksOnly;
-	}
-	public void setSelectedNetworksOnly(boolean selectedOnly){
-		this.selectedNetworksOnly = selectedOnly;
-	}
-
 	public ListSingleSelection<String> rootNetworkList;
 	@Tunable(description = "Network Collection List",groups="Select a Network Collection",dependsOn="SelectedNetworksOnly=false", params = "displayState=uncollapsed")
 	public ListSingleSelection<String> getRootNetworkList(){
@@ -98,6 +88,15 @@ public class JoinTablesTask extends AbstractTask{
 		this.columnList = colList;
 	}
 
+	public boolean selectedNetworksOnly = false;
+	@Tunable(description = "Or apply to selected networks only")
+	public boolean getSelectedNetworksOnly (){
+		return selectedNetworksOnly;
+	}
+	public void setSelectedNetworksOnly(boolean selectedOnly){
+		this.selectedNetworksOnly = selectedOnly;
+	}
+	
 	public ListMultipleSelection<String> networkList;
 	@Tunable(description = "Network List",groups="Select Networks",dependsOn="SelectedNetworksOnly=true", params = "displayState=collapsed")
 	public ListMultipleSelection<String> getNetworkList(){
