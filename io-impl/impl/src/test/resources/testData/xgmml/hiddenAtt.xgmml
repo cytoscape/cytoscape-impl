@@ -15,6 +15,11 @@
 			<att type="string" value="b" />
 		</att>
 	</node>
+	<!-- It should not matter whether or not edges are written before nodes! -->
+	<edge label="node1 (DirectedEdge) node2" source="-1" target="-2">
+		<att type="string" name="name" value="node1 (DirectedEdge) node2" />
+		<att type="real" name="_private_real" value="0.1" cy:hidden="1" />
+	</edge>
 	<node label="node2" id="-2">
 		<att type="string" name="name" value="node 2" />
 		<att type="string" name="_private_str" value="_v2" cy:hidden="1" />
@@ -23,8 +28,4 @@
 			<att type="string" value="d" />
 		</att>
 	</node>
-	<edge label="node1 (DirectedEdge) node2" source="-1" target="-2">
-		<att type="string" name="name" value="node1 (DirectedEdge) node2" />
-		<att type="real" name="_private_real" value="0.1" cy:hidden="1" />
-	</edge>
 </graph>

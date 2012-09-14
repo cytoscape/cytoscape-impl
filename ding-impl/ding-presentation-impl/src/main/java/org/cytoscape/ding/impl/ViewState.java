@@ -85,7 +85,9 @@ public class ViewState {
 			points = new WeakHashMap<CyNode, Point2D.Double>();
 			for (CyNode n: view.getNetwork().getNodeList()) {
 				NodeView nv = view.getDNodeView(n);
-				points.put(n, new Point2D.Double(nv.getXPosition(), nv.getYPosition()));
+				
+				if (nv != null)
+					points.put(n, new Point2D.Double(nv.getXPosition(), nv.getYPosition()));
 			}
 		}
 

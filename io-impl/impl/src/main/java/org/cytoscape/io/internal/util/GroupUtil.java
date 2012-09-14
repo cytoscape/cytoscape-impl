@@ -135,15 +135,18 @@ public class GroupUtil {
 		// Iterate each node and check if they have network pointers
 		for (final CyNode n : nodes) {
 			final CyNetwork netPointer = n.getNetworkPointer();
-			if (netPointer == null) continue;
+			
+			if (netPointer == null)
+				continue;
 			
 			// Retrieve the internal nodes and edges
 			final CyRow dnRow = net.getRow(n, CyNetwork.DEFAULT_ATTRS);
 			final CyRow hnRow = net.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			final CyRow snRow = netPointer.getRow(netPointer, CyNetwork.HIDDEN_ATTRS);
-			if (!dnRow.isSet(GROUP_STATE_ATTRIBUTE) && !hnRow.isSet(GROUP_STATE_ATTRIBUTE)
-			    && !hnRow.isSet(GROUP_ATTRIBUTE))
-				return;
+			
+			if (!dnRow.isSet(GROUP_STATE_ATTRIBUTE) && !hnRow.isSet(GROUP_STATE_ATTRIBUTE) &&
+			    !hnRow.isSet(GROUP_ATTRIBUTE))
+				continue;
 
 			boolean collapsed = false;
 			boolean cy2group = false;

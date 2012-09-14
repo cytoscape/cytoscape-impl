@@ -30,7 +30,6 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -427,25 +426,22 @@ public class ReadDataManager {
 		return (currentNetwork != null) ? rootNetworkManager.getRootNetwork(currentNetwork) : null;
 	}
 	
-    protected CyNode createNode(Object oldId, String label) {
+    protected CyNode createNode(final Object oldId, final String label, final CyNetwork net) {
         if (oldId == null)
         	throw new NullPointerException("'oldId' is null.");
         
         CyNode node = null;
         
-        if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
+        if (net instanceof CySubNetwork && getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network!
 	        node = cache.getNode(oldId);
 	        
-	        if (node != null) {
-	        	((CySubNetwork) this.getCurrentNetwork()).addNode(node);
-	        }
+	        if (node != null)
+	        	((CySubNetwork) net).addNode(node);
         }
         
-        if (node == null) {
-	        // OK, create it
-	        node = this.getCurrentNetwork().addNode();
-        }
+        if (node == null) // OK, create it
+	        node = net.addNode();
         
         // Add to internal cache:
         cache.cache(oldId, node);
@@ -456,23 +452,28 @@ public class ReadDataManager {
         return node;
     }
 
-	protected CyEdge createEdge(final CyNode source, final CyNode target, Object id, String label, boolean directed) {
+	protected void addNode(final CyNode node, final String label, final CySubNetwork net) {
+		net.addNode(node);
+		cache.cacheNodeByName(label, node);
+		cache.removeUnresolvedNode(node, net);
+	}
+    
+	protected CyEdge createEdge(final CyNode source, final CyNode target, Object id, final String label,
+			final boolean directed, CyNetwork net) {
 		CyEdge edge = null;
 		
 		if (id == null) id = label;
         
-        if (this.getCurrentNetwork() instanceof CySubNetwork && this.getParentNetwork() != null) {
+        if (net instanceof CySubNetwork && this.getParentNetwork() != null) {
         	// Do not create the element again if the network is a sub-network and the edge already exists!
 	        edge = cache.getEdge(id);
 	        
-	        if (edge != null) {
-	        	((CySubNetwork) this.getCurrentNetwork()).addEdge(edge);
-	        }
+	        if (edge != null)
+	        	((CySubNetwork) net).addEdge(edge);
         }
         
         if (edge == null) {
 	        // OK, create it
-        	CyNetwork net = getCurrentNetwork();
         	// But first get the actual source/target instances from the current network,
         	// because both node instances have to belong to the same root or sub-network.
         	CyNode actualSrc = net.getNode(source.getSUID());
@@ -484,10 +485,6 @@ public class ReadDataManager {
         		// The nodes might have been added to other sub-networks, but not to the current one.
         		// If that is the case, the root network should have both nodes,
         		// so let's just add the edge to the root.
-				logger.warn("Cannot add edge \"" + id
-						+ "\" to the expected sub-network, because it does not contain the source or target node." +
-						" Will try to add the edge to the root-network instead.");
-        		
         		final CyRootNetwork rootNet = getRootNetwork();
 				
         		if (actualSrc == null)
@@ -543,6 +540,39 @@ public class ReadDataManager {
 		return edge;
 	}
 
+	protected CyEdge createEdge (final Object sourceId, final Object targetId, Object id, final String label,
+			final boolean directed, final CyNetwork net) {
+		if (id == null) id = label;
+		
+		CyNode source = cache.getNode(sourceId);
+		CyNode target = cache.getNode(targetId);
+		final boolean haveTarget = target != null;
+		final boolean haveSource = source != null;
+	
+		// Create the required nodes, even if they haven't been parsed yet; they will probably be parsed later
+		// (it can happen if the edge is written before its nodes in the XGMML document)
+		if (!haveSource)
+			source = createNode(sourceId, null, net);
+		if (!haveTarget)
+			target = createNode(targetId, null, net);
+
+		// Create the edge
+		final CyNetwork curNet = getCurrentNetwork();
+		final CyEdge edge = createEdge(source, target, id, label, directed, net);
+		
+		if (curNet instanceof CySubNetwork) {
+			// Tag the node that were created in advance nodes for deletion (from this subnetwork):
+			// If the actual node elements are not parsed later, they should be deleted from this subnetwork.
+			if (!haveSource)
+				cache.addUnresolvedNode(source, (CySubNetwork) curNet);
+			if (!haveTarget)
+				cache.addUnresolvedNode(target, (CySubNetwork) curNet);
+		}
+		
+		return edge;
+	}
+
+	
 	protected void createGroups() {
 		groupUtil.createGroups(publicNetworks, null);
 	}
@@ -561,25 +591,8 @@ public class ReadDataManager {
 		}
 	}
 	
-	protected void addElementLink(String href, Class<? extends CyIdentifiable> clazz) {
-		Map<CyNetwork, Set<Long>> map = null;
-		Long id = XGMMLParseUtil.getIdFromXLink(href);
-		
-		if (clazz == CyNode.class)      map = cache.getNodeLinks();
-		else if (clazz == CyEdge.class) map = cache.getEdgeLinks();
-		
-		CyNetwork net = getCurrentNetwork();
-		
-		if (map != null && net != null) {
-			Set<Long> idSet = map.get(net);
-			
-			if (idSet == null) {
-				idSet = new HashSet<Long>();
-				map.put(net, idSet);
-			}
-			
-			idSet.add(id);
-		}
+	protected void addElementLink(final String href, final Class<? extends CyIdentifiable> clazz) {
+		cache.addElementLink(href, clazz, getCurrentNetwork());
 	}
 	
 	public Object getNetworkViewId() {

@@ -62,7 +62,7 @@ public class HandleGraphDone extends AbstractHandler {
 			
 			if (net != null && ids != null && !ids.isEmpty()) {
 				if (net instanceof CySubNetwork) {
-					CySubNetwork sn = (CySubNetwork) net;
+					final CySubNetwork sn = (CySubNetwork) net;
 					
 					for (Long id : ids) {
 						CyNode n = manager.getCache().getNode(id);
@@ -88,10 +88,10 @@ public class HandleGraphDone extends AbstractHandler {
 			
 			if (net != null && ids != null && !ids.isEmpty()) {
 				if (net instanceof CySubNetwork) {
-					CySubNetwork sn = (CySubNetwork) net;
+					final CySubNetwork sn = (CySubNetwork) net;
 					
 					for (Long id : ids) {
-						CyEdge e = manager.getCache().getEdge(id);
+						final CyEdge e = manager.getCache().getEdge(id);
 						
 						if (e != null)
 							sn.addEdge(e);
@@ -105,6 +105,7 @@ public class HandleGraphDone extends AbstractHandler {
 			}
 		}
 		
+		manager.getCache().deleteUnresolvedNodes();
 		resolveEquations();
 		resolveNetworkPointers();
 		updateSUIDAttributes();

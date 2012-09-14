@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.cytoscape.io.internal.read.xgmml.handler.XGMMLParseUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -61,6 +62,7 @@ public class ReadCache {
 	
 	private Map<CyNetwork, Set<Long>> nodeLinkMap;
 	private Map<CyNetwork, Set<Long>> edgeLinkMap;
+	private Map<CySubNetwork, Set<CyNode>> unresolvedNodeMap;
 	private Map<CyNode, Object/*network's id*/> networkPointerMap;
 	
 	private final CyNetworkTableManager netTblMgr;
@@ -81,6 +83,7 @@ public class ReadCache {
 		nodeByNameMap = new HashMap<Object, CyNode>();
 		nodeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
 		edgeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
+		unresolvedNodeMap = new WeakHashMap<CySubNetwork, Set<CyNode>>();
 		networkPointerMap = new WeakHashMap<CyNode, Object>();
 	}
 	
@@ -92,6 +95,7 @@ public class ReadCache {
 		nodeByNameMap = null;
 		nodeLinkMap = null;
 		edgeLinkMap = null;
+		unresolvedNodeMap = null;
 		networkPointerMap = null;
 	}
 	
@@ -179,6 +183,57 @@ public class ReadCache {
 	
 	public CyNode getNodeByName(String nodeName) {
 		return nodeByNameMap.get(nodeName);
+	}
+	
+	public void addUnresolvedNode(final CyNode node, final CySubNetwork net) {
+		Set<CyNode> nodes = unresolvedNodeMap.get(net);
+		
+		if (nodes == null) {
+			nodes = new HashSet<CyNode>();
+			unresolvedNodeMap.put(net, nodes);
+		}
+		
+		nodes.add(node);
+	}
+	
+	public boolean removeUnresolvedNode(final CyNode node, final CySubNetwork net) {
+		Set<CyNode> nodes = unresolvedNodeMap.get(net);
+		return nodes != null ? nodes.remove(node) : false;
+	}
+	
+	public void deleteUnresolvedNodes() {
+		// Delete unresolved nodes from
+		for (Map.Entry<CySubNetwork, Set<CyNode>> entry : unresolvedNodeMap.entrySet()) {
+			final CySubNetwork net = entry.getKey();
+			final Set<CyNode> nodes = entry.getValue();
+			
+			if (net != null && nodes != null && !nodes.isEmpty()) {
+				logger.error("The following nodes can't be resolved and will be deleted from network \"" + net + "\": " 
+						+ nodes);
+				net.removeNodes(nodes);
+			}
+		}
+	}
+
+	public void addElementLink(final String href, final Class<? extends CyIdentifiable> clazz, final CyNetwork net) {
+		Map<CyNetwork, Set<Long>> map = null;
+		final Long id = XGMMLParseUtil.getIdFromXLink(href);
+		
+		if (clazz == CyNode.class)
+			map = getNodeLinks();
+		else if (clazz == CyEdge.class)
+			map = getEdgeLinks();
+		
+		if (map != null && net != null) {
+			Set<Long> idSet = map.get(net);
+			
+			if (idSet == null) {
+				idSet = new HashSet<Long>();
+				map.put(net, idSet);
+			}
+			
+			idSet.add(id);
+		}
 	}
 	
 	public Map<CyNetwork, Set<Long>> getNodeLinks() {

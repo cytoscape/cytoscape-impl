@@ -37,11 +37,13 @@ import org.xml.sax.SAXException;
 public class HandleNode extends AbstractHandler {
 
 	@Override
-	public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
-		final CyNode node;
+	public ParseState handle(final String tag, final Attributes atts, final ParseState current) throws SAXException {
 		final String href = atts.getValue(ReadDataManager.XLINK, "href");
 		Object id = null;
 		String label = null;
+		CyNode node = null;
+		final CyNetwork curNet = manager.getCurrentNetwork();
+		final CyNetwork rootNet = manager.getRootNetwork();
 		
 		if (href == null) {
 			// Create the node
@@ -51,14 +53,18 @@ public class HandleNode extends AbstractHandler {
 			if (label == null)
 				label = atts.getValue("name"); // For backwards compatibility
 			
-			node = manager.createNode(id, label);
+			node = manager.getCache().getNode(id);
+			
+			if (node == null)
+				node = manager.createNode(id, label, curNet);
+			else if (curNet instanceof CySubNetwork)
+				manager.addNode(node, label, (CySubNetwork) curNet);
 			
 			if ( label != null && (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) ) {
-				manager.getCurrentNetwork().getRow(node).set(CyNetwork.NAME, label);
+				curNet.getRow(node).set(CyNetwork.NAME, label);
 				
-				if (manager.getRootNetwork() != null && manager.getCurrentNetwork() != manager.getRootNetwork()) {
-					manager.getRootNetwork().getRow(node).set(CyNetwork.NAME, label);
-				}
+				if (rootNet != null && curNet != rootNet)
+					rootNet.getRow(node).set(CyNetwork.NAME, label);
 			}
 		} else {
 			// Try to get the node from the internal cache
@@ -66,8 +72,6 @@ public class HandleNode extends AbstractHandler {
 			node = manager.getCache().getNode(id);
 			
 			if (node != null) {
-				final CyNetwork curNet = manager.getCurrentNetwork();
-				
 				if (curNet instanceof CySubNetwork)
 					((CySubNetwork) curNet).addNode(node);
 				else
