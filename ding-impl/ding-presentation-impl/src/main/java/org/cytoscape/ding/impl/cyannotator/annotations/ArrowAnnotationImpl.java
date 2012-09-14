@@ -179,7 +179,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			argMap.put(SOURCECOLOR,convertColor(this.sourceColor));
 
 		if (target instanceof Point2D) {
-			Point2D xy = getNodeCoordinates(((Point2D)target).getX(), ((Point2D)target).getY());
+			Point2D xy = (Point2D) target;
 			argMap.put(TARGETPOINT,Double.toString(xy.getX())+","+Double.toString(xy.getY()));
 		} else if (target instanceof Annotation) {
 			argMap.put(TARGETANN,((Annotation)target).getUUID().toString());
