@@ -85,10 +85,13 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		final VisualStyle vs = vmm.getVisualStyle(networkView);
 		
 		for (final RowSetRecord record : e.getPayloadCollection()) {
-			
 			final CyRow row = record.getRow();
 			final String columnName = record.getColumn();
 			final CyColumn column = row.getTable().getColumn(columnName);
+			
+			if (column == null)
+				continue;
+			
 			final VirtualColumnInfo virtualColInfo = column.getVirtualColumnInfo();
 			final boolean virtual = virtualColInfo.isVirtual();
 			final View<?> v = rowViewMap.get(row);
