@@ -524,18 +524,27 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				updateNetworkNameColumn(records, source);
+				updateNetworkViewTitle(records, source);
 			}
 		});
 	}
 	
-	private final void updateNetworkNameColumn(final Collection<RowSetRecord> records, final CyTable source) {
+	private final void updateNetworkViewTitle(final Collection<RowSetRecord> records, final CyTable source) {
 		for (final RowSetRecord record : records) {
-			// assume payload collection is for same column
-			for (JInternalFrame targetIF : iFrameMap.keySet()) {
-				if (iFrameMap.get(targetIF).getModel().getDefaultNetworkTable().equals(source)) {
-					targetIF.setTitle(record.getRow().get(CyNetwork.NAME, String.class));
-					return; // assuming just one row is set.
+			if (CyNetwork.NAME.equals(record.getColumn())) {
+				// assume payload collection is for same column
+				for (final JInternalFrame targetIF : iFrameMap.keySet()) {
+					final CyNetworkView view = iFrameMap.get(targetIF);
+					final CyNetwork net = view.getModel();
+					
+					if (net.getDefaultNetworkTable().equals(source)) {
+						final String title = record.getRow().get(CyNetwork.NAME, String.class);
+						targetIF.setTitle(title);
+						// We should guarantee this visual property is up to date as well
+						view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
+						
+						return; // assuming just one row is set.
+					}
 				}
 			}
 		}

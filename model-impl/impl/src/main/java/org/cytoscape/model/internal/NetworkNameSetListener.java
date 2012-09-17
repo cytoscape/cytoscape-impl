@@ -3,6 +3,7 @@ package org.cytoscape.model.internal;
 import java.util.Collection;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
@@ -82,30 +83,29 @@ public class NetworkNameSetListener implements RowsSetListener, NetworkAddedList
 		edgeTable.setTitle(name + " edge");
 		networkTable.setTitle(name + " network");
 		nodeTable.setTitle(name + " node");
-		
 	}
 
 	//=========================NetworkAddedListener Implementation========================
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {
-
 		CyNetwork sourceNetwork = e.getNetwork();
 		String name = sourceNetwork.getRow(sourceNetwork).get(CyNetwork.NAME, String.class);
 
-		if (sourceNetwork.equals( rootNetwork.getBaseNetwork())){
+		if (sourceNetwork.equals( rootNetwork.getBaseNetwork()))
 			setRootNetworkName(name);
-		}
 		
-		if(rootNetwork.containsNetwork(sourceNetwork))
+		if (rootNetwork.containsNetwork(sourceNetwork))
 			updateSubNetworkTableNames(sourceNetwork, name);
 	}
 	
 	private void setRootNetworkName(String name) {
-		rootNetwork.getRow(rootNetwork).set(CyRootNetwork.NAME, name);
+		CyRow row = rootNetwork.getRow(rootNetwork);
+		
+		if (!row.isSet(CyNetwork.NAME) || row.get(CyNetwork.NAME, String.class).isEmpty())
+			rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, name);
 	}
 	
 	private void updateSubNetworkTableNames(CyNetwork net, String name){
-		
 		net.getDefaultEdgeTable().setTitle(name + " default edge");
 		net.getDefaultNetworkTable().setTitle(name + " default network");
 		net.getDefaultNodeTable().setTitle(name + " default node");

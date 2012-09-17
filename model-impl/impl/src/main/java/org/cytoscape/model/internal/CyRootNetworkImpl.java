@@ -370,7 +370,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	
 	@Override
 	public String toString() {
-		return "CyRootNetwork: " + suid + " name: " + getRow(this).get("name", String.class); 
+		return "CyRootNetwork: " + suid + " name: " + getRow(this).get(NAME, String.class); 
 	}
 
 	private synchronized int getNextNodeIndex() {

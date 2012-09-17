@@ -472,13 +472,13 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			return;
 		
 		final CyTable table = e.getSource();
-		final CyNetwork updateNetworkName = nameTables.get(table);
+		final CyNetwork network = nameTables.get(table);
 		
 		// Case 1: Network name/title updated
-		if (updateNetworkName != null && record.getColumn().equals(CyNetwork.NAME)) {
+		if (network != null && record.getColumn().equals(CyNetwork.NAME)) {
 			final CyRow row = payload.iterator().next().getRow();
 			final String newTitle = row.get(CyNetwork.NAME, String.class);
-			final NetworkTreeNode node = this.network2nodeMap.get(updateNetworkName);
+			final NetworkTreeNode node = this.network2nodeMap.get(network);
 			final String oldTitle = treeTableModel.getValueAt(node, 0).toString();
 
 			if (newTitle.equals(oldTitle) == false) {
@@ -561,9 +561,9 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 	private void addNetwork(final CyNetwork network) {
 		// first see if it is not in the tree already
 		if (this.network2nodeMap.get(network) == null) {
-
 			NetworkTreeNode parentTreeNode = null;
 			CyRootNetwork parentNetwork = null;
+			
 			// In current version, ALL networks are created as Subnetworks.
 			// So, this should be always true.
 			if (network instanceof CySubNetwork) {
@@ -572,7 +572,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetCu
 			}
 
 			if (parentTreeNode == null){
-				parentTreeNode = new NetworkTreeNode(parentNetwork.getRow(parentNetwork).get(CyNetwork.NAME, String.class) , parentNetwork);
+				final String rootNetName = parentNetwork.getRow(parentNetwork).get(CyNetwork.NAME, String.class);
+				parentTreeNode = new NetworkTreeNode(rootNetName, parentNetwork);
 				nameTables.put(parentNetwork.getDefaultNetworkTable(), parentNetwork);
 				network2nodeMap.put(parentNetwork, parentTreeNode);
 			}
