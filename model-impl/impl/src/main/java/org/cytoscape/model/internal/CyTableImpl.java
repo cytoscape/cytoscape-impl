@@ -55,12 +55,11 @@ import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.TableTitleChangedEvent;
-
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.HashMultimap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 
 
 public final class CyTableImpl implements CyTable, TableAddedListener {
@@ -671,54 +670,63 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	private void setListX(final Object key, final String columnName, final Object value) {
 		Object newValue;
-
+		final Object rawValue;
+		
+		
 		synchronized(this) {
 			final String normalizedColName = normalizeColumnName(columnName);
+			final CyColumn column = types.get(normalizedColName);
+			CyRow row = rows.get(key);
+			final Class<?> type = column.getListElementType();
 			
-			if (value instanceof List) {
+			if (value instanceof CyListImpl) {
+				rawValue = value;
+			} else if (value instanceof List) {
 				final List list = (List)value;
 				if (!list.isEmpty())
 					checkType(list.get(0));
+				rawValue = new CyListImpl(type, new ArrayList(list), eventHelper, row, column);
 			} else if (!(value instanceof Equation)) {
 				throw new IllegalArgumentException("value is a " + value.getClass().getName()
 								   + " and not a List for column '"
 								   + columnName + "'.");
-			} else if (!EqnSupport.listEquationIsCompatible((Equation)value,
-					          types.get(normalizedColName).getListElementType())) {
+			} else if (!EqnSupport.listEquationIsCompatible((Equation)value, type)) {
 				throw new IllegalArgumentException(
 								   "value is not a List equation of a compatible type for column '"
 								   + columnName + "'.");
+			} else {
+				rawValue = value;
 			}
 
 			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
 			
 			if (virtColumn != null) {
-				virtColumn.setValue(key, value);
+				virtColumn.setValue(key, rawValue);
 			}
-			if (virtColumn != null && !(value instanceof Equation)) {
+			if (virtColumn != null && !(rawValue instanceof Equation)) {
 				newValue = virtColumn.getListValue(key);
 			} else {
 				Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 
 				// TODO this is an implicit addRow - not sure if we want to refactor this or not
 				final Object oldValue = keyToValueMap.get(key);
-				keyToValueMap.put(key, value);
-				if (value instanceof Equation) {
+				keyToValueMap.put(key, rawValue);
+				if (rawValue instanceof Equation) {
 					final StringBuilder errorMsg = new StringBuilder();
-					newValue = EqnSupport.evalEquation((Equation)value, suid, interpreter,
+					newValue = EqnSupport.evalEquation((Equation)rawValue, suid, interpreter,
 									   currentlyActiveAttributes, columnName,
 									   errorMsg, this);
 					lastInternalError = errorMsg.toString();
 				} else {
-					newValue = value;
-					addToReverseMap(columnName, key, oldValue, value);
+					newValue = rawValue;
+					addToReverseMap(columnName, key, oldValue, rawValue);
 				}
 			}
 		}
 
 		if (fireEvents)
 			eventHelper.addEventPayload((CyTable)this,
-			                            new RowSetRecord(getRow(key),columnName,newValue, value),
+			                            new RowSetRecord(getRow(key),columnName,newValue, rawValue),
 			                            RowsSetEvent.class);
 	}
 

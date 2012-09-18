@@ -125,7 +125,7 @@ public class CyTableTest extends AbstractCyTableTest {
 		attrs.set("booleanList", new BooleanList());
 		final BooleanList nonEmptyList = new BooleanList(true, false);
 		attrs.set("booleanList", nonEmptyList);
-		assertEquals(attrs.getList("booleanList", Boolean.class), nonEmptyList);
+		assertListEquals(attrs.getList("booleanList", Boolean.class), nonEmptyList);
 	}
 
 	//@Test : TODO: We removed support for strongly typed lists so this test is

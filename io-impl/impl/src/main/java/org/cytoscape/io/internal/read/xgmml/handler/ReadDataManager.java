@@ -517,8 +517,8 @@ public class ReadDataManager {
         				extEdgeIds = nphRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
         						
         				if (extEdgeIds == null) {
-        					extEdgeIds = new ArrayList<Long>();
-        					nphRow.set(EXTERNAL_EDGE_ATTRIBUTE, extEdgeIds);
+        					nphRow.set(EXTERNAL_EDGE_ATTRIBUTE, new ArrayList<Long>());
+        					extEdgeIds = nphRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
         				}
         			}
         		}
