@@ -274,23 +274,24 @@ public class VizMapPropertySheetBuilder {
 					// }
 				}
 
-				// Override dependency
-				final Set<VisualPropertyDependency<?>> dependencies = style.getAllVisualPropertyDependencies();
-				for (VisualPropertyDependency<?> dep : dependencies) {
-					if (dep.isDependencyEnabled()) {
-						final Set<?> vpGroup = dep.getVisualProperties();
-						VisualProperty<?> firstVP = (VisualProperty<?>) vpGroup.iterator().next();
-						final VisualLexiconNode node = lex.getVisualLexiconNode(firstVP);
-						final VisualProperty<?> parentVP = node.getParent().getVisualProperty();
-						if (unusedVisualPropType.contains(parentVP) == false)
-							unusedVisualPropType.add(parentVP);
-						// Remove group
-						for (Object toBeRemoved : vpGroup)
-							unusedVisualPropType.remove(toBeRemoved);
-					}
-				}
 
 				mapping = null;
+			}
+			
+			// Override dependency
+			final Set<VisualPropertyDependency<?>> dependencies = style.getAllVisualPropertyDependencies();
+			for (VisualPropertyDependency<?> dep : dependencies) {
+				if (dep.isDependencyEnabled()) {
+					final Set<?> vpGroup = dep.getVisualProperties();
+					VisualProperty<?> firstVP = (VisualProperty<?>) vpGroup.iterator().next();
+					final VisualLexiconNode node = lex.getVisualLexiconNode(firstVP);
+					final VisualProperty<?> parentVP = node.getParent().getVisualProperty();
+					if (unusedVisualPropType.contains(parentVP) == false && style.getVisualMappingFunction(parentVP) == null)
+						unusedVisualPropType.add(parentVP);
+					// Remove group
+					for (Object toBeRemoved : vpGroup)
+						unusedVisualPropType.remove(toBeRemoved);
+				}
 			}
 		}
 	}
