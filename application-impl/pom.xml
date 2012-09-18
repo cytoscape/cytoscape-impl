@@ -95,6 +95,12 @@
 			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
  		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>

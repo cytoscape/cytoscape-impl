@@ -1,26 +1,13 @@
 package org.cytoscape.model; 
 
-
-
-import org.cytoscape.event.CyEvent;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.HashSet;
 import java.util.Set;
+
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 
 
 public class PerfTest {

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.cytoscape</groupId>
@@ -8,13 +9,11 @@
 
 	<artifactId>vizmap-impl-parent</artifactId>
 	<packaging>pom</packaging>
-    <name>Cytoscape VizMap Impl Parent (${project.artifactId})</name>
-	
+	<name>Cytoscape VizMap Impl Parent (${project.artifactId})</name>
+
 	<modules>
 		<module>impl</module>
-		<!--
-		<module>it</module>
-		-->
+		<!-- <module>it</module> -->
 	</modules>
 
 	<repositories>
@@ -87,8 +86,8 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>application-api</artifactId>
 		</dependency>
-	
-		<!-- for testing -->	
+
+		<!-- for testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -105,48 +104,43 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>model-impl</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>model-impl</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>viewmodel-impl</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>viewmodel-impl</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>service-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>event-api</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>equations-api</artifactId>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-impl</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-api</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>property-api</artifactId>

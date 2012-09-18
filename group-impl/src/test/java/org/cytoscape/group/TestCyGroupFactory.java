@@ -27,24 +27,20 @@
 */
 package org.cytoscape.group;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.group.internal.CyGroupFactoryImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
-
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.junit.Test;
 

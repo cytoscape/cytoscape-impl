@@ -6,7 +6,6 @@
 		<version>3.0.0-alpha10-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.cytoscape</groupId>
 	<artifactId>viewmodel-impl-parent</artifactId>
 	<packaging>pom</packaging>
     <name>Cytoscape View Model Impl Parent (${project.artifactId})</name>
@@ -78,11 +77,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>service-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

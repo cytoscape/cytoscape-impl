@@ -13,7 +13,6 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>model-impl-performance-debug</artifactId>
 
     <name>Cytoscape Model Impl Performance Debug (${project.artifactId})</name>
@@ -68,6 +67,7 @@
 			<artifactId>model-impl</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
+			<scope>compile</scope>
 		</dependency>
         <dependency>
             <groupId>org.ops4j.pax.logging</groupId>

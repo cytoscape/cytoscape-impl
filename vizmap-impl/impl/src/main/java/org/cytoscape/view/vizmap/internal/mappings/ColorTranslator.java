@@ -4,7 +4,6 @@ import java.awt.Paint;
 
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 
-//TODO: DELETE?
 public class ColorTranslator implements ValueTranslator<String, Paint>{
 
 	@Override

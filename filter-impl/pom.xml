@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
@@ -10,11 +11,10 @@
 		<bundle.namespace>org.cytoscape.filter.internal</bundle.namespace>
 	</properties>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>filter-impl</artifactId>
 	<name>Cytoscape Filters Impl (${project.artifactId})</name>
-	<packaging>bundle</packaging>
 
+	<packaging>bundle</packaging>
 
 	<dependencies>
 
@@ -23,54 +23,50 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-        	<groupId>org.cytoscape</groupId>
-        	<artifactId>session-api</artifactId>
-        	<scope>compile</scope>
-        </dependency>
-        <dependency>
-        	<groupId>org.cytoscape</groupId>
-        	<artifactId>viewmodel-api</artifactId>
-        	<scope>compile</scope>
-        </dependency>
-        <dependency>
-        	<groupId>org.cytoscape</groupId>
-        	<artifactId>model-api</artifactId>
-        	<scope>compile</scope>
-        </dependency>
-        <dependency>
-        	<groupId>cytoscape-temp</groupId>
-        	<artifactId>violinstrings</artifactId>
-        	<version>1.0.2</version>
-        </dependency>
-        <dependency>
-        	<groupId>org.cytoscape</groupId>
-        	<artifactId>work-api</artifactId>
-        	<scope>compile</scope>
-        </dependency>
-        <dependency>
-        	<groupId>org.cytoscape</groupId>
-        	<artifactId>app-api</artifactId>
-        </dependency>
-        <dependency>
-        	<groupId>org.cytoscape</groupId>
-        	<artifactId>swing-application-api</artifactId>
-        </dependency>
-        <dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>swing-util-api</artifactId>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>service-api</artifactId>
+			<artifactId>session-api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>violinstrings</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>app-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-application-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-api</artifactId>
 		</dependency>
 	</dependencies>
-	
+
 	<repositories>
 		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
 		<repository>
@@ -108,7 +104,7 @@
 			<url>http://code.cytoscape.org/nexus/content/repositories/thirdparty/</url>
 		</repository>
 	</repositories>
-	
+
 	<build>
 		<plugins>
 			<plugin>

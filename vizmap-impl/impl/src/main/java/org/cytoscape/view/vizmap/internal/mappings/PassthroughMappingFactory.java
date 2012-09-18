@@ -22,6 +22,7 @@ public class PassthroughMappingFactory implements VisualMappingFunctionFactory {
 	}
 	
 	public void addValueTranslator(ValueTranslator<?, ?> translator, Map props) {
+		System.out.println("==========Translator called: " + translator);
 		if (translator != null)
 			TRANSLATORS.put(translator.getTranslatedValueType(), translator);
 	}

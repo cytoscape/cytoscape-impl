@@ -66,15 +66,13 @@
 			<artifactId>model-impl</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>service-api</artifactId>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>
 			<type>test-jar</type>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -94,18 +92,21 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>equations-impl</artifactId>
 			<version>${project.version}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -120,6 +121,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.googlecode.guava-osgi</groupId>

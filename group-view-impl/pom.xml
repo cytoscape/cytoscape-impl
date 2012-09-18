@@ -11,7 +11,6 @@
   </properties>
 
 	<modelVersion>4.0.0</modelVersion>
-  <groupId>org.cytoscape</groupId>
   <artifactId>group-view-impl</artifactId>
 
    <name>Cytoscape Group View Impl (${project.artifactId})</name>
@@ -120,10 +119,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>service-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>

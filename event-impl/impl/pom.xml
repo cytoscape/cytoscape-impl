@@ -13,7 +13,6 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>event-impl</artifactId>
 
 	<name>Cytoscape Event Impl (${project.artifactId})</name>

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
 		<groupId>org.cytoscape</groupId>
@@ -58,9 +59,9 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-                        <Export-Package>!${bundle.namespace}.*</Export-Package>
-                        <Private-Package>${bundle.namespace}.*</Private-Package>
-                        <Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -104,6 +105,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>

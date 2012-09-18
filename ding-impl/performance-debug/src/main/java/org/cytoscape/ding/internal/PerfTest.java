@@ -2,7 +2,7 @@ package org.cytoscape.ding.internal;
 
 
 import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 import java.awt.Color;
 import java.awt.Dimension;

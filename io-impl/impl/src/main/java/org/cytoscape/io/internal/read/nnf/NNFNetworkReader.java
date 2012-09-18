@@ -32,19 +32,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import org.cytoscape.event.CyEventHelper;
+
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -55,7 +49,6 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.HashSet;
 
 /**
  * Reader for graphs in the interactions file format. Given the filename,

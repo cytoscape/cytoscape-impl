@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
 		<artifactId>ding-impl</artifactId>
@@ -22,36 +23,34 @@
 
 	<build>
 		<plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>${maven-assembly-plugin.version}</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.cytoscape.ding.internal.PerfTest</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- append to the packaging phase. -->
-                        <goals>
-                        <goal>attached</goal> <!-- goals == mojos -->
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>${maven-assembly-plugin.version}</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+						<manifest>
+							<mainClass>org.cytoscape.ding.internal.PerfTest</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- append to the packaging phase. -->
+						<goals>
+							<goal>attached</goal> <!-- goals == mojos -->
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
-	<!--
-	This is where any additional implementation dependencies necessary for
-	running the integration tests should reside, NOT in the top level pom.xml.
-	-->
+	<!-- This is where any additional implementation dependencies necessary 
+		for running the integration tests should reside, NOT in the top level pom.xml. -->
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -62,10 +61,6 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>service-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -99,19 +94,20 @@
 			<artifactId>layout-impl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>org.ops4j.pax.logging</groupId>
-            <artifactId>pax-logging-api</artifactId>
-            <version>1.5.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.guava-osgi</groupId>
-            <artifactId>guava-osgi</artifactId>
-            <version>9.0.0</version>
-        </dependency>
+		<dependency>
+			<groupId>org.ops4j.pax.logging</groupId>
+			<artifactId>pax-logging-api</artifactId>
+			<version>1.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.guava-osgi</groupId>
+			<artifactId>guava-osgi</artifactId>
+			<version>9.0.0</version>
+		</dependency>
 	</dependencies>
 </project>

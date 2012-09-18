@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -12,6 +13,7 @@
 
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
+	<!-- Implementation bundles can have different version number -->
 	<version>3.0.0-alpha10-SNAPSHOT</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
@@ -72,265 +74,272 @@
 		<module>scripting-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
-  </modules>
+	</modules>
 
-	<properties>
-		<cytoscape.api.version>3.0.0-beta3-SNAPSHOT</cytoscape.api.version>
-		<cytoscape.support.version>3.0.0-alpha8</cytoscape.support.version>
-	</properties>
 
+	<!-- Managed dependency.  If bundles are shared by everyone, it should be moved to dependencies section! -->
 	<dependencyManagement>
 		<dependencies>
+			<!-- For testing -->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>${junit.version}</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-all</artifactId>
-				<version>${mockito.version}</version> 
+				<version>${mockito.version}</version>
+				<scope>test</scope>
 			</dependency>
+			
+			<!-- Cytoscape API -->
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>application-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>core-task-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>dnd-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>equations-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>event-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>io-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>layout-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>group-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>model-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>app-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>swing-app-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>presentation-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>custom-graphics-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>property-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
-			</dependency>
-			<dependency>
-				<groupId>org.cytoscape</groupId>
-				<artifactId>service-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>session-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>swing-application-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>swing-util-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>viewmodel-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>vizmap-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>vizmap-gui-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>webservice-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>webservice-swing-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>work-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>work-swing-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>datasource-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>command-executor-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 			</dependency>
 
 			<!-- test jars -->
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>core-task-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>swing-app-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>event-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>webservice-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>io-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>group-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>model-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>app-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>presentation-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>custom-graphics-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>session-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>viewmodel-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>vizmap-api</artifactId>
-				<version>${cytoscape.api.version}</version> 
+				<version>${cytoscape.api.version}</version>
 				<type>test-jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.osgi</groupId>
-				<artifactId>org.osgi.core</artifactId>
-				<version>${osgi.api.version}</version>
+				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
-    <!-- Shared dependency for all projects. -->
-    <dependencies>
-        <dependency>
-            <groupId>org.ops4j.pax.logging</groupId>
-            <artifactId>pax-logging-api</artifactId>
-            <version>1.5.2</version>
-            <scope>provided</scope>
-        </dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>service-api</artifactId>
-		</dependency>
-    </dependencies>
+	<!-- Shared dependency for all projects. -->
+	<dependencies>
+	<dependency>
+		<groupId>org.ops4j.pax.logging</groupId>
+		<artifactId>pax-logging-api</artifactId>
+		<version>1.5.2</version>
+		<scope>provided</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.osgi</groupId>
+		<artifactId>org.osgi.core</artifactId>
+		<version>${osgi.api.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.cytoscape</groupId>
+		<artifactId>service-api</artifactId>
+		<version>${cytoscape.api.version}</version>
+	</dependency>
+</dependencies>
 
 	<scm>
 		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/trunk</connection>
