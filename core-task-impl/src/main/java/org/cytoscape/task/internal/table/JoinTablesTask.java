@@ -1,4 +1,3 @@
-
 package org.cytoscape.task.internal.table;
 
 import java.util.ArrayList;
@@ -26,83 +25,99 @@ import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JoinTablesTask extends AbstractTask{
+public class JoinTablesTask extends AbstractTask {
+	
 	enum TableType {
-		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class);
+		NODE_ATTR("Node Attributes", CyNode.class),
+		EDGE_ATTR("Edge Attributes", CyEdge.class),
+		NETWORK_ATTR("Network Attributes", CyNetwork.class);
 
 		private final String name;
-		private final  Class<? extends CyIdentifiable> type;
+		private final Class<? extends CyIdentifiable> type;
 
 		private TableType(final String name, Class<? extends CyIdentifiable> type) {
 			this.name = name;
 			this.type = type;
 		}
 
-		public Class<? extends CyIdentifiable> getType(){
+		public Class<? extends CyIdentifiable> getType() {
 			return this.type;
 		}
 
-		@Override 
+		@Override
 		public String toString() {
 			return name;
 		}
 	};
 
-	private static Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
-	private static String NO_NETWORKS = "No Networks Found";
-	private boolean byReader;  
+	private static final Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
+	private static final String NO_NETWORKS = "No Networks Found";
+	
+	private boolean byReader;
 	private CyTableReader reader;
 	private CyTable globalTable;
 	private CyRootNetworkManager rootNetworkManager;
 	private CyNetworkManager networkManager;
 	private Map<String, CyNetwork> name2NetworkMap;
 	private Map<String, CyRootNetwork> name2RootMap;
-	private Map<String,String> source2targetColumnMap;
+	private Map<String, String> source2targetColumnMap;
 
-	//********tunables********************
 
 	public ListSingleSelection<TableType> dataTypeOptions;
+
 	@Tunable(description = "Import Data as:")
-	public ListSingleSelection<TableType> getDataTypeOptions(){
+	public ListSingleSelection<TableType> getDataTypeOptions() {
 		return dataTypeOptions;
 	}
-	public void setDataTypeOptions(ListSingleSelection<TableType> options ){
-		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue())  , dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+
+	public void setDataTypeOptions(ListSingleSelection<TableType> options) {
+		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+				dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
 	}
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection List",groups="Select a Network Collection",dependsOn="SelectedNetworksOnly=false", params = "displayState=uncollapsed")
-	public ListSingleSelection<String> getRootNetworkList(){
+
+	@Tunable(description = "Network Collection List", groups = "Select a Network Collection", dependsOn = "SelectedNetworksOnly=false", params = "displayState=uncollapsed")
+	public ListSingleSelection<String> getRootNetworkList() {
 		return rootNetworkList;
 	}
-	public void setRootNetworkList (ListSingleSelection<String> roots){
-		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue())  , dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+
+	public void setRootNetworkList(ListSingleSelection<String> roots) {
+		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+				dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
 	}
 
 	public ListSingleSelection<String> columnList;
-	@Tunable(description = "Key Column for Network:",groups="Select a Network Collection", listenForChange={"DataTypeOptions", "RootNetworkList"},dependsOn="SelectedNetworksOnly=false",  params = "displayState=uncollapsed")
-	public ListSingleSelection<String> getColumnList(){
+
+	@Tunable(description = "Key Column for Network:", groups = "Select a Network Collection", listenForChange = {
+			"DataTypeOptions", "RootNetworkList" }, dependsOn = "SelectedNetworksOnly=false", params = "displayState=uncollapsed")
+	public ListSingleSelection<String> getColumnList() {
 		return columnList;
 	}
-	public void setColumnList(ListSingleSelection<String> colList){
+
+	public void setColumnList(ListSingleSelection<String> colList) {
 		this.columnList = colList;
 	}
 
 	public boolean selectedNetworksOnly = false;
+
 	@Tunable(description = "Or apply to selected networks only")
-	public boolean getSelectedNetworksOnly (){
+	public boolean getSelectedNetworksOnly() {
 		return selectedNetworksOnly;
 	}
-	public void setSelectedNetworksOnly(boolean selectedOnly){
+
+	public void setSelectedNetworksOnly(boolean selectedOnly) {
 		this.selectedNetworksOnly = selectedOnly;
 	}
-	
+
 	public ListMultipleSelection<String> networkList;
-	@Tunable(description = "Network List",groups="Select Networks",dependsOn="SelectedNetworksOnly=true", params = "displayState=collapsed")
-	public ListMultipleSelection<String> getNetworkList(){
+
+	@Tunable(description = "Network List", groups = "Select Networks", dependsOn = "SelectedNetworksOnly=true", params = "displayState=collapsed")
+	public ListMultipleSelection<String> getNetworkList() {
 		return networkList;
 	}
-	public void setNetworkList (ListMultipleSelection<String> list){
+
+	public void setNetworkList(ListMultipleSelection<String> list) {
 		this.networkList = list;
 	}
 
@@ -111,69 +126,58 @@ public class JoinTablesTask extends AbstractTask{
 		return "Import Data ";
 	}
 
-	//************************************
 
 
-	public JoinTablesTask(CyTableReader reader, CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager){
+	public JoinTablesTask(CyTableReader reader, CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.reader = reader;
 		this.byReader = true;
 		this.globalTable = null;
 
-
-		this.rootNetworkManager = rootNetworkManeger;
-		this.networkManager = networkManager;
-		this.name2NetworkMap = new HashMap<String, CyNetwork>();
-		this.name2RootMap = new HashMap<String, CyRootNetwork>();
-		this.source2targetColumnMap = new HashMap<String, String>();
-
-
-		initTunable(networkManager);
+		init(rootNetworkManeger, networkManager);
 	}
 
-	public JoinTablesTask(CyTable globalTable, CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager){
+	public JoinTablesTask(CyTable globalTable, CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.reader = null;
 		this.byReader = false;
 		this.globalTable = globalTable;
 
-
+		init(rootNetworkManeger, networkManager);
+	}
+	
+	private final void init(CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.rootNetworkManager = rootNetworkManeger;
 		this.networkManager = networkManager;
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
 		this.name2RootMap = new HashMap<String, CyRootNetwork>();
 		this.source2targetColumnMap = new HashMap<String, String>();
 
-
 		initTunable(networkManager);
 	}
 
-
-	private void initTunable(CyNetworkManager networkManage){
+	private final void initTunable(CyNetworkManager networkManage) {
 
 		selectedNetworksOnly = false;
 
 		final List<TableType> options = new ArrayList<TableType>();
-		for(TableType type: TableType.values())
+		for (TableType type : TableType.values())
 			options.add(type);
 		dataTypeOptions = new ListSingleSelection<TableType>(options);
 		dataTypeOptions.setSelectedValue(TableType.NODE_ATTR);
 
-
-
-		for(CyNetwork net: networkManage.getNetworkSet()){
+		for (CyNetwork net : networkManage.getNetworkSet()) {
 			String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 			name2NetworkMap.put(netName, net);
 		}
 		List<String> names = new ArrayList<String>();
 		names.addAll(name2NetworkMap.keySet());
-		if(names.isEmpty())
+		if (names.isEmpty())
 			networkList = new ListMultipleSelection<String>(NO_NETWORKS);
 		else
 			networkList = new ListMultipleSelection<String>(names);
 
-
-		for (CyNetwork net : networkManager.getNetworkSet()){
+		for (CyNetwork net : networkManager.getNetworkSet()) {
 			final CyRootNetwork rootNet = rootNetworkManager.getRootNetwork(net);
-			if (!name2RootMap.containsValue(rootNet ) )
+			if (!name2RootMap.containsValue(rootNet))
 				name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
 		}
 		List<String> rootNames = new ArrayList<String>();
@@ -181,16 +185,15 @@ public class JoinTablesTask extends AbstractTask{
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
 
-
-
-		columnList = getColumns( name2RootMap.get(rootNetworkList.getSelectedValue())  , dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+				dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
 	}
 
-	public ListSingleSelection<String> getColumns (CyNetwork network, TableType tableType, String namespace){
-		CyTable selectedTable = getTable(network , tableType, CyRootNetwork.SHARED_ATTRS);
+	public ListSingleSelection<String> getColumns(CyNetwork network, TableType tableType, String namespace) {
+		CyTable selectedTable = getTable(network, tableType, CyRootNetwork.SHARED_ATTRS);
 
 		List<String> colNames = new ArrayList<String>();
-		for(CyColumn col: selectedTable.getColumns())
+		for (CyColumn col : selectedTable.getColumns())
 			colNames.add(col.getName());
 
 		ListSingleSelection<String> columns = new ListSingleSelection<String>(colNames);
@@ -202,19 +205,16 @@ public class JoinTablesTask extends AbstractTask{
 
 		TableType tableType = dataTypeOptions.getSelectedValue();
 
-		if (!checkKeys()){
+		if (!checkKeys()) {
 			throw new IllegalArgumentException("Types of keys selected for tables are not matching.");
 		}
 
 		if (!selectedNetworksOnly)
-			mapTableToDefaultAttrs (tableType);
+			mapTableToDefaultAttrs(tableType);
 		else
-			mapTableToLocalAttrs (tableType);	
-
+			mapTableToLocalAttrs(tableType);
 
 	}
-
-
 
 	private void mapTableToLocalAttrs(TableType tableType) {
 		List<CyNetwork> networks = new ArrayList<CyNetwork>();
@@ -222,27 +222,26 @@ public class JoinTablesTask extends AbstractTask{
 		if (networkList.getSelectedValues().isEmpty())
 			return;
 
-		if(!networkList.getSelectedValues().get(0).equals(NO_NETWORKS))
-			for(String netName: networkList.getSelectedValues())
+		if (!networkList.getSelectedValues().get(0).equals(NO_NETWORKS))
+			for (String netName : networkList.getSelectedValues())
 				networks.add(name2NetworkMap.get(netName));
 
-		for (CyNetwork network: networks){
+		for (CyNetwork network : networks) {
 			CyTable targetTable = getTable(network, tableType, CyNetwork.LOCAL_ATTRS);
 			if (targetTable != null)
 				applyMapping(targetTable);
 		}
 	}
 
-
-	private void mapTableToDefaultAttrs(TableType tableType) {		
-		CyTable targetTable = getTable(name2RootMap.get(rootNetworkList.getSelectedValue()) , tableType, CyRootNetwork.SHARED_DEFAULT_ATTRS);
-		if (targetTable != null){
+	private void mapTableToDefaultAttrs(TableType tableType) {
+		CyTable targetTable = getTable(name2RootMap.get(rootNetworkList.getSelectedValue()), tableType,
+				CyRootNetwork.SHARED_DEFAULT_ATTRS);
+		if (targetTable != null) {
 			applyMapping(targetTable);
 		}
 	}
 
-
-	private CyTable getTable(CyNetwork network, TableType tableType, String namespace){
+	private CyTable getTable(CyNetwork network, TableType tableType, String namespace) {
 		if (tableType == TableType.NODE_ATTR)
 			return network.getTable(CyNode.class, namespace);
 		if (tableType == TableType.EDGE_ATTR)
@@ -250,40 +249,39 @@ public class JoinTablesTask extends AbstractTask{
 		if (tableType == TableType.NETWORK_ATTR)
 			return network.getTable(CyNetwork.class, namespace);
 
-		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: " +TableType.NODE_ATTR +", " + TableType.EDGE_ATTR  + ", "+ TableType.NETWORK_ATTR +".");
+		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: "
+				+ TableType.NODE_ATTR + ", " + TableType.EDGE_ATTR + ", " + TableType.NETWORK_ATTR + ".");
 		return null;
 	}
 
+	private void applyMapping(CyTable targetTable) {
+		if (byReader) {
+			if (reader.getTables() != null && reader.getTables().length > 0) {
+				for (CyTable sourceTable : reader.getTables()) {
 
-	private void applyMapping(CyTable targetTable){
-		if(byReader){
-			if (reader.getTables() != null && reader.getTables().length >0){
-				for(CyTable sourceTable : reader.getTables()){
-
-					copyColumns (sourceTable, targetTable);
+					copyColumns(sourceTable, targetTable);
 					copyRows(sourceTable, targetTable);
 				}
 			}
-		}else{
-			copyColumns (globalTable, targetTable);
+		} else {
+			copyColumns(globalTable, targetTable);
 			copyRows(globalTable, targetTable);
 		}
 
 	}
 
-	private CyColumn getJoinTargetColumn (CyTable targetTable){
+	private CyColumn getJoinTargetColumn(CyTable targetTable) {
 		String joinKeyName = CyNetwork.NAME;
 		if (!selectedNetworksOnly)
 			joinKeyName = columnList.getSelectedValue();
 		return targetTable.getColumn(joinKeyName);
 	}
 
-
 	private void copyRows(CyTable sourceTable, CyTable targetTable) {
 		CyColumn targetKeyColumn = getJoinTargetColumn(targetTable);
 
-		for (CyRow targetRow: targetTable.getAllRows()){
-			Object key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType()) ;	
+		for (CyRow targetRow : targetTable.getAllRows()) {
+			Object key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
 
 			if (!sourceTable.rowExists(key))
 				continue;
@@ -293,7 +291,7 @@ public class JoinTablesTask extends AbstractTask{
 			if (sourceRow == null)
 				continue;
 
-			for(CyColumn col: sourceTable.getColumns()){
+			for (CyColumn col : sourceTable.getColumns()) {
 				if (col == sourceTable.getPrimaryKey())
 					continue;
 
@@ -307,14 +305,12 @@ public class JoinTablesTask extends AbstractTask{
 			}
 		}
 
-
-
 	}
 
 	private void copyColumns(CyTable sourceTable, CyTable targetTable) {
 
-		for(CyColumn col: sourceTable.getColumns()){
-			if (col== sourceTable.getPrimaryKey())
+		for (CyColumn col : sourceTable.getColumns()) {
+			if (col == sourceTable.getPrimaryKey())
 				continue;
 			String targetColName = getUniqueColumnName(targetTable, col.getName());
 
@@ -325,7 +321,6 @@ public class JoinTablesTask extends AbstractTask{
 				targetTable.createColumn(targetColName, col.getType(), col.isImmutable(), col.getDefaultValue());
 		}
 	}
-
 
 	private String getUniqueColumnName(CyTable table, final String preferredName) {
 		if (table.getColumn(preferredName) == null)
@@ -345,18 +340,18 @@ public class JoinTablesTask extends AbstractTask{
 
 		Class<?> joinTargetColumnType = String.class;
 		if (!selectedNetworksOnly)
-			joinTargetColumnType = getJoinTargetColumn(getTable(name2RootMap.get(rootNetworkList.getSelectedValue()) ,  dataTypeOptions.getSelectedValue(), CyNetwork.DEFAULT_ATTRS)).getType();
-		if (byReader){
-			for ( CyTable readerTable: reader.getTables())
+			joinTargetColumnType = getJoinTargetColumn(
+					getTable(name2RootMap.get(rootNetworkList.getSelectedValue()), dataTypeOptions.getSelectedValue(),
+							CyNetwork.DEFAULT_ATTRS)).getType();
+		if (byReader) {
+			for (CyTable readerTable : reader.getTables())
 				if (readerTable.getPrimaryKey().getType() != joinTargetColumnType)
 					return false;
 
-		}else
-			if (globalTable.getPrimaryKey().getType() != joinTargetColumnType)
-				return false;
+		} else if (globalTable.getPrimaryKey().getType() != joinTargetColumnType)
+			return false;
 
 		return true;
 	}
-
 
 }
