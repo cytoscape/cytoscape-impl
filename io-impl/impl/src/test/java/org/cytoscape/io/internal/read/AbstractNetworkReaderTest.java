@@ -1,5 +1,7 @@
 package org.cytoscape.io.internal.read;
 
+import static org.cytoscape.model.CyNetwork.NAME;
+import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +21,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
@@ -133,5 +136,23 @@ public class AbstractNetworkReaderTest {
 		assertEquals(numEdges, net.getEdgeCount());
 
 		return net;
+	}
+	
+	protected CyNode getNodeByName(CyNetwork net, String name) {
+		for (CyNode n : net.getNodeList()) {
+			if (name.equals(net.getRow(n).get(NAME, String.class)))
+				return n;
+		}
+		
+		return null;
+	}
+	
+	protected CyEdge getEdgeByName(CyNetwork net, String name) {
+		for (CyEdge e : net.getEdgeList()) {
+			if (name.equals(net.getRow(e).get(NAME, String.class)))
+				return e;
+		}
+		
+		return null;
 	}
 }

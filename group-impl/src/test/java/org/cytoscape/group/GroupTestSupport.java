@@ -10,16 +10,20 @@ import static org.mockito.Mockito.*;
 public class GroupTestSupport {
 
 	protected CyGroupFactory groupFactory;
+	protected CyGroupManagerImpl groupManager;
 	
 	public GroupTestSupport() {
 		final CyEventHelper help = mock(CyEventHelper.class);
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final CyGroupManagerImpl groupMgr = new CyGroupManagerImpl(help);
-		
-		this.groupFactory = new CyGroupFactoryImpl(help, groupMgr, serviceRegistrar);
+		groupManager = new CyGroupManagerImpl(help);
+		groupFactory = new CyGroupFactoryImpl(help, groupManager, serviceRegistrar);
 	}
 
 	public CyGroupFactory getGroupFactory() {
 		return groupFactory;
+	}
+
+	public CyGroupManagerImpl getGroupManager() {
+		return groupManager;
 	}
 }

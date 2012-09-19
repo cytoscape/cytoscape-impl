@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<graph label="Network" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cy="http://www.cytoscape.org" xmlns="http://www.cs.rpi.edu/XGMML"  directed="1">
+  <att name="documentVersion" value="1.1"/>
+  <att name="networkMetadata">
+    <rdf:RDF>
+      <rdf:Description rdf:about="http://www.cytoscape.org/">
+        <dc:type>Protein-Protein Interaction</dc:type>
+        <dc:description>N/A</dc:description>
+        <dc:identifier>N/A</dc:identifier>
+        <dc:date>2012-09-19 14:23:33</dc:date>
+        <dc:title>Network</dc:title>
+        <dc:source>http://www.cytoscape.org/</dc:source>
+        <dc:format>Cytoscape-XGMML</dc:format>
+      </rdf:Description>
+    </rdf:RDF>
+  </att>
+  <att type="string" name="backgroundColor" value="#ffffff"/>
+  <att type="real" name="GRAPH_VIEW_ZOOM" value="1.0"/>
+  <att type="real" name="GRAPH_VIEW_CENTER_X" value="0.0"/>
+  <att type="real" name="GRAPH_VIEW_CENTER_Y" value="0.0"/>
+  <att type="boolean" name="NODE_SIZE_LOCKED" value="true"/>
+  <node label="node4" id="-5">
+    <att type="string" name="NODE_TYPE" value="DefaultNode"/>
+    <att type="string" name="canonicalName" value="node4"/>
+    <graphics type="ELLIPSE" h="40.0" w="40.0" x="-111.0" y="118.0" fill="#99ff99" width="2" outline="#009900" cy:nodeTransparency="0.5882352941176471" cy:nodeLabelFont="SansSerif-0-13" cy:nodeLabel="node4" cy:borderLineType="solid"/>
+  </node>
+  <node label="node2" id="-3">
+    <att type="string" name="NODE_TYPE" value="DefaultNode"/>
+    <att type="string" name="canonicalName" value="node2"/>
+    <graphics type="ELLIPSE" h="40.0" w="40.0" x="108.0" y="15.0" fill="#99ff99" width="2" outline="#009900" cy:nodeTransparency="0.5882352941176471" cy:nodeLabelFont="SansSerif-0-13" cy:nodeLabel="node2" cy:borderLineType="solid"/>
+  </node>
+  <node label="Meta 2" id="-7">
+    <att type="integer" name="NumChildren" value="2"/>
+    <att type="integer" name="NumDescendents" value="4"/>
+    <att type="boolean" name="__MetanodeAggregationEnabled" value="false" cy:hidden="true"/>
+    <att type="boolean" name="__groupIsLocal" value="true"/>
+    <att type="integer" name="__groupState" value="2" cy:hidden="true"/>
+    <att type="string" name="__groupViewer" value="metaNode" cy:hidden="true"/>
+    <att type="string" name="canonicalName" value="Meta 2"/>
+    <att type="string" name="node.opacity" value="100.0"/>
+    <att>
+      <graph>
+        <node label="node3" id="-4">
+          <att type="string" name="NODE_TYPE" value="DefaultNode"/>
+          <att type="real" name="__metanodeHintX" value="26.0" cy:hidden="true"/>
+          <att type="real" name="__metanodeHintY" value="-61.0" cy:hidden="true"/>
+          <att type="string" name="canonicalName" value="node3"/>
+        </node>
+        <node label="Meta 1" id="-6">
+          <att type="integer" name="NumChildren" value="2"/>
+          <att type="integer" name="NumDescendents" value="2"/>
+          <att type="boolean" name="__MetanodeAggregationEnabled" value="false" cy:hidden="true"/>
+          <att type="boolean" name="__groupIsLocal" value="true"/>
+          <att type="integer" name="__groupState" value="2" cy:hidden="true"/>
+          <att type="string" name="__groupViewer" value="metaNode" cy:hidden="true"/>
+          <att type="real" name="__metanodeHintX" value="-25.0" cy:hidden="true"/>
+          <att type="real" name="__metanodeHintY" value="62.0" cy:hidden="true"/>
+          <att type="string" name="canonicalName" value="Meta 1"/>
+          <att type="string" name="node.opacity" value="100.0"/>
+          <att>
+            <graph>
+              <node label="node0" id="-1">
+                <att type="string" name="NODE_TYPE" value="DefaultNode"/>
+                <att type="real" name="__metanodeHintX" value="50.0" cy:hidden="true"/>
+                <att type="real" name="__metanodeHintY" value="0.0" cy:hidden="true"/>
+                <att type="string" name="canonicalName" value="node0"/>
+              </node>
+              <node label="node1" id="-2">
+                <att type="string" name="NODE_TYPE" value="DefaultNode"/>
+                <att type="real" name="__metanodeHintX" value="-49.0" cy:hidden="true"/>
+                <att type="real" name="__metanodeHintY" value="0.0" cy:hidden="true"/>
+                <att type="string" name="canonicalName" value="node1"/>
+              </node>
+              <edge label="node0 (DirectedEdge) node1" source="-1" target="-2">
+                <att type="string" name="canonicalName" value="node0 (DirectedEdge) node1"/>
+                <att type="string" name="interaction" value="DirectedEdge" cy:editable="false"/>
+              </edge>
+              <edge label="node1 (DirectedEdge) node2" source="-2" target="-3">
+                <att type="string" name="canonicalName" value="node1 (DirectedEdge) node2"/>
+                <att type="string" name="interaction" value="DirectedEdge" cy:editable="false"/>
+              </edge>
+              <edge label="node0 (DirectedEdge) node3" source="-1" target="-4">
+                <att type="string" name="canonicalName" value="node0 (DirectedEdge) node3"/>
+                <att type="string" name="interaction" value="DirectedEdge" cy:editable="false"/>
+              </edge>
+            </graph>
+          </att>
+        </node>
+        <edge label="Meta 1 (meta-DirectedEdge) node3" source="-6" target="-4">
+          <att type="boolean" name="__isMetaEdge" value="true" cy:hidden="true"/>
+          <att type="string" name="canonicalName" value="Meta 1 (meta-DirectedEdge) node3"/>
+          <att type="string" name="interaction" value="meta-DirectedEdge" cy:editable="false"/>
+        </edge>
+        <edge label="node4 (DirectedEdge) node3" source="-5" target="-4">
+          <att type="string" name="canonicalName" value="node4 (DirectedEdge) node3"/>
+          <att type="string" name="interaction" value="DirectedEdge" cy:editable="false"/>
+        </edge>
+        <edge label="node3 (DirectedEdge) node4" source="-4" target="-5">
+          <att type="string" name="canonicalName" value="node3 (DirectedEdge) node4"/>
+          <att type="string" name="interaction" value="DirectedEdge" cy:editable="false"/>
+        </edge>
+        <edge label="Meta 1 (meta-DirectedEdge) node2" source="-6" target="-3">
+          <att type="boolean" name="__isMetaEdge" value="true" cy:hidden="true"/>
+          <att type="string" name="canonicalName" value="Meta 1 (meta-DirectedEdge) node2"/>
+          <att type="string" name="interaction" value="meta-DirectedEdge" cy:editable="false"/>
+        </edge>
+      </graph>
+    </att>
+    <graphics type="ELLIPSE" h="40.0" w="40.0" x="-86.0" y="-25.0" fill="#99ff99" width="2" outline="#009900" cy:nodeTransparency="1.0" cy:nodeLabelFont="SansSerif-0-13" cy:nodeLabel="Meta 2" cy:borderLineType="solid"/>
+  </node>
+  <edge label="Meta 2 (meta-meta-DirectedEdge) node2" source="-7" target="-3">
+    <att type="boolean" name="__isMetaEdge" value="true" cy:hidden="true"/>
+    <att type="string" name="canonicalName" value="Meta 2 (meta-meta-DirectedEdge) node2"/>
+    <att type="string" name="interaction" value="meta-meta-DirectedEdge" cy:editable="false"/>
+    <graphics width="2" fill="#333333" cy:sourceArrow="0" cy:targetArrow="0" cy:sourceArrowColor="#000000" cy:targetArrowColor="#000000" cy:edgeLabelFont="SanSerif-0-10" cy:edgeLabel="" cy:edgeLineType="SOLID" cy:curved="STRAIGHT_LINES"/>
+  </edge>
+  <edge label="Meta 2 (meta-DirectedEdge) node4" source="-7" target="-5">
+    <att type="boolean" name="__isMetaEdge" value="true" cy:hidden="true"/>
+    <att type="string" name="canonicalName" value="Meta 2 (meta-DirectedEdge) node4"/>
+    <att type="string" name="interaction" value="meta-DirectedEdge" cy:editable="false"/>
+    <graphics width="2" fill="#333333" cy:sourceArrow="0" cy:targetArrow="0" cy:sourceArrowColor="#000000" cy:targetArrowColor="#000000" cy:edgeLabelFont="SanSerif-0-10" cy:edgeLabel="" cy:edgeLineType="SOLID" cy:curved="STRAIGHT_LINES"/>
+  </edge>
+  <edge label="node4 (meta-DirectedEdge) Meta 2" source="-5" target="-7">
+    <att type="boolean" name="__isMetaEdge" value="true" cy:hidden="true"/>
+    <att type="string" name="canonicalName" value="node4 (meta-DirectedEdge) Meta 2"/>
+    <att type="string" name="interaction" value="meta-DirectedEdge" cy:editable="false"/>
+    <graphics width="2" fill="#333333" cy:sourceArrow="0" cy:targetArrow="0" cy:sourceArrowColor="#000000" cy:targetArrowColor="#000000" cy:edgeLabelFont="SanSerif-0-10" cy:edgeLabel="" cy:edgeLineType="SOLID" cy:curved="STRAIGHT_LINES"/>
+  </edge>
+</graph>

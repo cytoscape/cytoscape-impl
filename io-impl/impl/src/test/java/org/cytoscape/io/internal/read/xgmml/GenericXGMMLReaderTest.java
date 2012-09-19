@@ -56,6 +56,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	CyNetworkFactory networkFactory;
 	CyRootNetworkManager rootNetworkMgr;
 	CyNetworkTableManager netTablMgr;
+	CyGroupManager groupMgr;
 	CyTableFactory tableFactory;
 	RenderingEngineManager renderingEngineMgr;
 	ReadDataManager readDataMgr;
@@ -87,10 +88,10 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		
 		GroupTestSupport groupTestSupport = new GroupTestSupport();
 		CyGroupFactory grFactory = groupTestSupport.getGroupFactory();
-		CyGroupManager grMgr = mock(CyGroupManager.class);
+		groupMgr = groupTestSupport.getGroupManager();
 		
 		readCache = new ReadCache(netTablMgr);
-		groupUtil = new GroupUtil(grMgr, grFactory);
+		groupUtil = new GroupUtil(groupMgr, grFactory);
 		suidUpdater = new SUIDUpdater();
 		readDataMgr = new ReadDataManager(readCache, suidUpdater, mock(EquationCompiler.class), networkFactory, 
 				rootNetworkMgr, groupUtil);
@@ -237,11 +238,18 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		List<CyNetworkView> views = getViews("group_2x_expanded.xgmml");
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
+		
 		CyNetwork net = checkSingleNetwork(views, 3, 2);
-		CyNode grNode = check2xGroupMetadata(net, true);
+		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(net);
+		CyNode grNode = getNodeByName(rootNet, "metanode 1");
+		check2xGroupMetadata(net, grNode, true);
+		
 		assertCustomColumnsAreMutable(rootNetworkMgr.getRootNetwork(net));
 		assertCustomColumnsAreMutable(net);
 		assertCustomColumnsAreMutable(grNode.getNetworkPointer());
+		
+		assertEquals(1, groupMgr.getGroupSet(net).size());
+		assertTrue(groupMgr.isGroup(grNode, net));
 	}
 	
 	@Test
@@ -250,16 +258,39 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 2, 1);
-		CyNode grNode = check2xGroupMetadata(net, false);
+		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(net);
+		CyNode grNode = getNodeByName(rootNet, "metanode 1");
+		check2xGroupMetadata(net, grNode, false);
+		
 		// Check group network data
 		CyNetwork grNet = grNode.getNetworkPointer();
 		for (CyNode n : grNet.getNodeList()) {
 			assertNotNull(grNet.getRow(n, HIDDEN_ATTRS).get("__metanodeHintX", Double.class));
 			assertNotNull(grNet.getRow(n, HIDDEN_ATTRS).get("__metanodeHintY", Double.class));
 		}
-		assertCustomColumnsAreMutable(rootNetworkMgr.getRootNetwork(net));
+		
+		assertCustomColumnsAreMutable(rootNet);
 		assertCustomColumnsAreMutable(net);
 		assertCustomColumnsAreMutable(grNet);
+		
+		assertEquals(1, groupMgr.getGroupSet(net).size());
+		assertTrue(groupMgr.isGroup(grNode, net));
+	}
+	
+	@Test
+	public void testParseNestedGroupsFrom2x() throws Exception {
+		List<CyNetworkView> views = getViews("nested_groups_283.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 3, 3);
+		// The group network should not be registered, so the network list must contain only the base network
+		assertEquals(1, reader.getNetworks().length);
+		
+		CyNode grNode2 = getNodeByName(net, "Meta 2");
+		assertTrue(groupMgr.isGroup(grNode2, net));
+		CyNode grNode1 = getNodeByName(grNode2.getNetworkPointer(), "Meta 1"); // Nested group node
+		assertTrue(groupMgr.isGroup(grNode1, grNode2.getNetworkPointer()));
+		
+		assertEquals(1, groupMgr.getGroupSet(net).size());
+		assertEquals(1, groupMgr.getGroupSet(grNode2.getNetworkPointer()).size());
 	}
 
 	@Test
@@ -384,34 +415,27 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		}
 	}
 	
-	private CyNode check2xGroupMetadata(final CyNetwork net, final boolean expanded) {
-		// Test 2.x group parsed as network pointer
-		CyNode gn = null;
+	private void check2xGroupMetadata(final CyNetwork net, final CyNode gn, final boolean expanded) {
+		assertNotNull("The group node is null", gn);
 		
+		// Test 2.x group parsed as network pointer
 		if (!expanded) {
-			int npCount = 0;
 			for (CyNode n : net.getNodeList()) {
-				if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet(ReadDataManager.GROUP_STATE_ATTRIBUTE)) {
-					gn = n;
-					if (++npCount > 1) fail("There should be only one group node!");
-				} else { // The other nodes have no network pointer!
+				if (net.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet(GroupUtil.GROUP_STATE_ATTRIBUTE))
+					assertNotNull(n.getNetworkPointer());
+				else // The other nodes have no network pointer!
 					assertNull(n.getNetworkPointer());
-				}
 			}
 		} else {
-			int npCount = 0;
 			CyRootNetwork rootNet = ((CySubNetwork)net).getRootNetwork();
 			for (CyNode n : rootNet.getNodeList()) {
-				if (rootNet.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet(ReadDataManager.GROUP_STATE_ATTRIBUTE)) {
-					gn = n;
-					if (++npCount > 1) fail("There should be only one group node!");
-				} else { // The other nodes have no network pointer!
+				if (rootNet.getRow(n, CyNetwork.HIDDEN_ATTRS).isSet(GroupUtil.GROUP_STATE_ATTRIBUTE))
+					assertNotNull(n.getNetworkPointer());
+				else // The other nodes have no network pointer!
 					assertNull(n.getNetworkPointer());
-				}
 			}
 		}
 		
-		assertNotNull("The group node cannot be found", gn);
 		CyNetwork np = gn.getNetworkPointer();
 		assertNotNull(np);
 		assertEquals(2, np.getNodeCount());
@@ -423,13 +447,11 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		
 		// Check external edges metadata (must be added by the reader!)
 		CyRow nphRow = np.getRow(np, HIDDEN_ATTRS);
-		List<Long> extEdgeIds = nphRow.getList(ReadDataManager.EXTERNAL_EDGE_ATTRIBUTE, Long.class);
+		List<Long> extEdgeIds = nphRow.getList(GroupUtil.EXTERNAL_EDGE_ATTRIBUTE, Long.class);
 		assertEquals(1, extEdgeIds.size());
 		
 		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(np);
 		assertNotNull(rootNet.getEdge(extEdgeIds.get(0)));
-		
-		return gn;
 	}
 	
 	private List<CyNetworkView> getViews(String file) throws Exception {

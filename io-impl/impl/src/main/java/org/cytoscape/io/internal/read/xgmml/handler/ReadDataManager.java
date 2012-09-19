@@ -27,6 +27,9 @@
  */
 package org.cytoscape.io.internal.read.xgmml.handler;
 
+import static org.cytoscape.io.internal.util.GroupUtil.EXTERNAL_EDGE_ATTRIBUTE;
+import static org.cytoscape.io.internal.util.GroupUtil.GROUP_STATE_ATTRIBUTE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -62,9 +65,6 @@ import org.xml.sax.Attributes;
 
 public class ReadDataManager {
 
-	public final static String GROUP_STATE_ATTRIBUTE="__groupState";
-	public final static String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges.SUID";
-	
 	protected final static String XLINK = "http://www.w3.org/1999/xlink";
 	
 	/* RDF Data */

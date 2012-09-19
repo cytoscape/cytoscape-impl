@@ -24,20 +24,20 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 public class GroupUtil {
 
 	// 3.x group attributes
-	private final String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges.SUID";
-	private final String GROUP_COLLAPSED_ATTRIBUTE="__groupCollapsed.SUID";
-	private final String GROUP_NETWORKS_ATTRIBUTE="__groupNetworks.SUID";
-	private final String GROUP_ATTRIBUTE="__isGroup";
-	private final String ISMETA_EDGE_ATTR="__isMetaEdge";
-	private final String X_LOCATION_ATTR="__xLocation";
-	private final String Y_LOCATION_ATTR="__yLocation";
+	public static final String EXTERNAL_EDGE_ATTRIBUTE="__externalEdges.SUID";
+	public static final String GROUP_COLLAPSED_ATTRIBUTE="__groupCollapsed.SUID";
+	public static final String GROUP_NETWORKS_ATTRIBUTE="__groupNetworks.SUID";
+	public static final String GROUP_ATTRIBUTE="__isGroup";
+	public static final String ISMETA_EDGE_ATTR="__isMetaEdge";
+	public static final String X_LOCATION_ATTR="__xLocation";
+	public static final String Y_LOCATION_ATTR="__yLocation";
 	// 2.x group attributes
-	private final String GROUP_STATE_ATTRIBUTE="__groupState";
-	private final String GROUP_ISLOCAL_ATTRIBUTE="__groupIsLocal";
-	private final String GROUP_NODEX_ATTRIBUTE="__metanodeHintX";
-	private final String GROUP_NODEY_ATTRIBUTE="__metanodeHintY";
-	private final String X_OFFSET_ATTR="__xOffset";
-	private final String Y_OFFSET_ATTR="__yOffset";
+	public static final String GROUP_STATE_ATTRIBUTE="__groupState";
+	public static final String GROUP_ISLOCAL_ATTRIBUTE="__groupIsLocal";
+	public static final String GROUP_NODEX_ATTRIBUTE="__metanodeHintX";
+	public static final String GROUP_NODEY_ATTRIBUTE="__metanodeHintY";
+	public static final String X_OFFSET_ATTR="__xOffset";
+	public static final String Y_OFFSET_ATTR="__yOffset";
 	
 	private final CyGroupManager groupMgr;
 	private final CyGroupFactory groupFactory;
@@ -148,6 +148,9 @@ public class GroupUtil {
 			    !hnRow.isSet(GROUP_ATTRIBUTE))
 				continue;
 
+			// Check for nested groups recursively
+			createGroups((CySubNetwork) netPointer, null);
+			
 			boolean collapsed = false;
 			boolean cy2group = false;
 
