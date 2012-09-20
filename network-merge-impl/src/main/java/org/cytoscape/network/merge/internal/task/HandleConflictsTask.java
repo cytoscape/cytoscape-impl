@@ -55,7 +55,7 @@ public class HandleConflictsTask extends AbstractTask {
 		int nAfter = conflictCollector.getMapToGOAttr().size();
 
 		taskMonitor.setProgress(1.0d);
-		taskMonitor.setStatusMessage("Successfully handled " + (nBefore-nAfter) + " attribute conflicts. "
+		taskMonitor.setStatusMessage("Successfully handled " + (nBefore-nAfter) + " table column conflicts. "
 					      + nAfter+" conflicts remains.");
 	}
 }
