@@ -293,7 +293,7 @@ public class PreviewTablePanel extends JPanel {
 		fileTypeLabel.setFont(new Font("Sans-Serif", Font.BOLD, 14));
 
 		keyPreviewScrollPane.setBorder(javax.swing.BorderFactory
-				.createTitledBorder("Key Attributes"));
+				.createTitledBorder("Key Columns"));
 
 		keyPreviewList.setOpaque(false);
 		keyPreviewList.setCellRenderer(new KeyAttributeListRenderer());
