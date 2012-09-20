@@ -217,7 +217,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		for(String curColumnName : types.keySet())
 			if (curColumnName.equalsIgnoreCase(newColumnName))
-				throw new IllegalArgumentException("attribute already exists for name: '"
+				throw new IllegalArgumentException("column already exists with name: '"
 					   + curColumnName + "' with type: "
 					   + types.get(curColumnName).getType());
 		
@@ -363,12 +363,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				     final boolean isImmutable, final T defaultValue) {
 		synchronized(this) {
 			if (columnName == null)
-				throw new NullPointerException("attribute name is null");
+				throw new NullPointerException("column name is null");
 			
 			final String normalizedColName = normalizeColumnName(columnName);
 			
 			if (types.containsKey(normalizedColName))
-				throw new IllegalArgumentException("attribute already exists for name: '" + columnName
+				throw new IllegalArgumentException("column already exists with name: '" + columnName
 						+ "' with type: " + types.get(normalizedColName).getType());
 			
 			if (type == null)
@@ -376,7 +376,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			if (type == List.class)
 				throw new IllegalArgumentException(
-						"use createListColumn() to create List columns instead of createColumn for attribute '"
+						"use createListColumn() to create List columns instead of createColumn for column '"
 						+ columnName + "'.");
 
 			checkClass(type);
@@ -407,12 +407,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 					 final boolean isImmutable, final List<T> defaultValue) {
 		synchronized(this) {
 			if (columnName == null)
-				throw new NullPointerException("attribute name is null");
+				throw new NullPointerException("column name is null");
 
 			final String normalizedColName = normalizeColumnName(columnName);
 			
 			if (types.containsKey(normalizedColName))
-				throw new IllegalArgumentException("attribute already exists for name: '"
+				throw new IllegalArgumentException("column already exists with name: '"
 					   + columnName + "' with type: "
 					   + types.get(normalizedColName).getType());
 			
@@ -420,7 +420,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				throw new NullPointerException("listElementType is null");
 
 			if (types.get(columnName) != null)
-				throw new IllegalArgumentException("attribute already exists for name: '"
+				throw new IllegalArgumentException("column already exists with name: '"
 								   + columnName + "' with type: "
 								   + types.get(columnName).getType());
 
@@ -462,7 +462,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		Map<Object, Object> vals = attributes.get(normalizedColName);
 		if (vals == null)
-			throw new IllegalArgumentException("attribute \"" + columnName + "\" does not exist.");
+			throw new IllegalArgumentException("column \"" + columnName + "\" does not exist.");
 
 		List l = new ArrayList(vals.size());
 		for (final Object suid : vals.keySet()) {
@@ -605,7 +605,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			final String normalizedColName = normalizeColumnName(columnName);
 			
 			if (types.get(normalizedColName) == null)
-				throw new IllegalArgumentException("attribute: '" + columnName + "' does not yet exist.");
+				throw new IllegalArgumentException("column: '" + columnName + "' does not yet exist.");
 
 			final Class<?> columnType = types.get(normalizedColName).getType();
 			if (columnType == List.class) {
@@ -740,7 +740,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			else {
 				final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 				if (!types.containsKey(normalizedColName) || keyToValueMap == null)
-					throw new IllegalArgumentException("attribute: '" + columnName + "' does not yet exist.");
+					throw new IllegalArgumentException("column: '" + columnName + "' does not yet exist.");
 
 				final Object value = keyToValueMap.get(key);
 				if (value == null)
