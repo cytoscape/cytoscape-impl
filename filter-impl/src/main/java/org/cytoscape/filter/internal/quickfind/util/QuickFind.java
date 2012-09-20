@@ -111,7 +111,7 @@ public interface QuickFind {
 	/**
 	 * Index all attributes.
 	 */
-	String INDEX_ALL_ATTRIBUTES = "[ Index all attributes ]";
+	String INDEX_ALL_ATTRIBUTES = "[ Index all columns ]";
 
 	/**
 	 * Network attribute, used to set default index.
