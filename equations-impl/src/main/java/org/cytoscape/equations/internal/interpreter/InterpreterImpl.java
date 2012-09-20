@@ -354,7 +354,7 @@ public class InterpreterImpl implements Interpreter {
 		// 1. get the function
 		final Object o = argumentStack.pop();
 		if (!(o instanceof Function))
-			throw new IllegalStateException("expected an attribute function after the CALL opcode but found \"" + o.getClass() + "\" instead.");
+			throw new IllegalStateException("expected a column function after the CALL opcode but found \"" + o.getClass() + "\" instead.");
 		final Function func = (Function)o;
 
 		// 2. get and validate the argument count
@@ -393,10 +393,10 @@ public class InterpreterImpl implements Interpreter {
 		final String attribName = (String)argumentStack.pop();
 		final IdentDescriptor identDescriptor = variableNameToDescriptorMap.get(attribName);
 		if (identDescriptor == null)
-			throw new IllegalStateException("unknown attribute reference: \"" + attribName + "\" (1).");
+			throw new IllegalStateException("unknown column reference: \"" + attribName + "\" (1).");
 		final Object value = identDescriptor.getValue();
 		if (value == null)
-			throw new IllegalStateException("undefined attribute reference: \"" + attribName + "\".");
+			throw new IllegalStateException("undefined column reference: \"" + attribName + "\".");
 		argumentStack.push(value);
 	}
 
@@ -405,7 +405,7 @@ public class InterpreterImpl implements Interpreter {
 		final Object defaultValue = argumentStack.pop();
 		final IdentDescriptor identDescriptor = variableNameToDescriptorMap.get(attribName);
 		if (identDescriptor == null)
-			throw new IllegalStateException("unknown attribute reference: \"" + attribName + "\" (2).");
+			throw new IllegalStateException("unknown column reference: \"" + attribName + "\" (2).");
 		final Object value = identDescriptor.getValue();
 		argumentStack.push(value != null ? value : defaultValue);
 	}
