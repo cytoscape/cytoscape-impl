@@ -582,7 +582,7 @@ public class NetworkMergeFrame extends JFrame {
 		advancedPanel.setLayout(new GridBagLayout());
 
 		attributePanel.setBorder(BorderFactory
-				.createTitledBorder("Matching attributes (attributes to match nodes between networks)"));
+				.createTitledBorder("Matching columns (table columns to match nodes between networks)"));
 		attributePanel.setLayout(new GridBagLayout());
 
 		attributeScrollPane.setMinimumSize(new Dimension(100, 50));
@@ -603,7 +603,7 @@ public class NetworkMergeFrame extends JFrame {
 		gridBagConstraints.weighty = 1.0;
 		attributePanel.add(attributeScrollPane, gridBagConstraints);
 
-		idmappingCheckBox.setText("Map IDs between the matching attributes");
+		idmappingCheckBox.setText("Map IDs between the matching columns");
 		// idmappingCheckBox.setVisible(checkCyThesaurus);
 		idmappingCheckBox.setVisible(false);
 		gridBagConstraints = new GridBagConstraints();
@@ -615,7 +615,7 @@ public class NetworkMergeFrame extends JFrame {
 
 		idmappingLabel.setForeground(new Color(255, 0, 51));
 		idmappingLabel
-				.setText("If you want to map identifiers between the matching attributes, please install CyThesaurus app version "
+				.setText("If you want to map identifiers between the matching columns, please install CyThesaurus app version "
 						+ requiredCyThesaursServiceVersion + " or above.");
 		// idmappingLabel.setVisible(!checkCyThesaurus);
 		idmappingLabel.setVisible(false);
@@ -641,7 +641,7 @@ public class NetworkMergeFrame extends JFrame {
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
 		advancedPanel.add(jSeparator3, gridBagConstraints);
 
-		mergeAttributePanel.setBorder(BorderFactory.createTitledBorder("How to merge attributes?"));
+		mergeAttributePanel.setBorder(BorderFactory.createTitledBorder("How to merge columns?"));
 		mergeAttributePanel.setMinimumSize(new Dimension(400, 200));
 		mergeAttributePanel.setPreferredSize(new Dimension(600, 200));
 		mergeAttributePanel.setLayout(new BoxLayout(mergeAttributePanel, BoxLayout.LINE_AXIS));
