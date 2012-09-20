@@ -127,7 +127,7 @@ public class VizMapPropertyBuilder {
 				CellType.MAPPING_TYPE, "Mapping Type", VisualMappingFunctionFactory.class);
 
 		if (attrName == null) {
-			topProperty.setValue("Select Attribute");
+			topProperty.setValue("Select Column");
 			((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
 					topProperty, emptyBoxRenderer);
 		} else {
