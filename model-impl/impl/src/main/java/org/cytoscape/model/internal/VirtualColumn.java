@@ -30,34 +30,34 @@ package org.cytoscape.model.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.VirtualColumnInfo;
 
 
-final class VirtualColumn {
+final class VirtualColumn implements VirtualColumnInfo {
 	private final CyTableImpl sourceTable;
 	private final CyColumn sourceColumn;
 	private final CyTableImpl targetTable;
 	private final CyColumn sourceJoinColumn;
 	private final CyColumn targetJoinColumn;
+	private final boolean isImmutable;
 
 	VirtualColumn(final CyTableImpl sourceTable, final String sourceColumnName,
 		      final CyTableImpl targetTable, final String sourceJoinColumnName,
-		      final String targetJoinColumnName)
+		      final String targetJoinColumnName, boolean isImmutable)
 	{
 		this.sourceTable      = sourceTable;
 		this.sourceColumn     = sourceTable.getColumn(sourceColumnName);
 		this.targetTable      = targetTable;
 		this.sourceJoinColumn = sourceTable.getColumn(sourceJoinColumnName);
 		this.targetJoinColumn = targetTable.getColumn(targetJoinColumnName);
+		this.isImmutable = isImmutable;
 	}
 
 	Object getRawValue(final Object targetKey) {
@@ -149,5 +149,35 @@ final class VirtualColumn {
 		}
 
 		return results;
+	}
+	
+	@Override
+	public boolean isImmutable() {
+		return isImmutable;
+	}
+	
+	@Override
+	public String getSourceColumn() {
+		return sourceColumn.getName();
+	}
+	
+	@Override
+	public String getSourceJoinKey() {
+		return sourceJoinColumn.getName();
+	}
+	
+	@Override
+	public CyTable getSourceTable() {
+		return sourceTable;
+	}
+	
+	@Override
+	public String getTargetJoinKey() {
+		return targetJoinColumn.getName();
+	}
+	
+	@Override
+	public boolean isVirtual() {
+		return true;
 	}
 }

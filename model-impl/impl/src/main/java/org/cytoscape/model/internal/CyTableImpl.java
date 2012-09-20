@@ -132,7 +132,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		dependents = new HashMap<String, Set<CyColumn>>();
 		normalizedColumnNames = new HashMap<String, String>();
 		
-		VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(false, null, null, null, null, true);
+		VirtualColumnInfo virtualInfo = NonVirtualColumnInfo.create(true);
 		final String normalizedPKName = normalizeColumnName(primaryKey);
 		
 		// Create the primary key column.  Do this explicitly so that we don't fire an event.
@@ -416,7 +416,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			checkClass(type);
 
-			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(false, null, null, null, null, isImmutable);
+			VirtualColumnInfo virtualInfo = NonVirtualColumnInfo.create(isImmutable);
 			types.put(normalizedColName, new CyColumnImpl(this, columnName, type,
 							                              /* listElementType = */ null,
 							                              virtualInfo ,
@@ -461,7 +461,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			checkClass(listElementType);
 
-			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(false, null, null, null, null, isImmutable);
+			VirtualColumnInfo virtualInfo = NonVirtualColumnInfo.create(isImmutable);
 			types.put(normalizedColName, new CyColumnImpl(this, columnName, List.class,
 							       listElementType,
 							       virtualInfo,
@@ -1026,13 +1026,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (sourceJoinKeyType.getType() != targetJoinKeyType.getType())
 				throw new IllegalArgumentException("\""+sourceColumnName+"\" has a different type from \""+targetJoinKeyName+"\".");
 
-			VirtualColumnInfo virtualInfo = new VirtualColumnInfoImpl(true, sourceTable, sourceColumnName, 
-			                                                          sourceTable.getPrimaryKey().getName(), 
-			                                                          targetJoinKeyName, isImmutable);
+			VirtualColumn virtualColumn = new VirtualColumn((CyTableImpl)sourceTable, sourceColumnName, this,
+                    sourceTable.getPrimaryKey().getName(), 
+                    targetJoinKeyName, isImmutable);
 			targetName = getUniqueColumnName(virtualColumnName);
 
 			final CyColumn targetColumn = new CyColumnImpl(this, targetName, sourceColumn.getType(),
-			                                               sourceColumn.getListElementType(), virtualInfo,
+			                                               sourceColumn.getListElementType(), virtualColumn,
 			                                               /* isPrimaryKey = */ false, isImmutable, null);
 			
 			((CyTableImpl) sourceTable).addDependent(sourceColumnName, targetColumn);
@@ -1040,9 +1040,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			final String normalizedTargetName = normalizeColumnName(targetName);
 			types.put(normalizedTargetName, targetColumn);
 			attributes.put(normalizedTargetName, new HashMap<Object, Object>(defaultInitSize));
-			virtualColumnMap.put(normalizedTargetName, new VirtualColumn((CyTableImpl)sourceTable, sourceColumnName, this,
-			                                                             sourceTable.getPrimaryKey().getName(), 
-			                                                             targetJoinKeyName));
+			virtualColumnMap.put(normalizedTargetName, virtualColumn);
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, targetName));
