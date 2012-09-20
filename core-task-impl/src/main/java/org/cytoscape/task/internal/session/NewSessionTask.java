@@ -44,7 +44,7 @@ public class NewSessionTask extends AbstractTask {
 		return "New Session";
 	}
 	
-	@Tunable(description="<html>Current session (all networks/attributes) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
+	@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
 	public boolean destroyCurrentSession = true;
 
 	private CySessionManager mgr;
