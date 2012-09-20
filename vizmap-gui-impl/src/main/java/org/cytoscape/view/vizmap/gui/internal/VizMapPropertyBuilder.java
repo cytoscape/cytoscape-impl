@@ -324,6 +324,7 @@ public class VizMapPropertyBuilder {
 
 			children.add(valProp);
 			final VisualPropertyEditor<V> editor = editorManager.getVisualPropertyEditor(vp);
+						
 			if (editor != null) {
 				final TableCellRenderer renderer = editor.getDiscreteTableCellRenderer();
 				if (renderer != null)

@@ -34,10 +34,12 @@ import org.cytoscape.view.vizmap.gui.internal.bypass.BypassManager;
 import org.cytoscape.view.vizmap.gui.internal.editor.BooleanVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.ColorVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.EditorManagerImpl;
+import org.cytoscape.view.vizmap.gui.internal.editor.FontVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.NumberVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.StringVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyColorPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyFontPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.BooleanValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.CyColorChooser;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.FontEditor;
@@ -104,6 +106,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorEditor);
 		
 		FontEditor fontEditor = new FontEditor();
+		CyFontPropertyEditor fontPropertyEditor = new CyFontPropertyEditor(fontEditor);
+		
 		NumericValueEditor<Double> doubleValueEditor = new NumericValueEditor<Double>(Double.class);
 		NumericValueEditor<Integer> integerValueEditor = new NumericValueEditor<Integer>(Integer.class);
 		NumericValueEditor<Float> floatValueEditor = new NumericValueEditor<Float>(Float.class);
@@ -115,6 +119,7 @@ public class CyActivator extends AbstractCyActivator {
 		NumberVisualPropertyEditor integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
 		NumberVisualPropertyEditor floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
 		
+		FontVisualPropertyEditor fontVisualPropertyEditor = new FontVisualPropertyEditor(Font.class, fontPropertyEditor);
 		StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor();
 		final CyComboBoxPropertyEditor booleanEditor = new CyComboBoxPropertyEditor();
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
@@ -199,7 +204,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,doublePropertyEditor, new Properties());
 		registerAllServices(bc,floatPropertyEditor, new Properties());
 		registerAllServices(bc,integerPropertyEditor, new Properties());
-		
+
+		registerAllServices(bc,fontVisualPropertyEditor, new Properties());
+
 		registerAllServices(bc,stringPropertyEditor, new Properties());
 		registerAllServices(bc,booleanVisualPropertyEditor, new Properties());
 		

@@ -7,8 +7,12 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 
 import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 
-public abstract class BasicVisualPropertyEditor<T> extends
-		AbstractVisualPropertyEditor<T> {
+/**
+ * Basic 
+ *
+ * @param <T> Data type for this editor.
+ */
+public abstract class BasicVisualPropertyEditor<T> extends AbstractVisualPropertyEditor<T> {
 
 	protected static final PropertyRendererRegistry REG = new PropertyRendererRegistry();
 

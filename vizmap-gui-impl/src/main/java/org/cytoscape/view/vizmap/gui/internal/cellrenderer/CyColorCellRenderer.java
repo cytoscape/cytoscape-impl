@@ -13,12 +13,10 @@ import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 
 /**
  * CyColorCellRenderer. Provides both table/Llist cell renderers.
- * 
- * @since Cytoscape 2.5
  */
 public class CyColorCellRenderer extends DefaultCellRenderer {
+	
 	private final static long serialVersionUID = 1202339868706383L;
-
 	
 	public static String toHex(Color color) {
 		String red = Integer.toHexString(color.getRed());
@@ -37,11 +35,14 @@ public class CyColorCellRenderer extends DefaultCellRenderer {
 		return ("#" + red + green + blue).toUpperCase();
 	}
 
+	@Override
 	protected String convertToString(Object value) {
 		// Do not return color as string.
 		return null;
 	}
 
+	
+	@Override
 	protected Icon convertToIcon(Object value) {
 		if (value == null)
 			return null;

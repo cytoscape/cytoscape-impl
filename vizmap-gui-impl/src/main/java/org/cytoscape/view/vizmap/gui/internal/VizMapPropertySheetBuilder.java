@@ -179,11 +179,12 @@ public class VizMapPropertySheetBuilder {
 
 	private List<Property> getProps(final VisualStyle style, final String categoryName,
 			final Collection<VisualProperty<?>> vpSet) {
+		
 
 		final List<Property> props = new ArrayList<Property>();
 		final Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
 
-		for (VisualMappingFunction<?, ?> mapping : mappings) {
+		for (final VisualMappingFunction<?, ?> mapping : mappings) {
 
 			final VisualProperty<?> targetVP = mapping.getVisualProperty();
 			// execute the following only if category matches.
@@ -209,11 +210,9 @@ public class VizMapPropertySheetBuilder {
 			final VizMapperProperty<?, String, ?> calculatorTypeProp = vizMapPropertyBuilder.buildProperty(mapping,
 					categoryName, propertySheetPanel, vmfFactory);
 
-			logger.debug("Built new PROP: " + calculatorTypeProp.getDisplayName());
-
 			PropertyEditor editor = ((PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory())
 					.getEditor(calculatorTypeProp);
-
+			
 			if ((editor == null) && (calculatorTypeProp.getCategory().equals("Unused Properties") == false)) {
 
 				((PropertyEditorRegistry) this.propertySheetPanel.getTable().getEditorFactory()).registerEditor(

@@ -31,43 +31,69 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this library; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
-import com.l2fprod.common.beans.editor.FontPropertyEditor;
+import javax.swing.JPanel;
 
+import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.FontEditor;
 
-/**
- *
- */
-public class CyFontPropertyEditor extends FontPropertyEditor {
+import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
+import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor.Value;
+
+public class CyFontPropertyEditor extends AbstractPropertyEditor {
+
 	private Component parent;
+	private FontEditor fontEditor;
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param parent DOCUMENT ME!
-	 */
+	private Font currentValue;
+
+	public CyFontPropertyEditor(final FontEditor fontEditor) {
+		this.fontEditor = fontEditor;
+		this.editor = new JPanel();
+		editor.addFocusListener(new FocusListener() {
+			public void focusGained(FocusEvent e) {
+				selectFont();
+			}
+
+			public void focusLost(FocusEvent arg0) {
+			}
+		});
+	}
+
 	public void setParent(Component parent) {
 		this.parent = parent;
 	}
 
+	@Override
+	public void setValue(Object value) {
+		if (value == null)
+			this.currentValue = null;
+		else if (value instanceof Value)
+			this.currentValue = (Font) value;
+	}
+
+	@Override
+	public Object getValue() {
+		return currentValue;
+	}
+
 	protected void selectFont() {
-//		ResourceManager rm = ResourceManager.all(FontPropertyEditor.class);
-//		String title = rm.getString("FontPropertyEditor.title");
-//
-//		Font font = (Font) super.getValue();
-//
-//		Font selectedFont = FontEditor.showDialog(parent, font);
-//
-//		if (selectedFont != null) {
-//			Font oldFont = font;
-//			Font newFont = selectedFont;
-//
-//			super.setValue(newFont);
-//			firePropertyChange(oldFont, newFont);
-//		}
+		final Font font = (Font) super.getValue();
+		final Font selectedFont = fontEditor.showEditor(parent, font);
+
+		if (selectedFont != null) {
+			Font oldFont = font;
+			Font newFont = selectedFont;
+
+			super.setValue(newFont);
+			this.currentValue = newFont;
+			firePropertyChange(oldFont, newFont);
+		}
 	}
 }

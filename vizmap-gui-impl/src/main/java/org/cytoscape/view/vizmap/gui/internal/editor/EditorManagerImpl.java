@@ -72,6 +72,7 @@ import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2DEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.GradientEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.AttributeComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyDiscreteValuePropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.valueeditor.DiscreteValueEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -277,18 +278,24 @@ public class EditorManagerImpl implements EditorManager {
 			if (REGISTRY.getEditor(targetDataType) != null)
 				continue;
 
+			if (this.getVisualPropertyEditor(vp) != null)
+				continue;
+
 			if (range instanceof DiscreteRange<?>) {
 				// Visual Property Editor.
 				final Set<?> values = ((DiscreteRange<?>) range).values();
-				VisualPropertyEditor<?> vpEditor = new DiscreteValuePropertyEditor(range.getType(), values,
-						tableManager, appManager, this, vmm);
-				this.addVisualPropertyEditor(vpEditor, null);
 
 				if (this.getValueEditor(range.getType()) == null) {
-					ValueEditor<?> valEditor = new DiscreteValueEditor(appManager, range.getType(),
+					final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(appManager, range.getType(),
 							(DiscreteRange) range, vp);
 					this.addValueEditor(valEditor, null);
 				}
+
+				final CyDiscreteValuePropertyEditor<?> discretePropEditor = new CyDiscreteValuePropertyEditor(
+						(DiscreteValueEditor) this.getValueEditor(range.getType()));
+				final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
+						discretePropEditor);
+				this.addVisualPropertyEditor(vpEditor, null);
 			}
 		}
 	}

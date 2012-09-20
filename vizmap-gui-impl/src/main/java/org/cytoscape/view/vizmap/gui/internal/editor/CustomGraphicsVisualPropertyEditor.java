@@ -1,13 +1,13 @@
 package org.cytoscape.view.vizmap.gui.internal.editor;
 
-import java.awt.Font;
-
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.internal.cellrenderer.FontTableCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyFontPropertyEditor;
 
-public class FontVisualPropertyEditor extends BasicVisualPropertyEditor<Font> {
-	public FontVisualPropertyEditor(Class<Font> type, CyFontPropertyEditor fontPropEditor) {
+public class CustomGraphicsVisualPropertyEditor extends BasicVisualPropertyEditor<CyCustomGraphics<?>> {
+	
+	public CustomGraphicsVisualPropertyEditor(Class<CyCustomGraphics<?>> type, CyFontPropertyEditor fontPropEditor) {
 		super(type, fontPropEditor, ContinuousEditorType.DISCRETE);
 		discreteTableCellRenderer = new FontTableCellRenderer();
 	}
