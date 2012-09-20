@@ -369,9 +369,9 @@ public abstract class Messages {
 
 	public static String DI_APPLYVS = "Apply visual styles to ";
 
-	public static String DI_ATTRIBUTE1 = "Attribute 1";
+	public static String DI_ATTRIBUTE1 = "Table Column 1";
 
-	public static String DI_ATTRIBUTE2 = "Attribute 2";
+	public static String DI_ATTRIBUTE2 = "Table Column 2";
 
 	public static String DI_AUTOANALYSIS1 = "Performing automatic analysis of ";
 
