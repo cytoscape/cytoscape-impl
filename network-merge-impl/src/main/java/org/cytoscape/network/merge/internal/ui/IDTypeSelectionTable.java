@@ -186,7 +186,7 @@ public class IDTypeSelectionTable extends JTable{
     }
 
     private class IDTypeSelectionTableModel extends AbstractTableModel {
-        private final String[] columnNames = {"Network","Attribute","ID Type(s)"};
+        private final String[] columnNames = {"Network","Column","ID Type(s)"};
 
         //@Override
         public int getColumnCount() {
