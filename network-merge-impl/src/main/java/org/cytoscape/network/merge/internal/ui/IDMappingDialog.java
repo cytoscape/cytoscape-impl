@@ -114,7 +114,7 @@ public class IDMappingDialog extends javax.swing.JDialog {
         setTitle("ID Mapping Configuration");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        idTypePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Select ID type(s) for each attribute"));
+        idTypePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Select ID type(s) for each column"));
         idTypePanel.setLayout(new javax.swing.BoxLayout(idTypePanel, javax.swing.BoxLayout.LINE_AXIS));
 
         idTypeScrollPane.setMinimumSize(new java.awt.Dimension(450, 200));
@@ -252,7 +252,7 @@ public class IDMappingDialog extends javax.swing.JDialog {
             Iterator<Set<String>> itTypes = mapAttrIDType.values().iterator();
             while (itTypes.hasNext()) {
                 if (itTypes.next().isEmpty()) {
-                        okButton.setToolTipText("Select at least one ID type for each attribute");
+                        okButton.setToolTipText("Select at least one ID type for each column");
                         okButton.setEnabled(false);
                         return;
                 }
