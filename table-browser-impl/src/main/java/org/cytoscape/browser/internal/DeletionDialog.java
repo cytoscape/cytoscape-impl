@@ -106,7 +106,7 @@ public class DeletionDialog extends JDialog {
 			}
 		});
 
-		descriptionLabel.setText("Please select attributes to be deleted:");
+		descriptionLabel.setText("Please select columns to be deleted:");
 
 		final GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
