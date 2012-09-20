@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public final class MapTableToNetworkTablesTask extends AbstractTask {
 
 	enum TableType {
-		NODE_ATTR("Node Attributes", CyNode.class), EDGE_ATTR("Edge Attributes", CyEdge.class), NETWORK_ATTR("Network Attributes", CyNetwork.class), GLOBAL("Unassigned Tables", CyTable.class);
+		NODE_ATTR("Node Table Columns", CyNode.class), EDGE_ATTR("Edge Table Columns", CyEdge.class), NETWORK_ATTR("Network Table Columns", CyNetwork.class), GLOBAL("Unassigned Tables", CyTable.class);
 
 		private final String name;
 		private final  Class<? extends CyIdentifiable> type;
