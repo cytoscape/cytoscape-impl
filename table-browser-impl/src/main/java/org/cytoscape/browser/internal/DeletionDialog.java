@@ -39,7 +39,7 @@ public class DeletionDialog extends JDialog {
 
 	/** Creates new form DeletionDialog */
 	protected DeletionDialog(final Frame parent, final CyTable attributes, final BrowserTable table) {
-		super(parent, "Delete Attributes", /* modal = */ true);
+		super(parent, "Delete Columns", /* modal = */ true);
 
 		this.attributes = attributes;
 		this.table  = table;
