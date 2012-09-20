@@ -13,7 +13,7 @@ import org.cytoscape.work.Tunable;
 
 
 public class LoadAttributesFileTask extends AbstractLoadAttributesTask {
-	@Tunable(description="Attribute Table file", params="fileCategory=table;input=true")
+	@Tunable(description="Data Table file", params="fileCategory=table;input=true")
 	public File file;
 
 	public LoadAttributesFileTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tabelMgr, 
