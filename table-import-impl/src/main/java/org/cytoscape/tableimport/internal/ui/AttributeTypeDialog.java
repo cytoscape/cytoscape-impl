@@ -104,11 +104,11 @@ public class AttributeTypeDialog extends javax.swing.JDialog {
 		listDelimiterLabel = new javax.swing.JLabel();
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setTitle("Set Attribute Name and Type");
+		setTitle("Set Column Name and Type");
 		titleLabel.setFont(new java.awt.Font("SansSerif", 1, 14));
-		titleLabel.setText("Attribute Name and Type");
+		titleLabel.setText("Column Name and Type");
 
-		attributeNameLabel.setText("Attribute name for Column " + (index + 1) + " entry:");
+		attributeNameLabel.setText("Name for Column " + (index + 1) + " entry:");
 
 		cancelButton.setText("Cancel");
 		cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -125,7 +125,7 @@ public class AttributeTypeDialog extends javax.swing.JDialog {
 			});
 
 		dataTypePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null,
-		                                                                     "Attribute Data Type",
+		                                                                     "Column Type",
 		                                                                     javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
 		                                                                     javax.swing.border.TitledBorder.DEFAULT_POSITION,
 		                                                                     new java.awt.Font("SansSerif",
