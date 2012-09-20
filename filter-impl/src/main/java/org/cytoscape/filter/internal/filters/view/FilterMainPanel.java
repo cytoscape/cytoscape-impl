@@ -778,7 +778,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		gridBagConstraints.insets = new Insets(10, 0, 0, 5);
 		pnlFilterDefinition.add(btnAddFilterWidget, gridBagConstraints);
 
-		lbAttribute.setText("Attribute/Filter");
+		lbAttribute.setText("Column/Filter");
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
@@ -948,7 +948,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 				if (selectObject != null) {
 					String selectItem = selectObject.toString();
 					
-					// Disable the Add button if "--Attribute--" or "-- Filter ---" is selected
+					// Disable the Add button if "--Table Column--" or "-- Filter ---" is selected
 					if (selectItem.equalsIgnoreCase(filtersSeparator) ||selectItem.equalsIgnoreCase(attributesSeperator)) {
 						btnAddFilterWidget.setEnabled(false);
 					} else {
