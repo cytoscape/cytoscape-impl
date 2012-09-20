@@ -41,6 +41,7 @@ import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -164,7 +165,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 
 	private CyNetworkView view;
-	private CyNetwork network;
+	private CySubNetwork network;
 
 	public GMLNetworkReader(InputStream inputStream,
 							CyNetworkFactory networkFactory,
@@ -196,13 +197,16 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		readGML(keyVals, taskMonitor); // read the GML file
 		taskMonitor.setProgress(0.3);
 		
-		String networkCollectionName =  networkCollection.getSelectedValue().toString();
+		String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
 		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
-			network = cyNetworkFactory.createNetwork();
+			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
+			CyNetwork rootNetwork = cyNetworkFactory.createNetwork();
+			network = this.cyRootNetworkManager.getRootNetwork(rootNetwork).addSubNetwork();
 		}
 		else {
-			// Create a subNetwork of a give collection
-			network = this.name2RootMap.get(networkCollectionName).addSubNetwork();
+			// Add a new subNetwork to the give collection
+			network = this.name2RootMap.get(networkCollectionName).addSubNetwork();			
+			this.initNodeMap(this.name2RootMap.get(networkCollectionName), this.targetColumnList.getSelectedValue());
 		}
 		
 		createGraph(taskMonitor);
@@ -273,7 +277,24 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			String label = node_labels.get(idx);
 
 			if (nodeNameSet.add(label)) {
-				CyNode node = network.addNode();
+				CyNode node;
+				if (this.rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+					node = network.addNode();
+				}
+				else {
+					// add to existing network collection
+					if (this.nMap.get(label) != null){
+						// node already existed
+						node = this.nMap.get(label);
+						if (!network.containsNode(node)){
+							network.addNode(node);
+						}
+					}
+					else {
+						// node is new
+						node = network.addNode();
+					}
+				}
 
 				// FIXME this fires too many events!!
 				network.getRow(node).set(CyNetwork.NAME, label);
