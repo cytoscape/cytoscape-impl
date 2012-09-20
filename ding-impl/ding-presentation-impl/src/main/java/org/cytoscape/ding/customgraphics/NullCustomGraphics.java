@@ -44,7 +44,7 @@ public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphicLay
 	}
 
 	public String toString() {
-		return this.getClass().getCanonicalName();
+		return "None";
 	}
 
 	@Override

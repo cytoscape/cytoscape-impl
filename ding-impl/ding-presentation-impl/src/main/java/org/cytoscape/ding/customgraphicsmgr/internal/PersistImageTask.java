@@ -64,14 +64,7 @@ public class PersistImageTask implements Task {
 		final ExecutorService exService = Executors
 				.newFixedThreadPool(NUM_THREADS);
 
-		for (final CyCustomGraphics<?> cg : manager.getAllCustomGraphics()) {
-
-			// Save ONLY bitmap image Custom Graphics.
-			// TODO: Why?
-			if (cg instanceof NullCustomGraphics
-					|| cg instanceof URLImageCustomGraphics == false)
-				continue;
-
+		for (final CyCustomGraphics<?> cg : manager.getAllPersistantCustomGraphics()) {
 			final Image img = cg.getRenderedImage();
 			if (img != null) {
 				try {

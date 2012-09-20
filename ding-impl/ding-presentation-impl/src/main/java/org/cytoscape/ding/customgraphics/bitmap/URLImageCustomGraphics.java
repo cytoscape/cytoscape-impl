@@ -44,6 +44,15 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 	
 	public URLImageCustomGraphics(Long id, String url) throws IOException {
 		super(id, url);
+		// Special case.  We include a number of images as part of our bundles.  The
+		// resulting URL's are not really helpful, so we need to massage the displayName
+		// here.
+		if (displayName.startsWith("bundle:")) {
+			int index = displayName.lastIndexOf("/");
+			displayName = displayName.substring(index+1);
+		}
+		// System.out.println("URLImageCustomGraphics: "+displayName+"("+id+") = "+url.toString());
+
 		tags.add(DEF_TAG);
 		createImage(url);
 		buildCustomGraphics(originalImage);
@@ -60,6 +69,8 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 		super(id, name);
 		if (img == null)
 			throw new IllegalArgumentException("Image cannot be null.");
+
+		// System.out.println("URLImageCustomGraphics: "+displayName+"("+id+")");
 
 		// System.out.println("URLImageCustomGraphics: name = "+name);
 		tags.add(DEF_TAG);
@@ -176,8 +187,9 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 			return "Empty image";
 		} else if (this.sourceUrl != null && !this.sourceUrl.toString().startsWith("bundle")) {
 			return "Image: "+this.sourceUrl.toString();
-		} else
+		} else {
 			return "Image: "+displayName;
+		}
 	}
 
 }

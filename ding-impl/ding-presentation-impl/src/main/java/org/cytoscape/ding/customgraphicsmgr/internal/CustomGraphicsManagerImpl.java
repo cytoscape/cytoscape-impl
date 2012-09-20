@@ -23,6 +23,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
@@ -215,6 +216,29 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	@Override
 	public Collection<CyCustomGraphics> getAllCustomGraphics() {
 		return graphicsMap.values();
+	}
+
+	/**
+	 * Get a collection of all Custom Graphics in current session that
+	 * we want to serialize into the session file.
+	 * 
+	 * @return
+	 */
+	@Override
+	public Collection<CyCustomGraphics> getAllPersistantCustomGraphics() {
+		Set<CyCustomGraphics> cgSet = new HashSet<CyCustomGraphics>();
+		for (CyCustomGraphics cg: getAllCustomGraphics()) {
+			// Currently, we only export URLImageCustomGraphics to the session file.  This
+			// may change in the future......
+			if (cg instanceof URLImageCustomGraphics) {
+				URLImageCustomGraphics urlCG = (URLImageCustomGraphics)cg;
+				// Don't serialize bundle-generated graphics
+				if (urlCG.getSourceURL() != null && urlCG.getSourceURL().toString().startsWith("bundle:"))
+					continue;
+				cgSet.add(cg);
+			}
+		}
+		return cgSet;
 	}
 
 	/**
