@@ -111,7 +111,7 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
             // Add edge attributes menus
             addEdgeAttributeMenus(this, false);
         } else {
-        	throw new RuntimeException("Layout algorithm expected valid attributes or sel");
+        	throw new RuntimeException("Layout algorithm expected valid table columns or selected");
         }
     }
 
