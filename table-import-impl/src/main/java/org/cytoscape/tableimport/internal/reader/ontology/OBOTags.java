@@ -17,7 +17,7 @@ public enum OBOTags {
 	DEF("The definition of the current term. There must be zero or one instances of this tag per term description. "
 	    + "More than one definition for a term generates a parse error. The value of this tag should be the quote "
 	    + "enclosed definition text, followed by a dbxref list containing dbxrefs that describe the origin of this "
-	    + "definition.  The origine is stored in a separate attribute called def_origin."), 
+	    + "definition.  The origin is stored in a separate table column called def_origin."), 
 	COMMENT("A comment for this term. There must be zero or one instances of this tag per term description. More than "
 	        + "one comment for a term generates a parse error."), 
 	SUBSET("This tag indicates a term subset to which this term belongs. The value of this tag must be a subset name as "
