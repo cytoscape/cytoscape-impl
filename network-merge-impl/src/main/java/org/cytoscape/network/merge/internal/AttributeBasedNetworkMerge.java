@@ -123,7 +123,7 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge {
 		CyColumn attr2 = matchingAttribute.getAttributeForMatching(net2);
 
 		if (attr1 == null || attr2 == null) {
-			throw new java.lang.IllegalArgumentException("Please specify the matching attribute first");
+			throw new java.lang.IllegalArgumentException("Please specify the matching table column first");
 		}
 
 		return attributeValueMatcher.matched(n1, attr1, n2, attr2);
