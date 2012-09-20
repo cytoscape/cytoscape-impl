@@ -600,7 +600,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
                     for (int i = 0; i < keys.length; i++) {
                         final String k = keys[i];
                         
-                        if (!writtenKeys.contains(k)) {
+                        if (!writtenKeys.contains(k) && !ignoreGraphicsAttribute(element, k)) {
                             writeAttributePair(k, value);
                             writtenKeys.add(k); // to avoid writing the same key twice, because of dependencies!
                         }

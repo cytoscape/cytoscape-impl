@@ -91,15 +91,23 @@ public class SessionXGMMLNetworkViewWriterTest extends AbstractXGMMLWriterTest {
 	
 	@Test
 	public void testStandardNodeGraphics() {
+		for (View<CyNode> nv : view.getNodeViews()) {
+			nv.setVisualProperty(NODE_X_LOCATION, 10.0);
+			nv.setVisualProperty(NODE_Y_LOCATION, 20.0);
+			nv.setVisualProperty(NODE_Z_LOCATION, 0.0);
+		}
+		
 		write(view);
+		
 		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@x)"));
 		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@y)"));
 		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@z)"));
-		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@h)"));
-		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@w)"));
-		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@width)"));
-		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@fill)"));
-		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@type)"));
+		assertEquals(0, evalNumber("count(//x:node/x:graphics/@h)"));
+		assertEquals(0, evalNumber("count(//x:node/x:graphics/@w)"));
+		assertEquals(0, evalNumber("count(//x:node/x:graphics/@width)"));
+		assertEquals(0, evalNumber("count(//x:node/x:graphics/@outline)"));
+		assertEquals(0, evalNumber("count(//x:node/x:graphics/@fill)"));
+		assertEquals(0, evalNumber("count(//x:node/x:graphics/@type)"));
 		
 		// TODO: test values
 	}

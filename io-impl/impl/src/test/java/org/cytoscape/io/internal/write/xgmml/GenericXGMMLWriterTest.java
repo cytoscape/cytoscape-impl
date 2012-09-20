@@ -279,6 +279,12 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 	
 	@Test
 	public void testMandatoryGraphicsAttributes() {
+		for (View<CyNode> nv : view.getNodeViews()) {
+			nv.setVisualProperty(NODE_X_LOCATION, 0.0);
+			nv.setVisualProperty(NODE_Y_LOCATION, 0.0);
+			nv.setVisualProperty(NODE_Z_LOCATION, 0.0);
+		}
+			
 		write(view);
 		
 		assertEquals(NODE_COUNT, evalNumber("count(//x:node/x:graphics/@x)"));
