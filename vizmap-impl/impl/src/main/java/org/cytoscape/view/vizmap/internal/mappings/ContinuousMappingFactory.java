@@ -26,7 +26,7 @@ public class ContinuousMappingFactory implements VisualMappingFunctionFactory {
 		
 		// Validate attribute type: Continuous Mapping is compatible with Numbers only.
 		if(Number.class.isAssignableFrom(attrValueType) == false)
-			throw new IllegalArgumentException("ContinuousMapping can be used for numerical attributes only.");
+			throw new IllegalArgumentException("ContinuousMapping can be used for numerical column types only.");
 		
 		return new ContinuousMappingImpl<K, V>(attributeName, attrValueType, vp, eventHelper);
 	}
