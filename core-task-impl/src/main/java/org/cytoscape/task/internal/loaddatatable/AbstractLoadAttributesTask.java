@@ -35,7 +35,7 @@ abstract class AbstractLoadAttributesTask extends AbstractTask {
 	}
 
 	void loadTable(final String name, final URI uri, final TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setStatusMessage("Finding Attribute Data Reader...");
+		taskMonitor.setStatusMessage("Finding Table Data Reader...");
 
 		CyTableReader reader = mgr.getReader(uri,uri.toString());
 
