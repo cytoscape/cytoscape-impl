@@ -145,7 +145,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 		if (col.getVirtualColumnInfo().isVirtual()) {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_VIRTUAL_COLOR);
-			toolTip += "<br />Shared Attribute</html>";
+			toolTip += "<br />Shared Column</html>";
 		} else {
 			setForeground(COLUMN_TITLE_COLOR);
 			setBackground(COLUMN_COLOR);
