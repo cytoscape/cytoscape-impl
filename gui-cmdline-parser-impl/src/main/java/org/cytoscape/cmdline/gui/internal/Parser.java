@@ -96,7 +96,7 @@ public class Parser {
 		
 		opt.addOption(OptionBuilder
 		              .withLongOpt("table")
-		              .withDescription("Load an attribute table file (any table format).")
+		              .withDescription("Load a data table file (any table format).")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("T"));
 
