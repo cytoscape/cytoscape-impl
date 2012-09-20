@@ -80,11 +80,11 @@ public abstract class AttributeImportPanel extends JPanel implements
 	public static final String CLOSE_EVENT = "CLOSE";
 
 	// Default title of this panel.
-	private static final String DEF_TITLE = "Attribute Import Utility";
+	private static final String DEF_TITLE = "Table Import Utility";
 
 	// Labels for the sub-panels.
 	private static final String DATASOURCE = "Data Source";
-	private static final String KEY_ATTR = "Key Attribute in Cytoscape";
+	private static final String KEY_ATTR = "Key Column in Cytoscape";
 	private static final String ATTR_PANEL_TITLE = "Available Annotations";
 
 	// Swing components. Maybe accessed from child classes.
@@ -191,7 +191,7 @@ public abstract class AttributeImportPanel extends JPanel implements
 		attributePanel.setBackground(new java.awt.Color(255, 255, 255));
 		attributePanel.setBorder(javax.swing.BorderFactory
 				.createTitledBorder(KEY_ATTR));
-		attributeLabel.setText("Attribute:");
+		attributeLabel.setText("Column:");
 
 		attributeTypeLabel.setText("Data Type:");
 
