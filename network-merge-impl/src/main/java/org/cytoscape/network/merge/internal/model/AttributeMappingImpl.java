@@ -101,7 +101,7 @@ public class AttributeMappingImpl implements AttributeMapping {
     @Override
     public String setMergedAttribute(final int index, final String attributeName) {
         if (attributeName==null) {
-            throw new java.lang.NullPointerException("Attribute name is null.");
+            throw new java.lang.NullPointerException("Column name is null.");
         }
         
         String ret = mergedAttributes.set(index, attributeName);
@@ -583,7 +583,7 @@ public class AttributeMappingImpl implements AttributeMapping {
 
     protected void resetMergedAttributeType(final int index, boolean add) {
         if (this.getSizeMergedAttributes()>this.mergedAttributeTypes.size()+(add?1:0)) {
-                throw new java.lang.IllegalStateException("attribute type not complete");
+                throw new java.lang.IllegalStateException("column type not complete");
         }
 
         if (index>=this.getSizeMergedAttributes()||index<0) {
