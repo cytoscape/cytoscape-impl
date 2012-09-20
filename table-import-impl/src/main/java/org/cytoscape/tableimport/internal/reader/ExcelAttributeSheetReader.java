@@ -166,7 +166,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
 		final Map<String, Object> invalid = parser.getInvalidMap();
-		sb.append(globalCounter + " entries are loaded and mapped onto attributes.");
+		sb.append(globalCounter + " entries are loaded and mapped into table.");
 
 		int limit = 10;
 		if (invalid.size() > 0) {
