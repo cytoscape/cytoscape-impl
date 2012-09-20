@@ -100,6 +100,10 @@
 			<artifactId>io-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>custom-graphics-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>l2fprod-common-sheet</artifactId>
 			<version>7.3</version>
