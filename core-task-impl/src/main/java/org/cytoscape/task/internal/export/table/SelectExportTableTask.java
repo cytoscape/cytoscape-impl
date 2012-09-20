@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -74,5 +75,10 @@ public class SelectExportTableTask extends AbstractTask {
 
 		// Export the selected table
 		this.insertTasksAfterCurrentTask(new CyTableWriter(writerManager, tbl));		
+	}
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Export Table";
 	}
 }

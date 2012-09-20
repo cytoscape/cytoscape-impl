@@ -8,6 +8,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -26,8 +27,12 @@ public class LoadAttributesURLTask extends AbstractLoadAttributesTask {
 	 * Executes Task.
 	 */
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-
 		loadTable(url.toString(), url.toURI(), taskMonitor);
+	}
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Import Table";
 	}
 }
 

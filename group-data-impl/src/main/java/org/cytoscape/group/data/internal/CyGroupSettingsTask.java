@@ -4,11 +4,11 @@ package org.cytoscape.group.data.internal;
 import org.cytoscape.application.CyApplicationManager;
 
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.ContainsTunables;
 
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.CyGroupAggregationManager;
 
@@ -74,5 +74,10 @@ public class CyGroupSettingsTask extends AbstractTask {
 			else
 				settings.setOverrideAggregation(column, overrides.get(column));
 		}
+	}
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Group Preferences";
 	}
 }

@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
@@ -137,5 +138,10 @@ public class LoadRepositoryTask extends AbstractTask {
 	
 	public LoadRepositoryResult getResult() {
 		return result;
+	}
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Select Services";
 	}
 }
