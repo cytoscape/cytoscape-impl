@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 public class JoinTablesTask extends AbstractTask {
 	
 	enum TableType {
-		NODE_ATTR("Node Attributes", CyNode.class),
-		EDGE_ATTR("Edge Attributes", CyEdge.class),
-		NETWORK_ATTR("Network Attributes", CyNetwork.class);
+		NODE_ATTR("Node Table Columns", CyNode.class),
+		EDGE_ATTR("Edge Table Columns", CyEdge.class),
+		NETWORK_ATTR("Network Table Columns", CyNetwork.class);
 
 		private final String name;
 		private final Class<? extends CyIdentifiable> type;
