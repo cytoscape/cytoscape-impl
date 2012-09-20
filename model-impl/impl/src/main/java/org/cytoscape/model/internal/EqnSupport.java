@@ -140,14 +140,14 @@ class EqnSupport {
 					currentlyActiveAttributes.clear();
 					try {
 						lastInternalError.append(
-							"Missing value for referenced attribute \""
+							"Missing value for referenced column \""
 							+ attribRef + "\".");
 					} catch (Exception e) {
 						// Intentionally empty!
 					}
 					logger.warn("Missing value for \"" + attribRef
 					            + "\" while evaluating an equation (ID:" + key
-					            + ", attribute name:" + columnName + ")");
+					            + ", column name:" + columnName + ")");
 					return null;
 				}
 			}
@@ -157,14 +157,14 @@ class EqnSupport {
 			} catch (final Exception e) {
 				currentlyActiveAttributes.clear();
 				try {
-					lastInternalError.append("Bad attribute reference to \""
+					lastInternalError.append("Bad column reference to \""
 								 + attribRef + "\".");
 				} catch (Exception e2) {
 					// Intentionally empty!
 				}
-				logger.warn("Bad attribute reference to \"" + attribRef
+				logger.warn("Bad column reference to \"" + attribRef
 				            + "\" while evaluating an equation (ID:" + key
-				            + ", attribute name:" + columnName + ")");
+				            + ", column name:" + columnName + ")");
 				return null;
 			}
 		}
@@ -181,7 +181,7 @@ class EqnSupport {
 				// Intentionally empty!
 			}
 			logger.warn("Error while evaluating an equation: " + e.getMessage() + " (ID:"
-			            + key + ", attribute name:" + columnName + ")");
+			            + key + ", column name:" + columnName + ")");
 			return null;
 		}
 	}
@@ -294,7 +294,7 @@ class EqnSupport {
 			if (retVal == null)
 				logger.warn("Cannot convert a floating point value ("
 					    + equationValue + ") to an integer.  (ID:" + id
-					    + ", attribute name:" + columnName + ")");
+					    + ", column name:" + columnName + ")");
 			return retVal;
 		}
 		else if (equationValue.getClass() == Long.class) {
@@ -302,7 +302,7 @@ class EqnSupport {
 			if (retVal == null)
 				logger.warn("Cannot convert a large integer (long) value ("
 					    + equationValue + ") to an integer. (ID:" + id
-					    + ", attribute name:" + columnName + ")");
+					    + ", column name:" + columnName + ")");
 			return retVal;
 		}
 		else if (equationValue.getClass() == Boolean.class) {
@@ -334,7 +334,7 @@ class EqnSupport {
 			} catch (final NumberFormatException e) {
 				logger.warn("Cannot convert a string (\"" + valueAsString
 				            + "\") to a floating point value. (ID:" + id
-                                            + ", attribute name:" + columnName + ")");
+                                            + ", column name:" + columnName + ")");
 				return null;
 			}
 		}
@@ -364,7 +364,7 @@ class EqnSupport {
 			else {
 				logger.warn("Cannot convert a string (\"" + stringValue
 				            + "\") to a boolean value. (ID:" + id
-                                            + ", attribute name:" + columnName + ")");
+                                            + ", column name:" + columnName + ")");
 				return null;
 			}
 		}
