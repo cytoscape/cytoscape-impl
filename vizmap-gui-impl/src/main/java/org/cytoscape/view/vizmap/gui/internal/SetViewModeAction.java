@@ -16,7 +16,7 @@ public final class SetViewModeAction extends AbstractCyAction {
 	public static final String VIEW_MODE_CHANGED = "VIEW_MODE_CHANGED";
 
 	private final static String BASIC = "Show All Visual Properties";
-	private final static String ALL = "Hide Advanced Visual Proeprties";
+	private final static String ALL = "Hide Advanced Visual Properties";
 	
 	public SetViewModeAction() {
 		super(BASIC);
