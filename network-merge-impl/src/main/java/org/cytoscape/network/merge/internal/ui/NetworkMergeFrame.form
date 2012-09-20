@@ -310,7 +310,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Matching attributes (attributes to match nodes between networks)"/>
+                    <TitledBorder title="Matching columns (table columns to match nodes between networks)"/>
                   </Border>
                 </Property>
               </Properties>
@@ -346,7 +346,7 @@
                 </Container>
                 <Component class="javax.swing.JCheckBox" name="idmappingCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Map IDs between the matching attributes"/>
+                    <Property name="text" type="java.lang.String" value="Map IDs between the matching columns"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="idmappingCheckBox.setVisible(checkCyThesaurus);"/>
@@ -363,7 +363,7 @@
                       <Color blue="33" green="0" red="ff" type="rgb"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="&quot;If you want to map identifiers between the matching attributes, please install CyThesaurus app version &quot;+requiredCyThesaursServiceVersion+&quot; or above.&quot;" type="code"/>
+                      <Connection code="&quot;If you want to map identifiers between the matching columns, please install CyThesaurus app version &quot;+requiredCyThesaursServiceVersion+&quot; or above.&quot;" type="code"/>
                     </Property>
                   </Properties>
                   <AuxValues>
@@ -394,7 +394,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="How to merge attributes?"/>
+                    <TitledBorder title="How to merge columns?"/>
                   </Border>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
