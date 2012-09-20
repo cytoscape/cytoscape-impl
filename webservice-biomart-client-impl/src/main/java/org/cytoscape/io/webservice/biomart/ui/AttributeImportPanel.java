@@ -83,7 +83,7 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 
 	// Labels for the sub-panels.
 	private static final String DATASOURCE = "Data Source";
-	private static final String KEY_ATTR = "Key Attribute in Cytoscape";
+	private static final String KEY_ATTR = "Key Column in Cytoscape";
 
 	// Swing components. Maybe accessed from child classes.
 	protected JComboBox columnNameComboBox;
@@ -183,7 +183,7 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 
 		attributePanel.setBackground(new java.awt.Color(255, 255, 255));
 		attributePanel.setBorder(BorderFactory.createTitledBorder(KEY_ATTR));
-		attributeLabel.setText("Attribute:");
+		attributeLabel.setText("Column:");
 
 		attributeTypeLabel.setText("Data Type:");
 
