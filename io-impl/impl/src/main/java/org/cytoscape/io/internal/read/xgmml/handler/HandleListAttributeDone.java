@@ -41,7 +41,7 @@ public class HandleListAttributeDone extends AbstractHandler {
                 manager.listAttrHolder = null;
             }
         } catch (Exception e) {
-            String err = "XGMML attribute handling error for attribute '" + manager.currentAttributeID +
+            String err = "XGMML table handling error for column '" + manager.currentAttributeID +
                          "' and network '" + manager.getCurrentNetwork() + "': " + e.getMessage();
             throw new SAXException(err);
         }
