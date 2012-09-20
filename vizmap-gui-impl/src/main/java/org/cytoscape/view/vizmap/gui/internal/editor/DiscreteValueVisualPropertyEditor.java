@@ -1,6 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.editor;
 
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.internal.cellrenderer.IconCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyDiscreteValuePropertyEditor;
 
 /**
@@ -12,9 +13,13 @@ import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyDiscreteVa
  */
 public class DiscreteValueVisualPropertyEditor<T> extends BasicVisualPropertyEditor<T> {
 
-	public DiscreteValueVisualPropertyEditor(final Class<T> type, final CyDiscreteValuePropertyEditor<T> propEditor) {
+	public DiscreteValueVisualPropertyEditor(final Class<T> type, final IconCellRenderer<T> cellRenderer,
+			final CyDiscreteValuePropertyEditor<T> propEditor) {
 		super(type, propEditor, ContinuousEditorType.DISCRETE);
 
-		discreteTableCellRenderer = REG.getRenderer(type);
+		if(cellRenderer != null)
+			discreteTableCellRenderer = cellRenderer;
+		else
+			discreteTableCellRenderer = REG.getRenderer(type);
 	}
 }

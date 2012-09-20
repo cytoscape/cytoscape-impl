@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.Icon;
 import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -58,6 +59,7 @@ import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -67,6 +69,7 @@ import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
+import org.cytoscape.view.vizmap.gui.internal.cellrenderer.IconCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2CEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2DEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.GradientEditor;
@@ -266,10 +269,10 @@ public class EditorManagerImpl implements EditorManager {
 		return mappingTypeEditor;
 	}
 
-	private void buildDiscreteEditors(final VisualLexicon lexicon) {
-		final Set<VisualProperty<?>> vps = lexicon.getAllVisualProperties();
+	private <V> void buildDiscreteEditors(final VisualLexicon lexicon) {
+		final Set<VisualProperty> vps = (Set)lexicon.getAllVisualProperties();
 
-		for (final VisualProperty<?> vp : vps) {
+		for (final VisualProperty<V> vp : vps) {
 			Range<?> range = vp.getRange();
 
 			// If data type is basic (String, Boolean, etc.) not custom editor
@@ -283,7 +286,17 @@ public class EditorManagerImpl implements EditorManager {
 
 			if (range instanceof DiscreteRange<?>) {
 				// Visual Property Editor.
-				final Set<?> values = ((DiscreteRange<?>) range).values();
+				final Set<V> values = ((DiscreteRange) range).values();
+//				final RenderingEngine<CyNetwork> engine = appManager.getCurrentRenderingEngine();
+//				
+//				// CCurrent engine is not ready yet.
+//				if(engine == null)
+//					return;
+//				
+//				Map<V, Icon> iconMap = new HashMap<V, Icon>();
+//				for(V value: values)
+//					iconMap.put(value, engine.createIcon(vp, value, 12, 12));
+//				IconCellRenderer<?> cellRenderer = new IconCellRenderer(iconMap);
 
 				if (this.getValueEditor(range.getType()) == null) {
 					final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(appManager, range.getType(),
@@ -293,8 +306,9 @@ public class EditorManagerImpl implements EditorManager {
 
 				final CyDiscreteValuePropertyEditor<?> discretePropEditor = new CyDiscreteValuePropertyEditor(
 						(DiscreteValueEditor) this.getValueEditor(range.getType()));
+				
 				final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
-						discretePropEditor);
+						null, discretePropEditor);
 				this.addVisualPropertyEditor(vpEditor, null);
 			}
 		}

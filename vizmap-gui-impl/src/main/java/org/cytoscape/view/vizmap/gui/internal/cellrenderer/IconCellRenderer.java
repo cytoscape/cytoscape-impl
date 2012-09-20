@@ -50,33 +50,17 @@ import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
  * for passing proper icons.
  */
 public class IconCellRenderer<T> extends DefaultCellRenderer {
-	/**
-	 *
-	 */
+	
 	private static final long serialVersionUID = -616290814339403108L;
+	
 	private Map<?extends T, Icon> icons;
 
-	/**
-	 * Creates a new IconCellRenderer object.
-	 *
-	 * @param icons  DOCUMENT ME!
-	 */
+	
 	public IconCellRenderer(Map<?extends T, Icon> icons) {
 		this.icons = icons;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param table DOCUMENT ME!
-	 * @param value DOCUMENT ME!
-	 * @param isSelected DOCUMENT ME!
-	 * @param hasFocus DOCUMENT ME!
-	 * @param row DOCUMENT ME!
-	 * @param column DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 	                                               boolean hasFocus, int row, int column) {
 		if (isSelected) {

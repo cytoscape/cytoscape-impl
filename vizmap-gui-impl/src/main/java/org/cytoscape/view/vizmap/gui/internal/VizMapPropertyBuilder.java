@@ -329,12 +329,13 @@ public class VizMapPropertyBuilder {
 				final TableCellRenderer renderer = editor.getDiscreteTableCellRenderer();
 				if (renderer != null)
 					cellRendererFactory.registerRenderer(valProp, renderer);
+				
+				final PropertyEditor cellEditor = editor.getPropertyEditor();
+
+				if (cellEditor != null)
+					cellEditorFactory.registerEditor(valProp, cellEditor);
 			}
-			final PropertyEditor cellEditor = editor.getPropertyEditor();
-
-			if (cellEditor != null)
-				cellEditorFactory.registerEditor(valProp, cellEditor);
-
+			
 			valProp.setValue(val);
 			valProp.setInternalValue(mapping);
 		}
