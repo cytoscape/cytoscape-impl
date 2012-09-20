@@ -257,7 +257,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
 		final Map<String, Object> invalid = parser.getInvalidMap();
-		sb.append(globalCounter + " entries are loaded and mapped onto attributes.");
+		sb.append(globalCounter + " entries are loaded and mapped into table.");
 		
 		if(invalid.size() > 0) {
 			sb.append("\n\nThe following enties are invalid and were not imported:\n");
