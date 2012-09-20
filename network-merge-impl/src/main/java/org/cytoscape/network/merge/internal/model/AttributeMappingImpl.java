@@ -127,7 +127,7 @@ public class AttributeMappingImpl implements AttributeMapping {
 
         final int index = mergedAttributes.indexOf(mergedAttributeName);
         if (index==-1) {
-            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged attributes");
+            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged table columns");
         }
 
         return getMergedAttributeType(index);
@@ -161,7 +161,7 @@ public class AttributeMappingImpl implements AttributeMapping {
 
         final int index = mergedAttributes.indexOf(mergedAttributeName);
         if (index==-1) {
-            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged attributes");
+            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged table columns");
         }
 
         return setMergedAttributeType(index,type);
@@ -170,7 +170,7 @@ public class AttributeMappingImpl implements AttributeMapping {
     @Override
     public boolean containsMergedAttribute(final String attributeName) {
         if (attributeName==null) {
-            throw new java.lang.NullPointerException("Attribute name is null.");
+            throw new java.lang.NullPointerException("Column name is null.");
         }
         return mergedAttributes.contains(attributeName);
     }
@@ -182,7 +182,7 @@ public class AttributeMappingImpl implements AttributeMapping {
         }
         final int index = mergedAttributes.indexOf(mergedAttributeName);
         if (index==-1) {
-            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged attributes");
+            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged table columns");
         }
         return getOriginalAttribute(net, index);
     }
@@ -208,7 +208,7 @@ public class AttributeMappingImpl implements AttributeMapping {
         }
         final int index = mergedAttributes.indexOf(mergedAttributeName);
         if (index==-1) {
-            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged attributes");
+            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged table columns");
         }
         return getOriginalAttributeMap(index);        
     }
@@ -242,7 +242,7 @@ public class AttributeMappingImpl implements AttributeMapping {
         }
         final int index = mergedAttributes.indexOf(mergedAttributeName);
         if (index==-1) {
-            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged attributes");
+            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged table columns");
         }
         return setOriginalAttribute(net, attributeName, index);
     }
@@ -276,7 +276,7 @@ public class AttributeMappingImpl implements AttributeMapping {
         
         final int index = mergedAttributes.indexOf(mergedAttributeName);
         if (index==-1) {
-            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged attributes");
+            throw new java.lang.IllegalArgumentException("No "+mergedAttributeName+" is contained in merged table columns");
         }
         
         return removeOriginalAttribute(net, index);
