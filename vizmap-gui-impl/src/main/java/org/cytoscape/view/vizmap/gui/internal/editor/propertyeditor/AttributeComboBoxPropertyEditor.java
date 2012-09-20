@@ -98,7 +98,7 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		// Add new name if not in the list.
 		box.setSelectedItem(selected);
 
-		logger.debug(graphObjectType + " attribute Combobox Updated: New Names = "
+		logger.debug(graphObjectType + " Column Name Combobox Updated: New Names = "
 				+ targetSet.getAttrMap().keySet());
 	}
 
