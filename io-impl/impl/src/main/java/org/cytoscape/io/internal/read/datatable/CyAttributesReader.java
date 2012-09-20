@@ -140,7 +140,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 							|| className.equalsIgnoreCase("Float")) {
 						type = TYPE_FLOATING_POINT;
 					}
-					logger.debug("New Attr Loaded.  Data Type = " + attributeName + ": " + type);
+					logger.debug("New Column Loaded.  Data Type = " + attributeName + ": " + type);
 				}
 			}
 
@@ -266,17 +266,17 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 		} catch (Exception e) {
 			String message;
 			if (guessedAttrType) {
-				message = "failed parsing attributes file at line: "
+				message = "failed parsing data table file at line: "
 						+ lineNum
 						+ " with exception: "
 						+ e.getMessage()
 						+ " This is most likely due to a missing attribute type on the first line.\n"
-						+ "Attribute type should be one of the following: "
+						+ "Column type should be one of the following: "
 						+ "(class=String), (class=Boolean), (class=Integer), or (class=Double). "
 						+ "(\"Double\" stands for a floating point a.k.a. \"decimal\" number.)"
 						+ " This should be added to end of the first line.";
 			} else
-				message = "failed parsing attributes file at line: " + lineNum
+				message = "failed parsing data table file at line: " + lineNum
 						+ " with exception: " + e.getMessage();
 			logger.warn(message, e);
 			throw new IOException(message);
