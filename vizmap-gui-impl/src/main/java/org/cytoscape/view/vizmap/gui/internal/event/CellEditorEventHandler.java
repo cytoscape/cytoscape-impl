@@ -241,7 +241,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
 			} else {
 				JOptionPane.showMessageDialog(null,
-						"Continuous Mapper can be used with Numbers only.\nPlease select numerical attributes.",
+						"Continuous Mapper can be used with Numbers only.\nPlease select a numerical column type.",
 						"Incompatible Mapping Type.", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
@@ -318,7 +318,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 
 				if (!Number.class.isAssignableFrom(attributeDataType)) {
 					JOptionPane.showMessageDialog(null,
-							"Selected column data type is not Number.\nPlease select numerical attributes.",
+							"Selected column data type is not Number.\nPlease select a numerical column type.",
 							"Incompatible Column Type.", JOptionPane.WARNING_MESSAGE);
 					return;
 				}
