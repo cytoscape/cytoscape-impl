@@ -18,7 +18,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 
 	@ProvidesTitle
 	public String getTitle() {
-		return "Import Attribute From Table";
+		return "Import Column From Table";
 	}
 
 
