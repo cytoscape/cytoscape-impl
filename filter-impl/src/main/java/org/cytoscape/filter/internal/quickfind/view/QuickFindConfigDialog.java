@@ -284,7 +284,7 @@ public class QuickFindConfigDialog extends JDialog {
 	 */
 	private JPanel createAttributeDescriptionPanel() {
 		JPanel panel = new JPanel();
-		panel.setBorder(new TitledBorder("Attribute Description:"));
+		panel.setBorder(new TitledBorder("Table Column Description:"));
 		panel.setLayout(new BorderLayout());
 		attributeDescriptionBox = new JTextArea(5, 40);
 		attributeDescriptionBox.setEditable(false);
@@ -305,7 +305,7 @@ public class QuickFindConfigDialog extends JDialog {
 	 */
 	private JPanel createAttributeValuePanel() {
 		JPanel panel = new JPanel();
-		panel.setBorder(new TitledBorder("Sample Attribute Values:"));
+		panel.setBorder(new TitledBorder("Sample Column Values:"));
 		panel.setLayout(new GridLayout(1, 0));
 
 		//  Table Cells are not editable
@@ -468,7 +468,7 @@ public class QuickFindConfigDialog extends JDialog {
 	private JPanel createAttributeSelectionPanel() {
 		JPanel attributePanel = new JPanel();
 
-		attributePanel.setBorder(new TitledBorder("Select Attribute:"));
+		attributePanel.setBorder(new TitledBorder("Select Column:"));
 		attributePanel.setLayout(new BoxLayout(attributePanel, BoxLayout.X_AXIS));
 
 		//  Create ComboBox
@@ -711,6 +711,6 @@ class DetermineDistinctValuesTask implements Task {
 	 * @return  DOCUMENT ME!
 	 */
 	public String getTitle() {
-		return "Accessing sample attribute data";
+		return "Accessing sample column data";
 	}
 }
