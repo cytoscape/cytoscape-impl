@@ -78,7 +78,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 		
 		// Validate type.  K is always a number.
 		if (Number.class.isAssignableFrom(attrType) == false)
-			throw new IllegalArgumentException("Attribute type should be Number.");
+			throw new IllegalArgumentException("Column type should be Number.");
 		
 		this.points = new ArrayList<ContinuousMappingPoint<K, V>>();
 
