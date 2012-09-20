@@ -79,7 +79,7 @@ import org.cytoscape.model.CyTable;
 enum ApplicationDomain {
 	CURRENT_CELL("Current cell only"),      // The currently selected cell in the browser.
 	CURRENT_SELECTION("Current selection"), // All entries in the browser.
-	ENTIRE_ATTRIBUTE("Entire attribute");   // All values of the current attribute.
+	ENTIRE_ATTRIBUTE("Entire column");   // All values of the current attribute.
 
 	private final String asString;
 	ApplicationDomain(final String asString) { this.asString = asString; }
