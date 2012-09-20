@@ -238,6 +238,9 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		} catch (Exception e) {
 			logger.error("Error closing zip output stream", e);
 		}
+
+		// Tell the groupUtils that we're done
+		groupUtils.groupsSerialized(session.getNetworks(), session.getNetworkViews());
 	}
 	
 	/**

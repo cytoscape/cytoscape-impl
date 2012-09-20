@@ -1,8 +1,11 @@
 package org.cytoscape.io.internal.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
@@ -41,6 +44,9 @@ public class GroupUtil {
 	
 	private final CyGroupManager groupMgr;
 	private final CyGroupFactory groupFactory;
+
+	// Remember groups that we had to add
+	private Map<CyNetwork, List<CyNode>> addedNodes = null;
 	
 	public GroupUtil(final CyGroupManager groupMgr, final CyGroupFactory groupFactory) {
 		assert groupMgr != null;
@@ -50,14 +56,16 @@ public class GroupUtil {
 		this.groupFactory = groupFactory;
 	}
 
-	public void prepareGroupsForSerialization(final Set<CyNetwork> networks) {
+	public void prepareGroupsForSerialization(final Collection<CyNetwork> networks) {
 		if (networks == null)
 			return;
+
+		addedNodes = new HashMap<CyNetwork, List<CyNode>>();
 		
 		for (CyNetwork net: networks) {
 			if (!(net instanceof CySubNetwork))
 				continue;
-			
+
 			// Get the root network
 			CyRootNetwork rootNetwork = ((CySubNetwork)net).getRootNetwork();
 			// Get all of our groups
@@ -70,6 +78,33 @@ public class GroupUtil {
 				updateGroupAttribute(net, group);
 			}
 		}
+	}
+
+	public void groupsSerialized(final Collection<CyNetwork> networks, 
+	                             final Collection<CyNetworkView> views) {
+
+		if (networks == null)
+			return;
+
+		Map <CyNetwork, CyNetworkView> viewMap = new HashMap<CyNetwork, CyNetworkView>();
+		if (views != null)
+			for (CyNetworkView view: views)
+				viewMap.put(view.getModel(), view);
+		
+
+		for (CyNetwork net: networks) {
+			if (!(net instanceof CySubNetwork) || !addedNodes.containsKey(net))
+				continue;
+
+			List<CyNode> nodeList = addedNodes.get(net);
+			if (nodeList != null && nodeList.size() > 0) {
+				net.removeNodes(nodeList);
+				// Update our view if we have one
+				if (viewMap.containsKey(net))
+					viewMap.get(net).updateView();
+			}
+		}
+
 	}
 
 	public List<CyNode> getExpandedGroups(final CyNetwork network) {
@@ -321,6 +356,7 @@ public class GroupUtil {
 
 	private void updateGroupAttribute(final CyNetwork net, final CyGroup group) {
 		CyNode node = group.getGroupNode();
+		List<CyNode> nodeList;
 		
 		// Expanded groups won't show in the network.  If it's not there, we need
 		// to add it so that it will get serialized
@@ -328,6 +364,14 @@ public class GroupUtil {
 			// Node not in this network.  Add it and mark it....
 			CySubNetwork subNet = (CySubNetwork)net;
 			subNet.addNode(node); // Temporarily add this to the network so we can serialize it
+
+			// Remember it...
+			if (addedNodes.containsKey(net))
+				nodeList = addedNodes.get(net);
+			else
+				nodeList = new ArrayList<CyNode>();
+			nodeList.add(node);
+			addedNodes.put(net, nodeList);
 		}
 
 		CyTable hiddenTable = net.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
@@ -431,4 +475,5 @@ public class GroupUtil {
 		if (table.getColumn(column) == null)
 			table.createListColumn(column, type, false);
 	}
+
 }
