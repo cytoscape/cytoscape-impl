@@ -14,7 +14,7 @@ import org.cytoscape.work.Tunable;
 
 public class LoadAttributesURLTask extends AbstractLoadAttributesTask {
 	
-	@Tunable(description="Attribute Table URL", params="fileCategory=table;input=true")
+	@Tunable(description="Data Table URL", params="fileCategory=table;input=true")
 	public URL url;
 
 	public LoadAttributesURLTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tableMgr, 
