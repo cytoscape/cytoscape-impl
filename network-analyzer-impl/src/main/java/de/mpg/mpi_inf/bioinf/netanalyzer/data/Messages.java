@@ -204,7 +204,7 @@ public abstract class Messages {
 
 	public static String SM_ANALYSISC = "Analysis cancelled.";
 
-	public static String SM_ATTRIBUTESNOTSAVED = "  ERROR: Could not save node attributes to a file.";
+	public static String SM_ATTRIBUTESNOTSAVED = "  ERROR: Could not save node table to a file.";
 
 	public static String SM_BADINPUT = constructLabel("Selected input directory is not acceptable.",
 			"Please make sure you have selected an existing non-empty directory.");
@@ -258,8 +258,8 @@ public abstract class Messages {
 	public static String SM_LOADNET = "Please load a network first.";
 
 	public static String SM_LOADPARAMETERS = constructLabel(
-			"Storing node and edge parameters as attributes is disabled.",
-			"You need to compute node or edge attributes.<br>"
+			"Storing node and edge parameters as table data is disabled.",
+			"You need to compute node or edge table values.<br>"
 					+ "Do you want to enable storing parameters and run NetworkAnalyzer on the selected network?");
 
 	public static String SM_LOADSETTINGSFAIL1 = "NetworkAnalyzer: Loading settings from ";
@@ -294,8 +294,8 @@ public abstract class Messages {
 	public static String SM_RESULTSSAVED = "  Results saved to network statistics file.";
 
 	public static String SM_RUNNETWORKANALYZER = constructLabel(
-			"No node or edge attributes are computed for this network.",
-			"You need to run NetworkAnalyzer to compute node or edge attributes.<br>"
+			"No node or edge table data are computed for this network.",
+			"You need to run NetworkAnalyzer to compute node or edge data values.<br>"
 					+ "Do you want to run NetworkAnalyzer on the selected network?");
 
 	public static String SM_SAVEERROR = "  ERROR: Could not save results to network statistics file.";
@@ -467,10 +467,10 @@ public abstract class Messages {
 
 	public static String DI_NETSTATSFILE = "Network Statistics File";
 
-	public static String DI_NODEATTR_SAVE = "<html><i>Node parameters stored as node attributes will be written to tab-delimited files. You can disable<br />"
+	public static String DI_NODEATTR_SAVE = "<html><i>Node parameters stored as node table data will be written to tab-delimited files. You can disable<br />"
 			+ "this option in the NetworkAnalyzer Settings dialog.</i></html>";
 
-	public static String DI_NODEATTR_SAVENOT = "<html><i>Node parameters are not stored as node attributes and will not be saved to files. You can enable<br />"
+	public static String DI_NODEATTR_SAVENOT = "<html><i>Node parameters are not stored as node table data and will not be saved to files. You can enable<br />"
 			+ "this option in the NetworkAnalyzer Settings dialog.</i></html>";
 
 	public static String DI_OK = "OK";
@@ -479,7 +479,7 @@ public abstract class Messages {
 
 	public static String DI_PIXELS = "pixels";
 
-	public static String DI_PLOT1 = "Plot node attributes of ";
+	public static String DI_PLOT1 = "Plot node table data of ";
 
 	public static String DI_PLOT2 = " against each other.";
 
@@ -503,7 +503,7 @@ public abstract class Messages {
 
 	public static String DI_SAVEDEFAULT = "Save as Default";
 
-	public static String DI_SAVENUMBEREDGES = "Create an edge attribute with number of duplicated edges";
+	public static String DI_SAVENUMBEREDGES = "Create an edge table data with number of duplicated edges";
 
 	public static String DI_SAVESTATISTICS = "Save Statistics";
 
@@ -625,9 +625,9 @@ public abstract class Messages {
 
 	public static String SET_TITLE = "Chart title";
 
-	public static String SET_USEEDGEATTRIBUTES = "Store edge parameters in edge attributes";
+	public static String SET_USEEDGEATTRIBUTES = "Store edge parameters in edge table";
 
-	public static String SET_USENODEATTRIBUTES = "Store node parameters in node attributes";
+	public static String SET_USENODEATTRIBUTES = "Store node parameters in node table";
 
 	public static String SET_VERTICALGRIDLINES = "Show vertical gridlines";
 
@@ -665,7 +665,7 @@ public abstract class Messages {
 
 	public static String TT_SAVEDATA = "Save chart data to a text file";
 
-	public static String TT_SAVENUMBEREDGES = "<html>Edge attribute represents the number of duplicated edges<br>"
+	public static String TT_SAVENUMBEREDGES = "<html>Edge table column represents the number of duplicated edges<br>"
 			+ "between two nodes, i.e. 1 means no duplicated edges.</html>";
 
 	public static String TT_SCATSETTINGS = "Scatter Plot Settings";
