@@ -170,7 +170,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		logger.debug("Selected attr type is " + attrType);
 
 		if (!Number.class.isAssignableFrom(attrType))
-			throw new IllegalArgumentException("Cannot support attribute data type.  Numerical values only: "
+			throw new IllegalArgumentException("Cannot support column data type.  Numerical values only: "
 					+ attrType);
 
 		initComponents();
@@ -415,7 +415,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 		attrNameLabel.setFont(new java.awt.Font("SansSerif", 1, 14));
 		attrNameLabel.setForeground(java.awt.Color.darkGray);
-		attrNameLabel.setText("Attribute Name");
+		attrNameLabel.setText("Column Name");
 
 		GroupLayout rangeSettingPanelLayout = new GroupLayout(rangeSettingPanel);
 		rangeSettingPanel.setLayout(rangeSettingPanelLayout);
