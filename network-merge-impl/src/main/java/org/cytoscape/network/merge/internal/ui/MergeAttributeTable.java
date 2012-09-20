@@ -256,7 +256,7 @@ class MergeAttributeTable extends JTable {
 								JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value,
 										isSelected, hasFocus, row, column);
 								label.setBackground(Color.LIGHT_GRAY);
-								label.setToolTipText("Only types of new attribute are changeable");
+								label.setToolTipText("Only types of new columns are changeable");
 								if (isSelected) {
 									label.setForeground(table.getSelectionForeground());
 								} else {
@@ -409,7 +409,7 @@ class MergeAttributeTable extends JTable {
 		@Override
 		public String getColumnName(final int col) {
 			if (isColumnMergedType(col)) {
-				return "Attribute type";
+				return "Column type";
 			}
 
 			if (isColumnMergedNetwork(col)) {
@@ -507,15 +507,15 @@ class MergeAttributeTable extends JTable {
 				}
 
 				if (v.length() == 0) {
-					JOptionPane.showMessageDialog(getParent(), "Please use a non-empty name for the attribute.",
-							"Error: empty attribute Name", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(getParent(), "Please use a non-empty name for the column.",
+							"Error: empty column name", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 
 				if (attributeMapping.containsMergedAttribute(v)) {
-					JOptionPane.showMessageDialog(getParent(), "Atribute " + v
-							+ " is already exist. Please use another name for this attribute.",
-							"Error: duplicated attribute Name", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(getParent(), "Column " + v
+							+ " already exist. Please use another name for this column.",
+							"Error: duplicated column name", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 
