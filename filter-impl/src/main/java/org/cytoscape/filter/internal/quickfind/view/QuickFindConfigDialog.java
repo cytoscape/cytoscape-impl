@@ -341,9 +341,9 @@ public class QuickFindConfigDialog extends JDialog {
 			description = "Each node and edge in Cytoscape is assigned a "
 			              + "unique identifier.  This is an alphanumeric value.";
 		} else if (attributeKey.equals(QuickFind.INDEX_ALL_ATTRIBUTES)) {
-			description = "Index all attributes.  Use this option for the "
+			description = "Index all columns.  Use this option for the "
 			              + "widest search scope possible.  Note that indexing "
-			              + "all attributes on very large networks may take a few " + "seconds.";
+			              + "all columns on very large networks may take a few " + "seconds.";
 		} else {
 //			description = attributes.getAttributeDescription(attributeKey);
 			description = null;
