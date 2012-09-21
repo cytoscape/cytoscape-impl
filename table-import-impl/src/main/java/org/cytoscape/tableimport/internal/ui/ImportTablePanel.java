@@ -176,7 +176,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	public static final String SHEET_CHANGED = "sheetChanged";
 	public static final String NETWORK_IMPORT_TEMPLATE_CHANGED = "networkImportTemplateChanged";
 
-	private static final String[] keyTable = { "Alias?", "Column (Attribute Name)", "Data Type" };
+	private static final String[] keyTable = { "Alias?", "Column Name", "Data Type" };
 	private static final String ID = CyNetwork.NAME; 
 
 	// Key column index
@@ -637,7 +637,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 	
 			attribuiteLabel.setFont(new java.awt.Font("SansSerif", 1, 12));
-			attribuiteLabel.setText("Attributes");
+			attribuiteLabel.setText("Data Type");
 
 			nodeRadioButton.setText("Node");
 			nodeRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -810,7 +810,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
 			nodeKeyLabel.setFont(new java.awt.Font("SansSerif", 1, 12));
 			nodeKeyLabel.setForeground(new java.awt.Color(255, 0, 51));
-			nodeKeyLabel.setText("Key Attribute for Network");
+			nodeKeyLabel.setText("Key Column for Network");
 
 			mappingAttributeComboBox.setForeground(new java.awt.Color(255, 0, 51));
 			mappingAttributeComboBox.setEnabled(false);
@@ -1071,9 +1071,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 						org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
 				.add(counterLabel).add(showAllRadioButton));
 
-		attributeNamePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Attribute Names"));
+		attributeNamePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Column Names"));
 
-		transferNameCheckBox.setText("Transfer first line as attribute names");
+		transferNameCheckBox.setText("Transfer first line as column names");
 
 		transferNameCheckBox.setBorder(null);
 		transferNameCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -1370,7 +1370,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			objType = EDGE;
 		} else {
 			//selectedAttributes = Cytoscape.getNetworkAttributes();
-			logger.info("\nNote: ImportTextTableFDialog.attributeRadioButtonActionPerformed():Import network attribute not implemented yet!\n");
+			logger.info("\nNote: ImportTextTableFDialog.attributeRadioButtonActionPerformed():Import network table not implemented yet!\n");
 			objType = NETWORK;
 		}
 
@@ -1512,7 +1512,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				}
 
 				if (importFlag[i] && importFlag[dupIndex]) {
-					final JLabel label = new JLabel("Duplicate Attribute Name Found: " + curName);
+					final JLabel label = new JLabel("Duplicate Column Name Found: " + curName);
 					label.setForeground(Color.RED);
 					JOptionPane.showMessageDialog(this, label);
 
@@ -2744,7 +2744,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				}
 
 				if (importFlag[i] && importFlag[dupIndex]) {
-					final JLabel label = new JLabel("Duplicate Attribute Name Found: " + curName);
+					final JLabel label = new JLabel("Duplicate Column Name Found: " + curName);
 					label.setForeground(Color.RED);
 					JOptionPane.showMessageDialog(this, label);
 
@@ -2826,7 +2826,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				}
 
 				if (importFlag[i] && importFlag[dupIndex]) {
-					final JLabel label = new JLabel("Duplicate Attribute Name Found: " + curName);
+					final JLabel label = new JLabel("Duplicate Column Name Found: " + curName);
 					label.setForeground(Color.RED);
 					JOptionPane.showMessageDialog(this, label);
 
