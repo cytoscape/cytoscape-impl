@@ -92,7 +92,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		
-		tm.setTitle("Loading attribute table data");
+		tm.setTitle("Loading table data");
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
 		
