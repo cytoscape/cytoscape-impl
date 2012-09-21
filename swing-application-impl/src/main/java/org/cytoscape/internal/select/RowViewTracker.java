@@ -61,7 +61,8 @@ public class RowViewTracker implements NetworkViewAddedListener,
 				final CyNetwork net = view.getModel(); 
 				
 				for ( View<CyNode> v : e.getNodeViews()) 
-					rowViewMap.put( net.getRow(v.getModel()), v );
+					if (net.containsNode(v.getModel())) 
+						rowViewMap.put( net.getRow(v.getModel()), v );
 			}
 		});
 	}
@@ -73,7 +74,8 @@ public class RowViewTracker implements NetworkViewAddedListener,
 				final CyNetwork net = view.getModel(); 
 
 				for ( View<CyEdge> v : e.getEdgeViews()) 
-					rowViewMap.put( net.getRow(v.getModel()), v );
+					if (net.containsEdge(v.getModel())) 
+						rowViewMap.put( net.getRow(v.getModel()), v );
 			}
 		});
 	}

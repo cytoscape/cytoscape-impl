@@ -257,7 +257,9 @@ public class GroupUtil {
 					CyEdge newEdge = rootNet.getEdge(suid);
 					if (newEdge != null) {
 						// Don't add the edge if it already exists
-						externalEdges.add(newEdge);
+						if (!isMeta(group, newEdge) || !metaExists(group, newEdge)) {
+							externalEdges.add(newEdge);
+						}
 					}
 				}
 				
@@ -476,4 +478,34 @@ public class GroupUtil {
 			table.createListColumn(column, type, false);
 	}
 
+	private boolean isMeta(CyGroup group, CyEdge edge) {
+		CyRootNetwork rootNetwork = group.getRootNetwork();
+		if (edge.getSource() != group.getGroupNode() &&
+		    edge.getTarget() != group.getGroupNode())
+			return false;
+
+    Boolean meta = rootNetwork.getRow(edge, CyNetwork.HIDDEN_ATTRS).
+                            get(ISMETA_EDGE_ATTR, Boolean.class, Boolean.FALSE);
+
+    return meta.booleanValue();
+	}
+
+	private boolean metaExists(CyGroup group, CyEdge edge) {
+		CyRootNetwork rootNetwork = group.getRootNetwork();
+		CyNode source;
+		CyNode target;
+		if (edge.getSource() == group.getGroupNode()) {
+			source = group.getGroupNode();
+			target = edge.getTarget();
+		} else {
+			source = edge.getSource();
+			target = group.getGroupNode();
+		}
+		List<CyEdge> list = rootNetwork.getConnectingEdgeList(source, target, CyEdge.Type.DIRECTED);
+		for (CyEdge e: list) {
+			if (e != edge && isMeta(group, e))
+				return true;	// Already got a meta-edge for this
+		}
+		return false;
+	}
 }
