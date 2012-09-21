@@ -131,6 +131,7 @@ public class NodeInteractionFilter extends InteractionFilter {
 		}
 				
 		BitSet passFilter_edgeBits = passFilter.getEdgeBits();
+		if (passFilter_edgeBits == null) return false;
 
 		int edgeIndex = -1;
 		for (int i=0; i < adjacentEdges.size(); i++) {
