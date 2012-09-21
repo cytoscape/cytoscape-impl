@@ -12,8 +12,10 @@ import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.slf4j.Logger;
@@ -75,16 +77,19 @@ public class DependencyTable extends JTable {
 			}
 		}
 		
-		final boolean isDepend = (Boolean) model.getValueAt(selected, 0);
-		
 		// Enable/disable dependency
+		final boolean isDepend = (Boolean) model.getValueAt(selected, 0);
 		dep.setDependency(isDepend);
 		
-		final VisualLexicon lexicon = appManager.getCurrentRenderingEngine().getVisualLexicon();
 		final Set<VisualProperty<?>> group = dep.getVisualProperties();
-
-//		for (final VisualProperty<?> vp : group)
-//			lexicon.getVisualLexiconNode(vp).setDependency(isDepend);
+		
+//		final RenderingEngine<CyNetwork> engine = appManager.getCurrentRenderingEngine();
+//		if (engine != null)	{
+//			final VisualLexicon lexicon = engine.getVisualLexicon();
+//			
+//			for (final VisualProperty<?> vp : group)
+//				lexicon.getVisualLexiconNode(vp).setDependency(isDepend);
+//		}
 
 		// Update other GUI component
 		if (isDepend)

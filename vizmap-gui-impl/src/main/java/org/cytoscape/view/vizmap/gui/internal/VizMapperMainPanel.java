@@ -463,7 +463,7 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 
 	@Override
 	public void handleEvent(LexiconStateChangedEvent e) {
-		logger.warn("Main panel got Lexicon update event.");
+		logger.debug("Main panel got Lexicon update event.");
 		vizMapPropertySheetBuilder.setPropertyTable(vmm.getCurrentVisualStyle());
 		// Set the default view to the panel.
 		propertySheetPanel.setSorting(true);
