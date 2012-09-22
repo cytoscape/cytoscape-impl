@@ -12,7 +12,6 @@ public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 	// Name of this custom graphics.
 	private static final String NAME = "Round Rectangle Gradient";
 	private int r =20;
-
 	
 	public GradientRoundRectangleLayer(final Long id) {
 		super(id, NAME);
@@ -40,6 +39,11 @@ public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 		paintFactory = new LinearGradientPaintFactory(colorList, stopList);
 		final PaintCustomGraphic cg = new PaintCustomGraphic(shape, paintFactory);
 		layers.add(cg);
+	}
+
+	@Override
+	public String toSerializableString() {
+		return makeSerializableString(displayName);
 	}
 
 }

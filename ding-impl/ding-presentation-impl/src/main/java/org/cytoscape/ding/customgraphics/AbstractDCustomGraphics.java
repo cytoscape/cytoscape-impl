@@ -98,9 +98,10 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 		return tags;
 	}
 
+	abstract public String toSerializableString();
 
 	// This will be used prop file.
-	public String toSerializableString() {
+	protected String makeSerializableString(String name) {
 		String tagStr = "";
 		// Build tags as a string
 		if (tags.size() != 0) {
@@ -111,10 +112,12 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 			tagStr = temp.substring(0, temp.length() - 1);
 		}
 
-		String name = displayName;
-		if (displayName.contains(",")) {
+		if (name == null) {
+			name = displayName;
+		}
+		if (name.contains(",")) {
 			// Replace delimiter
-			name = displayName.replace(",", "___");
+			name = name.replace(",", "___");
 		}
 
 		return this.getIdentifier() + DELIMITER + name + DELIMITER + tagStr;

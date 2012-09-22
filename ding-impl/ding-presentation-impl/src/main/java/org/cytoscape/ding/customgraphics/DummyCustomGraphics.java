@@ -20,4 +20,9 @@ public final class DummyCustomGraphics extends AbstractDCustomGraphics {
 	public String toString() {
 		return "DummyCustomGraphics ("+id+") "+displayName;
 	}
+
+	@Override
+	public String toSerializableString() {
+		return makeSerializableString(displayName);
+	}
 }

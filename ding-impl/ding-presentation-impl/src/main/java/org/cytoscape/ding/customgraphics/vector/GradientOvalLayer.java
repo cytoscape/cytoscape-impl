@@ -41,4 +41,9 @@ public class GradientOvalLayer extends GradientLayerCustomGraphics {
 		layers.add(cg);
 	}
 
+	@Override
+	public String toSerializableString() {
+		return makeSerializableString(displayName);
+	}
+
 }

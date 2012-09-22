@@ -164,26 +164,10 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 
 	@Override
 	public String toSerializableString() {
-		String tagStr = "";
-		// Build tags as a string
-		if (tags.size() != 0) {
-			final StringBuilder builder = new StringBuilder();
-			for (String tag : (SortedSet<String>)tags)
-				builder.append(tag + LIST_DELIMITER);
-			String temp = builder.toString();
-			tagStr = temp.substring(0, temp.length() - 1);
-		}
-
-		String name = displayName;
 		if (sourceUrl != null)
-			name = sourceUrl.toString();
+			return makeSerializableString(sourceUrl.toString());
 
-		if (name.contains(",")) {
-			// Replace delimiter
-			name = name.replace(",", "___");
-		}
-
-		return this.getIdentifier() + DELIMITER + name + DELIMITER + tagStr;
+		return makeSerializableString(displayName);
 	}
 
 	@Override

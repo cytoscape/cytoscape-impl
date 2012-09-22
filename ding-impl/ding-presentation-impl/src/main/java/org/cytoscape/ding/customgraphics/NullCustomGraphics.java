@@ -51,4 +51,9 @@ public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphicLay
 	public Image getRenderedImage() {
 		return DEF_IMAGE;
 	}
+
+	@Override
+	public String toSerializableString() {
+		return makeSerializableString(displayName);
+	}
 }
