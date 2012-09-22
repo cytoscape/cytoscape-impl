@@ -2,10 +2,12 @@ package org.cytoscape.ding.customgraphics;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.cytoscape.view.model.DiscreteRange;
-
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
+import org.cytoscape.ding.customgraphicsmgr.internal.CGComparator;
 
 public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
@@ -32,7 +34,9 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
 	@Override
 	public Set<CyCustomGraphics> values() {
-		return new HashSet<CyCustomGraphics>(manager.getAllCustomGraphics());
+		Set<CyCustomGraphics> sortedSet = new TreeSet<CyCustomGraphics>(new CGComparator());
+		sortedSet.addAll(manager.getAllCustomGraphics());
+		return sortedSet;
 	}
 
 	@Override

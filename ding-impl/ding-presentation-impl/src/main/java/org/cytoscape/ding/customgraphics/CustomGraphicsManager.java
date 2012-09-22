@@ -21,6 +21,7 @@ public interface CustomGraphicsManager {
 	void addCustomGraphics(CyCustomGraphics cg, URL source);
 	
 	Collection<CyCustomGraphics> getAllCustomGraphics();
+	Collection<CyCustomGraphics> getAllCustomGraphics(boolean sorted);
 	Collection<CyCustomGraphics> getAllPersistantCustomGraphics();
 	
 	CyCustomGraphics getCustomGraphicsByID(Long id);

@@ -11,8 +11,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.DefaultListModel;
-
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
@@ -29,7 +27,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 
 	private static final long serialVersionUID = -8342056297304400824L;
 
-	private DefaultListModel model;
+	private CustomGraphicsListModel model;
 	private final CustomGraphicsManager pool;
 
 	// For drag and drop
@@ -63,7 +61,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 	private void initComponents() {
 		this.setMaximumSize(new Dimension(300, 10000));
 		this.setBackground(new java.awt.Color(255, 255, 255));
-		model = new DefaultListModel();
+		model = new CustomGraphicsListModel();
 		this.setModel(model);
 		this.setCellRenderer(new CustomGraphicsCellRenderer());
 		this.setDropTarget(new URLDropTarget());

@@ -8,7 +8,9 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
@@ -37,6 +39,9 @@ public abstract class GradientLayerCustomGraphics extends AbstractDCustomGraphic
 	
 	protected final CustomGraphicsProperty<Color> c1;
 	protected final CustomGraphicsProperty<Color> c2;
+
+	protected List<Color> colorList;
+	protected List<Float> stopList;
 	
 	// Pre-Rendered image for icon.
 	protected BufferedImage rendered;
@@ -56,15 +61,19 @@ public abstract class GradientLayerCustomGraphics extends AbstractDCustomGraphic
 		width = DEF_W;
 		height = DEF_H;
 		props = new HashMap<String, CustomGraphicsProperty<?>>();
+		colorList = new ArrayList<Color>();
+		stopList = new ArrayList<Float>();
 
 		c1 = new CustomGraphicsPropertyImpl<Color>(transparentWhite);
+		colorList.add(c1.getValue()); stopList.add(0.0f);
 		c2 = new CustomGraphicsPropertyImpl<Color>(transparentBlack);
+		colorList.add(c2.getValue()); stopList.add(1.0f);
 		
 		this.props.put(COLOR1, c1);
 		this.props.put(COLOR2, c2);
 		this.tags.add("vector image, gradient");
 		this.fitRatio = FIT;
-		
+
 		// Render it for static icons.
 		getRenderedImage();
 	}

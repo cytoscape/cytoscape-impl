@@ -70,6 +70,11 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 		if (img == null)
 			throw new IllegalArgumentException("Image cannot be null.");
 
+		if (displayName.startsWith("bundle:")) {
+			int index = displayName.lastIndexOf("/");
+			displayName = displayName.substring(index+1);
+		}
+
 		// System.out.println("URLImageCustomGraphics: "+displayName+"("+id+")");
 
 		// System.out.println("URLImageCustomGraphics: name = "+name);

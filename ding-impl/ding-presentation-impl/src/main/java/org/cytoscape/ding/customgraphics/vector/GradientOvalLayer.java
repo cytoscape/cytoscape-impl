@@ -4,7 +4,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 
-import org.cytoscape.ding.customgraphics.paint.GradientPaintFactory;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.ding.customgraphics.paint.RadialGradientPaintFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public class GradientOvalLayer extends GradientLayerCustomGraphics {
@@ -32,7 +35,7 @@ public class GradientOvalLayer extends GradientLayerCustomGraphics {
 		// First, remove all layers.
 		layers.clear();
 		shape = new Ellipse2D.Double(-width / 2, -height / 2, width, height);
-		paintFactory = new GradientPaintFactory(c1.getValue(), c2.getValue());
+		paintFactory = new RadialGradientPaintFactory(colorList, stopList);
 		final CustomGraphicLayer cg = new PaintCustomGraphic(shape, paintFactory);
 		
 		layers.add(cg);

@@ -1,30 +1,34 @@
 package org.cytoscape.ding.customgraphics.paint;
 
 import java.awt.Color;
-import java.awt.GradientPaint;
+import java.awt.LinearGradientPaint;
 import java.awt.Paint;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+
+import java.util.List;
 
 import org.cytoscape.graph.render.stateful.PaintFactory;
 
-public class GradientPaintFactory implements PaintFactory {
+public abstract class GradientPaintFactory implements PaintFactory {
+	protected Color[] colorArray;
+	protected float[] stopArray;
 	
-	private Color c1;
-	private Color c2;
-	
-	private Paint paint;
+	protected Paint paint;
 
-	public GradientPaintFactory(Color c1, Color c2) {
-		this.c1 = c1;
-		this.c2 = c2;
+	public GradientPaintFactory(List<Color>colorList, List<Float>stopList) {
+		colorArray = new Color[colorList.size()];
+		stopArray = new float[colorList.size()];
+		for (int index = 0; index < colorArray.length; index++) {
+			colorArray[index] = colorList.get(index);
+			stopArray[index] = stopList.get(index).floatValue();
+		}
 	}
-	
 
-	public Paint getPaint(Rectangle2D bound) {
-		paint =  new GradientPaint((float)bound.getWidth()/2, 0, c2,
-				(float)bound.getWidth()/2, (float)bound.getHeight()/2, c1);
-		
-		return paint;
+	protected Point2D scale(Point2D point, Rectangle2D bound) {
+		double xvalue = point.getX() * bound.getWidth() + bound.getX();
+		double yvalue = point.getY() * bound.getHeight() + bound.getY();
+		return new Point2D.Float((float)xvalue, (float)yvalue);
 	}
 
 }

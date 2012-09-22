@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 import javax.imageio.ImageIO;
-import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -212,7 +211,7 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 					e.printStackTrace();
 					continue;
 				}
-				((DefaultListModel) browser.getModel()).addElement(cg);
+				((CustomGraphicsListModel) browser.getModel()).addElement(cg);
 			}
 		}
 	}

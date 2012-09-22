@@ -2,6 +2,7 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -208,14 +209,25 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 			return null;
 	}
 
+	@Override
+	public Collection<CyCustomGraphics> getAllCustomGraphics() {
+		return getAllCustomGraphics(false);
+	}
+
 	/**
 	 * Get a collection of all Custom Graphics in current session.
 	 * 
 	 * @return
 	 */
 	@Override
-	public Collection<CyCustomGraphics> getAllCustomGraphics() {
-		return graphicsMap.values();
+	public Collection<CyCustomGraphics> getAllCustomGraphics(boolean sorted) {
+		if (!sorted)
+			return graphicsMap.values();
+
+		List<CyCustomGraphics> values = 
+			new ArrayList<CyCustomGraphics>(graphicsMap.values());
+		Collections.sort(values, new CGComparator());
+		return values;
 	}
 
 	/**
