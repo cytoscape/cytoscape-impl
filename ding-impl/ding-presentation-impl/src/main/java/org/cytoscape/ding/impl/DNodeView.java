@@ -61,8 +61,8 @@ import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
-import org.cytoscape.ding.customgraphics.vector.VectorCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsPositionCalculator;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
@@ -1140,7 +1140,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (customGraphics == null || customGraphics instanceof NullCustomGraphics)
 			return;
 
-		final List<CustomGraphicLayer> layers = customGraphics.getLayers();
+		final List<CustomGraphicLayer> layers = customGraphics.getLayers(graphView.getModel(), model);
 
 		// No need to update
 		if (layers == null || layers.size() == 0)
@@ -1239,7 +1239,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final float fit = graphics.getFitRatio();
 
 		// Case 1: if custom graphic is a vector fit width and length
-		if (graphics instanceof VectorCustomGraphics) {
+		if (graphics instanceof PaintedShape) {
 			scale = AffineTransform.getScaleInstance(fit * width / cgW, fit * height / cgH);
 		} else {
 			// Case 2: node height value is larger than width

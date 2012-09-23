@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyIdentifiable;
+
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
@@ -81,7 +84,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 	}
 
 	
-	public List<T> getLayers() {
+	public List<T> getLayers(CyNetwork network, CyIdentifiable graphObject) {
 		return layers;
 	}
 
