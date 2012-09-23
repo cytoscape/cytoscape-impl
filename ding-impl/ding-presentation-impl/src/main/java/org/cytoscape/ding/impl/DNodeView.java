@@ -1224,6 +1224,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		// final double nodeH = this.getHeight();
 
 		final Rectangle2D originalBounds = cg.getBounds2D();
+		// If this is just a paint, getBounds2D will return null and
+		// we can use our own width and height
+		if (originalBounds == null) return cg;
+
 		final double cgW = originalBounds.getWidth();
 		final double cgH = originalBounds.getHeight();
 

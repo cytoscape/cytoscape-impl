@@ -156,6 +156,10 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		if (graphics == null)
 			throw new IllegalArgumentException("Custom Graphics and its ID should not be null.");
 
+		if (graphics.getIdentifier() == null) {
+			graphics.setIdentifier(getNextAvailableID());
+		}
+
 		// Souce URL is an optional field.
 		if (source != null)
 			sourceMap.put(source, graphics.getIdentifier());

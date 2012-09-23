@@ -570,7 +570,7 @@ public final class GraphGraphics {
 	 *                nodeShape is neither one of the SHAPE_* constants nor a
 	 *                previously defined custom node shape.
 	 */
-	public final void drawNodeFull(final byte nodeShape, final float xMin,
+	public final Shape drawNodeFull(final byte nodeShape, final float xMin,
 			final float yMin, final float xMax, final float yMax,
 			final Paint fillPaint, final float borderWidth, final Stroke borderStroke,
 			final Paint borderPaint) {
@@ -609,6 +609,7 @@ public final class GraphGraphics {
 
 		m_g2d.setPaint(fillPaint);
 		m_g2d.fill(sx);
+		return sx;
 	}
 
 	/**
@@ -2027,6 +2028,8 @@ public final class GraphGraphics {
 	 * This method will not work unless clear() has been called at least once
 	 * previously.
 	 * 
+	 * @param nodeShape
+	 *            the node shape
 	 * @param cg
 	 *            the CustomGraphicLayer
 	 * @param xOffset
@@ -2036,15 +2039,15 @@ public final class GraphGraphics {
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
 	 */
-	public final void drawCustomGraphicFull(final CustomGraphicLayer cg,
+	public final void drawCustomGraphicFull(final Shape nodeShape, final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
 		}
 		
-		m_g2d.translate(xOffset, yOffset);
 		if (cg instanceof PaintedShape) {
+			m_g2d.translate(xOffset, yOffset);
 			PaintedShape ps = (PaintedShape)cg;
 			Shape shape = ps.getShape();
 
@@ -2058,9 +2061,14 @@ public final class GraphGraphics {
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
 		} else if(cg instanceof ImageCustomGraphicLayer) {
+			m_g2d.translate(xOffset, yOffset);
 			Rectangle bounds = cg.getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
 			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
+		} else {
+			Rectangle2D bounds = nodeShape.getBounds2D();
+			m_g2d.setPaint(cg.getPaint(bounds));
+			m_g2d.fill(nodeShape);
 		}
 
 		m_g2d.setTransform(m_currNativeXform);

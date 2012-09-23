@@ -56,9 +56,12 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 		//this.position = new ObjectPositionImpl();
 	}
 	
-	
 	public Long getIdentifier() {
 		return id;
+	}
+	
+	public void setIdentifier(Long id) {
+		// For our uses, the id is always assigned in our constructor
 	}
 	
 	public void setWidth(final int width) {

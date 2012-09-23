@@ -30,6 +30,7 @@ package org.cytoscape.graph.render.stateful;
 
 import java.awt.Font;
 import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
 import java.awt.geom.GeneralPath;
@@ -1042,6 +1043,9 @@ public final class GraphRenderer {
 	private static final void renderNodeHigh(final CyNetwork graph, final GraphGraphics grafx, 
 			final long node, final CyNode cyNode, final float[] floatBuff1, final double[] doubleBuff1, 
 			final double[] doubleBuff2, final NodeDetails nodeDetails, final int lodBits) {
+
+		Shape nodeShape = null;
+
 		if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
 						
 			// Compute visual attributes that do not depend on LOD.
@@ -1066,7 +1070,8 @@ public final class GraphRenderer {
 			}
 
 			// Draw the node.
-			grafx.drawNodeFull(shape, floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], fillPaint, borderWidth, borserStroke, borderPaint);
+			nodeShape = grafx.drawNodeFull(shape, floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], 
+			                               fillPaint, borderWidth, borserStroke, borderPaint);
 		}
 
 		// Take care of custom graphic rendering.
@@ -1101,7 +1106,7 @@ public final class GraphRenderer {
 					doubleBuff1[2] = floatBuff1[2];
 					doubleBuff1[3] = floatBuff1[3];
 					lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
-					grafx.drawCustomGraphicFull(cg, (float) (doubleBuff2[0] + offsetVectorX), 
+					grafx.drawCustomGraphicFull(nodeShape, cg, (float) (doubleBuff2[0] + offsetVectorX), 
 					                            (float) (doubleBuff2[1] + offsetVectorY));
 					graphicInx++;
 				}
