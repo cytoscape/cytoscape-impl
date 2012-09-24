@@ -122,7 +122,18 @@ public class Cy283GroupsSessionLoadingTest extends BasicIntegrationTest {
 		assertEquals(SavePolicy.SESSION_FILE, g2.getGroupNetwork().getSavePolicy());
 		assertEquals(SavePolicy.SESSION_FILE, g3.getGroupNetwork().getSavePolicy());
 		
-		// TODO check group network attributes
-		// TODO check meta-edge attributes
+		// Check group network attributes
+		assertEquals(new Integer(6), root.getRow(gn1).get("score", Integer.class));
+		assertEquals(new Integer(2), net.getRow(gn2).get("score", Integer.class));
+		assertEquals(new Integer(5), root.getRow(gn3).get("score", Integer.class));
+		
+		// Check meta-edge attributes
+		CyEdge me1 = getEdgeByName(root, "Metanode 1 (meta-DirectedEdge) node2");
+		assertEquals(new Integer(9), root.getRow(me1).get("weight", Integer.class));
+		CyEdge me2 = getEdgeByName(root, "Metanode 2 (meta-meta-DirectedEdge) node2");
+		assertEquals(new Integer(8), net.getRow(me2).get("weight", Integer.class));
+		
+		// Visual Properties (group nodes and meta-edges only)
+		// TODO
 	}
 }
