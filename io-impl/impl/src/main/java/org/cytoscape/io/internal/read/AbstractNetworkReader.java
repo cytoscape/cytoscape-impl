@@ -150,6 +150,10 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	protected void initNodeMap(CyRootNetwork rootNetwork, String keyColName){	
 		// Note: The keyColName should start with "shared"
 		
+		if (rootNetwork == null){
+			return;
+		}
+		
 		Iterator<CyNode> it = rootNetwork.getNodeList().iterator();
 		
 		while (it.hasNext()){
