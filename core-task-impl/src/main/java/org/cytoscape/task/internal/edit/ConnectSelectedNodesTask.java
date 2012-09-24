@@ -44,7 +44,7 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
-		taskMonitor.setTitle("Connectiong Selected Nodes");
+		taskMonitor.setTitle("Connecting Selected Nodes");
 		taskMonitor.setStatusMessage("Connecting nodes.  Please wait...");
 		
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
