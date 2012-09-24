@@ -372,7 +372,7 @@ public class Tokeniser {
 				builder.append((char)ch);
 		}
 		if (escaped) {
-			errorMsg = "invalid attribute name at end of formula.";
+			errorMsg = "invalid column name at end of formula.";
 			return Token.ERROR;
 		}
 		ungetChar(ch);
