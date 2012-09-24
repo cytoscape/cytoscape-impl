@@ -105,6 +105,12 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
+		
+		// Now user has the option to import network into different collection
+		this.initNodeMap(name2RootMap.get(rootNetworkList.getSelectedValue()), this.targetColumnList.getSelectedValue());		
+		this.readDataMgr.setNodeMap(this.nMap);
+		this.readDataMgr.setRootNetwork(name2RootMap.get(rootNetworkList.getSelectedValue()));
+		
 		init(tm);
 		
 		try {

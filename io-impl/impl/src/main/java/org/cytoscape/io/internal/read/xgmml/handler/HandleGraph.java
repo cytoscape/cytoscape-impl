@@ -77,7 +77,10 @@ public class HandleGraph extends AbstractHandler {
 			if (parent == null) {
 				// This is a regular top-level network...
 				final CyRootNetwork rootNet = manager.createRootNetwork();
-				currentNet = rootNet.getBaseNetwork(); // The root-network is not important here!
+				//currentNet = rootNet.getBaseNetwork(); // The root-network is not important here!, this is out-dated
+				
+				// create a sub network, because we should add all nodes to subnetwork
+				currentNet = rootNet.addSubNetwork();
 			} else {
 				// This is a 2.x "child-network"...
 				currentNet = parent.addSubNetwork();

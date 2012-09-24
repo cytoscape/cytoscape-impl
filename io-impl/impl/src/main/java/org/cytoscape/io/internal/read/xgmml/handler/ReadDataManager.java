@@ -416,6 +416,11 @@ public class ReadDataManager {
 	}
 
 	protected CyRootNetwork createRootNetwork() {
+		
+		if (this.rootNetwork != null){
+			return this.rootNetwork;
+		}
+		
 		final CyNetwork baseNet = networkFactory.createNetwork();
 		final CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(baseNet);
 		
@@ -440,8 +445,20 @@ public class ReadDataManager {
 	        	((CySubNetwork) net).addNode(node);
         }
         
-        if (node == null) // OK, create it
-	        node = net.addNode();
+        if (node == null) 
+        {    
+        	node = this.nMap.get(label);
+        	if ( node == null){
+        		// OK, create it
+            	node = net.addNode();        		
+        	}
+        }
+        
+        if (net instanceof CySubNetwork && getParentNetwork() != null) {
+        	// cache the parent node, not the node from subnetwork
+        	CySubNetwork subnet = (CySubNetwork) net;
+        	node = subnet.getRootNetwork().getNode(node.getSUID());
+        }
         
         // Add to internal cache:
         cache.cache(oldId, node);
@@ -705,4 +722,18 @@ public class ReadDataManager {
 
 		return b;
 	}
+	
+	// The following is added to support the user option to import network into different collection
+	private  Map<Object, CyNode> nMap;
+	private CyRootNetwork rootNetwork = null;
+
+	public void setNodeMap(Map<Object, CyNode> nMap){
+		this.nMap = nMap;
+	}
+		
+	public void setRootNetwork(CyRootNetwork rootNet){
+		this.rootNetwork = rootNet;
+	}
+	
+	
 }
