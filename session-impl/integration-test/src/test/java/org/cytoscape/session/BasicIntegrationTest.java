@@ -42,6 +42,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -295,10 +296,10 @@ public abstract class BasicIntegrationTest {
 	}
 	
 	protected CyNode getNodeByName(CyNetwork net, String name) {
-		String colName = net instanceof CyRootNetwork ? SHARED_NAME : NAME;
-		
 		for (CyNode n : net.getNodeList()) {
-			if (name.equals(net.getRow(n).get(colName, String.class)))
+			CyRow row = net.getRow(n);
+			
+			if (name.equals(row.get(NAME, String.class)) || name.equals(row.get(SHARED_NAME, String.class)))
 				return n;
 		}
 		
@@ -306,10 +307,10 @@ public abstract class BasicIntegrationTest {
 	}
 	
 	protected CyEdge getEdgeByName(CyNetwork net, String name) {
-		String colName = net instanceof CyRootNetwork ? SHARED_NAME : NAME;
-		
 		for (CyEdge e : net.getEdgeList()) {
-			if (name.equals(net.getRow(e).get(colName, String.class)))
+			CyRow row = net.getRow(e);
+			
+			if (name.equals(row.get(NAME, String.class)) || name.equals(row.get(SHARED_NAME, String.class)))
 				return e;
 		}
 		
