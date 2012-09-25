@@ -114,6 +114,25 @@ class GenerateNetworkViewsTask extends AbstractTask {
 				}
 			}
 		}
+		
+		
+		// Make sure rootNetwork has a name
+		for (CyNetwork network : networks) {
+
+			if (network instanceof CySubNetwork){
+				CySubNetwork subNet = (CySubNetwork) network;
+				CyRootNetwork rootNet = subNet.getRootNetwork();
+
+				String networkName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
+				if(networkName == null || networkName.trim().length() == 0) {
+					networkName = name;
+					if(networkName == null)
+						networkName = "? (Name is missing)";
+					
+					rootNet.getRow(rootNet).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
+				}
+			}			
+		}
 	}
 
 	/**
