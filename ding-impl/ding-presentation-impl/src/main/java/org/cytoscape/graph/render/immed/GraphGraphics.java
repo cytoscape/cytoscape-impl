@@ -2015,9 +2015,8 @@ public final class GraphGraphics {
 		m_g2d.translate(xOffset, yOffset);
 		if(paint instanceof TexturePaint) {
 			final BufferedImage bImg = ((TexturePaint) paint).getImage();
-			m_g2d.drawImage(bImg,
-			                shape.getBounds().x, shape.getBounds().y, 
-			                shape.getBounds().width, shape.getBounds().height, null);
+			Rectangle bounds = shape.getBounds2D().getBounds();
+			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
 		}
 		m_g2d.setTransform(m_currNativeXform);
 	}
@@ -2062,7 +2061,7 @@ public final class GraphGraphics {
 			m_g2d.fill(shape);
 		} else if(cg instanceof ImageCustomGraphicLayer) {
 			m_g2d.translate(xOffset, yOffset);
-			Rectangle bounds = cg.getBounds();
+			Rectangle bounds = cg.getBounds2D().getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
 			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
 		} else {
@@ -2101,8 +2100,8 @@ public final class GraphGraphics {
 		m_g2d.translate(xOffset, yOffset);
 		if(paint instanceof TexturePaint) {
 			final BufferedImage bImg = ((TexturePaint) paint).getImage();
-			m_g2d.drawImage(bImg,
-					shape.getBounds().x, shape.getBounds().y, shape.getBounds().width, shape.getBounds().height, null);
+			Rectangle bounds = shape.getBounds();
+			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
 		} else {
 			m_g2d.setPaint(paint);
 			m_g2d.fill(shape);

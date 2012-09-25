@@ -20,7 +20,6 @@ public class ImageCustomGraphicImpl implements ImageCustomGraphicLayer {
 		this.pf = factory;
 	}
 
-	public Rectangle getBounds() { return bounds.getBounds(); }
 	public Rectangle2D getBounds2D() { return bounds; }
 
 	// TODO: at some point, we should just bring all of the TexturePaintFactory

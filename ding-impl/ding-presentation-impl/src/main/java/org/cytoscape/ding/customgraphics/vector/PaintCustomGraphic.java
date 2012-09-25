@@ -20,8 +20,6 @@ public class PaintCustomGraphic implements PaintedShape {
 		this.pf = factory;
 	}
 
-	public Rectangle getBounds() { return shape.getBounds(); } 
-
 	public Rectangle2D getBounds2D() { return shape.getBounds2D(); } 
 
 	public Paint getPaint(Rectangle2D bounds) {

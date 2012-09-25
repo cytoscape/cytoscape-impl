@@ -51,8 +51,8 @@ public class CustomGraphicsPositionCalculator {
 		
 		final double nodeW = nv.getWidth();
 		final double nodeH = nv.getHeight();
-		final double cgW = cg.getBounds().getWidth();
-		final double cgH = cg.getBounds().getHeight();
+		final double cgW = cg.getBounds2D().getWidth();
+		final double cgH = cg.getBounds2D().getHeight();
 		
 		final Float[] disp1 = DISPLACEMENT_MAP.get(anc);
 		final Float[] disp2 = DISPLACEMENT_MAP.get(ancN);
