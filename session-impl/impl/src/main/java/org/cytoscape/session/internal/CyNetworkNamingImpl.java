@@ -42,7 +42,6 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyNetworkNamingImpl.class);
 	
-	private static final String SUBNETWORK_SUFFIX = "Subnetwork";
 	private static final String DEF_NETWORK_NAME_PREFIX = "Network";
 	
 	private final CyNetworkManager networkManager;
@@ -56,7 +55,7 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 	public String getSuggestedSubnetworkTitle(final CyNetwork parentNetwork) {
 		for (int i = 0; true; i++) {
 			final String parentName = parentNetwork.getRow(parentNetwork).get(CyNetwork.NAME, String.class);
-			final String nameCandidate = parentName + " <" + SUBNETWORK_SUFFIX + " " + (i+1) + ">";
+			final String nameCandidate = parentName + "(" + (i+1) + ")";
 
 			if (!isNetworkTitleTaken(nameCandidate))
 				return nameCandidate;
