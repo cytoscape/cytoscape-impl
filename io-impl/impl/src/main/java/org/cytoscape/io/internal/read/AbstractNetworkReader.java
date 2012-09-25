@@ -48,7 +48,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	//******** tunables ********************
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection List" ,groups=" ")
+	@Tunable(description = "Network Collection" ,groups=" ")
 	public ListSingleSelection<String> getRootNetworkList(){
 		return rootNetworkList;
 	}

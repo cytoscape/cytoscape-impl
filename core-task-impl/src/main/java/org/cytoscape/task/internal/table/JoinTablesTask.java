@@ -77,7 +77,7 @@ public class JoinTablesTask extends AbstractTask {
 
 	public ListSingleSelection<String> rootNetworkList;
 
-	@Tunable(description = "Network Collection List", groups = "Select a Network Collection", dependsOn = "SelectedNetworksOnly=false", params = "displayState=uncollapsed")
+	@Tunable(description = "Network Collection", groups = "Select a Network Collection", dependsOn = "SelectedNetworksOnly=false", params = "displayState=uncollapsed")
 	public ListSingleSelection<String> getRootNetworkList() {
 		return rootNetworkList;
 	}
