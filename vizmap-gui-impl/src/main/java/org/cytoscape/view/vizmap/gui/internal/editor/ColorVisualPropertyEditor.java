@@ -41,6 +41,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyColorPropertyEditor;
 
@@ -53,10 +54,11 @@ public class ColorVisualPropertyEditor extends BasicVisualPropertyEditor<Paint> 
 
 	/**
 	 * Constructor. Should instantiate one editor per VisualProperty.
+	 * @param cellRendererFactory 
 	 */
 	public ColorVisualPropertyEditor(final Class<Paint> type, final CyNetworkTableManager manager,
-			final CyApplicationManager appManager, final EditorManager editorManager, final VisualMappingManager vmm, final CyColorPropertyEditor colorPropEditor) {
-		super(type, colorPropEditor, ContinuousEditorType.COLOR);
+			final CyApplicationManager appManager, final EditorManager editorManager, final VisualMappingManager vmm, final CyColorPropertyEditor colorPropEditor, ContinuousMappingCellRendererFactory cellRendererFactory) {
+		super(type, colorPropEditor, ContinuousEditorType.COLOR, cellRendererFactory);
 
 		this.discreteTableCellRenderer = REG.getRenderer(Color.class);
 	}

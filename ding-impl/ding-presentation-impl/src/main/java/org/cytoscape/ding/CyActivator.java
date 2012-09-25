@@ -88,6 +88,7 @@ import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
@@ -159,9 +160,11 @@ public class CyActivator extends AbstractCyActivator {
 				applicationManagerServiceRef);
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(vmmServiceRef, cyEventHelperServiceRef);
 
+		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
+
 		// Object Position Editor
 		ObjectPositionValueEditor objectPositionValueEditor = new ObjectPositionValueEditor();
-		ObjectPositionEditor objectPositionEditor = new ObjectPositionEditor(objectPositionValueEditor);
+		ObjectPositionEditor objectPositionEditor = new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory);
 
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,
 				cyRootNetworkFactoryServiceRef, undoSupportServiceRef, spacialIndex2DFactoryServiceRef, dVisualLexicon,
@@ -171,7 +174,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Edge Bend editor
 		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(cyNetworkFactory, dingNetworkViewFactory,
 				dingRenderingEngineFactory);
-		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor);
+		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory);
 
 		
 		Properties dingRenderingEngineFactoryProps = new Properties();

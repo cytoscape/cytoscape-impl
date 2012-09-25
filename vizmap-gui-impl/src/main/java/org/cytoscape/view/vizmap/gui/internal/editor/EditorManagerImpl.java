@@ -64,6 +64,7 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
@@ -107,17 +108,21 @@ public class EditorManagerImpl implements EditorManager {
 	private final VisualMappingManager vmm;
 	private final VisualMappingFunctionFactory continuousMappingFactory;
 
+	private ContinuousMappingCellRendererFactory cellRendererFactory;
+
 	/**
 	 * Creates a new EditorFactory object.
+	 * @param cellRendererFactory 
 	 */
 	public EditorManagerImpl(final CyApplicationManager appManager, final AttributeSetManager attrManager,
 			final VisualMappingManager vmm, final CyNetworkTableManager tableManager,
-			final CyNetworkManager networkManager, VisualMappingFunctionFactory continuousMappingFactory) {
+			final CyNetworkManager networkManager, VisualMappingFunctionFactory continuousMappingFactory, ContinuousMappingCellRendererFactory cellRendererFactory) {
 
 		this.appManager = appManager;
 		this.tableManager = tableManager;
 		this.vmm = vmm;
 		this.continuousMappingFactory = continuousMappingFactory;
+		this.cellRendererFactory = cellRendererFactory; 
 
 		editors = new HashMap<Class<?>, VisualPropertyEditor<?>>();
 
@@ -308,7 +313,7 @@ public class EditorManagerImpl implements EditorManager {
 						(DiscreteValueEditor) this.getValueEditor(range.getType()));
 				
 				final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
-						null, discretePropEditor);
+						null, discretePropEditor, cellRendererFactory);
 				this.addVisualPropertyEditor(vpEditor, null);
 			}
 		}

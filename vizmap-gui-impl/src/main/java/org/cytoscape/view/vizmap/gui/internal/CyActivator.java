@@ -27,6 +27,7 @@ import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedCellAction;
@@ -98,7 +99,8 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory continousMappingFactory = getService(bc, VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
 		
 		AttributeSetManager attributeSetManager = new AttributeSetManager(cyNetworkTableManagerServiceRef);
-		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef, continousMappingFactory);
+		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc,ContinuousMappingCellRendererFactory.class);
+		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef, continousMappingFactory, continuousMappingCellRendererFactory);
 		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl(editorManager);
 		PropertySheetPanel propertySheetPanel = new PropertySheetPanel();
 		
@@ -114,16 +116,16 @@ public class CyActivator extends AbstractCyActivator {
 		StringValueEditor stringValueEditor = new StringValueEditor();
 		BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
 		
-		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef, cyColorPropertyEditor);
-		NumberVisualPropertyEditor doublePropertyEditor = new NumberVisualPropertyEditor(Double.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
-		NumberVisualPropertyEditor integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
-		NumberVisualPropertyEditor floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef);
+		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef, cyColorPropertyEditor, continuousMappingCellRendererFactory);
+		NumberVisualPropertyEditor doublePropertyEditor = new NumberVisualPropertyEditor(Double.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef, continuousMappingCellRendererFactory);
+		NumberVisualPropertyEditor integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef, continuousMappingCellRendererFactory);
+		NumberVisualPropertyEditor floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,vmmServiceRef, continuousMappingCellRendererFactory);
 		
-		FontVisualPropertyEditor fontVisualPropertyEditor = new FontVisualPropertyEditor(Font.class, fontPropertyEditor);
-		StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor();
+		FontVisualPropertyEditor fontVisualPropertyEditor = new FontVisualPropertyEditor(Font.class, fontPropertyEditor, continuousMappingCellRendererFactory);
+		StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor(continuousMappingCellRendererFactory);
 		final CyComboBoxPropertyEditor booleanEditor = new CyComboBoxPropertyEditor();
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
-		BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor);
+		BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, continuousMappingCellRendererFactory);
 		
 		ColorManager colorMgr = new ColorManager();
 		IconManager iconManager = new IconManager();

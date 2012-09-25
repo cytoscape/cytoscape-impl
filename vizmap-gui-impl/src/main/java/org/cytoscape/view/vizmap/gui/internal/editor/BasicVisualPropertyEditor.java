@@ -4,6 +4,7 @@ import java.beans.PropertyEditor;
 
 import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 
 import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 
@@ -20,7 +21,7 @@ public abstract class BasicVisualPropertyEditor<T> extends AbstractVisualPropert
 		REG.registerDefaults();
 	}
 
-	public BasicVisualPropertyEditor(Class<T> type, PropertyEditor propertyEditor, ContinuousEditorType editorType) {
-		super(type, propertyEditor, editorType);
+	public BasicVisualPropertyEditor(Class<T> type, PropertyEditor propertyEditor, ContinuousEditorType editorType, ContinuousMappingCellRendererFactory cellRendererFactory) {
+		super(type, propertyEditor, editorType, cellRendererFactory);
 	}
 }
