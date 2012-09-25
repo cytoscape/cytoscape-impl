@@ -1239,7 +1239,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final float fit = graphics.getFitRatio();
 
 		// Case 1: if custom graphic is a vector fit width and length
-		if (graphics instanceof PaintedShape) {
+		if (cg instanceof PaintedShape) {
 			scale = AffineTransform.getScaleInstance(fit * width / cgW, fit * height / cgH);
 		} else {
 			// Case 2: node height value is larger than width
