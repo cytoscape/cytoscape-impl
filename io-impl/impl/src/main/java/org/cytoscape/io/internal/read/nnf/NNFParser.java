@@ -13,8 +13,9 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import java.util.Collection;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import java.util.Iterator;
 
 /**
@@ -32,33 +33,31 @@ public class NNFParser {
 	private CyNetwork overviewwork;
 	// Hash map from title to actual network
 	private Map<String, CyNetwork> networkMap;
-
-	private final CyNetworkFactory cyNetworkFactory;
-
-	private final CyNetworkManager cyNetworkManagerServiceRef;
-	private final CyRootNetworkManager cyRootNetworkFactory;
-
-	public NNFParser(CyNetworkManager cyNetworkManagerServiceRef, CyNetworkFactory cyNetworkFactory,  CyRootNetworkManager cyRootNetworkFactory) {
-		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
-		this.cyNetworkFactory = cyNetworkFactory;
-		this.cyRootNetworkFactory = cyRootNetworkFactory;
+	private final CyRootNetwork rootNetwork;
+	private final  Map<Object, CyNode> nMap;
+	
+	public NNFParser(CyRootNetwork rootNetwork,  Map<Object, CyNode> nMap) {
+		this.rootNetwork = rootNetwork;
+		this.nMap = nMap;
 		
 		networkMap = new HashMap<String, CyNetwork>();
 		networks = new ArrayList<CyNetwork>();	
-		this.overviewwork = this.cyNetworkFactory.createNetwork();
+		this.overviewwork = this.rootNetwork.addSubNetwork(); //this.cyNetworkFactory.createNetwork();
 	}
 
 
 	/** Returns the first network with title "networkTitle" or null, if there is no network w/ this title.
 	 */
 	private CyNetwork getNetworkByTitle(final String networkTitle) {
-		Set<CyNetwork> networks = this.cyNetworkManagerServiceRef.getNetworkSet();
-		for (final CyNetwork network : networks) {
-			String title = network.getRow(network).get(CyNetwork.NAME, String.class);
-			if (title.equals(networkTitle))
-				return network;
+		Iterator<CySubNetwork> it = this.rootNetwork.getSubNetworkList().iterator();
+		
+		while (it.hasNext()){
+			CySubNetwork subnet = it.next();
+			String title = subnet.getRow(subnet).get(CyNetwork.NAME, String.class);
+			if (title != null && title.equals(networkTitle))
+				return subnet;
 		}
-		return null;
+		return null;		
 	}
 	
 
@@ -83,7 +82,7 @@ public class NNFParser {
 			network = getNetworkByTitle(parts[0]);
 			if (network == null) {
 				// Create network without view.  View will be created later.
-				network = this.cyRootNetworkFactory.getRootNetwork(this.overviewwork).addSubNetwork();
+				network = this.rootNetwork.addSubNetwork(); 
 				network.getRow(network).set(CyNetwork.NAME, parts[0]);
 			}
 
@@ -104,7 +103,18 @@ public class NNFParser {
 		}
 
 		if (length == 2) {
-			final CyNode node = network.addNode();
+			
+			CyNode node;
+			if (this.nMap.get(parts[1]) == null){
+				node = network.addNode();
+				this.nMap.put(parts[1], this.rootNetwork.getNode(node.getSUID()));
+			}
+			else {
+				node = this.nMap.get(parts[1]);
+				CySubNetwork subnet = (CySubNetwork) network;
+				subnet.addNode(node);
+			}
+			
 			network.getRow(node).set(CyNetwork.NAME, parts[1]);
 						
 			final CyNetwork nestedNetwork = networkMap.get(parts[1]);
@@ -125,7 +135,18 @@ public class NNFParser {
 			}
 			else {
 				// source node does not existed yet, create one
-				source = network.addNode(); //Cytoscape.getCyNode(parts[1], true);
+				if (this.nMap.get(parts[1]) == null){
+					source = network.addNode(); //Cytoscape.getCyNode(parts[1], true);
+					CyNode newNode = this.rootNetwork.getNode(source.getSUID());
+					this.nMap.put(parts[1], newNode);
+				}
+				else {
+					CyNode newNode = this.nMap.get(parts[1]);
+					CySubNetwork subNet = (CySubNetwork) network;
+					subNet.addNode(newNode);
+					source = network.getNode(newNode.getSUID());
+				}
+				
 				network.getRow(source).set(CyNetwork.NAME, parts[1]);
 			}
 			
@@ -149,7 +170,20 @@ public class NNFParser {
 			}
 			else {
 				// source node does not existed yet, create one
-				target = network.addNode();
+				
+				if (this.nMap.get(parts[3]) == null){
+					target = network.addNode(); 
+					CyNode newNode = this.rootNetwork.getNode(target.getSUID());
+					this.nMap.put(parts[3], newNode);
+				}
+				else {
+					CyNode newNode = this.nMap.get(parts[3]);
+					CySubNetwork subNet = (CySubNetwork) network;
+					subNet.addNode(newNode);
+					target = network.getNode(newNode.getSUID());				
+				}				
+				//target = network.addNode();
+				
 				network.getRow(target).set(CyNetwork.NAME, parts[3]);
 			}
 
@@ -211,7 +245,6 @@ public class NNFParser {
 	
 	
 	public void setOverViewnetworkName(String overviewNetworkName){
-
 		this.overviewwork.getRow(this.overviewwork).set(CyNetwork.NAME, overviewNetworkName);
 		this.networks.add(this.overviewwork);
 	}

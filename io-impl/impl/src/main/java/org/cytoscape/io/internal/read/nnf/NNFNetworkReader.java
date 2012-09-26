@@ -49,6 +49,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 /**
  * Reader for graphs in the interactions file format. Given the filename,
@@ -60,7 +61,7 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 	private final CyLayoutAlgorithmManager layouts;	
 	// Optional comments start with this character and extend to the end of line.
 	private static final char COMMENT_CHAR = '#';	
-	private final NNFParser parser;
+	private NNFParser parser;
 	private TaskMonitor parentTaskMonitor;
 
 	public NNFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
@@ -68,12 +69,16 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 			CyNetworkManager cyNetworkManagerServiceRef, CyRootNetworkManager cyRootNetworkFactory) {
 		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManagerServiceRef, cyRootNetworkFactory);
 		this.layouts = layouts;
-
-		this.parser = new NNFParser(cyNetworkManagerServiceRef, cyNetworkFactory,cyRootNetworkFactory);
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
+		
+		this.initNodeMap();
+		CyRootNetwork rootNetwork = this.getRootNetwork();
+		
+		this.parser = new NNFParser(rootNetwork, this.nMap);
+		
 		try {
 			readInput(tm);
 		} finally {
