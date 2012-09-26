@@ -36,6 +36,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.session.CyNetworkNaming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class CyNetworkNamingImpl implements CyNetworkNaming {
@@ -53,8 +55,18 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 	
 	@Override
 	public String getSuggestedSubnetworkTitle(final CyNetwork parentNetwork) {
-		for (int i = 0; true; i++) {
-			final String parentName = parentNetwork.getRow(parentNetwork).get(CyNetwork.NAME, String.class);
+                String parentName = parentNetwork.getRow(parentNetwork).get(CyNetwork.NAME, String.class);
+
+                Pattern p = Pattern.compile(".*\\((\\d*)\\)$"); //capture just the digits
+                Matcher m = p.matcher(parentName);
+                int start = 0;
+
+                if (m.matches()){
+                        parentName = parentName.substring(0, m.start(1)-1);
+                        start = Integer.decode(m.group(1));
+                }
+
+                for (int i = start; true; i++) {
 			final String nameCandidate = parentName + "(" + (i+1) + ")";
 
 			if (!isNetworkTitleTaken(nameCandidate))
@@ -70,8 +82,17 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 			logger.warn("getSuggestedNetworkTitle: desiredTitle " + "was '" + desiredTitle + "'");
 		}
 		
-		for (int i = 0; true; i++) {
-			String titleCandidate = desiredTitle + ((i == 0) ? "" : (" <" + i + ">"));
+		Pattern p = Pattern.compile(".*_(\\d*)$"); //capture just the digits
+		Matcher m = p.matcher(desiredTitle);
+		int start = 0;
+
+		if (m.matches()){
+			desiredTitle = desiredTitle.substring(0, m.start(1)-1);
+			start = Integer.decode(m.group(1)) + 1;
+		}
+
+		for (int i = start; true; i++) {
+			final String titleCandidate = desiredTitle + ((i == 0) ? "" : ("_" + i ));
 
 			if (!isNetworkTitleTaken(titleCandidate))
 				return titleCandidate;
