@@ -138,25 +138,27 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		
 		boolean reloadSelection = false;
 		
+		listMultipleSelection = getMultipleSelection();
+		
 		//If the list of elements has changed, remove old elements and add new ones
-		if(!Arrays.equals(listModel.toArray(),getMultipleSelection().getPossibleValues().toArray()))
+		if(!Arrays.equals(listModel.toArray(),listMultipleSelection.getPossibleValues().toArray()))
 		{
 			listModel.removeAllElements();
 			reloadSelection = true;
-			for ( T value : getMultipleSelection().getPossibleValues() ) 
+			for ( T value : listMultipleSelection.getPossibleValues() ) 
 				listModel.addElement(value);
 		}
 		else
 		{
 			//if the list is the same but the selection has changed, remove all selections and select new ones
-			if(!Arrays.equals(itemsContainerList.getSelectedValues(),getMultipleSelection().getSelectedValues().toArray()))
+			if(!Arrays.equals(itemsContainerList.getSelectedValues(),listMultipleSelection.getSelectedValues().toArray()))
 				reloadSelection = true;
 		}
 		if(reloadSelection )
 		{
 			// selected items
-			final List<T> selectedVals = getMultipleSelection().getSelectedValues();
-			final List<T> allValues = getMultipleSelection().getPossibleValues();
+			final List<T> selectedVals = listMultipleSelection.getSelectedValues();
+			final List<T> allValues = listMultipleSelection.getPossibleValues();
 			
 			final int[] selectedIdx = new int[selectedVals.size()];
 			int index = 0;
