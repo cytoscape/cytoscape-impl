@@ -15,6 +15,7 @@ public class GraphMLFileFilter extends BasicCyFileFilter {
 	private static final Logger logger = LoggerFactory.getLogger(GraphMLFileFilter.class);
 
 	private static final String GRAPHML_NAMESPACE_STRING = "http://graphml.graphdrawing.org/xmlns";
+	private static final String GRAPHML_TAG = "<graphml>";
 
 	public GraphMLFileFilter(final String[] extensions, String[] contentTypes, String description,
 			DataCategory category, StreamUtil streamUtil) {
@@ -25,11 +26,14 @@ public class GraphMLFileFilter extends BasicCyFileFilter {
 	public boolean accepts(InputStream stream, DataCategory category) {
 
 		// Check data category
-		if (category != this.category)
+		if(category != this.category)
 			return false;
 
 		final String header = this.getHeader(stream, 20);
 		if (header.contains(GRAPHML_NAMESPACE_STRING))
+			return true;
+		
+		if(header.contains(GRAPHML_TAG))
 			return true;
 
 		return false;
@@ -38,7 +42,10 @@ public class GraphMLFileFilter extends BasicCyFileFilter {
 	@Override
 	public boolean accepts(URI uri, DataCategory category) {
 		try {
-			return accepts(uri.toURL().openStream(), category);
+			if(super.accepts(uri, category))
+				return accepts(uri.toURL().openStream(), category);
+			else
+				return false;
 		} catch (IOException e) {
 			logger.error("Error while opening stream: " + uri, e);
 			return false;
