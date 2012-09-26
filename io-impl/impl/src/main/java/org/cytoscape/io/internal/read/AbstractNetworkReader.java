@@ -146,6 +146,47 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		return cyNetworks;
 	}
 	
+	// Return the rootNetwork based on user selection, if not existed yet, create a new one
+	protected CyRootNetwork getRootNetwork(){
+		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
+		CyRootNetwork rootNetwork = this.name2RootMap.get(networkCollectionName);
+
+		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+			CyNetwork newNet = this.cyNetworkFactory.createNetwork();
+			return this.cyRootNetworkManager.getRootNetwork(newNet);
+		}
+
+		return rootNetwork;
+	}
+	
+	// Build the key-node map for the entire root network
+	// Note: The keyColName should start with "shared"
+	protected void initNodeMap(){	
+		
+		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
+		CyRootNetwork rootNetwork = this.name2RootMap.get(networkCollectionName);
+		
+		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+			return;
+		}
+
+		String targetKeyColName = this.targetColumnList.getSelectedValue();
+		
+		if (rootNetwork == null){
+			return;
+		}
+		
+		Iterator<CyNode> it = rootNetwork.getNodeList().iterator();
+		
+		while (it.hasNext()){
+			CyNode node = it.next();
+			Object keyValue =  rootNetwork.getRow(node).getRaw(targetKeyColName);
+			this.nMap.put(keyValue, node);				
+		}
+	}
+	
+	// The following is replaced by the above one, it should be removed late
+	
 	// Build the key-node map for the entire root network
 	protected void initNodeMap(CyRootNetwork rootNetwork, String keyColName){	
 		// Note: The keyColName should start with "shared"
