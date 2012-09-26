@@ -24,6 +24,7 @@ import javax.swing.ScrollPaneLayout;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.DefaultListModel;
 import javax.xml.ws.handler.MessageContext.Scope;
 
 import org.cytoscape.work.Tunable;
@@ -40,6 +41,7 @@ import org.cytoscape.work.util.ListMultipleSelection;
  */
 public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements ListSelectionListener {
 	private JList itemsContainerList;
+	private DefaultListModel listModel;
 	private ListMultipleSelection<T> listMultipleSelection;
 
 	/**
@@ -62,13 +64,19 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		super(getter, setter, instance, tunable);
 		init();
 	}
+	
+	private ListMultipleSelection<T> getMultipleSelection() {
+		try {
+			return (ListMultipleSelection<T>)getValue();
+		} catch(final Exception e) {
+			throw new NullPointerException("bad ListMultipleSelection object");	
+		}
+	}
 
 	private void init() {
-		try {
-			listMultipleSelection = (ListMultipleSelection<T>)getValue();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		
+		listMultipleSelection = getMultipleSelection();
+		listModel = new DefaultListModel();
 
 		//create GUI
 		if ( listMultipleSelection.getPossibleValues().isEmpty() ) {
@@ -91,7 +99,10 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		jta.setEditable(false);
 
 		//put the items in a list
-		itemsContainerList = new JList(listMultipleSelection.getPossibleValues().toArray());
+		itemsContainerList = new JList(listModel);//new JList(listMultipleSelection.getPossibleValues().toArray());
+		for ( T value : getMultipleSelection().getPossibleValues() ) 
+			listModel.addElement(value);
+		
 		itemsContainerList.setFont(new Font("sansserif",Font.PLAIN,11));
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		itemsContainerList.addListSelectionListener(this);
@@ -124,7 +135,42 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 	
 	@Override
 	public void update(){
-		// FIXME: implement this!
+		
+		boolean reloadSelection = false;
+		
+		//If the list of elements has changed, remove old elements and add new ones
+		if(!Arrays.equals(listModel.toArray(),getMultipleSelection().getPossibleValues().toArray()))
+		{
+			listModel.removeAllElements();
+			reloadSelection = true;
+			for ( T value : getMultipleSelection().getPossibleValues() ) 
+				listModel.addElement(value);
+		}
+		else
+		{
+			//if the list is the same but the selection has changed, remove all selections and select new ones
+			if(!Arrays.equals(itemsContainerList.getSelectedValues(),getMultipleSelection().getSelectedValues().toArray()))
+				reloadSelection = true;
+		}
+		if(reloadSelection )
+		{
+			// selected items
+			final List<T> selectedVals = getMultipleSelection().getSelectedValues();
+			final List<T> allValues = getMultipleSelection().getPossibleValues();
+			
+			final int[] selectedIdx = new int[selectedVals.size()];
+			int index = 0;
+			for(T selected: selectedVals) {
+				for(int i = 0; i<allValues.size(); i++) {
+					if(itemsContainerList.getModel().getElementAt(i).equals(selected)) {
+						selectedIdx[index] = i;
+						index++;
+					}
+				}
+			}
+			itemsContainerList.removeSelectionInterval(0, allValues.size()-1);
+			itemsContainerList.setSelectedIndices(selectedIdx);
+		}
 	}
 	
 	/**
@@ -136,11 +182,11 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 
 		List selectedItems = Arrays.asList(itemsContainerList.getSelectedValues());
 		if (!selectedItems.isEmpty()) {
-			listMultipleSelection.setSelectedValues(selectedItems);
+			getMultipleSelection().setSelectedValues(selectedItems);
 		}
 		
 		try {
-			setValue(listMultipleSelection);
+			setValue(getMultipleSelection());
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -157,7 +203,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		if ( itemsContainerList == null )
 			return "";
 
-		final List<T> selection = listMultipleSelection.getSelectedValues();
+		final List<T> selection = getMultipleSelection().getSelectedValues();
 		return selection == null ? "" : selection.toString();
 	}
 
