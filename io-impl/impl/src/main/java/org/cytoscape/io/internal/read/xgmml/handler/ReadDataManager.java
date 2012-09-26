@@ -416,10 +416,8 @@ public class ReadDataManager {
 	}
 
 	protected CyRootNetwork createRootNetwork() {
-		
-		if (this.rootNetwork != null){
+		if (this.rootNetwork != null)
 			return this.rootNetwork;
-		}
 		
 		final CyNetwork baseNet = networkFactory.createNetwork();
 		final CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(baseNet);
@@ -730,10 +728,4 @@ public class ReadDataManager {
 	public void setNodeMap(Map<Object, CyNode> nMap){
 		this.nMap = nMap;
 	}
-		
-	public void setRootNetwork(CyRootNetwork rootNet){
-		this.rootNetwork = rootNet;
-	}
-	
-	
 }

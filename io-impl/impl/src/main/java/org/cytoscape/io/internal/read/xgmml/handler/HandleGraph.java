@@ -68,6 +68,14 @@ public class HandleGraph extends AbstractHandler {
 		return s == null || ObjectTypeMap.fromXGMMLBoolean(s);
 	}
 	
+	/**
+	 * Handles XGMML from Cytoscape 2.x session files only.
+	 * @param tag
+	 * @param atts
+	 * @param current
+	 * @return
+	 * @throws SAXException
+	 */
 	private ParseState handleCy2ModelAndView(String tag, Attributes atts, ParseState current) throws SAXException {
 		final CyRootNetwork parent = manager.getParentNetwork();
 		final CyNetwork currentNet;
@@ -77,10 +85,7 @@ public class HandleGraph extends AbstractHandler {
 			if (parent == null) {
 				// This is a regular top-level network...
 				final CyRootNetwork rootNet = manager.createRootNetwork();
-				//currentNet = rootNet.getBaseNetwork(); // The root-network is not important here!, this is out-dated
-				
-				// create a sub network, because we should add all nodes to subnetwork
-				currentNet = rootNet.addSubNetwork();
+				currentNet = rootNet.getBaseNetwork();
 			} else {
 				// This is a 2.x "child-network"...
 				currentNet = parent.addSubNetwork();
@@ -97,6 +102,14 @@ public class HandleGraph extends AbstractHandler {
 		return current;
 	}
 	
+	/**
+	 * Handles "CyNetwork-type" XGMML from Cytoscape 3 session files only.
+	 * @param tag
+	 * @param atts
+	 * @param current
+	 * @return
+	 * @throws SAXException
+	 */
 	private ParseState handleCy3Model(String tag, Attributes atts, ParseState current) throws SAXException {
 		final CyNetwork currentNet;
 		boolean register = isRegistered(atts);
@@ -121,13 +134,27 @@ public class HandleGraph extends AbstractHandler {
 		return current;
 	}
 	
+	/**
+	 * Handles standalone XGMML graphs, not associated with a session file.
+	 * @param tag
+	 * @param atts
+	 * @param current
+	 * @return
+	 * @throws SAXException
+	 */
 	private ParseState handleGenericXGMMLGraph(String tag, Attributes atts, ParseState current) throws SAXException {
 		final CyNetwork currentNet;
 
 		if (manager.graphCount == 1) {
 			// Root (graph) element...
-			final CyRootNetwork rootNet = manager.createRootNetwork();
-			currentNet = rootNet.getBaseNetwork();
+			final CyRootNetwork parentNet = manager.getParentNetwork();
+			
+			if (parentNet == null) {
+				final CyRootNetwork rootNet = manager.createRootNetwork();
+				currentNet = rootNet.getBaseNetwork();
+			} else {
+				currentNet = parentNet.addSubNetwork();
+			}
 		} else {
 			// Nested graph tag...
 			final CyRootNetwork rootNet = manager.getRootNetwork();
