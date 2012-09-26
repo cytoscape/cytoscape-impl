@@ -34,6 +34,8 @@
  */
 package org.cytoscape.io.webservice.biomart.ui;
 
+import java.awt.Container;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,11 +46,12 @@ import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.biomart.BiomartClient;
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
 import org.cytoscape.io.webservice.biomart.rest.Attribute;
@@ -60,6 +63,7 @@ import org.cytoscape.io.webservice.biomart.task.ImportFilterTask;
 import org.cytoscape.io.webservice.biomart.task.LoadRepositoryResult;
 import org.cytoscape.io.webservice.biomart.task.LoadRepositoryTask;
 import org.cytoscape.io.webservice.biomart.task.ShowBiomartDialogTask;
+import org.cytoscape.io.webservice.swing.WebServiceGUI;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -99,13 +103,17 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 
 	private boolean initialized = false;
 
+	private WebServiceGUI webServiceGUI;
+
 	public BiomartAttrMappingPanel(final DialogTaskManager taskManager, final CyApplicationManager appManager,
-			final CyTableManager tblManager, final CyNetworkManager netManager) {
+			final CyTableManager tblManager, final CyNetworkManager netManager, WebServiceGUI webServiceGUI) {
 		super(tblManager, netManager, LOGO, "Biomart", "Import Settings");
 
 		this.taskManager = taskManager;
 		this.appManager = appManager;
 		this.globalTableCounter = 0;
+		
+		this.webServiceGUI = webServiceGUI;
 	}
 
 	public void setClient(final BiomartClient client) {
@@ -133,7 +141,8 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 		LoadRepositoryTask firstTask = new LoadRepositoryTask(client.getRestClient());
 		ShowBiomartDialogTask showDialogTask = new ShowBiomartDialogTask(this, firstTask);
 
-		taskManager.setExecutionContext(null);
+		Window parentWindow = webServiceGUI.getWindow(TableImportWebServiceClient.class);
+		taskManager.setExecutionContext(parentWindow);
 		taskManager.execute(new TaskIterator(firstTask, showDialogTask));
 		initialized = true;
 	}
