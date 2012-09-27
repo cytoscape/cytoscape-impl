@@ -197,6 +197,7 @@ public class JoinTablesTask extends AbstractTask {
 			colNames.add(col.getName());
 
 		ListSingleSelection<String> columns = new ListSingleSelection<String>(colNames);
+		columns.setSelectedValue(CyRootNetwork.SHARED_NAME);
 		return columns;
 	}
 

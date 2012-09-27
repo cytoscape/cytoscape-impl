@@ -392,6 +392,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsFileTaskFactoryProps.setProperty(TOOLTIP,"Import Table From File");
 		loadAttrsFileTaskFactoryProps.setProperty(COMMAND,"load-file");
 		loadAttrsFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
+		loadAttrsFileTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,loadAttrsFileTaskFactory,TaskFactory.class, loadAttrsFileTaskFactoryProps);
 		registerService(bc,loadAttrsFileTaskFactory,LoadTableFileTaskFactory.class, loadAttrsFileTaskFactoryProps);
 
@@ -406,6 +407,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsURLTaskFactoryProps.setProperty(TOOLTIP,"Import Table From URL");
 		loadAttrsURLTaskFactoryProps.setProperty(COMMAND,"load-url");
 		loadAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
+		loadAttrsURLTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,loadAttrsURLTaskFactory,TaskFactory.class, loadAttrsURLTaskFactoryProps);
 		registerService(bc,loadAttrsURLTaskFactory,LoadTableURLTaskFactory.class, loadAttrsURLTaskFactoryProps);
 
