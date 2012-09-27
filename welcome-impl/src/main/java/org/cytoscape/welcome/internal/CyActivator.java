@@ -34,6 +34,7 @@ import org.cytoscape.welcome.internal.panel.OpenPanel;
 import org.cytoscape.welcome.internal.panel.StatusPanel;
 import org.cytoscape.welcome.internal.task.ApplySelectedLayoutTaskFactory;
 import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -105,6 +106,7 @@ public class CyActivator extends AbstractCyActivator {
 		generateCustomStyleTaskFactoryProps.setProperty(TITLE,
 				"Analyze selected networks and create custom Visual Styles");
 		generateCustomStyleTaskFactoryProps.setProperty(IN_TOOL_BAR, "false");
+		generateCustomStyleTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		registerAllServices(bc, generateCustomStyleTaskFactory, generateCustomStyleTaskFactoryProps);
 
 		// This is a preset task, so register it first.
