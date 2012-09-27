@@ -246,6 +246,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			} catch (Throwable exception) {
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(new Exception(exception));
+			} finally {
+				parent = null;
+				dialogTunableMutator.setConfigurationContext(null);
 			}
 
 			// clean up the task monitor
