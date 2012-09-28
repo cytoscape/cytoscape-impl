@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -13,6 +14,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
 import org.cytoscape.tableimport.internal.reader.GraphReader;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
@@ -98,10 +101,10 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			Sheet sheet = workbook.getSheetAt(0);
 			networkName = workbook.getSheetName(0);
 			
-			reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp);
+			reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, this.nMap, this.rootNetwork);
 		} else {
 			networkName = this.inputName;
-			reader = new NetworkTableReader(networkName, this.is, ntmp);
+			reader = new NetworkTableReader(networkName, this.is, ntmp, this.nMap, this.rootNetwork);
 		}
 		loadNetwork(monitor);
 
@@ -111,7 +114,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 	private void loadNetwork(TaskMonitor tm) throws IOException {
 		
 		
-		final CyNetwork network = CytoscapeServices.cyNetworkFactory.createNetwork();
+		final CyNetwork network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
 		tm.setProgress(0.10);
 		this.reader.setNetwork(network);
 
@@ -168,4 +171,17 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			return ValidationState.INVALID;
 		}
 	}
+	
+	//
+	// support import network in different collection
+	private CyRootNetwork rootNetwork;
+	public void setRootNetwork(CyRootNetwork rootNetwork){
+		this.rootNetwork = rootNetwork;
+	}
+	
+	private Map<Object, CyNode> nMap;
+	public void setNodeMap(Map<Object, CyNode> nMap){
+		this.nMap = nMap;
+	}
+
 }

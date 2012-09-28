@@ -22,8 +22,7 @@ public class ImportNetworkTableReaderFactory extends AbstractNetworkReaderFactor
 
 public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		String fileFormat = inputName.substring(inputName.lastIndexOf('.'));
-		return new TaskIterator(new ImportNetworkTableReaderTask(inputStream, fileFormat,
+		return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat,
 		                                                         inputName));
 	}
-
 }

@@ -46,9 +46,10 @@ import org.cytoscape.model.CyNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
-
-
+//import java.util.HashMap;
+import java.util.Map;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 /**
  * Parse one line for network text table
  *
@@ -60,8 +61,10 @@ public class NetworkLineParser {
 	private final List<Long> nodeList;
 	private final List<Long> edgeList;
 	private CyNetwork network;
-	private HashMap<String, CyNode> nodeMap = new HashMap<String, CyNode>();
-
+//	private HashMap<String, CyNode> nodeMap = new HashMap<String, CyNode>();
+	private Map<Object, CyNode> nMap;
+	private final CyRootNetwork rootNetwork;
+	
 	/**
 	 * Creates a new NetworkLineParser object.
 	 *
@@ -70,10 +73,12 @@ public class NetworkLineParser {
 	 * @param nmp  DOCUMENT ME!
 	 */
 	public NetworkLineParser(List<Long> nodeList, List<Long> edgeList,
-	                         final NetworkTableMappingParameters nmp) {
+	                         final NetworkTableMappingParameters nmp,final Map<Object, CyNode> nMap, CyRootNetwork rootNetwork) {
 		this.nmp = nmp;
 		this.nodeList = nodeList;
 		this.edgeList = edgeList;
+		this.nMap = nMap;
+		this.rootNetwork = rootNetwork;
 	}
 
 	/**
@@ -125,15 +130,30 @@ public class NetworkLineParser {
 		if (nodeIndex.equals(-1) == false && (nodeIndex <= (parts.length - 1)) && (parts[nodeIndex] != null)) {
 			//node = Cytoscape.getCyNode(parts[nodeIndex], true);
 
-			CyNode existingNode = nodeMap.get(parts[nodeIndex]);
-			if (existingNode != null) {
+//			CyNode existingNode = nodeMap.get(parts[nodeIndex]);
+//			if (existingNode != null) {
+//				return existingNode;
+//			}
+//			node = network.addNode();
+//			network.getRow(node).set("name", parts[nodeIndex]);
+//
+//			nodeMap.put(parts[nodeIndex], node);
+
+			CyNode existingNode;
+			if (this.nMap.get(parts[nodeIndex]) == null){
+				// node does not exist yet, create it
+				node = network.addNode();
+				network.getRow(node).set("name", parts[nodeIndex]);
+				this.nMap.put(parts[nodeIndex], this.rootNetwork.getNode(node.getSUID()));
+			}
+			else {// already existed in parent network
+				CyNode parentNode = this.nMap.get(parts[nodeIndex]);
+				CySubNetwork subnet = (CySubNetwork) network;
+				subnet.addNode(parentNode);
+				existingNode = subnet.getNode(parentNode.getSUID());
 				return existingNode;
 			}
-			node = network.addNode();
-			network.getRow(node).set("name", parts[nodeIndex]);
-
-			nodeMap.put(parts[nodeIndex], node);
-
+			
 			nodeList.add(node.getSUID());
 		}
 

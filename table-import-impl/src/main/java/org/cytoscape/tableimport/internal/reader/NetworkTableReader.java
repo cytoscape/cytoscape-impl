@@ -53,10 +53,13 @@ import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 
 /**
@@ -80,6 +83,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	protected final InputStream is;
 
 	protected CyNetwork network;
+//	private Map<Object, CyNode> nMap;
 	
 	private static final Logger logger = LoggerFactory.getLogger(NetworkTableReader.class);
 
@@ -93,7 +97,9 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	 * @param commentChar  DOCUMENT ME!
 	 */
 	public NetworkTableReader(final String networkName, final InputStream is,
-	                          final NetworkTableMappingParameters nmp) {
+	                          final NetworkTableMappingParameters nmp,
+	                          final Map<Object, CyNode> nMap, final CyRootNetwork rootNetwork) 
+	{
 		super(networkName);
 		//this.sourceURL = sourceURL;
 		this.is = is;
@@ -102,8 +108,8 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		this.nodeList = new ArrayList<Long>();
 		this.edgeList = new ArrayList<Long>();
 		this.commentChar = nmp.getCommentChar();
-
-		parser = new NetworkLineParser(nodeList, edgeList, nmp);
+		
+		parser = new NetworkLineParser(nodeList, edgeList, nmp, nMap, rootNetwork);
 	}
 
 	/**

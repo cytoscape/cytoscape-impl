@@ -586,9 +586,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		//setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-		titleIconLabel2.setIcon(RIGHT_ARROW_ICON.getIcon());
+		//titleIconLabel2.setIcon(RIGHT_ARROW_ICON.getIcon());
 
-		titleIconLabel3.setIcon(new ImageIcon(getClass().getResource("/images/icon48.png")));
+		//titleIconLabel3.setIcon(new ImageIcon(getClass().getResource("/images/icon48.png")));
 
 		titleSeparator.setForeground(java.awt.Color.blue);
 
@@ -691,7 +691,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 
 		if ((dialogType == SIMPLE_ATTRIBUTE_IMPORT) || (dialogType == NETWORK_IMPORT)) {
-			titleIconLabel1.setIcon(SPREADSHEET_ICON_LARGE.getIcon());
+			//titleIconLabel1.setIcon(SPREADSHEET_ICON_LARGE.getIcon());
 
 			attributeFileLabel.setText("Input File");
 			attributeFileLabel.setFont(new java.awt.Font("SansSerif", 1, 12));
@@ -1701,7 +1701,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				ontologyTextField.setText(ontologyComboBox.getSelectedItem().toString());
 		} else if (dialogType == NETWORK_IMPORT) {
 			//setTitle("Import Network and Edge Attributes from Table");
-			titleLabel.setText("Import Network from Table");
+			//titleLabel.setText("Import Network from Table");
 			annotationAndOntologyImportPanel.setVisible(false);
 
 			importAllCheckBox.setVisible(false);
