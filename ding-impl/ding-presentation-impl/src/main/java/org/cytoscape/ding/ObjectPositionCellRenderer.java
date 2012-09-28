@@ -87,7 +87,7 @@ public class ObjectPositionCellRenderer extends DefaultCellRenderer {
 			
 			final ObjectPosition lp = (ObjectPosition) value;
 			
-			label.setIcon(VisualPropertyIconFactory.createIcon(DVisualLexicon.NODE_LABEL_POSITION, lp, ICON_WIDTH, ICON_HEIGHT));
+			label.setIcon(VisualPropertyIconFactory.createIcon(lp, ICON_WIDTH, ICON_HEIGHT));
 			label.setVerticalAlignment(SwingConstants.CENTER);
 			label.setHorizontalAlignment(SwingConstants.CENTER);
 		} 

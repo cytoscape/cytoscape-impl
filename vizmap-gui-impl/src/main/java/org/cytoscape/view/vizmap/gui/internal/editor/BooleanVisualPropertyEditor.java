@@ -9,6 +9,7 @@ public class BooleanVisualPropertyEditor extends BasicVisualPropertyEditor<Boole
 
 	public BooleanVisualPropertyEditor(final PropertyEditor editor, ContinuousMappingCellRendererFactory cellRendererFactory) {
 		super(Boolean.class, editor, ContinuousEditorType.DISCRETE, cellRendererFactory);
+		
 		discreteTableCellRenderer = REG.getRenderer(Boolean.class);
 	}
 

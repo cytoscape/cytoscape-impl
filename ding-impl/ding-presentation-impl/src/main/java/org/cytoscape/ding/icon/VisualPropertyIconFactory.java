@@ -25,7 +25,7 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
  */
 public class VisualPropertyIconFactory {	
 	
-	public static <V> Icon createIcon(VisualProperty<V> vp, V value, int w, int h) {
+	public static <V> Icon createIcon(V value, int w, int h) {
 		if(value == null)
 			return null;
 		

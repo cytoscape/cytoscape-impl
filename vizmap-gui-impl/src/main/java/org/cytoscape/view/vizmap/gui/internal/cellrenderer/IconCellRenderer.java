@@ -35,6 +35,7 @@
 package org.cytoscape.view.vizmap.gui.internal.cellrenderer;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.util.Map;
 
 import javax.swing.Icon;
@@ -42,27 +43,25 @@ import javax.swing.JTable;
 
 import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 
-
 /**
  * Renderer for cells with icon.
- *
- * Icon size is fixed, so caller of this class is responsible
- * for passing proper icons.
+ * 
+ * Icon size is fixed, so caller of this class is responsible for passing proper
+ * icons.
  */
 public class IconCellRenderer<T> extends DefaultCellRenderer {
-	
-	private static final long serialVersionUID = -616290814339403108L;
-	
-	private Map<?extends T, Icon> icons;
 
-	
-	public IconCellRenderer(Map<?extends T, Icon> icons) {
+	private static final long serialVersionUID = -616290814339403108L;
+
+	private Map<? extends T, Icon> icons;
+
+	public IconCellRenderer(Map<? extends T, Icon> icons) {
 		this.icons = icons;
 	}
 
 	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-	                                               boolean hasFocus, int row, int column) {
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+			int row, int column) {
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
 			setForeground(table.getSelectionForeground());
@@ -77,13 +76,24 @@ public class IconCellRenderer<T> extends DefaultCellRenderer {
 			if (valueIcon != null)
 				this.setIcon(valueIcon);
 
-			this.setIconTextGap(10);
-			this.setText(value.toString());
+			this.setIconTextGap(20);
+			this.setVerticalAlignment(CENTER);
 		} else {
 			this.setIcon(null);
 			this.setText(null);
 		}
 
 		return this;
+	}
+	
+	/**
+	 * Adjust icon location.
+	 * 
+	 * TODO: Optimize Icon Renderers and unify look.
+	 */
+	@Override
+	public void paint(Graphics g) {
+		g.translate(10, 4);
+		super.paint(g);
 	}
 }

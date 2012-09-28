@@ -42,9 +42,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
-import javax.swing.Icon;
 import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -54,13 +54,16 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.LineType;
+import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
@@ -70,7 +73,6 @@ import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
-import org.cytoscape.view.vizmap.gui.internal.cellrenderer.IconCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2CEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.C2DEditor;
 import org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.GradientEditor;
@@ -92,6 +94,16 @@ public class EditorManagerImpl implements EditorManager {
 
 	private static final PropertyEditorRegistry REGISTRY = new PropertyEditorRegistry();
 
+	// FIXME: We need better mechanism to manage icon sizes.
+	private static final Map<Class<? extends VisualPropertyValue>, Integer> ICON_WIDTH_MAP = new HashMap<Class<? extends VisualPropertyValue>, Integer>();
+	private static final int ICON_W = 14;
+	private static final int ICON_H = 14;
+	
+	static {
+		ICON_WIDTH_MAP.put(LineType.class, ICON_W*3);
+		ICON_WIDTH_MAP.put(ArrowShape.class, ICON_W*3);
+	}
+
 	private final Map<Class<?>, VisualPropertyEditor<?>> editors;
 
 	private final Map<String, PropertyEditor> comboBoxEditors;
@@ -109,6 +121,8 @@ public class EditorManagerImpl implements EditorManager {
 	private final VisualMappingFunctionFactory continuousMappingFactory;
 
 	private ContinuousMappingCellRendererFactory cellRendererFactory;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Creates a new EditorFactory object.
@@ -116,13 +130,15 @@ public class EditorManagerImpl implements EditorManager {
 	 */
 	public EditorManagerImpl(final CyApplicationManager appManager, final AttributeSetManager attrManager,
 			final VisualMappingManager vmm, final CyNetworkTableManager tableManager,
-			final CyNetworkManager networkManager, VisualMappingFunctionFactory continuousMappingFactory, ContinuousMappingCellRendererFactory cellRendererFactory) {
+			final CyNetworkManager networkManager, VisualMappingFunctionFactory continuousMappingFactory,
+			ContinuousMappingCellRendererFactory cellRendererFactory, final CyServiceRegistrar serviceRegistrar) {
 
 		this.appManager = appManager;
 		this.tableManager = tableManager;
 		this.vmm = vmm;
 		this.continuousMappingFactory = continuousMappingFactory;
 		this.cellRendererFactory = cellRendererFactory; 
+		this.serviceRegistrar = serviceRegistrar;
 
 		editors = new HashMap<Class<?>, VisualPropertyEditor<?>>();
 
@@ -278,9 +294,9 @@ public class EditorManagerImpl implements EditorManager {
 		final Set<VisualProperty> vps = (Set)lexicon.getAllVisualProperties();
 
 		for (final VisualProperty<V> vp : vps) {
-			Range<?> range = vp.getRange();
+			final Range<?> range = vp.getRange();
 
-			// If data type is basic (String, Boolean, etc.) not custom editor
+			// If data type is basic (String, Boolean, etc.), custom editor
 			// is not necessary.
 			final Class<?> targetDataType = range.getType();
 			if (REGISTRY.getEditor(targetDataType) != null)
@@ -290,19 +306,6 @@ public class EditorManagerImpl implements EditorManager {
 				continue;
 
 			if (range instanceof DiscreteRange<?>) {
-				// Visual Property Editor.
-				final Set<V> values = ((DiscreteRange) range).values();
-//				final RenderingEngine<CyNetwork> engine = appManager.getCurrentRenderingEngine();
-//				
-//				// CCurrent engine is not ready yet.
-//				if(engine == null)
-//					return;
-//				
-//				Map<V, Icon> iconMap = new HashMap<V, Icon>();
-//				for(V value: values)
-//					iconMap.put(value, engine.createIcon(vp, value, 12, 12));
-//				IconCellRenderer<?> cellRenderer = new IconCellRenderer(iconMap);
-
 				if (this.getValueEditor(range.getType()) == null) {
 					final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(appManager, range.getType(),
 							(DiscreteRange) range, vp);
@@ -312,14 +315,22 @@ public class EditorManagerImpl implements EditorManager {
 				final CyDiscreteValuePropertyEditor<?> discretePropEditor = new CyDiscreteValuePropertyEditor(
 						(DiscreteValueEditor) this.getValueEditor(range.getType()));
 				
+				final Set values = ((DiscreteRange)range).values();
+				// FIXME how can we manage the custom icon size based on value type?
+				Integer width = ICON_WIDTH_MAP.get(range.getType());
+				if(width == null)
+					width = ICON_W;
+				
 				final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
-						null, discretePropEditor, cellRendererFactory);
+						discretePropEditor, cellRendererFactory, values, width, ICON_H);
+				
+				serviceRegistrar.registerAllServices(vpEditor, new Properties());
 				this.addVisualPropertyEditor(vpEditor, null);
 			}
 		}
 	}
 
-	public void addRenderingEngineFactory(RenderingEngineFactory<?> factory, Map props) {
+	public void addRenderingEngineFactory(RenderingEngineFactory<?> factory, Map props) {		
 		final VisualLexicon lexicon = factory.getVisualLexicon();
 		buildDiscreteEditors(lexicon);
 	}

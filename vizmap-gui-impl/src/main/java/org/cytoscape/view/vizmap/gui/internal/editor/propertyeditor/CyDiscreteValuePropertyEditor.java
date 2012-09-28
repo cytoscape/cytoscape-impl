@@ -15,8 +15,9 @@ public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 	private final DiscreteValueEditor<T> valEditor;
 	private T currentValue;
 	private Component parent;
-
+	
 	public CyDiscreteValuePropertyEditor(final DiscreteValueEditor<T> valEditor) {
+		
 		this.valEditor = valEditor;
 		this.editor = new JPanel();
 		editor.addFocusListener(new FocusListener() {

@@ -37,7 +37,7 @@ public class EdgeBendCellRenderer extends DefaultCellRenderer {
 		if ((value != null) && value instanceof Bend) {
 
 			final Bend bend = (Bend) value;
-			final Icon icon = VisualPropertyIconFactory.createIcon(DVisualLexicon.EDGE_BEND, bend, ICON_WIDTH, ICON_HEIGHT);
+			final Icon icon = VisualPropertyIconFactory.createIcon(bend, ICON_WIDTH, ICON_HEIGHT);
 			label.setIcon(icon);
 			label.setVerticalAlignment(SwingConstants.CENTER);
 			label.setHorizontalAlignment(SwingConstants.CENTER);

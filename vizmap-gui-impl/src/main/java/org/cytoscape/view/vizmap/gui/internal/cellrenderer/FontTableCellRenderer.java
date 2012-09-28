@@ -30,9 +30,7 @@ public class FontTableCellRenderer extends DefaultCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int row, int column) {
-		
-		System.out.println("%%%%%%%%%%%% CELL Value= " + value);
-		
+				
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
 			setForeground(table.getSelectionForeground());

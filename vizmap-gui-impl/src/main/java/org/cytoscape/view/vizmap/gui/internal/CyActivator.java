@@ -100,7 +100,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		AttributeSetManager attributeSetManager = new AttributeSetManager(cyNetworkTableManagerServiceRef);
 		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc,ContinuousMappingCellRendererFactory.class);
-		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef, continousMappingFactory, continuousMappingCellRendererFactory);
+		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,vmmServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef, continousMappingFactory, continuousMappingCellRendererFactory, cyServiceRegistrarServiceRef);
 		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl(editorManager);
 		PropertySheetPanel propertySheetPanel = new PropertySheetPanel();
 		
