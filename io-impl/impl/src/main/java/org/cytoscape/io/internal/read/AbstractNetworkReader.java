@@ -16,6 +16,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -24,7 +25,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-//import org.cytoscape.model.subnetwork.CySubNetwork;
 
 
 public abstract class AbstractNetworkReader extends AbstractTask implements CyNetworkReader {
@@ -54,6 +54,10 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	}
 	public void setRootNetworkList (ListSingleSelection<String> roots){
 		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+			// set default
+			List<String> colNames = new ArrayList<String>();
+			colNames.add("shared name");
+			targetColumnList = new ListSingleSelection<String>(colNames);
 			return;
 		}
 		targetColumnList = getTargetColumns(name2RootMap.get(rootNetworkList.getSelectedValue()));
@@ -75,6 +79,9 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	}
 	public void setTargetColumnList(ListSingleSelection<String> colList){
 		this.targetColumnList = colList;
+
+		// looks like this does not have any effect, is this a bug?
+		this.targetColumnList.setSelectedValue("shared name");
 	}
 	
 	
@@ -86,11 +93,25 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	
 	public ListSingleSelection<String> getTargetColumns (CyNetwork network) {
 		CyTable selectedTable = network.getTable(CyNode.class, CyRootNetwork.SHARED_ATTRS);
-		
+
 		List<String> colNames = new ArrayList<String>();
+		
+		// Work-around to make the "shared name" the first in the list
+		boolean containSharedName = false;
+		// check if "shared name" column exist
+		if (CyTableUtil.getColumnNames(selectedTable).contains("shared name")){
+			containSharedName = true;
+			colNames.add("shared name");
+		}
+		
 		for(CyColumn col: selectedTable.getColumns()) {
 			// Exclude SUID from the mapping key list
 			if (col.getName().equalsIgnoreCase("SUID")){
+				continue;
+			}
+			
+			if (col.getName().equalsIgnoreCase("shared name") && containSharedName){
+				// "shared name" is already added in the first
 				continue;
 			}
 			colNames.add(col.getName());
