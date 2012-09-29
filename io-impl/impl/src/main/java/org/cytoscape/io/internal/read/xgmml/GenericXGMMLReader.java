@@ -39,6 +39,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
@@ -86,9 +87,10 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 							  final XGMMLParser parser,
 							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 							  final CyNetworkManager cyNetworkManager, 
-							  final CyRootNetworkManager cyRootNetworkManager
+							  final CyRootNetworkManager cyRootNetworkManager,
+							  final CyApplicationManager cyApplicationManager
 							  ) {
-		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;

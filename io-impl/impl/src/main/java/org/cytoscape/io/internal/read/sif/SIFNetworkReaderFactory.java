@@ -29,6 +29,7 @@ package org.cytoscape.io.internal.read.sif;
 
 import java.io.InputStream;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
@@ -46,19 +47,21 @@ public class SIFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
 	private final CyNetworkManager cyNetworkManager;;
 	private final CyRootNetworkManager cyRootNetworkManager;
+	private CyApplicationManager cyApplicationManager;
 	
 	public SIFNetworkReaderFactory(CyFileFilter filter, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			final CyEventHelper eventHelper, CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
+			final CyEventHelper eventHelper, CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager, CyApplicationManager cyApplicationManager) {
 		super(filter, cyNetworkViewFactory, cyNetworkFactory);
 		this.layouts = layouts;
 		this.eventHelper = eventHelper;
 		this.cyNetworkManager = cyNetworkManager;
 		this.cyRootNetworkManager = cyRootNetworkManager;
+		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new SIFNetworkReader(inputStream, layouts, cyNetworkViewFactory, cyNetworkFactory,
-				eventHelper, this.cyNetworkManager, this.cyRootNetworkManager));
+				eventHelper, this.cyNetworkManager, this.cyRootNetworkManager, this.cyApplicationManager));
 	}
 }

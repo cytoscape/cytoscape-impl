@@ -30,6 +30,7 @@ package org.cytoscape.io.internal.read.xgmml;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
@@ -59,9 +60,10 @@ public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 										 final XGMMLParser parser,
 										 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 										 final CyNetworkManager cyNetworkManager, 
-										 final CyRootNetworkManager cyRootNetworkManager) {
+										 final CyRootNetworkManager cyRootNetworkManager,
+										 final CyApplicationManager cyApplicationManager) {
 		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, renderingEngineMgr, readDataMgr, parser,
-				unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager);
+				unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
 	}
 
 	public String getVisualStyleName() {

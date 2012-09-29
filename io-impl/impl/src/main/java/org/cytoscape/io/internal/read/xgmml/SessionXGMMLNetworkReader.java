@@ -2,6 +2,7 @@ package org.cytoscape.io.internal.read.xgmml;
 
 import java.io.InputStream;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
@@ -26,7 +27,8 @@ public class SessionXGMMLNetworkReader extends GenericXGMMLReader {
 
 	private final CyRootNetworkManager cyRootNetworkManager;
 	private CyRootNetwork parent;
-
+	//private CyApplicationManager cyApplicationManager;
+	
 	public SessionXGMMLNetworkReader(final InputStream inputStream,
 									 final CyNetworkViewFactory cyNetworkViewFactory,
 									 final CyNetworkFactory cyNetworkFactory,
@@ -35,11 +37,13 @@ public class SessionXGMMLNetworkReader extends GenericXGMMLReader {
 									 final ReadDataManager readDataMgr,
 									 final XGMMLParser parser,
 									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-									 final  CyNetworkManager cyNetworkManager) {
+									 final CyNetworkManager cyNetworkManager,
+									 final CyApplicationManager cyApplicationManager) {
 		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, renderingEngineMgr, readDataMgr, parser,
-				unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager);
+				unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
 
 		this.cyRootNetworkManager = cyRootNetworkManager;
+		//this.cyApplicationManager = cyApplicationManager;
 	}
 
 	public void setParent(CyNetwork n) {

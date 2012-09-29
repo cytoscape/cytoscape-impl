@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
@@ -51,7 +52,8 @@ public class AbstractNetworkReaderTest {
 	protected CyLayoutAlgorithmManager layouts;
 	protected CyNetworkManager networkManager;;
 	protected CyRootNetworkManager rootNetworkManager;
-
+	protected CyApplicationManager cyApplicationManager;
+	
 	private Properties properties;
 
 	@Before
@@ -73,6 +75,8 @@ public class AbstractNetworkReaderTest {
 		networkManager = nts.getNetworkManager();
 		rootNetworkManager = nts.getRootNetworkFactory();
 		
+		cyApplicationManager = mock(CyApplicationManager.class);
+				
 		properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);		
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();

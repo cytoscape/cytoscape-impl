@@ -80,7 +80,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 	private  SIFNetworkReader readFile(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/sif/" + file);
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory, eventHelper, this.networkManager, this.rootNetworkManager);
+		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory, eventHelper, this.networkManager, this.rootNetworkManager, this.cyApplicationManager);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 

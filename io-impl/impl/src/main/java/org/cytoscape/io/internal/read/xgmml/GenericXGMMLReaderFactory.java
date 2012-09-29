@@ -29,6 +29,7 @@ package org.cytoscape.io.internal.read.xgmml;
 
 import java.io.InputStream;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
@@ -51,7 +52,8 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	private final CyNetworkManager cyNetworkManager;;
 	private final CyRootNetworkManager cyRootNetworkManager;
-
+	private CyApplicationManager cyApplicationManager;
+	
 	public GenericXGMMLReaderFactory(final CyFileFilter filter,
 			                         final CyNetworkViewFactory cyNetworkViewFactory,
 									 final CyNetworkFactory cyNetworkFactory,
@@ -60,7 +62,8 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 									 final XGMMLParser parser,
 									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 									 final CyNetworkManager cyNetworkManager, 
-									 final CyRootNetworkManager cyRootNetworkManager) {
+									 final CyRootNetworkManager cyRootNetworkManager,
+									 final CyApplicationManager cyApplicationManager) {
 		super(filter, cyNetworkViewFactory, cyNetworkFactory);
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.readDataMgr = readDataMgr;
@@ -68,11 +71,12 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 		this.cyNetworkManager = cyNetworkManager;
 		this.cyRootNetworkManager = cyRootNetworkManager;
+		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new GenericXGMMLReader(inputStream, cyNetworkViewFactory, cyNetworkFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr,this.cyNetworkManager, this.cyRootNetworkManager));
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr,this.cyNetworkManager, this.cyRootNetworkManager, this.cyApplicationManager));
 	}
 }

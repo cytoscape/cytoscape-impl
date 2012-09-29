@@ -296,7 +296,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	@Test
 	public void testIsLockedVisualProperty() throws Exception {
 		reader = new GenericXGMMLReader(new ByteArrayInputStream("".getBytes("UTF-8")), viewFactory, netFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, this.networkManager, this.rootNetworkManager);
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, this.networkManager, this.rootNetworkManager, this.cyApplicationManager);
 		
 		CyNetwork network = mock(CyNetwork.class);
 		assertFalse(reader.isLockedVisualProperty(network, "GRAPH_VIEW_ZOOM"));
@@ -457,7 +457,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	private List<CyNetworkView> getViews(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
 		reader = new GenericXGMMLReader(new FileInputStream(f), viewFactory, netFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, this.networkManager, this.rootNetworkManager);
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, this.networkManager, this.rootNetworkManager, this.cyApplicationManager);
 		reader.run(taskMonitor);
 
 		final CyNetwork[] networks = reader.getNetworks();

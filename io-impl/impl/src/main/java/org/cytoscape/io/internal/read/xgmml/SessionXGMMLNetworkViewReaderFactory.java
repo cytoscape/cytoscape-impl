@@ -29,6 +29,7 @@ package org.cytoscape.io.internal.read.xgmml;
 
 import java.io.InputStream;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
@@ -49,6 +50,7 @@ public class SessionXGMMLNetworkViewReaderFactory extends AbstractNetworkReaderF
 
 	private final CyNetworkManager cyNetworkManager;;
 	private final CyRootNetworkManager cyRootNetworkManager;
+	private final CyApplicationManager cyApplicationManager;
 	
 	public SessionXGMMLNetworkViewReaderFactory(final CyFileFilter filter,
 												final CyNetworkViewFactory cyNetworkViewFactory,
@@ -58,7 +60,8 @@ public class SessionXGMMLNetworkViewReaderFactory extends AbstractNetworkReaderF
 												final XGMMLParser parser,
 												final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 												final CyNetworkManager cyNetworkManager,
-												final CyRootNetworkManager cyRootNetworkManager) {
+												final CyRootNetworkManager cyRootNetworkManager,
+												final CyApplicationManager cyApplicationManager) {
 		super(filter, cyNetworkViewFactory, cyNetworkFactory);
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.readDataMgr = readDataMgr;
@@ -66,11 +69,12 @@ public class SessionXGMMLNetworkViewReaderFactory extends AbstractNetworkReaderF
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 		this.cyNetworkManager = cyNetworkManager;
 		this.cyRootNetworkManager = cyRootNetworkManager;
+		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new SessionXGMMLNetworkViewReader(inputStream, cyNetworkViewFactory, cyNetworkFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager));
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, this.cyApplicationManager));
 	}
 }

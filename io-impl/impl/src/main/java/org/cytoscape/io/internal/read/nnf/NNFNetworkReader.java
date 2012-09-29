@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -66,8 +67,8 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 
 	public NNFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			CyNetworkManager cyNetworkManagerServiceRef, CyRootNetworkManager cyRootNetworkFactory) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManagerServiceRef, cyRootNetworkFactory);
+			CyNetworkManager cyNetworkManagerServiceRef, CyRootNetworkManager cyRootNetworkFactory,  CyApplicationManager cyApplicationManager) {
+		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManagerServiceRef, cyRootNetworkFactory, cyApplicationManager);
 		this.layouts = layouts;
 	}
 
