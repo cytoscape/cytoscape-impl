@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-beta3-SNAPSHOT</version>
+		<version>3.0.0-beta3</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
