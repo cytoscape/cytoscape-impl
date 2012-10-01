@@ -13,7 +13,7 @@
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
 	<!-- Implementation bundles can have different version number -->
-	<version>3.0.0-beta1</version>
+	<version>3.0.0-beta2-SNAPSHOT</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
@@ -336,9 +336,9 @@
 </dependencies>
 
 	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/tags/impl-parent-3.0.0-beta1</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/tags/impl-parent-3.0.0-beta1</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/impl/tags/impl-parent-3.0.0-beta1</url>
+		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/trunk</connection>
+		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/trunk</developerConnection>
+		<url>http://chianti.ucsd.edu/svn/core3/impl/trunk</url>
 	</scm>
 
 	<build>
