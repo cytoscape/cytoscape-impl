@@ -68,18 +68,17 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 	private static final String TAB = "\t";
 	private String delimiter = " "; // single space
 
-	private final CyEventHelper eventHelper;
 	private final CyLayoutAlgorithmManager layouts;
 	private final StringBuilder edgeNameBuilder = new StringBuilder();
 	
 	private TaskMonitor parentTaskMonitor;
 	
-	public SIFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
-			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			final CyEventHelper eventHelper, CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager, CyApplicationManager cyApplicationManager) {
+	public SIFNetworkReader(InputStream is, final CyLayoutAlgorithmManager layouts,
+			final CyNetworkViewFactory cyNetworkViewFactory, final CyNetworkFactory cyNetworkFactory,
+			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager,
+			final CyApplicationManager cyApplicationManager) {
 		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
 		this.layouts = layouts;
-		this.eventHelper = eventHelper;
 	}
 
 	@Override

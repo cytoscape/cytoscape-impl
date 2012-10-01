@@ -83,8 +83,7 @@ public class PerfTest {
 
 	private  SIFNetworkReader readFile(String file) throws Exception {
 		InputStream is = getClass().getResource("/testData/sif/" + file).openStream();
-		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, eventHelper, netMgr, rootMgr, cyApplicationManager);
+		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, netMgr, rootMgr, cyApplicationManager);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 

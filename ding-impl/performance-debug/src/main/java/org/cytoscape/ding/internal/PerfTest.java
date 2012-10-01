@@ -12,6 +12,7 @@ import java.util.Properties;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
@@ -72,16 +73,16 @@ public class PerfTest {
 		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
 	}
 
-	private  SIFNetworkReader readFile(String file) throws Exception {
+	private SIFNetworkReader readFile(String file) throws Exception {
 		InputStream is = getClass().getResource("/testData/sif/" + file).openStream();
-		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, 
-		                                             eventHelper, netMgr, rootMgr);
+		final CyApplicationManager cyApplicationManager = mock(CyApplicationManager.class);
+		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, netMgr, rootMgr,
+				cyApplicationManager);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
 		is.close();
-		
+
 		return snvp;
 	}
 
