@@ -16,6 +16,12 @@
 	<version>3.0.0-beta1-SNAPSHOT</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
+	<properties>
+		<cytoscape.api.version>3.0.0-beta3</cytoscape.api.version>
+		<cytoscape.support.version>3.0.0-beta1</cytoscape.support.version>
+	</properties>
+
+
 	<modules>
 		<module>biopax-impl</module>
 		<module>command-executor-impl</module>
@@ -325,7 +331,7 @@
 	<dependency>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>service-api</artifactId>
-		<version>3.0.0-beta3</version>
+		<version>${cytoscape.api.version}</version>
 	</dependency>
 </dependencies>
 
