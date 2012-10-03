@@ -3,7 +3,6 @@ package org.cytoscape.app.internal.net.server;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
 import java.util.regex.Matcher;
 
@@ -11,7 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -40,11 +38,8 @@ import org.apache.http.HttpServerConnection;
 import org.apache.http.impl.DefaultHttpServerConnection;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.ConnectionClosedException;
-import org.apache.http.MethodNotSupportedException;
-import org.apache.http.RequestLine;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.entity.StringEntity;
@@ -111,11 +106,19 @@ class CyHttpdImpl implements CyHttpd
 
     public void start()
     {
-        if (running)
-            throw new IllegalStateException("server is running");
-        running = true;
-        executor = Executors.newCachedThreadPool();
-        executor.execute(new ServerThread());
+        synchronized (this) {
+	        if (running)
+	            throw new IllegalStateException("server is running");
+	        executor = Executors.newCachedThreadPool();
+	        executor.execute(new ServerThread());
+	        while (!running) {
+	        	try {
+	        		wait(500);
+	        	} catch (InterruptedException e) {
+	        		throw new RuntimeException(e);
+	        	}
+	        }
+        }
     }
 
     public void stop()
@@ -195,7 +198,12 @@ class CyHttpdImpl implements CyHttpd
         
             logger.info("Server socket started on {}", String.format("%s:%d", serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort()));
             
-            // Keep servicing incoming connections until we're told to stop
+            running = true;
+        	synchronized (CyHttpdImpl.this) {
+        		CyHttpdImpl.this.notifyAll();
+        	}
+
+        	// Keep servicing incoming connections until we're told to stop
             while (running)
             {
                 
