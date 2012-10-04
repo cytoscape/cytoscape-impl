@@ -97,6 +97,9 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
+			if (target.exists()) {
+				target.delete();
+			}
 			boolean success = source.renameTo(target);
 			
 			if (success) {
