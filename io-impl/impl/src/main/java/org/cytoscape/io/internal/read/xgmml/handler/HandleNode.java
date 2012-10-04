@@ -61,14 +61,15 @@ public class HandleNode extends AbstractHandler {
 				manager.addNode(node, label, (CySubNetwork) curNet);
 			
 			if ( label != null && (!manager.isSessionFormat() || manager.getDocumentVersion() < 3.0) ) {
-				
-				if (!curNet.containsNode(node) && curNet instanceof CySubNetwork){
-					// The node should be node in root network, it does not exist in current subnetwork yet
-					CySubNetwork subnet = (CySubNetwork) curNet;
-					subnet.addNode(node);
-					node = subnet.getNode(node.getSUID());
+				if (!manager.isSessionFormat()) {
+					if (!curNet.containsNode(node) && curNet instanceof CySubNetwork){
+						// The node should be node in root network, it does not exist in current subnetwork yet
+						CySubNetwork subnet = (CySubNetwork) curNet;
+						subnet.addNode(node);
+						node = subnet.getNode(node.getSUID());
+					}
 				}
-
+				
 				curNet.getRow(node).set(CyNetwork.NAME, label);													
 				
 				if (rootNet != null && curNet != rootNet)

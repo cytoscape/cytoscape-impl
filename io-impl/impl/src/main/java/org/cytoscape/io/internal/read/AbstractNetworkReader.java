@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.util.ReadUtils;
+import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -156,21 +157,23 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
 		
-		// 
-		if(this.cyApplicationManager.getSelectedNetworks() != null && this.cyApplicationManager.getSelectedNetworks().size() >0){
-			CyNetwork selectedNetwork = this.cyApplicationManager.getSelectedNetworks().get(0);
-			String rootName = "";
-			if (selectedNetwork instanceof CySubNetwork){
-				CySubNetwork subnet = (CySubNetwork) selectedNetwork;
-				CyRootNetwork rootNet = subnet.getRootNetwork();
-				rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
-			}
-			else {
-				// it is a root network
-				rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
-			}
+		if (!SessionUtil.isReadingSessionFile()) {
+			final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
 			
-			rootNetworkList.setSelectedValue(rootName);
+			if (selectedNetworks != null && selectedNetworks.size() > 0){
+				CyNetwork selectedNetwork = this.cyApplicationManager.getSelectedNetworks().get(0);
+				String rootName = "";
+				if (selectedNetwork instanceof CySubNetwork){
+					CySubNetwork subnet = (CySubNetwork) selectedNetwork;
+					CyRootNetwork rootNet = subnet.getRootNetwork();
+					rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
+				} else {
+					// it is a root network
+					rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
+				}
+				
+				rootNetworkList.setSelectedValue(rootName);
+			}
 		}
 		
 		// initialize target attribute list
