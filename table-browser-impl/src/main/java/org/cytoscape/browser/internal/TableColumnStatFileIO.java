@@ -75,8 +75,8 @@ final class TableColumnStatFileIO {
 
 					final InputStreamReader reader = new InputStreamReader(is);
 					final BufferedReader br = new BufferedReader(reader);
-					String line = br.readLine();
-					while (line != null){
+					String line = null;
+					while ((line = br.readLine()) != null){
 
 						String[] split = line.split(",");
 						if (split.length != 4)
@@ -92,9 +92,8 @@ final class TableColumnStatFileIO {
 						
 						TableColumnStat tcs = tableColStats.get(tableTitle);
 						tcs.addColumnStat(colName, colIndex, visible);
-						line = br.readLine();
-
 					}
+					br.close();
 				}catch(Exception ex){
 					logger.error("Error reading table browser status files from session.", ex);
 				}
