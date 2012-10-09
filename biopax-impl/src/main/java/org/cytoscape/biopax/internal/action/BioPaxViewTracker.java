@@ -10,6 +10,9 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.biopax.internal.BioPaxMapper;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.view.BioPaxContainer;
@@ -51,12 +54,14 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	private final CyLayoutAlgorithmManager layoutAlgorithmManager;
 	private final TaskManager taskManagerRef;
 	private final CyProperty<Properties> prop;
+	private final CySwingApplication cySwingApplication;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param bpPanel BioPaxDetails Panel Object.
 	 * @param taskManagerRef 
+	 * @param cySwingApplication TODO
 	 * @param cytoscapePropertiesServiceRef 
 	 */
 	public BioPaxViewTracker(BioPaxDetailsPanel bpPanel, 
@@ -66,7 +71,8 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 			BioPaxVisualStyleUtil bioPaxVisualStyleUtil,
 			CyLayoutAlgorithmManager layoutAlgorithmManager, 
 			TaskManager taskManagerRef, 
-			CyProperty<Properties> prop) 
+			CyProperty<Properties> prop, 
+			CySwingApplication cySwingApplication) 
 	{
 		this.bpPanel = bpPanel;
 		this.bpContainer = bpContainer;
@@ -76,6 +82,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		this.layoutAlgorithmManager = layoutAlgorithmManager;
 		this.taskManagerRef = taskManagerRef;
 		this.prop = prop;
+		this.cySwingApplication = cySwingApplication;
 	}
 
 
@@ -91,6 +98,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 				public void run() {
 					bpContainer.showLegend();
 					bpPanel.resetText();
+//					cySwingApplication.getCytoPanel(CytoPanelName.EAST).setState(CytoPanelState.DOCK);
 					
 					// apply BioPAX visual style and set tool tips
 					setNodeToolTips(view);
@@ -133,6 +141,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
        			@Override
        			public void run() {
        	            bpPanel.resetText();
+       	            cySwingApplication.getCytoPanel(CytoPanelName.EAST).setState(CytoPanelState.DOCK);
        			}
        		});
         }

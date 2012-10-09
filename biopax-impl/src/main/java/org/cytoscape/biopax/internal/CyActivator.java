@@ -75,7 +75,7 @@ public class CyActivator extends AbstractCyActivator {
 		BioPaxContainer bioPaxContainer = new BioPaxContainer(launchExternalBrowser,cyApplicationManagerRef,cyNetworkViewManagerRef,bioPaxDetailsPanel,cySwingApplicationRef);
 		BioPaxVisualStyleUtil bioPaxVisualStyleUtil = new BioPaxVisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFunctionFactoryRef,passthroughMappingFunctionFactoryRef);
 		BioPaxViewTracker bioPaxViewTracker = new BioPaxViewTracker(bioPaxDetailsPanel,bioPaxContainer, cyApplicationManagerRef, 
-				visualMappingManagerRef, bioPaxVisualStyleUtil, cyLayoutsRef, taskManagerRef, cytoscapePropertiesServiceRef);
+				visualMappingManagerRef, bioPaxVisualStyleUtil, cyLayoutsRef, taskManagerRef, cytoscapePropertiesServiceRef, cySwingApplicationRef);
 		InputStreamTaskFactory inputStreamTaskFactory = new BioPaxReaderTaskFactory(bioPaxFilter,cyNetworkFactoryRef,cyNetworkViewFactoryRef,cyNetworkNamingRef, cyGroupFactory);
 		CytoPanelComponent cytoPanelComponent = new BioPaxCytoPanelComponent(bioPaxContainer);
 		
