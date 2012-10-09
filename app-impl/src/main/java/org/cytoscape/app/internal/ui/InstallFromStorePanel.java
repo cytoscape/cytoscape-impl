@@ -303,7 +303,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
         downloadSiteLabel.setText("Download Site:");
 
-        downloadSiteComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "http://apps3.nrnb.org/", "http://apps.cytoscape.org/" }));
+        downloadSiteComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { WebQuerier.DEFAULT_APP_STORE_URL }));
         downloadSiteComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 downloadSiteComboBoxItemStateChanged(evt);

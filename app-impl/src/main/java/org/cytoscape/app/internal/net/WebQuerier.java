@@ -18,9 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-
-import javax.swing.ImageIcon;
 
 import org.apache.commons.io.IOUtils;
 import org.cytoscape.app.internal.exception.AppDownloadException;
@@ -29,7 +26,6 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.AppParser;
 import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebApp.Release;
-import org.cytoscape.app.internal.net.WebQuerier.AppTag;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.io.util.StreamUtil;
@@ -47,22 +43,17 @@ public class WebQuerier {
 	
 	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<DownloadSite>();
 	
-	static {
-		DownloadSite site = new DownloadSite();
-		site.setSiteName("Cytoscape App Store Beta");
-		site.setSiteUrl("http://apps3.nrnb.org/");
-		DEFAULT_DOWNLOAD_SITES.add(site);
-		
-		site = new DownloadSite();
-		site.setSiteName("Cytoscape App Store");
-		site.setSiteUrl("http://apps.cytoscape.org/");
-		DEFAULT_DOWNLOAD_SITES.add(site);
-	}
-	
-	private static final String DEFAULT_APP_STORE_URL = "http://apps3.nrnb.org/";
+	public static final String DEFAULT_APP_STORE_URL = "http://apps.cytoscape.org/";
 	
 	private static final String REQUEST_JSON_HEADER_KEY = "X-Requested-With";
 	private static final String REQUEST_JSON_HEADER_VALUE = "XMLHttpRequest";
+	
+	static {
+		DownloadSite site = new DownloadSite();
+		site.setSiteName("Cytoscape App Store");
+		site.setSiteUrl(DEFAULT_APP_STORE_URL);
+		DEFAULT_DOWNLOAD_SITES.add(site);
+	}
 	
 	/**
 	 * A regular expression for version lists that are compatible with the current version of Cytoscape.
