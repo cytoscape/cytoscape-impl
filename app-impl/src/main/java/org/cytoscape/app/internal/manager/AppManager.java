@@ -180,7 +180,7 @@ public class AppManager {
 					FileUtils.deleteQuietly(app.getAppFile());
 					app.setAppFile(null);
 				}		
-			} catch (AppDisableException e) {
+			} catch (Throwable e) {
 			}
 		}
 		
@@ -200,7 +200,7 @@ public class AppManager {
 					FileUtils.deleteQuietly(app.getAppFile());
 					app.setAppFile(null);
 				}
-			} catch (AppUninstallException e) {
+			} catch (Throwable e) {
 			}
 		}
 		
@@ -220,7 +220,7 @@ public class AppManager {
 					FileUtils.deleteQuietly(app.getAppFile());
 					app.setAppFile(null);
 				}
-			} catch (AppInstallException e) {
+			} catch (Throwable e) {
 				logger.warn("Failed to initially install app, " + e);
 			}
 		}
