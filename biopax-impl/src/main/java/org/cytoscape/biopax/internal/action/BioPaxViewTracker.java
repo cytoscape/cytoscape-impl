@@ -107,15 +107,19 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 					bioPaxVisualStyle.apply(view);
 					view.updateView();
 					
-					String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
+					String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME; //min. fall-back
 					if (prop != null)
-						pref = prop.getProperties().getProperty("preferredLayoutAlgorithm", pref);
-					final CyLayoutAlgorithm layout = layoutAlgorithmManager.getLayout(pref);					
-	    			final Object context = layout.getDefaultLayoutContext();
-					taskManagerRef.execute(
-	    				layout.createTaskIterator(view, context, CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
+						pref = prop.getProperties().getProperty("preferredLayoutAlgorithm", "force-directed");
+					final CyLayoutAlgorithm layout = layoutAlgorithmManager.getLayout(pref);
+					if (layout != null) {
+						final Object context = layout.getDefaultLayoutContext();
+						taskManagerRef.execute(
+			    			layout.createTaskIterator(view, context, CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
+					} else {
+						throw new IllegalArgumentException("Couldn't find layout algorithm: " + pref);
+					}			
 						    			
-//not yet migrated	    	        // set tooltips
+// not yet migrated to cy3....   - set tooltips
 //	    			setNodeToolTips(view);	    			
 	    			// add node's context menu
 	    			// TODO: NodeViewTaskFactory?
