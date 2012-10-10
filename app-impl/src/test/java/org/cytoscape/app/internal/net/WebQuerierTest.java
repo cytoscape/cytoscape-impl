@@ -22,21 +22,17 @@ public class WebQuerierTest {
 		
 		// <0 = first is newer, >0 = first is older
 		assertTrue(webQuerier.compareVersions("3.0.0", "3.0.0") == 0);
-		assertTrue(webQuerier.compareVersions("3.0.0-tag", "3.0.0") == 0);
-		assertTrue(webQuerier.compareVersions("3.0.0-tag1", "3.0.0-tag2") == 0);
+		assertTrue(webQuerier.compareVersions("3.0.0.tag", "3.0.0") < 0);
+		assertTrue(webQuerier.compareVersions("3.0.0.tag1", "3.0.0.tag2") > 0);
 		
-		assertTrue(webQuerier.compareVersions("3.0.0-tag1", "3.0.1-tag2") > 0);
-		assertTrue(webQuerier.compareVersions("3.0.1-tag1", "3.0.0-tag2") < 0);
-		assertTrue(webQuerier.compareVersions("3.0.1-tag1", "3.1.0-tag2") > 0);
+		assertTrue(webQuerier.compareVersions("3.0.0.tag1", "3.0.1.tag2") > 0);
+		assertTrue(webQuerier.compareVersions("3.0.1.tag1", "3.0.0.tag2") < 0);
+		assertTrue(webQuerier.compareVersions("3.0.1.tag1", "3.1.0.tag2") > 0);
 		
-		assertTrue(webQuerier.compareVersions("3.0", "3.0.0") > 0);
-		assertTrue(webQuerier.compareVersions("3.0-tag", "3.0.0") > 0);
+		assertTrue(webQuerier.compareVersions("3.0", "3.0.0") == 0);
 		assertTrue(webQuerier.compareVersions("3.1", "3.0.0") < 0);
 
-		assertTrue(webQuerier.compareVersions("3", "3.0.0") > 0);
-		assertTrue(webQuerier.compareVersions("3.1", "") == 0);
-		assertTrue(webQuerier.compareVersions("", "3.1") == 0);
-		assertTrue(webQuerier.compareVersions("", "") == 0);
+		assertTrue(webQuerier.compareVersions("3", "3.0.0") == 0);
 		
 		assertTrue(webQuerier.compareVersions("1.7", "3.0.0.alpha9-SNAPSHOT") > 0);
 	}

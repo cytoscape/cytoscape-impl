@@ -19,6 +19,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.cytoscape.app.internal.exception.AppDownloadException;
@@ -96,6 +98,8 @@ public class WebQuerier {
 	
 	
 	private String currentAppStoreUrl = DEFAULT_APP_STORE_URL;
+
+	private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)([.](\\d+)([.](\\d+)([.]([-_a-zA-Z0-9]+))?)?)?");
 	
 	/**
 	 * A class that represents a tag used for apps, containing information about the tag
@@ -702,80 +706,59 @@ public class WebQuerier {
 		return null;
 	}
 	
-	// Find which version is more recent, assuming versions are in format x.y[.z[tag]]
+	// Find which version is more recent, assuming versions are in format x.y[.z[.qualifier]]
 	
 	/**
-	 * Compares 2 versions, assuming they are in format x.y[.z[tag]], returning a negative
+	 * Compares 2 versions, assuming they are in format x.y[.z[.qualifier]], returning a negative
 	 * number if the first is more recent, a positive number if the second is more recent,
 	 * or 0 if the versions were the same or unable to determine which is more recent.
 	 * 
-	 * @param first The first version
-	 * @param second The second version
+	 * @param version1 The first version
+	 * @param version2 The second version
 	 * @return A negative integer if first more recent, a positive integer if second more recent,
 	 * or 0 if the versions were the same or unable to determine which is more recent.
 	 */
-	public static int compareVersions(String first, String second) {
-		if (first == null || second == null) {
-			return 0;
+	public static int compareVersions(String version1, String version2) {
+		Matcher matcher1 = VERSION_PATTERN.matcher(version1);
+		Matcher matcher2 = VERSION_PATTERN.matcher(version2);
+		
+		if (!matcher1.matches()) {
+			throw new IllegalArgumentException("Incorrectly-formatted version string: " + version1);
 		}
-		
-		String[] firstSplit = first.split("\\.", 3);
-		String[] secondSplit = second.split("\\.", 3);
-		
-		int maxFields = Math.max(firstSplit.length, secondSplit.length);
-		
-		boolean firstHasField, secondHasField;
-		//System.out.println("test2");
-		// Remove non-numerical characters
-		for (int i = 0; i < maxFields; i++) {
-			
-			firstHasField = (i < firstSplit.length);
-			secondHasField = (i < secondSplit.length);
+		if (!matcher2.matches()) {
+			throw new IllegalArgumentException("Incorrectly-formatted version string: " + version2);
+		}
 
-			/*
-			if (firstHasField) {
-				System.out.println("first: " + firstSplit[i]);
-			}
+		// major = 1, minor = 3, micro = 5, qualifier = 7
+		for (int i = 1; i < 8; i += 2) {
+			String part1 = matcher1.group(i);
+			String part2 = matcher2.group(i);
 			
-			if (secondHasField) {
-				System.out.println("second: " + secondSplit[i]);
+			if (part1 == null && part2 == null) {
+				return 0;
 			}
-			*/
-			
-			if (firstHasField && secondHasField) {
-				firstSplit[i] = firstSplit[i].replaceAll("[^\\d]+.*", "");
-				secondSplit[i] = secondSplit[i].replaceAll("[^\\d]+.*", "");
-				
-				/*
-				System.out.println("firstSplit: " + firstSplit[i]);
-				System.out.println("secondSplit: " + secondSplit[i]);
-				*/
-				
-				try {
-					int firstParsed = Integer.parseInt(firstSplit[i]);
-					int secondParsed = Integer.parseInt(secondSplit[i]);
-					
-					/*
-					System.out.println("firstParsed: " + firstParsed);
-					System.out.println("secondParsed: " + secondParsed);
-					*/
-					
-					if (firstParsed > secondParsed) {
-						return -1;
-					} else if (secondParsed > firstParsed) {
-						return 1;
-					}
-				} catch (NumberFormatException e) {
-					// System.out.println("NFE");
-					return 0;
+			if (i < 7) {
+				// major/minor/micro
+				if (part1 != null && part2 == null) {
+					return Integer.parseInt(part1) == 0 ? 0 : -1;
 				}
-			} else if (firstHasField) {
-				return -1;
-			} else if (secondHasField) {
-				return 1;
+				if (part1 == null && part2 != null) {
+					return Integer.parseInt(part2) == 0 ? 0 : 1;
+				}
+			} else {
+				// qualifier
+				if (part1 != null && part2 == null) {
+					return -1;
+				}
+				if (part1 == null && part2 != null) {
+					return 1;
+				}
+			}
+			int result = part1.compareTo(part2);
+			if (result != 0) {
+				return -result;
 			}
 		}
-		
 		return 0;
 	}
 	
