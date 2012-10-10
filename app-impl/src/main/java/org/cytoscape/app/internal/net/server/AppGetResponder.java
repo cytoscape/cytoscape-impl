@@ -3,17 +3,20 @@ package org.cytoscape.app.internal.net.server;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
-import java.util.regex.Pattern;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.cytoscape.app.internal.exception.AppDownloadException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.net.DownloadStatus;
 import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 import org.json.JSONObject;
 
 /**
@@ -83,7 +86,7 @@ public class AppGetResponder {
         protected Map<String,String> jsonRespond(CyHttpRequest request, Matcher matchedURI) {
             Map<String, String> responseData = new HashMap<String, String>();
 			String appName = matchedURI.group(1);
-			String version = matchedURI.group(2);
+			final String version = matchedURI.group(2);
 			
 			if (appName != null && appName.length() != 0 && version != null && version.length() != 0) {
 				// Use the WebQuerier to obtain the app from the app store using the app name and version
@@ -107,14 +110,35 @@ public class AppGetResponder {
 				responseData.put("name", appName);
 				
 				if (appFoundInStore) {
+					final File[] result = new File[1];
+					final Semaphore semaphore = new Semaphore(0);
 					
-					// Download app
-					File appFile = null;
-					try {
-						appFile = appManager.getWebQuerier().downloadApp(
-							appToDownload, version, new File(appManager.getDownloadedAppsPath()));
-					} catch (AppDownloadException e) {
-					}
+					final WebApp webApp = appToDownload;
+					TaskManager<?, ?> taskManager = appManager.getSwingAppAdapter().getTaskManager();
+					taskManager.execute(new TaskIterator(new AbstractTask() {
+						private DownloadStatus status;
+
+						@Override
+						public void run(TaskMonitor taskMonitor) throws Exception {
+							try {
+								taskMonitor.setStatusMessage("Installing app: " + webApp.getFullName());
+								status = new DownloadStatus(taskMonitor);
+								result[0] = appManager.getWebQuerier().downloadApp(
+										webApp, version, new File(appManager.getDownloadedAppsPath()), status);
+							} finally {
+								semaphore.release();
+							}
+						}
+						
+						public void cancel() {
+							if (status != null) {
+								status.cancel();
+							}
+						};
+					}));
+					
+					semaphore.acquireUninterruptibly();
+					File appFile = result[0];
 					
 					// Attempt to install app
 					if (appFile == null) {

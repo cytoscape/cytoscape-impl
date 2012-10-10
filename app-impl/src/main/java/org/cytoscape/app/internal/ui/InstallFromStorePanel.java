@@ -45,6 +45,7 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.AppParser;
+import org.cytoscape.app.internal.net.DownloadStatus;
 import org.cytoscape.app.internal.net.ResultsFilterer;
 import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.WebApp;
@@ -574,9 +575,11 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
         final WebApp appToDownload = selectedApp;
         
 		taskManager.execute(new TaskIterator(new Task() {
+			private DownloadStatus status;
 
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
+				status = new DownloadStatus(taskMonitor);
 				taskMonitor.setTitle("Installing App from App Store");
 				
 				double progress = 0;
@@ -584,7 +587,7 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 				taskMonitor.setStatusMessage("Installing app: " + appToDownload.getFullName());
 				
 				// Download app
-        		File appFile = webQuerier.downloadApp(appToDownload, null, new File(appManager.getDownloadedAppsPath()));
+        		File appFile = webQuerier.downloadApp(appToDownload, null, new File(appManager.getDownloadedAppsPath()), status);
 				
         		if (appFile != null) {
 	        		// Parse app
@@ -602,6 +605,9 @@ public class InstallFromStorePanel extends javax.swing.JPanel {
 
 			@Override
 			public void cancel() {
+				if (status != null) {
+					status.cancel();
+				}
 			}
 			
 		}));

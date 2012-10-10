@@ -2,7 +2,6 @@ package org.cytoscape.app.internal.net;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Time;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Locale;
@@ -20,9 +19,6 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.SimpleApp;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.App.AppStatus;
-import org.cytoscape.app.internal.util.DebugHelper;
-import org.cytoscape.application.events.SetSelectedNetworksEvent;
-import org.omg.CORBA.FREE_MEM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,8 +69,9 @@ public class UpdateManager {
 	 * Installs the given {@link Update} via the given {@link AppManager}
 	 * @param update The update to install
 	 * @param appManager The {@link AppManager} keeping track of current apps
+	 * @param taskMonitor 
 	 */
-	public void installUpdate(Update update, AppManager appManager) throws AppUpdateException {
+	public void installUpdate(Update update, AppManager appManager, DownloadStatus status) throws AppUpdateException {
 		
 		WebQuerier webQuerier = appManager.getWebQuerier();
 		
@@ -82,7 +79,8 @@ public class UpdateManager {
 		try {
 			appFile = webQuerier.downloadApp(update.getWebApp(), 
 					update.getRelease().getReleaseVersion(), 
-					new File(appManager.getDownloadedAppsPath()));
+					new File(appManager.getDownloadedAppsPath()),
+					status);
 		} catch (AppDownloadException e) {
 			logger.warn("Failed to obtain update for " 
 					+ update.getApp().getAppName() + ", " + e.getMessage());

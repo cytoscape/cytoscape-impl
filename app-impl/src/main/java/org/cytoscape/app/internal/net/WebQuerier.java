@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -29,6 +30,7 @@ import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.work.TaskMonitor;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -459,8 +461,9 @@ public class WebQuerier {
 	 * @param appName The unique app name used by the app store
 	 * @param version The desired version, or <code>null</code> to obtain the latest release
 	 * @param directory The directory used to store the downloaded file
+	 * @param taskMonitor 
 	 */
-	public File downloadApp(WebApp webApp, String version, File directory) throws AppDownloadException {
+	public File downloadApp(WebApp webApp, String version, File directory, DownloadStatus status) throws AppDownloadException {
 	
 		List<WebApp.Release> compatibleReleases = getCompatibleReleases(webApp);
 		
@@ -497,42 +500,48 @@ public class WebQuerier {
 				try {
 				
 					// Prepare to download
-					ReadableByteChannel readableByteChannel = Channels.newChannel(downloadUrl.openStream());
-					
-					// Output file has same name as app, but spaces are replaced with hyphens
-					File outputFile = new File(directory.getCanonicalPath() + File.separator 
-							+ webApp.getName().replaceAll("\\s", "-") + ".jar");
-					
-					if (outputFile.exists()) {
-						outputFile.delete();
-					}
-					
-					outputFile.createNewFile();
-					
-				    FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-				    FileChannel fileChannel = fileOutputStream.getChannel();
-				    
-				    long currentDownloadPosition = 0;
-				    long bytesTransferred;
-				    
-				    do {
-				    	bytesTransferred = fileChannel.transferFrom(readableByteChannel, currentDownloadPosition, 1 << 24);
-//				    	System.out.println("Position: " + currentDownloadPosition + " new bytes: " + bytesTransferred);
-				    	currentDownloadPosition += bytesTransferred;
-				    } while (bytesTransferred > 0);
-				    
-//				    System.out.println("outfile: " + outputFile.getAbsolutePath());
-				    
-				    try {
-				    	fileOutputStream.close();
-				    } catch (IOException e) {
-				    }
-				    
-				    try {
+					URLConnection connection = streamUtil.getURLConnection(downloadUrl);
+					InputStream inputStream = connection.getInputStream();
+					long contentLength = connection.getContentLength();
+					ReadableByteChannel readableByteChannel = Channels.newChannel(inputStream);
+					File outputFile;
+					try {
+						// Output file has same name as app, but spaces are replaced with hyphens
+						outputFile = new File(directory.getCanonicalPath() + File.separator 
+								+ webApp.getName().replaceAll("\\s", "-") + ".jar");
+						
+						if (outputFile.exists()) {
+							outputFile.delete();
+						}
+						
+						outputFile.createNewFile();
+						
+					    FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+					    try {
+						    FileChannel fileChannel = fileOutputStream.getChannel();
+						    
+						    long currentDownloadPosition = 0;
+						    long bytesTransferred;
+						    
+						    TaskMonitor taskMonitor = status.getTaskMonitor();
+						    do {
+						    	bytesTransferred = fileChannel.transferFrom(readableByteChannel, currentDownloadPosition, 1 << 14);
+						    	if (status.isCanceled()) {
+						    		outputFile.delete();
+						    		return null;
+						    	}
+						    	currentDownloadPosition += bytesTransferred;
+						    	if (contentLength > 0) {
+						    		double progress = (double) currentDownloadPosition / contentLength;
+						    		taskMonitor.setProgress(progress);
+						    	}
+						    } while (bytesTransferred > 0);
+					    } finally {
+					    	fileOutputStream.close();
+					    }
+					} finally {
 				    	readableByteChannel.close();
-				    } catch (IOException e) {
 				    }
-				    
 				    return outputFile;
 				} catch (IOException e) {
 					throw new AppDownloadException("Error while downloading app " + webApp.getFullName()
@@ -543,7 +552,6 @@ public class WebQuerier {
 			throw new AppDownloadException("No available releases were found for the app " 
 					+ webApp.getFullName() + ".");
 		}
-		
 		return null;
 	}
 

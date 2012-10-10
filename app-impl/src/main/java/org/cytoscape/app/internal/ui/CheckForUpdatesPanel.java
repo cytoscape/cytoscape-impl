@@ -7,7 +7,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -18,13 +17,13 @@ import org.cytoscape.app.internal.event.UpdatesChangedListener;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.net.DownloadStatus;
 import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
-import org.cytoscape.app.internal.ui.downloadsites.ManageDownloadSitesDialog;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -299,9 +298,11 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         final int updateCount = selectedUpdates.size();
         
         taskManager.execute(new TaskIterator(new Task() {
+			private DownloadStatus status;
 
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
+				status = new DownloadStatus(taskMonitor);
 				taskMonitor.setTitle("Installing updates");
 				
 				double progress = 0;
@@ -315,12 +316,15 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 							+ " for " + update.getApp().getAppName() 
 							+ " (" + count + "/" + updateCount + ")");
 					
-		        	updateManager.installUpdate(update, appManager);
+		        	updateManager.installUpdate(update, appManager, status);
 		        }
 			}
 
 			@Override
 			public void cancel() {	
+				if (status != null) {
+					status.cancel();
+				}
 			}
         	
         }));
@@ -331,9 +335,11 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         final int updateCount = updates.size();
 
         taskManager.execute(new TaskIterator(new Task() {
+			private DownloadStatus status;
 
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
+				status = new DownloadStatus(taskMonitor);
 				taskMonitor.setTitle("Installing updates");
 				
 				double progress = 0;
@@ -347,12 +353,15 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 							+ " for " + update.getApp().getAppName() 
 							+ " (" + count + "/" + updateCount + ")");
 					
-		        	updateManager.installUpdate(update, appManager);
+		        	updateManager.installUpdate(update, appManager, status);
 		        }
 			}
 
 			@Override
 			public void cancel() {
+				if (status != null) {
+					status.cancel();
+				}
 			}
         	
         }));
