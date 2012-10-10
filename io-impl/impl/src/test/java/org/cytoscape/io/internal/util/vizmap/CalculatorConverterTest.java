@@ -168,16 +168,16 @@ public class CalculatorConverterTest {
 	@Test
 	public void testParseDataTargetType() throws Exception {
 		assertEquals(CyNetwork.class, CalculatorConverter.parseTargetDataType("defaultBackgroundColor"));
-		assertEquals(CyNetwork.class, CalculatorConverter.parseTargetDataType("defaultEdgeSelectionColor"));
-		assertEquals(CyNetwork.class, CalculatorConverter.parseTargetDataType("defaultNodeSelectionColor"));
 		
 		assertEquals(CyEdge.class, CalculatorConverter.parseTargetDataType("defaultEdgeFontSize"));
 		assertEquals(CyEdge.class, CalculatorConverter.parseTargetDataType("defaultEdgeLineType"));
 		assertEquals(CyEdge.class, CalculatorConverter.parseTargetDataType("edgeLineTypeCalculator"));
 		assertEquals(CyEdge.class, CalculatorConverter.parseTargetDataType("defaultEdgeSourceArrow"));
+		assertEquals(CyEdge.class, CalculatorConverter.parseTargetDataType("defaultEdgeSelectionColor"));
 
 		assertEquals(CyNode.class, CalculatorConverter.parseTargetDataType("defaultNodeSize"));
 		assertEquals(CyNode.class, CalculatorConverter.parseTargetDataType("nodeLineTypeCalculator"));
+		assertEquals(CyNode.class, CalculatorConverter.parseTargetDataType("defaultNodeSelectionColor"));
 	}
 	
 	private void testConvertDefaltValue(String key,

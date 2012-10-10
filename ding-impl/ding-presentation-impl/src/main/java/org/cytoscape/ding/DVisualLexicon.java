@@ -52,7 +52,6 @@ import org.cytoscape.ding.impl.strokes.VerticalSlashStroke;
 import org.cytoscape.ding.impl.strokes.ZigzagStroke;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
-import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -67,7 +66,6 @@ import org.cytoscape.view.presentation.property.DoubleVisualProperty;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.PaintVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
-import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
 public class DVisualLexicon extends BasicVisualLexicon {
@@ -433,23 +431,10 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition8", NODE_CUSTOMGRAPHICS_POSITION_8);
 		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition9", NODE_CUSTOMGRAPHICS_POSITION_9);
 		
-		
-		// TODO: missing node properties
-		// addIdentifierMapping(CyNode.class,"nodeLabelOpacity",NODE_LABEL_TRANSPARENCY);
-		// addIdentifierMapping(CyNode.class,"nodeBorderOpacity",NODE_BORDER_TRANSPARENCY);
-		// addIdentifierMapping(CyNode.class,"nodeLabelWidth",NODE_LABEL_WIDTH);
+		addIdentifierMapping(CyNode.class, "nodeLabelPosition", NODE_LABEL_POSITION);
 
 		addIdentifierMapping(CyEdge.class, "edgeSourceArrowColor", EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 		addIdentifierMapping(CyEdge.class, "edgeTargetArrowColor", EDGE_TARGET_ARROW_UNSELECTED_PAINT);
-		addIdentifierMapping(CyEdge.class, "edgeHandleList", EDGE_BEND);
-		
-		// TODO: missing edge properties
-		// addIdentifierMapping(CyEdge.class,"edgeLabelOpacity",EDGE_LABEL_TRANSPARENCY);
-		// addIdentifierMapping(CyEdge.class,"edgeLabelWidth",EDGE_LABEL_WIDTH);
-		// addIdentifierMapping(CyEdge.class,"edgeOpacity",EDGE_TRANPARENCY);
-
-		// TODO add more!
-
 		addIdentifierMapping(CyEdge.class, "edgeCurved", EDGE_CURVED);
 	}
 

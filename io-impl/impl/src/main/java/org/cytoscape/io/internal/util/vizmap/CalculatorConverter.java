@@ -326,7 +326,8 @@ public class CalculatorConverter {
 			vp.setPassthroughMapping((PassthroughMapping) mapping);
 		else if (mapping instanceof ContinuousMapping)
 			vp.setContinuousMapping((ContinuousMapping) mapping);
-		else if (mapping instanceof DiscreteMapping) vp.setDiscreteMapping((DiscreteMapping) mapping);
+		else if (mapping instanceof DiscreteMapping)
+			vp.setDiscreteMapping((DiscreteMapping) mapping);
 	}
 
 	private void setDependency(VisualStyle vs, String sValue) {
@@ -467,7 +468,6 @@ public class CalculatorConverter {
 	static Class<? extends CyIdentifiable> parseTargetDataType(String calcKey) {
 		calcKey = calcKey.toLowerCase();
 
-		if (calcKey.matches("[a-zA-Z]+(node|edge)[reverse]?selectioncolor")) return CyNetwork.class;
 		if (calcKey.contains("node")) return CyNode.class;
 		if (calcKey.contains("edge")) return CyEdge.class;
 
