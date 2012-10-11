@@ -16,7 +16,16 @@ public class ScreenOriginsBeforeResponse implements CyHttpBeforeResponse
      */
     public ScreenOriginsBeforeResponse(final String... allowedOrigins)
     {
-        this.allowedOrigins = allowedOrigins;
+        this.allowedOrigins = new String[allowedOrigins.length];
+        
+        // Trim any trailing slashes
+        for (int i = 0; i < allowedOrigins.length; i++) {
+        	String origin = allowedOrigins[i];
+        	if (origin.endsWith("/")) {
+        		origin = origin.substring(0, origin.length() - 1);
+        	}
+        	this.allowedOrigins[i] = origin;
+        }
     }
 
     public CyHttpResponse intercept(CyHttpRequest request)
