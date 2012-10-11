@@ -77,7 +77,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			dialog.setTaskTitle(title);
 		if (statusMessage != null)
 			dialog.setStatus(statusMessage);
-		if (progress > 0)
+		if (progress != 0)
 			dialog.setPercentCompleted(progress);
 		
 		dialog.setVisible(showDialog);
@@ -177,6 +177,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			return;
 		}
 		if ( progress < 0 ) {
+			this.progress = -1;
 			if (dialog != null)
 				dialog.setPercentCompleted(-1);
 		} else {
