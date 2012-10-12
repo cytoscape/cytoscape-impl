@@ -6,20 +6,16 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -69,8 +65,9 @@ public class CyApplicationManagerImplTest {
 
 	@Test
 	public void testSetNullCurrentNetwork() {
-		appMgr.setCurrentNetwork(newNetwork());
-		appMgr.setCurrentNetworkView(newNetworkView());
+		final CyNetworkView view = newNetworkView();
+		appMgr.setCurrentNetwork(view.getModel());
+		appMgr.setCurrentNetworkView(view);
 		appMgr.setCurrentNetwork(null);
 		assertNull(appMgr.getCurrentNetwork());
 		assertNull(appMgr.getCurrentNetworkView());
@@ -142,6 +139,33 @@ public class CyApplicationManagerImplTest {
 	}
 	
 	@Test
+	public void testSetUnselectedCurrentNetworkChangesNetworkSelection() {
+		// Setting a current network that is not selected changes the network selection
+		CyNetwork n1 = newNetwork();
+		CyNetwork n2 = newNetwork();
+		CyNetwork n3 = newNetwork();
+		appMgr.setSelectedNetworks(Arrays.asList(new CyNetwork[]{ n1, n2 }));
+		appMgr.setCurrentNetwork(n3);
+		
+		assertEquals(n3, appMgr.getCurrentNetwork());
+		assertEquals(1, appMgr.getSelectedNetworks().size());
+		assertTrue(appMgr.getSelectedNetworks().contains(n3));
+	}
+	
+	@Test
+	public void testSetSelectedCurrentNetworkDoesNotChangeNetworkSelection() {
+		// Setting a current network that is already selected does NOT change the network selection state
+		CyNetwork n1 = newNetwork();
+		CyNetwork n2 = newNetwork();
+		CyNetwork n3 = newNetwork();
+		appMgr.setSelectedNetworks(Arrays.asList(new CyNetwork[]{ n1, n2, n3 }));
+		appMgr.setCurrentNetwork(n3);
+		
+		assertEquals(n3, appMgr.getCurrentNetwork());
+		assertEquals(3, appMgr.getSelectedNetworks().size());
+	}
+	
+	@Test
 	public void testSetCurrentNetworkView() {
 		CyNetworkView view = newNetworkView();
 		appMgr.setCurrentNetworkView(view);
@@ -155,6 +179,33 @@ public class CyApplicationManagerImplTest {
 		List<CyNetworkView> selViews = appMgr.getSelectedNetworkViews();
 		assertEquals(1, selViews.size());
 		assertTrue(selViews.contains(view));
+	}
+	
+	@Test
+	public void testSetUnselectedCurrentNetworkViewChangesViewSelection() {
+		// Setting a current view that is not selected changes the network view selection
+		CyNetworkView v1 = newNetworkView();
+		CyNetworkView v2 = newNetworkView();
+		CyNetworkView v3 = newNetworkView();
+		appMgr.setSelectedNetworkViews(Arrays.asList(new CyNetworkView[]{ v1, v2 }));
+		appMgr.setCurrentNetworkView(v3);
+		
+		assertEquals(v3, appMgr.getCurrentNetworkView());
+		assertEquals(1, appMgr.getSelectedNetworkViews().size());
+		assertTrue(appMgr.getSelectedNetworkViews().contains(v3));
+	}
+	
+	@Test
+	public void testSetSelectedCurrentNetworkViewDoesNotChangeViewSelection() {
+		// Setting a current  view that is already selected does NOT change the network view selection state
+		CyNetworkView v1 = newNetworkView();
+		CyNetworkView v2 = newNetworkView();
+		CyNetworkView v3 = newNetworkView();
+		appMgr.setSelectedNetworkViews(Arrays.asList(new CyNetworkView[]{ v1, v2, v3 }));
+		appMgr.setCurrentNetworkView(v3);
+		
+		assertEquals(v3, appMgr.getCurrentNetworkView());
+		assertEquals(3, appMgr.getSelectedNetworkViews().size());
 	}
 	
 	@Test
@@ -196,21 +247,23 @@ public class CyApplicationManagerImplTest {
 	
 	@Test
 	public void testSetSelectedNetworkViews() {
+		final List<CyNetwork> nets = Collections.singletonList(newNetwork());
+		appMgr.setSelectedNetworks(nets);
+		
 		final CyNetworkView v1 = newNetworkView();
 		final CyNetworkView v2 = newNetworkView();
-		final CyNetworkView v3 = newNetworkView();
-		final List<CyNetworkView> views = Arrays.asList(new CyNetworkView[]{v1, v3});
-		
+		final List<CyNetworkView> views = Arrays.asList(new CyNetworkView[]{v1, v2});
 		appMgr.setSelectedNetworkViews(views);
-		final List<CyNetwork> selectedNets = appMgr.getSelectedNetworks();
+		
 		final List<CyNetworkView> selectedViews = appMgr.getSelectedNetworkViews();
+		final List<CyNetwork> selectedNets = appMgr.getSelectedNetworks();
 		
 		assertEquals(2, selectedViews.size());
 		assertTrue(selectedViews.containsAll(views));
-//		assertEquals(2, selectedNets.size()); // Selecting views also selects their models!
-//		assertTrue(selectedNets.containsAll(Arrays.asList(new CyNetwork[]{v1.getModel(), v3.getModel()})));
+		assertEquals(1, selectedNets.size()); // Selected networks didn't change
+		assertTrue(selectedNets.containsAll(nets));
 		assertNull(appMgr.getCurrentNetwork()); // Shouldn't change the current network
-		assertNull(appMgr.getCurrentNetworkView());
+		assertNull(appMgr.getCurrentNetworkView()); // Shouldn't change the current network view
 	}
 	
 	@Test

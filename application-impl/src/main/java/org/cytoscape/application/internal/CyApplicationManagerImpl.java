@@ -30,8 +30,8 @@
 package org.cytoscape.application.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -154,15 +154,15 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 				currentNetwork = network;
 				
 				if (network != null) {
-					// set new current network view?
+					// If the new current network is not selected, reset the selection and select the current one only
+					if (!getSelectedNetworks().contains(network))
+						setSelectedNetworks(Collections.singletonList(network));
+					
+					// Set new current network view, unless the current view's model is already the new current network
 					final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-					final CyNetworkView nv = views.isEmpty() ? null : views.iterator().next();
 					
-					if (nv != currentNetworkView)
-						setCurrentNetworkView(nv);
-					
-					// reset selected networks
-					selectNetworks(Arrays.asList(new CyNetwork[]{ network }));
+					if (!views.contains(currentNetworkView))
+						setCurrentNetworkView(views.isEmpty() ? null : views.iterator().next());
 				} else {
 					if (currentNetworkView != null)
 						setCurrentNetworkView(null);
@@ -195,11 +195,11 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 			if (changed) {
 				currentNetworkView = view;
-				// reset selected network views
-				selectedNetworkViews.clear();
 				
 				if (view != null) {
-					selectedNetworkViews.add(view);
+					// If the new current view is not selected, reset selected views and select the current one only
+					if (!selectedNetworkViews.contains(view))
+						setSelectedNetworkViews(Collections.singletonList(view));
 					
 					if (!view.getModel().equals(currentNetwork))
 						setCurrentNetwork(view.getModel());
@@ -226,11 +226,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			if (networkViews != null)
 				selectedNetworkViews.addAll(networkViews);
 
-			CyNetworkView cv = getCurrentNetworkView();
-
-			if (cv != null && !selectedNetworkViews.contains(cv)) {
-				selectedNetworkViews.add(cv);
-			}
+			if (currentNetworkView != null && !selectedNetworkViews.contains(currentNetworkView))
+				selectedNetworkViews.add(currentNetworkView);
 		}
 
 		cyEventHelper.fireEvent(new SetSelectedNetworkViewsEvent(this,
