@@ -99,6 +99,25 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 		}
 	}
 
+	public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
+		CyNode node = nodeView.getModel();
+		CyNetwork net = networkView.getModel();
+
+		// Do we care about this double-click?
+		if (cyGroupManager.isGroup(node, net)) {
+			return true;
+		} else {
+			List<CyGroup> groups = cyGroupManager.getGroupsForNode(node);
+			for (CyGroup g: groups) {
+				// Make sure we're in the right network
+				if (cyGroupManager.isGroup(g.getGroupNode(), net)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	class NullTask extends AbstractTask {
 		public void run(TaskMonitor tm) throws Exception {
 			return;
