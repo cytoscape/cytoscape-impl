@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>event-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-alpha10-SNAPSHOT</version>
+		<version>3.0.0-beta2-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,6 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>event-impl-it</artifactId>
 
 	<name>Cytoscape Event Impl IT (${project.artifactId})</name>
