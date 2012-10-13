@@ -245,6 +245,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			types.put(normalizedNewColName, column);
 			types.remove( normalizedOldColName);
 			
+			final VirtualColumn virtualColumn = virtualColumnMap.get(normalizedOldColName);
+			if (virtualColumn != null) {
+				virtualColumnMap.remove(normalizedOldColName);
+				virtualColumnMap.put(normalizedNewColName, virtualColumn);
+			}
+			
 			final Set<CyColumn> columnDependents = dependents.get(normalizedOldColName);
 			if (columnDependents != null) {
 				dependents.remove(normalizedOldColName);
