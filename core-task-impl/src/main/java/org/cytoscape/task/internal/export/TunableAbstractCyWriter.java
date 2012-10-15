@@ -116,7 +116,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 			return file;
 
 		final String extension = extensions.next();
-		final String pathWithoutExtension = stripExtension(file.getPath());
+		final String pathWithoutExtension = stripExtension(file.getAbsolutePath());
 
 		return new File(pathWithoutExtension + "." + extension);
 	}
