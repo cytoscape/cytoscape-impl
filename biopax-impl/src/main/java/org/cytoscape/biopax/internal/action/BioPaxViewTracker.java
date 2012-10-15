@@ -98,7 +98,6 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 				public void run() {
 					bpContainer.showLegend();
 					bpPanel.resetText();
-//					cySwingApplication.getCytoPanel(CytoPanelName.EAST).setState(CytoPanelState.DOCK);
 					
 					// apply BioPAX visual style and set tool tips
 					setNodeToolTips(view);
