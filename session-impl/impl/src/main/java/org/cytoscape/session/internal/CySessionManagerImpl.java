@@ -47,6 +47,7 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -96,6 +97,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private final VisualMappingManager vmMgr;
 	private final CyNetworkViewManager nvMgr;
 	private final CyRootNetworkManager rootNetMgr;
+	private final CyGroupManager grMgr;
 	private final CyServiceRegistrar registrar;
 	private final UndoSupport undo;
 
@@ -112,6 +114,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 								final VisualMappingManager vmMgr,
 								final CyNetworkViewManager nvMgr,
 								final CyRootNetworkManager rootNetMgr,
+								final CyGroupManager grMgr,
 								final CyServiceRegistrar registrar,
 								final UndoSupport undo) {
 		this.eventHelper = eventHelper;
@@ -122,6 +125,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		this.vmMgr = vmMgr;
 		this.nvMgr = nvMgr;
 		this.rootNetMgr = rootNetMgr;
+		this.grMgr = grMgr;
 		this.registrar = registrar;
 		this.sessionProperties = new HashSet<CyProperty<?>>();
 		this.undo = undo;
@@ -229,6 +233,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 		if (sess == null) {
 			logger.debug("Creating empty session...");
+			grMgr.reset(); // TODO: move this line to disposeCurrentSession() when possible. See http://code.cytoscape.org/redmine/issues/1520
+			
 			final Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 			final Set<CyProperty<?>> props = getAllProperties();
 

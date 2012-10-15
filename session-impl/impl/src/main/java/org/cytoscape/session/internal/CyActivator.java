@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
@@ -33,6 +34,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
 		CyRootNetworkManager cyRootNetworkManagerServiceRef = getService(bc, CyRootNetworkManager.class);
+		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		UndoSupport undo = getService(bc, UndoSupport.class);
 		
@@ -40,7 +42,7 @@ public class CyActivator extends AbstractCyActivator {
 		CySessionManagerImpl cySessionManager = new CySessionManagerImpl(cyEventHelperServiceRef,
 				cyApplicationManagerServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef,
 				cyNetworkTableManagerServiceRef, visualMappingManagerServiceRef, cyNetworkViewManagerServiceRef,
-				cyRootNetworkManagerServiceRef, cyServiceRegistrarServiceRef, undo);
+				cyRootNetworkManagerServiceRef, cyGroupManagerServiceRef, cyServiceRegistrarServiceRef, undo);
 
 		registerService(bc, cyNetworkNaming, CyNetworkNaming.class, new Properties());
 		registerAllServices(bc, cySessionManager, new Properties());

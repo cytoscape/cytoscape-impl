@@ -311,6 +311,10 @@ public class GroupUtil {
 		}
 	}
 
+	public void disposeAllGroups() {
+		groupMgr.reset();
+	}
+	
 	private void updateExternalEdgeAttribute(final CyGroup group) {
 		// Get the group node
 		CyNode groupNode = group.getGroupNode();

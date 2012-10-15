@@ -265,6 +265,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	abstract void createObjectMap();
 
 	protected void createGroups() {
+		groupUtil.disposeAllGroups(); // TODO: it should be done by the Session bundle, not IO
 		groupUtil.createGroups(networks, networkViews);
 	}
 	
