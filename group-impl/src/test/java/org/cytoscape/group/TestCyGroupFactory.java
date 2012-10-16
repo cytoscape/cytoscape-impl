@@ -27,12 +27,16 @@
 */
 package org.cytoscape.group;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.group.internal.CyGroupFactoryImpl;
@@ -103,5 +107,81 @@ public class TestCyGroupFactory {
 		assertTrue("group3 external edge count = 2", group3.getExternalEdgeList().size() == 2);
 	}
 
+    /*
+     * Tests for this scenario:
+
+                           group
+                     +- - - - - - - - +
+                     |        2       |
+                        +-------> B
+                     |  |         ^   |    Collapse
+                        |         |5      ===========>
+                     |  v         |   |
+               1        +     3   v                            1
+            A<--------->G<------->C   |                 A+---------->G
+                        ^         ^
+                     |  |         |6  |      Expand
+                        |         |       <===========
+                     |  |     4   v   |
+                        +-------->D
+                     |                |
+                     +- - - - - - - - +
+    */
+    @Test
+    public void testMemberEdges() throws Exception
+    {
+        // Set up our data structures
+		final CyGroupFactory factory = TestCyGroupFactory.getFactory();
+		final NetworkTestSupport support = new NetworkTestSupport();
+		final CyNetwork net = support.getNetwork();
+
+        final CyNode nodeA = net.addNode();
+        final CyNode nodeB = net.addNode();
+        final CyNode nodeC = net.addNode();
+        final CyNode nodeD = net.addNode();
+        final CyNode nodeG = net.addNode();
+
+        final CyEdge edge1 = net.addEdge(nodeA, nodeG, false);
+        final CyEdge edge2 = net.addEdge(nodeG, nodeB, false);
+        final CyEdge edge3 = net.addEdge(nodeG, nodeC, false);
+        final CyEdge edge4 = net.addEdge(nodeG, nodeD, false);
+        final CyEdge edge5 = net.addEdge(nodeC, nodeB, false);
+        final CyEdge edge6 = net.addEdge(nodeC, nodeD, false);
+
+        final CyGroup group = factory.createGroup(net, nodeG, Arrays.asList(nodeB, nodeC, nodeD), Arrays.asList(edge2, edge3, edge4, edge5, edge6), true);
+
+        // Assert our group has the right nodes and edges
+        assertFalse(group.isCollapsed(net));
+        assertEqualWithoutOrder(group.getNodeList(), Arrays.asList(nodeB, nodeC, nodeD));
+        assertEqualWithoutOrder(group.getInternalEdgeList(), Arrays.asList(edge5, edge6));
+        assertEquals(group.getExternalEdgeList().size(), 0);
+
+        // Assert that the network was unaffected by the group creation
+        assertEqualWithoutOrder(net.getNodeList(), Arrays.asList(nodeA, nodeB, nodeC, nodeD, nodeG));
+        assertEqualWithoutOrder(net.getEdgeList(), Arrays.asList(edge1, edge2, edge3, edge4, edge5, edge6));
+
+        // Collapse the group
+        group.collapse(net);
+        assertTrue(group.isCollapsed(net));
+
+        // Test to see if our network is what we expect
+        assertEqualWithoutOrder(net.getNodeList(), Arrays.asList(nodeA, nodeG));
+        assertEqualWithoutOrder(net.getEdgeList(), Arrays.asList(edge1));
+
+        // Expand the group
+        group.expand(net);
+        assertFalse(group.isCollapsed(net));
+
+        // Assert that the network has returned to its original state
+        assertEqualWithoutOrder(net.getNodeList(), Arrays.asList(nodeA, nodeB, nodeC, nodeD, nodeG));
+        assertEqualWithoutOrder(net.getEdgeList(), Arrays.asList(edge1, edge2, edge3, edge4, edge5, edge6));
+    }
+
+    private static <T> void assertEqualWithoutOrder(final Collection<T> a, final Collection<T> b)
+    {
+        final Set<T> aset = new HashSet<T>(a);
+        final Set<T> bset = new HashSet<T>(b);
+        assertEquals(aset, bset);
+    }
 }
 
