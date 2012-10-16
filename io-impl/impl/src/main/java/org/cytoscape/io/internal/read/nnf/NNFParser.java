@@ -4,17 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+
 import java.util.Collection;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import java.util.Iterator;
 
@@ -24,6 +22,8 @@ import java.util.Iterator;
  * @author kono, ruschein
  */
 public class NNFParser {
+	private static final String HAS_NESTED_NETWORK_ATTRIBUTE = "has_nested_network";
+	
 	// For performance, these fields will be reused.
 	private String[] parts;
 	private int length;
@@ -92,13 +92,13 @@ public class NNFParser {
 			// Attempt to nest network within the node with the same name			
 			CyNode parent = getNodeByName(networkMap, parts[0]);
 			if (parent != null) {
-				parent.setNetworkPointer(network);
+				setNestedNetwork(network, parent, network);
 			}
 			
 			// is the node exist in the overview network
 			parent = getNodefromOverview(parts[0]);
 			if (parent != null) {
-				parent.setNetworkPointer(network);
+				setNestedNetwork(network, parent, network);
 			}
 		}
 
@@ -119,7 +119,7 @@ public class NNFParser {
 						
 			final CyNetwork nestedNetwork = networkMap.get(parts[1]);
 			if (nestedNetwork != null) {
-				node.setNetworkPointer(nestedNetwork);
+				setNestedNetwork(network, node, nestedNetwork);
 			}
 		} else if (length == 4) {
 			CyNode source = null;
@@ -152,7 +152,7 @@ public class NNFParser {
 			
 			CyNetwork nestedNetwork = networkMap.get(parts[1]);
 			if (nestedNetwork != null) {
-				source.setNetworkPointer(nestedNetwork);
+				setNestedNetwork(network, source, nestedNetwork);
 			}
 
 			CyNode target = null;
@@ -190,7 +190,7 @@ public class NNFParser {
 			//
 			nestedNetwork = networkMap.get(parts[3]);
 			if (nestedNetwork != null) {
-				target.setNetworkPointer(nestedNetwork);
+				setNestedNetwork(network, target, nestedNetwork);
 			}
 
 			CyEdge newEdge = network.addEdge(source, target, true);
@@ -206,6 +206,26 @@ public class NNFParser {
 	}
 	
 	
+	@SuppressWarnings("unused")
+	private void setNestedNetwork(CyNetwork sourceNetwork, CyNode node, CyNetwork targetNetwork) {
+		// TODO: We should consider exposing a nested network API so we don't
+		// have to do this everywhere we establish this link.
+		node.setNetworkPointer(targetNetwork);
+		
+		CyTable nodeTable = sourceNetwork.getDefaultNodeTable();
+		boolean attributeExists = nodeTable.getColumn(HAS_NESTED_NETWORK_ATTRIBUTE) != null;
+		if (targetNetwork == null && attributeExists) {
+			nodeTable.getRow(node.getSUID()).set(HAS_NESTED_NETWORK_ATTRIBUTE, false);
+		} else if (targetNetwork != null) {
+			if (!attributeExists) {
+				nodeTable.createColumn(HAS_NESTED_NETWORK_ATTRIBUTE, Boolean.class, false);
+			}
+			CyRow row = nodeTable.getRow(node.getSUID());
+			row.set(HAS_NESTED_NETWORK_ATTRIBUTE, true);
+		}
+	}
+
+
 	private CyNode getNodeByName(Map<String, CyNetwork> networkMap, String nodeName){
 		
 		CyNode retNode = null;
