@@ -104,6 +104,8 @@ import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -158,29 +160,24 @@ public class CyActivator extends AbstractCyActivator {
 		
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
-		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
-		                                                                             CyApplicationConfiguration.class);
-		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc,
-		                                                                   RecentlyOpenedTracker.class);
-		CyProperty cytoscapePropertiesServiceRef = getService(bc, CyProperty.class,
-		                                                      "(cyPropertyName=cytoscape3.props)");
+		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
+		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc, RecentlyOpenedTracker.class);
+		CyProperty cytoscapePropertiesServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		CyVersion cyVersionServiceRef = getService(bc, CyVersion.class);
-		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,
-		                                                                 CyApplicationManager.class);
+		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
-		CySessionReaderManager sessionReaderManagerServiceRef = getService(bc,
-		                                                                   CySessionReaderManager.class);
-		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,
-		                                                                 CyNetworkViewManager.class);
+		CySessionReaderManager sessionReaderManagerServiceRef = getService(bc, CySessionReaderManager.class);
+		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
+		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
+		CyTableFactory cyTableFactoryServiceRef = getService(bc, CyTableFactory.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 
 		RenderingEngineFactory dingNavigationPresentationFactoryServiceRef = getService(bc,
 		                                                                                RenderingEngineFactory.class,
 		                                                                                "(id=dingNavigation)");
-		CyProperty bookmarkServiceRef = getService(bc, CyProperty.class,
-		                                           "(cyPropertyName=bookmarks)");
+		CyProperty bookmarkServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=bookmarks)");
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc, BookmarksUtil.class);
 		
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
@@ -232,6 +229,8 @@ public class CyActivator extends AbstractCyActivator {
 		                                             cyNetworkViewManagerServiceRef,
 		                                             birdsEyeViewHandler,
 		                                             dialogTaskManagerServiceRef,
+		                                             cyTableManagerServiceRef,
+		                                             cyTableFactoryServiceRef,
 		                                             dynamicTaskFactoryProvisionerServiceRef,
 		                                             editNetworkTitleTFServiceRef);
 

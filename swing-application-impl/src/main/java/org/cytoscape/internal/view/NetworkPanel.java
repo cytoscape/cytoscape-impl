@@ -41,12 +41,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -73,10 +75,14 @@ import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -86,6 +92,10 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
@@ -107,7 +117,11 @@ import org.slf4j.LoggerFactory;
 
 public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSelectedNetworksListener,
 		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener,
-		NetworkViewAboutToBeDestroyedListener, RowsSetListener {
+		NetworkViewAboutToBeDestroyedListener, RowsSetListener, SessionAboutToBeSavedListener, SessionLoadedListener {
+
+	private static final String NETWORK_PANEL_TABLE = "CY_NETWORK_LIST_UI";
+	private static final String NETWORK_SUID_COLUMN = "network.SUID";
+	private static final String NETWORK_ORDER_COLUMN = "network_order";
 
 	private final static long serialVersionUID = 1213748836763243L;
 
@@ -125,8 +139,9 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 	private final NetworkTreeTableModel treeTableModel;
 	private final CyApplicationManager appMgr;
 	final CyNetworkManager netMgr;
-	final CyNetworkViewManager netViewMgr;
-
+	private final CyNetworkViewManager netViewMgr;
+	private final CyTableManager tblMgr;
+	private final CyTableFactory tblFactory;
 	private final DialogTaskManager taskMgr;
 	private final DynamicTaskFactoryProvisioner factoryProvisioner;
 
@@ -135,14 +150,12 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 	
 	private final Map<TaskFactory, JMenuItem> popupMap;
 	private final Map<TaskFactory, CyAction> popupActions;
-	private final Map<CyTable, CyNetwork> nameTables;
-	private final Map<CyTable, CyNetwork> nodeEdgeTables;
-
-	private final Map<Long, NetworkTreeNode> treeNodeMap;
+	private HashMap<JMenuItem, Double> actionGravityMap;
 	private final Map<Object, TaskFactory> provisionerMap;
 	
-	private HashMap<JMenuItem, Double> actionGravityMap;
-
+	private final Map<CyTable, CyNetwork> nameTables;
+	private final Map<CyTable, CyNetwork> nodeEdgeTables;
+	private final Map<Long, NetworkTreeNode> treeNodeMap;
 	private final Map<CyNetwork, NetworkTreeNode> network2nodeMap;
 
 	private boolean ignoreTreeSelectionEvents;
@@ -165,6 +178,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 						final CyNetworkViewManager netViewMgr,
 						final BirdsEyeViewHandler bird,
 						final DialogTaskManager taskMgr,
+						final CyTableManager tblMgr,
+						final CyTableFactory tblFactory,
 						final DynamicTaskFactoryProvisioner factoryProvisioner,
 						final EditNetworkTitleTaskFactory networkTitleEditor) {
 		super();
@@ -175,6 +190,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
 		this.taskMgr = taskMgr;
+		this.tblMgr = tblMgr;
+		this.tblFactory = tblFactory;
 		this.factoryProvisioner = factoryProvisioner;
 		
 		root = new NetworkTreeNode("Network Root", null);
@@ -349,9 +366,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 		final CyNetwork net = nde.getNetwork();
 		logger.debug("Network about to be destroyed: " + net);
 		removeNetwork(net);
-
-		nameTables.values().removeAll(Collections.singletonList(net));
-		nodeEdgeTables.values().removeAll(Collections.singletonList(net));
 	}
 
 	@Override
@@ -359,10 +373,6 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 		final CyNetwork net = e.getNetwork();
 		logger.debug("Network added: " + net);
 		addNetwork(net);
-
-		nameTables.put(net.getDefaultNetworkTable(), net);
-		nodeEdgeTables.put(net.getDefaultNodeTable(), net);
-		nodeEdgeTables.put(net.getDefaultEdgeTable(), net);
 	}
 
 	@Override
@@ -450,7 +460,98 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 			}
 		});
 	}
+	
+	@Override
+	public void handleEvent(final SessionLoadedEvent e) {
+		// Restore the network collections order
+		final Set<CyNetwork> networks = e.getLoadedSession().getNetworks();
+		
+		if (networks.size() < 2)
+			return; // No need to sort 1 network, of course
+		
+		final List<CyNetwork> sortedNetworks = new ArrayList<CyNetwork>(networks);
+		final CyTable tbl = getNetworkPanelTable();
+		
+		Collections.sort(sortedNetworks, new Comparator<CyNetwork>() {
+			@Override
+			public int compare(final CyNetwork n1, final CyNetwork n2) {
+				try {
+					int o1 = -1;
+					int o2 = -1;
+					final Collection<CyRow> rows1 = tbl.getMatchingRows(NETWORK_SUID_COLUMN, n1.getSUID());
+					final Collection<CyRow> rows2 = tbl.getMatchingRows(NETWORK_SUID_COLUMN, n2.getSUID());
+					final CyRow r1 = rows1.isEmpty() ? null : rows1.iterator().next();
+					final CyRow r2 = rows2.isEmpty() ? null : rows2.iterator().next();
+					
+					if (r1 != null && r1.isSet(NETWORK_ORDER_COLUMN))
+						o1 = r1.get(NETWORK_ORDER_COLUMN, Integer.class);
+					if (r2 != null && r2.isSet(NETWORK_ORDER_COLUMN))
+						o2 = r2.get(NETWORK_ORDER_COLUMN, Integer.class);
+					
+					if (o1 < o2)
+						return -1;
+					else if (o1 > o2)
+						return 1;
+				} catch (final Exception e) {
+					logger.error("Cannot sort networks", e);
+				}
+				
+				return 0;
+			}
+		});
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				// TODO: find a better way of doing it--one that does not require rebuilding the tree
+				nameTables.clear();
+				nodeEdgeTables.clear();
+				network2nodeMap.clear();
+				treeNodeMap.clear();
+				
+				ignoreTreeSelectionEvents = true;
+				root.removeAllChildren();
+				treeTable.getTree().updateUI();
+				treeTable.repaint();
+				ignoreTreeSelectionEvents = false;
+				
+				for (final CyNetwork n : sortedNetworks)
+					addNetwork(n);
+					
+				updateNetworkTreeSelection();
+			}
+		});
+		
+		// Delete the table
+		tblMgr.deleteTable(tbl.getSUID());
+	}
 
+	@Override
+	public void handleEvent(final SessionAboutToBeSavedEvent e) {
+		// Save the network orders
+		if (netMgr.getNetworkSet().size() < 2)
+			return; // No need save the orders, if there is only 1 network (or none)
+		
+		final CyTable tbl = getNetworkPanelTable();
+		
+		// Save the orders
+		final JTree tree = treeTable.getTree();
+		
+		for (final Entry<CyNetwork, NetworkTreeNode> entry : network2nodeMap.entrySet()) {
+			final CyNetwork net = entry.getKey();
+			final NetworkTreeNode node = entry.getValue();
+			
+			if (node != null) {
+				final TreePath tp = new TreePath(node.getPath());
+				final int i = tree.getRowForPath(tp);
+				
+				final CyRow row = tbl.getRow(net.getSUID());
+				row.set(NETWORK_SUID_COLUMN, net.getSUID());
+				row.set(NETWORK_ORDER_COLUMN, i);
+			}
+		}
+	}
+	
 	/**
 	 * This method highlights a network in the NetworkPanel.
 	 */
@@ -596,18 +697,23 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 				}
 			});
 		}
+		
+		nameTables.put(network.getDefaultNetworkTable(), network);
+		nodeEdgeTables.put(network.getDefaultNodeTable(), network);
+		nodeEdgeTables.put(network.getDefaultEdgeTable(), network);
 	}
 	
 	/**
 	 * Remove a network from the panel.
 	 */
 	private void removeNetwork(final CyNetwork network) {
-		final NetworkTreeNode node = this.network2nodeMap.remove(network);
+		nameTables.values().removeAll(Collections.singletonList(network));
+		nodeEdgeTables.values().removeAll(Collections.singletonList(network));
+		treeNodeMap.remove(network.getSUID());
+		final NetworkTreeNode node = network2nodeMap.remove(network);
 		
 		if (node == null)
 			return;
-
-		treeNodeMap.values().remove(node);
 		
 		final List<NetworkTreeNode> removedChildren = new ArrayList<NetworkTreeNode>();
 		final Enumeration<?> children = node.children();
@@ -632,6 +738,12 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 
 				if (parentNode.isLeaf()) {
 					// Remove from root node
+					final CyNetwork parentNet = parentNode.getNetwork();
+					nameTables.values().removeAll(Collections.singletonList(parentNet));
+					nodeEdgeTables.values().removeAll(Collections.singletonList(parentNet));
+					network2nodeMap.remove(parentNet);
+					treeNodeMap.remove(parentNet.getSUID());
+					
 					parentNode.removeFromParent();
 				}
 				
@@ -800,6 +912,30 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 		}
 		
 		return nets;
+	}
+	
+	private CyTable getNetworkPanelTable() {
+		CyTable tbl = null;
+		// First check if it already exists
+		final Set<CyTable> globalTables = tblMgr.getGlobalTables();
+		
+		for (final CyTable t : globalTables) {
+			if (NETWORK_PANEL_TABLE.equals(t.getTitle())) {
+				tbl = t;
+				break;
+			}
+		}
+		
+		if (tbl == null) {
+			// Create the table, if it doesn't exist
+			tbl = tblFactory.createTable(NETWORK_PANEL_TABLE, CyIdentifiable.SUID, Long.class, false, true);
+			tbl.setSavePolicy(SavePolicy.SESSION_FILE);
+			tbl.createColumn(NETWORK_SUID_COLUMN, Long.class, true);
+			tbl.createColumn(NETWORK_ORDER_COLUMN, Integer.class, true, -1);
+			tblMgr.addTable(tbl);
+		}
+		
+		return tbl;
 	}
 	
 	// // Private Classes // //
