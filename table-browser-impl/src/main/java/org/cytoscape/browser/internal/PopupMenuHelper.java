@@ -84,8 +84,8 @@ public class PopupMenuHelper {
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column);
 			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
 		}
-
-		menu.show(invoker, x, y);
+		if(menu.getSubElements().length > 0)
+			menu.show(invoker, x, y);
 	}
 
 	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue, final Class<? extends CyIdentifiable> tableType, final Component invoker,
@@ -107,8 +107,8 @@ public class PopupMenuHelper {
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
 			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
 		}
-
-		menu.show(invoker, x, y);
+		if(menu.getSubElements().length > 0)
+			menu.show(invoker, x, y);
 	}
 
 	/**
