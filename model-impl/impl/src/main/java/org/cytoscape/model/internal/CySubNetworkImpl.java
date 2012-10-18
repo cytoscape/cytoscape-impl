@@ -323,11 +323,11 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 	public String toString() {
 		String name;
 		try {
-			name = getRow(this).get("name", String.class);
+			name = getRow(this).get(NAME, String.class);
 		} catch (NullPointerException e) {
 			name = "(unavailable)";
 		}
-		return "CyNetwork: " + getSUID() + " name: " + name; 
+		return "CySubNetwork: " + getSUID() + " name: " + name; 
 	}
 	
 	@Override
