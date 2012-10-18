@@ -53,7 +53,6 @@ import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
 import org.biopax.paxtools.model.level3.XReferrable;
 import org.biopax.paxtools.model.level3.Xref;
 import org.biopax.paxtools.util.ClassFilterSet;
-import org.cytoscape.model.CyNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -319,11 +318,11 @@ public final class BioPaxUtil {
 	
 	/**
 	 * Gets the NCBI Taxonomy ID.
-	 *
 	 * @param bpe BioPAX element
+	 *
 	 * @return taxonomyId, or -1, if not available.
 	 */
-	public static int getOrganismTaxonomyId(CyNetwork network, BioPAXElement bpe) {
+	public static int getOrganismTaxonomyId(BioPAXElement bpe) {
 		int taxonomyId = -1;
 		
 		try {

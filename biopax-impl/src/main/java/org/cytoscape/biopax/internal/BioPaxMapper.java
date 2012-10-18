@@ -63,52 +63,52 @@ public class BioPaxMapper {
 	/**
 	 * BioPax Node Attribute: Entity TYPE
 	 */
-	public static final String BIOPAX_ENTITY_TYPE = "biopax_type";
+	public static final String BIOPAX_ENTITY_TYPE = "BIOPAX_TYPE";
 
 	/**
 	 * BioPax Node Attribute: CHEMICAL_MODIFICATIONS_MAP
 	 */
-	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_MAP = "chemical_modifications_map";
+	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_MAP = "CHEMICAL_MODIFICATIONS_MAP";
 
 	/**
 	 * BioPax Node Attribute: CHEMICAL_MODIFICATIONS_LIST
 	 */
-	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_LIST = "chemical_modifications";
+	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_LIST = "CHEMICAL_MODIFICATIONS";
 
 	/**
 	 * Node Attribute: UNIFICATION_REFERENCES
 	 */
-	public static final String BIOPAX_UNIFICATION_REFERENCES = "unification_references";
+	public static final String BIOPAX_UNIFICATION_REFERENCES = "UNIFICATION_REFERENCES";
 
 	/**
 	 * Node Attribute: RELATIONSHIP_REFERENCES
 	 */
-	public static final String BIOPAX_RELATIONSHIP_REFERENCES = "relationship_references";
+	public static final String BIOPAX_RELATIONSHIP_REFERENCES = "RELATIONSHIP_REFERENCES";
 
 	/**
 	 * Node Attribute: PUBLICATION_REFERENCES
 	 */
-	public static final String BIOPAX_PUBLICATION_REFERENCES = "publication_references";
+	public static final String BIOPAX_PUBLICATION_REFERENCES = "PUBLICATION_REFERENCES";
 
 	/**
 	 * Node Attribute:  XREF_IDs.
 	 */
-	public static final String BIOPAX_XREF_IDS = "identifiers";
+	public static final String BIOPAX_XREF_IDS = "IDENTIFIERS";
 
 	/**
 	 * Node Attribute:  BIOPAX_XREF_PREFIX.
 	 */
-	public static final String BIOPAX_XREF_PREFIX = "xref.";
+	public static final String BIOPAX_XREF_PREFIX = "XREF.";
 
 	/**
 	 * Node Attribute: IHOP_LINKS
 	 */
-	public static final String BIOPAX_IHOP_LINKS = "ihop_links";
+	public static final String BIOPAX_IHOP_LINKS = "IHOP_LINKS";
 
 	/**
 	 * Node Attribute: AFFYMETRIX_REFERENCES
 	 */
-	public static final String BIOPAX_AFFYMETRIX_REFERENCES_LIST = "affymetrix_references";
+	public static final String BIOPAX_AFFYMETRIX_REFERENCES_LIST = "AFFYMETRIX_REFERENCES";
 	
 	
 	public static final Logger log = LoggerFactory.getLogger(BioPaxMapper.class);
@@ -569,7 +569,7 @@ public class BioPaxMapper {
 		}
 		
 		// ihop links
-		String stringRef = addIHOPLinks(network, resource);
+		String stringRef = ihopLinks(resource);
 		if (stringRef != null) {
 			AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_IHOP_LINKS, stringRef, String.class);
 		}
@@ -722,11 +722,11 @@ public class BioPaxMapper {
 		// add a piece of the BioPAX (RDF/XML without parent|child elements)
 		
 		
-		//the following attr. was experimental, not so important for users...
-		if(network.getNodeCount() < 100) { //- this condition was added for performance/memory...
-			String owl = BioPaxUtil.toOwl(element); // (requires common-lang-2.4 bundle to be started)
-			AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BioPaxUtil.BIOPAX_DATA, owl, String.class);
-		}
+//		//the following attr. was experimental, not so important for users...
+//		if(network.getNodeCount() < 100) { //- this condition was added for performance/memory...
+//			String owl = BioPaxUtil.toOwl(element); // (requires common-lang-2.4 bundle to be started)
+//			AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BioPaxUtil.BIOPAX_DATA, owl, String.class);
+//		}
 		
 		String name = BioPaxUtil.truncateLongStr(BioPaxUtil.getNodeName(element) + "");
 		
@@ -941,19 +941,17 @@ public class BioPaxMapper {
 	}
 
 	
-	private static String addIHOPLinks(CyNetwork network, BioPAXElement bpe) {
+	private static String ihopLinks(BioPAXElement bpe) {
 		List<String> synList = new ArrayList<String>(BioPaxUtil.getSynonyms(bpe));
 		List<ExternalLink> dbList = xrefToExternalLinks(bpe, Xref.class);
+		String htmlLink = null;
 		
 		if (!synList.isEmpty() || !dbList.isEmpty()) {
-			String htmlLink = ExternalLinkUtil.createIHOPLink(bpe.getModelInterface().getSimpleName(),
-					synList, dbList, BioPaxUtil.getOrganismTaxonomyId(network, bpe));
-			if (htmlLink != null) {
-				return htmlLink;
-			}
+			htmlLink = ExternalLinkUtil.createIHOPLink(bpe.getModelInterface().getSimpleName(),
+					synList, dbList, BioPaxUtil.getOrganismTaxonomyId(bpe));
 		}
 
-		return null;
+		return htmlLink;
 	}
 
 	
