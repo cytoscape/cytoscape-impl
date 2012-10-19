@@ -29,8 +29,10 @@
  */
 package org.cytoscape.task.internal.creation;  
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -49,11 +51,13 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 	private final CyNetworkNaming namingUtil;
 	private final SynchronousTaskManager<?> syncTaskMgr;
 	private final VisualMappingManager vmm;
-
+	private final CyRootNetworkManager cyRootNetworkManager;
+	private final CyApplicationManager cyApplicationManager;
+	
 	public NewEmptyNetworkTaskFactoryImpl(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, 
 			final CyNetworkManager netMgr, final CyNetworkViewManager networkViewManager, 
 			final CyNetworkNaming namingUtil, final SynchronousTaskManager<?> syncTaskMgr,
-			final VisualMappingManager vmm) {
+			final VisualMappingManager vmm, final CyRootNetworkManager cyRootNetworkManager, final CyApplicationManager cyApplicationManager) {
 		this.cnf = cnf;
 		this.cnvf = cnvf;
 		this.netMgr = netMgr;
@@ -61,6 +65,8 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.namingUtil = namingUtil;
 		this.syncTaskMgr = syncTaskMgr;
 		this.vmm = vmm;
+		this.cyRootNetworkManager = cyRootNetworkManager;
+		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -68,7 +74,7 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 	} 
 
 	private NewEmptyNetworkTask createTask() {
-		return new NewEmptyNetworkTask(cnf, cnvf, netMgr, networkViewMgr, namingUtil, vmm);
+		return new NewEmptyNetworkTask(cnf, cnvf, netMgr, networkViewMgr, namingUtil, vmm, cyRootNetworkManager, cyApplicationManager);
 	}
 	
 	public CyNetworkView createNewEmptyNetworkView() {

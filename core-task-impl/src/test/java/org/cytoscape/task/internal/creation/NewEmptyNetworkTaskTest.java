@@ -3,11 +3,13 @@ package org.cytoscape.task.internal.creation;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -27,7 +29,10 @@ public class NewEmptyNetworkTaskTest {
 
 	private CyNetworkFactory cnf = support.getNetworkFactory();
 	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
-
+	private CyRootNetworkManager cyroot = support.getRootNetworkFactory();
+	
+	private CyApplicationManager appManager = mock(CyApplicationManager.class);
+	
 	@Mock
 	private CyNetworkManager netMgr;
 	@Mock
@@ -47,7 +52,7 @@ public class NewEmptyNetworkTaskTest {
 
 	@Test
 	public void testNewEmptyNetworkTask() throws Exception {
-		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(cnf, cnvf, netMgr, netViewMgr, namingUtil, vmm);
+		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(cnf, cnvf, netMgr, netViewMgr, namingUtil, vmm, cyroot, appManager);
 		final TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		task.run(taskMonitor);
 
