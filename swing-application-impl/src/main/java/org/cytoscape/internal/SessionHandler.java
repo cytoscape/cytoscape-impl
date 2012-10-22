@@ -37,9 +37,11 @@ package org.cytoscape.internal;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -50,14 +52,18 @@ import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.internal.io.Cytopanel;
-import org.cytoscape.internal.io.Cytopanels;
-import org.cytoscape.internal.io.NetworkFrame;
-import org.cytoscape.internal.io.NetworkFrames;
-import org.cytoscape.internal.io.SessionState;
-import org.cytoscape.internal.io.SessionStateIO;
+import org.cytoscape.internal.io.SessionIO;
+import org.cytoscape.internal.io.networklist.Network;
+import org.cytoscape.internal.io.networklist.NetworkList;
+import org.cytoscape.internal.io.sessionstate.Cytopanel;
+import org.cytoscape.internal.io.sessionstate.Cytopanels;
+import org.cytoscape.internal.io.sessionstate.NetworkFrame;
+import org.cytoscape.internal.io.sessionstate.NetworkFrames;
+import org.cytoscape.internal.io.sessionstate.SessionState;
 import org.cytoscape.internal.view.CytoscapeDesktop;
+import org.cytoscape.internal.view.NetworkPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
@@ -77,15 +83,17 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 
 	private static final String APP_NAME = "org.cytoscape.swing-application";
 	private static final String SESSION_STATE_FILENAME = "session_state.xml";
+	private static final String NETWORK_LIST_FILENAME = "network_list.xml";
 	
 	private final CytoscapeDesktop desktop;
 	private final CyNetworkManager netMgr;
 	private final NetworkViewManager netViewMgr;
 	private final SynchronousTaskManager<?> syncTaskMgr;
 	private final SaveSessionAsTaskFactory saveTaskFactory;
-	private final SessionStateIO sessionStateIO;
+	private final SessionIO sessionIO;
 	private final CySessionManager sessionManager;
 	private final FileUtil fileUtil;
+	private final NetworkPanel netPanel;
 	private final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<String, CytoPanelName>();
 	
 	private static final Logger logger = LoggerFactory.getLogger(SessionHandler.class);
@@ -95,16 +103,19 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 						  final NetworkViewManager netViewMgr,
 						  final SynchronousTaskManager<?> syncTaskMgr,
 						  final SaveSessionAsTaskFactory saveTaskFactory,
-						  final SessionStateIO sessionStateIO, final CySessionManager sessionManager,
-						  final FileUtil fileUtil) {
+						  final SessionIO sessionIO,
+						  final CySessionManager sessionManager,
+						  final FileUtil fileUtil,
+						  final NetworkPanel netPanel) {
 		this.desktop = desktop;
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
 		this.syncTaskMgr = syncTaskMgr;
 		this.saveTaskFactory = saveTaskFactory;
-		this.sessionStateIO = sessionStateIO;
+		this.sessionIO = sessionIO;
 		this.sessionManager = sessionManager;
 		this.fileUtil = fileUtil;
+		this.netPanel = netPanel;
 		
 		CYTOPANEL_NAMES.put("CytoPanel1", CytoPanelName.WEST);
 		CYTOPANEL_NAMES.put("CytoPanel2", CytoPanelName.SOUTH);
@@ -130,16 +141,18 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			return;
 		} else if (n == JOptionPane.YES_OPTION) {
 			final String sessionFileName = sessionManager.getCurrentSessionFileName();
-			File file;
+			final File file;
+			
 			if (sessionFileName == null || sessionFileName.isEmpty() ){
 				FileChooserFilter filter = new FileChooserFilter("Session File" , "cys");
 				List<FileChooserFilter> filterCollection = new ArrayList<FileChooserFilter>(1);
 				filterCollection.add(filter);
 				file = fileUtil.getFile(desktop, "Save Session File", FileUtil.SAVE, filterCollection );
-			}
-			else
+			} else {
 				file = new File(sessionFileName);
-			if (file == null){ //just check the file again in casee the file chooser dialoge task is cancled.
+			}
+			
+			if (file == null){ //just check the file again in case the file chooser dialoge task is canceled.
 				e.abortShutdown("User canceled the shutdown request.");
 				return;
 			}
@@ -155,10 +168,38 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	@Override
 	public void handleEvent(final SessionAboutToBeSavedEvent e) {
 		// Do not use invokeLater() here.  It breaks session file.
-		prepareForSaving(e);
+		final File f1 = saveSessionState(e);
+		final File f2 = saveNetworkList(e);
+		
+		final List<File> files = new ArrayList<File>();
+		if (f1 != null) files.add(f1);
+		if (f2 != null) files.add(f2);
+		
+		// Add it to the apps list
+		try {
+			if (!files.isEmpty())
+				e.addAppFiles(APP_NAME, files);
+		} catch (Exception ex) {
+			logger.error("Error adding app files to be saved in the session.", ex);
+		}
 	}
 	
-	private final void prepareForSaving(final SessionAboutToBeSavedEvent e) {
+	@Override
+	public void handleEvent(final SessionLoadedEvent e) {
+		final CySession sess = e.getLoadedSession();
+
+		if (sess == null)
+			return;
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				postLoading(sess);
+			}
+		});
+	}
+	
+	private File saveSessionState(final SessionAboutToBeSavedEvent e) {
 		final SessionState sessState = new SessionState();
 
 		// Network Frames
@@ -204,32 +245,37 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		tmpFile.deleteOnExit();
 
 		// Write to the file
-		sessionStateIO.write(sessState, tmpFile);
+		sessionIO.write(sessState, tmpFile);
 
-		// Add it to the apps list
-		List<File> fileList = new ArrayList<File>();
-		fileList.add(tmpFile);
-
-		try {
-			e.addAppFiles(APP_NAME, fileList);
-		} catch (Exception ex) {
-			logger.error("Error adding " + SESSION_STATE_FILENAME + " file to be saved in the session.", ex);
-		}
+		return tmpFile;
 	}
-
-	@Override
-	public void handleEvent(final SessionLoadedEvent e) {
-		final CySession sess = e.getLoadedSession();
-
-		if (sess == null)
-			return;
+	
+	private File saveNetworkList(final SessionAboutToBeSavedEvent e) {
+		final Map<Long, Integer> netOrder = netPanel.getNetworkListOrder();
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				postLoading(sess);
+		// Create the JAXB objects
+		final NetworkList netList = new NetworkList();
+		
+		for (final Entry<Long, Integer> entry : netOrder.entrySet()) {
+			final Long suid = entry.getKey();
+			final Integer order = entry.getValue();
+			
+			if (order != null) {
+				final Network n = new Network();
+				n.setId(suid);
+				n.setOrder(order);
+				netList.getNetwork().add(n);
 			}
-		});
+		}
+		
+		// Create temp file
+		File tmpFile = new File(System.getProperty("java.io.tmpdir"), NETWORK_LIST_FILENAME);
+		tmpFile.deleteOnExit();
+
+		// Write to the file
+		sessionIO.write(netList, tmpFile);
+		
+		return tmpFile;
 	}
 	
 	private final void postLoading(final CySession sess) {
@@ -240,18 +286,22 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 
 			if (files != null) {
 				SessionState sessState = null;
+				NetworkList netList = null;
 				
 				for (File f : files) {
-					if (f.getName().endsWith(SESSION_STATE_FILENAME)) {
-						// There should be only one file!
-						sessState = sessionStateIO.read(f);
-						break;
-					}
+					if (f.getName().endsWith(SESSION_STATE_FILENAME))
+						sessState = sessionIO.read(f, SessionState.class);
+					else if (f.getName().endsWith(NETWORK_LIST_FILENAME))
+						netList = sessionIO.read(f, NetworkList.class);
 				}
 				
 				if (sessState != null) {
 					setNetworkFrameLocations(sessState.getNetworkFrames(), sess);
 					setCytoPanelStates(sessState.getCytopanels());
+				}
+				
+				if (netList != null) {
+					setNetworkListOrder(netList.getNetwork(), sess);
 				}
 			}
 		}
@@ -327,5 +377,18 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 				}
 			}
 		}
+	}
+	
+	private void setNetworkListOrder(final List<Network> networks, final CySession sess) {
+		final Map<Long, Integer> order = new HashMap<Long, Integer>();
+		
+		for (final Network n : networks) {
+			final CyNetwork net = sess.getObject(n.getId(), CyNetwork.class); // in order to retrieve the new SUID
+			
+			if (net != null)
+				order.put(net.getSUID(), n.getOrder());
+		}
+		
+		netPanel.setNetworkListOrder(order);
 	}
 }

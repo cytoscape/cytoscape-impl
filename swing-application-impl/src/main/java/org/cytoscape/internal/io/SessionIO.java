@@ -14,25 +14,22 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Responsible for writing and reading session state info as private app files.
- */
-public class SessionStateIO {
-	
-	private static final String SESSION_STATE_PACKAGE = SessionState.class.getPackage().getName();
-	private static final Logger logger = LoggerFactory.getLogger(SessionStateIO.class);
+public class SessionIO {
 
-	public SessionState read(final File file) {
-		SessionState sessionState = null;
+	private static final Logger logger = LoggerFactory.getLogger(SessionIO.class);
+
+	@SuppressWarnings("unchecked")
+	public <T> T read(final File file, final Class<T> type) {
+		T obj = null;
 		InputStream is = null;
 		
 		try {
 			is = new FileInputStream(file);
-			final JAXBContext jaxbContext = JAXBContext.newInstance(SESSION_STATE_PACKAGE, getClass().getClassLoader());
+			final JAXBContext jaxbContext = JAXBContext.newInstance(type.getPackage().getName(), getClass().getClassLoader());
 			final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-			sessionState = (SessionState) unmarshaller.unmarshal(is);
+			obj = (T) unmarshaller.unmarshal(is);
 		} catch (Exception e) {
-			logger.error("SessionState Read error", e);
+			logger.error("Read error for " + type, e);
 		} finally {
 			if (is != null) {
 				try {
@@ -42,21 +39,21 @@ public class SessionStateIO {
 			}
 		}
 
-		return sessionState;
+		return obj;
 	}
 
-	public void write(final SessionState sessionState, final File file) {
+	public <T> void write(final T obj, final File file) {
 		OutputStream out = null;
 
 		try {
 			out = new FileOutputStream(file);
-			final JAXBContext jc = JAXBContext.newInstance(SessionState.class.getPackage().getName(), this.getClass()
+			final JAXBContext jc = JAXBContext.newInstance(obj.getClass().getPackage().getName(), this.getClass()
 					.getClassLoader());
 			final Marshaller m = jc.createMarshaller();
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			m.marshal(sessionState, out);
+			m.marshal(obj, out);
 		} catch (Exception e) {
-			logger.error("SessionState Write error", e);
+			logger.error("Write error for " + obj, e);
 		} finally {
 			if (out != null) {
 				try {

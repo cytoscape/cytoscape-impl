@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <xs:element name="networkList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="network"/>
+      </xs:sequence>
+      <xs:attribute name="documentVersion" use="optional" default="1.0" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="network">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:long"/>
+      <xs:attribute name="order" use="required" type="xs:int"/>
+    </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

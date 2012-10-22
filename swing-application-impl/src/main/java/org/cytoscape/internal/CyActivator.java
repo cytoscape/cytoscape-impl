@@ -61,6 +61,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
+import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CommandListAction;
@@ -73,7 +74,7 @@ import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
-import org.cytoscape.internal.io.SessionStateIO;
+import org.cytoscape.internal.io.SessionIO;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
 import org.cytoscape.internal.layout.ui.SettingsAction;
 import org.cytoscape.internal.select.RowViewTracker;
@@ -104,8 +105,6 @@ import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -136,7 +135,6 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
-import org.cytoscape.command.AvailableCommands;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,8 +167,6 @@ public class CyActivator extends AbstractCyActivator {
 		CySessionReaderManager sessionReaderManagerServiceRef = getService(bc, CySessionReaderManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
-		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
-		CyTableFactory cyTableFactoryServiceRef = getService(bc, CyTableFactory.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 
@@ -229,8 +225,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                             cyNetworkViewManagerServiceRef,
 		                                             birdsEyeViewHandler,
 		                                             dialogTaskManagerServiceRef,
-		                                             cyTableManagerServiceRef,
-		                                             cyTableFactoryServiceRef,
 		                                             dynamicTaskFactoryProvisionerServiceRef,
 		                                             editNetworkTitleTFServiceRef);
 
@@ -245,16 +239,17 @@ public class CyActivator extends AbstractCyActivator {
 
 		SaveSessionAsTaskFactory saveTaskFactoryServiceRef = getService(bc, SaveSessionAsTaskFactory.class);
 
-		SessionStateIO sessStateIO = new SessionStateIO();
+		SessionIO sessionIO = new SessionIO();
 
 		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop,
 														   cyNetworkManagerServiceRef,
 														   networkViewManager,
 														   synchronousTaskManagerServiceRef,
 														   saveTaskFactoryServiceRef,
-														   sessStateIO,
+														   sessionIO,
 														   cySessionManagerServiceRef,
-														   fileUtilServiceRef);
+														   fileUtilServiceRef,
+														   networkPanel);
 
 		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, 
 		                                          cyNetworkViewManagerServiceRef, 

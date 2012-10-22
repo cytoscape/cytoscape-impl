@@ -58,7 +58,23 @@
 							<schemaIncludes>
 								<include>sessionState.xsd</include>
 							</schemaIncludes>
-							<generatePackage>org.cytoscape.internal.io</generatePackage>
+							<generatePackage>org.cytoscape.internal.io.sessionstate</generatePackage>
+							<verbose>true</verbose>
+							<encoding>UTF-8</encoding>
+						</configuration>
+					</execution>
+					<execution>
+						<id>networkList</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+			                <generateDirectory>${project.build.directory}/generated-sources/xjc/networkList</generateDirectory>
+							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
+							<schemaIncludes>
+								<include>networkList.xsd</include>
+							</schemaIncludes>
+							<generatePackage>org.cytoscape.internal.io.networklist</generatePackage>
 							<verbose>true</verbose>
 							<encoding>UTF-8</encoding>
 						</configuration>
