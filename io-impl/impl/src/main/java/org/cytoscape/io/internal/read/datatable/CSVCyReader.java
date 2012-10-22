@@ -146,6 +146,14 @@ public class CSVCyReader implements CyTableReader {
 
 	TableInfo readHeader(CSVReader reader) throws IOException, ClassNotFoundException {
 		String[] values = reader.readNext();
+		int schemaVersion;
+		if (values.length == 2 && "CyCSV-Version".equals(values[0])) {
+			schemaVersion = Integer.parseInt(values[1]);
+			values = reader.readNext();
+		} else {
+			schemaVersion = 0;
+		}
+		
 		TableInfo table = new TableInfo();
 		ColumnInfo[] columns = new ColumnInfo[values.length];
 		for (int i = 0; i < values.length; i++) {
@@ -157,30 +165,22 @@ public class CSVCyReader implements CyTableReader {
 		if (!readSchema) {
 			return table;
 		}
-		values = reader.readNext();
-		for (int i = 0; i < values.length; i++) {
-			Matcher matcher = classPattern.matcher(values[i]);
-			matcher.matches();
-			String typeName = matcher.group(1);
-			Class<?> type = Class.forName(typeName);
-			if (type.equals(List.class)) {
-				String elementName = matcher.group(3);
-				Class<?> elementType = Class.forName(elementName);
-				columns[i].setListElementType(elementType);
-			} else {
-				columns[i].setType(type);
-			}
-		}
-		values = reader.readNext();
-		table.setTitle(values[0]);
-		for (String option : values[1].split(",")) {
-			if ("public".equals(option)) {
-				table.setPublic(true);
-			} else if ("mutable".equals(option)) {
-				table.setMutable(true);
-			}
-		}
+		
+		SchemaDelegate delegate = getSchemaDelegate(schemaVersion);
+		delegate.readSchema(reader, table);
+		
 		return table;
+	}
+
+	private SchemaDelegate getSchemaDelegate(int schemaVersion) {
+		switch (schemaVersion) {
+		case 0:
+			return new SchemaDelegate0();
+		case 1:
+			return new SchemaDelegate1();
+		default:
+			throw new IllegalArgumentException("Unsupported CyCSV version: " + schemaVersion);
+		}
 	}
 
 	@Override
@@ -191,4 +191,67 @@ public class CSVCyReader implements CyTableReader {
 		return new CyTable[] { table };
 	}
 
+	static interface SchemaDelegate {
+		void readSchema(CSVReader reader, TableInfo table) throws IOException, ClassNotFoundException;
+	}
+	
+	static class AbstractSchemaDelegate implements SchemaDelegate {
+		@Override
+		public void readSchema(CSVReader reader, TableInfo table) throws IOException, ClassNotFoundException {
+			handleColumnTypes(reader, table);
+			handleColumnOptions(reader, table);
+			handleTableOptions(reader, table);
+		}
+
+		protected void handleTableOptions(CSVReader reader, TableInfo table) throws IOException {
+			String[] values = reader.readNext();
+			table.setTitle(values[0]);
+			for (String option : values[1].split(",")) {
+				if ("public".equals(option)) {
+					table.setPublic(true);
+				} else if ("mutable".equals(option)) {
+					table.setMutable(true);
+				}
+			}
+		}
+
+		protected void handleColumnOptions(CSVReader reader, TableInfo table) throws IOException, ClassNotFoundException {
+			ColumnInfo[] columns = table.getColumns();
+			String[] values = reader.readNext();
+			for (int i = 0; i < values.length; i++) {
+				for (String option : values[i].split(",")) {
+					if ("mutable".equals(option)) {
+						columns[i].setMutable(true);
+					}
+				}
+			}
+		}
+
+		protected void handleColumnTypes(CSVReader reader, TableInfo table) throws IOException, ClassNotFoundException {
+			ColumnInfo[] columns = table.getColumns();
+			String[] values = reader.readNext();
+			for (int i = 0; i < values.length; i++) {
+				Matcher matcher = classPattern.matcher(values[i]);
+				matcher.matches();
+				String typeName = matcher.group(1);
+				Class<?> type = Class.forName(typeName);
+				if (type.equals(List.class)) {
+					String elementName = matcher.group(3);
+					Class<?> elementType = Class.forName(elementName);
+					columns[i].setListElementType(elementType);
+				} else {
+					columns[i].setType(type);
+				}
+			}
+		}
+	}
+	
+	static class SchemaDelegate0 extends AbstractSchemaDelegate {
+		@Override
+		protected void handleColumnOptions(CSVReader reader, TableInfo table) throws IOException, ClassNotFoundException {
+		}
+	}
+	
+	static class SchemaDelegate1 extends AbstractSchemaDelegate {
+	}
 }

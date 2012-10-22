@@ -20,6 +20,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 
 public class CSVCyWriter implements CyWriter {
+	private static final int SCHEMA_VERSION = 1;
 	private final OutputStream outputStream;
 	private final CyTable table;
 	private final boolean writeSchema;
@@ -72,6 +73,9 @@ public class CSVCyWriter implements CyWriter {
 				}
 			});
 			taskMonitor.setProgress(0.4);
+			if (writeSchema) {
+				writeVersion(writer);
+			}
 			writeHeader(writer, columns);
 			if (writeSchema) {
 				writeSchema(writer, columns);
@@ -84,19 +88,27 @@ public class CSVCyWriter implements CyWriter {
 		taskMonitor.setProgress(1.0);
 	}
 
+	private void writeVersion(CSVWriter writer) {
+		writer.writeNext(new String[] { "CyCSV-Version", String.valueOf(SCHEMA_VERSION) });
+	}
+
 	private void writeSchema(CSVWriter writer, List<CyColumn> columns) {
-		String[] values = new String[columns.size()];
+		String[] types = new String[columns.size()];
+		String[] options = new String[columns.size()];
 		for (int i = 0; i < columns.size(); i++) {
 			CyColumn column = columns.get(i);
 			Class<?> type = column.getType();
 			if (List.class.isAssignableFrom(type)) {
-				values[i] = String.format("%s<%s>", List.class.getCanonicalName(), column.getListElementType().getCanonicalName());
+				types[i] = String.format("%s<%s>", List.class.getCanonicalName(), column.getListElementType().getCanonicalName());
 			} else {
-				values[i] = type.getCanonicalName();
+				types[i] = type.getCanonicalName();
 			}
+			options[i] = column.isImmutable() ? "" : "mutable";
 		}
-		writer.writeNext(values);
-		values = new String[2];
+		writer.writeNext(types);
+		writer.writeNext(options);
+		
+		String[] values = new String[2];
 		values[0] = table.getTitle();
 
 		StringBuilder builder = new StringBuilder();
