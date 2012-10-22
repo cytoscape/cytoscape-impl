@@ -223,8 +223,8 @@ public class VisualStyleSerializerTest {
 	public void testCy283Vizmap() throws Exception {
 		Properties props = loadVizmapProps("v283_vizmap.props");
 		Set<VisualStyle> styles = serializer.createVisualStyles(props);
-		assertEquals(4,  styles.size()); // "default" is not returned
-		assertVisualStylesNotNull(styles, new String[] { "Sample1", "Solid", "Universe", "galFiltered Style" });
+		assertEquals(5,  styles.size()); // "default" is not returned
+		assertVisualStylesNotNull(styles, new String[] { "Sample1", "Solid", "Universe", "galFiltered Style", "Nested Network Style" });
 		
 		// Test visual styles (defaults, mappings and dependencies)
 		// -----
@@ -306,6 +306,14 @@ public class VisualStyleSerializerTest {
 		
 		VisualPropertyDependency<?> dep2 = getDependency(galFiltered, NODE_SIZE_LOCKED_DEPENDENCY);
 		assertTrue(dep2.isDependencyEnabled());
+		
+		// -----
+		VisualStyle nested = getVisualStyleByTitle(styles, "Nested Network Style");
+		
+		DiscreteMapping<Boolean, Paint> nLabelColorMp = (DiscreteMapping<Boolean, Paint>) nested.getVisualMappingFunction(NODE_LABEL_COLOR);
+		assertEquals("has_nested_network", nLabelColorMp.getMappingColumnName());
+		assertEquals(Boolean.class, nLabelColorMp.getMappingColumnType());
+		assertEquals(new Color(0,102,204), nLabelColorMp.getMapValue(true));
 	}
 
 	// UTIL ============================================================================================================

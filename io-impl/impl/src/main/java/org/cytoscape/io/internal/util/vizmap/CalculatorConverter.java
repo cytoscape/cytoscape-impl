@@ -231,19 +231,24 @@ public class CalculatorConverter {
 			byte controllerType = controllerTypeProp != null ? Byte.parseByte(controllerTypeProp) : TYPE_STRING;
 			AttributeType attrType = null;
 
-			switch (controllerType) {
-				case TYPE_BOOLEAN:
-					attrType = AttributeType.BOOLEAN;
-					break;
-				case TYPE_FLOATING_POINT:
-					attrType = AttributeType.FLOAT;
-					break;
-				case TYPE_INTEGER:
-					attrType = AttributeType.INTEGER;
-					break;
-				default:
-					attrType = AttributeType.STRING;
-					break;
+			if (attrName.equals("has_nested_network")) {
+				// Force to boolean (in Cy2, this attribute is a "yes\no" string type)
+				attrType = AttributeType.BOOLEAN;
+			} else {
+				switch (controllerType) {
+					case TYPE_BOOLEAN:
+						attrType = AttributeType.BOOLEAN;
+						break;
+					case TYPE_FLOATING_POINT:
+						attrType = AttributeType.FLOAT;
+						break;
+					case TYPE_INTEGER:
+						attrType = AttributeType.INTEGER;
+						break;
+					default:
+						attrType = AttributeType.STRING;
+						break;
+				}
 			}
 
 			DiscreteMapping dm = new DiscreteMapping();
@@ -258,6 +263,9 @@ public class CalculatorConverter {
 					String sv = props.getProperty(sk);
 					String value = getValue(sv);
 
+					if (attrName.equals("has_nested_network"))
+						attrValue = attrValue.matches("(?i)yes|true") ? "true" : "false";
+					
 					DiscreteMappingEntry entry = new DiscreteMappingEntry();
 					entry.setAttributeValue(attrValue);
 					entry.setValue(value);
