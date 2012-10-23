@@ -105,7 +105,7 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 			this.add(fileLabel);
 		}
 		
-		open = new JLabel("Open other file...");
+		open = new JLabel("Open file...");
 		open.setFont(REGULAR_FONT);
 		open.setForeground(REGULAR_FONT_COLOR);
 		open.setIcon(openIcon);

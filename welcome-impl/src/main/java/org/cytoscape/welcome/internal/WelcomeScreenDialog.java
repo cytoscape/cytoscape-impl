@@ -168,7 +168,7 @@ public class WelcomeScreenDialog extends JDialog {
 		panel4.setBackground(PANEL_COLOR);
 
 		setChildPanel(panel1, openPanel, "Open Recent Session");
-		setChildPanel(panel2, importPanel, "Common Workflow");
+		setChildPanel(panel2, importPanel, "Start New Session");
 		setChildPanel(panel3, helpPanel, "News and Links");
 		setLogoPanel(panel4, new LogoPanel());
 
