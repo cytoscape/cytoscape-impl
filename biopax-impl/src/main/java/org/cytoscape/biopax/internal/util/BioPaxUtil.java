@@ -67,7 +67,7 @@ public final class BioPaxUtil {
 	private static final Map<String,String> chemModificationsMap;
 	
 	public static final Logger log = LoggerFactory.getLogger(BioPaxUtil.class);
-    public static final String BIOPAX_DATA = "biopax_data";
+    public static final String BIOPAX_DATA = "BIOPAX_DATA";
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final int MAX_DISPLAY_STRING_LEN = 25;
 	public static final String NULL_ELEMENT_TYPE = "BioPAX Element";

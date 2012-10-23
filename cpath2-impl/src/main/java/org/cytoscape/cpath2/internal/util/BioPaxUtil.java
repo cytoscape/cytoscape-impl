@@ -84,21 +84,21 @@ public final class BioPaxUtil {
     
 	public static final String BIOPAX_NETWORK = "BIOPAX_NETWORK";
 	public static final String BIOPAX_RDF_ID = "URI";
-	public static final String BIOPAX_ENTITY_TYPE = "biopax_type";
-	public static final String BIOPAX_DATA = "biopax_data";
+	public static final String BIOPAX_ENTITY_TYPE = "BIOPAX_TYPE";
+	public static final String BIOPAX_DATA = "BIOPAX_DATA";
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final int MAX_DISPLAY_STRING_LEN = 25;
 	public static final String NULL_ELEMENT_TYPE = "BioPAX Element";
 	public static final String BIOPAX_EDGE_TYPE = "BIOPAX_EDGE_TYPE";
-	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_MAP = "chemical_modifications_map";
-	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_LIST = "chemical_modifications";
-	public static final String BIOPAX_UNIFICATION_REFERENCES = "unification_references";
-	public static final String BIOPAX_RELATIONSHIP_REFERENCES = "relationship_references";
-	public static final String BIOPAX_PUBLICATION_REFERENCES = "publication_references";
-	public static final String BIOPAX_XREF_IDS = "identifiers";
-	public static final String BIOPAX_XREF_PREFIX = "xref.";
-	public static final String BIOPAX_IHOP_LINKS = "ihop_links";
-	public static final String BIOPAX_AFFYMETRIX_REFERENCES_LIST = "affymetrix_references";
+	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_MAP = "CHEMICAL_MODIFICATIONS_MAP";
+	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_LIST = "CHEMICAL_MODIFICATIONS";
+	public static final String BIOPAX_UNIFICATION_REFERENCES = "UNIFICATION_REFERENCES";
+	public static final String BIOPAX_RELATIONSHIP_REFERENCES = "RELATIONSHIP_REFERENCES";
+	public static final String BIOPAX_PUBLICATION_REFERENCES = "PUBLICATION_REFERENCES";
+	public static final String BIOPAX_XREF_IDS = "IDENTIFIERS";
+	public static final String BIOPAX_XREF_PREFIX = "ID_";
+	public static final String BIOPAX_IHOP_LINKS = "IHOP_LINKS";
+	public static final String BIOPAX_AFFYMETRIX_REFERENCES_LIST = "AFFYMETRIX_REFERENCES";
 	public static final String PHOSPHORYLATION_SITE = "phosphorylation site";
 	public static final String PROTEIN_PHOSPHORYLATED = "Protein-phosphorylated";
 	
@@ -367,7 +367,8 @@ public final class BioPaxUtil {
 		if(str != null) {
 			str = str.replaceAll("[\n\r \t]+", " ");
 			if (str.length() > MAX_DISPLAY_STRING_LEN) {
-				str = str.substring(0, MAX_DISPLAY_STRING_LEN) + "...";
+				str = str.substring(0, MAX_DISPLAY_STRING_LEN/2-1) 
+					+ "..." + str.substring(str.length() - MAX_DISPLAY_STRING_LEN/2);
 			}
 		}
 		return str;
@@ -398,32 +399,30 @@ public final class BioPaxUtil {
 	{
 		Filter<PropertyEditor> filter = new Filter<PropertyEditor>() {
 			@Override
-			// skips for entity-range properties 
-			// (which map to edges rather than attributes!),
-			// and several utility classes range ones 
-			// (for which we do not want generate attributes or do another way)
+			// skips for entity-range properties (which map to edges rather than attributes!),
+			// and several utility classes ranges (for which we do not want generate attributes or do another way)
 			public boolean filter(PropertyEditor editor) {
+				boolean pass = true;
+				
+				final String prop = editor.getProperty();
 				if(editor instanceof ObjectPropertyEditor) {
 					Class c = editor.getRange();
-					String prop = editor.getProperty();
 					if( Entity.class.isAssignableFrom(c)
-						|| "name".equals(prop) //display/standard name is enough
 						|| Stoichiometry.class.isAssignableFrom(c)
 						|| "nextStep".equals(prop) 
 						) {	
-						return false; 
+						pass = false;; 
 					}
-				} 
+				} else if("name".equals(prop))
+					pass = false;
 				
-				return true;
+				return pass;
 			}
 		};
 		
 		@SuppressWarnings("unchecked")
 		AbstractTraverser bpeAutoMapper = new AbstractTraverser(SimpleEditorMap.L3, filter) 
 		{
-			final Logger log = LoggerFactory.getLogger(AbstractTraverser.class);
-
 			@SuppressWarnings("rawtypes")
 			@Override
 			protected void visit(Object obj, BioPAXElement bpe, Model model,
@@ -471,7 +470,7 @@ public final class BioPaxUtil {
 			}
 
 			private String getAttrName(Stack<String> props) {
-				return "/" + StringUtils.join(props, "/");
+				return StringUtils.join(props, "/");
 			}
 		};
 

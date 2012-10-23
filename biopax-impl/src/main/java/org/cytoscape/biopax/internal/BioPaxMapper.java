@@ -98,7 +98,7 @@ public class BioPaxMapper {
 	/**
 	 * Node Attribute:  BIOPAX_XREF_PREFIX.
 	 */
-	public static final String BIOPAX_XREF_PREFIX = "XREF.";
+	public static final String BIOPAX_XREF_PREFIX = "ID_";
 
 	/**
 	 * Node Attribute: IHOP_LINKS
@@ -639,19 +639,21 @@ public class BioPaxMapper {
 			// skips for entity-range properties (which map to edges rather than attributes!),
 			// and several utility classes ranges (for which we do not want generate attributes or do another way)
 			public boolean filter(PropertyEditor editor) {
+				boolean pass = true;
+				
+				final String prop = editor.getProperty();
 				if(editor instanceof ObjectPropertyEditor) {
 					Class c = editor.getRange();
-					String prop = editor.getProperty();
 					if( Entity.class.isAssignableFrom(c)
-						|| "name".equals(prop) //name clash with the Cytoscape reserved column (display/standard name is enough)
 						|| Stoichiometry.class.isAssignableFrom(c)
 						|| "nextStep".equals(prop) 
 						) {	
-						return false; 
+						pass = false;; 
 					}
-				} 
+				} else if("name".equals(prop))
+					pass = false;
 				
-				return true;
+				return pass;
 			}
 		};
 		
