@@ -172,7 +172,11 @@ public class AttributeValueUtil {
     	ParseState parseState = ParseState.NONE;
     	
     	final String name = atts.getValue("name");
-    	final String type = atts.getValue("type");
+    	String type = atts.getValue("type");
+    	
+    	if ("has_nested_network".equals(name))
+        	type = ObjectType.BOOLEAN.getName();
+    	
     	final boolean isEquation = ObjectTypeMap.fromXGMMLBoolean(atts.getValue("cy:equation"));
     	final boolean isHidden = ObjectTypeMap.fromXGMMLBoolean(atts.getValue("cy:hidden"));
         

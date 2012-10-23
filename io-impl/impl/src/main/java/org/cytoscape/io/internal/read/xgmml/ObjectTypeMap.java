@@ -69,9 +69,10 @@ public class ObjectTypeMap {
     }
     
     public static boolean fromXGMMLBoolean(final String s) {
-    	// should be only "1", but let's be nice and also accept "true"
+    	// Should be only "1", but let's be nice and also accept "true"
     	// http://www.cs.rpi.edu/research/groups/pb/punin/public_html/XGMML/draft-xgmml-20001006.html#BT
-    	return s != null && s.matches("(?i)1|true");
+    	// We also accept "yes", because of Cy2 "has_nested_network" attribute
+    	return s != null && s.matches("(?i)1|true|yes");
     }
 
     public static String toXGMMLBoolean(final Boolean value) {
