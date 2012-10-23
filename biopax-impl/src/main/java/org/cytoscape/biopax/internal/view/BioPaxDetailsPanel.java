@@ -33,7 +33,6 @@ package org.cytoscape.biopax.internal.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.util.List;
 
@@ -53,7 +52,6 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.ParagraphView;
 import javax.swing.text.html.StyleSheet;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.cytoscape.application.CyApplicationManager;
 
@@ -150,9 +148,9 @@ public class BioPaxDetailsPanel extends JPanel {
 	 */
 	public void resetText(String text) {
 		StringBuffer temp = new StringBuffer();
-		temp.append("<HTML><BODY>");
+		temp.append("<html><body>");
 		temp.append(text);
-		temp.append("</BODY></HTML>");
+		temp.append("</body></html>");
 		textPane.setText(temp.toString());
 	}
 
@@ -164,7 +162,7 @@ public class BioPaxDetailsPanel extends JPanel {
 	public void showDetails(CyNetwork network, CyNode node) {
         String stringRef;
 
-		StringBuffer buf = new StringBuffer("<HTML>");
+		StringBuffer buf = new StringBuffer("<html><body>");
 
 		CyRow row = network.getRow(node);
 		
@@ -178,9 +176,13 @@ public class BioPaxDetailsPanel extends JPanel {
         
         // organism
         stringRef = null;
-        stringRef = row.get("/entityReference/organism/displayName", String.class);
+        stringRef = row.get("entityReference/organism/displayName", String.class);
         if(stringRef == null)
-        	stringRef = row.get("/organism/displayName", String.class);
+        	stringRef = row.get("entityReference/organism/standardName", String.class);
+        if(stringRef == null)
+        	stringRef = row.get("organism/displayName", String.class);
+        if(stringRef == null)
+        	stringRef = row.get("organism/standardName", String.class);
         if (stringRef != null) {
             buf.append("<h3>" + stringRef + "</h3>");
         }
@@ -190,7 +192,7 @@ public class BioPaxDetailsPanel extends JPanel {
         
 		// cellular location
 		stringRef = null;
-        stringRef = row.get("/cellularLocation", String.class);
+        stringRef = row.get("cellularLocation", String.class);
         if (stringRef != null) {
            appendHeader("Cellular Location: " + stringRef, buf);
         }
@@ -200,7 +202,7 @@ public class BioPaxDetailsPanel extends JPanel {
 		                 BIOPAX_CHEMICAL_MODIFICATIONS_LIST, "Chemical Modifications:", buf);
 
 		// data source
-        addAttributeList(network, node, null, "/dataSource", "Data sources:", buf);
+        addAttributeList(network, node, null, "dataSource", "Data sources:", buf);
         
 		
 		// links
@@ -216,13 +218,9 @@ public class BioPaxDetailsPanel extends JPanel {
 //            buf.append("<pre class='excerpt'>" + StringEscapeUtils.escapeXml(stringRef) + "</pre>");
 //        }
 		
-		buf.append("</BODY></HTML>");
+		buf.append("</body></html>");
 		textPane.setText(buf.toString());
 		textPane.setCaretPosition(0);
-
-		//  If the containing parent is a BioPaxDetailsWindow, show it.
-		//  This only applies in Cytoscape 2.1 and local testing
-		Container parent = this.getTopLevelAncestor();
     }
 
 	//TODO test; remove or upgrade to PC2 api (URI based)
@@ -279,21 +277,21 @@ public class BioPaxDetailsPanel extends JPanel {
 			String listItem = list.get(lc);
 
 			if ((listItem != null) && (listItem.length() > 0)) {
-                displayString.append("<LI> - " + listItem);
-                displayString.append("</LI>"); 
+                displayString.append("<li> - " + listItem);
+                displayString.append("</li>"); 
 			}
 		}
         if (tooMany) {
-            displayString.append("<LI>  ...</LI>");
+            displayString.append("<li>  ...</li>");
         }
 
         // do we have a string to display ?
 		if (displayString.length() > 0) {
 			if(label != null)
 				appendHeader(label, buf);
-            buf.append ("<UL>");
+            buf.append ("<ul>");
             appendData(displayString.toString(), buf, false);
-            buf.append ("</UL>");
+            buf.append ("</ul>");
         }
 	}
 
@@ -306,7 +304,7 @@ public class BioPaxDetailsPanel extends JPanel {
 	private void appendData(String data, StringBuffer buf, boolean appendBr) {
 		buf.append(data);
 		if (appendBr) {
-			buf.append("<BR>");
+			buf.append("<br/>");
 		}
 	}
 
@@ -315,9 +313,9 @@ public class BioPaxDetailsPanel extends JPanel {
 		String ihopLinks = row.get(BIOPAX_IHOP_LINKS, String.class);
 
 		if (ihopLinks != null) {
-			buf.append("<UL>");
+			buf.append("<ul>");
 			appendData(ihopLinks, buf, false);
-			buf.append("</UL>");
+			buf.append("</ul>");
 		}
 	}
 }

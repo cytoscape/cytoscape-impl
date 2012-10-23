@@ -204,7 +204,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		for (CyNode node : network.getNodeList()) {
 			CyRow row = network.getRow(node);
 			String tip = row.get(BIOPAX_ENTITY_TYPE, String.class) + "\n"
-					+ row.get("/cellularLocation", String.class);
+					+ row.get("cellularLocation", String.class);
 			View<CyNode> nodeView = networkView.getNodeView(node);
 			nodeView.setLockedValue(BasicVisualLexicon.NODE_TOOLTIP, tip);
 		}
@@ -224,6 +224,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 			// get chemical modifications
 			int count = 0;
 			boolean isPhosphorylated = false;
+			
 			// TODO: MultiHashMap
 //			MultiHashMapDefinition mhmdef = nodeAttributes.getMultiHashMapDefinition();
 //

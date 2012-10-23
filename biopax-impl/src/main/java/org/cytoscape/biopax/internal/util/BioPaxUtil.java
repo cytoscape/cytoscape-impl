@@ -442,7 +442,7 @@ public final class BioPaxUtil {
 		if(str != null) {
 			str = str.replaceAll("[\n\r \t]+", " ");
 			if (str.length() > MAX_DISPLAY_STRING_LEN) {
-				str = str.substring(0, MAX_DISPLAY_STRING_LEN) + "...";
+				str = str.substring(0, MAX_DISPLAY_STRING_LEN/2-1) + "..." + str.substring(str.length()-MAX_DISPLAY_STRING_LEN/2);
 			}
 		}
 		return str;

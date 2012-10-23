@@ -9,7 +9,7 @@
 	<properties>
 		<bundle.symbolicName>org.cytoscape.biopax-impl</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.biopax</bundle.namespace>
-		<paxtools.version>4.1.5b</paxtools.version>
+		<paxtools.version>4.1.5b2</paxtools.version>
 	</properties>
 	
 	<modelVersion>4.0.0</modelVersion>

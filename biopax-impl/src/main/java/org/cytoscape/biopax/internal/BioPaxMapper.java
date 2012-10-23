@@ -148,12 +148,12 @@ public class BioPaxMapper {
 	private final Model model;
 	private final CyNetworkFactory networkFactory;
 	private final TaskMonitor taskMonitor;
-	private final CyGroupFactory cyGroupFactory;
+//	private final CyGroupFactory cyGroupFactory;
 	
 	// BioPAX ID (URI) to CyNode map
 	// remark: nodes's CyTable will also have 'URI' (RDF Id) column
 	private final Map<BioPAXElement, CyNode> 
-		uriToCyNodeMap = new HashMap<BioPAXElement, CyNode>();
+		bpeToCyNodeMap = new HashMap<BioPAXElement, CyNode>();
 	
 
 	/**
@@ -169,7 +169,7 @@ public class BioPaxMapper {
 		this.model = model;
 		this.networkFactory = cyNetworkFactory;
 		this.taskMonitor = taskMonitor;
-		this.cyGroupFactory = cyGroupFactory;
+//		this.cyGroupFactory = cyGroupFactory;
 	}
 	
 
@@ -231,12 +231,12 @@ public class BioPaxMapper {
 //			List<CyNode> nodeList = new ArrayList<CyNode>();
 //			List<CyEdge> edgeList = new ArrayList<CyEdge>();
 			
-			CyNode cyParentNode = uriToCyNodeMap.get(par);
+			CyNode cyParentNode = bpeToCyNodeMap.get(par);
 			assert cyParentNode != null : "cyParentNode is NULL.";
 			// for each its member PE, add the directed edge
 			for (PhysicalEntity member : members) 
 			{
-				CyNode cyMemberNode = uriToCyNodeMap.get(member);
+				CyNode cyMemberNode = bpeToCyNodeMap.get(member);
 				CyEdge edge = network.addEdge(cyParentNode, cyMemberNode, true);
 				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "member", String.class);
 				
@@ -265,7 +265,7 @@ public class BioPaxMapper {
 			
 			//  Create node symbolizing the interaction
 			CyNode node = network.addNode();
-			uriToCyNodeMap.put(bpe, node);
+			bpeToCyNodeMap.put(bpe, node);
 				           
 			// traverse
 			createAttributesFromProperties(bpe, node, network);
@@ -321,7 +321,7 @@ public class BioPaxMapper {
 				continue;
 
 			// get node
-			CyNode complexCyNode = uriToCyNodeMap.get(complexElement);
+			CyNode complexCyNode = bpeToCyNodeMap.get(complexElement);
 			
 //			List<CyNode> nodeList = new ArrayList<CyNode>();
 //			List<CyEdge> edgeList = new ArrayList<CyEdge>();
@@ -329,7 +329,7 @@ public class BioPaxMapper {
 			// get all components. There can be 0 or more
 			for (PhysicalEntity member : members) 
 			{
-				CyNode complexMemberCyNode = uriToCyNodeMap.get(member);
+				CyNode complexMemberCyNode = bpeToCyNodeMap.get(member);
 				// create edge, set attributes
 				CyEdge edge = network.addEdge(complexCyNode, complexMemberCyNode, true);
 				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "contains", String.class);
@@ -378,14 +378,14 @@ public class BioPaxMapper {
 	private void linkNodes(CyNetwork network, BioPAXElement bpeA, BioPAXElement bpeB, String type) 
 	{	
 		// Note: getCyNode also assigns cellular location attribute...
-		CyNode nodeA = uriToCyNodeMap.get(bpeA);
+		CyNode nodeA = bpeToCyNodeMap.get(bpeA);
 		if(nodeA == null) {
 			log.debug("linkNodes: no node was created for " 
 				+ bpeA.getModelInterface() + " " + bpeA.getRDFId());
 			return; //e.g., we do not create any pathway nodes currently...
 		}
 		
-		CyNode nodeB = uriToCyNodeMap.get(bpeB);
+		CyNode nodeB = bpeToCyNodeMap.get(bpeB);
 		if(nodeB == null) {
 			log.debug("linkNodes: no node was created for " 
 					+ bpeB.getModelInterface() + " " + bpeB.getRDFId());
@@ -435,14 +435,11 @@ public class BioPaxMapper {
 	}
 
 
-	/**
+	/*
 	 * Given a binding element (complex or interaction)
 	 * and type (like left or right),
 	 * returns chemical modification (abbreviated form).
 	 *
-	 * @param physicalElement Element
-	 * @param type            String
-	 * @return NodeAttributesWrapper
 	 */
 	private NodeAttributesWrapper getInteractionChemicalModifications(BioPAXElement participantElement) 
 	{
@@ -502,7 +499,7 @@ public class BioPaxMapper {
 	}
 
 
-	/**
+	/*
 	 * A helper function to get post-translational modifications string.
 	 */
 	private String getModificationsString(NodeAttributesWrapper chemicalModificationsWrapper) 
@@ -640,14 +637,13 @@ public class BioPaxMapper {
 		Filter<PropertyEditor> filter = new Filter<PropertyEditor>() {
 			@Override
 			// skips for entity-range properties (which map to edges rather than attributes!),
-			// and several utility classes range ones 
-			// (for which we do not want generate attributes or do another way)
+			// and several utility classes ranges (for which we do not want generate attributes or do another way)
 			public boolean filter(PropertyEditor editor) {
 				if(editor instanceof ObjectPropertyEditor) {
 					Class c = editor.getRange();
 					String prop = editor.getProperty();
 					if( Entity.class.isAssignableFrom(c)
-						|| "name".equals(prop) //display/standard name is enough
+						|| "name".equals(prop) //name clash with the Cytoscape reserved column (display/standard name is enough)
 						|| Stoichiometry.class.isAssignableFrom(c)
 						|| "nextStep".equals(prop) 
 						) {	
@@ -662,8 +658,6 @@ public class BioPaxMapper {
 		@SuppressWarnings("unchecked")
 		AbstractTraverser bpeAutoMapper = new AbstractTraverser(SimpleEditorMap.L3, filter) 
 		{
-			final Logger log = LoggerFactory.getLogger(AbstractTraverser.class);
-
 			@SuppressWarnings("rawtypes")
 			@Override
 			protected void visit(Object obj, BioPAXElement bpe, Model model,
@@ -711,7 +705,7 @@ public class BioPaxMapper {
 			}
 
 			private String getAttrName(Stack<String> props) {
-				return "/" + StringUtils.join(props, "/");
+				return StringUtils.join(props, "/");
 			}
 		};
 
