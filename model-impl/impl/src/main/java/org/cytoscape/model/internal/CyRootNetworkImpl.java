@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
@@ -145,6 +146,21 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		
 		for (CySubNetwork network : subNetworks) {
 			network.dispose();
+		}
+		Map<String, CyTable> tableMap = networkTableMgr.getTables(this, CyNetwork.class);
+		for(CyTable table : tableMap.values() )
+		{
+			tableMgr.deleteTableInternal(table.getSUID(),true);
+		}
+		tableMap = networkTableMgr.getTables(this, CyNode.class);
+		for(CyTable table : tableMap.values() )
+		{
+			tableMgr.deleteTableInternal(table.getSUID(),true);
+		}
+	    tableMap = networkTableMgr.getTables(this, CyEdge.class);
+		for(CyTable table : tableMap.values() )
+		{
+			tableMgr.deleteTableInternal(table.getSUID(),true);
 		}
 		networkTableMgr.removeAllTables(this);
 	}
