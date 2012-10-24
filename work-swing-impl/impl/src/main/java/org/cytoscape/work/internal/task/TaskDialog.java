@@ -298,6 +298,7 @@ class TaskDialog extends JDialog {
 
 	JTextArea initTextArea(JTextArea textArea) {
 		textArea.setEditable(false);
+		textArea.setFocusable(false);
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
 		textArea.setColumns(TEXT_AREA_COLUMNS);
