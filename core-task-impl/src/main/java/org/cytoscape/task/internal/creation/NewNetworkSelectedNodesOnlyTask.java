@@ -45,6 +45,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -58,10 +59,11 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	                                       final CyNetworkNaming cyNetworkNaming,
 	                                       final VisualMappingManager vmm,
 	                                       final CyApplicationManager appManager,
-	                                       final CyEventHelper eventHelper)
+	                                       final CyEventHelper eventHelper,
+	                                       final RenderingEngineManager renderingEngineMgr)
 	{
 		super(undoSupport, net, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
-		      vmm, appManager, eventHelper);
+		      vmm, appManager, eventHelper, renderingEngineMgr);
 	}
 
 	Collection<CyEdge> getEdges(CyNetwork netx, List<CyNode> nodes) {

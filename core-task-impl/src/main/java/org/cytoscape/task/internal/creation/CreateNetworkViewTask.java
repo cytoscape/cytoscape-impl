@@ -41,6 +41,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
@@ -53,31 +54,43 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 	private static final Logger logger = LoggerFactory.getLogger(CreateNetworkViewTask.class);
 
 	private final UndoSupport undoSupport;
-	private final CyNetworkViewManager networkViewManager;
+	private final CyNetworkViewManager netViewMgr;
 	private final CyNetworkViewFactory viewFactory;
-	private final CyLayoutAlgorithmManager layouts;
+	private final CyLayoutAlgorithmManager layoutMgr;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
+	private final RenderingEngineManager renderingEngineMgr;
 	private final CyNetworkView sourceView;
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
-			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager networkViewManager,
-			final CyLayoutAlgorithmManager layouts, final CyEventHelper eventHelper, final VisualMappingManager vmm) {
-		this(undoSupport, networks, viewFactory, networkViewManager, layouts, eventHelper, vmm, null);
+	public CreateNetworkViewTask(final UndoSupport undoSupport,
+								 final Collection<CyNetwork> networks,
+								 final CyNetworkViewFactory viewFactory,
+								 final CyNetworkViewManager netViewMgr,
+								 final CyLayoutAlgorithmManager layoutMgr,
+								 final CyEventHelper eventHelper,
+								 final VisualMappingManager vmm,
+								 final RenderingEngineManager renderingEngineMgr) {
+		this(undoSupport, networks, viewFactory, netViewMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, null);
 	}
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
-			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager networkViewManager,
-			final CyLayoutAlgorithmManager layouts, final CyEventHelper eventHelper, final VisualMappingManager vmm,
-			final CyNetworkView sourceView) {
+	public CreateNetworkViewTask(final UndoSupport undoSupport,
+			 					 final Collection<CyNetwork> networks,
+			 					 final CyNetworkViewFactory viewFactory,
+			 					 final CyNetworkViewManager netViewMgr,
+			 					 final CyLayoutAlgorithmManager layoutMgr,
+			 					 final CyEventHelper eventHelper,
+			 					 final VisualMappingManager vmm,
+			 					 final RenderingEngineManager renderingEngineMgr,
+			 					 final CyNetworkView sourceView) {
 		super(networks);
 
 		this.undoSupport = undoSupport;
 		this.viewFactory = viewFactory;
-		this.networkViewManager = networkViewManager;
-		this.layouts = layouts;
+		this.netViewMgr = netViewMgr;
+		this.layoutMgr = layoutMgr;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
+		this.renderingEngineMgr = renderingEngineMgr;
 		this.sourceView = sourceView;
 	}
 
@@ -90,7 +103,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		int i = 0;
 		int viewCount = networks.size();
 		for (final CyNetwork n : networks) {
-			if (networkViewManager.getNetworkViews(n).isEmpty()) {
+			if (netViewMgr.getNetworkViews(n).isEmpty()) {
 				createView(n);
 				taskMonitor.setStatusMessage("Network view successfully created for:  "
 						+ n.getRow(n).get(CyNetwork.NAME, String.class));
@@ -110,7 +123,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			// large network.
 			final CyNetworkView view = viewFactory.createNetworkView(network);
 			final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the view!
-			networkViewManager.addNetworkView(view);
+			netViewMgr.addNetworkView(view);
 			
 			// Apply visual style
 			if (style != null) {
@@ -122,13 +135,14 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			// If a source view has been provided, use that to set the X/Y positions of the
 			// nodes along with the visual style.
 			if (sourceView != null)
-				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, view, sourceView, null));
+				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, renderingEngineMgr, view, sourceView, 
+						null, null, true));
 
 			// Otherwise check if layouts have been provided.
-			else if (layouts != null) {
+			else if (layoutMgr != null) {
 				final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
 				views.add(view);
-				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layouts));
+				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layoutMgr));
 			}
 
 		} catch (Exception e) {
@@ -137,7 +151,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		}
 
 		if (undoSupport != null)
-			undoSupport.postEdit(new CreateNetworkViewEdit(eventHelper, network, viewFactory, networkViewManager));
+			undoSupport.postEdit(new CreateNetworkViewEdit(eventHelper, network, viewFactory, netViewMgr));
 
 		logger.info("Network view creation finished in " + (System.currentTimeMillis() - start) + " msec.");
 	}

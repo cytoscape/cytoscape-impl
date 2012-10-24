@@ -3,11 +3,12 @@ package org.cytoscape.task.internal.creation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -25,6 +26,8 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -46,9 +49,11 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 	private CyNetworkNaming cyNetworkNaming = mock(CyNetworkNaming.class);
 	private VisualMappingManager vmm = mock(VisualMappingManager.class);
 	private CyApplicationManager appManager = mock(CyApplicationManager.class);
+	private RenderingEngineManager renderingEngineManager = mock(RenderingEngineManager.class);
 
 	@Before
 	public void setUp() throws Exception {
+		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
 	
 	@Test
@@ -73,7 +78,7 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 		final NewNetworkSelectedNodesOnlyTask task =
 			new NewNetworkSelectedNodesOnlyTask(undoSupport, net, cyroot, cnvf, netmgr,
 			                                     networkViewManager, cyNetworkNaming,
-			                                     vmm, appManager, eventHelper);
+			                                     vmm, appManager, eventHelper, renderingEngineManager);
 		
 		assertNotNull("task is null!" , task);
 		task.setTaskIterator(new TaskIterator(task));

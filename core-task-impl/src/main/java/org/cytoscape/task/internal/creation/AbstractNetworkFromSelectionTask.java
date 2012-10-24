@@ -53,6 +53,7 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
@@ -67,6 +68,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	protected final CyNetworkNaming cyNetworkNaming;
 	protected final CyApplicationManager appManager;
 	private final CyEventHelper eventHelper;
+	private final RenderingEngineManager renderingEngineMgr;
 
 	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
 	                                        final CyNetwork parentNetwork,
@@ -77,17 +79,18 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	                                        final CyNetworkNaming cyNetworkNaming,
 	                                        final VisualMappingManager vmm,
 	                                        final CyApplicationManager appManager,
-	                                        final CyEventHelper eventHelper)
-	{
+	                                        final CyEventHelper eventHelper,
+	                                        final RenderingEngineManager renderingEngineMgr) {
 		super(parentNetwork, netmgr, networkViewManager);
 
-		this.undoSupport        = undoSupport;
+		this.undoSupport = undoSupport;
 		this.rootNetworkManager = rootNetworkManager;
-		this.viewFactory        = viewFactory;
-		this.cyNetworkNaming    = cyNetworkNaming;
-		this.vmm                = vmm;
-		this.appManager         = appManager;
-		this.eventHelper        = eventHelper;
+		this.viewFactory = viewFactory;
+		this.cyNetworkNaming = cyNetworkNaming;
+		this.vmm = vmm;
+		this.appManager = appManager;
+		this.eventHelper = eventHelper;
+		this.renderingEngineMgr = renderingEngineMgr;
 	}
 
 	abstract Collection<CyEdge> getEdges(CyNetwork netx, List<CyNode> nodes);
@@ -149,7 +152,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		networks.add(newNet);
 		final Task createViewTask = new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
-				null, eventHelper, vmm, sourceView);
+				null, eventHelper, vmm, renderingEngineMgr, sourceView);
 		insertTasksAfterCurrentTask(createViewTask);
 
 		tm.setProgress(1.0);

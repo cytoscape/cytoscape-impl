@@ -40,6 +40,7 @@ import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
@@ -55,6 +56,7 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 	private final VisualMappingManager vmm;
 	private final CyApplicationManager appManager;
 	private final CyEventHelper eventHelper;
+	private final RenderingEngineManager renderingEngineMgr;
 
 	public NewNetworkSelectedNodesEdgesTaskFactoryImpl(final UndoSupport undoSupport,
 	                                               final CyRootNetworkManager crnf,
@@ -64,7 +66,8 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 	                                               final CyNetworkNaming naming,
 	                                               final VisualMappingManager vmm,
 	                                               final CyApplicationManager appManager,
-	                                               final CyEventHelper eventHelper)
+	                                               final CyEventHelper eventHelper,
+	                                               final RenderingEngineManager renderingEngineMgr)
 	{
 		this.undoSupport        = undoSupport;
 		this.netmgr             = netmgr;
@@ -75,12 +78,13 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 		this.vmm                = vmm;
 		this.appManager         = appManager;
 		this.eventHelper        = eventHelper;
+		this.renderingEngineMgr = renderingEngineMgr;
 	}
 
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(3,
 			new NewNetworkSelectedNodesEdgesTask(undoSupport, network, crnf, cnvf,
 			                                     netmgr, networkViewManager, naming, vmm,
-			                                     appManager, eventHelper));
+			                                     appManager, eventHelper, renderingEngineMgr));
 	}
 }
