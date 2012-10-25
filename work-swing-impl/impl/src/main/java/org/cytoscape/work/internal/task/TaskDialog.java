@@ -36,7 +36,6 @@
 package org.cytoscape.work.internal.task;
 
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -49,6 +48,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Date;
 
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -56,12 +56,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
-import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.InputMap;
-import javax.swing.KeyStroke;
 
 class TaskDialog extends JDialog {
 
@@ -74,8 +72,8 @@ class TaskDialog extends JDialog {
 	static final int TIME_UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
 
 	/**
-	 * Description and status messages are stored in <code>JTextArea</code>s;
-	 * this specifies the number of columns <code>JTextArea</code>s should have.
+	 * Description and status messages are stored in <code>JLabel</code>s;
+	 * this specifies the number of columns <code>JLabel</code>s should have.
 	 * This value has a big impact on the size of the dialog.
 	 */
 	static final int TEXT_AREA_COLUMNS = 30;
@@ -105,10 +103,10 @@ class TaskDialog extends JDialog {
 	 * <code>timeLabel</code>.
 	 */
 	static final String ELAPSED_AND_REMAINING_FORMAT = "%s elapsed, %s remaining";
-
 	static final String CANCEL_LABEL = "Cancel";
 	static final String CANCELLING_LABEL = "   Cancelling...   ";
 	static final String CLOSE_LABEL = "Close";
+	static final String HTML_STYLE_HEADER = "<html><div style=\"width:400px;\">";
 
 	// State variables
 	boolean haltRequested = false;
@@ -116,11 +114,11 @@ class TaskDialog extends JDialog {
 	SwingTaskMonitor parentTaskMonitor = null;
 
 	// Swing components
-	JTextArea descriptionLabel = new JTextArea();
-	JTextArea descriptionLabel2 = new JTextArea();
-	JTextArea statusLabel = new JTextArea();
+	JLabel descriptionLabel = new JLabel(HTML_STYLE_HEADER);
+	JLabel descriptionLabel2 = new JLabel(HTML_STYLE_HEADER);
+	JLabel statusLabel = new JLabel(HTML_STYLE_HEADER);
 	JProgressBar progressBar = new JProgressBar();
-	JTextArea timeLabel = new JTextArea();
+	JLabel timeLabel = new JLabel(HTML_STYLE_HEADER);
 	JButton cancelButton = new JButton(CANCEL_LABEL);
 	JButton closeButton = new JButton(CLOSE_LABEL);
 	JPanel exceptionPanel = new JPanel();
@@ -141,8 +139,8 @@ class TaskDialog extends JDialog {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				setTitle(taskTitle);
-				descriptionLabel.setText(taskTitle);
-				descriptionLabel2.setText(taskTitle);
+				descriptionLabel.setText(HTML_STYLE_HEADER+taskTitle);
+				descriptionLabel2.setText(HTML_STYLE_HEADER+taskTitle);
 				pack();
 			}
 		});
@@ -205,7 +203,7 @@ class TaskDialog extends JDialog {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					// statusLabel.setText(StringUtils.truncateOrPadString(message));
-					statusLabel.setText(message);
+					statusLabel.setText(HTML_STYLE_HEADER+message);
 					pack();
 				}
 			});
@@ -216,7 +214,7 @@ class TaskDialog extends JDialog {
 		// Update the UI
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				timeLabel.setText(message);
+				timeLabel.setText(HTML_STYLE_HEADER+message);
 			}
 		});
 	}
@@ -258,10 +256,10 @@ class TaskDialog extends JDialog {
 	void initComponents() {
 		//Set the button that has focus as default button. Thereby, enter key will activate that button.
 		//UIManager.put("Button.defaultButtonFollowsFocus", Boolean.TRUE);
-		initTextArea(descriptionLabel);
-		initTextArea(descriptionLabel2);
-		initTextArea(statusLabel);
-		initTextArea(timeLabel);
+		initLabel(descriptionLabel);
+		initLabel(descriptionLabel2);
+		initLabel(statusLabel);
+		initLabel(timeLabel);
 		closeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				close();
@@ -294,20 +292,6 @@ class TaskDialog extends JDialog {
 		label.setHorizontalAlignment(JLabel.LEFT);
 		label.setFont(new Font(null, Font.PLAIN, 13));
 		return label;
-	}
-
-	JTextArea initTextArea(JTextArea textArea) {
-		textArea.setEditable(false);
-		textArea.setFocusable(false);
-		textArea.setLineWrap(true);
-		textArea.setWrapStyleWord(true);
-		textArea.setColumns(TEXT_AREA_COLUMNS);
-		// textArea.setBorder(new EmptyBorder(5, 5, 5, 5));
-
-		textArea.setBackground((Color) UIManager.get("Label.background"));
-		textArea.setForeground((Color) UIManager.get("Label.foreground"));
-		textArea.setFont(new Font(null, Font.PLAIN, 13));
-		return textArea;
 	}
 
 	void initLayout() {
@@ -367,7 +351,6 @@ class TaskDialog extends JDialog {
 		getContentPane().add(panel2, EXCEPTION_MODE);
 
 		exceptionPanel.setLayout(new GridLayout(1, 1));
-
 		setResizable(false);
 		pack();
 	}
@@ -413,4 +396,5 @@ class TaskDialog extends JDialog {
 			timer.stop();
 		}
 	}
+	
 }
