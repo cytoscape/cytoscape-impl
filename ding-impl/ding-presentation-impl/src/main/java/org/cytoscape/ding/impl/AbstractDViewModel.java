@@ -89,6 +89,11 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		}
 	}
 	
+	@Override
+	public boolean isSet(final VisualProperty<?> vp) {
+		return visualProperties.get(vp) != null || visualPropertyLocks.get(vp) != null || getDefaultValue(vp) != null;
+	}
+	
 	protected abstract <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value);
 	protected abstract <T, V extends T> V getDefaultValue(final VisualProperty<T> vp);
 	
