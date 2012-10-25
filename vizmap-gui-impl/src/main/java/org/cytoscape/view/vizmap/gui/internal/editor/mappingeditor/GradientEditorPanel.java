@@ -84,14 +84,28 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 	public GradientEditorPanel(final VisualStyle style, final ContinuousMapping<T, Color> mapping, final CyTable attr,
 			final CyApplicationManager appManager, final ValueEditor<Paint> colorEditor, final VisualMappingManager vmm, final VisualMappingFunctionFactory continuousMappingFactory) {
-
 		super(style, mapping, attr, appManager, vmm, continuousMappingFactory);
 
 		this.colorEditor = colorEditor;
 		this.appManager = appManager;
 
 		iconPanel.setVisible(false);
+		
 		initSlider();
+		slider.addMouseListener(new ThumbMouseListener());
+		slider.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				final JComponent selectedThumb = slider.getSelectedThumb();
+				
+				if (selectedThumb != null) {
+					if (e.getClickCount() == 2) {
+						final Paint newColor = colorEditor.showEditor(slider, null);
+						if (newColor != null)
+							setColor((Color) newColor);
+					}
+				}
+			}
+		});
 
 		if ((mapping != null) && (mapping.getPointCount() == 0))
 			addButtonActionPerformed(null);
@@ -101,7 +115,6 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getAndSetColor();
 			}
 		});
-
 	}
 
 	private void getAndSetColor() {
@@ -153,7 +166,6 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	}
 
 	private void createSimpleGradient() {
-
 		Number rangeValue = tracer.getRange(type);
 		Number minValue = tracer.getMin(type);
 
@@ -219,22 +231,8 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	}
 
 	protected void initSlider() {
-
 		slider.updateUI();
-		slider.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-
-				final JComponent selectedThumb = slider.getSelectedThumb();
-				if (selectedThumb != null) {
-					if (e.getClickCount() == 2) {
-						final Paint newColor = colorEditor.showEditor(slider, null);
-						if (newColor != null)
-							setColor((Color) newColor);
-					}
-				}
-			}
-		});
-
+		
 		final double actualRange = tracer.getRange(type);
 		final double minValue = tracer.getMin(type);
 
@@ -256,7 +254,6 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			slider.getModel().addThumb(
 					((Number) ((point.getValue().doubleValue() - minValue) / actualRange)).floatValue() * 100,
 					bound.equalValue);
-
 		}
 
 		if (!sortedPoints.isEmpty()) {
@@ -275,7 +272,6 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		slider.setThumbRenderer(thumbRend);
 		slider.setTrackRenderer(gRend);
-		slider.addMouseListener(new ThumbMouseListener());
 
 		// Add tooltip as help for users.
 		slider.setToolTipText("Double-click handles to edit boundary colors.");
