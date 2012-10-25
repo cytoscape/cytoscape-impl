@@ -40,6 +40,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -75,12 +76,11 @@ class GenerateNetworkViewsTask extends AbstractTask {
 		int i = 0;
 
 		for (CyNetwork network : networks) {
-
 			// Use original name if exists
 			String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-			if(networkName == null || networkName.trim().length() == 0) {
+			if (networkName == null || networkName.trim().length() == 0) {
 				networkName = name;
-				if(networkName == null)
+				if (networkName == null)
 					networkName = "? (Name is missing)";
 				
 				network.getRow(network).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
@@ -93,7 +93,11 @@ class GenerateNetworkViewsTask extends AbstractTask {
 				networkViewManager.addNetworkView(view);
 				vmm.setVisualStyle(style, view);
 				style.apply(view);
-				view.fitContent();
+				
+				if (!view.isSet(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)
+						&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)
+						&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION))
+					view.fitContent();
 			}
 
 			taskMonitor.setProgress((double)(++i)/numNets);
