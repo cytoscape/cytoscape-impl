@@ -125,14 +125,14 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 	}
 
 	public String addVirtualColumn(String virtualColumn, String sourceColumn, CyTable sourceTable, String targetJoinKey, boolean isImmutable) {
-		//String ret = shared.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
+		virtualColumn = shared.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
 		for ( CyTable local : localTables() ) 
 			local.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
 		return virtualColumn;
 	}
 
 	public void addVirtualColumns(CyTable sourceTable, String targetJoinKey, boolean isImmutable) {
-	//	shared.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);
+		shared.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);
 		for ( CyTable local : localTables() ) 
 			local.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);
 	}
