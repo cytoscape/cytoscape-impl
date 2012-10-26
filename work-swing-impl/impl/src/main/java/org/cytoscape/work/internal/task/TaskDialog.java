@@ -385,6 +385,7 @@ class TaskDialog extends JDialog {
 						pack();
 					}
 				});
+		timer.setInitialDelay(0);
 		timer.start();
 	}
 
