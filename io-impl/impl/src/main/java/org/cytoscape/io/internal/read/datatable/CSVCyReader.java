@@ -249,6 +249,12 @@ public class CSVCyReader implements CyTableReader {
 	static class SchemaDelegate0 extends AbstractSchemaDelegate {
 		@Override
 		protected void handleColumnOptions(CSVReader reader, TableInfo table) throws IOException, ClassNotFoundException {
+			// Make columns except primary key mutable by default so users
+			// won't run into issue #1526.
+			ColumnInfo[] columns = table.getColumns();
+			for (int i = 1; i < columns.length; i++) {
+				columns[i].setMutable(true);
+			}
 		}
 	}
 	
