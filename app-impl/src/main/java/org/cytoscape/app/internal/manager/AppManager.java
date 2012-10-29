@@ -2,26 +2,19 @@ package org.cytoscape.app.internal.manager;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipException;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
-import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.AbstractCyApp;
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
@@ -31,10 +24,12 @@ import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.application.CyApplicationConfiguration;
-
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
+import org.cytoscape.application.CyApplicationConfiguration;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.service.startlevel.StartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * This class represents an App Manager, which is capable of maintaining a list of all currently installed and available apps. The class
  * also provides functionalities for installing and uninstalling apps.
  */
-public class AppManager {
+public class AppManager implements FrameworkListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AppManager.class);
 	
@@ -71,6 +66,8 @@ public class AppManager {
 	/** This subdirectory in the local Cytoscape storage directory is used to store app data, as 
 	 * well as installed and uninstalled apps. */
 	private static final String APPS_DIRECTORY_NAME = "3" + File.separator + "apps";
+
+	private static final int APP_START_LEVEL = 200;
 	
 	/** The set of all apps, represented by {@link App} objects, registered to this App Manager. */
 	private Set<App> apps;
@@ -90,7 +87,7 @@ public class AppManager {
 	/**
 	 * The {@link FeaturesService} used to communicate with Apache Karaf to manage OSGi bundle based apps
 	 */
-	private FeaturesService featuresService;
+//	private FeaturesService featuresService;
 	
 	
 	// private KarService karService;
@@ -106,6 +103,10 @@ public class AppManager {
 	private CySwingAppAdapter swingAppAdapter;
 	
 	private FileAlterationMonitor fileAlterationMonitor;
+
+	private StartLevel startLevel;
+
+	private boolean isInitialized;
 	
 	/**
 	 * A {@link FileFilter} that accepts only files in the first depth level of a given directory
@@ -131,11 +132,11 @@ public class AppManager {
 	}
 	
 	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration, 
-			final WebQuerier webQuerier, FeaturesService featuresService) {
+			final WebQuerier webQuerier, StartLevel startLevel) {
 		this.applicationConfiguration = applicationConfiguration;
 		this.swingAppAdapter = swingAppAdapter;
 		this.webQuerier = webQuerier;
-		this.featuresService = featuresService;
+		this.startLevel = startLevel;
 		
 		apps = new HashSet<App>();
 		appParser = new AppParser();
@@ -145,6 +146,27 @@ public class AppManager {
 		purgeTemporaryDirectories();
 		initializeAppsDirectories();
 		
+		attemptInitialization();
+	}
+	
+	@Override
+	public void frameworkEvent(FrameworkEvent event) {
+		// Defer initialization until we reach the right start level.
+		if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
+			attemptInitialization();
+		}
+	}
+	
+	void attemptInitialization() {
+		synchronized (this) {
+			if (!isInitialized && startLevel.getStartLevel() >= APP_START_LEVEL) {
+				initializeApps();
+				isInitialized = true;
+			}
+		}
+	}
+	
+	void initializeApps() {
 		// Move apps from install-on-restart directory to install directory
 		Set<App> installOnRestartApps = obtainAppsFromDirectory(new File(getInstallOnRestartAppsPath()), false);
 		for (App app: installOnRestartApps) {
@@ -233,14 +255,6 @@ public class AppManager {
 		//apps.addAll(uninstalledApps);
 		
 		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
-	}
-	
-	public FeaturesService getFeaturesService() {
-		return this.featuresService;
-	}
-	
-	public void setFeaturesService(FeaturesService featuresService) {
-		this.featuresService = featuresService;
 	}
 	
 	private void setupAlterationMonitor() {

@@ -1,6 +1,5 @@
 package org.cytoscape.app.internal;
 
-import org.apache.karaf.features.FeaturesService;
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.CyAppAdapterImpl;
 import org.cytoscape.app.internal.action.AppManagerAction;
@@ -70,6 +69,7 @@ import org.cytoscape.work.TaskFactory;
 
 
 import org.osgi.framework.BundleContext;
+import org.osgi.service.startlevel.StartLevel;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -357,19 +357,18 @@ public class CyActivator extends AbstractCyActivator {
 		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef);
 		registerService(bc, webQuerier, WebQuerier.class, new Properties());
 		
-		FeaturesService featuresService = getService(bc, FeaturesService.class);
-		
 		Properties properties = System.getProperties();
 
 		for (Entry<Object, Object> entry : properties.entrySet()) {
 			//System.out.println("Entry: " + entry.getKey() + ", value: " + entry.getValue());
 		}
 		
+		StartLevel startLevel = getService(bc, StartLevel.class);
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, 
-				cyApplicationConfigurationServiceRef, webQuerier, featuresService);
+				cyApplicationConfigurationServiceRef, webQuerier, startLevel);
 		registerService(bc, appManager, AppManager.class, new Properties());
-		appManager.setFeaturesService(featuresService);
+		bc.addFrameworkListener(appManager);
 		
 		final DownloadSitesManager downloadSitesManager = new DownloadSitesManager(cyPropertyRef);
 		

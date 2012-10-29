@@ -4,15 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
-import org.apache.karaf.features.Feature;
-import org.apache.karaf.features.FeaturesService;
-import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.exception.AppDisableException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
@@ -130,34 +125,35 @@ public class KarafArchiveApp extends App {
 		
 		*/
 	}
-	
-	private List<Feature> getCorrespondingFeatures(FeaturesService featuresService) {
-		List<Feature> correspondingFeatures = new LinkedList<Feature>();
-		
-		Feature[] availableFeatures = new Feature[]{};
-		try {
-			availableFeatures = featuresService.listFeatures();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		for (int i = 0; i < availableFeatures.length; i++) {
-			Feature availableFeature = availableFeatures[i];
-			
-			KarafArchiveApp.KarafFeature appFeature = featuresSet.get(availableFeature.getName());
-			
-			// System.out.println("available feature: " + availableFeature.getName() + ", " + availableFeature.getVersion());
-			
-			if (appFeature != null
-					&& appFeature.featureVersion.equalsIgnoreCase(availableFeature.getVersion())) {
-				correspondingFeatures.add(availableFeature);
-				
-				// System.out.println("feature match: " + availableFeature.getName() + " vs " + appFeature.featureName);
-			}
-		}
-		
-		return correspondingFeatures;
-	}
+
+// Ticket 1554: FeaturesService is not API so we shouldn't use it.  Disabled for now.
+//	private List<Feature> getCorrespondingFeatures(FeaturesService featuresService) {
+//		List<Feature> correspondingFeatures = new LinkedList<Feature>();
+//		
+//		Feature[] availableFeatures = new Feature[]{};
+//		try {
+//			availableFeatures = featuresService.listFeatures();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		
+//		for (int i = 0; i < availableFeatures.length; i++) {
+//			Feature availableFeature = availableFeatures[i];
+//			
+//			KarafArchiveApp.KarafFeature appFeature = featuresSet.get(availableFeature.getName());
+//			
+//			// System.out.println("available feature: " + availableFeature.getName() + ", " + availableFeature.getVersion());
+//			
+//			if (appFeature != null
+//					&& appFeature.featureVersion.equalsIgnoreCase(availableFeature.getVersion())) {
+//				correspondingFeatures.add(availableFeature);
+//				
+//				// System.out.println("feature match: " + availableFeature.getName() + " vs " + appFeature.featureName);
+//			}
+//		}
+//		
+//		return correspondingFeatures;
+//	}
 	
 	@Override
 	public void uninstall(AppManager appManager) throws AppUninstallException {
