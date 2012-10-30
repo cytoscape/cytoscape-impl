@@ -138,6 +138,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	@Override
 	public void dispose() {
+		Map<String, CyTable> tableMap;
 		serviceRegistrar.unregisterAllServices(columnAdder);
 		serviceRegistrar.unregisterAllServices(nameSetListener);
 		serviceRegistrar.unregisterAllServices(interactionSetListener);
@@ -147,7 +148,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		for (CySubNetwork network : subNetworks) {
 			network.dispose();
 		}
-		Map<String, CyTable> tableMap = networkTableMgr.getTables(this, CyNetwork.class);
+		tableMap = networkTableMgr.getTables(this, CyNetwork.class);
 		for(CyTable table : tableMap.values() )
 		{
 			tableMgr.deleteTableInternal(table.getSUID(),true);
@@ -336,6 +337,23 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 		// clean up pointers for nodes in subnetwork
 		sub.removeNodes(sub.getNodeList());
+		Map<String, CyTable> tableMap;
+		
+		tableMap = networkTableMgr.getTables(sub, CyNetwork.class);
+		for(CyTable table : tableMap.values() )
+		{
+			tableMgr.deleteTableInternal(table.getSUID(),true);
+		}
+		tableMap = networkTableMgr.getTables(sub, CyNode.class);
+		for(CyTable table : tableMap.values() )
+		{
+			tableMgr.deleteTableInternal(table.getSUID(),true);
+		}
+	    tableMap = networkTableMgr.getTables(sub, CyEdge.class);
+		for(CyTable table : tableMap.values() )
+		{
+			tableMgr.deleteTableInternal(table.getSUID(),true);
+		}
 
 		subNetworks.remove( sub );
 		sub.dispose();
