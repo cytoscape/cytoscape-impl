@@ -269,7 +269,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 	/**
 	 * Perform a layout
 	 */
-	public void layoutPartion(LayoutPartition partition) {
+	public void layoutPartition(LayoutPartition partition) {
 		LayoutPoint initialLocation = null;
 		this.partition = partition;
 		// Initialize all of our values.  This will create

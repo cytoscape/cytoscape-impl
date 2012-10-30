@@ -45,7 +45,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 		q = new LongArrayList();
 	}
 	
-	public void layoutPartion(LayoutPartition partition) {
+	public void layoutPartition(LayoutPartition partition) {
 		this.partition = partition;
 
 		int nodeCount = partition.nodeCount();

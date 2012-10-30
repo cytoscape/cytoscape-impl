@@ -110,7 +110,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	/**
 	 * Perform a layout
 	 */
-	public void layoutPartion(LayoutPartition partition) {
+	public void layoutPartition(LayoutPartition partition) {
 		this.partition = partition;
 
 		LayoutPoint initialLocation = null;

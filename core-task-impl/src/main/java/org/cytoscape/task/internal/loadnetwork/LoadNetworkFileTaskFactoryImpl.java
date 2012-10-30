@@ -80,7 +80,7 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 	}
 
 	@Override
-	public TaskIterator creatTaskIterator(File file) {
+	public TaskIterator createTaskIterator(File file) {
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("file", file);
 

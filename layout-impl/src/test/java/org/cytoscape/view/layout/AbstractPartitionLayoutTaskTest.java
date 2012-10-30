@@ -37,7 +37,7 @@ public class AbstractPartitionLayoutTaskTest extends LayoutTaskTest {
 	@Test
 	public void testLayoutPartion() {
 		final LayoutPartition partition = new LayoutPartition(10, 10);
-		((AbstractPartitionLayoutTask)task).layoutPartion(partition);
+		((AbstractPartitionLayoutTask)task).layoutPartition(partition);
 	}
 
 	@Test
@@ -56,7 +56,7 @@ public class AbstractPartitionLayoutTaskTest extends LayoutTaskTest {
 		}
 
 		@Override
-		public void layoutPartion(LayoutPartition partition) {
+		public void layoutPartition(LayoutPartition partition) {
 
 		}
 

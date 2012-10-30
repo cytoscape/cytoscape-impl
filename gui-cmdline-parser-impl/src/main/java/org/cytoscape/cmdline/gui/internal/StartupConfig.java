@@ -247,7 +247,7 @@ public class StartupConfig {
 
 		} else {
 			for ( File network : networkFiles )
-				taskIteratorList.add( networkFileLoader.creatTaskIterator(network) );
+				taskIteratorList.add( networkFileLoader.createTaskIterator(network) );
 			for ( URL network : networkURLs )
 				taskIteratorList.add( networkURLLoader.loadCyNetworks(network) );
 			for ( File table : tableFiles )
@@ -258,7 +258,7 @@ public class StartupConfig {
 				taskIteratorList.add( visualStylesLoader.createTaskIterator(vizmap));
 		}
 
-		Task initTask = new DummyTaks();
+		Task initTask = new DummyTask();
 		TaskIterator taskIterator = new TaskIterator(taskIteratorList.size(), initTask);
 		for (int i= taskIteratorList.size()-1; i>= 0 ; i--){
 			TaskIterator ti = taskIteratorList.get(i);
@@ -269,7 +269,7 @@ public class StartupConfig {
 		
 	}
 	
-	private class DummyTaks extends AbstractTask{
+	private class DummyTask extends AbstractTask{
 
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {

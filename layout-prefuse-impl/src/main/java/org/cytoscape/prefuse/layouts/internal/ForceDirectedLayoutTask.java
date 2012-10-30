@@ -90,7 +90,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		return ForceDirectedLayout.ALGORITHM_DISPLAY_NAME;
 	}
 
-	public void layoutPartion(LayoutPartition part) {
+	public void layoutPartition(LayoutPartition part) {
 		LayoutPoint initialLocation = null;
 		// System.out.println("layoutPartion: "+part.getEdgeList().size()+" edges");
 		// Calculate our edge weights

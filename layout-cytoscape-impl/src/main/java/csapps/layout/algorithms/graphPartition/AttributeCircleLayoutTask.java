@@ -33,7 +33,7 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 	 *
 	 * @param partition DOCUMENT ME!
 	 */
-	public void layoutPartion(LayoutPartition partition) {
+	public void layoutPartition(LayoutPartition partition) {
 		// just add the unlocked nodes
 		List<LayoutNode> nodes = new ArrayList<LayoutNode>();
 		for ( LayoutNode ln : partition.getNodeList() ) {

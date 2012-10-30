@@ -40,7 +40,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 
 
 	@Override
-	public void layoutPartion(LayoutPartition partition) {
+	public void layoutPartition(LayoutPartition partition) {
 		if (cancelled)
 			return;
 

@@ -31,7 +31,7 @@ public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements 
 	}
 
 	@Override
-	public TaskIterator creatTaskIterator(File file) {
+	public TaskIterator createTaskIterator(File file) {
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("OutputFile", file);
 

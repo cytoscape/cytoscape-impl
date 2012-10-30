@@ -34,7 +34,7 @@ public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 	}
 
 	@Override
-	public void layoutPartion(LayoutPartition partition) {
+	public void layoutPartition(LayoutPartition partition) {
 		// Create attribute
 		final CyTable table = network.getDefaultNodeTable();
 		if (table.getColumn(DEGREE_ATTR_NAME) == null)
