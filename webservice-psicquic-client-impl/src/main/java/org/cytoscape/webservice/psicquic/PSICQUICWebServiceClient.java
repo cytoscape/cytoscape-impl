@@ -1,16 +1,7 @@
 package org.cytoscape.webservice.psicquic;
 
 import java.awt.Container;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.SearchWebServiceClient;
@@ -35,13 +26,9 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	private static final Logger logger = LoggerFactory.getLogger(PSICQUICWebServiceClient.class);
 
-	// Timeout value for registry manager.
-	private static final Long TIMEOUT_IN_SECCONDS = 30l;
-
 	private PSICQUICRestClient client;
 	private RegistryManager regManager;
 	private final CyNetworkManager networkManager;
-	private final MergedNetworkBuilder builder;
 
 	private final TaskManager<?, ?> tManager;
 
@@ -64,50 +51,11 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		this.tManager = tManager;
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.openBrowser = openBrowser;
-		this.builder = builder;
 		this.vsBuilder = vsBuilder;
 		this.vmm = vmm;
 
-		// Initialize registry manager in different thread.
-		initRegmanager(networkFactory);
-	}
-
-	private void initRegmanager(CyNetworkFactory factory) {
-		final ExecutorService exe = Executors.newCachedThreadPool();
-		final long startTime = System.currentTimeMillis();
-
-		// Submit the query for each active service
-		final List<InitRegistryManagerTask> tasks = new ArrayList<InitRegistryManagerTask>();
-		tasks.add(new InitRegistryManagerTask());
-
-		List<Future<RegistryManager>> futures = null;
-		try {
-			futures = exe.invokeAll(tasks, TIMEOUT_IN_SECCONDS, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			logger.error("Initialization interrupted.", e);
-			return;
-		}
-
-		for (final Future<RegistryManager> future : futures) {
-			try {
-				regManager = future.get();
-			} catch (ExecutionException e) {
-				throw new IllegalStateException("PSICQUIC Reg manager could not be initialized.", e);
-			} catch (CancellationException ce) {
-				throw new IllegalStateException("Timeout error.", ce);
-			} catch (InterruptedException ie) {
-				throw new IllegalStateException("PSICQUIC Reg manager initialization interrupted.", ie);
-			}
-		}
-
-		if (regManager == null)
-			throw new IllegalStateException("PSICQUIC Reg manager could not be initialized.");
-
-		client = new PSICQUICRestClient(factory, regManager, builder);
-
-		long endTime = System.currentTimeMillis();
-		double sec = (endTime - startTime) / (1000.0);
-		logger.info("Registry Manager initialized in " + sec + " sec.");
+		regManager = new RegistryManager();
+		client = new PSICQUICRestClient(networkFactory, regManager, builder);
 	}
 
 	public TaskIterator createTaskIterator(Object query) {
@@ -130,20 +78,13 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		}
 	}
 
-	private static final class InitRegistryManagerTask implements Callable<RegistryManager> {
-		@Override
-		public RegistryManager call() throws Exception {
-			return new RegistryManager();
-		}
-	}
-
 	@Override
 	public Container getQueryBuilderGUI() {
 		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, openBrowser, vsBuilder, vmm);
 	}
 
 	PSICQUICRestClient getRestClient() {
-		return this.client;
+		return client;
 	}
 
 	RegistryManager getRegistryManager() {

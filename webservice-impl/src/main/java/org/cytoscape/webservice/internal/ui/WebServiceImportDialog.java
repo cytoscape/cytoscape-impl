@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.io.webservice.WebServiceClient;
@@ -113,11 +116,7 @@ public class WebServiceImportDialog<T> extends JDialog {
 		setComponentsEnabled(true);
 		
 		if (client instanceof WebServiceGUIClient) {
-			WebServiceGUIClient service = (WebServiceGUIClient) client;
-			Container container = service.getQueryBuilderGUI();
-			if (container != null) {
-				serviceUIPanels.put((WebServiceClient) client, container);
-			}
+			serviceUIPanels.put((WebServiceClient) client, null);
 		}
 		datasourceComboBox.setSelectedItem(client);
 		datasourceComboBoxActionPerformed(null);
@@ -341,6 +340,13 @@ public class WebServiceImportDialog<T> extends JDialog {
 								GroupLayout.PREFERRED_SIZE)));
 
 		dataQueryPanel.setLayout(new BorderLayout());
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				datasourceComboBoxActionPerformed(null);
+			}
+		});
 	}
 
 	private void searchButtonActionPerformed() {
@@ -375,7 +381,10 @@ public class WebServiceImportDialog<T> extends JDialog {
 	}
 
 	private void datasourceComboBoxActionPerformed(ActionEvent evt) {
-
+		if (!isVisible()) {
+			return;
+		}
+		
 		Object selected = datasourceComboBox.getSelectedItem();
 		if (selected == null) {
 			selected = datasourceComboBox.getItemAt(0);
@@ -392,8 +401,9 @@ public class WebServiceImportDialog<T> extends JDialog {
 
 		// Update Panel
 		dataQueryPanel.removeAll();
+		
+		Container gui = getUIPanel(client);
 
-		final Container gui = serviceUIPanels.get(client);
 		if (gui != null) {
 			// This service has custom panel.
 			dataQueryPanel.add(gui, BorderLayout.CENTER);
@@ -408,6 +418,18 @@ public class WebServiceImportDialog<T> extends JDialog {
 		pack();
 		repaint();
 	}
+
+	private Container getUIPanel(WebServiceClient client) {
+		Container container = serviceUIPanels.get(client);
+		if (container == null && client instanceof WebServiceGUIClient) {
+			container = ((WebServiceGUIClient) client).getQueryBuilderGUI();
+			if (container != null) {
+				serviceUIPanels.put(client, container);
+			}
+		}
+		return container;
+	}
+
 
 	private void aboutButtonActionPerformed(ActionEvent evt) {
 
@@ -442,5 +464,4 @@ public class WebServiceImportDialog<T> extends JDialog {
 
 		}
 	}
-
 }

@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -61,6 +64,8 @@ public class RegistryManager {
 	private final Map<String, List<String>> tagMap;
 	private final Map<String, Long> countMap;
 
+	private boolean isInitialized;
+	
 	/**
 	 * Constructor to use default registry location.
 	 */
@@ -87,11 +92,32 @@ public class RegistryManager {
 		urlMap = new HashMap<String, String>();
 		tagMap = new HashMap<String, List<String>>();
 		countMap = new HashMap<String, Long>();
+		allServiceNames = new TreeSet<String>();
+	}
+	
+	private void ensureInitialized() {
+		synchronized (this) {
+			if (isInitialized) {
+				return;
+			}
 
-		invoke();
-
-		allServiceNames = new TreeSet<String>(activeServiceMap.keySet());
-		allServiceNames.addAll(inactiveServiceMap.keySet());
+			ExecutorService executor = Executors.newCachedThreadPool();
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					invoke();
+					allServiceNames.addAll(activeServiceMap.keySet());
+					allServiceNames.addAll(inactiveServiceMap.keySet());
+				}
+			});
+			try {
+				executor.shutdown();
+				executor.awaitTermination(60, TimeUnit.SECONDS);
+				isInitialized = true;
+			} catch (InterruptedException e) {
+				throw new IllegalStateException(e);
+			}
+		}
 	}
 	
 	public void refresh() {
@@ -111,26 +137,32 @@ public class RegistryManager {
 	}
 
 	public Map<String, String> getActiveServices() {
+		ensureInitialized();
 		return activeServiceMap;
 	}
 
 	public Map<String, String> getInactiveServices() {
+		ensureInitialized();
 		return inactiveServiceMap;
 	}
 
 	public Map<String, List<String>> getTagMap() {
+		ensureInitialized();
 		return this.tagMap;
 	}
 
 	public Map<String, Long> getCountMap() {
+		ensureInitialized();
 		return this.countMap;
 	}
 
 	public SortedSet<String> getAllServiceNames() {
+		ensureInitialized();
 		return this.allServiceNames;
 	}
 
 	public Map<String, String> getSource2NameMap() {
+		ensureInitialized();
 		// Lazy instantiation.
 		if (source2NameMap.size() == 0) {
 			for (String name : activeServiceMap.keySet())
@@ -245,6 +277,7 @@ public class RegistryManager {
 	}
 
 	public boolean isActive(final String serviceName) {
+		ensureInitialized();
 		if (serviceName == null)
 			throw new NullPointerException("Service Name is null.");
 
@@ -255,6 +288,7 @@ public class RegistryManager {
 	}
 
 	public String getRestURL(final String serviceName) {
+		ensureInitialized();
 		if (serviceName == null)
 			throw new NullPointerException("Service Name is null.");
 
