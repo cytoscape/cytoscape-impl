@@ -48,14 +48,13 @@ public class JoinTablesTaskTest {
 	private String node1Name = "node1";
 	private String node2Name = "node2";
 
-	private static CyEventHelper eventHelper = new DummyCyEventHelper();
-	private static CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);
-	private static CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
+	private CyEventHelper eventHelper = new DummyCyEventHelper();
+	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);
+	private CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
 
-	private static SyncTunableMutator stm = new SyncTunableMutator();
-	private static SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
-	private static TunableSetterImpl ts = new TunableSetterImpl(
-			new SyncTunableMutatorFactory(syncTunableHandlerFactory), new TunableRecorderManager());
+	private SyncTunableMutator stm = new SyncTunableMutator();
+	private SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
+	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory), new TunableRecorderManager());
 	Properties syncFactoryProp = new Properties();
 
 
@@ -192,7 +191,7 @@ public class JoinTablesTaskTest {
 		return table1;
 	}
 
-	public static void join(CyTable table, CyNetwork net, CyRootNetwork rootNet, CyColumn col, boolean selectedOnly)
+	public void join(CyTable table, CyNetwork net, CyRootNetwork rootNet, CyColumn col, boolean selectedOnly)
 			throws Exception {
 		JoinTablesTaskTaskFactoryImpl joinTableTF = new JoinTablesTaskTaskFactoryImpl(netMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
