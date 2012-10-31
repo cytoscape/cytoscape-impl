@@ -19,7 +19,6 @@ import javax.xml.bind.Unmarshaller;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.webservice.psicquic.miriam.Miriam;
 import org.cytoscape.webservice.psicquic.miriam.Miriam.Datatype;
@@ -61,19 +60,29 @@ public class InteractionClusterMapper {
 	static final String TAXNOMY_NAME = "taxonomy.name";
 	static final String TAXNOMY_DB = "taxonomy.db";
 
+	boolean isInitialized = false;
+	
 	public InteractionClusterMapper() {
 		namespaceSet = new HashSet<String>();
 		this.name2ns = new HashMap<String, String>();
 		this.synonym2ns = new HashMap<String, String>();
-
-		// Read resource file
-		try {
-			parseXml();
-		} catch (Exception ex) {
-			throw new RuntimeException("Could not read resource file", ex);
-		}
 	}
 
+	void ensureInitialized() {
+		synchronized (this) {
+			if (isInitialized) {
+				return;
+			}
+			// Read resource file
+			try {
+				parseXml();
+			} catch (Exception ex) {
+				throw new RuntimeException("Could not read resource file", ex);
+			}
+			isInitialized = true;
+		}
+	}
+	
 	public void mapNodeColumn(final EncoreInteraction interaction, final CyRow sourceRow, final CyRow targetRow) {
 
 		final Map<String, String> accsSource = interaction.getInteractorAccsA();

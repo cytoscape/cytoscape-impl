@@ -6,11 +6,9 @@ import static org.cytoscape.webservice.psicquic.mapper.InteractionClusterMapper.
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
@@ -58,6 +56,7 @@ public class MergedNetworkBuilder {
 
 	private final Map<String, CyNode> process(final InteractionCluster iC, CyNetwork network, CyNetworkView netView,
 			final View<CyNode> hubNode) {
+		mapper.ensureInitialized();
 		nodeMap = new HashMap<String, CyNode>();
 		if (hubNode != null) {
 			nodeMap.put(network.getRow(hubNode.getModel()).get(CyNetwork.NAME, String.class), hubNode.getModel());
