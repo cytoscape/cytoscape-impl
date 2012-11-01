@@ -18,6 +18,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
@@ -66,14 +67,15 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 
 		final List<URL> recentFiles = fileTracker.getRecentlyOpenedURLs();
 		int fileCount = recentFiles.size();
-		if(fileCount>MAX_FILES)
+		
+		if (fileCount > MAX_FILES)
 			fileCount = MAX_FILES;
 
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
 		final Border padLine = BorderFactory.createEmptyBorder(3, 5, 3, 0);
 
-		for (int i = 0; i<fileCount; i++) {
+		for (int i = 0; i < fileCount; i++) {
 			final URL target = recentFiles.get(i);
 
 			URI fileURI = null;
@@ -83,6 +85,7 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 				logger.error("Invalid file URL.", e2);
 				continue;
 			}
+			
 			final File targetFile = new File(fileURI);
 			final JLabel fileLabel = new JLabel();
 			FontMetrics fm = fileLabel.getFontMetrics(REGULAR_FONT);
@@ -97,8 +100,15 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 			fileLabel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					taskManager.execute(openSessionTaskFactory.createTaskIterator(targetFile));
-					closeParentWindow();
+					if (targetFile.exists()) {
+						taskManager.execute(openSessionTaskFactory.createTaskIterator(targetFile));
+						closeParentWindow();
+					} else {
+						JOptionPane.showMessageDialog(OpenPanel.this.getTopLevelAncestor(),
+								"Session file not found:\n" + targetFile.getAbsolutePath(),
+								"File not Found",
+								JOptionPane.WARNING_MESSAGE);
+					}
 				}
 			});
 
