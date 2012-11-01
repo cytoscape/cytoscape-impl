@@ -55,8 +55,8 @@ public class CyActivator extends AbstractCyActivator {
 		final MergedNetworkBuilder builder = new MergedNetworkBuilder(cyNetworkFactoryServiceRef);
 
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
-				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "PSICQUIC Universal Client",
-				"REST version of PSICQUIC web service client.", cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
+				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "Interaction Database Universal Client",
+				"REST version of universal interaction datavase client.", cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
 				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm);
 
 		registerAllServices(bc, psicquicClient, new Properties());
@@ -67,7 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		nodeProp.setProperty("preferredTaskManager", "menu");
 		nodeProp.setProperty(PREFERRED_MENU, NODE_APPS_MENU);
 		nodeProp.setProperty(MENU_GRAVITY, "10.0");
-		nodeProp.setProperty(TITLE, "Extend Network by PSICQUIC...");
+		nodeProp.setProperty(TITLE, "Extend Network by public interaction database...");
 		registerService(bc, expandNodeContextMenuFactory, NodeViewTaskFactory.class, nodeProp);
 	}
 }

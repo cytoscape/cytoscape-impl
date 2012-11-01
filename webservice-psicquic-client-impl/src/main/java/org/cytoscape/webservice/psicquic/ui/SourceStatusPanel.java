@@ -263,6 +263,7 @@ public class SourceStatusPanel extends JPanel {
 
 		importNetworkButton.setText("Import");
 		importNetworkButton.setFont(new Font("SansSerif", Font.BOLD, 12));
+		importNetworkButton.setForeground(Color.green);
 		importNetworkButton.setPreferredSize(new java.awt.Dimension(70, 28));
 		importNetworkButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
