@@ -40,14 +40,21 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class AboutDialogFactoryImpl extends AbstractTaskFactory {
-	private CyVersion version;
+	
+	private final CyVersion version;
+	private AboutDialogTask task;
 
-	public AboutDialogFactoryImpl(CyVersion version) {
+	public AboutDialogFactoryImpl(final CyVersion version) {
 		this.version = version;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AboutDialogTask(version));
+		synchronized (this) {
+			if (task == null)
+				task = new AboutDialogTask(version);
+		}
+		
+		return new TaskIterator(task);
 	}
 }
