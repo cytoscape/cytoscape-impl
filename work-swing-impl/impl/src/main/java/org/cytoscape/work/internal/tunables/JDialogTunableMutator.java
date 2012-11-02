@@ -84,14 +84,12 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 		
 		do 
 		{
-			tunableDialog = new TunableDialog(parent);
+			tunableDialog = new TunableDialog(parent, optionPanel);
 			tunableDialog.setLocationRelativeTo(parent);
 			
 			tunableDialog.setTitle(getTitle(objectWithTunables));
 			tunableDialog.setModal(true);
 			tunableDialog.setAlwaysOnTop(true);
-	
-			tunableDialog.addComponent(optionPanel);
 			tunableDialog.setVisible(true);
 		
 		

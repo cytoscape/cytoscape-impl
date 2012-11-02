@@ -12,23 +12,18 @@ public final class TunableDialog extends JDialog {
 	private static final long serialVersionUID = 7438623438647443009L;
 
 	protected JPanel parentPanel = null;
+	protected Component optionPanel = null;
 	private String userInput = "";
 
 	/**
 	 * Construct this TunableDialog.
 	 * @param parent The parent Window of this TunableDialog.
 	 */
-	public TunableDialog(final Window parent) {
+	public TunableDialog(final Window parent, final Component optionPanel) {
 		super(parent);
 		this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+		this.optionPanel = optionPanel;
 		initComponents();
-	}
-
-
-	public void addComponent(Component optionPanel) {
-		jScrollPane1.setViewportView(optionPanel);
-		pack();
-		this.setSize(this.getSize().width + 30, this.getSize().height + 30);
 	}
 
 	/** Set the text to replace the "OK" string on OK button. 
@@ -113,8 +108,9 @@ public final class TunableDialog extends JDialog {
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
 		getContentPane().add(pnlButtons, gridBagConstraints);
-
+		jScrollPane1.setViewportView(optionPanel);
 		pack();
+		setSize(this.getSize().width + 30, this.getSize().height + 30);
 	}// </editor-fold>
 
 	// Variables declaration - do not modify
