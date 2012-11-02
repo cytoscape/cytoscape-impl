@@ -5,8 +5,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,7 +25,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.io.webservice.WebServiceClient;
@@ -78,6 +75,8 @@ public class WebServiceImportDialog<T> extends JDialog {
 	private final Class<T> type;
 	
 	private final OpenBrowser openBrowser;
+	
+	boolean readyToShow;
 	
 	public WebServiceImportDialog(final Class<T> type, final String title, final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser) {
 		super();
@@ -340,15 +339,15 @@ public class WebServiceImportDialog<T> extends JDialog {
 								GroupLayout.PREFERRED_SIZE)));
 
 		dataQueryPanel.setLayout(new BorderLayout());
-		
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowOpened(WindowEvent e) {
-				datasourceComboBoxActionPerformed(null);
-			}
-		});
 	}
 
+	public void prepareForDisplay() {
+		// Initialize the selected client GUI here so that we can compute the
+		// proper initial bounds of the dialog when it's first displayed.
+		readyToShow = true;
+		datasourceComboBoxActionPerformed(null);
+	}
+	
 	private void searchButtonActionPerformed() {
 		final Object selected = datasourceComboBox.getSelectedItem();
 		if (selected == null)
@@ -381,7 +380,10 @@ public class WebServiceImportDialog<T> extends JDialog {
 	}
 
 	private void datasourceComboBoxActionPerformed(ActionEvent evt) {
-		if (!isVisible()) {
+		// This method gets triggered whenever the model changes.  However,
+		// we don't want to initialize the GUI until we're actually ready to
+		// show the dialog.
+		if (!readyToShow) {
 			return;
 		}
 		

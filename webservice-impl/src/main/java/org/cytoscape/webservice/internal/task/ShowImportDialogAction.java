@@ -46,6 +46,7 @@ public class ShowImportDialogAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		dialog.prepareForDisplay();
 		dialog.setLocationRelativeTo(parent);
 		dialog.setVisible(true);
 	}
