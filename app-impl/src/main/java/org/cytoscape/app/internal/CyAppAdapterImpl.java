@@ -569,7 +569,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	@Override public UnHideAllNodesTaskFactory get_UnHideAllNodesTaskFactory(){ return this.unHideAllNodesTaskFactory;}
 	@Override public UnHideAllEdgesTaskFactory get_UnHideAllEdgesTaskFactory(){ return this.unHideAllEdgesTaskFactory;	}
 	@Override public NewEmptyNetworkViewFactory get_NewEmptyNetworkViewFactory(){ return this.newEmptyNetworkViewFactory; }
-	@Override public NewNetworkSelectedNodesAndEdgesTaskFactory get_NewNetworkSelectedNodesAndEdgesTaskFatory(){ return this.newNetworkSelectedNodesEdgesTaskFactory; }
+	@Override public NewNetworkSelectedNodesAndEdgesTaskFactory get_NewNetworkSelectedNodesAndEdgesTaskFactory(){ return this.newNetworkSelectedNodesEdgesTaskFactory; }
 	@Override public NewNetworkSelectedNodesOnlyTaskFactory get_NewNetworkSelectedNodesOnlyTaskFactory(){ return this.newNetworkSelectedNodesOnlyTaskFactory; }
 	@Override public CloneNetworkTaskFactory get_CloneNetworkTaskFactory(){ return this.cloneNetworkTaskFactory; }
 	@Override public DestroyNetworkTaskFactory get_DestroyNetworkTaskFactory(){ return this.destroyNetworkTaskFactory;	}
