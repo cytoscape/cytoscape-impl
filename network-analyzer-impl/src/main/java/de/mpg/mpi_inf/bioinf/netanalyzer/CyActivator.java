@@ -22,7 +22,7 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -59,7 +59,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory passthroughMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		
 		// Create network from selection
-		NewNetworkSelectedNodesAndEdgesTaskFatory newNetworkSelectedNodesEdgesTaskFactoryServiceRef = getService(bc,NewNetworkSelectedNodesAndEdgesTaskFatory.class);
+		NewNetworkSelectedNodesAndEdgesTaskFactory newNetworkSelectedNodesEdgesTaskFactoryServiceRef = getService(bc,NewNetworkSelectedNodesAndEdgesTaskFactory.class);
 		DialogTaskManager taskManager = getService(bc, DialogTaskManager.class);
 		
 		final ResultPanelFactory resultPanel = new ResultPanelFactory(cyServiceRegistrarServiceRef);

@@ -50,7 +50,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -70,7 +70,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 public class ConnComponentsDialog extends JDialog
 	implements ActionListener, DocumentListener, ListSelectionListener {
 
-	private final NewNetworkSelectedNodesAndEdgesTaskFatory tf;
+	private final NewNetworkSelectedNodesAndEdgesTaskFactory tf;
 	private final TaskManager<?, ?> tm;
 	
 	/**
@@ -83,7 +83,7 @@ public class ConnComponentsDialog extends JDialog
 	 *         <code>true</code>.
 	 */
 	public ConnComponentsDialog(Frame aOwner, CyNetwork aNetwork, CCInfo[] aComponents,
-			final NewNetworkSelectedNodesAndEdgesTaskFatory tf, final TaskManager<?, ?> tm)
+			final NewNetworkSelectedNodesAndEdgesTaskFactory tf, final TaskManager<?, ?> tm)
 		throws HeadlessException {
 		super(aOwner, Messages.DT_CONNCOMP, true);
 		network = aNetwork;

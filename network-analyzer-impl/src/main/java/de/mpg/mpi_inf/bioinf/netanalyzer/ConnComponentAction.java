@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +42,13 @@ public class ConnComponentAction extends NetAnalyzerAction {
 
 	private static final Logger logger = LoggerFactory.getLogger(ConnComponentAction.class);
 
-	private final NewNetworkSelectedNodesAndEdgesTaskFatory tf;
+	private final NewNetworkSelectedNodesAndEdgesTaskFactory tf;
 	private final TaskManager<?, ?> tm;
 	
 	/**
 	 * Initializes a new instance of <code>ConnComponentAction</code>.
 	 */
-	public ConnComponentAction(CyApplicationManager appMgr,CySwingApplication swingApp, final NewNetworkSelectedNodesAndEdgesTaskFatory tf, final TaskManager<?, ?> tm) {
+	public ConnComponentAction(CyApplicationManager appMgr,CySwingApplication swingApp, final NewNetworkSelectedNodesAndEdgesTaskFactory tf, final TaskManager<?, ?> tm) {
 		super(Messages.AC_CONNCOMP,appMgr,swingApp);
 		this.tf = tf;
 		this.tm = tm;
