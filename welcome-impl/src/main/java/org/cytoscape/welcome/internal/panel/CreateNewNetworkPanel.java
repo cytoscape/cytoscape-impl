@@ -132,6 +132,41 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private void initComponents() {
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
+		// Label border
+		final Border labelPadding = BorderFactory.createEmptyBorder(2, 10, 2, 8);
+
+		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
+
+		//////////////////
+		JLabel lbStartEmpty = new JLabel("Start without data");
+		lbStartEmpty.setFont(COMMAND_FONT);
+		lbStartEmpty.setForeground(COMMAND_FONT_COLOR);
+		lbStartEmpty.setHorizontalAlignment(JLabel.LEFT);
+		lbStartEmpty.setHorizontalTextPosition(JLabel.LEFT);
+		lbStartEmpty.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		lbStartEmpty.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent ev) {
+				//close parent window only.
+				closeParentWindow();
+			}
+		});
+
+		// Start empty session without data
+		final JPanel pnlEmptySession = new JPanel();
+		pnlEmptySession.setLayout(new GridLayout(1, 1));
+		pnlEmptySession.setBorder(BorderFactory.createTitledBorder("Start Empty Session"));
+		pnlEmptySession.setOpaque(false);
+		final Dimension emptyPanelSize = new Dimension(300, 60);
+		lbStartEmpty.setMaximumSize(emptyPanelSize);
+		lbStartEmpty.setBorder(labelPadding);
+		pnlEmptySession.setPreferredSize(emptyPanelSize);
+		pnlEmptySession.setSize(emptyPanelSize);
+		pnlEmptySession.setMaximumSize(emptyPanelSize);
+		pnlEmptySession.add(lbStartEmpty);
+
+		//////////////////
+		
 		this.loadNetwork = new JLabel("Import network from file...");
 		loadNetwork.setFont(COMMAND_FONT);
 		loadNetwork.setForeground(COMMAND_FONT_COLOR);
@@ -144,7 +179,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 			}
 		});
 
-		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
 
 		this.fromDB = new JLabel("Import network from reference data set:");
 		fromDB.setFont(COMMAND_FONT);
@@ -167,9 +201,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 				}
 			}
 		});
-
-		// Label border
-		final Border labelPadding = BorderFactory.createEmptyBorder(2, 10, 2, 8);
 
 		// Remote access
 		final JPanel wsPanel = new JPanel();
@@ -205,6 +236,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 		bottomPanel.add(importPanel);
 		bottomPanel.add(initOptionPanel());
+		this.add(pnlEmptySession);
 		this.add(wsPanel);
 		this.add(bottomPanel);
 
