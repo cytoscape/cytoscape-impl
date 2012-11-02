@@ -36,6 +36,7 @@
 package org.cytoscape.work.internal.task;
 
 import java.awt.CardLayout;
+import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -352,6 +353,7 @@ class TaskDialog extends JDialog {
 
 		exceptionPanel.setLayout(new GridLayout(1, 1));
 		setResizable(false);
+		setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
 		pack();
 	}
 
