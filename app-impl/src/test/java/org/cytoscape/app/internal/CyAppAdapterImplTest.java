@@ -36,7 +36,7 @@ import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.create.CloneNetworkTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
 import org.cytoscape.task.create.NewSessionTaskFactory;
 import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
@@ -171,7 +171,7 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(UnHideAllEdgesTaskFactory.class),
 			mock(NewEmptyNetworkViewFactory.class),
 			mock(CloneNetworkTaskFactory.class),
-			mock(NewNetworkSelectedNodesAndEdgesTaskFatory.class),
+			mock(NewNetworkSelectedNodesAndEdgesTaskFactory.class),
 			mock(NewNetworkSelectedNodesOnlyTaskFactory.class),
 			mock(DestroyNetworkTaskFactory.class),
 			mock(DestroyNetworkViewTaskFactory.class),

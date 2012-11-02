@@ -47,7 +47,7 @@ import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.task.create.CloneNetworkTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFatory;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
 import org.cytoscape.task.create.NewSessionTaskFactory;
 import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
@@ -249,7 +249,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private NewEmptyNetworkViewFactory newEmptyNetworkTaskFactory;
 
 	private CloneNetworkTaskFactory cloneNetworkTaskFactory;
-	private NewNetworkSelectedNodesAndEdgesTaskFatory newNetworkSelectedNodesEdgesTaskFactory;
+	private NewNetworkSelectedNodesAndEdgesTaskFactory newNetworkSelectedNodesEdgesTaskFactory;
 	private NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory;
 	private DestroyNetworkTaskFactory destroyNetworkTaskFactory;
 	private DestroyNetworkViewTaskFactory destroyNetworkViewTaskFactory;
@@ -363,7 +363,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	                	final NewEmptyNetworkViewFactory newEmptyNetworkTaskFactory,
 
 	                	final CloneNetworkTaskFactory cloneNetworkTaskFactory,
-	                	final NewNetworkSelectedNodesAndEdgesTaskFatory newNetworkSelectedNodesEdgesTaskFactory,
+	                	final NewNetworkSelectedNodesAndEdgesTaskFactory newNetworkSelectedNodesEdgesTaskFactory,
 	                	final NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory,
 	                	final DestroyNetworkTaskFactory destroyNetworkTaskFactory,
 	                	final DestroyNetworkViewTaskFactory destroyNetworkViewTaskFactory,
@@ -569,7 +569,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	@Override public UnHideAllNodesTaskFactory get_UnHideAllNodesTaskFactory(){ return this.unHideAllNodesTaskFactory;}
 	@Override public UnHideAllEdgesTaskFactory get_UnHideAllEdgesTaskFactory(){ return this.unHideAllEdgesTaskFactory;	}
 	@Override public NewEmptyNetworkViewFactory get_NewEmptyNetworkViewFactory(){ return this.newEmptyNetworkViewFactory; }
-	@Override public NewNetworkSelectedNodesAndEdgesTaskFatory get_NewNetworkSelectedNodesAndEdgesTaskFatory(){ return this.newNetworkSelectedNodesEdgesTaskFactory; }
+	@Override public NewNetworkSelectedNodesAndEdgesTaskFactory get_NewNetworkSelectedNodesAndEdgesTaskFatory(){ return this.newNetworkSelectedNodesEdgesTaskFactory; }
 	@Override public NewNetworkSelectedNodesOnlyTaskFactory get_NewNetworkSelectedNodesOnlyTaskFactory(){ return this.newNetworkSelectedNodesOnlyTaskFactory; }
 	@Override public CloneNetworkTaskFactory get_CloneNetworkTaskFactory(){ return this.cloneNetworkTaskFactory; }
 	@Override public DestroyNetworkTaskFactory get_DestroyNetworkTaskFactory(){ return this.destroyNetworkTaskFactory;	}
