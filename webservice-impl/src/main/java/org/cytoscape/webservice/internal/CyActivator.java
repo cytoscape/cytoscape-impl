@@ -34,13 +34,11 @@ public class CyActivator extends AbstractCyActivator {
 
 		// UI for Network Import Clients
 		WebServiceImportDialog<NetworkImportWebServiceClient> unifiedNetworkImportDialog = new WebServiceImportDialog<NetworkImportWebServiceClient>(
-				NetworkImportWebServiceClient.class, "Import Network from Web Service", taskManagerServiceRef, openBrowser);
+				NetworkImportWebServiceClient.class, "Import Network from Web Service", cySwingApplicationServiceRef, taskManagerServiceRef, openBrowser);
 		
 		// UI for Table Import Clients
 		WebServiceImportDialog<TableImportWebServiceClient> unifiedTableImportDialog = new WebServiceImportDialog<TableImportWebServiceClient>(
-				TableImportWebServiceClient.class, "Import Data Table from Web Service", taskManagerServiceRef, openBrowser);
-
-		unifiedTableImportDialog.setModal(true);
+				TableImportWebServiceClient.class, "Import Data Table from Web Service", cySwingApplicationServiceRef, taskManagerServiceRef, openBrowser);
 		
 		WebServiceGUIImpl webServiceGui = new WebServiceGUIImpl();
 		webServiceGui.addClient(NetworkImportWebServiceClient.class, unifiedNetworkImportDialog);

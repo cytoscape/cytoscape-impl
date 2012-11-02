@@ -27,6 +27,7 @@ import javax.swing.JTextPane;
 import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
 
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.io.webservice.swing.WebServiceGUIClient;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -78,8 +79,8 @@ public class WebServiceImportDialog<T> extends JDialog {
 	
 	boolean readyToShow;
 	
-	public WebServiceImportDialog(final Class<T> type, final String title, final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser) {
-		super();
+	public WebServiceImportDialog(final Class<T> type, final String title, final CySwingApplication cySwingApplicationServiceRef, final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser) {
+		super(cySwingApplicationServiceRef.getJFrame());
 		if (taskManager == null)
 			throw new NullPointerException("TaskManager is null.");
 
@@ -88,7 +89,6 @@ public class WebServiceImportDialog<T> extends JDialog {
 		this.openBrowser = openBrowser;
 
 		numClients = 0;
-		setModal(false);
 		this.clients = new HashSet<WebServiceClient>();
 
 		initGUI();
