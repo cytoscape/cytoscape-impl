@@ -58,6 +58,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	private final Map<CyNetwork, Collection<CyNetworkView>> networkViewMap;
 	private final CyEventHelper cyEventHelper;
 	private final CyNetworkManager netMgr;
+	private final Set<CyNetworkView> viewsAboutToBeDestroyed;
 
 	/**
 	 * 
@@ -65,6 +66,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	 */
 	public CyNetworkViewManagerImpl(final CyEventHelper cyEventHelper, final CyNetworkManager netMgr) {
 		networkViewMap = new WeakHashMap<CyNetwork, Collection<CyNetworkView>>();
+		viewsAboutToBeDestroyed = new HashSet<CyNetworkView>();
 		this.cyEventHelper = cyEventHelper;
 		this.netMgr = netMgr;
 	}
@@ -92,6 +94,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 		for (Collection<CyNetworkView> setFoViews : vals)
 			views.addAll(setFoViews);
 
+		views.removeAll(viewsAboutToBeDestroyed);
 		return views;
 	}
 
@@ -131,6 +134,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 		if (!networkViewMap.containsKey(network))
 			throw new IllegalArgumentException("network view is not recognized by this NetworkManager");
 
+		viewsAboutToBeDestroyed.add(view);
 		// let everyone know!
 		cyEventHelper.fireEvent(new NetworkViewAboutToBeDestroyedEvent(this, view));
 
@@ -144,6 +148,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 			networkViewMap.put(network, views);
 		}
 		
+		viewsAboutToBeDestroyed.remove(view);
 		view.dispose();
 
 		cyEventHelper.fireEvent(new NetworkViewDestroyedEvent(this));
