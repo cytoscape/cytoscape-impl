@@ -52,11 +52,13 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 /**
  * General GUI component for importing attributes.<br>
@@ -430,6 +432,7 @@ public abstract class AttributeImportPanel extends JPanel implements
 			for (CyColumn col : columns)
 				attributeComboBox.addItem(col.getName());
 		}
+		attributeComboBox.setSelectedItem(CyRootNetwork.SHARED_NAME);
 	}
 
 	protected void addAttribute(final String attributeName) {

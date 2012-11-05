@@ -66,6 +66,7 @@ import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 /**
  * General GUI component for importing attributes.<br>
@@ -352,6 +353,7 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 			for (CyColumn col : columns)
 				columnNameComboBox.addItem(col.getName());
 		}
+		columnNameComboBox.setSelectedItem(CyRootNetwork.SHARED_NAME);
 	}
 
 	protected void addAttribute(final String attributeName) {
@@ -436,6 +438,8 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 
 		for (String name : attrNameSet)
 			columnNameComboBox.addItem(name);
+		
+		columnNameComboBox.setSelectedItem(CyRootNetwork.SHARED_NAME);
 	}
 
 }
