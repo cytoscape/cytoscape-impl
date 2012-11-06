@@ -17,6 +17,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsListener;
@@ -164,7 +165,9 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				rowViewMapsByNetworkView.remove(e.getSource());
+				CyNetworkView view = e.getNetworkView();
+				rowViewMapsByNetworkView.remove(view);
+				removeTables(view);
 			}
 		});
 	}
