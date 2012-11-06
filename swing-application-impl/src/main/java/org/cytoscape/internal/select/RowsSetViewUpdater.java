@@ -32,11 +32,10 @@ import org.cytoscape.view.vizmap.VisualStyle;
 public class RowsSetViewUpdater implements RowsSetListener {
 
 	private final VisualMappingManager vmm;
-	private final Map<CyRow, View<?>> rowViewMap;
 	private final CyNetworkViewManager vm;
 	private final CyApplicationManager am;
 	private final NetworkViewManager viewManager;
-	
+	private final RowViewTracker tracker;
 
 	private VisualMappingFunction<?, ?> targetFunction;
 
@@ -46,7 +45,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		this.vm = vm;
 		this.vmm = vmm;
 		this.viewManager = viewManager;
-		this.rowViewMap = tracker.getRowViewMap();
+		this.tracker = tracker;
 	}
 
 	/**
@@ -83,6 +82,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			networkView = views.iterator().next();
 
 		final VisualStyle vs = vmm.getVisualStyle(networkView);
+		Map<CyRow, View<?>> rowViewMap = tracker.getRowViewMap(networkView);
 		
 		for (final RowSetRecord record : e.getPayloadCollection()) {
 			final CyRow row = record.getRow();

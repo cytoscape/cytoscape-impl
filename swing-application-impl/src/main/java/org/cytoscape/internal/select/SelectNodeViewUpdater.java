@@ -36,12 +36,11 @@ package org.cytoscape.internal.select;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
 
-import org.cytoscape.application.swing.AbstractViewUpdater;
 import org.cytoscape.model.CyNetwork;
 
 public class SelectNodeViewUpdater extends AbstractViewUpdater<Boolean> {
 
 	public SelectNodeViewUpdater(RowViewTracker tracker) {
-		super(NODE_SELECTED, CyNetwork.SELECTED, tracker.getRowViewMap());
+		super(NODE_SELECTED, CyNetwork.SELECTED, tracker);
 	}
 }
