@@ -54,12 +54,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -2553,14 +2551,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Collection<View<? extends CyIdentifiable>> getAllViews() {
-		final Set<View<? extends CyIdentifiable>> views = new HashSet<View<? extends CyIdentifiable>>();
-
-		views.addAll(getNodeViews());
-		views.addAll(getEdgeViews());
-		views.add(this);
-
-		return views;
+		synchronized (m_lock) {
+			final List views = new ArrayList(m_nodeViewMap.size() + m_edgeViewMap.size() + 1);
+			Collection nodeViews = m_nodeViewMap.values();
+			views.addAll(nodeViews);
+			Collection edgeViews = m_edgeViewMap.values();
+			views.addAll(edgeViews);
+			views.add(this);
+			return views;
+		}
 	}
 
 	@Override
