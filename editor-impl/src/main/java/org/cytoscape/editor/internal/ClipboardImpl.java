@@ -13,6 +13,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -272,6 +273,8 @@ public class ClipboardImpl {
 			Map<String, Object> oldDataMap = sourceRow.getAllValues();
 			for (String colName: oldDataMap.keySet()) {
 				CyColumn column = destTable.getColumn(colName);
+				boolean isVirtual = false;
+
 				if (column == null) {
 					CyColumn sourceColumn = sourceTable.getColumn(colName);
 					if (sourceColumn.getType() == List.class) {
@@ -281,9 +284,25 @@ public class ClipboardImpl {
 						destTable.createColumn(colName, sourceColumn.getType(), 
 						                       sourceColumn.isImmutable());
 					}
-				} else if (column == null || column.isPrimaryKey()) continue;
+				} else if (column.isPrimaryKey()) {
+					continue;
+				} else {
+					// Column already exists.  We need to check for virtual columns that don't join
+					// on SUID (since that's the only thing we're changing).  If they don't, we need to
+					// skip them.
+					VirtualColumnInfo virtualInfo = column.getVirtualColumnInfo();
+					if (virtualInfo.isVirtual() && !virtualInfo.getTargetJoinKey().equals(CyNetwork.SUID))
+						continue;
+				}
 
-				targetRow.set(colName, oldDataMap.get(colName));
+				// We need to be careful of the facade table.  If the sourceTable and
+				// the targetTable are the same, and this column is virtual, we don't
+				// want to copy it.
+				try {
+					targetRow.set(colName, oldDataMap.get(colName));
+				} catch (IllegalArgumentException e) {
+					// Log a warning
+				} 
 			}
 		}
 	}
@@ -292,5 +311,11 @@ public class ClipboardImpl {
 		oldSharedRowMap.put(object, sourceRootNetwork.getRow(object, CyRootNetwork.SHARED_ATTRS));
 		oldLocalRowMap.put(object, sourceNetwork.getRow(object, CyNetwork.LOCAL_ATTRS));
 		oldHiddenRowMap.put(object, sourceNetwork.getRow(object, CyNetwork.HIDDEN_ATTRS));
+	}
+
+	private String printVirtualColumnInfo(VirtualColumnInfo info) {
+		String s = "{source="+info.getSourceColumn()+", sourceJoinKey="+info.getSourceJoinKey();
+		s += ", targetJoinKey="+info.getTargetJoinKey()+", sourceTable="+info.getSourceTable();
+		return s;
 	}
 }
