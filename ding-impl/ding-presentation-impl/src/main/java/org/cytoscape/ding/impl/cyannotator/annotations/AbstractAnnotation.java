@@ -136,7 +136,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		}
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(canvasName));
 		for (ArrowAnnotation arrow: arrowList) 
-			setCanvas(cnvs);
+			arrow.setCanvas(cnvs);
 	}
 
 	@Override
@@ -146,8 +146,10 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		    (cnvs.equals(FOREGROUND) && canvasName.equals(DGraphView.Canvas.FOREGROUND_CANVAS)))
 			return;
 
-		for (ArrowAnnotation arrow: arrowList) 
-			changeCanvas(cnvs);
+		if (!(this instanceof ArrowAnnotation)) {
+			for (ArrowAnnotation arrow: arrowList) 
+				arrow.changeCanvas(cnvs);
+		}
 
 		// Remove ourselves from the current canvas
 		canvas.remove(this);
@@ -219,7 +221,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		canvas.remove(this);
 		cyAnnotator.removeAnnotation(this);
 		for (ArrowAnnotation arrow: arrowList) 
-			removeAnnotation();
+			arrow.removeAnnotation();
 		canvas.repaint();
 	}
 
