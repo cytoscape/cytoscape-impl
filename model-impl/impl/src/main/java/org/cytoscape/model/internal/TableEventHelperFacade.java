@@ -1,30 +1,34 @@
 package org.cytoscape.model.internal;
 
-import org.cytoscape.event.CyEventHelper;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import org.cytoscape.event.CyEvent;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.CyPayloadEvent;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.events.TableTitleChangedEvent;
-import org.cytoscape.model.events.TablePrivacyChangedEvent;
-import org.cytoscape.model.events.ColumnNameChangedEvent;
-import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnCreatedEvent;
-import java.util.WeakHashMap; 
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.TablePrivacyChangedEvent;
+import org.cytoscape.model.events.TableTitleChangedEvent;
 
 public class TableEventHelperFacade implements CyEventHelper {
 
 	private final CyEventHelper actualHelper;
-	private final WeakHashMap<CyTable,LocalTableFacade> facadeMap; 
+	private final Map<CyTable,Reference<LocalTableFacade>> facadeMap; 
 
 	public TableEventHelperFacade(CyEventHelper actualHelper) {
 		this.actualHelper = actualHelper;	
-		this.facadeMap = new WeakHashMap<CyTable,LocalTableFacade>(); 
+		this.facadeMap = new WeakHashMap<CyTable,Reference<LocalTableFacade>>(); 
 	}
 
 	void registerFacade(LocalTableFacade facade) {
-		facadeMap.put(facade.getLocalTable(),facade);	
+		facadeMap.put(facade.getLocalTable(),new WeakReference<LocalTableFacade>(facade));	
 	}
 
 	public <E extends CyEvent<?>> void fireEvent(final E event) {
@@ -37,7 +41,10 @@ public class TableEventHelperFacade implements CyEventHelper {
 		if ( !(source instanceof CyTable) )
 			return;
 
-		LocalTableFacade facade = facadeMap.get((CyTable)source);
+		Reference<LocalTableFacade> reference = facadeMap.get((CyTable)source);
+		if (reference == null)
+			return;
+		LocalTableFacade facade = reference.get();
 		if ( facade == null )
 			return;
 
@@ -76,7 +83,10 @@ public class TableEventHelperFacade implements CyEventHelper {
 
 		// only propagate the payload with a facade source if it's one we care about
 		if ( source instanceof CyTable ) {
-			LocalTableFacade facade = facadeMap.get((CyTable)source);
+			Reference<LocalTableFacade> reference = facadeMap.get((CyTable)source);
+			if (reference == null)
+				return;
+			LocalTableFacade facade = reference.get();
 			if ( facade == null )
 				return;
 			if (payload instanceof RowSetRecord){
