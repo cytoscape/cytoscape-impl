@@ -26,42 +26,36 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, write to the Free Software Foundation,
   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+ */
 package org.cytoscape.view.layout.internal.algorithms;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
-
 /**
- * The GridNodeLayout provides a very simple layout, suitable as
- * the default layout for Cytoscape data readers.
+ * The GridNodeLayout provides a very simple layout, suitable as the default
+ * layout for Cytoscape data readers.
  */
 public class GridNodeLayoutTask extends AbstractLayoutTask {
+
 	private final double nodeVerticalSpacing;
 	private final double nodeHorizontalSpacing;
 
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public GridNodeLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final GridNodeLayoutContext context, String attrName, UndoSupport undoSupport) {
+	public GridNodeLayoutTask(final String name, final CyNetworkView networkView,
+			final Set<View<CyNode>> nodesToLayOut, final GridNodeLayoutContext context, String attrName,
+			UndoSupport undoSupport) {
 		super(name, networkView, nodesToLayOut, attrName, undoSupport);
 
 		this.nodeVerticalSpacing = context.nodeVerticalSpacing;
@@ -69,8 +63,7 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 	}
 
 	/**
-	 *  Perform actual layout task.
-	 *  This creates the default square layout.
+	 * Perform actual layout task. This creates the default square layout.
 	 */
 	@Override
 	final protected void doLayout(final TaskMonitor taskMonitor) {
@@ -79,18 +72,15 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 		double initialX = 0.0d;
 		double initialY = 0.0d;
 
-		final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
-		final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
-		
-		List<View<CyNode>> sortedNodeList = sort(nodesToLayOut);
 		// Yes, our size and starting points need to be different
-		int nodeCount = sortedNodeList.size();
-		int columns = (int) Math.sqrt(nodeCount);
+		final int nodeCount = nodesToLayOut.size();
+		final int columns = (int) Math.sqrt(nodeCount);
+
 		// Calculate our starting point as the geographical center of the
 		// selected nodes.
-		for ( View<CyNode> nView : sortedNodeList ) {
-			initialX += (nView.getVisualProperty(xLoc) / nodeCount);
-			initialY += (nView.getVisualProperty(yLoc) / nodeCount);
+		for (final View<CyNode> nView : nodesToLayOut) {
+			initialX += (nView.getVisualProperty(NODE_X_LOCATION) / nodeCount);
+			initialY += (nView.getVisualProperty(NODE_Y_LOCATION) / nodeCount);
 		}
 
 		// initialX and initialY reflect the center of our grid, so we
@@ -101,19 +91,14 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 		currY = initialY;
 
 		int count = 0;
-		
-		// Set visual property.
-		for (final View<CyNode> nView : sortedNodeList ) {
-			// FIXME
-//			edgeList = network.getAdjacentEdgeList(nView.getModel(),CyEdge.Type.ANY);
-//			for (CyEdge edge: edgeList) {
-//				networkView.getCyEdgeView(edge).clearBends();
-//			}
 
-			// approach 1			
-			nView.setVisualProperty(xLoc,currX);
-			nView.setVisualProperty(yLoc,currY);
-						
+		// Set visual property.
+		// TODO: We need batch apply method for Visual Property values for
+		// performance.
+		for (final View<CyNode> nView : nodesToLayOut) {
+			nView.setVisualProperty(NODE_X_LOCATION, currX);
+			nView.setVisualProperty(NODE_Y_LOCATION, currY);
+
 			count++;
 
 			if (count == columns) {
@@ -125,16 +110,4 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 			}
 		}
 	}
-
-	private List<View<CyNode>> sort(Set<View<CyNode>> nodesToLayOut) {
-		
-		Map<Long, View<CyNode>> map = new TreeMap<Long, View<CyNode>>();
-		Iterator<View<CyNode>> iterator = nodesToLayOut.iterator();
-		while(iterator.hasNext()){
-			View<CyNode> view = iterator.next();
-			map.put(view.getSUID(), view );
-		}
-		return new ArrayList<View<CyNode>>(map.values());
-	}
-
 }
