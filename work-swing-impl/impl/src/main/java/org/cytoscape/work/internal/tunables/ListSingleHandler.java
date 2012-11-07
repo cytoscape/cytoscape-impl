@@ -87,15 +87,8 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 	}
 
 	public void update() {
-		
-		int selectedIndex = combobox.getSelectedIndex();
-		combobox.removeAllItems();
-		for ( T value : getSingleSelection().getPossibleValues() ) 
-			combobox.addItem(value);
-		
-		//this is to solve the problem with calling update at run
-		if (combobox.getItemCount() > selectedIndex)
-			combobox.setSelectedIndex(selectedIndex);
+		combobox.setModel(new DefaultComboBoxModel(getSingleSelection().getPossibleValues().toArray()));
+		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
 	}
 
 	/**
