@@ -129,7 +129,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			if (style != null) {
 				vmm.setVisualStyle(style, view);
 				style.apply(view);
-				view.fitContent();
 			}
 
 			// If a source view has been provided, use that to set the X/Y positions of the
