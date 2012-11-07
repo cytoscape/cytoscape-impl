@@ -60,6 +60,8 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
+import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +73,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
                                                  NetworkAboutToBeDestroyedListener,
                                                  NetworkViewAboutToBeDestroyedListener,
 												 NetworkAddedListener,
-												 NetworkViewAddedListener {
+												 NetworkViewAddedListener,
+												 RenderingEngineAboutToBeRemovedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyApplicationManagerImpl.class);
 	
@@ -131,9 +134,24 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			if (toBeDestroyed.equals(currentNetworkView)) {
 				setCurrentNetworkView(null);
 			}
+			
+			// TODO: Do we need to fire an event?  Most listeners that care
+			// would just listen for NetworkViewAboutToBeDestroyedEvent.
+			selectedNetworkViews.removeAll(Collections.singletonList(toBeDestroyed));
 		}
 	}
 
+	@Override
+	public void handleEvent(RenderingEngineAboutToBeRemovedEvent event) {
+		RenderingEngine<?> renderingEngine = event.getRenderingEngine();
+		
+		synchronized (this) {
+			if (renderingEngine == currentRenderer) {
+				setCurrentRenderingEngine(null);
+			}
+		}
+	}
+	
 	@Override
 	public synchronized CyNetwork getCurrentNetwork() {
 		return currentNetwork;

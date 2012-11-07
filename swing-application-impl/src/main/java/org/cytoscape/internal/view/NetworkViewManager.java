@@ -75,7 +75,6 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -330,8 +329,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			JInternalFrame frame = presentationContainerMap.get(view);
 			if (frame != null) {
 				RenderingEngine<CyNetwork> removed = this.presentationMap.remove(view);
+				
 				logger.debug("Removing rendering engine: " + removed);
-				removed = null;
 				iFrameMap.remove(frame);
 				
 				frame.getRootPane().getLayeredPane().removeAll();
@@ -345,6 +344,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				
 				frame.dispose();
 				frame = null;
+				
+				renderingEngineMgr.removeRenderingEngine(removed);
 			}
 		} catch (Exception e) {
 			logger.error("Network View unable to be killed", e);

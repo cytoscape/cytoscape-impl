@@ -91,7 +91,9 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		
 		final View<?> viewModel = renderingEngine.getViewModel();
 		final Collection<RenderingEngine<?>> currentEngines = renderingEngineMap.get(viewModel);
-		currentEngines.remove(renderingEngine);
+		if (currentEngines != null) {
+			currentEngines.remove(renderingEngine);
+		}
 		
 		renderingEngine.dispose();
 	}
