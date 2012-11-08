@@ -820,7 +820,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			return;
 		
 		renameColumnName(e.getOldColumnName(), e.getNewColumnName());
-		repaint();
+		tableHeader.repaint();
 	}
 
 	private void renameColumnName(final String oldName, final String newName) {
