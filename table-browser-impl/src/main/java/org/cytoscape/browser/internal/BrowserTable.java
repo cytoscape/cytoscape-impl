@@ -818,17 +818,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		if (e.getSource() != dataTable)
 			return;
-
-		final String newColumnName = e.getNewColumnName();
-		final int column = model.mapColumnNameToColumnIndex(e.getOldColumnName());
-		if (isColumnVisible(e.getOldColumnName())){
-			int colIndex = convertColumnIndexToView(column);
-			if (colIndex != -1)
-				getColumnModel().getColumn(colIndex).setHeaderValue(newColumnName);
-		}
 		
-		renameColumnName(e.getOldColumnName(), newColumnName);
-
+		renameColumnName(e.getOldColumnName(), e.getNewColumnName());
+		repaint();
 	}
 
 	private void renameColumnName(final String oldName, final String newName) {
