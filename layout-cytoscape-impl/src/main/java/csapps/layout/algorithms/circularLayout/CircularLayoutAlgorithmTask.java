@@ -34,8 +34,8 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 	private boolean[] drawnBiComps;
 
 
-	public CircularLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, CircularLayoutContext context, UndoSupport undo) {
-		super(name, context.singlePartition, networkView, nodesToLayOut,"", undo);
+	public CircularLayoutAlgorithmTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, CircularLayoutContext context, UndoSupport undo) {
+		super(displayName, context.singlePartition, networkView, nodesToLayOut,"", undo);
 	}
 
 

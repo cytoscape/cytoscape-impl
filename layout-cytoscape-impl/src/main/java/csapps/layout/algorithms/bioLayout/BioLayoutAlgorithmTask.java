@@ -63,8 +63,8 @@ public abstract class BioLayoutAlgorithmTask extends AbstractPartitionLayoutTask
 	/**
 	 * This is the constructor for the bioLayout algorithm.
 	 */
-	public BioLayoutAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final boolean singlePartition, String attrName, UndoSupport undo) {
-		super(name, singlePartition, networkView, nodesToLayOut,attrName, undo);
+	public BioLayoutAlgorithmTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final boolean singlePartition, String attrName, UndoSupport undo) {
+		super(displayName, singlePartition, networkView, nodesToLayOut,attrName, undo);
 
 	}
 

@@ -44,9 +44,9 @@ public class JGraphLayoutWrapperTask extends AbstractLayoutTask{
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public JGraphLayoutWrapperTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Object context, JGraphLayoutAlgorithm layout, JGraphLayoutSettings layoutSettings, UndoSupport undo)
+	public JGraphLayoutWrapperTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, Object context, JGraphLayoutAlgorithm layout, JGraphLayoutSettings layoutSettings, UndoSupport undo)
 	{
-		super(name, networkView, nodesToLayOut,"", undo);
+		super(displayName, networkView, nodesToLayOut,"", undo);
 
 		this.layoutSettings = layoutSettings;
 		this.layout = layout;

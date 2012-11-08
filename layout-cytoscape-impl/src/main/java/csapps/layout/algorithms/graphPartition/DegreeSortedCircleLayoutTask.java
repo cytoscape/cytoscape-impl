@@ -26,9 +26,9 @@ public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public DegreeSortedCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,
+	public DegreeSortedCircleLayoutTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,
 			DegreeSortedCircleContext context, String attrName, UndoSupport undo) {
-		super(name, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
+		super(displayName, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
 
 		this.network = networkView.getModel();
 	}

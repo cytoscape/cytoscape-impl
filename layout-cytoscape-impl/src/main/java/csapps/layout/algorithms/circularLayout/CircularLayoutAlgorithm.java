@@ -21,7 +21,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm {
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(new CircularLayoutAlgorithmTask(getName(), networkView, nodesToLayOut, (CircularLayoutContext)context, undoSupport));
+		return new TaskIterator(new CircularLayoutAlgorithmTask(toString(), networkView, nodesToLayOut, (CircularLayoutContext)context, undoSupport));
 	}
 	
 	@Override

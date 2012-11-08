@@ -23,8 +23,8 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public AttributeCircleLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,  final AttributeCircleLayoutContext context, String attrName, UndoSupport undo) {
-		super(name, context.singlePartition, networkView, nodesToLayOut,attrName, undo);
+	public AttributeCircleLayoutTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,  final AttributeCircleLayoutContext context, String attrName, UndoSupport undo) {
+		super(displayName, context.singlePartition, networkView, nodesToLayOut,attrName, undo);
 		this.context = context;
 	}
 

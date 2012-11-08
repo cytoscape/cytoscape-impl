@@ -38,8 +38,8 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 	CyNetwork network;
 	private ISOMLayoutContext context;
 	
-	public ISOMLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, ISOMLayoutContext context, String attrName, UndoSupport undo) {
-		super(name, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
+	public ISOMLayoutTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, ISOMLayoutContext context, String attrName, UndoSupport undo) {
+		super(displayName, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
 		this.context = context;
 		network = networkView.getModel();
 		q = new LongArrayList();

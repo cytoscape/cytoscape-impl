@@ -89,7 +89,7 @@ public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm {
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(getName(), networkView, nodesToLayOut,(HierarchicalLayoutContext) context, attrName, undoSupport,hf,bf));
+		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(toString(), networkView, nodesToLayOut,(HierarchicalLayoutContext) context, attrName, undoSupport,hf,bf));
 	}
 	
 	@Override

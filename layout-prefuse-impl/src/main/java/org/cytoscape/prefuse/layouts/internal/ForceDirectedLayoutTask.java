@@ -65,10 +65,10 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	/**
 	 * Creates a new ForceDirectedLayout object.
 	 */
-	public ForceDirectedLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,
+	public ForceDirectedLayoutTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut,
 			final ForceDirectedLayoutContext context, final ForceDirectedLayout.Integrators integrator,
 			String attrName, UndoSupport undo) {
-		super(name, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
+		super(displayName, context.singlePartition, networkView, nodesToLayOut, attrName, undo);
 
 		this.context = context;
 		this.integrator = integrator;

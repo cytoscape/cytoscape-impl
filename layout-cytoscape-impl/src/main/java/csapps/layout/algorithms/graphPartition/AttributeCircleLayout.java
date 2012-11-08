@@ -70,7 +70,7 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm {
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(new AttributeCircleLayoutTask(getName(), networkView, nodesToLayOut, (AttributeCircleLayoutContext)context, attrName, undoSupport));
+		return new TaskIterator(new AttributeCircleLayoutTask(toString(), networkView, nodesToLayOut, (AttributeCircleLayoutContext)context, attrName, undoSupport));
 	}
 
 	@Override

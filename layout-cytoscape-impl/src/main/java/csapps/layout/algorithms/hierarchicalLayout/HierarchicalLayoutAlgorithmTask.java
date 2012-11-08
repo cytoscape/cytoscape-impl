@@ -39,11 +39,11 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public HierarchicalLayoutAlgorithmTask(final String name, CyNetworkView networkView, 
+	public HierarchicalLayoutAlgorithmTask(final String displayName, CyNetworkView networkView, 
 	                                       Set<View<CyNode>> nodesToLayOut, HierarchicalLayoutContext context, 
 										   String attrName, UndoSupport undo, HandleFactory handleFactory,
 										   BendFactory bendFactory) {
-		super(name, networkView, nodesToLayOut, attrName, undo);
+		super(displayName, networkView, nodesToLayOut, attrName, undo);
 		this.context = context;
 		this.handleFactory = handleFactory;
 		this.bendFactory = bendFactory;

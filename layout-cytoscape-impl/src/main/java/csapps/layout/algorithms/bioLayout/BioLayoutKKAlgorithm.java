@@ -68,7 +68,7 @@ public class BioLayoutKKAlgorithm  extends BioLayoutAlgorithm {
 	
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
 		return new TaskIterator(
-			new BioLayoutKKAlgorithmTask(getName(), networkView, nodesToLayOut, (BioLayoutKKContext)context, supportWeights, attrName, undoSupport));
+			new BioLayoutKKAlgorithmTask(toString(), networkView, nodesToLayOut, (BioLayoutKKContext)context, supportWeights, attrName, undoSupport));
 	}
 	
 	@Override

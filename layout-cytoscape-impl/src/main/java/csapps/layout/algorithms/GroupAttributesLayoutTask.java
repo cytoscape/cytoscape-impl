@@ -31,8 +31,8 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 
 	private GroupAttributesLayoutContext context;
 	
-	public GroupAttributesLayoutTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, GroupAttributesLayoutContext context, String attrName, UndoSupport undo) {
-		super(name, networkView, nodesToLayOut, attrName, undo);
+	public GroupAttributesLayoutTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, GroupAttributesLayoutContext context, String attrName, UndoSupport undo) {
+		super(displayName, networkView, nodesToLayOut, attrName, undo);
 		
 		this.context = context;
 	}

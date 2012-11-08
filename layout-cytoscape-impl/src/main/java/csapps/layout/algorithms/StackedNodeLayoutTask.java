@@ -14,8 +14,8 @@ public class StackedNodeLayoutTask extends AbstractLayoutTask {
 
 	private StackedNodeLayoutContext context;
 	
-	public StackedNodeLayoutTask(final String name, CyNetworkView networkView, final StackedNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut, String attr, UndoSupport undo) {
-		super(name, networkView, nodesToLayOut, attr, undo);
+	public StackedNodeLayoutTask(final String displayName, CyNetworkView networkView, final StackedNodeLayoutContext context, Set<View<CyNode>> nodesToLayOut, String attr, UndoSupport undo) {
+		super(displayName, networkView, nodesToLayOut, attr, undo);
 		this.context = context;
 	}
 

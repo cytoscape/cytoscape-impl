@@ -51,7 +51,7 @@ public class StackedNodeLayout extends AbstractLayoutAlgorithm {
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attr) {
-		return new TaskIterator(new StackedNodeLayoutTask(getName(), networkView, (StackedNodeLayoutContext)context, nodesToLayOut, attr,undoSupport));
+		return new TaskIterator(new StackedNodeLayoutTask(toString(), networkView, (StackedNodeLayoutContext)context, nodesToLayOut, attr,undoSupport));
 	}
 	
 	@Override

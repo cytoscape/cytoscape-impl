@@ -90,7 +90,7 @@ public class JGraphLayoutWrapper extends AbstractLayoutAlgorithm {
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(new JGraphLayoutWrapperTask(getName(), networkView, nodesToLayOut, context, layout, layoutSettings, undoSupport));
+		return new TaskIterator(new JGraphLayoutWrapperTask(toString(), networkView, nodesToLayOut, context, layout, layoutSettings, undoSupport));
 	}
 
 	/**

@@ -53,10 +53,15 @@ public class GridNodeLayout extends AbstractLayoutAlgorithm {
 	}
 
 	@Override
+<<<<<<< .mine
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
+		return new TaskIterator(new GridNodeLayoutTask(toString(), networkView, nodesToLayOut, (GridNodeLayoutContext)context, attrName, undoSupport));
+=======
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,
 			String attrName) {
-		return new TaskIterator(new GridNodeLayoutTask(toString(), networkView, nodesToLayOut,
+		return new TaskIterator(new GridNodeLayoutTask(getName(), networkView, nodesToLayOut,
 				(GridNodeLayoutContext) context, attrName, undoSupport));
+>>>>>>> .r30763
 	}
 
 	@Override

@@ -45,12 +45,12 @@ public class LayoutTaskTest extends AbstractLayoutTaskTest {
 
 	private static final class DummyLayoutTask extends AbstractLayoutTask {
 
-		public DummyLayoutTask(String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut) {
-			super(name, networkView, nodesToLayOut,"", mock(UndoSupport.class));
+		public DummyLayoutTask(String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut) {
+			super(displayName, networkView, nodesToLayOut,"", mock(UndoSupport.class));
 		}
 
-		public DummyLayoutTask(String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, String attr) {
-			super(name, networkView, nodesToLayOut,"", mock(UndoSupport.class));
+		public DummyLayoutTask(String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, String attr) {
+			super(displayName, networkView, nodesToLayOut,"", mock(UndoSupport.class));
 
 		}
 

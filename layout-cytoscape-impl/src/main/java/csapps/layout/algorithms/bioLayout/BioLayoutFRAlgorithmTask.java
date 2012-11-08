@@ -65,8 +65,8 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	Profile updateProfile;
 	 */
 
-	public BioLayoutFRAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final BioLayoutFRContext context, final boolean supportWeights, String attrName, UndoSupport undo) {		
-		super(name, networkView, nodesToLayOut,  context.singlePartition, attrName, undo);
+	public BioLayoutFRAlgorithmTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final BioLayoutFRContext context, final boolean supportWeights, String attrName, UndoSupport undo) {		
+		super(displayName, networkView, nodesToLayOut,  context.singlePartition, attrName, undo);
 		this.context = context;
 
 		this.supportWeights =supportWeights;

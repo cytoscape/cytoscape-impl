@@ -23,7 +23,7 @@ public class ISOMLayout extends AbstractLayoutAlgorithm {
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,String attrName) {
-		return new TaskIterator(new ISOMLayoutTask(getName(), networkView, nodesToLayOut, (ISOMLayoutContext) context, attrName, undoSupport));
+		return new TaskIterator(new ISOMLayoutTask(toString(), networkView, nodesToLayOut, (ISOMLayoutContext) context, attrName, undoSupport));
 	}
 	
 	@Override

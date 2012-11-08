@@ -100,8 +100,8 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * @param supportEdgeWeights a boolean to indicate whether we should
 	 *                                                  behave as if we support weights
 	 */
-	public BioLayoutKKAlgorithmTask(final String name, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final BioLayoutKKContext context, final boolean supportWeights, String attrName, UndoSupport undo) {
-		super(name, networkView, nodesToLayOut, context.singlePartition, attrName, undo);
+	public BioLayoutKKAlgorithmTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final BioLayoutKKContext context, final boolean supportWeights, String attrName, UndoSupport undo) {
+		super(displayName, networkView, nodesToLayOut, context.singlePartition, attrName, undo);
 		this.context = context;
 		this.supportWeights = supportWeights;
 		this.m_layoutPass = context.m_layoutPass;
