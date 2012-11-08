@@ -60,6 +60,7 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 
 		this.nodeVerticalSpacing = context.nodeVerticalSpacing;
 		this.nodeHorizontalSpacing = context.nodeHorizontalSpacing;
+		this.recenter = false;
 	}
 
 	/**

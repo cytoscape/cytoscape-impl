@@ -100,11 +100,13 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		taskMonitor.setTitle("Creating Network View");
 		taskMonitor.setStatusMessage("Creating network view...");
 
+		final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the view!
+		
 		int i = 0;
 		int viewCount = networks.size();
 		for (final CyNetwork n : networks) {
 			if (netViewMgr.getNetworkViews(n).isEmpty()) {
-				createView(n);
+				createView(n, style);
 				taskMonitor.setStatusMessage("Network view successfully created for:  "
 						+ n.getRow(n).get(CyNetwork.NAME, String.class));
 				i++;
@@ -115,14 +117,12 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		taskMonitor.setProgress(1.0);
 	}
 
-	private final void createView(CyNetwork network) throws Exception {	
+	private final void createView(final CyNetwork network, final VisualStyle style) throws Exception {	
 		final long start = System.currentTimeMillis();
 
 		try {
-			// By calling this task, actual view will be created even if it's a
-			// large network.
+			// By calling this task, actual view will be created even if it's a large network.
 			final CyNetworkView view = viewFactory.createNetworkView(network);
-			final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the view!
 			netViewMgr.addNetworkView(view);
 			
 			// Apply visual style
@@ -133,17 +133,14 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 			// If a source view has been provided, use that to set the X/Y positions of the
 			// nodes along with the visual style.
-			if (sourceView != null)
+			if (sourceView != null) {
 				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, renderingEngineMgr, view, sourceView, 
 						null, null, true));
-
-			// Otherwise check if layouts have been provided.
-			else if (layoutMgr != null) {
+			} else if (layoutMgr != null) {
 				final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
 				views.add(view);
 				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layoutMgr));
 			}
-
 		} catch (Exception e) {
 			throw new Exception("Could not create network view for network: "
 					+ network.getRow(network).get(CyNetwork.NAME, String.class), e);
