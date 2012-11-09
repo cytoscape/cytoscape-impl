@@ -28,12 +28,10 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
@@ -52,18 +50,13 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 
-import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.PaintedShape;
-import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsPositionCalculator;
+import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -73,8 +66,10 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -203,7 +198,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		this.graphView = graphView;
 	}
-
+	
 	@Override
 	public GraphView getGraphView() {
 		return graphView;
@@ -227,7 +222,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				graphView.m_contentChanged = true;
 		}
 	}
-
 
 	@Override
 	public void setUnselectedPaint(final Paint paint) {
@@ -301,8 +295,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			graphView.m_nodeDetails.overrideBorderPaint(model, graphView.m_lastTexturePaint);
 		}
 	}
-
-	
 
 	@Override
 	public void setTransparency(int trans) {

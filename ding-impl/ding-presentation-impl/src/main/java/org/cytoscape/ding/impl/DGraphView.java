@@ -2611,6 +2611,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
+	public void clearValueLock(final VisualProperty<?> vp) {
+		visualPropertyLocks.remove(vp);
+		applyVisualProperty(vp, visualProperties.get(vp)); // always apply the regular vp
+	}
+	
+	@Override
 	public <T> T getVisualProperty(final VisualProperty<T> vp) {
 		Object value = null;
 		
@@ -2752,7 +2758,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	protected <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

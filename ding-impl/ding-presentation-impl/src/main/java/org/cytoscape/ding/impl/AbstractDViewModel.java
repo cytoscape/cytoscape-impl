@@ -51,13 +51,14 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		else
 			visualProperties.put(vp, value);
 
-		// In any case, it should be applied to PRESENTATION (NodeView and EdgeView).
-		applyVisualProperty(vp, value);
+		if (!isValueLocked(vp))
+			applyVisualProperty(vp, value);
 	}
 
 	@Override
 	public <T, V extends T> void setLockedValue(final VisualProperty<? extends T> vp, final V value) {
 		visualPropertyLocks.put(vp, value);
+		applyVisualProperty(vp, value);
 	}
 
 	@Override
@@ -68,6 +69,11 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	@Override
 	public void clearValueLock(final VisualProperty<?> vp) {
 		visualPropertyLocks.remove(vp);
+		
+		// Re-apply the regular visual property value
+		if (visualProperties.containsKey(vp))
+			applyVisualProperty(vp, visualProperties.get(vp));
+		// TODO else: reset to the visual style default if visualProperties map doesn't contain this vp
 	}
 	
 	@SuppressWarnings("unchecked")
