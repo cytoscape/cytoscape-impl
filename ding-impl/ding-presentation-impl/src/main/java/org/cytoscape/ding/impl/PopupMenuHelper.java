@@ -190,7 +190,7 @@ class PopupMenuHelper {
 	 * Creates a menu based on the NetworkView.
 	 */
 	void createEmptySpaceMenu(Point rawPt, Point xformPt, String action) {
-		
+
 		final JPopupMenu menu = createMenu("Double Click Menu: empty");
 		final JMenuTracker tracker = new JMenuTracker(menu);
 
@@ -209,7 +209,22 @@ class PopupMenuHelper {
 			addMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
 		}
 		
-		menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));
+		int menuItemCount = usableTFs.size()+ usableTFs2.size();
+		if (action.equalsIgnoreCase("OPEN") && menuItemCount == 1){
+			//Double click on open space and there is only one menu item, execute it
+			if (usableTFs.size() == 1){
+				NetworkViewTaskFactory tf  = usableTFs.iterator().next();
+				m_view.manager.execute(tf.createTaskIterator(m_view));
+			}
+			else if (usableTFs2.size() == 1){
+				NetworkViewLocationTaskFactory tf = usableTFs2.iterator().next();
+				m_view.manager.execute(tf.createTaskIterator(m_view,rawPt, xformPt));
+			}
+		}
+		else {
+			// There are more than one menu item, let user make the selection
+			menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));		
+		}
 	}
 
 	/**
@@ -229,10 +244,6 @@ class PopupMenuHelper {
 		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
 		boolean useCheckBoxMenuItem = getBooleanProperty(props, "useCheckBoxMenuItem");
 		double gravity;
-
-		// We really don't want to have double-click actions in our menus
-		if (prefAction != null && prefAction.equals("OPEN"))
-			return;
 
 		if (menuGravity != null) {
 			gravity = Double.parseDouble(menuGravity);
