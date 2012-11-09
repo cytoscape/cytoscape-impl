@@ -94,16 +94,11 @@ class TaskDialog extends JDialog {
 	static final String EXCEPTION_MODE = "exception";
 
 	/**
-	 * If the progress bar is indeterminate, the string format to use for
+	 * The string format to use for
 	 * <code>timeLabel</code>.
 	 */
 	static final String ELAPSED_FORMAT = "%s elapsed";
-
-	/**
-	 * If the progress bar is determinate, the string format to use for
-	 * <code>timeLabel</code>.
-	 */
-	static final String ELAPSED_AND_REMAINING_FORMAT = "%s elapsed, %s remaining";
+	
 	static final String CANCEL_LABEL = "Cancel";
 	static final String CANCELLING_LABEL = "   Cancelling...   ";
 	static final String CLOSE_LABEL = "Close";
@@ -367,23 +362,9 @@ class TaskDialog extends JDialog {
 				new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						Date currentTime = new Date();
-						long timeElapsed = currentTime.getTime()
-								- startTime.getTime();
-						String timeElapsedString = StringUtils
-								.getTimeString(timeElapsed);
-						if (!progressBar.isIndeterminate()
-								&& progressBar.getValue() != 0) {
-							long timeRemaining = (long) ((100.0 / progressBar
-									.getValue() - 1.0) * timeElapsed);
-							String timeRemainingString = StringUtils
-									.getTimeString(timeRemaining);
-							timeLabel.setText(String.format(
-									ELAPSED_AND_REMAINING_FORMAT,
-									timeElapsedString, timeRemainingString));
-						} else {
-							timeLabel.setText(String.format(ELAPSED_FORMAT,
-									timeElapsedString));
-						}
+						long timeElapsed = currentTime.getTime() - startTime.getTime();
+						String timeElapsedString = StringUtils.getTimeString(timeElapsed);
+						timeLabel.setText(String.format(ELAPSED_FORMAT,timeElapsedString));
 						pack();
 					}
 				});
