@@ -32,6 +32,9 @@ package org.cytoscape.task.internal.creation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -44,6 +47,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
@@ -62,26 +66,17 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyNetworkView sourceView;
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport,
-								 final Collection<CyNetwork> networks,
-								 final CyNetworkViewFactory viewFactory,
-								 final CyNetworkViewManager netViewMgr,
-								 final CyLayoutAlgorithmManager layoutMgr,
-								 final CyEventHelper eventHelper,
-								 final VisualMappingManager vmm,
-								 final RenderingEngineManager renderingEngineMgr) {
+	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
+			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager netViewMgr,
+			final CyLayoutAlgorithmManager layoutMgr, final CyEventHelper eventHelper, final VisualMappingManager vmm,
+			final RenderingEngineManager renderingEngineMgr) {
 		this(undoSupport, networks, viewFactory, netViewMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, null);
 	}
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport,
-			 					 final Collection<CyNetwork> networks,
-			 					 final CyNetworkViewFactory viewFactory,
-			 					 final CyNetworkViewManager netViewMgr,
-			 					 final CyLayoutAlgorithmManager layoutMgr,
-			 					 final CyEventHelper eventHelper,
-			 					 final VisualMappingManager vmm,
-			 					 final RenderingEngineManager renderingEngineMgr,
-			 					 final CyNetworkView sourceView) {
+	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
+			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager netViewMgr,
+			final CyLayoutAlgorithmManager layoutMgr, final CyEventHelper eventHelper, final VisualMappingManager vmm,
+			final RenderingEngineManager renderingEngineMgr, final CyNetworkView sourceView) {
 		super(networks);
 
 		this.undoSupport = undoSupport;
@@ -100,13 +95,13 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		taskMonitor.setTitle("Creating Network View");
 		taskMonitor.setStatusMessage("Creating network view...");
 
-		final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the view!
+		final VisualStyle style = vmm.getCurrentVisualStyle();
 		
 		int i = 0;
 		int viewCount = networks.size();
 		for (final CyNetwork n : networks) {
 			if (netViewMgr.getNetworkViews(n).isEmpty()) {
-				createView(n, style);
+				createView(n, style, taskMonitor);
 				taskMonitor.setStatusMessage("Network view successfully created for:  "
 						+ n.getRow(n).get(CyNetwork.NAME, String.class));
 				i++;
@@ -117,29 +112,32 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		taskMonitor.setProgress(1.0);
 	}
 
-	private final void createView(final CyNetwork network, final VisualStyle style) throws Exception {	
+	private final void createView(final CyNetwork network, final VisualStyle style, TaskMonitor tMonitor) throws Exception {
 		final long start = System.currentTimeMillis();
 
 		try {
-			// By calling this task, actual view will be created even if it's a large network.
+			// By calling this task, actual view will be created even if it's a
+			// large network.
 			final CyNetworkView view = viewFactory.createNetworkView(network);
 			netViewMgr.addNetworkView(view);
-			
+
 			// Apply visual style
 			if (style != null) {
 				vmm.setVisualStyle(style, view);
 				style.apply(view);
 			}
 
-			// If a source view has been provided, use that to set the X/Y positions of the
+			// If a source view has been provided, use that to set the X/Y
+			// positions of the
 			// nodes along with the visual style.
 			if (sourceView != null) {
-				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, renderingEngineMgr, view, sourceView, 
-						null, null, true));
+				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, renderingEngineMgr, view, sourceView, null,
+						null, true));
 			} else if (layoutMgr != null) {
 				final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
 				views.add(view);
 				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layoutMgr));
+//				executeInParallel(view, style, new ApplyPreferredLayoutTask(views, layoutMgr), tMonitor);
 			}
 		} catch (Exception e) {
 			throw new Exception("Could not create network view for network: "
@@ -151,4 +149,62 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 		logger.info("Network view creation finished in " + (System.currentTimeMillis() - start) + " msec.");
 	}
+
+	private final void executeInParallel(final CyNetworkView view, final VisualStyle style, final Task task, final TaskMonitor tMonitor) {
+		final ExecutorService exe = Executors.newCachedThreadPool();
+		final long startTime = System.currentTimeMillis();
+
+		final ApplyVisualStyleTask applyTask = new ApplyVisualStyleTask(view, style);
+		final LayoutTask layoutTask = new LayoutTask(task, tMonitor);
+		exe.submit(applyTask);
+		exe.submit(layoutTask);
+
+		try {
+			exe.shutdown();
+			exe.awaitTermination(1000000, TimeUnit.SECONDS);
+
+			long endTime = System.currentTimeMillis();
+			double sec = (endTime - startTime) / (1000.0);
+			logger.info("Create View Finished in " + sec + " sec.");
+		} catch (Exception ex) {
+			logger.warn("Create view operation timeout", ex);
+		} finally {
+
+		}
+	}
+
+	private static final class ApplyVisualStyleTask implements Runnable {
+		private final CyNetworkView view;
+		private final VisualStyle style;
+		
+		ApplyVisualStyleTask(final CyNetworkView view, final VisualStyle style) {
+			this.style = style;
+			this.view = view;
+		}
+
+		@Override
+		public void run() {
+			style.apply(view);
+		}
+	}
+
+	private static final class LayoutTask implements Runnable {
+
+		private final Task task;
+		private final TaskMonitor tMonitor;
+		
+		public LayoutTask(final Task task, final TaskMonitor tMonitor) {
+			this.task = task;
+			this.tMonitor = tMonitor;
+		}
+		@Override
+		public void run() {
+			try {
+				task.run(tMonitor);
+			} catch (Exception e) {
+				throw new RuntimeException("Could not run task", e);
+			}
+		}
+	}
+
 }

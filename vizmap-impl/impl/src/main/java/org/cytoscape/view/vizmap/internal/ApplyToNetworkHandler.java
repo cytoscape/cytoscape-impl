@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -34,32 +37,38 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 
 	@Override
 	public void apply(final CyRow row, final View<CyNetwork> view) {
-		final long start = System.currentTimeMillis();
-
 		final CyNetworkView netView = (CyNetworkView) view;
 		final Collection<View<CyNode>> nodeViews = netView.getNodeViews();
 		final Collection<View<CyEdge>> edgeViews = netView.getEdgeViews();
 		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
 		networkViewSet.add(netView);
 
-		applyViewDefaults(netView, lexManager.getNodeVisualProperties());
-		applyViewDefaults(netView, lexManager.getEdgeVisualProperties());
-		applyViewDefaults(netView, lexManager.getNetworkVisualProperties());
+		final VisualLexicon lex = lexManager.getAllVisualLexicon().iterator().next();
+		applyDefaultsInParallel(netView, lexManager.getNodeVisualProperties(), lex);
+		applyDefaultsInParallel(netView, lexManager.getEdgeVisualProperties(), lex);
+		applyDefaultsInParallel(netView, lexManager.getNetworkVisualProperties(), lex);
 
 		final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap = applyDependencies(netView);
 		
-		applyMappings(netView, nodeViews, lexManager.getNodeVisualProperties(), dependencyMap);
-		applyMappings(netView, edgeViews, lexManager.getEdgeVisualProperties(), dependencyMap);
-		applyMappings(netView, networkViewSet, lexManager.getNetworkVisualProperties(), dependencyMap);
+		ExecutorService exe = Executors.newCachedThreadPool();
+		exe.submit(new ApplyMappingsTask(netView, nodeViews, lexManager.getNodeVisualProperties(), dependencyMap));
+		exe.submit(new ApplyMappingsTask(netView, edgeViews, lexManager.getEdgeVisualProperties(), dependencyMap));
+		exe.submit(new ApplyMappingsTask(netView, networkViewSet, lexManager.getNetworkVisualProperties(), dependencyMap));
+		
+		try {
+			exe.shutdown();
+		} catch (Exception ex) {
+			logger.warn("Create apply operation failed.", ex);
+		} finally {
 
-		logger.debug("Visual Style applied in " + (System.currentTimeMillis() - start) + " msec.");
+		}
 	}
+	
 
-	private void applyViewDefaults(final CyNetworkView netView, final Collection<VisualProperty<?>> vps) {
-		// TODO get lexicon from view's rendering engine
-		final VisualLexicon lex = lexManager.getAllVisualLexicon().iterator().next();
-
-		for (VisualProperty<?> vp : vps) {
+	private void applyDefaultsInParallel(final CyNetworkView netView, final Collection<VisualProperty<?>> vps, final VisualLexicon lex) {
+		final ExecutorService exe = Executors.newCachedThreadPool();
+		
+		for (final VisualProperty<?> vp : vps) {
 			final VisualLexiconNode node = lex.getVisualLexiconNode(vp);
 			final Collection<VisualLexiconNode> children = node.getChildren();
 
@@ -70,32 +79,71 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 					((VisualStyleImpl) style).getStyleDefaults().put(vp, vp.getDefault());
 					defaultValue = style.getDefaultValue(vp);
 				}
-	
-				netView.setViewDefault(vp, defaultValue);
+				exe.submit(new ApplyDefaultTask(netView, vp, defaultValue));
 			}
+		}
+		try {
+			exe.shutdown();
+		} catch (Exception ex) {
+			logger.warn("Create apply default failed", ex);
+		} finally {
+
+		}
+	}
+	
+	private final class ApplyDefaultTask implements Runnable {
+		private final CyNetworkView netView;
+		private final VisualProperty<?> vp;
+		private final Object defaultValue;
+		
+		ApplyDefaultTask(final CyNetworkView netView, final VisualProperty<?> vp, final Object defaultValue) {
+			this.vp = vp;
+			this.netView = netView;
+			this.defaultValue = defaultValue;
+		}
+		
+		@Override
+		public void run() {
+			netView.setViewDefault(vp, defaultValue);
 		}
 	}
 
-	private void applyMappings(final CyNetworkView netView,
-							   final Collection<? extends View<? extends CyIdentifiable>> views,
-							   final Collection<VisualProperty<?>> visualProperties,
-							   final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap) {
-		for (VisualProperty<?> vp : visualProperties) {
-			final VisualPropertyDependency<?> dep = dependencyMap.get(vp);
-			
-			if (dep != null)
-				continue; // Already handled when applying dependencies
-			
-			final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
+	private final class ApplyMappingsTask implements Runnable {
 
-			if (mapping != null) {
-				final CyNetwork net = netView.getModel();
+		private final CyNetworkView netView;
+		private final Collection<? extends View<? extends CyIdentifiable>> views;
+		private final Collection<VisualProperty<?>> visualProperties;
+		private final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap;
+		
+		ApplyMappingsTask(final CyNetworkView netView,
+				final Collection<? extends View<? extends CyIdentifiable>> views,
+				final Collection<VisualProperty<?>> visualProperties,
+				final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap) {
+			this.netView = netView;
+			this.views = views;
+			this.visualProperties = visualProperties;
+			this.dependencyMap = dependencyMap;
+		}
+		
+		@Override
+		public void run() {
+			for (VisualProperty<?> vp : visualProperties) {
+				final VisualPropertyDependency<?> dep = dependencyMap.get(vp);
+				
+				if (dep != null)
+					continue; // Already handled when applying dependencies
+				
+				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 
-				for (final View<? extends CyIdentifiable> v : views) {
-					Object value = mapping.getMappedValue(net.getRow(v.getModel()));
-					
-					if (value != null)
-						v.setVisualProperty(vp, value);
+				if (mapping != null) {
+					final CyNetwork net = netView.getModel();
+
+					for (final View<? extends CyIdentifiable> v : views) {
+						Object value = mapping.getMappedValue(net.getRow(v.getModel()));
+						
+						if (value != null)
+							v.setVisualProperty(vp, value);
+					}
 				}
 			}
 		}

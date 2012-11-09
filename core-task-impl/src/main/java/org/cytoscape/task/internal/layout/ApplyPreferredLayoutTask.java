@@ -37,7 +37,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
@@ -74,10 +73,9 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 			tm.setProgress(0.2d);
 			final CyLayoutAlgorithm layout = layouts.getLayout(pref);
 			if (layout != null) {
-				clearEdgeBends(view);
+				//clearEdgeBends(view);
 				final TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
 						CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
-				insertTasksAfterCurrentTask(new UpdateViewTask(view));
 				insertTasksAfterCurrentTask(itr);
 
 			} else {
@@ -109,22 +107,6 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 		for (final View<CyEdge> edgeView : edgeViews) {
 			edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
 			edgeView.clearValueLock(BasicVisualLexicon.EDGE_BEND);
-		}
-	}
-
-	/**
-	 * Simply updates the network view.
-	 */
-	private final class UpdateViewTask extends AbstractTask {
-		private final CyNetworkView view;
-
-		UpdateViewTask(final CyNetworkView view) {
-			this.view = view;
-		}
-
-		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
-			view.updateView();
 		}
 	}
 }

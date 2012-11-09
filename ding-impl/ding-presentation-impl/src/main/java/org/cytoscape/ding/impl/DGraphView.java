@@ -58,6 +58,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -73,6 +77,7 @@ import org.cytoscape.ding.GraphViewObject;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.PrintLOD;
+import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
@@ -135,6 +140,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
@@ -478,8 +484,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_edgeDetails = new DEdgeDetails(this);
 		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
 		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
-		m_nodeViewMap = new HashMap<CyNode, NodeView>();
-		m_edgeViewMap = new HashMap<CyEdge, EdgeView>();
+		m_nodeViewMap = new ConcurrentHashMap<CyNode, NodeView>();
+		m_edgeViewMap = new ConcurrentHashMap<CyEdge, EdgeView>();
 		m_printLOD = new PrintLOD();
 		m_defaultNodeXMin = 0.0f;
 		m_defaultNodeYMin = 0.0f;
@@ -1163,10 +1169,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	@Override
 	public void updateView() {
-//		System.out.println(this.toString() + ": Update view called: " + this.model);
-//		Thread.dumpStack();
+		//System.out.println(this.toString() + ": Update view called: " + this.model);
+		//Thread.dumpStack();
 		
-		final long start = System.currentTimeMillis();
+		//final long start = System.currentTimeMillis();
 		cyEventHelper.flushPayloadEvents();
 		m_networkCanvas.repaint();
 		
@@ -1225,16 +1231,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public DNodeView getDNodeView(final CyNode node) {
-		synchronized (m_lock) {
-			return (DNodeView)m_nodeViewMap.get(node);
-		}
+		// TODO: remove cast!
+		return (DNodeView)m_nodeViewMap.get(node);
 	}
 	
 	@Override
 	public DNodeView getDNodeView(final long nodeInx) {
-		synchronized (m_lock) {
-			return getDNodeView(model.getNode(nodeInx));
-		}
+		return getDNodeView(model.getNode(nodeInx));
 	}
 
 	@Override
@@ -1318,24 +1321,18 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	@Override
 	public DEdgeView getDEdgeView(final long edgeInx) {
-		synchronized (m_lock) {
-			return getDEdgeView(model.getEdge(edgeInx));
-		}
+		return getDEdgeView(model.getEdge(edgeInx));
 	}
 
 	@Override
 	public Iterator<EdgeView> getEdgeViewsIterator() {
-		synchronized (m_lock) {
-			return m_edgeViewMap.values().iterator();
-		}
+		return m_edgeViewMap.values().iterator();
 	}
 
 	
 	@Override
 	public DEdgeView getDEdgeView(final CyEdge edge) {
-		synchronized (m_lock) {
-			return (DEdgeView)m_edgeViewMap.get(edge);
-		}
+		return (DEdgeView)m_edgeViewMap.get(edge);
 	}
 
 	@Override
@@ -2672,18 +2669,22 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			return;
 		
 		final Class<?> targetType = vp.getTargetDataType();
+		final VisualStyle style = vmm.getVisualStyle(this);
 		
 		// In DING, there is no default W, H, and D.
 		// Also, custom Graphics should be applied for each view.
-		if (vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.NODE_WIDTH
-				|| vp == BasicVisualLexicon.NODE_HEIGHT || vp == BasicVisualLexicon.NODE_TRANSPARENCY) {
+		if (vp == BasicVisualLexicon.NODE_SIZE 
+				|| vp == BasicVisualLexicon.NODE_WIDTH
+				|| vp == BasicVisualLexicon.NODE_HEIGHT ) {
 			applyToAllNodes(vp, defaultValue);
 			return;
 		}
 		
-		if ((VisualProperty<?>)vp instanceof CustomGraphicsVisualProperty) {
-			applyToAllNodes(vp, defaultValue);
-			return;
+		if ((VisualProperty<?>) vp instanceof CustomGraphicsVisualProperty) {
+			if (style.getDefaultValue(vp) != NullCustomGraphics.getNullObject()) {
+				applyToAllNodes(vp, defaultValue);
+				return;
+			}
 		}
 		
 		if (vp != DVisualLexicon.NODE_LABEL_POSITION && defaultValue instanceof ObjectPosition) {
@@ -2705,18 +2706,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 	
+	
 	private <T, V extends T> void applyToAllNodes(VisualProperty<? extends T> vp, final V defaultValue) {
 		final Collection<NodeView> nodes = this.m_nodeViewMap.values();
-		
 		for (NodeView n : nodes)
 			((DNodeView) n).setVisualProperty(vp, defaultValue);
-	}
-	
-	private <T, V extends T> void applyToAllEdges(VisualProperty<? extends T> vp, final V defaultValue) {
-		final Collection<EdgeView> edges = this.m_edgeViewMap.values();
-		
-		for (EdgeView e : edges)
-			((DEdgeView) e).setVisualProperty(vp, defaultValue);
 	}
 
 	public CyAnnotator getCyAnnotator() {

@@ -2,12 +2,9 @@ package org.cytoscape.task.internal.layout;
 
 import java.util.Collection;
 import java.util.Properties;
-import java.util.Map;
-import java.util.HashMap;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;

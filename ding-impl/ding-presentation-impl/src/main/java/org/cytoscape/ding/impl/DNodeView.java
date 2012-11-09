@@ -392,11 +392,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		else
 			height = originalHeight;
 		
+		final Long modelSuid = model.getSUID();
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelSuid, graphView.m_extentsBuff, 0))
 				return false;
 
-			final double yCenter = (((double) graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
+			final double yCenter = ((graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
 			final double hDiv2 = height / 2.0d;
 			final float yMin = (float) (yCenter - hDiv2);
 			final float yMax = (float) (yCenter + hDiv2);
@@ -405,8 +406,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				throw new IllegalArgumentException("height is too small max:" + yMax + " min:" + yMin + " center:"
 						+ yCenter + " height:" + height);
 
-			graphView.m_spacial.delete(model.getSUID());
-			graphView.m_spacial.insert(model.getSUID(), graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
+			graphView.m_spacial.delete(modelSuid);
+			graphView.m_spacial.insert(modelSuid, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
 
 			graphView.m_contentChanged = true;
 
@@ -692,7 +693,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public void setText(String text) {
-		synchronized (graphView.m_lock) {
+		//synchronized (graphView.m_lock) {
 			graphView.m_nodeDetails.overrideLabelText(model, 0, text);
 
 			if (DEFAULT_LABEL_TEXT.equals(graphView.m_nodeDetails.labelText(model, 0)))
@@ -701,7 +702,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				graphView.m_nodeDetails.overrideLabelCount(model, 1);
 
 			graphView.m_contentChanged = true;
-		}
+		//}
 	}
 
 	/**
@@ -824,14 +825,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		return retVal;
 	}
 
-	public void removeAllCustomGraphics() {
-		synchronized (CG_LOCK) {
-			if (orderedCustomGraphicLayers != null) {
-				orderedCustomGraphicLayers.clear();
-				graphicsPositions.clear();
-			}
+	void removeAllCustomGraphics() {
+		if (orderedCustomGraphicLayers != null) {
+			orderedCustomGraphicLayers.clear();
+			graphicsPositions.clear();
 		}
-		ensureContentChanged();
+		// ensureContentChanged();
 	}
 
 	/**

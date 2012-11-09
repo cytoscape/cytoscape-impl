@@ -1,6 +1,8 @@
 package org.cytoscape.task.internal.creation;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -17,7 +19,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -32,12 +33,6 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
 
 public class NewNetworkSelectedNodesEdgesTaskTest {
 	private final NetworkTestSupport support = new NetworkTestSupport();
