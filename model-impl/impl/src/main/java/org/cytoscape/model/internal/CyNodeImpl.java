@@ -28,33 +28,24 @@
 package org.cytoscape.model.internal;
 
 
-import java.util.Map;
-
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.SetNetworkPointerEvent;
 import org.cytoscape.model.events.UnsetNetworkPointerEvent;
 
 
 class CyNodeImpl extends CyIdentifiableImpl implements CyNode {
+	
+	private final CyEventHelper eventHelper;
+	
 	private CyNetwork nestedNet;
-	final private CyEventHelper eventHelper;
-
+	
 	CyNodeImpl(long suid, long ind, final CyEventHelper eventHelper) {
 		super(suid);
 		nestedNet = null;
 		this.eventHelper = eventHelper;
 	}
-
-	/**
-	 * @see org.cytoscape.model.CyNode#getIndex()
-	@Override
-	public long getIndex() {
-		return getSUID().longValue();
-	}
-	 */
 
 	/**
 	 * @see org.cytoscape.model.CyNode#getNetworkPointer()
