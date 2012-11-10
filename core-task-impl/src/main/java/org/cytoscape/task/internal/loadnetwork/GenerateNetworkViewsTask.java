@@ -99,10 +99,7 @@ class GenerateNetworkViewsTask extends AbstractTask {
 						&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION))
 					view.fitContent();
 			}
-
 			taskMonitor.setProgress((double)(++i)/numNets);
-
-			informUserOfGraphStats(network, numGraphObjects, taskMonitor);
 		}
 
 		// If this is a subnetwork, and there is only one subnetwork in the root, check the name of the root network
@@ -137,31 +134,5 @@ class GenerateNetworkViewsTask extends AbstractTask {
 				}
 			}			
 		}
-	}
-
-	/**
-	 * Inform User of Network Stats.
-	 */
-	private void informUserOfGraphStats(final CyNetwork newNetwork, final int objectCount,
-			final TaskMonitor taskMonitor) {
-		NumberFormat formatter = new DecimalFormat("#,###,###");
-		StringBuffer sb = new StringBuffer();
-
-		// Give the user some confirmation
-		sb.append("Successfully loaded network from:  ");
-		sb.append(name);
-		sb.append("\n\nNetwork contains " + formatter.format(newNetwork.getNodeCount()));
-		sb.append(" nodes and " + formatter.format(newNetwork.getEdgeCount()));
-		sb.append(" edges.\n\n");
-
-		if (objectCount < viewThreshold) {
-			sb.append("Network is under " + viewThreshold
-					+ " graph objects.  A view will be automatically created.");
-		} else {
-			sb.append("Network is over " + viewThreshold + " graph objects.  A view has not been created."
-					+ "  If you wish to view this network, use " + "\"Create View\" from the \"Edit\" menu.");
-		}
-
-		taskMonitor.setStatusMessage(sb.toString());
 	}
 }
