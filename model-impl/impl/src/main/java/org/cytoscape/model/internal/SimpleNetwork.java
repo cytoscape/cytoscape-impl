@@ -216,20 +216,21 @@ class SimpleNetwork {
 		return ret;
 	}
 
-	protected CyNode addNodeInternal(final CyNode node) {
+	/**
+	 * IMPORTANT: this is not protected by synchronized 
+	 * because caller always uses lock.
+	 */
+	CyNode addNodeInternal(final CyNode node) {
+		// node already exists in this network
+		if (containsNode(node))
+			return node;
 
-		synchronized (this) {
-			// node already exists in this network
-			if ( containsNode(node) )
-				return node;
+		final NodePointer n = new NodePointer(node);
+		nodePointers.put(node.getSUID(), n);
+		nodeCount++;
+		firstNode = n.insert(firstNode);
 
-			NodePointer n = new NodePointer(node);	
-			nodePointers.put(node.getSUID(),n);
-			nodeCount++;
-			firstNode = n.insert(firstNode);
-		}
-
-		return node; 
+		return node;
 	}
 
 	protected boolean removeNodesInternal(final Collection<CyNode> nodes) {
