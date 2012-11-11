@@ -2523,28 +2523,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public Collection<View<CyNode>> getNodeViews() {
-		synchronized (m_lock) {
-			final List<View<CyNode>> returnThis = new ArrayList<View<CyNode>>(m_nodeViewMap.size());
-			final Iterator<NodeView> values = m_nodeViewMap.values().iterator();
-
-			while (values.hasNext())
-				returnThis.add((View<CyNode>) values.next());
-
-			return returnThis;
-		}
+		// This cast is always safe in current implementation.
+		// Also, since this is a concurrent collection, this operation is thread-safe.
+		return (Collection) m_nodeViewMap.values();
 	}
 
 	@Override
 	public Collection<View<CyEdge>> getEdgeViews() {
-		synchronized (m_lock) {
-			final List<View<CyEdge>> returnThis = new ArrayList<View<CyEdge>>(m_edgeViewMap.size());
-			final Iterator<EdgeView> values = m_edgeViewMap.values().iterator();
-
-			while (values.hasNext())
-				returnThis.add((View<CyEdge>) values.next());
-
-			return returnThis;
-		}
+		// This cast is always safe in current implementation.
+		// Also, since this is a concurrent collection, this operation is thread-safe.
+		return (Collection) m_edgeViewMap.values();
 	}
 
 	@Override
