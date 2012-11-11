@@ -107,20 +107,19 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 
 		CyTable table;
 
-		synchronized (this) {
-			if (entry instanceof CyNode && containsNode((CyNode) entry))
-				table = networkTableManager.getTable(networkRef.get(), CyNode.class, tableName);
-			else if (entry instanceof CyEdge && containsEdge((CyEdge) entry))
-				table = networkTableManager.getTable(networkRef.get(), CyEdge.class, tableName);
-			else if (entry instanceof CyNetwork && entry.equals(this)) {
-				if ( networkRef == null )
-					throw new IllegalArgumentException("asdfasdf");
-				CyNetwork n = networkRef.get();
-				table = networkTableManager.getTable(n, CyNetwork.class, tableName);
-			}else
-				throw new IllegalArgumentException("unrecognized (table entry): " + entry.toString()
-						+ "  (table name): " + tableName);
-		}
+		// The table returned should be immutable.
+		if (entry instanceof CyNode && containsNode((CyNode) entry))
+			table = networkTableManager.getTable(networkRef.get(), CyNode.class, tableName);
+		else if (entry instanceof CyEdge && containsEdge((CyEdge) entry))
+			table = networkTableManager.getTable(networkRef.get(), CyEdge.class, tableName);
+		else if (entry instanceof CyNetwork && entry.equals(this)) {
+			if (networkRef == null)
+				throw new IllegalArgumentException("Network reference is null.  This should not be null.");
+			final CyNetwork n = networkRef.get();
+			table = networkTableManager.getTable(n, CyNetwork.class, tableName);
+		} else
+			throw new IllegalArgumentException("unrecognized (table entry): " + entry.toString() + "  (table name): "
+					+ tableName);
 
 		if(table == null)
 			throw new NullPointerException("Table does not exist: " + tableName);
