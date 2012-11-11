@@ -51,60 +51,70 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractTableFacade implements CyTable {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AbstractTableFacade.class);
+	
 	private final CyTable actual;
 	private final Long suid;
 	private final Map<CyRow,CyRow> facadeRows;
 	private final Map<CyColumn,CyColumn> facadeColumns;
 	private boolean isPublic = true;
 
-	public AbstractTableFacade(CyTable actual) {
+	public AbstractTableFacade(final CyTable actual) {
 		this.actual = actual;
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID()); 
 		this.facadeRows = new HashMap<CyRow,CyRow>();
 		this.facadeColumns = new HashMap<CyColumn,CyColumn>();
 	}
 
+	@Override
 	public Long getSUID() {
 		return suid;	
 	}
-	
+
+	@Override
 	public String toString() {
 		return actual.toString();
 	}
 
+	@Override
 	public boolean isPublic() {
 		return isPublic;
 	}
-	
-	public void setPublic(boolean isPublic) {
+
+	@Override
+	public void setPublic(final boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 
+	@Override
 	public CyTable.Mutability getMutability() {
 		return actual.getMutability();
 	}
 
+	@Override
 	public String getTitle() {
 		return actual.getTitle();
 	}
 
+	@Override
 	public void setTitle(String title) {
 		actual.setTitle(title);
 	}
 
+	@Override
 	public CyColumn getPrimaryKey() {
 		return actual.getPrimaryKey();
 	}
 
-	public CyColumn getColumn(String columnName) {
-		CyColumn actualColumn = actual.getColumn(columnName);
+	@Override
+	public CyColumn getColumn(final String columnName) {
+		final CyColumn actualColumn = actual.getColumn(columnName);
 		if ( actualColumn == null )
 			return null;
 		
 		return getFacadeColumn(actualColumn);
 	}
 
-	private CyColumn getFacadeColumn(CyColumn actualColumn) {
+	private final CyColumn getFacadeColumn(final CyColumn actualColumn) {
 		CyColumn ret = facadeColumns.get(actualColumn);
 		if ( ret == null ) {
 			ret = new ColumnFacade(actualColumn);
@@ -114,11 +124,12 @@ public abstract class AbstractTableFacade implements CyTable {
 		return ret;
 	}
 
+	@Override
 	public Collection<CyColumn> getColumns() {
 		return getFacadeColumns(actual.getColumns());
 	}
 
-	private Collection<CyColumn> getFacadeColumns(Collection<CyColumn> columns) {
+	private final Collection<CyColumn> getFacadeColumns(final Collection<CyColumn> columns) {
 		List<CyColumn> facadeColumns = new ArrayList<CyColumn>( columns.size() ); 
 		for ( CyColumn column : columns )
 			facadeColumns.add( getFacadeColumn(column) ); 
@@ -126,7 +137,8 @@ public abstract class AbstractTableFacade implements CyTable {
 		return facadeColumns;
 	}
 
-	public CyRow getRow(Object primaryKey) {
+	@Override
+	public CyRow getRow(final Object primaryKey) {
 		CyRow actualRow = actual.getRow(primaryKey);
 		if ( actualRow == null )
 			return null;
@@ -143,23 +155,28 @@ public abstract class AbstractTableFacade implements CyTable {
 
 		return ret; 
 	}
-
+	
+	@Override
 	public boolean rowExists(Object primaryKey) {
 		return actual.rowExists(primaryKey); 
 	}
-
+	
+	@Override
 	public boolean deleteRows(Collection<?> primaryKeys) {
 		return actual.deleteRows(primaryKeys); 
 	}
 
+	@Override
 	public List<CyRow> getAllRows() {
 		return getFacadeRows(actual.getAllRows());	
 	}
-
+	
+	@Override
 	public String getLastInternalError() {
 		return actual.getLastInternalError();
 	}
 
+	@Override
 	public Collection<CyRow> getMatchingRows(String columnName, Object value) {
 		return getFacadeRows(actual.getMatchingRows(columnName,value));
 	}
@@ -171,24 +188,29 @@ public abstract class AbstractTableFacade implements CyTable {
 
 		return frows;
 	}
-
+	
+	@Override
 	public int countMatchingRows(String columnName, Object value) {
 		return actual.countMatchingRows(columnName, value);
 	}
 
+	@Override
 	public int getRowCount() {
 		return actual.getRowCount();	
 	}
-
+	
+	@Override
 	public SavePolicy getSavePolicy() {
 		return SavePolicy.DO_NOT_SAVE;
 	}
-
+	
+	@Override
 	public void setSavePolicy(SavePolicy policy) {
 		if (policy != SavePolicy.DO_NOT_SAVE)
 			throw new IllegalArgumentException("This table cannot be saved");
 	}
-
+	
+	@Override
 	public void swap(CyTable otherTable) {
 		// TODO do we need to do something here?
 		actual.swap(otherTable);	
@@ -196,17 +218,18 @@ public abstract class AbstractTableFacade implements CyTable {
 
 	protected abstract void updateColumnName(String oldName, String newName);
 	
-	private class RowFacade implements CyRow {
+	private final class RowFacade implements CyRow {
+		
 		private final CyRow actualRow;
 		private final CyTable table;
 
-		RowFacade(CyRow actualRow, CyTable table) {
+		RowFacade(final CyRow actualRow, final CyTable table) {
 			this.actualRow = actualRow;
 			this.table = table;
 		}
 
 		@Override
-		public void set(String attributeName, Object value) {
+		public void set(final String attributeName, final Object value) {
 			if ( value != null && attributeName != null && attributeName.equals("edges.SUID") ) {
 				System.out.println("facade set (" + Long.toString(actualRow.get("SUID",Long.class)) + " - " + table.getTitle() + ") " + attributeName + " " + value.toString());
 				Thread.dumpStack();
@@ -276,10 +299,11 @@ public abstract class AbstractTableFacade implements CyTable {
 		}
 	}
 	
-	private class ColumnFacade implements CyColumn {
+	private final class ColumnFacade implements CyColumn {
+		
 		private final CyColumn actualColumn;
 
-		public ColumnFacade(CyColumn actualColumn) {
+		public ColumnFacade(final CyColumn actualColumn) {
 			this.actualColumn = actualColumn;
 		}
 
