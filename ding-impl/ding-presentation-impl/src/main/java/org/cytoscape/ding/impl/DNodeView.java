@@ -132,6 +132,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	private boolean selected;
 
+	private final long modelIdx;
+	
 	/**
 	 * Stores the position of a nodeView when it's hidden so that when the
 	 * nodeView is restored we can restore the view into the same position.
@@ -192,6 +194,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.labelPosition = new ObjectPositionImpl();
 
 		this.netViewMgr = netViewMgr;
+		this.modelIdx = model.getSUID();
 		
 		// Initialize custom graphics pool.
 		cgMap = new HashMap<VisualProperty<?>, Set<CustomGraphicLayer>>();
@@ -338,19 +341,19 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public boolean setWidth(final double originalWidth) {
-		final Double width;
-		
+		final double width;
+
 		// Check bypass
 		if (isValueLocked(DVisualLexicon.NODE_WIDTH))
 			width = getVisualProperty(DVisualLexicon.NODE_WIDTH);
 		else
 			width = originalWidth;
-			
+
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return false;
 
-			final double xCenter = (((double) graphView.m_extentsBuff[0]) + graphView.m_extentsBuff[2]) / 2.0d;
+			final double xCenter = (graphView.m_extentsBuff[0] + graphView.m_extentsBuff[2]) / 2.0d;
 			final double wDiv2 = width / 2.0d;
 			final float xMin = (float) (xCenter - wDiv2);
 			final float xMax = (float) (xCenter + wDiv2);
@@ -358,15 +361,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			if (!(xMax > xMin))
 				throw new IllegalArgumentException("width is too small");
 
-			graphView.m_spacial.delete(model.getSUID());
-			graphView.m_spacial.insert(model.getSUID(), xMin, graphView.m_extentsBuff[1], xMax, graphView.m_extentsBuff[3]);
-
-// TODO Is it really necessary?
-//			final double w = ((double) xMax) - xMin;
-//			final double h = ((double) graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1];
-//			if (!(Math.max(w, h) < (1.99d * Math.min(w, h))) && (getShape() == GraphGraphics.SHAPE_ROUNDED_RECTANGLE))
-//				setShape(NodeShapeVisualProperty.RECTANGLE);
-
+			graphView.m_spacial.delete(modelIdx);
+			graphView.m_spacial.insert(modelIdx, xMin, graphView.m_extentsBuff[1], xMax,
+					graphView.m_extentsBuff[3]);
 			graphView.m_contentChanged = true;
 
 			return true;
@@ -376,7 +373,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public double getWidth() {
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return -1.0d;
 
 			return ((double) graphView.m_extentsBuff[2]) - graphView.m_extentsBuff[0];
@@ -384,17 +381,16 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	@Override
-	public boolean setHeight(double originalHeight) {
-		final Double height;
+	public boolean setHeight(final double originalHeight) {
+		final double height;
 		// Check bypass
 		if (isValueLocked(DVisualLexicon.NODE_HEIGHT))
 			height = getVisualProperty(DVisualLexicon.NODE_HEIGHT);
 		else
 			height = originalHeight;
 		
-		final Long modelSuid = model.getSUID();
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(modelSuid, graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return false;
 
 			final double yCenter = ((graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
@@ -406,9 +402,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				throw new IllegalArgumentException("height is too small max:" + yMax + " min:" + yMin + " center:"
 						+ yCenter + " height:" + height);
 
-			graphView.m_spacial.delete(modelSuid);
-			graphView.m_spacial.insert(modelSuid, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
-
+			graphView.m_spacial.delete(modelIdx);
+			graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
 			graphView.m_contentChanged = true;
 
 			return true;
@@ -418,7 +413,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public double getHeight() {
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return -1.0d;
 
 			return ((double) graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1];
@@ -429,7 +424,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public void setOffset(double x, double y) {
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return;
 
 			final double wDiv2 = (((double) graphView.m_extentsBuff[2]) - graphView.m_extentsBuff[0]) / 2.0d;
@@ -445,8 +440,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			if (!(yMax > yMin))
 				throw new IllegalStateException("height of node has degenerated to zero after " + "rounding");
 
-			graphView.m_spacial.delete(model.getSUID());
-			graphView.m_spacial.insert(model.getSUID(), xMin, yMin, xMax, yMax);
+			graphView.m_spacial.delete(modelIdx);
+			graphView.m_spacial.insert(modelIdx, xMin, yMin, xMax, yMax);
 			graphView.m_contentChanged = true;
 			setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,x);
 			setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,y);
@@ -456,7 +451,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public Point2D getOffset() {
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return null;
 
 			final double xCenter = (((double) graphView.m_extentsBuff[0]) + graphView.m_extentsBuff[2]) / 2.0d;
@@ -467,15 +462,17 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	@Override
-	public void setXPosition(double xPos) {
+	public void setXPosition(final double xPos) {
+		
+		final double wDiv2;
+		
 		synchronized (graphView.m_lock) {
-			final double wDiv2;
-			final boolean nodeVisible = graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0);
+			final boolean nodeVisible = graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0);
 
 			if (nodeVisible)
-				wDiv2 = (((double) graphView.m_extentsBuff[2]) - graphView.m_extentsBuff[0]) / 2.0d;
+				wDiv2 = (graphView.m_extentsBuff[2] - graphView.m_extentsBuff[0]) / 2.0d;
 			else
-				wDiv2 = (double) (m_hiddenXMax - m_hiddenXMin) / 2.0d;
+				wDiv2 = 	(m_hiddenXMax - m_hiddenXMin) / 2.0d;
 
 			final float xMin = (float) (xPos - wDiv2);
 			final float xMax = (float) (xPos + wDiv2);
@@ -485,8 +482,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 			// If the node is visible, set the extents.
 			if (nodeVisible) {
-				graphView.m_spacial.delete(model.getSUID());
-				graphView.m_spacial.insert(model.getSUID(), xMin, graphView.m_extentsBuff[1], xMax, graphView.m_extentsBuff[3]);
+				graphView.m_spacial.delete(modelIdx);
+				graphView.m_spacial.insert(modelIdx, xMin, graphView.m_extentsBuff[1], xMax, graphView.m_extentsBuff[3]);
 				graphView.m_contentChanged = true;
 
 				// If the node is NOT visible (hidden), then update the hidden
@@ -503,7 +500,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	public double getXPosition() {
 		synchronized (graphView.m_lock) {
-			if (graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0))
+			if (graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return (((double) graphView.m_extentsBuff[0]) + graphView.m_extentsBuff[2]) / 2.0d;
 			else
 				return (double) (m_hiddenXMin + m_hiddenXMax) / 2.0;
@@ -515,7 +512,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		
 		synchronized (graphView.m_lock) {
 			
-			final boolean nodeVisible = graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0);
+			final boolean nodeVisible = graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0);
 
 			if (nodeVisible)
 				hDiv2 = ((graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1]) / 2.0d;
@@ -530,8 +527,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 			// If the node is visible, set the extents.
 			if (nodeVisible) {
-				graphView.m_spacial.delete(model.getSUID());
-				graphView.m_spacial.insert(model.getSUID(), graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
+				graphView.m_spacial.delete(modelIdx);
+				graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
 				graphView.m_contentChanged = true;
 
 				// If the node is NOT visible (hidden), then update the hidden
@@ -546,7 +543,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	public double getYPosition() {
 		synchronized (graphView.m_lock) {
-			if (graphView.m_spacial.exists(model.getSUID(), graphView.m_extentsBuff, 0))
+			if (graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return ((graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
 			else
 				return ((m_hiddenYMin + m_hiddenYMax)) / 2.0d;
@@ -576,7 +573,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		selected = true;
 		graphView.m_nodeDetails.select(model);
-		graphView.m_selectedNodes.insert(model.getSUID());
+		graphView.m_selectedNodes.insert(modelIdx);
 
 		return true;
 	}
@@ -600,7 +597,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		selected = false;
 		graphView.m_nodeDetails.unselect(model);
-		graphView.m_selectedNodes.delete(model.getSUID());
+		graphView.m_selectedNodes.delete(modelIdx);
 
 		return true;
 	}
