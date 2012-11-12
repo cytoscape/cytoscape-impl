@@ -146,7 +146,7 @@ public abstract class AbstractTableFacade implements CyTable {
 		return getFacadeRow(actualRow);
 	}
 
-	private CyRow getFacadeRow(CyRow actualRow) {
+	private final CyRow getFacadeRow(final CyRow actualRow) {
 		CyRow ret = facadeRows.get(actualRow);
 		if ( ret == null ) { 
 			ret = new RowFacade(actualRow,this);
@@ -181,9 +181,9 @@ public abstract class AbstractTableFacade implements CyTable {
 		return getFacadeRows(actual.getMatchingRows(columnName,value));
 	}
 
-	private List<CyRow> getFacadeRows(Collection<CyRow> rows) {
-		List<CyRow> frows = new ArrayList<CyRow>( rows.size() ); 
-		for ( CyRow r : rows )
+	private final List<CyRow> getFacadeRows(final Collection<CyRow> rows) {
+		final List<CyRow> frows = new ArrayList<CyRow>( rows.size() ); 
+		for (final CyRow r : rows)
 			frows.add( getFacadeRow(r) ); 
 
 		return frows;
