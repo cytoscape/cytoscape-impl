@@ -13,9 +13,9 @@ import org.cytoscape.work.TaskManager;
  */
 public class AppManagerDialog extends javax.swing.JDialog {
 
-	private CheckForUpdatesPanel checkForUpdatesPanel1;
-    private CurrentlyInstalledAppsPanel currentlyInstalledAppsPanel1;
-    private InstallFromStorePanel installNewAppsPanel1;
+	private CheckForUpdatesPanel checkForUpdatesPanel;
+    private CurrentlyInstalledAppsPanel currentlyInstalledAppsPanel;
+    private InstallAppsPanel installAppsPanel;
     private javax.swing.JTabbedPane mainTabbedPane;
 
     private ManageDownloadSitesDialog manageDownloadSitesDialog;
@@ -50,16 +50,16 @@ public class AppManagerDialog extends javax.swing.JDialog {
    
     private void initComponents() {
     	mainTabbedPane = new javax.swing.JTabbedPane();
-        installNewAppsPanel1 = new InstallFromStorePanel(appManager, downloadSitesManager, fileUtil, taskManager, this);
-        currentlyInstalledAppsPanel1 = new CurrentlyInstalledAppsPanel(appManager);
-        checkForUpdatesPanel1 = new CheckForUpdatesPanel(appManager, downloadSitesManager, taskManager, this);
+        installAppsPanel = new InstallAppsPanel(appManager, downloadSitesManager, fileUtil, taskManager, this);
+        currentlyInstalledAppsPanel = new CurrentlyInstalledAppsPanel(appManager);
+        checkForUpdatesPanel = new CheckForUpdatesPanel(appManager, downloadSitesManager, taskManager, this);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("App Manager");
         
-        mainTabbedPane.addTab("Install from App Store", installNewAppsPanel1);
-        mainTabbedPane.addTab("Currently Installed", currentlyInstalledAppsPanel1);
-        mainTabbedPane.addTab("Check for Updates", checkForUpdatesPanel1);
+        mainTabbedPane.addTab("Install Apps", installAppsPanel);
+        mainTabbedPane.addTab("Currently Installed", currentlyInstalledAppsPanel);
+        mainTabbedPane.addTab("Check for Updates", checkForUpdatesPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
