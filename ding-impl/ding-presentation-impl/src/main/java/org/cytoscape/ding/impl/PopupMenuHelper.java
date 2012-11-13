@@ -45,6 +45,7 @@ import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyMenuItem;
+import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
@@ -166,30 +167,10 @@ class PopupMenuHelper {
 		}
 	}
 
-	private JPopupMenu createMenu(String title) {
-		final JPopupMenu menu = new JPopupMenu(title);
-		menu.addPopupMenuListener(new PopupMenuListener() {
-			@Override
-			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-			}
-			
-			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-				menu.removeAll();
-			}
-			
-			@Override
-			public void popupMenuCanceled(PopupMenuEvent arg0) {
-				menu.removeAll();
-			}
-		});
-		return menu;
-	}
-
 	/**
 	 * Creates a menu based on the NetworkView.
 	 */
-	void createEmptySpaceMenu(Point rawPt, Point xformPt, String action) {
+	void createNetworkViewMenu(Point rawPt, Point xformPt, String action) {
 
 		final JPopupMenu menu = createMenu("Double Click Menu: empty");
 		final JMenuTracker tracker = new JMenuTracker(menu);
@@ -207,6 +188,11 @@ class PopupMenuHelper {
 		for ( NetworkViewLocationTaskFactory nvltf : usableTFs2 ) {
 			NamedTaskFactory provisioner = factoryProvisioner.createFor(nvltf, m_view, rawPt, xformPt);
 			addMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
+		}
+		
+		for (CyNetworkViewContextMenuFactory netVMF: m_view.cyNetworkViewContextMenuFactory.keySet()) {
+			CyMenuItem menuItem = netVMF.createMenuItem(m_view);
+			addCyMenuItem(m_view, menu, menuItem, tracker, m_view.cyNetworkViewContextMenuFactory.get(netVMF));
 		}
 		
 		int menuItemCount = usableTFs.size()+ usableTFs2.size();
@@ -227,6 +213,26 @@ class PopupMenuHelper {
 		}
 	}
 
+	private JPopupMenu createMenu(String title) {
+		final JPopupMenu menu = new JPopupMenu(title);
+		menu.addPopupMenuListener(new PopupMenuListener() {
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+			}
+			
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+				menu.removeAll();
+			}
+			
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent arg0) {
+				menu.removeAll();
+			}
+		});
+		return menu;
+	}
+	
 	/**
 	 * This method creates popup menu submenus and menu items based on the
 	 * "title" and "preferredMenu" keywords, depending on which are present

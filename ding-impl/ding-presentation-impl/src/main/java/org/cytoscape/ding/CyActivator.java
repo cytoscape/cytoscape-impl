@@ -13,6 +13,7 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -424,6 +425,8 @@ public class CyActivator extends AbstractCyActivator {
 				"removeCyEdgeViewContextMenuFactory", CyEdgeViewContextMenuFactory.class);
 		registerServiceListener(bc, vtfListener, "addCyNodeViewContextMenuFactory",
 				"removeCyNodeViewContextMenuFactory", CyNodeViewContextMenuFactory.class);
+		registerServiceListener(bc, vtfListener, "addCyNetworkViewContextMenuFactory",
+				"removeCyNetworkViewContextMenuFactory", CyNetworkViewContextMenuFactory.class);
 
 		registerServiceListener(bc, annotationFactoryManager, "addAnnotationFactory", "removeAnnotationFactory",
 				AnnotationFactory.class);

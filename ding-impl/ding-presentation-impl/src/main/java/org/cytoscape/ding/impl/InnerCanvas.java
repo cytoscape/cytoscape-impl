@@ -1153,7 +1153,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					Point xformPt = new Point();
 					xformPt.setLocation(loc[0],loc[1]); 
 					if (!InnerCanvas.this.isPopupMenuDisabled()){
-						popup.createEmptySpaceMenu(rawPt, xformPt, "NEW");						
+						popup.createNetworkViewMenu(rawPt, xformPt, "NEW");						
 					}
 				}
 			}
@@ -1174,7 +1174,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				Point xformPt = new Point();
 				xformPt.setLocation(loc[0],loc[1]); 
 				if (!InnerCanvas.this.isPopupMenuDisabled()){
-					popup.createEmptySpaceMenu(rawPt, xformPt, "OPEN");
+					popup.createNetworkViewMenu(rawPt, xformPt, "OPEN");
 				}
 			}
 		}

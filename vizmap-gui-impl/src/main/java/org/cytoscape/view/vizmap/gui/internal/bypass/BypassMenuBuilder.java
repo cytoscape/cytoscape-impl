@@ -49,14 +49,21 @@ final class BypassMenuBuilder {
 	private final Collection<VisualProperty<?>> vpSet;
 
 	public BypassMenuBuilder(final VisualLexiconNode root, final EditorManager editorManager,
-			final VisualMappingManager vmm, final Collection<VisualProperty<?>> vpSet) {
+			final VisualMappingManager vmm) {
 		this.root = root;
 		this.editorManager = editorManager;
 		this.vmm = vmm;
-		this.vpSet = vpSet;
+		this.vpSet = new HashSet<VisualProperty<?>>();
 	}
 
-	public CyMenuItem build(final CyNetworkView netView, final View<? extends CyIdentifiable> nodeView) {
+	/**
+	 * 
+	 * @param netView
+	 * @param view a View&lt;CyNode&gt;, View&lt;CyEdge&gt; or View&lt;CyNetwork&gt; object
+	 * @return
+	 */
+	public CyMenuItem build(final CyNetworkView netView, final View<? extends CyIdentifiable> view) {
+		final Class<? extends CyIdentifiable> targetClass = view.getModel().getClass();
 		final Queue<VisualLexiconNode> queue = new PriorityQueue<VisualLexiconNode>(50,
 				new VisualLexiconNodeComparator());
 		final Map<VisualLexiconNode, JMenuItem> menuMap = new HashMap<VisualLexiconNode, JMenuItem>();
@@ -73,65 +80,70 @@ final class BypassMenuBuilder {
 			final VisualLexiconNode curretNode = queue.poll();
 			final VisualProperty<?> vp = curretNode.getVisualProperty();
 			
-			final Collection<VisualLexiconNode> children = curretNode.getChildren();
-			nextNodes.addAll(children);
-
-			final JMenuItem menu;
-			if (children.size() == 0 && PropertySheetUtil.isCompatible(vp)) {
-				final boolean lock = nodeView.isValueLocked(vp);
-				if (lock) {
-					menu = new JMenu(vp.getDisplayName());
-					final JMenuItem clear = new JMenuItem("Clear");
-					clear.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							nodeView.clearValueLock(vp);
-							netView.updateView();
+			if (vp.getTargetDataType().isAssignableFrom(targetClass)) {
+				final Collection<VisualLexiconNode> children = curretNode.getChildren();
+				nextNodes.addAll(children);
+	
+				final JMenuItem menu;
+				if (children.isEmpty() && PropertySheetUtil.isCompatible(vp)) {
+					final boolean lock = view.isValueLocked(vp);
+					if (lock) {
+						menu = new JMenu(vp.getDisplayName());
+						final JMenuItem clear = new JMenuItem("Clear");
+						clear.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								view.clearValueLock(vp);
+								netView.updateView();
+							}
+						});
+						
+						final JMenuItem edit = new JMenuItem("Edit Bypass");
+						edit.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								applBypassValue(netView, view, vp);
+							}
+						});
+						menu.add(clear);
+						menu.add(edit);
+	
+						// Update color
+						menu.setForeground(ENABLED_COLOR);
+						menu.setIcon(ENABLED_ICON);
+						menu.setFont(ENABLED_FONT);
+						VisualLexiconNode parent = curretNode.getParent();
+						
+						while (parent != root) {
+							JMenuItem enabledPath = menuMap.get(parent);
+							enabledPath.setForeground(ENABLED_COLOR);
+							enabledPath.setIcon(ENABLED_ICON);
+							enabledPath.setFont(ENABLED_FONT);
+							parent = parent.getParent();
 						}
-					});
-					final JMenuItem edit = new JMenuItem("Edit Bypass");
-					edit.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							applBypassValue(netView, nodeView, vp);
-						}
-					});
-					menu.add(clear);
-					menu.add(edit);
-
-					// Update color
-					menu.setForeground(ENABLED_COLOR);
-					menu.setIcon(ENABLED_ICON);
-					menu.setFont(ENABLED_FONT);
-					VisualLexiconNode parent = curretNode.getParent();
-					while (parent != root) {
-						JMenuItem enabledPath = menuMap.get(parent);
-						enabledPath.setForeground(ENABLED_COLOR);
-						enabledPath.setIcon(ENABLED_ICON);
-						enabledPath.setFont(ENABLED_FONT);
-						parent = parent.getParent();
+						
+						rootJMenu.setIcon(ENABLED_ICON);
+						rootJMenu.setForeground(ENABLED_COLOR);
+						rootJMenu.setFont(ENABLED_FONT);
+						
+						vpSet.add(vp);
+					} else {
+						menu = new JMenuItem(vp.getDisplayName());
+						menu.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								applBypassValue(netView, view, vp);
+							}
+						});
 					}
-					rootJMenu.setIcon(ENABLED_ICON);
-					rootJMenu.setForeground(ENABLED_COLOR);
-					rootJMenu.setFont(ENABLED_FONT);
-
 				} else {
-					menu = new JMenuItem(vp.getDisplayName());
-					menu.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							applBypassValue(netView, nodeView, vp);
-						}
-					});
+					menu = new JMenu(vp.getDisplayName());
 				}
-
-			} else {
-				menu = new JMenu(vp.getDisplayName());
-			}
-
-			if(PropertySheetUtil.isCompatible(vp)) {
-				menuMap.get(curretNode.getParent()).add(menu);
-				menuMap.put(curretNode, menu);
+	
+				if (PropertySheetUtil.isCompatible(vp)) {
+					menuMap.get(curretNode.getParent()).add(menu);
+					menuMap.put(curretNode, menu);
+				}
 			}
 
 			if (queue.isEmpty()) {
@@ -146,8 +158,7 @@ final class BypassMenuBuilder {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				clearAll(netView, nodeView);
-				
+				clearAll(netView, view);
 			}
 		});
 		

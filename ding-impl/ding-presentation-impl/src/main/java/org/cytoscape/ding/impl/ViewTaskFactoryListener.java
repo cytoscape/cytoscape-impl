@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
@@ -22,6 +23,7 @@ public class ViewTaskFactoryListener {
 	final Map<NetworkViewLocationTaskFactory, Map> networkViewLocationTFs;
 	final Map<CyNodeViewContextMenuFactory, Map> cyNodeViewContexMenuFactory;
 	final Map<CyEdgeViewContextMenuFactory, Map> cyEdgeViewContextMenuFactory;
+	final Map<CyNetworkViewContextMenuFactory, Map> cyNetworkViewContextMenuFactory;
 	
 	private final NVLTFActionSupport nvltfActionSupport;
 
@@ -34,7 +36,7 @@ public class ViewTaskFactoryListener {
 		networkViewLocationTFs = new HashMap<NetworkViewLocationTaskFactory, Map>();
 		cyNodeViewContexMenuFactory = new HashMap<CyNodeViewContextMenuFactory, Map>();
 		cyEdgeViewContextMenuFactory = new HashMap<CyEdgeViewContextMenuFactory, Map>();
-
+		cyNetworkViewContextMenuFactory = new HashMap<CyNetworkViewContextMenuFactory, Map>();
 	}
 
 	
@@ -117,6 +119,16 @@ public class ViewTaskFactoryListener {
 			return;
 		cyEdgeViewContextMenuFactory.remove(cevcmf);
 	}
-
 	
+	public void addCyNetworkViewContextMenuFactory(CyNetworkViewContextMenuFactory cnvcmf, Map props){
+		if(cnvcmf == null)
+			return;
+		cyNetworkViewContextMenuFactory.put(cnvcmf, props);
+	}
+	
+	public void removeCyNetworkViewContextMenuFactory(CyNetworkViewContextMenuFactory cnvcmf, Map props){
+		if(cnvcmf == null)
+			return;
+		cyNetworkViewContextMenuFactory.remove(cnvcmf);
+	}
 }

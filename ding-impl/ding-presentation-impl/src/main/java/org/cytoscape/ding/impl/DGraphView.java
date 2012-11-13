@@ -53,21 +53,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.JLayeredPane;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
@@ -386,6 +383,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final Map<NetworkViewLocationTaskFactory, Map> networkViewLocationTfs;
 	final Map<CyEdgeViewContextMenuFactory, Map> cyEdgeViewContextMenuFactory;
 	final Map<CyNodeViewContextMenuFactory, Map> cyNodeViewContextMenuFactory;
+	final Map<CyNetworkViewContextMenuFactory, Map> cyNetworkViewContextMenuFactory;
 
 	final DialogTaskManager manager;
 
@@ -406,6 +404,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final CyNetworkViewManager netViewMgr; 
 	private final CyServiceRegistrar registrar;
 	private final HandleFactory handleFactory;
+
 
 	/**
 	 * Create presentation from View Model
@@ -470,6 +469,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.networkViewLocationTfs = vtfl.networkViewLocationTFs;
 		this.cyEdgeViewContextMenuFactory = vtfl.cyEdgeViewContextMenuFactory;
 		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
+		this.cyNetworkViewContextMenuFactory = vtfl.cyNetworkViewContextMenuFactory;
 		
 		this.netViewMgr = netViewMgr;
 		this.manager = manager;
