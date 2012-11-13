@@ -725,8 +725,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			} else {
 				String normalizedTargetJoinKey = table2.normalizeColumnName(targetJoinKey);			
 				SetMultimap<Object, Object> reverseMap = table2.reverse.get(normalizedTargetJoinKey);
-				for (Object key2 : reverseMap.get(key)) {
-					fireVirtualColumnRowSetEvent(table2, key2, targetJoinKey, newValue, newRawValue);
+				if(reverseMap != null) {
+					for (Object key2 : reverseMap.get(key)) {
+						fireVirtualColumnRowSetEvent(table2, key2, targetJoinKey, newValue, newRawValue);
+					}
 				}
 			}
 		}
