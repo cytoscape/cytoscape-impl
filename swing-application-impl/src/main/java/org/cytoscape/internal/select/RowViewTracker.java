@@ -17,7 +17,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsListener;
@@ -65,16 +64,15 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	
 	protected void addTables(CyNetworkView view) {
 		CyNetwork network = view.getModel();
-		addTable(view, network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
-		addTable(view, network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
-		addTable(view, network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
+		addTable(view, network.getTable(CyNetwork.class, CyNetwork.DEFAULT_ATTRS));
+		addTable(view, network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS));
+		addTable(view, network.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS));
 	}
 
 	private void addTable(CyNetworkView view, CyTable table) {
 		if (table == null) {
 			return;
 		}
-		
 		Set<CyNetworkView> views = networkViewsByTable.get(table);
 		if (views == null) {
 			views = new HashSet<CyNetworkView>();
@@ -85,9 +83,9 @@ public class RowViewTracker implements NetworkViewAddedListener,
 
 	protected void removeTables(CyNetworkView view) {
 		CyNetwork network = view.getModel();
-		removeTable(view, network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
-		removeTable(view, network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
-		removeTable(view, network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
+		removeTable(view, network.getTable(CyNetwork.class, CyNetwork.DEFAULT_ATTRS));
+		removeTable(view, network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS));
+		removeTable(view, network.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS));
 	}
 	
 	private void removeTable(CyNetworkView view, CyTable table) {
@@ -182,7 +180,11 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	}
 
 	public Map<CyRow,View<?>> getRowViewMap(CyNetworkView networkView) {
-		return Collections.unmodifiableMap(rowViewMapsByNetworkView.get(networkView));  
+		Map<CyRow, View<?>> map = rowViewMapsByNetworkView.get(networkView);
+		if (map == null) {
+			map = Collections.emptyMap();
+		}
+		return Collections.unmodifiableMap(map);  
 	}
 
 	public Collection<CyNetworkView> getAffectedNetworkViews(CyTable cyTable) {
