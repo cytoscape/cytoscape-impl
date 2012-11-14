@@ -296,9 +296,8 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		}
 
 		loadTaskIt.append(new ResetTask());
-
-		guiTaskManager.execute(loadTaskIt);
 		closeParentWindow();
+		guiTaskManager.execute(loadTaskIt);
 	}
 
 	/**
