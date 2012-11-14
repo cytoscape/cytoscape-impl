@@ -161,23 +161,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	private static final Logger logger = LoggerFactory.getLogger(DGraphView.class);
 	
-	private static enum ZOrder {
-		BACKGROUND_PANE, NETWORK_PANE, FOREGROUND_PANE;
-		
-		int layer() {
-			if (this == BACKGROUND_PANE)
-				return -30000;
-
-			if (this == NETWORK_PANE)
-				return 0;
-
-			if (this == FOREGROUND_PANE)
-				return 301;
-
-			return 0;
-		}
-	}
-
 	// Size of square for moving handle
 	static final float DEFAULT_ANCHOR_SIZE = 12.0f;
 	
@@ -1112,7 +1095,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public void setZoom(final double zoom) {
 		synchronized (m_lock) {
-			m_networkCanvas.m_scaleFactor = checkZoom(zoom,m_networkCanvas.m_scaleFactor);
+			m_networkCanvas.m_scaleFactor = checkZoom(zoom, m_networkCanvas.m_scaleFactor);
 			m_viewportChanged = true;
 		}
 	}
@@ -1138,21 +1121,23 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			// Adjust the content based on the background canvas
 			m_backgroundCanvas.adjustBounds(m_extentsBuffD);
 
-			m_networkCanvas.m_xCenter = (m_extentsBuffD[0] + m_extentsBuffD[2]) / 2.0d;
-			m_networkCanvas.m_yCenter = (m_extentsBuffD[1] + m_extentsBuffD[3]) / 2.0d;
-
-			// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
-			final double zoom = Math.min(((double) m_networkCanvas.getWidth()) / 
-			                             (m_extentsBuffD[2] - m_extentsBuffD[0]), 
-			                              ((double) m_networkCanvas.getHeight()) / 
-			                             (m_extentsBuffD[3] - m_extentsBuffD[1])) * 0.98;
-			m_networkCanvas.m_scaleFactor = checkZoom(zoom,m_networkCanvas.m_scaleFactor);
-			m_viewportChanged = true;
+			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
+				setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION,
+						(m_extentsBuffD[0] + m_extentsBuffD[2]) / 2.0d);
 			
-			// Update view model.  Zoom Level should be modified.
-			setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
-			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
+			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
+				setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION,
+						(m_extentsBuffD[1] + m_extentsBuffD[3]) / 2.0d);
+
+			if (!isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
+				// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
+				final double zoom = Math.min(((double) m_networkCanvas.getWidth()) / 
+				                             (m_extentsBuffD[2] - m_extentsBuffD[0]), 
+				                              ((double) m_networkCanvas.getHeight()) / 
+				                             (m_extentsBuffD[3] - m_extentsBuffD[1])) * 0.98;
+				// Update view model.  Zoom Level should be modified.
+				setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+			}
 		}
 		
 		if (updateView)
@@ -1166,7 +1151,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public void fitContent() {
 		fitContent(/* updateView = */ true);
 	}
-
 	
 	/**
 	 * Redraw the canvas.
@@ -1181,8 +1165,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_networkCanvas.repaint();
 		
 		//Check if image size has changed if so, visual property needs to be changed as well
-		if( m_networkCanvas.getWidth() != imageWidth || m_networkCanvas.getHeight() != imageHeight)
-		{
+		if ( m_networkCanvas.getWidth() != imageWidth || m_networkCanvas.getHeight() != imageHeight) {
 			imageWidth = m_networkCanvas.getWidth();
 			imageHeight = m_networkCanvas.getHeight();
 			setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,(double)imageWidth);
@@ -1588,6 +1571,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			m_viewportChanged = true;
 			
 			// Update view model
+			// TODO: don't do it from here?
 			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
 			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
 		}
@@ -1605,8 +1589,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		cyEventHelper.flushPayloadEvents();
 		
 		synchronized (m_lock) {
-			LongEnumerator selectedElms = m_selectedNodes.searchRange(
-					Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+			LongEnumerator selectedElms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 
 			// Only check for selected edges if we don't have selected nodes.
 			if (selectedElms.numRemaining() == 0 && edgeSelectionEnabled()) {
@@ -1643,21 +1626,28 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			xMin = xMin - (getLabelWidth(leftMost) / 2);
 			xMax = xMax + (getLabelWidth(rightMost) / 2);
 
-			m_networkCanvas.m_xCenter = (((double) xMin) + ((double) xMax)) / 2.0d;
-			m_networkCanvas.m_yCenter = (((double) yMin) + ((double) yMax)) / 2.0d;
-			final double zoom = Math.min(((double) m_networkCanvas.getWidth())
-					/ (((double) xMax) - ((double) xMin)),
-					((double) m_networkCanvas.getHeight())
-							/ (((double) yMax) - ((double) yMin)));
-			m_networkCanvas.m_scaleFactor = checkZoom(zoom,
-					m_networkCanvas.m_scaleFactor);
-			m_viewportChanged = true;
+			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+				double zoom = Math.min(((double) m_networkCanvas.getWidth())
+						/ (((double) xMax) - ((double) xMin)),
+						((double) m_networkCanvas.getHeight())
+								/ (((double) yMax) - ((double) yMin)));
+				zoom = checkZoom(zoom, m_networkCanvas.m_scaleFactor);
+				
+				// Update view model.  Zoom Level should be modified.
+				setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+			}
 			
-			// Update view model.  Zoom Level should be modified.
-			setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
-			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
+			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
+				final double xCenter = (((double) xMin) + ((double) xMax)) / 2.0d;
+				setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
+			}
+			
+			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+				final double yCenter = (((double) yMin) + ((double) yMax)) / 2.0d;
+				setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
+			}
 		}
+			
 		updateView();
 	}
 
@@ -2584,11 +2574,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			setBackgroundPaint((Paint) value);
 		} else if (vp == BasicVisualLexicon.NETWORK_CENTER_X_LOCATION) {
 			final double x = (Double) value;
-			if(x != m_networkCanvas.m_xCenter)
+			if (x != m_networkCanvas.m_xCenter)
 				setCenter(x, m_networkCanvas.m_yCenter);
 		} else if (vp == BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION) {
 			final double y = (Double) value;
-			if(y != m_networkCanvas.m_yCenter)
+			if (y != m_networkCanvas.m_yCenter)
 				setCenter(m_networkCanvas.m_xCenter, y);
 		} else if (vp == BasicVisualLexicon.NETWORK_SCALE_FACTOR) {
 			setZoom(((Double) value).doubleValue());

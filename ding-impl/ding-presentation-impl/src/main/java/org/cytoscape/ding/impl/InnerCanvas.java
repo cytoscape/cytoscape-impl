@@ -269,20 +269,18 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	 * This method exposes the JComponent processMouseEvent so that canvases on
 	 * top of us can pass events they don't want down.
 	 * 
-	 * @param e
-	 *            the MouseEvent to process
+	 * @param e the MouseEvent to process
 	 */
 	@Override
 	public void processMouseEvent(MouseEvent e) {
 		super.processMouseEvent(e);
 	}
 
-
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		adjustZoom(e.getWheelRotation());
+		if (!m_view.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR))
+			adjustZoom(e.getWheelRotation());
 	}
-	
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
@@ -797,7 +795,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 	
 	private void adjustZoom(int notches) {
-		
 		final double factor;
 		
 		if (notches < 0)
