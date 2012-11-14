@@ -96,7 +96,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AboutToRemoveNodesEvent;
@@ -405,7 +405,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final CyServiceRegistrar registrar;
 	private final HandleFactory handleFactory;
 
-
 	/**
 	 * Create presentation from View Model
 	 * 
@@ -476,8 +475,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.cyEventHelper = cyEventHelper;
 
 		// creating empty subnetworks
-		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork(SavePolicy.DO_NOT_SAVE);
-		cyEventHelper.silenceEventSource(m_drawPersp);
+//		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork(SavePolicy.DO_NOT_SAVE);
+//		cyEventHelper.silenceEventSource(m_drawPersp);
+		
+		// New simple implementation of the graph to keep track of visible nodes/edges.
+		m_drawPersp = new MinimalNetwork(SUIDFactory.getNextSUID());
+
 		m_spacial = spacialFactory.createSpacialIndex2D();
 		m_spacialA = spacialFactory.createSpacialIndex2D();
 		m_nodeDetails = new DNodeDetails(this);
@@ -794,8 +797,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @return The NodeView object that is added to the GraphView.
 	 */
 	@Override
-	public NodeView addNodeView(CyNode node) {
-		DNodeView newView = null;
+	public NodeView addNodeView(final CyNode node) {
+		final DNodeView newView;
 
 		synchronized (m_lock) {
 			newView = addNodeViewInternal(node);
@@ -852,18 +855,19 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	@Override
 	public EdgeView addEdgeView(final CyEdge edge) {
-		NodeView sourceNode = null;
-		NodeView targetNode = null;
-		DEdgeView dEdgeView = null;
 		if (edge == null)
 			throw new NullPointerException("edge is null");
-
+		
+		final NodeView sourceNode;
+		final NodeView targetNode;
+		final DEdgeView dEdgeView;
+		
 		synchronized (m_lock) {
 			final EdgeView oldView = m_edgeViewMap.get(edge);
 
 			if (oldView != null)
 				return oldView;
-
+		
 			sourceNode = addNodeViewInternal(edge.getSource());
 			targetNode = addNodeViewInternal(edge.getTarget());
 
