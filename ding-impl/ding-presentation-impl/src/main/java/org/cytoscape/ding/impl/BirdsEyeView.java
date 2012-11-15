@@ -60,6 +60,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * Swing component to display overview of the network.
@@ -326,26 +327,34 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 *
 	 */
 	private final class InnerMouseMotionListener extends MouseMotionAdapter {
-		@Override public void mouseDragged(MouseEvent e) {
-						
+		@Override
+		public void mouseDragged(MouseEvent e) {
 			if (m_currMouseButton == 1) {
 				final int currX = e.getX();
 				final int currY = e.getY();
-				final double deltaX = (currX - m_lastXMousePos)
-						/ m_myScaleFactor;
-				final double deltaY = (currY - m_lastYMousePos)
-						/ m_myScaleFactor;
-				m_lastXMousePos = currX;
-				m_lastYMousePos = currY;
-
-				final Point2D pt = viewModel.getCenter();
-				viewModel.setCenter(pt.getX() + deltaX, pt.getY() + deltaY);
-				viewModel.updateView();
+				double deltaX = 0;
+				double deltaY = 0;
+				
+				if (!viewModel.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
+					deltaX = (currX - m_lastXMousePos) / m_myScaleFactor;
+					m_lastXMousePos = currX;
+				}
+				if (!viewModel.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+					deltaY = (currY - m_lastYMousePos) / m_myScaleFactor;
+					m_lastYMousePos = currY;
+				}
+				
+				if (deltaX != 0 || deltaY != 0) {
+					final Point2D pt = viewModel.getCenter();
+					viewModel.setCenter(pt.getX() + deltaX, pt.getY() + deltaY);
+					viewModel.updateView();
+				}
 			}
 		}
 	}
 
-	@Override public Dimension getMinimumSize() {
+	@Override
+	public Dimension getMinimumSize() {
 		return MIN_SIZE;
 	}
 
