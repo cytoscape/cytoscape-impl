@@ -51,20 +51,10 @@ public class CyActivator extends AbstractCyActivator {
 		AbstractTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef);//, mapGlobalTableTaskFactoryServiceRef);
 		AbstractTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef);//, mapGlobalTableTaskFactoryServiceRef);
 		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef);//, mapGlobalTableTaskFactoryServiceRef);
-		
-		AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyServiceRegistrarServiceRef,compilerServiceRef,cyNetworkManagerServiceRef,deleteTableTaskFactoryService,guiTaskManagerServiceRef,popupMenuHelper,cyApplicationManagerServiceRef, cyEventHelperServiceRef);
-		
+				
 		registerAllServices(bc,nodeTableBrowser, new Properties());
 		registerAllServices(bc,edgeTableBrowser, new Properties());
 		registerAllServices(bc,networkTableBrowser, new Properties());
-		//registerAllServices(bc,globalTableBrowser, new Properties());
-		Properties globalTableProp = new Properties();
-		registerService(bc, globalTableBrowser, ActionListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, SessionLoadedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TableAddedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class, globalTableProp);
 
 		registerServiceListener(bc,popupMenuHelper,"addTableColumnTaskFactory","removeTableColumnTaskFactory",TableColumnTaskFactory.class);
 		registerServiceListener(bc,popupMenuHelper,"addTableCellTaskFactory","removeTableCellTaskFactory",TableCellTaskFactory.class);
