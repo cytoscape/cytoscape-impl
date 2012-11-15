@@ -1135,11 +1135,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
 			if (nview != null && !InnerCanvas.this.isPopupMenuDisabled()) {
-				popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),null);
+				popup.createNodeViewMenu(m_view.getModel(), nview, e.getX(), e.getY(), null);
 			} else {
 				EdgeView edgeView = m_view.getPickedEdgeView(e.getPoint());
 				if (edgeView != null && !InnerCanvas.this.isPopupMenuDisabled()) {
-					popup.createEdgeViewMenu(m_view.m_drawPersp,edgeView,e.getX(),e.getY(),null);
+					popup.createEdgeViewMenu(m_view.getModel(), edgeView, e.getX(), e.getY(), null);
 				} else {
 					// Clicked on empty space...
 					Point rawPt = e.getPoint();
@@ -1161,7 +1161,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			//System.out.println("MousePressed ----> doubleLeftClick");
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
 			if ( nview != null && !InnerCanvas.this.isPopupMenuDisabled())
-				popup.createNodeViewMenu(m_view.m_drawPersp,nview,e.getX(),e.getY(),"OPEN");
+				popup.createNodeViewMenu(m_view.getModel(), nview,e.getX(), e.getY(), "OPEN");
 			else {
 				Point rawPt = e.getPoint();
 				double[] loc = new double[2];
