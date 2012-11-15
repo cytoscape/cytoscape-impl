@@ -204,7 +204,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Holds the NodeView data for the nodes that are visible. This will change
 	 * as nodes are hidden from the view.
 	 */
-	CySubNetwork m_drawPersp;
+	final CySubNetwork m_drawPersp;
 
 	/**
 	 * RTree used for querying node positions.
@@ -216,10 +216,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * DEdgeView, and InnerCanvas.
 	 */
 	SpacialIndex2D m_spacialA;
-
 	
-	DNodeDetails m_nodeDetails;
-	DEdgeDetails m_edgeDetails;
+	final DNodeDetails m_nodeDetails;
+	final DEdgeDetails m_edgeDetails;
+	final NodeViewDefaultSupport nodeViewDefaultSupport;
+	final EdgeViewDefaultSupport edgeViewDefaultSupport;
 
 	/**
 	 * Level of detail specific to printing. Not used for rendering.
@@ -229,29 +230,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final Map<CyNode, NodeView> m_nodeViewMap;
 	private final Map<CyEdge, EdgeView> m_edgeViewMap;
 
-	/**
-	 *
-	 */
 	Long m_identifier;
 
-	/**
-	 *
-	 */
 	final float m_defaultNodeXMin;
-
-	/**
-	 *
-	 */
 	final float m_defaultNodeYMin;
-
-	/**
-	 *
-	 */
 	final float m_defaultNodeXMax;
-
-	/**
-	 *
-	 */
 	final float m_defaultNodeYMax;
 
 	/**
@@ -374,12 +357,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final VisualLexicon dingLexicon;
 	
 	private final Properties props;
-
-	private final NodeViewDefaultSupport m_nodeViewDefaultSupport;// TODO delete?
-	private final EdgeViewDefaultSupport m_edgeViewDefaultSupport;// TODO delete?
+	
 	private final CyAnnotator cyAnnotator;
 
-	private boolean annotationsLoaded = false;
+	private boolean annotationsLoaded;
 	private boolean servicesRegistered;
 	
 	private final VisualMappingManager vmm;
@@ -468,8 +449,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_spacialA = spacialFactory.createSpacialIndex2D();
 		m_nodeDetails = new DNodeDetails(this);
 		m_edgeDetails = new DEdgeDetails(this);
-		m_nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
-		m_edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
+		nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
+		edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
 		m_nodeViewMap = new ConcurrentHashMap<CyNode, NodeView>();
 		m_edgeViewMap = new ConcurrentHashMap<CyEdge, EdgeView>();
 		m_printLOD = new PrintLOD();
@@ -2646,6 +2627,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
 		if (vp.shouldIgnoreDefault())
 			return;
@@ -2678,10 +2660,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		
 		if (targetType == CyNode.class) {
 			m_nodeDetails.clear();
-			m_nodeViewDefaultSupport.setNodeViewDefault(vp,defaultValue);
+			nodeViewDefaultSupport.setViewDefault((VisualProperty<V>)vp, defaultValue);
 		} else if (targetType == CyEdge.class) {
-			m_edgeDetails.clearMappedValues();
-			m_edgeViewDefaultSupport.setEdgeViewDefault(vp,defaultValue);
+			m_edgeDetails.clear();
+			edgeViewDefaultSupport.setViewDefault((VisualProperty<V>)vp, defaultValue);
 		} else if (targetType == CyNetwork.class) {
 			// For networks, just set as regular visual property value.  (No defaults)
 			this.setVisualProperty(vp, defaultValue);

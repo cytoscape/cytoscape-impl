@@ -30,9 +30,7 @@ package org.cytoscape.ding.impl;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
-import java.awt.Stroke;
 
-import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.model.VisualProperty;
@@ -51,12 +49,13 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 		this.lock = lock;
 	}
 
-	<V> void setNodeViewDefault(final VisualProperty<?> vpOriginal, V value) {
-		final VisualProperty<?> vp = vpOriginal;
+	@Override
+	protected <V> void setViewDefault(final VisualProperty<V> vpOriginal, V value) {
+		final VisualProperty<V> vp = vpOriginal;
 
 		// Null means set value to VP's default.
 		if (value == null)
-			value = (V) vp.getDefault();
+			value = vp.getDefault();
 
 		if (vp == DVisualLexicon.NODE_SHAPE) {
 			setShape(((NodeShape) value));

@@ -1039,6 +1039,22 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 	
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void clearValueLock(final VisualProperty<?> vp) {
+		final boolean isDefault = !visualProperties.containsKey(vp);
+		super.clearValueLock(vp);
+		
+		// Reset to the visual style default if visualProperties map doesn't contain this vp
+		if (isDefault) {
+			if (vp == BasicVisualLexicon.NODE_VISIBLE) // TODO: what if the default value of the visual style is different (e.g. invisible)?
+				applyVisualProperty((VisualProperty) vp, vp.getDefault());
+			else
+				graphView.nodeViewDefaultSupport.setViewDefault((VisualProperty) vp,
+						graphView.m_nodeDetails.getDefaultValue(vp));
+		}
+	}
+	
+	@Override
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		VisualProperty<?> vp = vpOriginal;
 		

@@ -139,7 +139,7 @@ class PopupMenuHelper {
 
 			// build a menu of actions if more than factory exists
 			if ( usableTFs.size() > 1) {
-				String nodeLabel = network.getRow(nv.getModel()).get("name",String.class);
+				String nodeLabel = network.getRow(nv.getModel()).get(CyNetwork.NAME, String.class);
 				JPopupMenu menu = createMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 

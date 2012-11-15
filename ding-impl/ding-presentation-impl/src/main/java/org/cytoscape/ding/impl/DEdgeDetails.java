@@ -137,7 +137,7 @@ final class DEdgeDetails extends EdgeDetails {
 		defaultValues = new HashMap<VisualProperty<?>, Object>();
 	}
 
-	void clearMappedValues() {
+	void clear() {
 		if (isCleared)
 			return;
 

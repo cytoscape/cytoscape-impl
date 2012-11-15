@@ -54,15 +54,10 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		this.lock = lock;
 	}
 
-	/**
-	 * Set default value for visual properties
-	 * 
-	 * @param vp
-	 * @param value
-	 */
-	void setEdgeViewDefault(VisualProperty<?> vp, Object value) {
+	@Override
+	protected <V> void setViewDefault(final VisualProperty<V> vp, V value) {
 		if (value == null)
-			value = vp.getDefault();
+			value = (V) vp.getDefault();
 
 		// // Type check:
 		// if(vp.getRange().getType().isAssignableFrom(value.getClass()) ==
