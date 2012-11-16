@@ -86,10 +86,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 				tableChooser.setEnabled(false);
 				// The last table is deleted, refresh the browser table (this is a special case)
 				deleteTable(cyTable);
-				serviceRegistrar.unregisterService(this, CytoPanelComponent.class);
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
+						serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
 						showSelectedTable();
 					}
 				});
@@ -112,8 +112,14 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 				comboBoxModel.addAndSetSelectedItem(newTable);
 			}
 			
-			if (tableChooser.getItemCount() == 1)
-				serviceRegistrar.registerService(this, CytoPanelComponent.class, new Properties());
+			if (tableChooser.getItemCount() == 1) {
+				SwingUtilities.invokeLater(
+					new Runnable() {
+						public void run() {
+							serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class, new Properties());
+						}
+					});
+			}
 			
 			if (tableChooser.getItemCount() != 0)
 				tableChooser.setEnabled(true);
