@@ -1003,7 +1003,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			String action = "Edge";
 			NodeView nview = m_view.getPickedNodeView(rawPt);
 			if ( nview != null && !InnerCanvas.this.isPopupMenuDisabled()) 
-				popup.createNodeViewMenu(m_view.m_drawPersp, nview, e.getX(), e.getY(), action);
+				popup.createNodeViewMenu(m_view.getModel(), nview, e.getX(), e.getY(), action);
 		}
 	}
 
