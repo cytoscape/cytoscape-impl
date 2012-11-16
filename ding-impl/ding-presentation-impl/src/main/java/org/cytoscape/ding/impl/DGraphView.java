@@ -2640,6 +2640,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (vp == BasicVisualLexicon.NODE_SIZE 
 				|| vp == BasicVisualLexicon.NODE_WIDTH
 				|| vp == BasicVisualLexicon.NODE_HEIGHT ) {
+			// TODO: Run in parallel.  fork/join?
 			applyToAllNodes(vp, defaultValue);
 			return;
 		}
@@ -2652,7 +2653,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 		
 		if (vp != DVisualLexicon.NODE_LABEL_POSITION && defaultValue instanceof ObjectPosition) {
-			if (defaultValue != ObjectPositionImpl.DEFAULT_POSITION) {
+			// This is a CustomGraphicsPosition.
+			if (defaultValue.equals(ObjectPositionImpl.DEFAULT_POSITION) == false) {
 				applyToAllNodes(vp, defaultValue);
 				return;
 			}
@@ -2671,9 +2673,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 	
 	
-	private <T, V extends T> void applyToAllNodes(VisualProperty<? extends T> vp, final V defaultValue) {
+	private final <T, V extends T> void applyToAllNodes(final VisualProperty<? extends T> vp, final V defaultValue) {
 		final Collection<NodeView> nodes = this.m_nodeViewMap.values();
-		for (NodeView n : nodes)
+		for (final NodeView n : nodes)
 			((DNodeView) n).setVisualProperty(vp, defaultValue);
 	}
 
