@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
@@ -66,6 +68,15 @@ import org.xml.sax.Attributes;
 public class ReadDataManager {
 
 	protected final static String XLINK = "http://www.w3.org/1999/xlink";
+	
+	private static final String PATTERN2X = "type|fill|w|h|size|width|outline|"
+			 + "(cy:)?((node|edge)Transparency|(node|edge)LabelFont|(border|edge)LineType)|"
+			 + "(cy:)?(source|target)Arrow(Color)?";
+	private static final String BG_COLOR_PATTERN = "backgroundColor";
+	
+	private static final Pattern P2X = Pattern.compile(PATTERN2X);
+	private static final Pattern PBG_COLOR = Pattern.compile(BG_COLOR_PATTERN);
+
 	
 	/* RDF Data */
 	protected String RDFDate;
@@ -697,28 +708,37 @@ public class ReadDataManager {
         	suidUpdater.addSUIDMapping((Long)oldId, newSUID);
 	}
 	
+	
+	
 	/**
 	 * It controls which graphics attributes should be parsed.
 	 * @param element The network, node or edge
 	 * @param attName The name of the XGMML attribute
 	 * @return
 	 */
-	private boolean ignoreGraphicsAttribute(final CyIdentifiable element, String attName) {
+	private final boolean ignoreGraphicsAttribute(final CyIdentifiable element, final String attName) {
 		boolean b = false;
 		
 		// When reading XGMML as part of a CYS file, these graphics attributes should not be parsed.
 		if (isSessionFormat() && element != null && attName != null) {
 			// Network
-			b = b || (element instanceof CyNetwork && attName.matches("backgroundColor"));
+			b = b || (element instanceof CyNetwork && matchesBg(attName));
 			// Nodes or Edges (these are standard XGMML and 2.x <graphics> attributes, not 3.0 bypass properties)
 			b = b ||
-				((element instanceof CyNode || element instanceof CyEdge) && attName
-						.matches("type|fill|w|h|size|width|outline|"
-								 + "(cy:)?((node|edge)Transparency|(node|edge)LabelFont|(border|edge)LineType)|"
-								 + "(cy:)?(source|target)Arrow(Color)?"));
+				((element instanceof CyNode || element instanceof CyEdge) && matches2x(attName));
 		}
 
 		return b;
+	}
+	
+	private final boolean matches2x(final String text) {
+		final Matcher matcher = P2X.matcher(text);
+		return matcher.matches();
+	}
+	
+	private final boolean matchesBg(final String text) {
+		final Matcher matcher = PBG_COLOR.matcher(text);
+		return matcher.matches();
 	}
 	
 	// The following is added to support the user option to import network into different collection

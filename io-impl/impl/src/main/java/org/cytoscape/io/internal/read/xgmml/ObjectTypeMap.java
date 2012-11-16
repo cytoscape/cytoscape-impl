@@ -3,6 +3,7 @@ package org.cytoscape.io.internal.read.xgmml;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.cytoscape.io.internal.util.SUIDUpdater;
 
@@ -34,39 +35,48 @@ public class ObjectTypeMap {
      * @param name the attribute name
      * @return the typed value
      */
-    public Object getTypedValue(final ObjectType type, final String value, final String name) {
-    	Object typedValue = null; 
-    	
-        switch (type) {
-            case BOOLEAN:
-                if (value != null)
-                	typedValue = fromXGMMLBoolean(""+value);
-                break;
-            case REAL:
-                if (value != null) {
-                	if (SUIDUpdater.isUpdatable(name))
-                		typedValue = new Long(value);
-                	else
-                		typedValue = new Double(value);
-                }
-                break;
-            case INTEGER:
-                if (value != null)
-                	typedValue = new Integer(value);
-                break;
-            case STRING:
-                if (value != null) {
-                    // Make sure we convert our newlines and tabs back
-                    String sAttr = value.replace("\\t", "\t");
-                    typedValue = sAttr.replace("\\n", "\n");
-                }
-                break;
-            case LIST:
-            	typedValue = new ArrayList<Object>();
-        }
-        
-        return typedValue;
-    }
+	public Object getTypedValue(final ObjectType type, final String value, final String name) {
+		Object typedValue = null;
+
+		switch (type) {
+		case BOOLEAN:
+			if (value != null)
+				typedValue = fromXGMMLBoolean("" + value);
+			break;
+		case REAL:
+			if (value != null) {
+				if (SUIDUpdater.isUpdatable(name))
+					typedValue = Long.valueOf(value);
+				else
+					typedValue = Double.valueOf(value);
+			}
+			break;
+		case INTEGER:
+			if (value != null)
+				typedValue = Integer.valueOf(value);
+			break;
+		case STRING:
+			if (value != null) {
+				// Make sure we convert our newlines and tabs back
+//				typedValue = NEW_LINE_PATTERN.matcher(TAB_PATTERN.matcher(value).replaceFirst(TAB_STRING))
+//						.replaceFirst(NEW_LINE_STRING);
+				final String sAttr = value.replace("\\t", "\t");
+				typedValue = sAttr.replace("\\n", "\n");
+			}
+			break;
+		case LIST:
+			typedValue = new ArrayList<Object>();
+		default:
+			break;
+		}
+
+		return typedValue;
+	}
+	
+	private static final String TAB_STRING = "\t";
+	private static final String NEW_LINE_STRING = "\n";
+	private static final Pattern TAB_PATTERN = Pattern.compile("\\t");
+	private static final Pattern NEW_LINE_PATTERN = Pattern.compile("\\n");
     
     public static boolean fromXGMMLBoolean(final String s) {
     	// Should be only "1", but let's be nice and also accept "true"
