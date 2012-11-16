@@ -75,6 +75,8 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -92,7 +94,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
-		RowsSetListener, VisualStyleChangedListener {
+		RowsSetListener, VisualStyleChangedListener, UpdateNetworkPresentationListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -450,7 +452,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		} else {
 			int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
 			int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
-			updateNetworkSize(view, w, h);
+			boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
+					!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
+			updateNetworkSize(view, w, h, resizable);
 		}
 
 		// Display it and add listeners
@@ -468,7 +472,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		return title;
 	}
 	
-	private void updateNetworkSize(final CyNetworkView view, int width, int height) {
+	private void updateNetworkSize(final CyNetworkView view, int width, int height, boolean resizable) {
 		final JInternalFrame frame = presentationContainerMap.get(view);
 
 		if (frame == null)
@@ -476,6 +480,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 		if (width > 0 && height > 0)
 			frame.setSize(new Dimension(width, height));
+		
+		frame.setResizable(resizable);
+		frame.setMaximizable(resizable);
 	}
 
 	private void setFocus(CyNetworkView targetView) {
@@ -573,8 +580,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	}
 
 	@Override
-	public void handleEvent(VisualStyleChangedEvent e) {
-		
+	public void handleEvent(final VisualStyleChangedEvent e) {
 		final VisualStyle style= e.getSource();
 		// First, check current view.  If necessary, apply it.
 		final Set<CyNetworkView> networkViews = netViewMgr.getNetworkViewSet();
@@ -591,5 +597,16 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				this.viewUpdateRequired.add(view);
 			}
 		}
+	}
+
+	@Override
+	public void handleEvent(final UpdateNetworkPresentationEvent e) {
+		final CyNetworkView view = e.getSource();
+		int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
+		int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
+		boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
+				!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
+		
+		updateNetworkSize(view, w, h, resizable);
 	}
 }
