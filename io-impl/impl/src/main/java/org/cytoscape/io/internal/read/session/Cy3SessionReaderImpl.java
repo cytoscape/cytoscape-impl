@@ -466,8 +466,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		}
 	}
 
-	private void mergeNetworkTables() throws UnsupportedEncodingException {
-		for (Entry<Long, Set<CyTableMetadataBuilder>> entry : networkTableMap.entrySet()) {
+	private final void mergeNetworkTables() throws UnsupportedEncodingException {
+		for (final Entry<Long, Set<CyTableMetadataBuilder>> entry : networkTableMap.entrySet()) {
 			final Object oldId = entry.getKey();
 			final Set<CyTableMetadataBuilder> builders = entry.getValue();
 			final CyNetwork network = cache.getNetwork(oldId);
@@ -477,21 +477,21 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				continue;
 			}
 
-			for (CyTableMetadataBuilder builder : builders) {
+			for (final CyTableMetadataBuilder builder : builders) {
 				builder.setNetwork(network);
 				mergeNetworkTable(network, builder);
 				CyTableMetadata metadata = builder.build();
 				tableMetadata.add(metadata);
 				
 				// Update filename<->table maps
-				String filename = builderFilenameMap.get(builder);
+				final String filename = builderFilenameMap.get(builder);
 				filenameTableMap.put(filename, metadata.getTable());
 			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private void mergeNetworkTable(CyNetwork network, CyTableMetadataBuilder builder) {
+	private final void mergeNetworkTable(CyNetwork network, CyTableMetadataBuilder builder) {
 		final Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) builder.getType();
 		final String namespace = builder.getNamespace();
 		final CyTable src = builder.getTable();
