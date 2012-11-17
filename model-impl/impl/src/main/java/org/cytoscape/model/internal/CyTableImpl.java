@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.Interpreter;
@@ -127,8 +128,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		currentlyActiveAttributes = new HashSet<String>();
 		attributes = new HashMap<String, Map<Object, Object>>();
 		reverse =  new HashMap<String, SetMultimap<Object,Object>>();
-		rows = new HashMap<Object, CyRow>(defaultInitSize, 0.5f);
-		types = new HashMap<String, CyColumn>();
+		
+		rows = new ConcurrentHashMap<Object, CyRow>(defaultInitSize, 0.5f);
+		types = new ConcurrentHashMap<String, CyColumn>();
+		
 		dependents = new HashMap<String, Set<CyColumn>>();
 		normalizedColumnNames = new HashMap<String, String>();
 		
@@ -215,7 +218,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (oldColumnName.equalsIgnoreCase(newColumnName))
 			return;
 
-		for(String curColumnName : types.keySet())
+		for(final String curColumnName : types.keySet())
 			if (curColumnName.equalsIgnoreCase(newColumnName))
 				throw new IllegalArgumentException("column already exists with name: '"
 					   + curColumnName + "' with type: "
@@ -321,12 +324,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	@Override
-	synchronized public Collection<CyColumn> getColumns() {
+	public Collection<CyColumn> getColumns() {
 		return types.values();
 	}
 
 	@Override
-	synchronized public CyColumn getColumn(final String columnName) {
+	public CyColumn getColumn(final String columnName) {
 		return types.get(normalizeColumnName(columnName));
 	}
 
@@ -336,7 +339,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	@Override
-	synchronized public int getRowCount() {
+	public int getRowCount() {
 		return rows.size();
 	}
 
@@ -529,51 +532,37 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	// that are only being referenced. We expect it to return null.
 	CyRow getRowNoCreate(final Object key) {
 		checkKey(key);
-		
-		synchronized(this) {
-			return rows.get(key);
-		}
+		return rows.get(key);
 	}
 
 	@Override
 	public CyRow getRow(final Object key) {
 		checkKey(key);
 
-		CyRow row;
-		synchronized(this) {
-			row = rows.get(key);
-			if (row != null)
-				return row;
+		CyRow row = rows.get(key);
+		if (row != null)
+			return row;
 
-			row = new InternalRow(key);
-			rows.put(key, row);
-		}
+		row = new InternalRow(key);
+		rows.put(key, row);
 
 		if (fireEvents)
-			eventHelper.addEventPayload((CyTable)this, (Object)key, RowsCreatedEvent.class);
+			eventHelper.addEventPayload((CyTable) this, (Object) key, RowsCreatedEvent.class);
 		return row;
 	}
 
 	@Override
-	synchronized public boolean rowExists(final Object primaryKey) {
+	public boolean rowExists(final Object primaryKey) {
 		return (primaryKey != null && rows.containsKey(primaryKey));	
 	}
 
-	private boolean rowIsEmpty(final Object key) {
-		for (final String columnName : attributes.keySet()) {
-			if (!attributes.get(columnName).isEmpty())
-				return false;
-		}
-
-		return true;
-	}
 
 	@Override
 	synchronized public String getLastInternalError() {
 		return lastInternalError;
 	}
 
-	private void checkKey(final Object suid) {
+	private final void checkKey(final Object suid) {
 		if (suid == null)
 			throw new NullPointerException("key is null");
 
@@ -584,7 +573,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	@Override
-	synchronized public List<CyRow> getAllRows() {
+	public List<CyRow> getAllRows() {
 		return new ArrayList<CyRow>(rows.values());
 	}
 
@@ -734,12 +723,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		}
 	}
 
-	private void addToReverseMap(final String columnName, final Object key,
-				     final Object oldValue, final Object newValue) {
+	private final void addToReverseMap(final String columnName, final Object key, final Object oldValue,
+			final Object newValue) {
 		final String normalizedColName = normalizeColumnName(columnName);
-		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(normalizedColName);
-		valueTokeysMap.remove(oldValue,key);
-		valueTokeysMap.put(newValue,key);
+		final SetMultimap<Object, Object> valueTokeysMap = reverse.get(normalizedColName);
+		valueTokeysMap.remove(oldValue, key);
+		valueTokeysMap.put(newValue, key);
 	}
 
 	private void setListX(final Object key, final String columnName, final Object value) {
@@ -907,7 +896,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			return vl;
 	}
 
-	private <T> T getDefaultValue(final String columnName, final T defaultValue) {
+	private final <T> T getDefaultValue(final String columnName, final T defaultValue) {
 		if ( defaultValue == null ) {
 			final CyColumn column = this.getColumn(columnName);
 			if ( column == null )
