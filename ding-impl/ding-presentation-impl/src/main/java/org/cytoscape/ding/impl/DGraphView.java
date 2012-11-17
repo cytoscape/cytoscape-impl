@@ -787,7 +787,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * Should synchronize around m_lock.
 	 */
-	private DNodeView addNodeViewInternal(final CyNode node) {
+	private final DNodeView addNodeViewInternal(final CyNode node) {
 		final long nodeInx = node.getSUID();
 		final NodeView oldView = nodeViewMap.get(node);
 
@@ -797,10 +797,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_drawPersp.addNode(node);
 
 		final DNodeView dNodeView = new DNodeView(dingLexicon, this, node, vmm, netViewMgr);
-		Boolean selected = getModel().getRow(node).get(CyNetwork.SELECTED, Boolean.class);
-		if (selected != null && selected) {
-			dNodeView.select();
-		}
+		
+		// WARNING: DO not call the following in view creation.  This is VERY slow.
+		//Boolean selected = getModel().getRow(node).get(CyNetwork.SELECTED, Boolean.class);
+		//if (selected != null && selected)
+		//	dNodeView.select();
 
 		nodeViewMap.put(node, dNodeView);
 		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, m_defaultNodeXMax, m_defaultNodeYMax);
