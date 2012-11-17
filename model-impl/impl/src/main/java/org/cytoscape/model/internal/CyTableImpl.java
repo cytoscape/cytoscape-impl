@@ -294,9 +294,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			return Mutability.IMMUTABLE_DUE_TO_VIRT_COLUMN_REFERENCES;
 	}
 
-	private int getDependentCount() {
+	private final int getDependentCount() {
 		int count = 0;
-		for (Set<CyColumn> columnDependents : dependents.values()) {
+		for (final Set<CyColumn> columnDependents : dependents.values()) {
 			count += columnDependents.size();
 		}
 		return count;
@@ -622,7 +622,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			return valueToKeysMap.get(value).size();
 	}
 
-	private void setX(final Object key, final String columnName, final Object value) {
+	private final void setX(final Object key, final String columnName, final Object value) {
 		if (columnName == null)
 			throw new NullPointerException("columnName must not be null.");
 		if (value == null)
@@ -723,18 +723,17 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		}
 	}
 
-	private final void addToReverseMap(final String columnName, final Object key, final Object oldValue,
-			final Object newValue) {
+	private final void addToReverseMap(final String columnName, final Object key,
+				     final Object oldValue, final Object newValue) {
 		final String normalizedColName = normalizeColumnName(columnName);
-		final SetMultimap<Object, Object> valueTokeysMap = reverse.get(normalizedColName);
-		valueTokeysMap.remove(oldValue, key);
-		valueTokeysMap.put(newValue, key);
+		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(normalizedColName);
+		valueTokeysMap.remove(oldValue,key);
+		valueTokeysMap.put(newValue,key);
 	}
 
-	private void setListX(final Object key, final String columnName, final Object value) {
+	private final void setListX(final Object key, final String columnName, final Object value) {
 		Object newValue;
 		final Object rawValue;
-		
 		
 		synchronized(this) {
 			final String normalizedColName = normalizeColumnName(columnName);
@@ -821,7 +820,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			                            RowsSetEvent.class);
 	}
 
-	private void removeFromReverseMap(final String columnName, final Object key, final Object value) {
+	private final void removeFromReverseMap(final String columnName, final Object key, final Object value) {
 		final String normalizedColName = normalizeColumnName(columnName);
 		final SetMultimap<Object,Object> valueTokeysMap = reverse.get(normalizedColName);
 		valueTokeysMap.remove(key,value);
@@ -832,7 +831,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		return getValueOrEquation(key, columnName, virtualColumnMap.get(normalizedColName));
 	}
 
-	private synchronized Object getValueOrEquation(final Object key, final String columnName, final VirtualColumn virtColumn) {
+	private final synchronized Object getValueOrEquation(final Object key, final String columnName, final VirtualColumn virtColumn) {
 		final String normalizedColName = normalizeColumnName(columnName);
 		
 		if (primaryKey.equalsIgnoreCase(normalizedColName))
@@ -845,31 +844,32 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (virtualValue != null && !(virtualValue instanceof Equation))
 			return virtualValue;
 		
-		Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+		final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 		if (keyToValueMap == null)
 			return null;
 		
 		return keyToValueMap.get(key);
 	}
 
-	synchronized private <T> T getX(final Object key, final String columnName, final Class<? extends T> type, final T defaultValue) {
+	private final <T> T getX(final Object key, final String columnName, final Class<? extends T> type, final T defaultValue) {
 		if (type.isAssignableFrom(List.class))
 			logger.debug("risky use of get() instead of getList() for retrieving list");
 		lastInternalError = null;
 
-		final Object value = getValue(key,columnName,type);
-
-		if (value == null)
-			return getDefaultValue(columnName,defaultValue);
-		else
-			return type.cast(value);
+		Object value;
+		synchronized (this) {
+			value = getValue(key, columnName, type);
+			if (value == null)
+				return getDefaultValue(columnName, defaultValue);
+		}
+		return type.cast(value);
 	}
 
 	Object getValue(Object key, String columnName) {
 		return getValue(key,columnName,null);
 	}
 
-	private Object getValue(Object key, String columnName, Class<?> type) {
+	private final Object getValue(final Object key, final String columnName, final Class<?> type) {
 		final String normalizedColName = normalizeColumnName(columnName);
 		final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
 		final Object vl = getValueOrEquation(key, columnName, virtColumn);
@@ -981,7 +981,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			throw new IllegalArgumentException("invalid class: " + c.getName());
 	}
 
-	private void checkType(Object o) {
+	private final void checkType(final Object o) {
 		if (o instanceof String)
 			return;
 		else if (o instanceof Integer)
@@ -1044,7 +1044,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		return targetName;
 	}
 
-	private String getUniqueColumnName(final String preferredName) {
+	private final String getUniqueColumnName(final String preferredName) {
 		if (getColumn(preferredName) == null)
 			return preferredName;
 
@@ -1123,7 +1123,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	/**
 	 * Normalizes the column names to be case insensitive.
 	 */
-	private String normalizeColumnName(String initialName) {
+	private final String normalizeColumnName(final String initialName) {
 		String name = normalizedColumnNames.get(initialName);
 		if (name == null) {
 			name = initialName.toLowerCase();
@@ -1134,7 +1134,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 	
 	@Override
-	public boolean deleteRows(Collection<?> primaryKeys) {
+	public boolean deleteRows(final Collection<?> primaryKeys) {
 		boolean changed = false;
 		synchronized(this) {
 			for (Object key : primaryKeys) {
