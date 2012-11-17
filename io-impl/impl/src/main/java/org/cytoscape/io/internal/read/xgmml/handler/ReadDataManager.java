@@ -348,7 +348,7 @@ public class ReadDataManager {
 		return null;
 	}
 	
-	public <T extends CyIdentifiable> Map<String, String> getViewGraphicsAttributes(Object oldId, boolean locked) {
+	public <T extends CyIdentifiable> Map<String, String> getViewGraphicsAttributes(final Object oldId, final boolean locked) {
 		return locked ? viewLockedGraphics.get(oldId) : viewGraphics.get(oldId);
 	}
 
