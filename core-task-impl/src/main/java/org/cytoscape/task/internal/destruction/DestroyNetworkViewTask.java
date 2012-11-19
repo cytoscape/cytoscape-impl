@@ -35,10 +35,14 @@ import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask {
 
 	private final CyNetworkViewManager networkViewManager;
+	
+	@Tunable(description="<html>Current network view will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
+	public boolean destroyCurrentNetworkView = true;
 
 	public DestroyNetworkViewTask(final Collection<CyNetworkView> views, final CyNetworkViewManager networkViewManager) {
 		super(views);
@@ -48,17 +52,21 @@ public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask {
 	
 	@Override
 	public void run(TaskMonitor tm) {
-		tm.setProgress(0.0);
 		
 		int i=0;
-		int viewCount = networkViews.size();
-		for (final CyNetworkView n : networkViews)
+		int viewCount;
+		if(destroyCurrentNetworkView)
 		{
-			networkViewManager.destroyNetworkView(n);
-			i++;
-			tm.setProgress((i/(double)viewCount));
+			tm.setProgress(0.0);
+			viewCount = networkViews.size();
+			for (final CyNetworkView n : networkViews)
+			{
+				networkViewManager.destroyNetworkView(n);
+				i++;
+				tm.setProgress((i/(double)viewCount));
+			}
+			tm.setProgress(1.0);
 		}
 		
-		tm.setProgress(1.0);
 	}
 }

@@ -36,10 +36,14 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 
 public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 	private final CyNetworkManager netmgr;
+	
+	@Tunable(description="<html>Current network will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
+	public boolean destroyCurrentNetwork = true;
 
 	public DestroyNetworkTask(final Collection<CyNetwork> nets, final CyNetworkManager netmgr) {
 		super(nets);
@@ -47,15 +51,19 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 	}
 
 	public void run(TaskMonitor tm) {
-		tm.setProgress(0.0);
-		int i=0;
-		int networkCount = networks.size();
 		
-		for ( CyNetwork n : networks ){
-			netmgr.destroyNetwork(n);
-			i++;
-			tm.setProgress((i/(double)networkCount));
+		int i=0;
+		int networkCount;
+		if(destroyCurrentNetwork)
+		{
+			tm.setProgress(0.0);
+			networkCount = networks.size();
+			for ( CyNetwork n : networks ){
+				netmgr.destroyNetwork(n);
+				i++;
+				tm.setProgress((i/(double)networkCount));
+			}
+			tm.setProgress(1.0);
 		}
-		tm.setProgress(1.0);
 	}
 }
