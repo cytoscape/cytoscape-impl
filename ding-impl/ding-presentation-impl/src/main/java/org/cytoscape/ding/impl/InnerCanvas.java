@@ -1000,10 +1000,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.xformComponentToNodeCoords(loc);
 			Point xformPt = new Point();
 			xformPt.setLocation(loc[0],loc[1]); 
-			String action = "Edge";
 			NodeView nview = m_view.getPickedNodeView(rawPt);
 			if ( nview != null && !InnerCanvas.this.isPopupMenuDisabled()) 
-				popup.createNodeViewMenu(m_view.getModel(), nview, e.getX(), e.getY(), action);
+				popup.createNodeViewMenu(m_view.getModel(), nview, e.getX(), e.getY(), "Edge");
 		}
 	}
 
@@ -1135,11 +1134,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
 			if (nview != null && !InnerCanvas.this.isPopupMenuDisabled()) {
-				popup.createNodeViewMenu(m_view.getModel(), nview, e.getX(), e.getY(), null);
+				popup.createNodeViewMenu(m_view.getModel(),nview,e.getX(),e.getY(),"NEW");
 			} else {
 				EdgeView edgeView = m_view.getPickedEdgeView(e.getPoint());
 				if (edgeView != null && !InnerCanvas.this.isPopupMenuDisabled()) {
-					popup.createEdgeViewMenu(m_view.getModel(), edgeView, e.getX(), e.getY(), null);
+					popup.createEdgeViewMenu(m_view.getModel(), edgeView, e.getX(), e.getY(), "NEW");
 				} else {
 					// Clicked on empty space...
 					Point rawPt = e.getPoint();
@@ -1163,15 +1162,20 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			if ( nview != null && !InnerCanvas.this.isPopupMenuDisabled())
 				popup.createNodeViewMenu(m_view.getModel(), nview,e.getX(), e.getY(), "OPEN");
 			else {
-				Point rawPt = e.getPoint();
-				double[] loc = new double[2];
-				loc[0] = rawPt.getX();
-				loc[1] = rawPt.getY();
-				m_view.xformComponentToNodeCoords(loc);
-				Point xformPt = new Point();
-				xformPt.setLocation(loc[0],loc[1]); 
-				if (!InnerCanvas.this.isPopupMenuDisabled()){
-					popup.createNetworkViewMenu(rawPt, xformPt, "OPEN");
+				EdgeView edgeView = m_view.getPickedEdgeView(e.getPoint());
+				if (edgeView != null && !InnerCanvas.this.isPopupMenuDisabled()) {
+					popup.createEdgeViewMenu(m_view.m_drawPersp,edgeView,e.getX(),e.getY(),"OPEN");
+				} else {
+					Point rawPt = e.getPoint();
+					double[] loc = new double[2];
+					loc[0] = rawPt.getX();
+					loc[1] = rawPt.getY();
+					m_view.xformComponentToNodeCoords(loc);
+					Point xformPt = new Point();
+					xformPt.setLocation(loc[0],loc[1]); 
+					if (!InnerCanvas.this.isPopupMenuDisabled()){
+						popup.createNetworkViewMenu(rawPt, xformPt, "OPEN");
+					}
 				}
 			}
 		}

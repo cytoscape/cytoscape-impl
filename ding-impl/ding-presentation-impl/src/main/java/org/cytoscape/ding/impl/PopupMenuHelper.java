@@ -28,6 +28,15 @@
 package org.cytoscape.ding.impl;
 
 
+import static org.cytoscape.work.ServiceProperties.APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -62,8 +71,6 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
 
-import static org.cytoscape.work.ServiceProperties.*;
-
 
 // TODO Consider generalizing this class so that it can be used by anyone
 // who needs a popup menu based on TaskFactories.
@@ -95,12 +102,19 @@ class PopupMenuHelper {
 	 */
 	void createEdgeViewMenu(CyNetwork network, EdgeView edgeView, int x, int y, String action) {
 		if (edgeView != null ) {
-
 			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(m_view.edgeViewTFs,action);
+			Collection<CyEdgeViewContextMenuFactory> usableCMFs = getPreferredActions(m_view.cyEdgeViewContextMenuFactory, action);
+			
 			View<CyEdge> ev = (DEdgeView)edgeView;
-
+			int tfCount = usableTFs.size();
+			int menuItemCount = usableTFs.size()+ usableCMFs.size();
+			
 			// build a menu of actions if more than factory exists
-			if ( usableTFs.size() > 1) {
+			if (action.equals("OPEN") && menuItemCount == 1 && tfCount == 1) {
+				EdgeViewTaskFactory tf  = usableTFs.iterator().next();
+				m_view.manager.execute(tf.createTaskIterator(ev, m_view));
+			}
+			else {
 				String edgeLabel = network.getRow(ev.getModel()).get("interaction",String.class);
 				JPopupMenu menu = createMenu(edgeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
@@ -114,17 +128,12 @@ class PopupMenuHelper {
 					addMenuItem(ev, menu, provisioner, context, tracker, m_view.edgeViewTFs.get(evtf) );
 				}
 				
-				for (CyEdgeViewContextMenuFactory edgeCMF: m_view.cyEdgeViewContextMenuFactory.keySet()) {
+				for (CyEdgeViewContextMenuFactory edgeCMF: usableCMFs) {
 					// menu.add(edgeCMF.createMenuItem(m_view , ev).getMenuItem());
 					CyMenuItem menuItem = edgeCMF.createMenuItem(m_view, ev);
 					addCyMenuItem(ev, menu, menuItem, tracker, m_view.cyEdgeViewContextMenuFactory.get(edgeCMF));
 				}
 				menu.show(invoker, x, y);
-
-			// execute the task directly if only one factory exists
-			} else if ( usableTFs.size() == 1) {
-				EdgeViewTaskFactory tf  = usableTFs.iterator().next();
-				m_view.manager.execute(tf.createTaskIterator(ev, m_view));
 			}
 		}
 	}
@@ -135,10 +144,16 @@ class PopupMenuHelper {
 	void createNodeViewMenu(CyNetwork network, NodeView nview, int x, int y , String action) {
 		if (nview != null ) {
 			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(m_view.nodeViewTFs,action);
+			Collection<CyNodeViewContextMenuFactory> usableCMFs = getPreferredActions(m_view.cyNodeViewContextMenuFactory,action);
+			
 			View<CyNode> nv = (DNodeView)nview;
-
-			// build a menu of actions if more than factory exists
-			if ( usableTFs.size() > 1) {
+			int menuItemCount = usableTFs.size()+ usableCMFs.size();
+			int tfCount = usableTFs.size();
+			if (action.equals("OPEN") && menuItemCount == 1 && tfCount == 1) {
+				NodeViewTaskFactory tf  = usableTFs.iterator().next();
+				m_view.manager.execute(tf.createTaskIterator(nv, m_view));
+			}
+			else {
 				String nodeLabel = network.getRow(nv.getModel()).get(CyNetwork.NAME, String.class);
 				JPopupMenu menu = createMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
@@ -152,17 +167,12 @@ class PopupMenuHelper {
 					addMenuItem(nv, menu, provisioner, context, tracker, m_view.nodeViewTFs.get( nvtf ));
 				}
 
-				for (CyNodeViewContextMenuFactory nodeVMF: m_view.cyNodeViewContextMenuFactory.keySet()) {
+				for (CyNodeViewContextMenuFactory nodeCMF: usableCMFs) {
 					// menu.add(nodeVMF.createMenuItem(m_view, nv).getMenuItem());
-					CyMenuItem menuItem = nodeVMF.createMenuItem(m_view, nv);
-					addCyMenuItem(nv, menu, menuItem, tracker, m_view.cyNodeViewContextMenuFactory.get(nodeVMF));
+					CyMenuItem menuItem = nodeCMF.createMenuItem(m_view, nv);
+					addCyMenuItem(nv, menu, menuItem, tracker, m_view.cyNodeViewContextMenuFactory.get(nodeCMF));
 				}
 				menu.show(invoker, x, y);
-
-			// execute the task directly if only one factory exists
-			} else if ( usableTFs.size() == 1) {
-				NodeViewTaskFactory tf  = usableTFs.iterator().next();
-				m_view.manager.execute(tf.createTaskIterator(nv, m_view));
 			}
 		}
 	}
@@ -172,31 +182,13 @@ class PopupMenuHelper {
 	 */
 	void createNetworkViewMenu(Point rawPt, Point xformPt, String action) {
 
-		final JPopupMenu menu = createMenu("Double Click Menu: empty");
-		final JMenuTracker tracker = new JMenuTracker(menu);
-
-		tracker.getGravityTracker(".").addMenuSeparator(-0.1);
-		tracker.getGravityTracker(".").addMenuSeparator(999.99);
-
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
-		for ( NetworkViewTaskFactory nvtf : usableTFs ) {
-			NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
-			addMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
-		}
-		
 		Collection<NetworkViewLocationTaskFactory> usableTFs2 = getPreferredActions(m_view.networkViewLocationTfs,action);
-		for ( NetworkViewLocationTaskFactory nvltf : usableTFs2 ) {
-			NamedTaskFactory provisioner = factoryProvisioner.createFor(nvltf, m_view, rawPt, xformPt);
-			addMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
-		}
+		Collection<CyNetworkViewContextMenuFactory> usableCMFs = getPreferredActions(m_view.cyNetworkViewContextMenuFactory,action);
 		
-		for (CyNetworkViewContextMenuFactory netVMF: m_view.cyNetworkViewContextMenuFactory.keySet()) {
-			CyMenuItem menuItem = netVMF.createMenuItem(m_view);
-			addCyMenuItem(m_view, menu, menuItem, tracker, m_view.cyNetworkViewContextMenuFactory.get(netVMF));
-		}
-		
-		int menuItemCount = usableTFs.size()+ usableTFs2.size();
-		if (action.equalsIgnoreCase("OPEN") && menuItemCount == 1){
+		int menuItemCount = usableTFs.size()+ usableTFs2.size() +usableCMFs.size();
+		int tfCount = usableTFs.size() + usableTFs2.size();
+		if (action.equalsIgnoreCase("OPEN") && menuItemCount == 1 && tfCount == 1){
 			//Double click on open space and there is only one menu item, execute it
 			if (usableTFs.size() == 1){
 				NetworkViewTaskFactory tf  = usableTFs.iterator().next();
@@ -208,6 +200,27 @@ class PopupMenuHelper {
 			}
 		}
 		else {
+			final JPopupMenu menu = createMenu("Double Click Menu: empty");
+			final JMenuTracker tracker = new JMenuTracker(menu);
+
+			tracker.getGravityTracker(".").addMenuSeparator(-0.1);
+			tracker.getGravityTracker(".").addMenuSeparator(999.99);
+			
+			for ( NetworkViewTaskFactory nvtf : usableTFs ) {
+				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
+				addMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
+			}
+			
+			for ( NetworkViewLocationTaskFactory nvltf : usableTFs2 ) {
+				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvltf, m_view, rawPt, xformPt);
+				addMenuItem(null, menu, provisioner, null, tracker, m_view.networkViewLocationTfs.get( nvltf ) );
+			}
+			
+			for (CyNetworkViewContextMenuFactory netVMF: usableCMFs) {
+				CyMenuItem menuItem = netVMF.createMenuItem(m_view);
+				addCyMenuItem(m_view, menu, menuItem, tracker, m_view.cyNetworkViewContextMenuFactory.get(netVMF));
+			}
+			
 			// There are more than one menu item, let user make the selection
 			menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));		
 		}
@@ -379,7 +392,10 @@ class PopupMenuHelper {
 		java.util.List<T> usableTFs = new ArrayList<T>();
 		for ( T evtf : tfs.keySet() ) {
 			String prefAction = (String)(tfs.get( evtf ).get(PREFERRED_ACTION));
-			if ( action != null && action.equals(prefAction) )
+			// assume action is NEW if no action specified
+			if (prefAction == null)
+				prefAction = "NEW";
+			if ( action.equalsIgnoreCase(prefAction) )
 				usableTFs.add(evtf);
 		}
 		return usableTFs;
