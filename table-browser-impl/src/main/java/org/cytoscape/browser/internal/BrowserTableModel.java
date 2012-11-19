@@ -176,11 +176,68 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			cooked = getColumnValue(row, columnName);
 		}
 
+		String editString = createEditString(raw);
 		if (cooked != null)
-			return new ValidatedObjectAndEditString(cooked, raw.toString());
+			return new ValidatedObjectAndEditString(cooked, editString);
 
 		final String lastInternalError = dataTable.getLastInternalError();
-		return new ValidatedObjectAndEditString(cooked, raw.toString(), lastInternalError);
+		return new ValidatedObjectAndEditString(cooked, editString, lastInternalError);
+	}
+
+	private String createEditString(Object raw) {
+		if (raw instanceof List) {
+			StringBuilder builder = new StringBuilder();
+			builder.append('[');
+			boolean first = true;
+			for (Object item : (List<?>) raw) {
+				if (first) {
+					first = false;
+				} else {
+					builder.append(',');
+				}
+				if (item instanceof String) {
+					builder.append('"');
+					escape(item.toString(), builder);
+					builder.append('"');
+				} else {
+					builder.append(item.toString());
+				}
+			}
+			builder.append(']');
+			return builder.toString();
+		}
+		return raw.toString();
+	}
+
+	private void escape(String string, StringBuilder builder) {
+		for (int i = 0; i < string.length(); i++) {
+			char c = string.charAt(i);
+			switch (c) {
+			case '\b':
+				builder.append("\\b");
+				break;
+			case '\t':
+				builder.append("\\t");
+				break;
+			case '\n':
+				builder.append("\\n");
+				break;
+			case '\f':
+				builder.append("\\f");
+				break;
+			case '\r':
+				builder.append("\\r");
+				break;
+			case '\\':
+				builder.append("\\\\");
+				break;
+			case '"':
+				builder.append("\\\"");
+				break;
+			default:
+				builder.append(c);
+			}
+		}
 	}
 
 	private static Object getColumnValue(final CyRow row, final String columnName) {

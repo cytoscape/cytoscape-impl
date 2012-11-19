@@ -3,18 +3,12 @@ package org.cytoscape.browser.internal.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 
 public final class TableBrowserUtil {
 
@@ -355,6 +349,12 @@ public final class TableBrowserUtil {
 						break;
 					case 'b':
 						builder.append('\b');
+						break;
+					case '"':
+						builder.append('"');
+						break;
+					case '\\':
+						builder.append('\\');
 						break;
 					default:
 						builder.append((char)ch);
