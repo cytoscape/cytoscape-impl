@@ -19,6 +19,9 @@ import org.cytoscape.ding.Position;
 */
 public class ObjectPositionImpl implements ObjectPosition {
 	
+	private static final Pattern p = Pattern
+			.compile("^([NSEWC]{1,2}+),([NSEWC]{1,2}+),([clr]{1}+),(-?\\d+(.\\d+)?),(-?\\d+(.\\d+)?)$");
+	
 	public static ObjectPosition DEFAULT_POSITION = new ObjectPositionImpl();
 	
 	private Position objectAnchor;
@@ -191,18 +194,16 @@ public class ObjectPositionImpl implements ObjectPosition {
 	 * @param serializableString
 	 * @return Never returns null.  If invalid, simply returns default.
 	 */
-	public static ObjectPosition parse(String serializableString) {
-		final Pattern p = Pattern
-				.compile("^([NSEWC]{1,2}+),([NSEWC]{1,2}+),([clr]{1}+),(-?\\d+(.\\d+)?),(-?\\d+(.\\d+)?)$");
+	public static ObjectPosition parse(final String serializableString) {
+		
 		final Matcher m = p.matcher(serializableString);
-
 		if (m.matches()) {
 			final ObjectPosition lp = new ObjectPositionImpl();
 			lp.setTargetAnchor(Position.parse(m.group(1)));
 			lp.setAnchor(Position.parse(m.group(2)));
 			lp.setJustify(Justification.parse(m.group(3)));
-			lp.setOffsetX(Double.parseDouble(m.group(4)));
-			lp.setOffsetY(Double.parseDouble(m.group(6)));
+			lp.setOffsetX(Double.valueOf(m.group(4)));
+			lp.setOffsetY(Double.valueOf(m.group(6)));
 			return lp;
 		}
 

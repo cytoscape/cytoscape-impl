@@ -34,6 +34,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -281,18 +283,23 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		return b;
 	}
 
-	static boolean isXGMMLTransparency(String attName) {
-		return attName.matches("(cy:)?(node|edge)Transparency");
+	
+	private static final Pattern TRANSPARENCY_PATTERN = Pattern.compile("(cy:)?(node|edge)Transparency");
+	static boolean isXGMMLTransparency(final String attName) {
+		final Matcher matcher = TRANSPARENCY_PATTERN.matcher(attName);
+		return matcher.matches();
 	}
 
-	static boolean isOldFont(String attName) {
-		return attName.matches("(cy:)?(node|edge)LabelFont");
+	private static final Pattern OLD_FONT_PATTERN = Pattern.compile("(cy:)?(node|edge)LabelFont");
+	static boolean isOldFont(final String attName) {
+		final Matcher matcher = OLD_FONT_PATTERN.matcher(attName);
+		return matcher.matches();
 	}
 
-	static String convertXGMMLTransparencyValue(String s) {
+	static String convertXGMMLTransparencyValue(final String s) {
 		// Opacity is saved in XGMML as a float from 0.0-1.0, but Cytoscape uses 0-255
 		try {
-			float f = Float.parseFloat(s);
+			final float f = Float.valueOf(s);
 			return "" + Math.round(f * 255);
 		} catch (Exception e) {
 			logger.warn("Cannot convert XGMML transparency value: " + s, e);

@@ -29,7 +29,7 @@ public class ObjectPositionVisualProperty extends AbstractVisualProperty<ObjectP
 	}
 
 	@Override
-	public ObjectPosition parseSerializableString(String objectPositionString) {
+	public ObjectPosition parseSerializableString(final String objectPositionString) {
 		return ObjectPositionImpl.parse(objectPositionString);
 	}
 
