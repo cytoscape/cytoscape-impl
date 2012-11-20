@@ -478,8 +478,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (frame == null)
 			return;
 
-		if (width > 0 && height > 0)
-			frame.setSize(new Dimension(width, height));
+		if (width > 0 && height > 0) {
+			frame.getContentPane().setPreferredSize(new Dimension(width, height));
+			frame.pack();
+		}
 		
 		frame.setResizable(resizable);
 		frame.setMaximizable(resizable);
