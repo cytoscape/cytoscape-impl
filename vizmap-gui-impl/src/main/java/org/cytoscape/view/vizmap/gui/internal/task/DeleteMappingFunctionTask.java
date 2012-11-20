@@ -2,8 +2,6 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -21,15 +19,13 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 public class DeleteMappingFunctionTask extends AbstractTask {
 
 	private final PropertySheetTable table;
-	private final CyApplicationManager appManager;
 	private final VisualMappingManager vmm;
 
-	public DeleteMappingFunctionTask(final PropertySheetTable table, final CyApplicationManager appManager,
-			final VisualMappingManager vmm) {
+	public DeleteMappingFunctionTask(final PropertySheetTable table, final VisualMappingManager vmm) {
 		this.table = table;
-		this.appManager = appManager;
 		this.vmm = vmm;
 	}
+
 
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
@@ -37,7 +33,7 @@ public class DeleteMappingFunctionTask extends AbstractTask {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				int selectedRow = table.getSelectedRow();
+				final int selectedRow = table.getSelectedRow();
 
 				// If not selected, do nothing.
 				if (selectedRow < 0)
@@ -51,7 +47,6 @@ public class DeleteMappingFunctionTask extends AbstractTask {
 					if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
 						final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
 						removeMapping(vmm.getCurrentVisualStyle(), vp);
-
 						updatePropertySheet(prop, vp);
 					}
 				}
@@ -61,17 +56,17 @@ public class DeleteMappingFunctionTask extends AbstractTask {
 
 	}
 
-	private void removeMapping(final VisualStyle style, final VisualProperty<?> vp) {
+	private final void removeMapping(final VisualStyle style, final VisualProperty<?> vp) {
 		style.removeVisualMappingFunction(vp);
 	}
 
-	private void updatePropertySheet(final VizMapperProperty<?, ?, ?> prop, final VisualProperty<?> vp) {
+	private final void updatePropertySheet(final VizMapperProperty<?, ?, ?> prop, final VisualProperty<?> vp) {
 
 		final PropertySheetTableModel sheetModel = table.getSheetModel();
 		final Property[] children = prop.getSubProperties();
 
 		// Remove all children
-		for (Property p : children)
+		for (final Property p : children)
 			sheetModel.removeProperty(p);
 
 		// Remove itself
