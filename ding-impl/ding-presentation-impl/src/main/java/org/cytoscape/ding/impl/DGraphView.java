@@ -2583,10 +2583,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		} else if (vp == BasicVisualLexicon.NETWORK_SCALE_FACTOR) {
 			value = getZoom();
 		} else {
-			value = visualProperties.get(vp);
-			
-			if (value == null)
-				value = vp.getDefault();
+			value = super.getVisualProperty(vp);
 		}
 		
 		return (T) value;

@@ -454,7 +454,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
 			boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
 					!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
-			updateNetworkSize(view, w, h, resizable);
+			updateNetworkFrameSize(view, w, h, resizable);
 		}
 
 		// Display it and add listeners
@@ -462,17 +462,16 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		iframe.setVisible(true);
 	}
 	
-
-	private String getTitle(CyNetworkView view) {
+	private String getTitle(final CyNetworkView view) {
 		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
 		
-		if (title == null || title.isEmpty())
+		if (title == null || title.trim().isEmpty())
 			title = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
 		
 		return title;
 	}
 	
-	private void updateNetworkSize(final CyNetworkView view, int width, int height, boolean resizable) {
+	private void updateNetworkFrameSize(final CyNetworkView view, int width, int height, boolean resizable) {
 		final JInternalFrame frame = presentationContainerMap.get(view);
 
 		if (frame == null)
@@ -486,8 +485,17 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		frame.setResizable(resizable);
 		frame.setMaximizable(resizable);
 	}
-
-	private void setFocus(CyNetworkView targetView) {
+	
+	private void updateNetworkFrameTitle(final CyNetworkView view, final String title) {
+		if (title != null && !title.trim().isEmpty()) {
+			final JInternalFrame frame = presentationContainerMap.get(view);
+	
+			if (frame != null)
+				frame.setTitle(title);
+		}
+	}
+	
+	private void setFocus(final CyNetworkView targetView) {
 		final CyNetworkView curView = getSelectedNetworkView();
 		
 		if ((curView == null && targetView == null) || (curView != null && curView.equals(targetView))) {
@@ -549,9 +557,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 					
 					if (net.getDefaultNetworkTable().equals(source)) {
 						final String title = record.getRow().get(CyNetwork.NAME, String.class);
-						targetIF.setTitle(title);
-						// We should guarantee this visual property is up to date as well
+						// We should guarantee this visual property is up to date
 						view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
+						
+						// Do not update the title with the new network name if this visual property is locked
+						if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE))
+							targetIF.setTitle(title);
 						
 						return; // assuming just one row is set.
 					}
@@ -577,7 +588,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		return iFrameMap.get(selectedFrame);
 	}
 	
-	public void setUpdateFlag(CyNetworkView view) {
+	public void setUpdateFlag(final CyNetworkView view) {
 		this.viewUpdateRequired.add(view);
 	}
 
@@ -587,12 +598,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// First, check current view.  If necessary, apply it.
 		final Set<CyNetworkView> networkViews = netViewMgr.getNetworkViewSet();
 		
-		for(final CyNetworkView view: networkViews) {
+		for (final CyNetworkView view: networkViews) {
 			final VisualStyle targetViewsStyle = vmm.getVisualStyle(view);
-			if(targetViewsStyle != style)
+			if (targetViewsStyle != style)
 				continue;
 			
-			if(view == appMgr.getCurrentNetworkView()) {
+			if (view == appMgr.getCurrentNetworkView()) {
 				style.apply(view);
 				view.updateView();
 			} else {
@@ -604,11 +615,15 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	@Override
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView view = e.getSource();
-		int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
-		int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
-		boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
+		
+		final String title = getTitle(view);
+		updateNetworkFrameTitle(view, title);
+		
+		final int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
+		final int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
+		final boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
 				!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
 		
-		updateNetworkSize(view, w, h, resizable);
+		updateNetworkFrameSize(view, w, h, resizable);
 	}
 }
