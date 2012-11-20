@@ -1152,11 +1152,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			imageHeight = m_networkCanvas.getHeight();
 			setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,(double)imageWidth);
 			setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT,(double)imageHeight);
+			// Fire for updating other presentations.
+			cyEventHelper.fireEvent(new UpdateNetworkPresentationEvent(this));
 		}
 		//System.out.println("Repaint finished in " + (System.currentTimeMillis() - start) + " msec.");
-		
-		// Fire for updating other presentations.
-		cyEventHelper.fireEvent(new UpdateNetworkPresentationEvent(this));
 	}
 
 	/**
