@@ -69,11 +69,15 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	@Override
 	public void clearValueLock(final VisualProperty<?> vp) {
 		visualPropertyLocks.remove(vp);
-		
 		// Re-apply the regular visual property value
-		if (visualProperties.containsKey(vp))
+		if (visualProperties.containsKey(vp)) {
 			applyVisualProperty(vp, visualProperties.get(vp));
 		// TODO else: reset to the visual style default if visualProperties map doesn't contain this vp
+		} else {
+			// Apply default if necessary.
+			final Object newValue = getVisualProperty(vp);
+			applyVisualProperty(vp, newValue);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
