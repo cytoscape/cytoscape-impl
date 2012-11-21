@@ -15,6 +15,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 
@@ -50,6 +51,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties doubleClickProperties = new Properties();
 		doubleClickProperties.setProperty(PREFERRED_ACTION, "OPEN");
+		doubleClickProperties.setProperty(TITLE, "Expand/Collapse group");
 		registerService(bc,gvsListener,NodeViewTaskFactory.class, doubleClickProperties);
 	}
 }
