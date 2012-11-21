@@ -152,6 +152,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			ret = parent.addEdge(source, target, isDirected);
 			// then add the resulting CyEdge to this network
 			addEdgeInternal(source,target,isDirected,ret);
+			getRow(ret).set(CyNetwork.SELECTED, false);
 		}
 
 		if (fireAddedNodesAndEdgesEvents)
