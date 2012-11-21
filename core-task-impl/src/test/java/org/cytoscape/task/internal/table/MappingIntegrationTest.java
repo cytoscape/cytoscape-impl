@@ -18,6 +18,7 @@ import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -76,6 +77,7 @@ public class MappingIntegrationTest {
 	private UpdateAddedNetworkAttributes up = new UpdateAddedNetworkAttributes(new MapGlobalToLocalTableTaskFactoryImpl(tabMgr, netMgr, ts), new SyncTaskManager(stm));
 	Properties syncFactoryProp = new Properties();
 	
+	private CyGroupManager groupMgr = mock(CyGroupManager.class);
 	private RenderingEngineManager renderingEngineManager = mock(RenderingEngineManager.class);
 
 	@Before
@@ -145,7 +147,7 @@ public class MappingIntegrationTest {
 		net1.getDefaultNodeTable().getRow(node2.getSUID()).set(CyNetwork.SELECTED, true);
 		
 		NewNetworkSelectedNodesOnlyTask newNetTask = new NewNetworkSelectedNodesOnlyTask(mock(UndoSupport.class), net1, support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(),
-				netMgr, mock(CyNetworkViewManager.class) , mock(CyNetworkNaming.class), mock(VisualMappingManager.class), mock(CyApplicationManager.class), eventHelper, renderingEngineManager);
+				netMgr, mock(CyNetworkViewManager.class) , mock(CyNetworkNaming.class), mock(VisualMappingManager.class), mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager);
 		
 		assertNotNull(newNetTask);
 		newNetTask.setTaskIterator(new TaskIterator(newNetTask));
@@ -190,7 +192,7 @@ public class MappingIntegrationTest {
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		
 		NewNetworkSelectedNodesOnlyTask newNetTask2 = new NewNetworkSelectedNodesOnlyTask(mock(UndoSupport.class), net1, support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(),
-				netMgr, mock(CyNetworkViewManager.class) , mock(CyNetworkNaming.class), mock(VisualMappingManager.class), mock(CyApplicationManager.class), eventHelper, renderingEngineManager);
+				netMgr, mock(CyNetworkViewManager.class) , mock(CyNetworkNaming.class), mock(VisualMappingManager.class), mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager);
 		
 		assertNotNull(newNetTask2);
 		newNetTask2.setTaskIterator(new TaskIterator(newNetTask2));

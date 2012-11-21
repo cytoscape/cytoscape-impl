@@ -32,6 +32,7 @@ package org.cytoscape.task.internal.creation;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -56,6 +57,7 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 	private final VisualMappingManager vmm;
 	private final CyApplicationManager appManager;
 	private final CyEventHelper eventHelper;
+	private final CyGroupManager groupMgr;
 	private final RenderingEngineManager renderingEngineMgr;
 
 	public NewNetworkSelectedNodesOnlyTaskFactoryImpl(final UndoSupport undoSupport,
@@ -67,6 +69,7 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 													  final VisualMappingManager vmm,
 													  final CyApplicationManager appManager,
 													  final CyEventHelper eventHelper,
+													  final CyGroupManager groupMgr,
 													  final RenderingEngineManager renderingEngineMgr)
 	{
 		this.undoSupport        = undoSupport;
@@ -78,6 +81,7 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 		this.vmm                = vmm;
 		this.appManager         = appManager;
 		this.eventHelper        = eventHelper;
+		this.groupMgr           = groupMgr;
 		this.renderingEngineMgr = renderingEngineMgr;
 	}
 
@@ -85,6 +89,6 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 		return new TaskIterator(3,
 			new NewNetworkSelectedNodesOnlyTask(undoSupport, network, crnf, cnvf, netmgr,
 			                                    networkViewManager, naming, vmm,
-			                                    appManager, eventHelper, renderingEngineMgr));
+			                                    appManager, eventHelper, groupMgr, renderingEngineMgr));
 	}
 }

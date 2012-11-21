@@ -71,7 +71,7 @@ class CyGroupImpl implements CyGroup {
 	private CyNode groupNode;
 	private Set<CyEdge> externalEdges;
 	private Set<CyEdge> metaEdges;
-    private Set<CyEdge> memberEdges;
+	private Set<CyEdge> memberEdges;
 	private CyRootNetwork rootNetwork = null;
 	private Set<CyNetwork> networkSet = null;
 	private Set<Long> collapseSet = null;

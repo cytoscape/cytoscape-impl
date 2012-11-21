@@ -1200,7 +1200,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public DNodeView getDNodeView(final CyNode node) {
 		// TODO: remove cast!
-		return (DNodeView)nodeViewMap.get(node);
+		if (node != null && nodeViewMap.containsKey(node))
+			return (DNodeView)nodeViewMap.get(node);
+		else
+			return null;
 	}
 	
 	@Override

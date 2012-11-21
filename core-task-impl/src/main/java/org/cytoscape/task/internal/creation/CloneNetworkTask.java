@@ -29,12 +29,17 @@
  */
 package org.cytoscape.task.internal.creation;
 
+import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
@@ -50,6 +55,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -67,6 +73,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private Map<CyNode, CyNode> orig2NewNodeMap;
 	private Map<CyNode, CyNode> new2OrigNodeMap;
 	private Map<CyEdge, CyEdge> new2OrigEdgeMap;
+	private Map<CyEdge, CyEdge> orig2NewEdgeMap;
 
 	private final VisualMappingManager vmm;
 	private final CyNetworkFactory netFactory;
@@ -142,6 +149,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		cloneNodes(origNet, newNet);
 		cloneEdges(origNet, newNet);
 
+		cloneGroups(origNet, newNet);
+
 		newNet.getRow(newNet).set(CyNetwork.NAME, 
 				naming.getSuggestedNetworkTitle(origNet.getRow(origNet).get(CyNetwork.NAME, String.class)));
 		
@@ -153,27 +162,47 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		new2OrigNodeMap = new WeakHashMap<CyNode, CyNode>();
 		
 		for (final CyNode origNode : origNet.getNodeList()) {
-			final CyNode newNode = newNet.addNode();
-			orig2NewNodeMap.put(origNode, newNode);
-			new2OrigNodeMap.put(newNode, origNode);
-			cloneRow(newNet, CyNode.class, origNet.getRow(origNode, CyNetwork.LOCAL_ATTRS), newNet.getRow(newNode, CyNetwork.LOCAL_ATTRS));
-			
-			if (!groupMgr.isGroup(origNode, origNet))
-				cloneNetworkPointer(origNet, newNet, newNode, origNode.getNetworkPointer());
+			cloneNode(origNet, newNet, origNode);
 		}
+	}
+
+	private CyNode cloneNode(final CyNetwork origNet, final CyNetwork newNet, final CyNode origNode) {
+		if (orig2NewNodeMap.containsKey(origNode))
+			return orig2NewNodeMap.get(origNode);
+
+		final CyNode newNode = newNet.addNode();
+		orig2NewNodeMap.put(origNode, newNode);
+		new2OrigNodeMap.put(newNode, origNode);
+		cloneRow(newNet, CyNode.class, origNet.getRow(origNode, CyNetwork.LOCAL_ATTRS), newNet.getRow(newNode, CyNetwork.LOCAL_ATTRS));
+		cloneRow(newNet, CyNode.class, origNet.getRow(origNode, CyNetwork.HIDDEN_ATTRS), newNet.getRow(newNode, CyNetwork.HIDDEN_ATTRS));
+		
+		if (!groupMgr.isGroup(origNode, origNet))
+			cloneNetworkPointer(origNet, newNet, newNode, origNode.getNetworkPointer());
+		return newNode;
 	}
 
 	private void cloneEdges(final CyNetwork origNet, final CyNetwork newNet) {
 		new2OrigEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
+		orig2NewEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
 		
 		for (final CyEdge origEdge : origNet.getEdgeList()) {
-			final CyNode newSource = orig2NewNodeMap.get(origEdge.getSource());
-			final CyNode newTarget = orig2NewNodeMap.get(origEdge.getTarget());
-			final boolean newDirected = origEdge.isDirected();
-			final CyEdge newEdge = newNet.addEdge(newSource, newTarget, newDirected);
-			new2OrigEdgeMap.put(newEdge, origEdge);
-			cloneRow(newNet, CyEdge.class, origNet.getRow(origEdge, CyNetwork.LOCAL_ATTRS), newNet.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
+			cloneEdge(origNet, newNet, origEdge);
 		}
+	}
+
+	private CyEdge cloneEdge(final CyNetwork origNet, final CyNetwork newNet, final CyEdge origEdge) {
+		if (orig2NewEdgeMap.containsKey(origEdge))
+			return orig2NewEdgeMap.get(origEdge);
+
+		final CyNode newSource = orig2NewNodeMap.get(origEdge.getSource());
+		final CyNode newTarget = orig2NewNodeMap.get(origEdge.getTarget());
+		final boolean newDirected = origEdge.isDirected();
+		final CyEdge newEdge = newNet.addEdge(newSource, newTarget, newDirected);
+		new2OrigEdgeMap.put(newEdge, origEdge);
+		orig2NewEdgeMap.put(origEdge, newEdge);
+		cloneRow(newNet, CyEdge.class, origNet.getRow(origEdge, CyNetwork.LOCAL_ATTRS), newNet.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
+		cloneRow(newNet, CyEdge.class, origNet.getRow(origEdge, CyNetwork.HIDDEN_ATTRS), newNet.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
+		return newEdge;
 	}
 
 	private void cloneNetworkPointer(final CyNetwork origNet, final CyNetwork newNet, final CyNode newNode,
@@ -187,7 +216,110 @@ public class CloneNetworkTask extends AbstractCreationTask {
 			newNode.setNetworkPointer(netPointer);
 		}
 	}
-	
+
+	private void cloneGroups(final CyNetwork origNet, final CyNetwork newNet) {
+		// Get all of the groups in our original network
+		Set<CyGroup> origGroups = groupMgr.getGroupSet(origNet);
+
+		// First, make sure we clone all of the child nodes for all of our
+		// collapsed groups.  Otherwise, we might not be able to create some or our
+		// edges
+		for (CyGroup origGroup: origGroups) {
+			if (origGroup.isCollapsed(origNet)) {
+				for (CyNode origNode: origGroup.getNodeList()) {
+					// add the node back into the network
+					((CySubNetwork)origNet).addNode(origNode);
+					cloneNode(origNet, newNet, origNode);
+				}
+			}
+		}
+
+		// Now, we can clone the group itself
+		for (CyGroup origGroup: origGroups) {
+			cloneGroup(origNet, newNet, origGroup);
+		}
+	}
+
+	private CyGroup cloneGroup(final CyNetwork origNet, final CyNetwork newNet, final CyGroup origGroup) {
+		List<CyNode> nodeList = new ArrayList<CyNode>();
+		List<CyEdge> edgeList = new ArrayList<CyEdge>();
+
+		boolean collapsed = origGroup.isCollapsed(origNet);
+		if (collapsed)
+			origGroup.expand(origNet);
+		else {
+			// If we're not collapsed, we need to clone the group node and it's edges
+			CyNode groupNode = origGroup.getGroupNode();
+			((CySubNetwork)origNet).addNode(groupNode);
+			cloneNode(origNet, newNet, groupNode);
+			// Now remove it
+			((CySubNetwork)origNet).removeNodes(Collections.singletonList(groupNode));
+
+			// TODO: What about non-meta edges?
+		}
+
+		// Get the list of nodes for the group
+		for (CyNode node: origGroup.getNodeList()) {
+			nodeList.add(orig2NewNodeMap.get(node));
+		}
+
+		for (CyEdge iEdge: origGroup.getInternalEdgeList()) {
+			cloneEdge(origNet, newNet, iEdge);
+		}
+
+		for (CyEdge eEdge: origGroup.getExternalEdgeList()) {
+			cloneEdge(origNet, newNet, eEdge);
+		}
+
+		// Get the group node
+		CyNode newNode = orig2NewNodeMap.get(origGroup.getGroupNode());
+
+		// Copy our metaEdge information (if any), which is stored in the root network hidden table
+		cloneMetaEdgeInfo(origNet, newNet, origGroup);
+
+		// Create the group
+		CyGroup newGroup = groupFactory.createGroup(newNet, newNode, nodeList, null, true);
+
+		// We need to update all of our positions hints
+		cloneGroupTables(origNet, newNet, origGroup, newGroup);
+
+		if (collapsed) {
+			//  ...and collapse it...
+			origGroup.collapse(origNet);
+			newGroup.collapse(newNet);
+		} 
+
+		return newGroup;
+	}
+
+	private void cloneMetaEdgeInfo(CyNetwork origNet, CyNetwork newNet, CyGroup origGroup) {
+		CyRootNetwork origRoot = ((CySubNetwork)origNet).getRootNetwork();
+		for (CyEdge edge: origRoot.getAdjacentEdgeList(origGroup.getGroupNode(), CyEdge.Type.ANY)) {
+			GroupUtils.updateMetaEdgeInformation(origNet, newNet, edge, orig2NewEdgeMap.get(edge));
+		}
+	}
+
+	private void cloneGroupTables(CyNetwork origNet, CyNetwork newNet, 
+	                              CyGroup origGroup, CyGroup newGroup) {
+		CyNetwork origGroupNet = origGroup.getGroupNetwork();
+		CyNetwork newGroupNet = newGroup.getGroupNetwork();
+
+		addColumns(origGroupNet, newGroupNet, CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		addColumns(origGroupNet, newGroupNet, CyNode.class, CyNetwork.HIDDEN_ATTRS);
+
+		Long groupNetworkSUID = origGroup.getGroupNetwork().getSUID();
+		Dimension d = GroupUtils.getPosition(origNet, origGroup, 
+		                                     groupNetworkSUID, CyNetwork.class);
+		GroupUtils.updatePosition(newNet, newGroup, groupNetworkSUID, CyNetwork.class, d);
+
+		// Clone the node table
+		for (CyNode node: origGroup.getNodeList()) {
+			Long nodeSUID = node.getSUID();
+			d = GroupUtils.getPosition(origNet, origGroup, nodeSUID, CyNode.class);
+			GroupUtils.updatePosition(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class, d);
+		}
+	}
+
 	private void addColumns(final CyNetwork origNet,
 							final CyNetwork newNet, 
 							final Class<? extends CyIdentifiable> tableType,

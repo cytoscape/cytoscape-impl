@@ -15,6 +15,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -48,6 +49,7 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 	private VisualMappingManager vmm = mock(VisualMappingManager.class);
 	private CyApplicationManager appManager = mock(CyApplicationManager.class);
 	private RenderingEngineManager renderingEngineManager = mock(RenderingEngineManager.class);
+	private CyGroupManager groupMgr = mock(CyGroupManager.class);
 
 	@Before
 	public void setUp() throws Exception {
@@ -76,7 +78,7 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		final NewNetworkSelectedNodesEdgesTask task =
 			new NewNetworkSelectedNodesEdgesTask(undoSupport, net, cyroot, cnvf, netmgr,
 			                                     networkViewManager, cyNetworkNaming,
-			                                     vmm, appManager, eventHelper, renderingEngineManager);
+			                                     vmm, appManager, eventHelper, groupMgr, renderingEngineManager);
 		
 		assertNotNull("task is null!" , task);
 		task.setTaskIterator(new TaskIterator(task));

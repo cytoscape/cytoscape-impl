@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -60,10 +61,11 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	                                       final VisualMappingManager vmm,
 	                                       final CyApplicationManager appManager,
 	                                       final CyEventHelper eventHelper,
+	                                       final CyGroupManager groupMgr,
 	                                       final RenderingEngineManager renderingEngineMgr)
 	{
 		super(undoSupport, net, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
-		      vmm, appManager, eventHelper, renderingEngineMgr);
+		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr);
 	}
 
 	Collection<CyEdge> getEdges(CyNetwork netx, List<CyNode> nodes) {

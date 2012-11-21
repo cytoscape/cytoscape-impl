@@ -38,6 +38,8 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -69,6 +71,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	protected final CyApplicationManager appManager;
 	private final CyEventHelper eventHelper;
 	private final RenderingEngineManager renderingEngineMgr;
+	protected final CyGroupManager groupMgr;
 
 	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
 	                                        final CyNetwork parentNetwork,
@@ -80,6 +83,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	                                        final VisualMappingManager vmm,
 	                                        final CyApplicationManager appManager,
 	                                        final CyEventHelper eventHelper,
+	                                        final CyGroupManager groupMgr,
 	                                        final RenderingEngineManager renderingEngineMgr) {
 		super(parentNetwork, netmgr, networkViewManager);
 
@@ -90,6 +94,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		this.vmm = vmm;
 		this.appManager = appManager;
 		this.eventHelper = eventHelper;
+		this.groupMgr = groupMgr;
 		this.renderingEngineMgr = renderingEngineMgr;
 	}
 
@@ -131,6 +136,10 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			cloneRow(parentNetwork.getRow(node), newNet.getRow(node));
 			//Set rows and edges to not selected state to avoid conflicts with table browser
 			newNet.getRow(node).set(CyNetwork.SELECTED, false);
+			if (groupMgr.isGroup(node, parentNetwork)) {
+				CyGroup group = groupMgr.getGroup(node, parentNetwork);
+				GroupUtils.addGroupToNetwork(groupMgr.getGroup(node, parentNetwork), parentNetwork, newNet);
+			}
 		}
 
 		tm.setProgress(0.4);
