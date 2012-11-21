@@ -27,7 +27,6 @@ public class SessionXGMMLNetworkReader extends GenericXGMMLReader {
 
 	private final CyRootNetworkManager cyRootNetworkManager;
 	private CyRootNetwork parent;
-	//private CyApplicationManager cyApplicationManager;
 	
 	public SessionXGMMLNetworkReader(final InputStream inputStream,
 									 final CyNetworkViewFactory cyNetworkViewFactory,
@@ -43,35 +42,34 @@ public class SessionXGMMLNetworkReader extends GenericXGMMLReader {
 				unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
 
 		this.cyRootNetworkManager = cyRootNetworkManager;
-		//this.cyApplicationManager = cyApplicationManager;
 	}
 
-	public void setParent(CyNetwork n) {
+	public void setParent(final CyNetwork n) {
 		this.parent = n != null ? cyRootNetworkManager.getRootNetwork(n) : null;
 	}
 	
 	@Override
-	protected void init(TaskMonitor tm) {
+	protected void init(final TaskMonitor tm) {
 		super.init(tm);
 		readDataMgr.setViewFormat(false);
 		readDataMgr.setParentNetwork(parent);
 	}
 	
 	@Override
-	protected void setNetworkViewProperties(CyNetworkView netView) {
+	protected void setNetworkViewProperties(final CyNetworkView netView) {
 		// Only for Cytocape 2.x files. In Cy3 the visual properties are saved in the view xgmml file.
 		if (readDataMgr.getDocumentVersion() < 3.0)
 			super.setNetworkViewProperties(netView);
 	}
 
 	@Override
-	protected void setNodeViewProperties(CyNetworkView netView, View<CyNode> nodeView) {
+	protected void setNodeViewProperties(final CyNetworkView netView, final View<CyNode> nodeView) {
 		if (readDataMgr.getDocumentVersion() < 3.0)
 			super.setNodeViewProperties(netView, nodeView);
 	}
 
 	@Override
-	protected void setEdgeViewProperties(CyNetworkView netView, View<CyEdge> edgeView) {
+	protected void setEdgeViewProperties(final CyNetworkView netView, final View<CyEdge> edgeView) {
 		if (readDataMgr.getDocumentVersion() < 3.0)
 			super.setEdgeViewProperties(netView, edgeView);
 	}

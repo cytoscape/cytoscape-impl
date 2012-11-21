@@ -71,13 +71,13 @@ public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 	}
 	
 	@Override
-	protected void init(TaskMonitor tm) {
+	protected void init(final TaskMonitor tm) {
 		super.init(tm);
 		readDataMgr.setViewFormat(true);
 	}
 	
 	@Override
-	protected void setNetworkViewProperties(CyNetworkView netView) {
+	protected void setNetworkViewProperties(final CyNetworkView netView) {
 		// Direct visual properties
 		Map<String, String> atts = readDataMgr.getViewGraphicsAttributes(readDataMgr.getNetworkId(), false);
 		this.settingLockedVisualProperties = false;
@@ -93,12 +93,12 @@ public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 	}
 
 	@Override
-	protected void setNodeViewProperties(CyNetworkView netView, View<CyNode> nodeView) {
+	protected void setNodeViewProperties(final CyNetworkView netView, final View<CyNode> nodeView) {
 		final CyNode node = nodeView.getModel();
 		
 		// When parsing view-format XGMML, the manager does not have the network model
 		// to create a map by CyNode objects, so the graphics mapping is indexed by the old element id.
-		Object oldId = readDataMgr.getCache().getOldId(node.getSUID());
+		final Object oldId = readDataMgr.getCache().getOldId(node.getSUID());
 		
 		// Direct visual properties
 		Map<String, String> atts = readDataMgr.getViewGraphicsAttributes(oldId, false);
@@ -112,12 +112,12 @@ public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 	}
 
 	@Override
-	protected void setEdgeViewProperties(CyNetworkView netView, View<CyEdge> edgeView) {
+	protected void setEdgeViewProperties(final CyNetworkView netView, final View<CyEdge> edgeView) {
 		final CyEdge edge = edgeView.getModel();
 		
 		// When parsing view-format XGMML, the manager does not have the network model
 		// to create a map by CyEdge objects, so the graphics mapping is indexed by the old element id.
-		Object oldId = readDataMgr.getCache().getOldId(edge.getSUID());
+		final Object oldId = readDataMgr.getCache().getOldId(edge.getSUID());
 		
 		// Direct visual properties
 		Map<String, String> atts = readDataMgr.getViewGraphicsAttributes(oldId, false);

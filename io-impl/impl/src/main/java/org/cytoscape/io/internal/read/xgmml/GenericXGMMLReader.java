@@ -107,7 +107,7 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
+	public void run(final TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
 		init(tm);
 		
@@ -146,14 +146,14 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		return netView;
 	}
 	
-	protected void init(TaskMonitor tm) {
+	protected void init(final TaskMonitor tm) {
 		readDataMgr.init();
 		readDataMgr.setViewFormat(false); // TODO: refactor readDataMgr and delete this line
 		
 		// Now user has the option to import network into different collection
-		this.initNodeMap(name2RootMap.get(rootNetworkList.getSelectedValue()), this.targetColumnList.getSelectedValue());		
-		this.readDataMgr.setNodeMap(this.nMap);
-		this.readDataMgr.setParentNetwork(name2RootMap.get(rootNetworkList.getSelectedValue()));
+		initNodeMap(name2RootMap.get(rootNetworkList.getSelectedValue()), this.targetColumnList.getSelectedValue());		
+		readDataMgr.setNodeMap(this.nMap);
+		readDataMgr.setParentNetwork(name2RootMap.get(rootNetworkList.getSelectedValue()));
 	}
 	
 	protected void complete(TaskMonitor tm) {
@@ -168,7 +168,7 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 */
-	protected void readXGMML(TaskMonitor tm) throws SAXException, IOException {
+	protected void readXGMML(final TaskMonitor tm) throws SAXException, IOException {
 		final SAXParserFactory spf = SAXParserFactory.newInstance();
 
 		try {
@@ -198,45 +198,54 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		}
 	}
 	
-	protected void setNetworkViewProperties(CyNetworkView netView) {
+	protected void setNetworkViewProperties(final CyNetworkView netView) {
 		final CyNetwork network = netView.getModel();
-		
-		String name = network.getRow(network).get(CyNetwork.NAME, String.class);
+		final String name = network.getRow(network).get(CyNetwork.NAME, String.class);
 		
 		if (name != null)
 			netView.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, name);
 		
-		Map<String, String> atts = readDataMgr.getGraphicsAttributes(network);
+		final Map<String, String> atts = readDataMgr.getGraphicsAttributes(network);
 		setVisualProperties(netView, netView, atts);
 	}
 	
-	protected void setNodeViewProperties(CyNetworkView netView, View<CyNode> nodeView) {
+	protected void setNodeViewProperties(final CyNetworkView netView, final View<CyNode> nodeView) {
 		final CyNode node = nodeView.getModel();
 		final Map<String, String> atts = readDataMgr.getGraphicsAttributes(node);
 		setVisualProperties(netView, nodeView, atts);
 	}
 
-	protected void setEdgeViewProperties(CyNetworkView netView, View<CyEdge> edgeView) {
+	protected void setEdgeViewProperties(final CyNetworkView netView, final View<CyEdge> edgeView) {
 		final CyEdge edge = edgeView.getModel();
 		final Map<String, String> atts = readDataMgr.getGraphicsAttributes(edge);
 		setVisualProperties(netView, edgeView, atts);
+		
+		// For 2.x compatibility
+		final Bend bend = edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
+		
+		if (bend != null && bend != EdgeBendVisualProperty.DEFAULT_EDGE_BEND) {
+			final List<Handle> handles = bend.getAllHandles();
+			
+			for (final Handle handle : handles)
+				handle.defineHandle(netView, edgeView, Double.NaN, Double.NaN);
+		}
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void setVisualProperties(final CyNetworkView netView, final View<? extends CyIdentifiable> view,
-			Map<String, String> atts) {
+			final Map<String, String> atts) {
 		if (view != null && atts != null) {
-			CyIdentifiable model = view.getModel();
+			final CyIdentifiable model = view.getModel();
 			Class<?> type = CyNetwork.class;
 			
 			if (model instanceof CyNode)      type = CyNode.class;
 			else if (model instanceof CyEdge) type = CyEdge.class;
 
-			Set<String> attSet = atts.keySet();
+			final Set<String> attSet = atts.keySet();
 
-			for (String attName : attSet) {
+			for (final String attName : attSet) {
 				String attValue = atts.get(attName);
-				VisualProperty vp = visualLexicon.lookup(type, attName);
+				final VisualProperty vp = visualLexicon.lookup(type, attName);
 				
 				if (vp != null) {
 					if (isXGMMLTransparency(attName))
@@ -254,17 +263,12 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, attName, attValue);
 				}
 			}
-			
-			// For 2.x compatibility
-			final Bend bend = view.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
-			if (bend != null && bend != EdgeBendVisualProperty.DEFAULT_EDGE_BEND) {
-				final List<Handle> handles = bend.getAllHandles();
-				for (Handle handle : handles) {
-					handle.defineHandle(netView, (View<CyEdge>) view, Double.NaN, Double.NaN);
-				}
-			}
 		}
 	}
+	
+	private static final Pattern DIRECT_NODE_PROPS_PATTERN = Pattern.compile("x|y|z");
+	private static final Pattern DIRECT_NET_PROPS_PATTERN = Pattern.compile(
+			"GRAPH_VIEW_(ZOOM|CENTER_(X|Y))|NETWORK_(WIDTH|HEIGHT|SCALE_FACTOR|CENTER_(X|Y|Z)_LOCATION)");
 	
 	/**
 	 * It tells which graphics attributes should be set as locked properties.
@@ -272,25 +276,32 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 	 * @param attName
 	 * @return
 	 */
-	protected boolean isLockedVisualProperty(final CyIdentifiable element, String attName) {
-		// These are NOT locked properties
-		boolean b = !((element instanceof CyNode) && attName.matches("x|y|z"));
-		b = b &&
-			!((element instanceof CyNetwork) && 
-					attName.matches("GRAPH_VIEW_(ZOOM|CENTER_(X|Y))|" + 
-									"NETWORK_(WIDTH|HEIGHT|SCALE_FACTOR|CENTER_(X|Y|Z)_LOCATION)"));
+	protected boolean isLockedVisualProperty(final CyIdentifiable element, final String attName) {
+		boolean locked = true;
+		
+		// These must NOT be set as locked properties
+		if (element instanceof CyNetwork) {
+			final Matcher netMatcher = DIRECT_NET_PROPS_PATTERN.matcher(attName);
+			locked = !netMatcher.matches();
+		} else if (element instanceof CyNode) {
+			final Matcher nodeMatcher = DIRECT_NODE_PROPS_PATTERN.matcher(attName);
+			locked = !nodeMatcher.matches();
+		} else if (element instanceof CyEdge) {
+			// Nothing to do here; all edge properties are locked by default.
+		}
 
-		return b;
+		return locked;
 	}
-
 	
 	private static final Pattern TRANSPARENCY_PATTERN = Pattern.compile("(cy:)?(node|edge)Transparency");
+	
 	static boolean isXGMMLTransparency(final String attName) {
 		final Matcher matcher = TRANSPARENCY_PATTERN.matcher(attName);
 		return matcher.matches();
 	}
 
 	private static final Pattern OLD_FONT_PATTERN = Pattern.compile("(cy:)?(node|edge)LabelFont");
+	
 	static boolean isOldFont(final String attName) {
 		final Matcher matcher = OLD_FONT_PATTERN.matcher(attName);
 		return matcher.matches();
