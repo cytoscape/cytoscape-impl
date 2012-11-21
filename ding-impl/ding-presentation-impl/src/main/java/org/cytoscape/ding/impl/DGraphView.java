@@ -1300,6 +1300,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	
 	@Override
 	public DEdgeView getDEdgeView(final CyEdge edge) {
+		if (edge == null) {
+			return null;
+		}
 		return (DEdgeView)edgeViewMap.get(edge);
 	}
 
