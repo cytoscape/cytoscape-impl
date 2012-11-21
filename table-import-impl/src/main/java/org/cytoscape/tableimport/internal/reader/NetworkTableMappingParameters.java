@@ -77,14 +77,14 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 	 */
 	public NetworkTableMappingParameters(List<String> delimiters, String listDelimiter,
 	                                     String[] attributeNames, Byte[] attributeTypes,
-	                                     //Byte[] listAttributeTypes,
+	                                     Byte[] listAttributeTypes,
 	                                     boolean[] importFlag,
 	                                     Integer source, Integer target, Integer interaction,
 	                                     final String defInteraction, 
 	                                     int startNumber, String commentChar) throws Exception {
 		
 		
-		super(delimiters, listDelimiter,attributeNames , attributeTypes, importFlag, startNumber, commentChar);
+		super(delimiters, listDelimiter,attributeNames , attributeTypes, listAttributeTypes, importFlag, startNumber, commentChar);
 
 		this.source = source;
 		this.target = target;

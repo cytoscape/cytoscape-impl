@@ -187,13 +187,12 @@ public class NetworkLineParser {
 	//private void mapAttribute(final String key, final String entry, final int index) {
 	private void mapAttribute(final CyEdge edge, final String entry, final int index) {
 
-
 		Byte type = nmp.getAttributeTypes()[index];
 
 		if (entry == null || entry.length() == 0) {
 			return;
 		}
-
+			
 		switch (type) {
 			case AttributeTypes.TYPE_BOOLEAN:
 				//nmp.getAttributes()
@@ -228,21 +227,42 @@ public class NetworkLineParser {
 
 			case AttributeTypes.TYPE_SIMPLE_LIST:
 
+				Byte elementType = nmp.getListAttributeTypes()[index];
+				
+				// If the column does not exist, create it
+				if (network.getRow(edge).getTable().getColumn(nmp.getAttributeNames()[index]) == null) {
+					if (elementType == AttributeTypes.TYPE_BOOLEAN){
+						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Boolean.class, false);
+					}
+					else if (elementType == AttributeTypes.TYPE_INTEGER) {
+						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Integer.class, false);
+					}
+					else if (elementType == AttributeTypes.TYPE_FLOATING) {
+						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Double.class, false);
+					}
+					else { // TYPE_STRING or undefined
+						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], String.class, false);
+					}
+				}
+				
 				/*
 				 * In case of list, not overwrite the attribute. Get the existing
 				 * list, and add it to the list.
 				 */
 				//List curList = nmp.getAttributes()
-				//                  .getListAttribute(key, nmp.getAttributeNames()[index]);
+		        //          .getListAttribute(key, nmp.getAttributeNames()[index]);
 
-				//if (curList == null) {
-				//	curList = new ArrayList();
-				//}
+				List curList = network.getRow(edge).get(nmp.getAttributeNames()[index], List.class);
 
-				//curList.addAll(buildList(entry));
+				if (curList == null) {
+					curList = new ArrayList();
+				}
+
+				curList.addAll(buildList(entry, elementType));
 
 				//nmp.getAttributes().setListAttribute(key, nmp.getAttributeNames()[index], curList);
-
+				network.getRow(edge).set(nmp.getAttributeNames()[index], curList);
+				
 				break;
 
 			default:
@@ -256,17 +276,28 @@ public class NetworkLineParser {
 	 *
 	 * @return
 	 */
-	private List buildList(final String entry) {
+	private List buildList(final String entry, Byte type) {
 		if (entry == null) {
 			return null;
 		}
 
-		final List<String> listAttr = new ArrayList<String>();
+		final List listAttr = new ArrayList();
 
 		final String[] parts = (entry.replace("\"", "")).split(nmp.getListDelimiter());
 
 		for (String listItem : parts) {
-			listAttr.add(listItem.trim());
+			if (type == AttributeTypes.TYPE_BOOLEAN){
+				listAttr.add(new Boolean(listItem.trim()));
+			}
+			else if (type == AttributeTypes.TYPE_INTEGER){
+				listAttr.add(new Integer(listItem.trim()));
+			}
+			else if (type == AttributeTypes.TYPE_FLOATING){
+				listAttr.add(new Double(listItem.trim()));
+			}
+			else {// TYPE_STRING or unknown
+				listAttr.add(listItem.trim());				
+			}
 		}
 
 		return listAttr;

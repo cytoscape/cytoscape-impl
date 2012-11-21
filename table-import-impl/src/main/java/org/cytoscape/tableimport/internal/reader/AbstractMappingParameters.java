@@ -22,7 +22,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	//private final List<Integer> aliasIndex;
 	private String[] attributeNames;
 	private Byte[] attributeTypes;
-	//private Byte[] listAttributeTypes;
+	private Byte[] listAttributeTypes;
 	//private final String mappingAttribute;
 	private List<String> delimiters;
 	private String listDelimiter;
@@ -72,12 +72,12 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	                                  final String listDelimiter, //final int keyIndex,
 	                                 // final String mappingAttribute,
 	                                 //final List<Integer> aliasIndex, 
-	                                  final String[] attrNames, Byte[] attributeTypes, //Byte[] listAttributeTypes,
+	                                  final String[] attrNames, Byte[] attributeTypes, Byte[] listAttributeTypes,
 	                                  boolean[] importFlag,
 	                                  boolean caseSensitive) throws Exception {
 		this( delimiters, listDelimiter,
 				//keyIndex, mappingAttribute, aliasIndex,
-		     attrNames, attributeTypes, //listAttributeTypes, 
+		     attrNames, attributeTypes, listAttributeTypes, 
 		     importFlag, 
 			 0, null);
 	}
@@ -104,10 +104,10 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	                                  //final String mappingAttribute,
 	                                  //final List<Integer> aliasIndex, 
 	                                  final String[] attrNames,Byte[] attributeTypes, 
-	                                  //Byte[] listAttributeTypes, 
+	                                  Byte[] listAttributeTypes, 
 	                                  boolean[] importFlag, int startNumber, String commentChar)
 	    throws Exception {
-		//this.listAttributeTypes = listAttributeTypes;
+		this.listAttributeTypes = listAttributeTypes;
 		this.startLineNumber= startNumber;
 		this.commentChar = commentChar;
 
@@ -247,10 +247,10 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	 *
 	 * @return  DOCUMENT ME!
 	 */
-/*	public Byte[] getListAttributeTypes() {
+	public Byte[] getListAttributeTypes() {
 		return listAttributeTypes;
 	}
-*/	
+	
 	/**
 	 *  DOCUMENT ME!
 	 *
