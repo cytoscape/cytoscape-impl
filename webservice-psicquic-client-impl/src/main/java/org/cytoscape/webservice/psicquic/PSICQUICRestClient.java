@@ -49,7 +49,7 @@ public final class PSICQUICRestClient {
 	private static final String MAPPING_NAMES = "uniprotkb,chebi,ddbj/embl/genbank,ensembl,irefindex";
 
 	public enum SearchMode {
-		MIQL("Search by Query (MIQL)"), INTERACTOR("Search by gene/protein ID list");
+		MIQL("Search by Query (MIQL)"), INTERACTOR("Search by gene/protein ID list"), SPECIES("Search by species");
 
 		private final String name;
 

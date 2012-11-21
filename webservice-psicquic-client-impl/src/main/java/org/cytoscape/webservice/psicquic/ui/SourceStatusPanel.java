@@ -30,8 +30,8 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
-import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
+import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
 import org.cytoscape.work.TaskIterator;
@@ -47,7 +47,7 @@ public class SourceStatusPanel extends JPanel {
 
 	private final RegistryManager manager;
 	private final PSICQUICRestClient client;
-	private final String query;
+	private String query;
 	private final CyNetworkManager networkManager;
 
 	private final TaskManager<?, ?> taskManager;
@@ -67,14 +67,18 @@ public class SourceStatusPanel extends JPanel {
 	 */
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
-			SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
 			final VisualMappingManager vmm) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
 		this.networkManager = networkManager;
 		this.taskManager = taskManager;
-		this.mode = mode;
+		
+		if(mode == SearchMode.SPECIES)
+			this.mode = SearchMode.MIQL;
+		else
+			this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
@@ -139,8 +143,8 @@ public class SourceStatusPanel extends JPanel {
 		// Tags
 		resultTable.getColumnModel().getColumn(2).setPreferredWidth(250);
 		// Found
-		resultTable.getColumnModel().getColumn(3).setPreferredWidth(100);
-		resultTable.getColumnModel().getColumn(4).setPreferredWidth(150);
+		resultTable.getColumnModel().getColumn(3).setPreferredWidth(120);
+		resultTable.getColumnModel().getColumn(4).setPreferredWidth(60);
 
 		resultTable.setSelectionBackground(SELECTED_ROW);
 		resultTable.setDefaultRenderer(String.class, new StringCellRenderer());
@@ -526,4 +530,7 @@ public class SourceStatusPanel extends JPanel {
 		}
 	}
 
+	void setQuery(final String query){
+		this.query = query;
+	}
 }

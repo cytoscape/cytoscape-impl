@@ -80,7 +80,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	@Override
 	public Container getQueryBuilderGUI() {
-		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, openBrowser, vsBuilder, vmm);
+		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, vsBuilder, vmm);
 	}
 
 	PSICQUICRestClient getRestClient() {

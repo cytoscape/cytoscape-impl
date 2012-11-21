@@ -1,10 +1,8 @@
 package org.cytoscape.webservice.psicquic.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,28 +11,22 @@ import java.awt.event.MouseEvent;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
-import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
-import org.cytoscape.webservice.psicquic.QueryMode;
+import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
 import org.cytoscape.webservice.psicquic.ui.SelectorBuilder.Species;
@@ -49,6 +41,8 @@ public class PSICQUICSearchUI extends JPanel {
 
 	private static final String MIQL_REFERENCE_PAGE_URL = "http://code.google.com/p/psicquic/wiki/MiqlReference";
 
+	private static final Dimension PANEL_SIZE = new Dimension(680, 500);
+	
 	// Color Scheme
 	private static final Color MIQL_COLOR = new Color(0x7f, 0xff, 0xd4);
 	private static final Color ID_LIST_COLOR = new Color(0xff, 0xa5, 0x00);
@@ -77,38 +71,31 @@ public class PSICQUICSearchUI extends JPanel {
 
 	private JPanel searchPanel;
 	private JLabel modeLabel;
-	private JButton helpButton;
 	private JButton searchButton;
 	private JButton refreshButton;
 
-	private JPanel queryBuilderPanel;
-	
 	private JPanel speciesPanel;
 	
 	private JComboBox searchModeSelector;
-	// private JComboBox speciesSelector;
-	private ButtonGroup bg;
+	private JComboBox speciesSelector;
 
 	private SearchMode mode = SearchMode.MIQL;
 	private String searchAreaTitle = MIQL_MODE;
 
 	private boolean firstClick = true;
 
-	private final OpenBrowser openBrowserUtil;
-
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
 
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
 			final PSICQUICRestClient client, final TaskManager<?, ?> tmManager,
-			final CreateNetworkViewTaskFactory createViewTaskFactory, final OpenBrowser openBrowserUtil,
+			final CreateNetworkViewTaskFactory createViewTaskFactory,
 			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;
 		this.networkManager = networkManager;
 		this.createViewTaskFactory = createViewTaskFactory;
-		this.openBrowserUtil = openBrowserUtil;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
 
@@ -128,46 +115,8 @@ public class PSICQUICSearchUI extends JPanel {
 		
 		queryModeChanged();
 		
-
-		// this.queryBuilderPanel = new JPanel();
-		// queryBuilderPanel.setBackground(Color.white);
-		// queryBuilderPanel.setLayout(new BoxLayout(queryBuilderPanel,
-		// BoxLayout.X_AXIS));
-		// queryBuilderPanel.setBorder(new TitledBorder("Query Helper"));
-		//
-		// // Help menu
-		// this.helpButton = new JButton("Syntax Help");
-		// helpButton.setToolTipText("Show MIQL Syntax Reference in Web Browser...");
-		// helpButton.addActionListener(new ActionListener() {
-		// @Override
-		// public void actionPerformed(ActionEvent e) {
-		// openBrowserUtil.openURL(MIQL_REFERENCE_PAGE_URL);
-		// }
-		// });
-		//
-		// final JLabel speciesLabel = new JLabel("Species:");
-		// final SelectorBuilder speciesBuilder = new SelectorBuilder();
-		// speciesSelector = speciesBuilder.getComboBox();
-		// speciesSelector.addActionListener(new ActionListener() {
-		// @Override
-		// public void actionPerformed(ActionEvent e) {
-		// addSpeciesQuery();
-		// }
-		// });
-		//
-		// queryBuilderPanel.add(speciesLabel);
-		// queryBuilderPanel.add(speciesSelector);
-		// queryBuilderPanel.add(helpButton);
-		//
-		// final JPanel basePanel = new JPanel();
-		// basePanel.setBackground(Color.WHITE);
-		// basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
-		// basePanel.add(queryBuilderPanel);
-		//
-		// this.add(basePanel, BorderLayout.SOUTH);
-		//
-		//
-		// queryBuilderPanel.setMaximumSize(new Dimension(950, 60));
+		this.setSize(PANEL_SIZE);
+		this.setPreferredSize(PANEL_SIZE);
 	}
 
 	private final void createDBlistPanel() {
@@ -192,6 +141,17 @@ public class PSICQUICSearchUI extends JPanel {
 		queryScrollPane.setPreferredSize(new Dimension(500, 150));
 		queryScrollPane.setViewportView(queryArea);
 		this.add(queryScrollPane);
+		
+		queryArea.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(firstClick) {
+					queryArea.setText("");
+					firstClick = false;
+				}
+			}
+		});
 	}
 
 	private final void createQueryModePanel() {
@@ -250,7 +210,7 @@ public class PSICQUICSearchUI extends JPanel {
 		final JLabel speciesLabel = new JLabel("Select Species:");
 
 		final SelectorBuilder speciesBuilder = new SelectorBuilder();
-		JComboBox speciesSelector = speciesBuilder.getComboBox();
+		speciesSelector = speciesBuilder.getComboBox();
 		speciesPanel.setLayout(new BoxLayout(speciesPanel, BoxLayout.X_AXIS));
 		speciesPanel.add(speciesLabel);
 		speciesPanel.add(speciesSelector);
@@ -268,42 +228,36 @@ public class PSICQUICSearchUI extends JPanel {
 		});
 	}
 
-	private void addSpeciesQuery() {
-
-		// final Object selectedItem = speciesSelector.getSelectedItem();
-		// final Species species = (Species) selectedItem;
-		//
-		// String currentQuery = this.queryArea.getText();
-		// if (currentQuery.contains(MIQL_QUERY_AREA_MESSAGE_STRING)) {
-		// currentQuery = "";
-		// queryArea.setText("");
-		// }
-		//
-		// final String newQuery;
-		// if (species == Species.ALL) {
-		// newQuery = currentQuery.replaceAll("species:\".+\"", "");
-		// } else {
-		//
-		// final String speciesEntry = "species:\"" + species.toString() + "\"";
-		//
-		// if (currentQuery.contains("species:")) {
-		// newQuery = currentQuery.replaceAll("species:\".+\"", speciesEntry);
-		// } else {
-		// newQuery = currentQuery + " " + speciesEntry;
-		// }
-		//
-		// this.queryArea.setText(newQuery);
-		// }
-	}
 
 	private void search() {
 		final SearchRecoredsTask searchTask = new SearchRecoredsTask(client, mode);
 		final Map<String, String> activeSource = regManager.getActiveServices();
-		final String query = this.queryArea.getText();
+		String query = this.queryArea.getText();
+		
+		
+		// Query by species
+		if(mode == SearchMode.SPECIES)
+			query = buildSpeciesQuery();
+		
+		
+		statesPanel.setQuery(query);
+		
 		searchTask.setQuery(query);
 		searchTask.setTargets(activeSource.values());
 
 		taskManager.execute(new TaskIterator(searchTask, new SetTableTask(searchTask)));
+	}
+	
+	private final String buildSpeciesQuery() {
+		mode = SearchMode.SPECIES;
+		final Object selectedItem = this.speciesSelector.getSelectedItem();
+		final Species species = (Species) selectedItem;
+		
+		if (species == Species.ALL) {
+			return "*";
+		} else {
+			return "species:\"" + species.toString() + "\"";
+		}
 	}
 
 	private final class SetTableTask extends AbstractTask {
@@ -317,7 +271,16 @@ public class PSICQUICSearchUI extends JPanel {
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			final Map<String, Long> result = searchTask.getResult();
-			statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager, networkManager, result,
+			
+			String query;
+			// Query by species
+			if(mode == SearchMode.SPECIES)
+				query = buildSpeciesQuery();
+			else {
+				query = queryArea.getText();
+			}
+						
+			statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, result,
 					taskManager, mode, createViewTaskFactory, vsBuilder, vmm);
 			statesPanel.sort();
 			updateGUILayout();
@@ -328,7 +291,7 @@ public class PSICQUICSearchUI extends JPanel {
 		removeAll();
 		
 		add(statesPanel);
-		if(mode == null)
+		if(mode == SearchMode.SPECIES)
 			add(speciesPanel);
 		else
 			add(queryScrollPane);
@@ -350,6 +313,7 @@ public class PSICQUICSearchUI extends JPanel {
 		
 		final String modeString = selectedObject.toString();
 		final Color borderColor;
+		final String query;
 		if (modeString.equals(MIQL_MODE)) {
 			mode = SearchMode.MIQL;
 			searchAreaTitle = MIQL_MODE;
@@ -357,6 +321,7 @@ public class PSICQUICSearchUI extends JPanel {
 			// helpButton.setEnabled(true);
 			queryArea.setText(MIQL_QUERY_AREA_MESSAGE_STRING);
 			borderColor = MIQL_COLOR;
+			query = queryArea.getText();
 		} else if (modeString.equals(INTERACTOR_ID_LIST)) {
 			mode = SearchMode.INTERACTOR;
 			searchAreaTitle = INTERACTOR_ID_LIST;
@@ -364,10 +329,12 @@ public class PSICQUICSearchUI extends JPanel {
 			// helpButton.setEnabled(false);
 			queryArea.setText(INTERACTOR_LIST_AREA_MESSAGE_STRING);
 			borderColor = ID_LIST_COLOR;
+			query = queryArea.getText();
 		} else {
-			mode = null;
+			mode = SearchMode.SPECIES;
 			searchAreaTitle = BY_SPECIES;
 			borderColor = MIQL_COLOR;
+			query = buildSpeciesQuery();
 		}
 
 		firstClick = true;
@@ -377,7 +344,8 @@ public class PSICQUICSearchUI extends JPanel {
 		border.setTitleFont(STRONG_FONT);
 		queryScrollPane.setBorder(border);
 		
-		statesPanel = new SourceStatusPanel(queryArea.getText(), client, regManager, networkManager, null,
+		
+		statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, null,
 				taskManager, mode, createViewTaskFactory, vsBuilder, vmm);
 		statesPanel.sort();
 		
