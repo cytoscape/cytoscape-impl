@@ -39,6 +39,8 @@ package org.cytoscape.internal.view;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
@@ -458,6 +460,13 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 
 		// Display it and add listeners
+		iframe.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				view.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double)iframe.getContentPane().getWidth());
+				view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double)iframe.getContentPane().getHeight());
+			}
+		});
 		iframe.addInternalFrameListener(this);
 		iframe.setVisible(true);
 	}
