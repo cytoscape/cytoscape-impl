@@ -1108,11 +1108,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == BasicVisualLexicon.NODE_LABEL_COLOR) {
 			setTextPaint((Color)value);
 		} else if (vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY) {
-			final int currentOpacity = graphView.m_nodeDetails.getLabelTransparency(model);
 			final int opacity = ((Number) value).intValue();
-			if(currentOpacity != opacity) {
-				setTextTransparency(opacity);
-			}
+			setTextTransparency(opacity);
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
 			final float currentFontSize = graphView.m_nodeDetails.getLabelFont(model, 0).getSize();
 			final Font newFont = ((Font) value).deriveFont(currentFontSize);
