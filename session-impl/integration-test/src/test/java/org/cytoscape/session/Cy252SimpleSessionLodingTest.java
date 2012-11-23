@@ -172,9 +172,9 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 				.getVisualMappingFunction(BasicVisualLexicon.NODE_TOOLTIP);
 		assertTrue(nodeTooltipMapping instanceof PassthroughMapping);
 		assertEquals("gal4RGexp", nodeTooltipMapping.getMappingColumnName());
-		
-		// FIXME this should be Number.class, but returns String
-		//assertEquals(Number.class, nodeTooltipMapping.getMappingColumnType());
+		// Cy2 doesn't write the "controllerType" property for PassThroughMappings,
+		// so it's always created as String (it shouldn't cause any issues)
+		assertEquals(String.class, nodeTooltipMapping.getMappingColumnType());
 
 		VisualMappingFunction<?, LineType> edgeLineStyleMapping = style
 				.getVisualMappingFunction(BasicVisualLexicon.EDGE_LINE_TYPE);

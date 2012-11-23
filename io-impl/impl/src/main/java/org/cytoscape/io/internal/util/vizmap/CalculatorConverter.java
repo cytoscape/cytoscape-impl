@@ -312,6 +312,8 @@ public class CalculatorConverter {
 		} else if ("PassThroughMapping".equalsIgnoreCase(functionType)) {
 			PassthroughMapping pm = new PassthroughMapping();
 			pm.setAttributeName(attrName);
+			// Cy2 doesn't write the "controllerType" property for PassThroughMappings, so just set STRING
+			// (it should work, anyway).
 			pm.setAttributeType(AttributeType.STRING);
 
 			return pm;

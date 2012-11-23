@@ -69,6 +69,7 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 		final CyColumn column = row.getTable().getColumn(columnName);
 		
 		if (column != null) {
+			// Always try to find the data type from the current table/column first
 			final Class<?> columnClass = column.getType();
 	
 			try {
