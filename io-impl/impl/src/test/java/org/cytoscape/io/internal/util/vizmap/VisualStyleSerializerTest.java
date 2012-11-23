@@ -220,6 +220,90 @@ public class VisualStyleSerializerTest {
 	
 	@Test
 	@SuppressWarnings("unchecked")
+	public void testCy252Vizmap() throws Exception {
+		Properties props = loadVizmapProps("v252_vizmap.props");
+		Set<VisualStyle> styles = serializer.createVisualStyles(props);
+		assertEquals(4,  styles.size()); // "default" is not returned
+		assertVisualStylesNotNull(styles, new String[] { "Sample1", "Sample2", "Sample3", "SimpleBioMoleculeEditor" });
+		
+		// Test one style
+		// -----
+		VisualStyle s3 = getVisualStyleByTitle(styles, "Sample3");
+
+		assertEquals(new Color(0,0,0), s3.getDefaultValue(NETWORK_BACKGROUND_PAINT));
+		
+		assertEquals(new Color(255,255,255), s3.getDefaultValue(NODE_FILL_COLOR));
+		assertEquals(new Color(255,255,0), s3.getDefaultValue(NODE_SELECTED_PAINT));
+		assertEquals(NodeShapeVisualProperty.ROUND_RECTANGLE, s3.getDefaultValue(NODE_SHAPE));
+		assertEquals(80, s3.getDefaultValue(NODE_WIDTH).intValue());
+		assertEquals(30, s3.getDefaultValue(NODE_HEIGHT).intValue());
+		assertEquals(180, s3.getDefaultValue(NODE_TRANSPARENCY).intValue());
+		assertEquals(new Color(153,153,255), s3.getDefaultValue(NODE_BORDER_PAINT));
+		assertEquals(2, s3.getDefaultValue(NODE_BORDER_WIDTH).intValue());
+		assertEquals(255, s3.getDefaultValue(NODE_BORDER_TRANSPARENCY).intValue());
+		assertEquals(new Font("Arial-BoldMT", Font.PLAIN, 12), s3.getDefaultValue(NODE_LABEL_FONT_FACE));
+		assertEquals(16, s3.getDefaultValue(NODE_LABEL_FONT_SIZE).intValue());
+		assertEquals(new Color(255,255,255), s3.getDefaultValue(NODE_LABEL_COLOR));
+		assertEquals(255, s3.getDefaultValue(NODE_LABEL_TRANSPARENCY).intValue());
+		assertEquals(LineTypeVisualProperty.SOLID, s3.getDefaultValue(NODE_BORDER_LINE_TYPE));
+		assertEquals("", s3.getDefaultValue(NODE_TOOLTIP));
+		
+		assertEquals(1, s3.getDefaultValue(EDGE_WIDTH).intValue());
+		assertEquals(new Color(153,153,255), s3.getDefaultValue(EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(new Color(255,0,0), s3.getDefaultValue(EDGE_STROKE_SELECTED_PAINT));
+		assertEquals(255, s3.getDefaultValue(EDGE_TRANSPARENCY).intValue());
+		assertEquals(LineTypeVisualProperty.SOLID, s3.getDefaultValue(EDGE_LINE_TYPE));
+		assertEquals(Font.decode("SanSerif-PLAIN-10"), s3.getDefaultValue(EDGE_LABEL_FONT_FACE));
+		assertEquals(14, s3.getDefaultValue(EDGE_LABEL_FONT_SIZE).intValue());
+		assertEquals(new Color(255,255,204), s3.getDefaultValue(EDGE_LABEL_COLOR));
+		assertEquals(255, s3.getDefaultValue(EDGE_LABEL_TRANSPARENCY).intValue());
+		assertEquals(ArrowShapeVisualProperty.NONE, s3.getDefaultValue(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, s3.getDefaultValue(EDGE_TARGET_ARROW_SHAPE));
+		assertEquals("", s3.getDefaultValue(EDGE_TOOLTIP));
+		
+		PassthroughMapping<String, String> nLabelMp = (PassthroughMapping<String, String>) s3.getVisualMappingFunction(NODE_LABEL);
+		assertEquals(NAME, nLabelMp.getMappingColumnName());
+		assertEquals(String.class, nLabelMp.getMappingColumnType());
+		
+		PassthroughMapping<String, String> eLabelMp = (PassthroughMapping<String, String>) s3.getVisualMappingFunction(EDGE_LABEL);
+		assertEquals(INTERACTION, eLabelMp.getMappingColumnName());
+		assertEquals(String.class, eLabelMp.getMappingColumnType());
+		
+		PassthroughMapping<String, String> nTooltipMp = (PassthroughMapping<String, String>) s3.getVisualMappingFunction(NODE_TOOLTIP);
+		assertEquals("gal4RGexp", nTooltipMp.getMappingColumnName());
+		assertEquals(String.class, nTooltipMp.getMappingColumnType());
+		
+		ContinuousMapping<Double, Paint> nColorMp = (ContinuousMapping<Double, Paint>) s3.getVisualMappingFunction(NODE_FILL_COLOR);
+		assertEquals("gal4RGexp", nColorMp.getMappingColumnName());
+		assertEquals(Number.class, nColorMp.getMappingColumnType());
+		assertEquals(3, nColorMp.getPointCount());
+		assertEquals(-2.4059998989105242, nColorMp.getPoint(0).getValue(), 0.0001);
+		assertEquals(new Color(0,153,0), nColorMp.getPoint(0).getRange().equalValue);
+		assertEquals(new Color(0,153,0), nColorMp.getPoint(0).getRange().greaterValue);
+		assertEquals(Color.BLACK, nColorMp.getPoint(0).getRange().lesserValue);
+		assertEquals(-3.254413627473696E-8, nColorMp.getPoint(1).getValue(), 0.0001);
+		assertEquals(Color.WHITE, nColorMp.getPoint(1).getRange().equalValue);
+		assertEquals(Color.WHITE, nColorMp.getPoint(1).getRange().greaterValue);
+		assertEquals(Color.WHITE, nColorMp.getPoint(1).getRange().lesserValue);
+		assertEquals(1.2239999999999998, nColorMp.getPoint(2).getValue(), 0.0001);
+		assertEquals(new Color(255,0,0), nColorMp.getPoint(2).getRange().equalValue);
+		assertEquals(new Color(255,255,255), nColorMp.getPoint(2).getRange().greaterValue);
+		assertEquals(new Color(255,0,0), nColorMp.getPoint(2).getRange().lesserValue);
+		
+		DiscreteMapping<String, Paint> eColorMp = (DiscreteMapping<String, Paint>) s3.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
+		assertEquals(INTERACTION, eColorMp.getMappingColumnName());
+		assertEquals(String.class, eColorMp.getMappingColumnType());
+		assertEquals(new Color(102,255,255), eColorMp.getMapValue("pd"));
+		assertEquals(new Color(255,255,255), eColorMp.getMapValue("pp"));
+		
+		DiscreteMapping<String, LineType> eTypeMp = (DiscreteMapping<String, LineType>) s3.getVisualMappingFunction(EDGE_LINE_TYPE);
+		assertEquals(INTERACTION, eTypeMp.getMappingColumnName());
+		assertEquals(LineTypeVisualProperty.LONG_DASH, eTypeMp.getMapValue("pd"));
+		assertEquals(LineTypeVisualProperty.SOLID, eTypeMp.getMapValue("pp"));
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
 	public void testCy283Vizmap() throws Exception {
 		Properties props = loadVizmapProps("v283_vizmap.props");
 		Set<VisualStyle> styles = serializer.createVisualStyles(props);
