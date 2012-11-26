@@ -31,7 +31,6 @@ package org.cytoscape.io.webservice.biomart;
 
 import javax.naming.ConfigurationException;
 
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.io.webservice.biomart.task.ImportTableTask;
@@ -53,7 +52,6 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 	private final CyTableFactory tableFactory;
 	private final BiomartRestClient restClient;
 	private ImportTableTask importTask;
-	private final CySwingApplication app;
 	private final CyTableManager tableManager;
 	private final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF;
 
@@ -65,7 +63,7 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 	 */
 	public BiomartClient(final String displayName, final String description,
 	                     final BiomartRestClient restClient, final CyTableFactory tableFactory,
-	                     final CySwingApplication app, final CyTableManager tableManager,
+	                     final CyTableManager tableManager,
 						 final BiomartAttrMappingPanel gui,
 						 final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF)
 	{
@@ -73,7 +71,6 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 
 		this.tableFactory         = tableFactory;
 		this.restClient           = restClient;
-		this.app                  = app;
 		this.tableManager         = tableManager;
 		this.mapNetworkAttrTF     = mapNetworkAttrTF;
 		
@@ -94,7 +91,7 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 					"Could not build query because Query Builder GUI is null.");
 
 		importTask = new ImportTableTask(restClient, (BiomartQuery) query, tableFactory,
-		                                 app.getJFrame(), tableManager,mapNetworkAttrTF);
+		                                  tableManager,mapNetworkAttrTF);
 
 		return new TaskIterator(importTask);
 	}

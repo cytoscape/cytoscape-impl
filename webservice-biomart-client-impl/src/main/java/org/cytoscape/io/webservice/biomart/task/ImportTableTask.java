@@ -37,20 +37,17 @@ public class ImportTableTask extends AbstractTask {
 	private Set<CyTable> tables;
 
 
-	private final Window parent;
 	private final CyTableManager tableManager;
 	private final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF;
 
 	public ImportTableTask(final BiomartRestClient client, final BiomartQuery query,
 			       final CyTableFactory tableFactory,
-			       final Window parent,
 			       final CyTableManager tableManager,
 				   final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF)
 	{
 		this.client               = client;
 		this.query                = query;
 		this.tableFactory         = tableFactory;
-		this.parent               = parent;
 		this.tableManager         = tableManager;
 		this.mapNetworkAttrTF     = mapNetworkAttrTF;
 
@@ -79,12 +76,12 @@ public class ImportTableTask extends AbstractTask {
 		result.close();
 
 		tables.add(newTable);
-
-		final TaskIterator ti = mapNetworkAttrTF.createTaskIterator(newTable);
-		this.insertTasksAfterCurrentTask(ti);
 		
 		final ShowResultTask messageTask = new ShowResultTask();
 		this.insertTasksAfterCurrentTask(messageTask);
+
+		final TaskIterator ti = mapNetworkAttrTF.createTaskIterator(newTable);
+		this.insertTasksAfterCurrentTask(ti);
 	}
 
 	private CyTable createGlobalTable(BufferedReader reader, String key) throws IOException {
@@ -233,7 +230,7 @@ public class ImportTableTask extends AbstractTask {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						JOptionPane.showMessageDialog(parent, "New table loaded.\n" + table.getTitle() + " contains "
+						JOptionPane.showMessageDialog(null,"New table loaded.\n" + table.getTitle() + " contains "
 								+ table.getRowCount() + " rows.", "Table Loaded from BioMart",
 								JOptionPane.INFORMATION_MESSAGE);
 

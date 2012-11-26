@@ -4,7 +4,6 @@ package org.cytoscape.io.webservice.biomart;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
 import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
 import org.cytoscape.io.webservice.swing.WebServiceGUI;
@@ -25,7 +24,6 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		// Import services
-		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		DialogTaskManager taskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
@@ -39,7 +37,7 @@ public class CyActivator extends AbstractCyActivator {
 		BiomartRestClient biomartRestClient = new BiomartRestClient("http://www.biomart.org/biomart/martservice");
 		BiomartAttrMappingPanel biomartAttrMappingPanel = new BiomartAttrMappingPanel(taskManagerServiceRef,cyApplicationManagerServiceRef,cyTableManagerServiceRef,cyNetworkManagerServiceRef, webServiceGUI);
 		
-		BiomartClient biomartClient = new BiomartClient("BioMart Client","REST version of BioMart Web Service Client.",biomartRestClient,cyTableFactoryServiceRef,cySwingApplicationServiceRef,cyTableManagerServiceRef, biomartAttrMappingPanel, mapNetworkAttrTFServiceRef);
+		BiomartClient biomartClient = new BiomartClient("BioMart Client","REST version of BioMart Web Service Client.",biomartRestClient,cyTableFactoryServiceRef,cyTableManagerServiceRef, biomartAttrMappingPanel, mapNetworkAttrTFServiceRef);
 		biomartAttrMappingPanel.setClient(biomartClient);
 		
 		registerAllServices(bc,biomartAttrMappingPanel, new Properties());
