@@ -96,7 +96,7 @@ public class ImportTableTask extends AbstractTask {
 		if (columnNames[0].contains("Query ERROR"))
 			throw new IOException("BioMart service returns error: \n" + line);
 
-		final CyTable globalTable = tableFactory.createTable(query.getTableName(), key, String.class, true, true);
+		final CyTable globalTable = tableFactory.createTable(query.getTableName(), key, String.class, false, true);
 
 		// For status report
 		int recordCount = 0;
