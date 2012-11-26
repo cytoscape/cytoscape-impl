@@ -290,12 +290,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * State variable for when nodes have moved.
 	 */
-	boolean m_contentChanged = false;
+	volatile boolean m_contentChanged = false;
 
 	/**
 	 * State variable for when zooming/panning have changed.
 	 */
-	boolean m_viewportChanged = false;
+	volatile boolean m_viewportChanged = false;
 
 	/**
 	 * List of listeners.
