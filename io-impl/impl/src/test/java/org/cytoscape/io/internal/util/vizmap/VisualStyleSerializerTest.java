@@ -36,6 +36,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -300,6 +301,91 @@ public class VisualStyleSerializerTest {
 		assertEquals(INTERACTION, eTypeMp.getMappingColumnName());
 		assertEquals(LineTypeVisualProperty.LONG_DASH, eTypeMp.getMapValue("pd"));
 		assertEquals(LineTypeVisualProperty.SOLID, eTypeMp.getMapValue("pp"));
+		
+		VisualPropertyDependency<?> dep1 = getDependency(s3, NODE_SIZE_LOCKED_DEPENDENCY);
+		assertFalse(dep1.isDependencyEnabled());
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testCy270Vizmap() throws Exception {
+		Properties props = loadVizmapProps("v270_vizmap.props");
+		Set<VisualStyle> styles = serializer.createVisualStyles(props);
+		assertEquals(1,  styles.size()); // "default" is not returned
+		assertVisualStylesNotNull(styles, new String[] { "Binary_SIF_Version_1" });
+		
+		// Test visual styles (defaults, mappings and dependencies)
+		// -----
+		VisualStyle s = getVisualStyleByTitle(styles, "Binary_SIF_Version_1");
+		
+		assertEquals(new Color(255,153,153), s.getDefaultValue(NODE_FILL_COLOR));
+		assertEquals(new Color(255,255,0), s.getDefaultValue(NODE_SELECTED_PAINT));
+		assertEquals(NodeShapeVisualProperty.ELLIPSE, s.getDefaultValue(NODE_SHAPE));
+		assertEquals(70, s.getDefaultValue(NODE_WIDTH).intValue());
+		assertEquals(30, s.getDefaultValue(NODE_HEIGHT).intValue());
+		assertEquals(35, s.getDefaultValue(NODE_SIZE).intValue());
+		assertEquals(125, s.getDefaultValue(NODE_TRANSPARENCY).intValue());
+		assertEquals(new Color(0,0,0), s.getDefaultValue(NODE_BORDER_PAINT));
+		assertEquals(1, s.getDefaultValue(NODE_BORDER_WIDTH).intValue());
+		assertEquals(255, s.getDefaultValue(NODE_BORDER_TRANSPARENCY).intValue());
+		assertEquals("", s.getDefaultValue(NODE_LABEL));
+		assertEquals(Font.decode("Default-PLAIN-12"), s.getDefaultValue(NODE_LABEL_FONT_FACE));
+		assertEquals(12, s.getDefaultValue(NODE_LABEL_FONT_SIZE).intValue());
+		assertEquals(new Color(0,0,0), s.getDefaultValue(NODE_LABEL_COLOR));
+		assertEquals(100, s.getDefaultValue(NODE_LABEL_WIDTH).intValue());
+		assertEquals(255, s.getDefaultValue(NODE_LABEL_TRANSPARENCY).intValue());
+		assertEquals(LineTypeVisualProperty.SOLID, s.getDefaultValue(NODE_BORDER_LINE_TYPE));
+		assertEquals("", s.getDefaultValue(NODE_TOOLTIP));
+		assertEquals(Boolean.TRUE, s.getDefaultValue(NODE_NESTED_NETWORK_IMAGE_VISIBLE));
+		
+		assertEquals(4, s.getDefaultValue(EDGE_WIDTH).intValue());
+		assertEquals(new Color(0,0,0), s.getDefaultValue(EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(new Color(255,0,0), s.getDefaultValue(EDGE_STROKE_SELECTED_PAINT));
+		assertEquals(255, s.getDefaultValue(EDGE_TRANSPARENCY).intValue());
+		assertEquals(LineTypeVisualProperty.SOLID, s.getDefaultValue(EDGE_LINE_TYPE));
+		assertEquals("", s.getDefaultValue(EDGE_LABEL));
+		assertEquals(Font.decode("SanSerif-PLAIN-10"), s.getDefaultValue(EDGE_LABEL_FONT_FACE));
+		assertEquals(10, s.getDefaultValue(EDGE_LABEL_FONT_SIZE).intValue());
+		assertEquals(new Color(0,0,0), s.getDefaultValue(EDGE_LABEL_COLOR));
+		assertEquals(255, s.getDefaultValue(EDGE_LABEL_TRANSPARENCY).intValue());
+		assertEquals(ArrowShapeVisualProperty.NONE, s.getDefaultValue(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, s.getDefaultValue(EDGE_TARGET_ARROW_SHAPE));
+		assertEquals("", s.getDefaultValue(EDGE_TOOLTIP));
+		
+		PassthroughMapping<String, String> nLabelMp = (PassthroughMapping<String, String>) s.getVisualMappingFunction(NODE_LABEL);
+		assertEquals("biopax.node_label", nLabelMp.getMappingColumnName());
+		assertEquals(String.class, nLabelMp.getMappingColumnType());
+		
+		assertNull(s.getVisualMappingFunction(EDGE_LABEL));
+		
+		DiscreteMapping<String, Paint> nColorMp = (DiscreteMapping<String, Paint>) s.getVisualMappingFunction(NODE_FILL_COLOR);
+		assertEquals("biopax.entity_type", nColorMp.getMappingColumnName());
+		assertEquals(String.class, nColorMp.getMappingColumnType());
+		assertEquals(new Color(153,153,255), nColorMp.getMapValue("Complex"));
+		assertNull(nColorMp.getMapValue("Protein"));
+		
+		DiscreteMapping<String, Paint> eColorMp = (DiscreteMapping<String, Paint>) s.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
+		assertEquals(INTERACTION, eColorMp.getMappingColumnName());
+		assertEquals(String.class, eColorMp.getMappingColumnType());
+		// Test a few entries
+		assertEquals(new Color(255,192,0), eColorMp.getMapValue("COMPONENT_OF"));
+		assertEquals(new Color(255,0,0), eColorMp.getMapValue("CO_CONTROL_DEPENDENT_ANTI"));
+		assertEquals(new Color(0,176,80), eColorMp.getMapValue("CO_CONTROL_DEPENDENT_SIMILAR"));
+		assertEquals(new Color(253,149,166), eColorMp.getMapValue("CO_CONTROL_INDEPENDENT_ANTI"));
+		assertEquals(new Color(0,176,80), eColorMp.getMapValue("CO_CONTROL_DEPENDENT_SIMILAR"));
+		
+		DiscreteMapping<String, ArrowShape> eTgtArrowMp = (DiscreteMapping<String, ArrowShape>) s.getVisualMappingFunction(EDGE_TARGET_ARROW_SHAPE);
+		assertEquals(INTERACTION, eTgtArrowMp.getMappingColumnName());
+		assertEquals(String.class, eTgtArrowMp.getMappingColumnType());
+		assertEquals(ArrowShapeVisualProperty.ARROW, eTgtArrowMp.getMapValue("COMPONENT_OF"));
+		assertEquals(ArrowShapeVisualProperty.ARROW, eTgtArrowMp.getMapValue("METABOLIC_CATALYSIS"));
+		assertEquals(ArrowShapeVisualProperty.ARROW, eTgtArrowMp.getMapValue("SEQUENTIAL_CATALYSIS"));
+		assertEquals(ArrowShapeVisualProperty.ARROW, eTgtArrowMp.getMapValue("SEQUENTIAL_CATALYSIS"));
+		assertEquals(ArrowShapeVisualProperty.ARROW, eTgtArrowMp.getMapValue("STATE_CHANGE"));
+		assertNull(eTgtArrowMp.getMapValue("INTERACTS_WITH"));
+		
+		VisualPropertyDependency<?> dep1 = getDependency(s, NODE_SIZE_LOCKED_DEPENDENCY);
+		assertFalse(dep1.isDependencyEnabled());
 	}
 	
 	@Test
