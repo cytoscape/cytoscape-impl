@@ -15,6 +15,8 @@ import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ServiceProperties;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 
 /**
@@ -52,7 +54,7 @@ public class NVLTFActionSupport {
         private final NetworkViewLocationTaskFactory nvltf;
 
         public NVLTFAction(NetworkViewLocationTaskFactory nvltf, Map<String,String> props) {
-            super(props,appMgr,netViewMgr);
+            super(props,appMgr,netViewMgr, createTaskFactory(nvltf));
             this.nvltf = nvltf;
         }
 
@@ -81,4 +83,18 @@ public class NVLTFActionSupport {
             tm.execute(nvltf.createTaskIterator(view,javaPt,xformPt));
         }
     }
+
+	TaskFactory createTaskFactory(final NetworkViewLocationTaskFactory taskFactory) {
+		return new TaskFactory() {
+			@Override
+			public boolean isReady() {
+				return taskFactory.isReady(appMgr.getCurrentNetworkView(), null, null);
+			}
+			
+			@Override
+			public TaskIterator createTaskIterator() {
+				return taskFactory.createTaskIterator(appMgr.getCurrentNetworkView(), null, null);
+			}
+		};
+	}
 }
