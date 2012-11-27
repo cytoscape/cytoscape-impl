@@ -384,6 +384,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	/**
 	 * Removes all the components from the CytoPanel.
 	 */
+	@Override
 	public void removeAll() {
 		// remove all tabs and components from JTabbedPane
 		tabbedPane.removeAll();
@@ -397,11 +398,14 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 *
 	 * @param index The desired index.
 	 */
-	public void setSelectedIndex(int index) {
+	@Override
+	public void setSelectedIndex(final int index) {
 		// set selected index
+		if(tabbedPane.getTabCount()<=index)
+			return;
+		
 		tabbedPane.setSelectedIndex(index);
 		resizeSelectedComponent();
-
 		// do not have to sent out notification - the tabbedPane will let us know.
 	}
 
