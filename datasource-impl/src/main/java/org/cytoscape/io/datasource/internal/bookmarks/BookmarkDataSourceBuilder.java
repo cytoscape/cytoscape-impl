@@ -28,6 +28,8 @@ public class BookmarkDataSourceBuilder {
 		CONVERSION_MAP = new HashMap<String, DataCategory>();
 		CONVERSION_MAP.put("network", DataCategory.NETWORK);
 		CONVERSION_MAP.put("table", DataCategory.TABLE);
+		CONVERSION_MAP.put("ontology", DataCategory.TABLE);
+		CONVERSION_MAP.put("plugins", DataCategory.UNSPECIFIED);		
 	}
 
 	private final Bookmarks bookMarks;
