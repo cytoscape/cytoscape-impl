@@ -101,6 +101,8 @@ public class WebQuerier {
 
 	private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)([.](\\d+)([.](\\d+)([.]([-_a-zA-Z0-9]+))?)?)?");
 	
+	public static final Pattern OUTPUT_FILENAME_DISALLOWED_CHARACTERS = Pattern.compile("[^a-zA-Z0-9.-]");
+	
 	/**
 	 * A class that represents a tag used for apps, containing information about the tag
 	 * such as its unique name used on the app store website as well as its human-readable name.
@@ -508,17 +510,29 @@ public class WebQuerier {
 					InputStream inputStream = connection.getInputStream();
 					long contentLength = connection.getContentLength();
 					ReadableByteChannel readableByteChannel = Channels.newChannel(inputStream);
+					
 					File outputFile;
 					try {
-						// Output file has same name as app, but spaces are replaced with hyphens
+						// Replace spaces with underscores
+						String outputFileBasename = webApp.getName().replaceAll("\\s", "_");
+						
+						// Strip disallowed characters
+						outputFileBasename = OUTPUT_FILENAME_DISALLOWED_CHARACTERS.matcher(outputFileBasename).replaceAll("");
+						
+						// Append extension
+						outputFileBasename += ".jar";
+						
+						// Output file has same name as app, but spaces and slashes are replaced with hyphens
 						outputFile = new File(directory.getCanonicalPath() + File.separator 
-								+ webApp.getName().replaceAll("\\s", "-") + ".jar");
+								+ outputFileBasename);
 						
 						if (outputFile.exists()) {
 							outputFile.delete();
 						}
 						
 						outputFile.createNewFile();
+						
+//						System.out.println("preparing to download");
 						
 					    FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 					    try {
@@ -549,7 +563,7 @@ public class WebQuerier {
 				    return outputFile;
 				} catch (IOException e) {
 					throw new AppDownloadException("Error while downloading app " + webApp.getFullName()
-							+ ": " + e.getMessage());
+							+ ", " + e.getMessage());
 				}
 			}
 		} else {

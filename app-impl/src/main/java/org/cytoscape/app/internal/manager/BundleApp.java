@@ -13,7 +13,33 @@ import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 
 public class BundleApp extends App {
-
+	
+	/*
+	@Override
+	public String getReadableStatus() {
+		switch (this.getStatus()) {
+		
+		case DISABLED:
+			if (this.getAppInstance() != null) {
+				return "Disable on Restart";
+			} else {
+				return "Disabled";
+			}
+		case UNINSTALLED:
+			if (this.getAppInstance() != null) {
+				return "Uninstall on Restart";
+			} else {
+				return "Uninstalled";
+			}
+		case FILE_MOVED:
+			return "File Moved (Needs restart to uninstall)";
+		default:
+			return super.getReadableStatus();
+		
+		}
+	}
+	*/
+	
 	@Override
 	public Object createAppInstance(CySwingAppAdapter appAdapter)
 			throws AppInstanceException {

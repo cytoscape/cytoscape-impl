@@ -3,6 +3,8 @@ package org.cytoscape.app.internal.net;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.regex.Pattern;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +37,22 @@ public class WebQuerierTest {
 		assertTrue(webQuerier.compareVersions("3", "3.0.0") == 0);
 		
 		assertTrue(webQuerier.compareVersions("1.7", "3.0.0.alpha9-SNAPSHOT") > 0);
+	}
+	
+	@Test
+	public void testFormatOutputFilename() {
+		
+		Pattern regex = WebQuerier.OUTPUT_FILENAME_DISALLOWED_CHARACTERS;
+		
+		assertEquals("test", regex.matcher("test").replaceAll(""));
+		assertEquals("Test", regex.matcher("Test").replaceAll(""));
+		
+		assertEquals("Test123", regex.matcher("Test123").replaceAll(""));
+		assertEquals("Test123.123", regex.matcher("Test123.123").replaceAll(""));
+		assertEquals("Test", regex.matcher("Test/\\").replaceAll(""));
+		assertEquals("Test", regex.matcher("Test@$(*&").replaceAll(""));
+		assertEquals("Test.2", regex.matcher("Test@.2@").replaceAll(""));
+		
 	}
 	
 	@Test

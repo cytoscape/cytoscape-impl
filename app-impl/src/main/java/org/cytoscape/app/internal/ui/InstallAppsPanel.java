@@ -503,10 +503,29 @@ public class InstallAppsPanel extends javax.swing.JPanel {
     				for (int index = 0; index < files.length; index++) {
     	        		AppParser appParser = appManager.getAppParser();
     	        		
-    	        		App app = null;
+    	        		App parsedApp = null;
     	        		
-    	        		app = appParser.parseApp(files[index]);
-						appManager.installApp(app);
+    	        		parsedApp = appParser.parseApp(files[index]);
+						
+    	        		{
+    	        			String parsedAppName = parsedApp.getAppName();
+    	        			String parsedAppVersion = parsedApp.getVersion();
+    	        			
+	    	        		for (App app : appManager.getApps()) {
+	
+	    	        			// App with same name found, check if need to replace existing
+	    	        			if (parsedAppName.equals(app.getAppName())) {
+	    	        				
+	    	        				/*
+	    	        				if (WebQuerier.compareVersions(parsedAppVersion, app.getVersion() == 0)) {
+	    	        					// TODO: Check == version, <= version.
+	    	        				}
+	    	        				*/
+	    	        			}
+	    	        		}
+    	        		}
+    	        		
+    	        		appManager.installApp(parsedApp);
     	        	}
     				
     	        	taskMonitor.setProgress(1.0);

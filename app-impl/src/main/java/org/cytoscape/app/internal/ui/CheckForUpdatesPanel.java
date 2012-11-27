@@ -128,6 +128,8 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         descriptionLabel.setText("Update Description:");
 
         descriptionTextArea.setEditable(false);
+        descriptionTextArea.setLineWrap(true);
+        descriptionTextArea.setWrapStyleWord(true);
         descriptionTextArea.setFocusable(false);
         descriptionScrollPane.setViewportView(descriptionTextArea);
 

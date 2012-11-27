@@ -121,6 +121,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 
         descriptionTextArea.setEditable(false);
         descriptionTextArea.setLineWrap(true);
+        descriptionTextArea.setWrapStyleWord(true);
         descriptionTextArea.setFocusable(false);
         descriptionScrollPane.setViewportView(descriptionTextArea);
 
@@ -365,8 +366,6 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     		String text = selectedApp.getDescription() == null ? 
     			"App description not found." : selectedApp.getDescription();
     		descriptionTextArea.setText(text);
-    		
-    		
     		
     		// Enable/disable the appropriate button
     		if (selectedApp.getStatus() == AppStatus.INSTALLED) {
