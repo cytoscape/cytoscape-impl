@@ -145,11 +145,17 @@ class PopupMenuHelper {
 		if (nview != null ) {
 			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(m_view.nodeViewTFs,action);
 			Collection<CyNodeViewContextMenuFactory> usableCMFs = getPreferredActions(m_view.cyNodeViewContextMenuFactory,action);
+			//If the action is NEW, we should also include the Edge Actions
+			if (action.equals("NEW"))
+			{
+				usableTFs.addAll(getPreferredActions(m_view.nodeViewTFs,"Edge"));
+				usableCMFs.addAll(getPreferredActions(m_view.cyNodeViewContextMenuFactory,"Edge"));
+			}
 			
 			View<CyNode> nv = (DNodeView)nview;
 			int menuItemCount = usableTFs.size()+ usableCMFs.size();
 			int tfCount = usableTFs.size();
-			if (action.equals("OPEN") && menuItemCount == 1 && tfCount == 1) {
+			if ((action.equals("OPEN") || action.equalsIgnoreCase("Edge")) && menuItemCount == 1 && tfCount == 1) {
 				NodeViewTaskFactory tf  = usableTFs.iterator().next();
 				m_view.manager.execute(tf.createTaskIterator(nv, m_view));
 			}
@@ -158,8 +164,11 @@ class PopupMenuHelper {
 				JPopupMenu menu = createMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
-				tracker.getGravityTracker(".").addMenuSeparator(-0.1);
-				tracker.getGravityTracker(".").addMenuSeparator(999.99);
+				if(usableTFs.size() > 1)
+				{
+					tracker.getGravityTracker(".").addMenuSeparator(-0.1);
+					tracker.getGravityTracker(".").addMenuSeparator(999.99);
+				}
 
 				for ( NodeViewTaskFactory nvtf : usableTFs ) {
 					Object context = null;
