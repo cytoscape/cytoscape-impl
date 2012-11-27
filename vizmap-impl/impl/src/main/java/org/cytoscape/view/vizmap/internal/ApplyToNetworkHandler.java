@@ -57,6 +57,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		
 		try {
 			exe.shutdown();
+			exe.awaitTermination(15, TimeUnit.MINUTES);
 		} catch (Exception ex) {
 			logger.warn("Create apply operation failed.", ex);
 		} finally {
@@ -82,8 +83,10 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 				exe.submit(new ApplyDefaultTask(netView, vp, defaultValue));
 			}
 		}
+		
 		try {
 			exe.shutdown();
+			exe.awaitTermination(10, TimeUnit.MINUTES);
 		} catch (Exception ex) {
 			logger.warn("Create apply default failed", ex);
 		} finally {
