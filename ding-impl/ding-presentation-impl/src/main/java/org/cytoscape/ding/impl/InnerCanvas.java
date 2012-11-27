@@ -1416,4 +1416,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		addEdgeMode = null;
 		popup.dispose();
 	}
+	
+	public void ensureInitialized() {
+		if (!m_grafx.isInitialized()) {
+			m_grafx.setTransform(m_xCenter, m_yCenter, m_scaleFactor);
+		}
+	}
 }

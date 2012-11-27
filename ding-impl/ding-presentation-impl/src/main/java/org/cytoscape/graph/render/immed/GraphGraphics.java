@@ -379,13 +379,16 @@ public final class GraphGraphics {
 		
 		m_g2d.setStroke(new BasicStroke(0.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 
-		m_currXform.setToTranslation(0.5d * image.getWidth(null), 0.5d * image
-				.getHeight(null));
-		m_currXform.scale(scaleFactor, scaleFactor);
-		m_currXform.translate(-xCenter, -yCenter);
+		setTransform(xCenter, yCenter, scaleFactor);
 		m_g2d.transform(m_currXform);
 		m_currNativeXform.setTransform(m_g2d.getTransform());
 		m_cleared = true;
+	}
+
+	public void setTransform(double xCenter, double yCenter, double scaleFactor) {
+		m_currXform.setToTranslation(0.5d * image.getWidth(null), 0.5d * image.getHeight(null));
+		m_currXform.scale(scaleFactor, scaleFactor);
+		m_currXform.translate(-xCenter, -yCenter);
 	}
 
 	/**
@@ -2138,5 +2141,9 @@ public final class GraphGraphics {
 	private void checkOrder(float min, float max, String id) {
 		if (!(min < max)) 
 			throw new IllegalArgumentException( id + "Min not less than " + id + "Max");
+	}
+	
+	public boolean isInitialized() {
+		return m_cleared;
 	}
 }

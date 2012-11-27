@@ -208,6 +208,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 * Render actual image on the panel.
 	 */
 	@Override public void update(Graphics g) {
+		viewModel.m_networkCanvas.ensureInitialized();
+		
 		ArbitraryGraphicsCanvas foregroundCanvas = 
 		    (ArbitraryGraphicsCanvas) viewModel.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS);
 		ArbitraryGraphicsCanvas backgroundCanvas = 
