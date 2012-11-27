@@ -516,11 +516,11 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 	    	        			// App with same name found, check if need to replace existing
 	    	        			if (parsedAppName.equals(app.getAppName())) {
 	    	        				
-	    	        				/*
-	    	        				if (WebQuerier.compareVersions(parsedAppVersion, app.getVersion() == 0)) {
+//	    	        				if (WebQuerier.compareVersions(parsedAppVersion, app.getVersion()) == 0) {
+//	    	        					WebQuerier.c
 	    	        					// TODO: Check == version, <= version.
-	    	        				}
-	    	        				*/
+//	    	        				}
+	    	        				
 	    	        			}
 	    	        		}
     	        		}

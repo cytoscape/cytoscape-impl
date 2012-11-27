@@ -30,6 +30,13 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 	/** Long serial version identifier required by the Serializable class */
 	private static final long serialVersionUID = 7096775814942183176L;
 	
+	private static final Set<AppStatus> HIDDEN_APP_STATUSES = new HashSet<AppStatus>();
+
+	static {
+		HIDDEN_APP_STATUSES.add(AppStatus.FILE_MOVED);
+		HIDDEN_APP_STATUSES.add(AppStatus.UNINSTALLED);
+	}
+	
     private javax.swing.JScrollPane appsAvailableScrollPane;
     private javax.swing.JTable appsAvailableTable;
     private javax.swing.JLabel appsInstalledLabel;
@@ -311,13 +318,19 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     private void populateTable() {
     	DefaultTableModel tableModel = (DefaultTableModel) appsAvailableTable.getModel();
 		
-    	for (App app : appManager.getApps()) {	
-    		tableModel.addRow(new Object[]{
-					app,
-					app.getAppFile() != null ? app.getAppName() : app.getAppName() + " (File moved)",
-					app.getVersion(),
-					app.getReadableStatus()
-			});
+    	for (App app : appManager.getApps()) {
+    		
+    		// Hide apps with certain statuses from the table, such as uninstalled ones
+    		if (HIDDEN_APP_STATUSES.contains(app.getStatus())) {
+    			// Do nothing
+    		} else {
+	    		tableModel.addRow(new Object[]{
+						app,
+						app.getAppFile() != null ? app.getAppName() : app.getAppName() + " (File moved)",
+						app.getVersion(),
+						app.getReadableStatus()
+				});
+    		}
     	}
     	
     	updateLabels();
@@ -327,7 +340,14 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
      * Update the labels that display the number of currently installed and available apps.
      */
     private void updateLabels() {
-    	int installedCount = appManager.getApps().size();
+    	int installedCount = 0;
+    	
+    	for (App app : appManager.getApps()) {
+    		
+    		if (app.getStatus() == AppStatus.INSTALLED) {
+    			installedCount++;
+    		}
+    	}
     	
     	appsInstalledLabel.setText(installedCount + (installedCount == 1 ? " App installed." : " Apps installed."));
     }

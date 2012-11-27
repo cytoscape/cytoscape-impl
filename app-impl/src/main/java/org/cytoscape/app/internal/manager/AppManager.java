@@ -322,6 +322,15 @@ public class AppManager implements FrameworkListener {
 			}
 			
 			@Override
+			public void onFileChange(File file) {
+				// Can treat file replacements/changes as old file deleted, new file added
+				this.onFileDelete(file);
+				this.onFileCreate(file);
+				
+				fireAppsChangedEvent();
+			}
+			
+			@Override
 			public void onFileDelete(File file) {
 				// System.out.println(file + " on delete");
 				
@@ -395,6 +404,15 @@ public class AppManager implements FrameworkListener {
 			}
 			
 			@Override
+			public void onFileChange(File file) {
+				// Can treat file replacements/changes as old file deleted, new file added
+				this.onFileDelete(file);
+				this.onFileCreate(file);
+				
+				fireAppsChangedEvent();
+			}
+			
+			@Override
 			public void onFileDelete(File file) {
 				// System.out.println(file + " on delete");
 				
@@ -415,7 +433,7 @@ public class AppManager implements FrameworkListener {
 		FileAlterationObserver uninstallAlterationObserver = new FileAlterationObserver(
 				getUninstalledAppsPath(), new SingleLevelFileFilter(new File(getUninstalledAppsPath())), IOCase.SYSTEM);
 		
-		// Listen for events on the "disabled apps" folder
+		// Listen for events on the "uninstalled apps" folder
 		uninstallAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileCreate(File file) {
@@ -452,6 +470,7 @@ public class AppManager implements FrameworkListener {
 				}
 				
 				try {
+					// Checks if the app file moved here belonged to a known app, if so, uninstall it.
 					if (registeredApp == null) {
 						apps.add(parsedApp);
 						parsedApp.uninstall(appManager);
@@ -465,6 +484,15 @@ public class AppManager implements FrameworkListener {
 				}
 				
 				// System.out.println(file + " on create");
+			}
+			
+			@Override
+			public void onFileChange(File file) {
+				// Can treat file replacements/changes as old file deleted, new file added
+				this.onFileDelete(file);
+				this.onFileCreate(file);
+				
+				fireAppsChangedEvent();
 			}
 			
 			@Override
@@ -610,6 +638,24 @@ public class AppManager implements FrameworkListener {
 
 		checkForFileChanges();
     }
+    
+//    /**
+//     * Attempts to remove uninstalled apps so that they don't take up space on the UI.
+//     * If you wish to display uninstalled apps for purposes of completion, avoid calling this function.
+//     */
+//    public void clearUninstalledApps() {
+//    	Set<App> appsToBeRemoved = new HashSet<App>();
+//    	
+//    	for (App app : apps) {
+//    		if (app.getStatus() == AppStatus.UNINSTALLED
+//    				|| app.getStatus() == AppStatus.FILE_MOVED) {
+//    			
+//    			appsToBeRemoved.add(app);
+//    		}
+//    	}
+//    	
+//    	this.apps.removeAll(appsToBeRemoved);
+//    }
 	
 	public void fireAppsChangedEvent() {
 		AppsChangedEvent appEvent = new AppsChangedEvent(this);
