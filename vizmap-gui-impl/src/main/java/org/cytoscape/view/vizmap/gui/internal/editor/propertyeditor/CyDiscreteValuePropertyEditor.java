@@ -1,8 +1,8 @@
 package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 
 import java.awt.Component;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JPanel;
 
@@ -20,12 +20,10 @@ public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 		
 		this.valEditor = valEditor;
 		this.editor = new JPanel();
-		editor.addFocusListener(new FocusListener() {
-			public void focusGained(FocusEvent e) {
+		editor.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent event) {
 				selectValue();
-			}
-
-			public void focusLost(FocusEvent arg0) {
 			}
 		});
 	}
