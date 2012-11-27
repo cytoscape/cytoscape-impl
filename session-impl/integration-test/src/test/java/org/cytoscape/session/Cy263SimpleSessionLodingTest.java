@@ -1,20 +1,27 @@
 package org.cytoscape.session;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.junit.Assert.*;
+
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Paint;
 import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -22,15 +29,12 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.cytoscape.work.TaskIterator;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.junit.ExamReactorStrategy;
 import org.ops4j.pax.exam.junit.JUnit4TestRunner;
 import org.ops4j.pax.exam.spi.reactors.AllConfinedStagedReactorFactory;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.CyTable;
 
 /**
  * Test for sample file in Cytoscape 2.6.3 distribution
@@ -56,27 +60,14 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 	private void confirm() {
 		// test overall status of current session.
 		checkGlobalStatus();
-
 		checkVisualStyles();
-		
-		final Set<CyNetwork> networks = networkManager.getNetworkSet();
-		final Iterator<CyNetwork> itr = networks.iterator();
 
 		// get the parent network in the session
-		CyNetwork gdNetwork = null;
-		while (itr.hasNext()){
-			CyNetwork network = itr.next();
-
-			// Check title
-			String title = network.getRow(network).get("name", String.class);
-			if (title.equalsIgnoreCase("gene_disease_network4.txt")){
-				gdNetwork = network;
-				break;
-			}
-		}		
+		CyNetwork net = getNetworkByName("gene_disease_network4.txt");
+		assertNotNull(net);
 		
-		checkAttributes(gdNetwork);
-		checkNetwork(gdNetwork);
+		checkAttributes(net);
+		checkNetwork(net);
 	}
 
 	private void checkGlobalStatus() {
@@ -95,6 +86,7 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 
 	private void checkVisualStyles() {
 		Set<VisualStyle> vsSet = vmm.getAllVisualStyles();
+		assertEquals(8, vsSet.size());
 		
 		VisualStyle gda_geneCentric = null;
 		VisualStyle gda_diseaseCentric = null;
@@ -104,15 +96,12 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		
 		while (it.hasNext()){
 			VisualStyle vs = it.next();
-			if (vs.getTitle().equalsIgnoreCase("gda_geneCentric")){
+			if (vs.getTitle().equalsIgnoreCase("gda_geneCentric"))
 				gda_geneCentric = vs;
-			}
-			if (vs.getTitle().equalsIgnoreCase("gda_diseaseCentric")){
+			else if (vs.getTitle().equalsIgnoreCase("gda_diseaseCentric"))
 				gda_diseaseCentric = vs;
-			}
-			if (vs.getTitle().equalsIgnoreCase("gda_wholeNetwork")){
+			else if (vs.getTitle().equalsIgnoreCase("gda_wholeNetwork"))
 				gda_wholeNetwork = vs;
-			}
 		}
 		
 		assertNotNull(gda_geneCentric);
@@ -123,19 +112,18 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 	}
 	
 	private void checkVisualStyle(final VisualStyle style) {
-
 		//		Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
 		//		assertEquals(4, mappings.size());
 
 		// Test defaults
-		NodeShape defaultShape = style.getDefaultValue(BasicVisualLexicon.NODE_SHAPE);
-		Paint nodeColor = style.getDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR);
-		Integer fontSize = style.getDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_SIZE);
-		Integer transparency = style.getDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY);
-		Double w = style.getDefaultValue(BasicVisualLexicon.NODE_WIDTH);
-		Double h = style.getDefaultValue(BasicVisualLexicon.NODE_HEIGHT);
+		NodeShape defaultShape = style.getDefaultValue(NODE_SHAPE);
+		Paint nodeColor = style.getDefaultValue(NODE_FILL_COLOR);
+		Integer fontSize = style.getDefaultValue(NODE_LABEL_FONT_SIZE);
+		Integer transparency = style.getDefaultValue(NODE_TRANSPARENCY);
+		Double w = style.getDefaultValue(NODE_WIDTH);
+		Double h = style.getDefaultValue(NODE_HEIGHT);
 
-		Paint edgeLabelColor = style.getDefaultValue(BasicVisualLexicon.EDGE_LABEL_COLOR);
+		Paint edgeLabelColor = style.getDefaultValue(EDGE_LABEL_COLOR);
 
 		assertEquals(NodeShapeVisualProperty.RECTANGLE, defaultShape);
 		assertEquals(Color.WHITE, nodeColor);
@@ -145,10 +133,8 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(Double.valueOf(30), h);
 
 		// Check each mapping
-		VisualMappingFunction<?, String> nodeLabelMapping = style
-				.getVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
-		VisualMappingFunction<?, String> edgeLabelMapping = style
-				.getVisualMappingFunction(BasicVisualLexicon.EDGE_LABEL);
+		VisualMappingFunction<?, String> nodeLabelMapping = style.getVisualMappingFunction(NODE_LABEL);
+		VisualMappingFunction<?, String> edgeLabelMapping = style.getVisualMappingFunction(EDGE_LABEL);
 
 		assertTrue(nodeLabelMapping instanceof PassthroughMapping);
 
@@ -156,20 +142,17 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(String.class, nodeLabelMapping.getMappingColumnType());
 
 		// Node Color mapping
-		VisualMappingFunction<?, Paint> nodeColorMapping = style
-				.getVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
+		VisualMappingFunction<?, Paint> nodeColorMapping = style.getVisualMappingFunction(NODE_FILL_COLOR);
 		assertTrue(nodeColorMapping instanceof DiscreteMapping);
 		assertEquals("NodeType", nodeColorMapping.getMappingColumnName());
 		assertEquals(String.class, nodeColorMapping.getMappingColumnType());
 
-		VisualMappingFunction<?, ?> edgeWidthMapping = style
-				.getVisualMappingFunction(BasicVisualLexicon.EDGE_WIDTH);
+		VisualMappingFunction<?, ?> edgeWidthMapping = style.getVisualMappingFunction(EDGE_WIDTH);
 		assertTrue(edgeWidthMapping instanceof ContinuousMapping);
 		assertEquals("AsssociationCount", edgeWidthMapping.getMappingColumnName());
 	}
 
 	private void checkAttributes(final CyNetwork network){
-		
 		CyTable nodeTable = network.getDefaultNodeTable();
 		
 		// check attribute name
@@ -187,7 +170,6 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals("Gene",row2.get("NodeType", String.class));	
 		assertEquals(106180,row2.get("OMIM_ID", Integer.class).intValue());			
 	}
-
 	
 	private void checkNetwork(final CyNetwork network) {
 		assertEquals(4133, network.getNodeCount());
@@ -198,5 +180,44 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		Collection<CyRow> selectedEdges = network.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true);
 		assertEquals(0, selectedNodes.size());
 		assertEquals(0, selectedEdges.size());
+		
+		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
+
+		final CyNetworkView view = views.iterator().next();
+		assertEquals(4133, view.getNodeViews().size());
+		assertEquals(14558, view.getEdgeViews().size());
+
+		// Check updated view
+		final VisualStyle style = vmm.getVisualStyle(view);
+		style.apply(view);
+		checkView(view);
+	}
+	
+	private void checkView(final CyNetworkView view) {
+		assertEquals(new Color(204,204,255), view.getVisualProperty(NETWORK_BACKGROUND_PAINT));
+		// All nodes have the same default visual properties
+		final View<CyNode> nv = view.getNodeView(view.getModel().getNodeList().iterator().next());
+		assertEquals(40, nv.getVisualProperty(NODE_SIZE).intValue());
+		assertEquals(new Color(255,153,153), nv.getVisualProperty(NODE_FILL_COLOR));
+		assertEquals(NodeShapeVisualProperty.ELLIPSE, nv.getVisualProperty(NODE_SHAPE));
+		assertEquals(255, nv.getVisualProperty(NODE_TRANSPARENCY).intValue());
+		assertEquals(new Double(1.5d), nv.getVisualProperty(NODE_BORDER_WIDTH));
+		assertEquals(LineTypeVisualProperty.SOLID, nv.getVisualProperty(NODE_BORDER_LINE_TYPE));
+		assertEquals(new Color(102,102,102), nv.getVisualProperty(NODE_BORDER_PAINT));
+		assertEquals(255, nv.getVisualProperty(NODE_BORDER_TRANSPARENCY).intValue());
+		assertEquals(new Color(0,0,0), nv.getVisualProperty(NODE_LABEL_COLOR));
+		assertEquals(255, nv.getVisualProperty(NODE_LABEL_TRANSPARENCY).intValue());
+		assertEquals(Font.decode("SansSerif-PLAIN-12"), nv.getVisualProperty(NODE_LABEL_FONT_FACE));
+		assertEquals(12, nv.getVisualProperty(NODE_LABEL_FONT_SIZE).intValue());
+		// All edges have the same visual properties
+		final View<CyEdge> ev = view.getEdgeView(view.getModel().getEdgeList().iterator().next());
+		assertEquals(1, ev.getVisualProperty(EDGE_WIDTH).intValue());
+		assertEquals(new Color(0,0,255), ev.getVisualProperty(EDGE_UNSELECTED_PAINT));
+		assertEquals(255, ev.getVisualProperty(EDGE_TRANSPARENCY).intValue());
+		assertEquals(LineTypeVisualProperty.SOLID, ev.getVisualProperty(EDGE_LINE_TYPE));
+		assertEquals(new Double(1.5d), ev.getVisualProperty(EDGE_WIDTH));
+		assertEquals(new Color(0,0,0), ev.getVisualProperty(EDGE_LABEL_COLOR));
+		assertEquals(ArrowShapeVisualProperty.NONE, ev.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, ev.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
 	}
 }
