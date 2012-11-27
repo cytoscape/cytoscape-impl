@@ -34,7 +34,6 @@
  */
 package org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -69,7 +68,8 @@ import org.jdesktop.swingx.multislider.TrackRenderer;
  * </p>
  * 
  */
-public class C2CMappingEditorPanel<K extends Number, V extends Number> extends ContinuousMappingEditorPanel<K, V> implements PropertyChangeListener {
+public class C2CMappingEditorPanel<K extends Number, V extends Number> extends ContinuousMappingEditorPanel<K, V>
+		implements PropertyChangeListener {
 
 	private final static long serialVersionUID = 1213748836613718L;
 
@@ -78,33 +78,32 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	private static final Number FIRST_LOCATION = 10d;
 	private static final Number SECOND_LOCATION = 30d;
 
-	
 
 	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping, final CyTable attr,
-			final CyApplicationManager appManager, final VisualMappingManager vmm, final VisualMappingFunctionFactory continuousMappingFactory) {
+			final CyApplicationManager appManager, final VisualMappingManager vmm,
+			final VisualMappingFunctionFactory continuousMappingFactory) {
 		super(style, mapping, attr, appManager, vmm, continuousMappingFactory);
-		
+
 		abovePanel.setVisible(false);
 		belowPanel.setVisible(false);
 
 		initSlider();
-		if(mapping.getAllPoints().isEmpty()) {
+		if (mapping.getAllPoints().isEmpty()) {
 			addSlider(0d, FIRST_LOCATION);
 			addSlider(100d, SECOND_LOCATION);
 		}
-		
+
 		setPropertySpinner();
 	}
-	
+
 	private V convertToValue(final Number value) {
 		return NumberConverter.convert(vpValueType, value);
 	}
-	
+
 	private K convertToColumnValue(final Number value) {
 		return NumberConverter.convert(columnType, value);
 	}
-	
-	
+
 	public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
 		final TrackRenderer rend = slider.getTrackRenderer();
 
@@ -124,35 +123,33 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		return rend.getLegend(width, height);
 	}
 
-	
 	/**
 	 * Add New Slider to editor
 	 * 
 	 * @param position
 	 * @param value
 	 */
-	private void addSlider(Number position, Number value) {
+	private void addSlider(final Number position, final Number value) {
 		final K maxValue = convertToColumnValue(tracer.getMax(type));
-		BoundaryRangeValues<V> newRange;	
-		
-		if (mapping.getPointCount() == 0) {
-			slider.getModel().addThumb(position.floatValue(), convertToValue(value));
+		BoundaryRangeValues<V> newRange;
 
+		slider.getModel().addThumb(position.floatValue(), convertToValue(value));
+
+		// There is no handle at this point.  Add new one.
+		if (mapping.getPointCount() == 0) {
 			newRange = new BoundaryRangeValues<V>(convertToValue(below), convertToValue(5d), convertToValue(above));
 			final K newKey = convertToColumnValue((maxValue.doubleValue() / 2));
-			
+
 			mapping.addPoint(newKey, newRange);
-
 			updateMap();
-
 			return;
 		}
 
-		slider.getModel().addThumb(position.floatValue(), convertToValue(value));
-		
-		final SortedMap<Double, ContinuousMappingPoint<K,V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<K,V>>();
+		// There are one or more handles exists.  Need sorting.
+		final SortedMap<Double, ContinuousMappingPoint<K, V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<K, V>>();
+
 		for (final ContinuousMappingPoint<K, V> point : mapping.getAllPoints()) {
-			final Number val =point.getValue();
+			final Number val = point.getValue();
 			sortedPoints.put(val.doubleValue(), point);
 		}
 
@@ -163,7 +160,8 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		V equalVal = previousPoint.getRange().greaterValue;
 		V greaterVal = previousRange.greaterValue;
 
-		newRange = new BoundaryRangeValues<V>(convertToValue(lesserVal), convertToValue(equalVal), convertToValue(greaterVal));
+		newRange = new BoundaryRangeValues<V>(convertToValue(lesserVal), convertToValue(equalVal),
+				convertToValue(greaterVal));
 		mapping.addPoint(maxValue, newRange);
 
 		updateMap();
@@ -171,7 +169,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
-		addSlider(100d, convertToValue(5d));
+		addSlider(50d, convertToValue(5d));
 	}
 
 	@Override
@@ -195,21 +193,22 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 
 		BoundaryRangeValues<V> bound;
 		Number fraction;
-		
+
 		final List<Thumb<V>> sorted = slider.getModel().getSortedThumbs();
 		for (Thumb<V> t : sorted)
 			slider.getModel().removeThumb(slider.getModel().getThumbIndex(t));
-		
-		final SortedMap<Double, ContinuousMappingPoint<K,V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<K,V>>();
+
+		final SortedMap<Double, ContinuousMappingPoint<K, V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<K, V>>();
 		for (final ContinuousMappingPoint<K, V> point : mapping.getAllPoints()) {
-			final Number val =point.getValue();
+			final Number val = point.getValue();
 			sortedPoints.put(val.doubleValue(), point);
 		}
 
 		for (Double key : sortedPoints.keySet()) {
 			ContinuousMappingPoint<K, V> point = sortedPoints.get(key);
 			bound = point.getRange();
-			fraction = ((Number) ((point.getValue().doubleValue() - minValue.doubleValue()) / actualRange.doubleValue())).floatValue() * 100d;
+			fraction = ((Number) ((point.getValue().doubleValue() - minValue.doubleValue()) / actualRange.doubleValue()))
+					.floatValue() * 100d;
 			slider.getModel().addThumb(fraction.floatValue(), bound.equalValue);
 		}
 
@@ -226,20 +225,20 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		 */
 		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
 
-		ContinuousTrackRenderer<K, V> cRend = new ContinuousTrackRenderer<K, V>(style, mapping, below, above,
-				tracer, appManager);
+		ContinuousTrackRenderer<K, V> cRend = new ContinuousTrackRenderer<K, V>(style, mapping, below, above, tracer,
+				appManager);
 		cRend.addPropertyChangeListener(this);
 
 		slider.setThumbRenderer(thumbRend);
 		slider.setTrackRenderer(cRend);
-		slider.addMouseListener(new ThumbMouseListener());
+//		slider.addMouseListener(new ThumbMouseListener());
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals(ContinuousMappingEditorPanel.BELOW_VALUE_CHANGED)) {
-			below = convertToValue((Number)evt.getNewValue());
+			below = convertToValue((Number) evt.getNewValue());
 		} else if (evt.getPropertyName().equals(ContinuousMappingEditorPanel.ABOVE_VALUE_CHANGED)) {
-			above = convertToValue((Number)evt.getNewValue());
+			above = convertToValue((Number) evt.getNewValue());
 		}
 	}
 
@@ -256,7 +255,6 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		}
 	}
 
-	
 	private void setPropertySpinner() {
 		SpinnerNumberModel propertySpinnerModel = new SpinnerNumberModel(0.0d, Double.NEGATIVE_INFINITY,
 				Double.POSITIVE_INFINITY, 0.01d);
@@ -267,23 +265,25 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	private final class PropertyValueSpinnerChangeListener implements ChangeListener {
 
 		private final SpinnerNumberModel spinnerModel;
-		
+
 		public PropertyValueSpinnerChangeListener(SpinnerNumberModel model) {
 			this.spinnerModel = model;
 		}
 
 		public void stateChanged(ChangeEvent e) {
-			
+
 			final Number newVal = spinnerModel.getNumber().doubleValue();
 			final int selectedIndex = slider.getSelectedIndex();
-
+			V currentValue = slider.getModel().getThumbAt(selectedIndex).getObject();
+			if(currentValue.equals(newVal))
+				return;
+			
 			slider.getModel().getThumbAt(selectedIndex).setObject(convertToValue(newVal));
-
-			updateMap();
+			//updateMap();
 			slider.repaint();
 		}
 	}
-	
+
 	@Override
 	protected void cancelChanges() {
 		initSlider();

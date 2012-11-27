@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
 		<artifactId>impl-parent</artifactId>
@@ -18,31 +19,6 @@
 	<name>Cytoscape VizMap GUI Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
-
-	<repositories>
-		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>cytoscape_releases</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Cytoscape Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
-		</repository>
-	</repositories>
 
 	<build>
 		<plugins>
@@ -68,7 +44,6 @@
 	</build>
 
 	<dependencies>
-
 		<!-- Cytoscape Dependency -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -98,20 +73,25 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
 		</dependency>
+		
+		<!-- 3rd party libs  -->	
 		<dependency>
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>l2fprod-common-sheet</artifactId>
 			<version>7.3</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>l2fprod-common-shared</artifactId>
 			<version>7.3</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>l2fprod-common-fontchooser</artifactId>
 			<version>7.3</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -121,7 +101,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- freehep fopr exporting Visual Legend -->
+		<!-- freehep for exporting Visual Legend -->
 		<dependency>
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>freehep-graphicsio</artifactId>
@@ -156,6 +136,7 @@
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>freehep-util</artifactId>
 			<version>2.0.2</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

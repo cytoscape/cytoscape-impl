@@ -272,7 +272,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 
 		slider.setThumbRenderer(thumbRend);
 		slider.setTrackRenderer(dRend);
-		slider.addMouseListener(new ThumbMouseListener());
+//		slider.addMouseListener(new ThumbMouseListener());
 	}
 
 

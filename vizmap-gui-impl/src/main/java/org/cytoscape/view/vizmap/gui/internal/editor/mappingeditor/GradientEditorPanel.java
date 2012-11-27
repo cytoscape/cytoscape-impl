@@ -92,7 +92,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		iconPanel.setVisible(false);
 		
 		initSlider();
-		slider.addMouseListener(new ThumbMouseListener());
+//		slider.addMouseListener(new ThumbMouseListener());
 		slider.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				final JComponent selectedThumb = slider.getSelectedThumb();

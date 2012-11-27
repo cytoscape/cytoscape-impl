@@ -106,12 +106,7 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.cytoscape.view.vizmap.gui.internal.editor.mappingeditor.
-	 * ContinuousMappingEditor#drawIcon(int, int, boolean)
-	 */
+	
 	@Override
 	public ImageIcon drawIcon(int width, int height, boolean detail) {
 		if (editorPanel == null)

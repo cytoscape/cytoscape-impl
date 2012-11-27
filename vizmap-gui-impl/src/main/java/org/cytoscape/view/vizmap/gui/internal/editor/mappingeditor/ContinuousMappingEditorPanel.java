@@ -113,7 +113,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected V below;
 	protected V above;
 
-	protected double lastSpinnerNumber = 0;
+	protected Double lastSpinnerNumber = null;
 
 	protected CyNetworkManager cyNetworkManager;
 
@@ -178,6 +178,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		initComponents();
 		initRangeValues();
 		setSpinner();
+		slider.addMouseListener(new ThumbMouseListener());
 	}
 
 	private JPanel createMainPanel() {
@@ -244,7 +245,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 
 	protected void reset() {
-
 		initRangeValues();
 		updateMap();
 		repaint();
@@ -572,66 +572,70 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		return -1;
 	}
 
+	
+	
 	protected void updateMap() {
 		final List<Thumb<V>> thumbs = slider.getModel().getSortedThumbs();
 		final double min = tracer.getMin(type);
 		final double range = tracer.getRange(type);
 
+		// There is only one point.
 		if (thumbs.size() == 1) {
 			updateOnePoint(thumbs, min, range);
 			return;
 		}
 
-		int size = thumbs.size();
+		// There are two or more points.
+		final int size = thumbs.size();
+		final int mappingPointCount = mapping.getPointCount();
 		
-		final SortedMap<Double, ContinuousMappingPoint<K,V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<K,V>>();
-		for (final ContinuousMappingPoint<K, V> point : mapping.getAllPoints()) {
-			Number val =point.getValue();
-			if(sortedPoints.containsKey(val.doubleValue()))
-				val=val.doubleValue()-0.01d;
-			sortedPoints.put(val.doubleValue(), point);
-		}
-		
-		final SortedSet<Double> keys= new TreeSet<Double>(sortedPoints.keySet()); 
-		final Iterator<Double> itr = keys.iterator();
-		
-		for (int i = 0; i < size; i++) {
-			final Thumb<V> t = thumbs.get(i);
-			final Double key = itr.next();
-			final ContinuousMappingPoint<K, V> point = sortedPoints.get(key);
-			
+		// This should not happen!
+		if(size != mappingPointCount)
+			throw new IllegalStateException("Number of handles is not equal to mapping points.");
+
+		int i = 0;
+		for (final Thumb<V> handle:thumbs) {
+			final ContinuousMappingPoint<K, V> point = mapping.getPoint(i);
+			final Number handlePosition = ((handle.getPosition() / 100) * range) + min;
+
+			// Debug
+//			System.out.print("@@@@@@@ Index = " + i);
+//			System.out.print(", handle position = " + handlePosition);
+//			System.out.println(", handle Value = " + handle.getObject());
+
 			V lesserVal;
-			V equalVal = t.getObject();
+			V equalVal = handle.getObject();
 			V greaterVal;
 
 			if (i == 0) {
+				// First handle.  Use Below for lesser.
 				lesserVal = below;
-				greaterVal = t.getObject();
-			} else if (i == (thumbs.size() - 1)) {
+				greaterVal = handle.getObject();
+			} else if (i == (size - 1)) {
+				// Last handle.  Use above.
 				greaterVal = above;
-				lesserVal = t.getObject();
+				lesserVal = handle.getObject();
 			} else {
-				lesserVal = t.getObject();
-				greaterVal = t.getObject();
+				lesserVal = handle.getObject();
+				greaterVal = handle.getObject();
 			}
 
 			final BoundaryRangeValues<V> newRange;
 			if (equalVal instanceof Number) {
 				newRange = new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number) lesserVal),
-						NumberConverter.convert(vpValueType, (Number) equalVal), NumberConverter.convert(
-								vpValueType, (Number) greaterVal));
-				
+						NumberConverter.convert(vpValueType, (Number) equalVal), NumberConverter.convert(vpValueType,
+								(Number) greaterVal));
+
 			} else {
 				newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
 			}
-			
-			point.setRange(newRange);
 
-			Number newVal = ((t.getPosition() / 100) * range) + min;
-			point.setValue((K) newVal);
+			point.setRange(newRange);
+			point.setValue((K) handlePosition);
+			
+			i++;
 		}
 	}
-	
 	
 	private void updateOnePoint(final List<Thumb<V>> thumbs, final double min,
 			final double range) {
@@ -652,22 +656,13 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		mapping.getPoint(0).setValue((K) newVal);
 	}
 
-	protected void enableSpinner(final int selectedIndex) {
-		final Class<V> vpValueType = type.getRange().getType();
-		valueSpinner.setEnabled(true);
-		final Thumb<?> selectedThumb = slider.getModel().getThumbAt(selectedIndex);
-		final Double newVal = ((slider.getModel().getThumbAt(selectedIndex).getPosition() / 100) * tracer
-				.getRange(type)) + tracer.getMin(type);
-		valueSpinner.setValue(newVal);
-		updateMap();
-
+	private final void enableValueEditor(final V newObject) {
 		if (Number.class.isAssignableFrom(vpValueType)) {
 			propertySpinner.setEnabled(true);
-			final BoundaryRangeValues<V> rg = mapping.getPoint(selectedIndex).getRange();
-			propertySpinner.setValue(rg.equalValue);
+			propertySpinner.setValue(newObject);
 		} else if (Paint.class.isAssignableFrom(vpValueType)) {
 			colorButton.setEnabled(true);
-			setButtonColor((Color) selectedThumb.getObject());
+			setButtonColor((Color) newObject);
 		}
 	}
 
@@ -683,17 +678,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		Icon colorIcon = new ImageIcon(bi);
 		colorButton.setIcon(colorIcon);
 		colorButton.setIconTextGap(10);
-	}
-
-	protected void disableSpinner() {
-		Class<?> dataType = type.getClass();
-		valueSpinner.setEnabled(false);
-		valueSpinner.setValue(0);
-
-		if (Number.class.isAssignableFrom(dataType)) {
-			propertySpinner.setEnabled(false);
-			propertySpinner.setValue(0);
-		}
 	}
 
 	void cancelChangesInternal() {
@@ -712,22 +696,31 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	// End of variables declaration
 	protected class ThumbMouseListener extends MouseAdapter {
-
+		
+		/**
+		 * Updates GUI when user moves & releases the handle.
+		 */
 		public void mouseReleased(MouseEvent e) {
-			logger.debug("Mouse released from thumb: ");
-			int selectedIndex = slider.getSelectedIndex();
-
-			if ((0 <= selectedIndex) && (slider.getModel().getThumbCount() > 0)) {
-				valueSpinner.setEnabled(true);
-				enableSpinner(selectedIndex);
-
-				Double newVal = ((slider.getModel().getThumbAt(selectedIndex).getPosition() / 100) * tracer
-						.getRange(type)) + tracer.getMin(type);
-				valueSpinner.setValue(newVal);
+			final int selectedIndex = slider.getSelectedIndex();
+			final int tCount = slider.getModel().getThumbCount();
+			
+			if ((0 <= selectedIndex) && (tCount> 0)) {
+				final Thumb<V> handle = slider.getModel().getThumbAt(selectedIndex);
+				final Double handlePosition = ((handle.getPosition() / 100) * tracer.getRange(type)) + tracer.getMin(type);
 
 				updateMap();
 				slider.repaint();
 				repaint();
+				
+				// Updates spinner values
+				spinnerModel = new SpinnerNumberModel(handlePosition.doubleValue(), Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
+				spinnerModel.addChangeListener(new SpinnerChangeListener());
+				valueSpinner.setModel(spinnerModel);
+				valueSpinner.setEnabled(true);
+
+				V object = handle.getObject();
+				enableValueEditor(object);
+				
 			} else {
 				valueSpinner.setEnabled(false);
 				valueSpinner.setValue(0);
@@ -736,11 +729,14 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 
 	private final class SpinnerChangeListener implements ChangeListener {
-
 		@Override
 		public void stateChanged(ChangeEvent e) {
-
-			Number newVal = spinnerModel.getNumber();
+			final Number newVal = spinnerModel.getNumber();
+			if(lastSpinnerNumber == null || newVal.equals(lastSpinnerNumber)) {
+				lastSpinnerNumber = newVal.doubleValue();
+				return;
+			}
+		
 			int selectedIndex = slider.getSelectedIndex();
 
 			if ((0 <= selectedIndex) && (slider.getModel().getThumbCount() > 1)) {
