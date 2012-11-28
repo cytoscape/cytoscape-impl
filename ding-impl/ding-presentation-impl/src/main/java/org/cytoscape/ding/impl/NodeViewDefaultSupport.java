@@ -76,7 +76,7 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
-			final int currentFontSize = nodeDetails.m_labelFontDefault.getSize();
+			final float currentFontSize = nodeDetails.m_labelFontDefault.getSize();
 			final Font newFont = ((Font) value).deriveFont(currentFontSize);
 			setFont(newFont);
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_SIZE) {
