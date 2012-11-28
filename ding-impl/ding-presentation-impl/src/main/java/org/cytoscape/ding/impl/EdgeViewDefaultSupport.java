@@ -117,7 +117,7 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 			final int newLabelTransparency = ((Number) value).intValue();
 			final int currentLabelTransparency = edgeDetails.labelTransparencyDefault;
 			if (newLabelTransparency != currentLabelTransparency)
-				setTextPaint(edgeDetails.m_labelPaintDefault);
+				setLabelTransparency(newLabelTransparency);
 		} else if (vp == EDGE_CURVED) {
 			setCurved((Boolean) value);
 		} else if (vp == EDGE_BEND) {
@@ -146,6 +146,15 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 
 		setSelectedPaint(edgeDetails.m_selectedPaintDefault);
 		setUnselectedPaint(edgeDetails.m_unselectedPaintDefault);
+	}
+	
+	void setLabelTransparency(final int trans) {
+		if (trans < 0 || trans > 255)
+			edgeDetails.labelTransparencyDefault = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
+		else
+			edgeDetails.labelTransparencyDefault = trans;
+
+		setTextPaint(edgeDetails.m_labelPaintDefault);
 	}
 
 	void setStrokeWidth(float width) {
