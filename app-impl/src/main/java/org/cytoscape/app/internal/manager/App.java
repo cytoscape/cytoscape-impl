@@ -114,6 +114,22 @@ public abstract class App {
 	}
 	
 	/**
+	 * Loosely, a detached app is no longer associated with the main program.
+	 * 
+	 * This is a useful method for knowing which apps not to display in an "all apps" GUI listing.
+	 */
+	public boolean isDetached() {
+		
+		// Following above Javadoc, e.g. Completely uninstalled, and/or file is completely gone
+		if ((status == AppStatus.UNINSTALLED && appInstance == null)
+				|| status == AppStatus.FILE_MOVED && appInstance == null) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
 	 * Creates an instance of this app, such as by instancing the app's class that extends AbstractCyApp,
 	 * and returns an instance to it.
 	 * @param appAdapter A reference to the {@link CyAppAdapter} service used to provide the newly

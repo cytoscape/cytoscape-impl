@@ -496,8 +496,9 @@ public class InstallAppsPanel extends javax.swing.JPanel {
     			public void run(TaskMonitor taskMonitor) throws Exception {
     				taskMonitor.setTitle("Installing app");
     				
+    				int installedAppCount = 0;
     				double progress = 0;
-    					
+    				
     				taskMonitor.setStatusMessage("Installing app");
     				
     				for (int index = 0; index < files.length; index++) {
@@ -514,9 +515,8 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 	    	        		for (App app : appManager.getApps()) {
 	
 	    	        			// App with same name found, check if need to replace existing
-	    	        			if (parsedAppName.equals(app.getAppName()) && false) {
+	    	        			if (parsedAppName.equals(app.getAppName())) {
 	    	        				
-//	    	        				if (WebQuerier.compareVersions(parsedAppVersion, app.getVersion()) == 0) {
 	    	        				int response;
 	    	        				
     	        					response = JOptionPane.showConfirmDialog(parent, "There is an app \"" + app.getAppName()
@@ -525,16 +525,16 @@ public class InstallAppsPanel extends javax.swing.JPanel {
     	        							+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_OPTION);
 	    	        				
     	        					if (response == JOptionPane.YES_OPTION) {
+    	        						installedAppCount += 1;
     	        						appManager.uninstallApp(app);
-    	        					}
-    	        					
-    	        					if (response == JOptionPane.NO_OPTION) {
     	        						
     	        					}
     	        					
-	    	        					// TODO: Check == version, <= version.
-//	    	        				}
-	    	        				
+    	        					if (response == JOptionPane.NO_OPTION) {
+    	        						// Do nothing
+    	        					}
+	    	        			} else {
+		    	        			installedAppCount += 1;
 	    	        			}
 	    	        		}
     	        		}
@@ -545,7 +545,9 @@ public class InstallAppsPanel extends javax.swing.JPanel {
     	        	taskMonitor.setProgress(1.0);
     	        	
     	        	if (parent instanceof AppManagerDialog) {
-    	        		((AppManagerDialog) parent).changeTab(1);	
+    	        		if (installedAppCount > 0) {
+    	        			((AppManagerDialog) parent).changeTab(1);
+    	        		}
     	        	}
     			}
 
@@ -557,6 +559,16 @@ public class InstallAppsPanel extends javax.swing.JPanel {
         }
     }
     
+	private boolean checkAppNameCollision(String appName) {
+		for (App app : appManager.getApps()) {
+			if (appName.equalsIgnoreCase(app.getAppName())) {
+				
+			}
+		}
+		
+		return false;
+	}
+	
     /**
      * Attempts to insert newlines into a given string such that each line has no 
      * more than the specified number of characters.
