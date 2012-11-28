@@ -610,8 +610,6 @@ public class AppManager implements FrameworkListener {
 	 * Uninstalls an app. If it was located in the subdirectory containing currently installed apps in the
 	 * local storage directory, it will be moved to the subdirectory containing currently uninstalled apps.
 	 * 
-	 * The app will only be uninstalled if it is currently installed.
-	 * 
 	 * @param app The app to be uninstalled.
 	 * @throws AppUninstallException If there was an error while attempting to uninstall the app such as
 	 * attempting to uninstall an app that isn't installed, or being unable to move the app to the uninstalled

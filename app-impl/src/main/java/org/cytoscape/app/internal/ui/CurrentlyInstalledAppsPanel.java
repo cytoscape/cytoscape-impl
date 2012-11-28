@@ -30,6 +30,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 	/** Long serial version identifier required by the Serializable class */
 	private static final long serialVersionUID = 7096775814942183176L;
 	
+	/** List of statuses of apps that should not be displayed in the apps listing. */
 	private static final Set<AppStatus> HIDDEN_APP_STATUSES = new HashSet<AppStatus>();
 
 	static {

@@ -514,10 +514,24 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 	    	        		for (App app : appManager.getApps()) {
 	
 	    	        			// App with same name found, check if need to replace existing
-	    	        			if (parsedAppName.equals(app.getAppName())) {
+	    	        			if (parsedAppName.equals(app.getAppName()) && false) {
 	    	        				
 //	    	        				if (WebQuerier.compareVersions(parsedAppVersion, app.getVersion()) == 0) {
-//	    	        					WebQuerier.c
+	    	        				int response;
+	    	        				
+    	        					response = JOptionPane.showConfirmDialog(parent, "There is an app \"" + app.getAppName()
+    	        							+ "\" with the same name. It is version " + app.getVersion() + ", while the" 
+    	        							+ " one you're about to install is version " + parsedApp.getVersion() 
+    	        							+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_OPTION);
+	    	        				
+    	        					if (response == JOptionPane.YES_OPTION) {
+    	        						appManager.uninstallApp(app);
+    	        					}
+    	        					
+    	        					if (response == JOptionPane.NO_OPTION) {
+    	        						
+    	        					}
+    	        					
 	    	        					// TODO: Check == version, <= version.
 //	    	        				}
 	    	        				
@@ -759,7 +773,6 @@ public class InstallAppsPanel extends javax.swing.JPanel {
     		
     		// text += "<html> <head> </head> <body hspace=\"4\" vspace=\"4\">";
     		text += "<html> <body hspace=\"4\" vspace=\"2\">";
-    		
     		
     		// App hyperlink to web store page
     		// text += "<p style=\"margin-top: 0\"> <a href=\"" + selectedApp.getPageUrl() + "\">" + selectedApp.getPageUrl() + "</a> </p>";
