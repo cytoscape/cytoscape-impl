@@ -753,9 +753,6 @@ final class DEdgeDetails extends EdgeDetails {
 			isCleared = false;
 		}
 	}
-
-	
-	
 	
 	@Override
 	public Font getLabelFont(final CyEdge edge, final int labelInx) {

@@ -148,12 +148,11 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		setUnselectedPaint(edgeDetails.m_unselectedPaintDefault);
 	}
 	
-	void setLabelTransparency(final int trans) {
+	void setLabelTransparency(int trans) {
 		if (trans < 0 || trans > 255)
-			edgeDetails.labelTransparencyDefault = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
-		else
-			edgeDetails.labelTransparencyDefault = trans;
+			trans = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
 
+		edgeDetails.setLabelTransparencyDefault(trans);
 		setTextPaint(edgeDetails.m_labelPaintDefault);
 	}
 

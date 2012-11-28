@@ -623,6 +623,9 @@ class DNodeDetails extends NodeDetails {
 	void setLabelFontDefault(Font f) {
 		m_labelFontDefault = f;
 		defaultValues.put(DVisualLexicon.NODE_LABEL_FONT_FACE, m_labelFontDefault);
+		
+		if (f != null)
+			defaultValues.put(DVisualLexicon.NODE_LABEL_FONT_SIZE, f.getSize());
 	}
 
 	/*

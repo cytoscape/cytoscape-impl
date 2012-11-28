@@ -664,7 +664,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 	
-	public void setTextTransparency(Integer trans) {
+	public void setLabelTransparency(Integer trans) {
 		synchronized (graphView.m_lock) {
 			Integer transparency;
 			if (trans < 0 || trans > 255) {
@@ -1109,7 +1109,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setTextPaint((Color)value);
 		} else if (vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY) {
 			final int opacity = ((Number) value).intValue();
-			setTextTransparency(opacity);
+			setLabelTransparency(opacity);
 		} else if (vp == DVisualLexicon.NODE_LABEL_FONT_FACE) {
 			final float currentFontSize = graphView.m_nodeDetails.getLabelFont(model, 0).getSize();
 			final Font newFont = ((Font) value).deriveFont(currentFontSize);
