@@ -207,11 +207,10 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(255, nv.getVisualProperty(NODE_BORDER_TRANSPARENCY).intValue());
 		assertEquals(new Color(0,0,0), nv.getVisualProperty(NODE_LABEL_COLOR));
 		assertEquals(255, nv.getVisualProperty(NODE_LABEL_TRANSPARENCY).intValue());
-		assertEquals(Font.decode("SansSerif-PLAIN-12"), nv.getVisualProperty(NODE_LABEL_FONT_FACE));
+		assertEquals(Font.decode("SansSerif-BOLD-12"), nv.getVisualProperty(NODE_LABEL_FONT_FACE));
 		assertEquals(12, nv.getVisualProperty(NODE_LABEL_FONT_SIZE).intValue());
 		// All edges have the same visual properties
 		final View<CyEdge> ev = view.getEdgeView(view.getModel().getEdgeList().iterator().next());
-		assertEquals(1, ev.getVisualProperty(EDGE_WIDTH).intValue());
 		assertEquals(new Color(0,0,255), ev.getVisualProperty(EDGE_UNSELECTED_PAINT));
 		assertEquals(255, ev.getVisualProperty(EDGE_TRANSPARENCY).intValue());
 		assertEquals(LineTypeVisualProperty.SOLID, ev.getVisualProperty(EDGE_LINE_TYPE));

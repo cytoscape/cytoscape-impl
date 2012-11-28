@@ -198,7 +198,7 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(255, nv.getVisualProperty(NODE_LABEL_TRANSPARENCY).intValue());
 		// All edges have the same width and other properties
 		final View<CyEdge> ev = view.getEdgeView(view.getModel().getEdgeList().iterator().next());
-		assertEquals(1, ev.getVisualProperty(EDGE_WIDTH).intValue());
+		assertEquals(new Double(1.0), ev.getVisualProperty(EDGE_WIDTH));
 		assertEquals(255, ev.getVisualProperty(EDGE_TRANSPARENCY).intValue());
 		assertEquals(ArrowShapeVisualProperty.NONE, ev.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
 		assertEquals(ArrowShapeVisualProperty.NONE, ev.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
