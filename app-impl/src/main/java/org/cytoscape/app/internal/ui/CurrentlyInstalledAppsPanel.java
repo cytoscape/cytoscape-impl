@@ -20,6 +20,8 @@ import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.manager.BundleApp;
+import org.cytoscape.app.internal.manager.SimpleApp;
 
 /**
  * This class represents the panel in the App Manager dialog's tab used for checking for currently installed apps.
@@ -182,6 +184,8 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         		appManager.getWebQuerier().findAppDescriptions(appManager.getApps());
         	}
         });
+        
+        updateLabels();
     }
         
     private void enableSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -341,16 +345,17 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
      * Update the labels that display the number of currently installed and available apps.
      */
     private void updateLabels() {
-    	int installedCount = 0;
+    	int listedCount = 0;
     	
     	for (App app : appManager.getApps()) {
     		
-    		if (app.getStatus() == AppStatus.INSTALLED) {
-    			installedCount++;
+    		// Count the number of displayed apps
+    		if (!app.isDetached()) {
+    			listedCount++;
     		}
     	}
     	
-    	appsInstalledLabel.setText(installedCount + (installedCount == 1 ? " App installed." : " Apps installed."));
+    	appsInstalledLabel.setText(listedCount + " App(s) listed.");
     }
     
     /**
@@ -381,12 +386,24 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     		uninstallSelectedButton.setEnabled(false);
     		
     	// If a single app is selected, show its app description
-    	} else if (numSelected == 1){
+    	} else if (numSelected == 1) {
     		App selectedApp = selectedApps.iterator().next();
     		
+    		String type;
     		String text = selectedApp.getDescription() == null ? 
     			"App description not found." : selectedApp.getDescription();
-    		descriptionTextArea.setText(text);
+    		type = "Type of app: ";
+    		if (selectedApp instanceof BundleApp) {
+    			type += "OSGi bundle app";
+    		} else if (selectedApp instanceof SimpleApp) {
+    			type += "Simple app";
+    		} else {
+    			type += "Unknown";
+    		}
+    		type += "\n";
+    		type += "\n";
+    		
+    		descriptionTextArea.setText(type + text);
     		
     		// Enable/disable the appropriate button
     		if (selectedApp.getStatus() == AppStatus.INSTALLED) {
