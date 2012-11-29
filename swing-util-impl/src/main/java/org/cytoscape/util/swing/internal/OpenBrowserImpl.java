@@ -56,6 +56,8 @@ import org.slf4j.LoggerFactory;
 public class OpenBrowserImpl implements OpenBrowser {
 
 	private final Logger logger = LoggerFactory.getLogger(OpenBrowserImpl.class);
+	private static String[] BROWSERS =
+        { "xdg-open", "htmlview", "firefox", "mozilla", "konqueror", "chrome", "chromium" };
 
 	/**
 	 * Opens the specified URL in the system default web browser.
@@ -64,11 +66,20 @@ public class OpenBrowserImpl implements OpenBrowser {
 	 */
 	@Override
 	public boolean openURL(final String url) {
-		final Desktop desktop = Desktop.getDesktop();
-		
 		try {
 			URI uri = new URI(url);
-			desktop.browse(uri);
+			if(Desktop.isDesktopSupported()) {
+				final Desktop desktop = Desktop.getDesktop();
+				desktop.browse(uri);
+			}
+			else { //fallback if desktop API not supported
+				for (final String browser : BROWSERS) {
+					String cmd = browser + " " + url;
+					final Process p = Runtime.getRuntime().exec(cmd);
+					if(p.waitFor() == 0)
+						break;
+				}
+			}
 		} catch (IOException ioe) {
 			JOptionPane.showInputDialog(null, "There was an error while attempting to open the system browser. "
 					+ "\nPlease copy and paste the following URL into your browser:", url);
@@ -76,8 +87,9 @@ public class OpenBrowserImpl implements OpenBrowser {
 		} catch (URISyntaxException e) {
 			logger.warn("This URI is invalid: " + url, e);
 			return false;
+		} catch (InterruptedException e) {
+			logger.warn("Browser process thread interrupted");
 		}
-		
 		return true;
 	}
 }
