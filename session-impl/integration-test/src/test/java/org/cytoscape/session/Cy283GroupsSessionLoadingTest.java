@@ -1,15 +1,11 @@
 package org.cytoscape.session;
 
-import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
-import static org.cytoscape.model.CyNetwork.HIDDEN_ATTRS;
-import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS;
-import static org.cytoscape.model.CyNetwork.NAME;
-import static org.cytoscape.model.CyNetwork.SELECTED;
-import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_ATTRS;
-import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_DEFAULT_ATTRS;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.junit.Assert.*;
 
+import java.awt.Color;
 import java.io.File;
+import java.util.Collection;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyEdge;
@@ -18,6 +14,11 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +47,7 @@ public class Cy283GroupsSessionLoadingTest extends BasicIntegrationTest {
 	private void confirm() {
 		checkGlobalStatus();
 		checkNetwork();
+		checkNetworkView();
 		checkGroups();
 	}
 	
@@ -65,6 +67,33 @@ public class Cy283GroupsSessionLoadingTest extends BasicIntegrationTest {
 		assertEquals(SavePolicy.SESSION_FILE, net.getSavePolicy());
 		checkNodeEdgeCount(applicationManager.getCurrentNetwork(), 4, 2, 0, 0);
 		assertEquals("Nested Network Style", vmm.getVisualStyle(viewManager.getNetworkViews(net).iterator().next()).getTitle());
+	}
+	
+	private void checkNetworkView(){
+		// View test
+		final CyNetwork net = applicationManager.getCurrentNetwork();
+		Collection<CyNetworkView> views = viewManager.getNetworkViews(net);
+		assertEquals(1, views.size());
+
+		// Check updated view
+		final CyNetworkView view = applicationManager.getCurrentNetworkView();
+		final VisualStyle style = vmm.getVisualStyle(view);
+		style.apply(view);
+		
+		// Locked Visual Properties (group nodes and meta-edges)
+		final CyNode mn = getNodeByName(net, "Metanode 2");
+		final View<CyNode> nv = view.getNodeView(mn);
+		assertEquals(NodeShapeVisualProperty.DIAMOND, nv.getVisualProperty(NODE_SHAPE));
+		assertTrue(nv.isValueLocked(NODE_SHAPE));
+		assertEquals(new Integer(100), nv.getVisualProperty(NODE_TRANSPARENCY));
+		assertTrue(nv.isValueLocked(NODE_TRANSPARENCY));
+		
+		final CyEdge me = getEdgeByName(net, "Metanode 2 (meta-meta-DirectedEdge) node2");
+		final View<CyEdge> ev = view.getEdgeView(me);
+		assertEquals(LineTypeVisualProperty.EQUAL_DASH, ev.getVisualProperty(EDGE_LINE_TYPE));
+		assertTrue(ev.isValueLocked(EDGE_LINE_TYPE));
+		assertEquals(new Color(51,51,255), ev.getVisualProperty(EDGE_STROKE_UNSELECTED_PAINT));
+		assertTrue(ev.isValueLocked(EDGE_STROKE_UNSELECTED_PAINT));
 	}
 	
 	private void checkGroups() {
@@ -132,8 +161,5 @@ public class Cy283GroupsSessionLoadingTest extends BasicIntegrationTest {
 		assertEquals(new Integer(9), root.getRow(me1).get("weight", Integer.class));
 		CyEdge me2 = getEdgeByName(root, "Metanode 2 (meta-meta-DirectedEdge) node2");
 		assertEquals(new Integer(8), net.getRow(me2).get("weight", Integer.class));
-		
-		// Visual Properties (group nodes and meta-edges only)
-		// TODO
 	}
 }
