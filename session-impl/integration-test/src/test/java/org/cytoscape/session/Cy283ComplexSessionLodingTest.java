@@ -1,17 +1,14 @@
 package org.cytoscape.session;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.junit.Assert.*;
 
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-
-import javax.jws.soap.SOAPBinding.Style;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -27,11 +24,9 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.cytoscape.work.TaskIterator;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -160,12 +155,12 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(4, mappings.size());
 
 		// Test defaults
-		NodeShape defaultShape = style.getDefaultValue(BasicVisualLexicon.NODE_SHAPE);
-		Paint nodeColor = style.getDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR);
-		Integer fontSize = style.getDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_SIZE);
-		Integer transparency = style.getDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY);
-		Double size = style.getDefaultValue(BasicVisualLexicon.NODE_SIZE);
-		Paint edgeLabelColor = style.getDefaultValue(BasicVisualLexicon.EDGE_LABEL_COLOR);
+		NodeShape defaultShape = style.getDefaultValue(NODE_SHAPE);
+		Paint nodeColor = style.getDefaultValue(NODE_FILL_COLOR);
+		Integer fontSize = style.getDefaultValue(NODE_LABEL_FONT_SIZE);
+		Integer transparency = style.getDefaultValue(NODE_TRANSPARENCY);
+		Double size = style.getDefaultValue(NODE_SIZE);
+		Paint edgeLabelColor = style.getDefaultValue(EDGE_LABEL_COLOR);
 
 		assertEquals(NodeShapeVisualProperty.ELLIPSE, defaultShape);
 		assertEquals(new Color(204, 204, 255), nodeColor);
@@ -175,10 +170,8 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(Color.BLACK, edgeLabelColor);
 
 		// Check each mapping
-		VisualMappingFunction<?, String> nodeLabelMapping = style
-				.getVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
-		VisualMappingFunction<?, String> edgeLabelMapping = style
-				.getVisualMappingFunction(BasicVisualLexicon.EDGE_LABEL);
+		VisualMappingFunction<?, String> nodeLabelMapping = style.getVisualMappingFunction(NODE_LABEL);
+		VisualMappingFunction<?, String> edgeLabelMapping = style.getVisualMappingFunction(EDGE_LABEL);
 
 		assertTrue(nodeLabelMapping instanceof PassthroughMapping);
 		assertTrue(edgeLabelMapping instanceof PassthroughMapping);
@@ -189,8 +182,7 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(String.class, edgeLabelMapping.getMappingColumnType());
 
 		// Edge Color mapping
-		VisualMappingFunction<?, Paint> edgeColorMapping = style
-				.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		VisualMappingFunction<?, Paint> edgeColorMapping = style.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
 		assertTrue(edgeColorMapping instanceof DiscreteMapping);
 		assertEquals(CyEdge.INTERACTION, edgeColorMapping.getMappingColumnName());
 		assertEquals(String.class, edgeColorMapping.getMappingColumnType());
@@ -199,8 +191,7 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(new Color(255, 0, 51), disc1.getMapValue("pd"));
 		assertEquals(null, disc1.getMapValue("this is an invalid value"));
 
-		VisualMappingFunction<?, LineType> edgeLineStyleMapping = style
-				.getVisualMappingFunction(BasicVisualLexicon.EDGE_LINE_TYPE);
+		VisualMappingFunction<?, LineType> edgeLineStyleMapping = style.getVisualMappingFunction(EDGE_LINE_TYPE);
 		assertTrue(edgeLineStyleMapping instanceof DiscreteMapping);
 		assertEquals(CyEdge.INTERACTION, edgeLineStyleMapping.getMappingColumnName());
 		assertEquals(String.class, edgeLineStyleMapping.getMappingColumnType());
@@ -212,24 +203,18 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		final Set<VisualPropertyDependency<?>> deps = style.getAllVisualPropertyDependencies();
 		assertEquals(3, deps.size());
 		
-		
-		// Apply the given style
-		style.apply(view);
-
 		// Check updated view
+		style.apply(view);
 		checkView1(view);
-
 	}
 	
 	private void checkView1(final CyNetworkView view) {
-		
-		final Color backgroungColor = (Color) view.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
-		assertEquals(Color.WHITE, backgroungColor);
+		assertEquals(Color.WHITE, view.getVisualProperty(NETWORK_BACKGROUND_PAINT));
 		
 		// Check lock is restored
 		
 		final Double nodeSize = view.getNodeView(view.getModel().getNodeList().iterator().next()).getVisualProperty(
-				BasicVisualLexicon.NODE_SIZE);
+				NODE_SIZE);
 		
 		// FIXME dependency is broken.
 		//assertEquals(Double.valueOf(40.0d), nodeSize);

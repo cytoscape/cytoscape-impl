@@ -184,6 +184,12 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 
 	private void checkView(final CyNetworkView view) {
 		assertEquals(Color.BLACK, view.getVisualProperty(NETWORK_BACKGROUND_PAINT));
+		assertEquals(new Double(639.0d), view.getVisualProperty(NETWORK_WIDTH));
+		assertEquals(new Double(624.0d), view.getVisualProperty(NETWORK_HEIGHT));
+		assertEquals(new Double(3091.2991395970175d), view.getVisualProperty(NETWORK_CENTER_X_LOCATION));
+		assertEquals(new Double(3610.396738076269d), view.getVisualProperty(NETWORK_CENTER_Y_LOCATION));
+		assertEquals(new Double(0.05044042295795177d), view.getVisualProperty(NETWORK_SCALE_FACTOR));
+	    
 		// All nodes have the same size, border and shape
 		final View<CyNode> nv = view.getNodeView(view.getModel().getNodeList().iterator().next());
 		assertEquals(80, nv.getVisualProperty(NODE_WIDTH).intValue());
@@ -196,6 +202,7 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(255, nv.getVisualProperty(NODE_BORDER_TRANSPARENCY).intValue());
 		assertEquals(new Color(255,255,255), nv.getVisualProperty(NODE_LABEL_COLOR));
 		assertEquals(255, nv.getVisualProperty(NODE_LABEL_TRANSPARENCY).intValue());
+		
 		// All edges have the same width and other properties
 		final View<CyEdge> ev = view.getEdgeView(view.getModel().getEdgeList().iterator().next());
 		assertEquals(new Double(1.0), ev.getVisualProperty(EDGE_WIDTH));

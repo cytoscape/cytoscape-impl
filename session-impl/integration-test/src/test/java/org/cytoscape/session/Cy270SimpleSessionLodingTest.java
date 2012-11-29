@@ -8,7 +8,6 @@ import java.awt.Font;
 import java.io.File;
 import java.util.Collection;
 
-import org.cytoscape.ding.customgraphics.paint.ColorPaintFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -151,8 +150,13 @@ public class Cy270SimpleSessionLodingTest extends BasicIntegrationTest {
 	}
 
 	private void checkView(final CyNetworkView view) {
-		final Color backgroungColor = (Color) view.getVisualProperty(NETWORK_BACKGROUND_PAINT);
-		assertEquals(Color.WHITE, backgroungColor);
+		assertEquals(Color.WHITE, view.getVisualProperty(NETWORK_BACKGROUND_PAINT));
+		assertEquals(new Double(400.0d), view.getVisualProperty(NETWORK_WIDTH));
+		assertEquals(new Double(400.0d), view.getVisualProperty(NETWORK_HEIGHT));
+		assertEquals(new Double(1667.0d), view.getVisualProperty(NETWORK_CENTER_X_LOCATION));
+		assertEquals(new Double(2553.0d), view.getVisualProperty(NETWORK_CENTER_Y_LOCATION));
+		assertEquals(new Double(0.19686075949367088d), view.getVisualProperty(NETWORK_SCALE_FACTOR));
+		
 		// All nodes have the same default visual properties
 		final View<CyNode> nv = view.getNodeView(view.getModel().getNodeList().iterator().next());
 		assertEquals(40, nv.getVisualProperty(NODE_SIZE).intValue());
