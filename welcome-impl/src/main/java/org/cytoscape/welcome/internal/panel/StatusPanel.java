@@ -2,7 +2,6 @@ package org.cytoscape.welcome.internal.panel;
 
 import java.awt.GridLayout;
 
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -39,7 +38,6 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 		status.setOpaque(false);
 		status.setFont(REGULAR_FONT);
 		status.setForeground(REGULAR_FONT_COLOR);
-		status.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 		
 		if(isUpToDate()) {
 			status.setIcon(upToDateIcon);

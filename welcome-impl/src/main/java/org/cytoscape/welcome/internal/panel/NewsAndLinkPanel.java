@@ -1,7 +1,6 @@
 package org.cytoscape.welcome.internal.panel;
 
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -12,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -49,20 +47,19 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 	}
 
 	private void initComponents() {
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		this.setLayout(new GridLayout(2,1));
 		setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
 		
 		final JPanel linkPanel = new JPanel();
 		linkPanel.setOpaque(false);
-		linkPanel.setMaximumSize(new Dimension(300, 65));
 		linkPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(REGULAR_FONT_COLOR, 1),
 				"Web Links", TitledBorder.LEFT, TitledBorder.CENTER, REGULAR_FONT, REGULAR_FONT_COLOR));
 		linkPanel.setLayout(new GridLayout(2, 2));
 
 		
 		about = new JLabel("<html><u>About Cytoscape</u></html>");
-		manual = new JLabel("<html><u>User Documentation</u></html>");
+		manual = new JLabel("<html><u>Documentation</u></html>");
 		tutorial = new JLabel("<html><u>Tutorials</u></html>");
 		bugReport = new JLabel("<html><u>Report a bug</u></html>");
 
@@ -89,16 +86,12 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 			label.setForeground(LINK_FONT_COLOR);
 			label.setHorizontalAlignment(SwingConstants.LEFT);
 			label.setHorizontalTextPosition(SwingConstants.LEFT);
-			label.setOpaque(false);
 			label.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			label.addMouseListener(new LabelMouseListener(label, urlMap.get(label), this));
 			linkPanel.add(label);
 		}
 
 		statusPanel.setOpaque(false);
-		final Dimension statusPanelSize = new Dimension(300, 100);
-		statusPanel.setPreferredSize(statusPanelSize);
-		statusPanel.setSize(statusPanelSize);
 		statusPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(REGULAR_FONT_COLOR, 1),
 				"Latest News", TitledBorder.LEFT, TitledBorder.CENTER, REGULAR_FONT, REGULAR_FONT_COLOR));
 		
