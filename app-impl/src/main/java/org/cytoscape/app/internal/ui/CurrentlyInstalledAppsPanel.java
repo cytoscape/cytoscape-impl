@@ -321,8 +321,8 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 		
     	for (App app : appManager.getApps()) {
     		
-    		// Hide apps with certain statuses from the table, such as uninstalled ones
-    		if (HIDDEN_APP_STATUSES.contains(app.getStatus())) {
+    		// Hide apps with certain statuses from the table, such as uninstalled ones.
+    		if (app.isDetached() || HIDDEN_APP_STATUSES.contains(app.getStatus())) {
     			// Do nothing
     		} else {
 	    		tableModel.addRow(new Object[]{

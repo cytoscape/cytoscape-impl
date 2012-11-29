@@ -45,6 +45,7 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.AppParser;
+import org.cytoscape.app.internal.manager.BundleApp;
 import org.cytoscape.app.internal.net.DownloadStatus;
 import org.cytoscape.app.internal.net.ResultsFilterer;
 import org.cytoscape.app.internal.net.Update;
@@ -510,33 +511,34 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 						
     	        		{
     	        			String parsedAppName = parsedApp.getAppName();
-    	        			String parsedAppVersion = parsedApp.getVersion();
     	        			
-	    	        		for (App app : appManager.getApps()) {
-	
-	    	        			// App with same name found, check if need to replace existing
-	    	        			if (parsedAppName.equals(app.getAppName())) {
-	    	        				
-	    	        				int response;
-	    	        				
-    	        					response = JOptionPane.showConfirmDialog(parent, "There is an app \"" + app.getAppName()
-    	        							+ "\" with the same name. It is version " + app.getVersion() + ", while the" 
-    	        							+ " one you're about to install is version " + parsedApp.getVersion() 
-    	        							+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_OPTION);
-	    	        				
-    	        					if (response == JOptionPane.YES_OPTION) {
-    	        						installedAppCount += 1;
-    	        						appManager.uninstallApp(app);
-    	        						
-    	        					}
-    	        					
-    	        					if (response == JOptionPane.NO_OPTION) {
-    	        						// Do nothing
-    	        					}
-	    	        			} else {
-		    	        			installedAppCount += 1;
-	    	        			}
-	    	        		}
+    	        			Set<App> collidingApps = checkAppNameCollision(parsedAppName);
+    	        			
+    	        			// TODO: Only do replace for bundle apps due to simple apps requiring restart for uninstall.
+    	        			// TODO: Possibly may be good idea to show whether an app is a bundle app, on the app description page.
+    	        			if (collidingApps.size() == 1 && collidingApps.iterator().next() instanceof BundleApp) {
+    	        				App app = collidingApps.iterator().next();
+    	        				
+    	        				int response;
+    	        				
+    	        				response = JOptionPane.showConfirmDialog(parent, "There is an app \"" + app.getAppName()
+	        							+ "\" with the same name. It is version " + app.getVersion() + ", while the" 
+	        							+ " one you're about to install is version " + parsedApp.getVersion() 
+	        							+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_OPTION);
+    	        				
+	        					if (response == JOptionPane.YES_OPTION) {
+	        						installedAppCount += 1;
+	        						appManager.uninstallApp(app);
+	        						
+	        					}
+	        					
+	        					if (response == JOptionPane.NO_OPTION) {
+	        						// Do nothing
+	        					}
+    	        			} else {
+    	        				installedAppCount += 1;
+    	        			}
+    	        			
     	        		}
     	        		
     	        		appManager.installApp(parsedApp);
@@ -559,14 +561,21 @@ public class InstallAppsPanel extends javax.swing.JPanel {
         }
     }
     
-	private boolean checkAppNameCollision(String appName) {
+	private Set<App> checkAppNameCollision(String appName) {
+		Set<App> collidingApps = new HashSet<App>();
+		
 		for (App app : appManager.getApps()) {
 			if (appName.equalsIgnoreCase(app.getAppName())) {
 				
+				if (app.isDetached() == false) {
+					collidingApps.add(app);
+				}
 			}
 		}
 		
-		return false;
+		
+		
+		return collidingApps;
 	}
 	
     /**
@@ -637,6 +646,27 @@ public class InstallAppsPanel extends javax.swing.JPanel {
         		if (appFile != null) {
 	        		// Parse app
 	        		App parsedApp = appManager.getAppParser().parseApp(appFile);
+	        		
+	        		// Check for name collisions
+	        		Set<App> collidingApps = checkAppNameCollision(parsedApp.getAppName());
+	        		
+	        		// TODO: Only do replace for bundle apps due to simple apps requiring restart for uninstall.
+	        		if (collidingApps.size() == 1 && collidingApps.iterator().next() instanceof BundleApp) {
+	        			App collidingApp = collidingApps.iterator().next();
+		        		
+	        			int response = JOptionPane.showConfirmDialog(parent, "There is an app \"" + collidingApp.getAppName()
+    							+ "\" with the same name, version " + collidingApp.getVersion() + ". The" 
+    							+ " one you're about to install is version " + parsedApp.getVersion() 
+    							+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_OPTION);
+        				
+    					if (response == JOptionPane.YES_OPTION) {
+    						appManager.uninstallApp(collidingApp);
+    					}
+    					
+    					if (response == JOptionPane.NO_OPTION) {
+    						// Do nothing
+    					}
+	        		}
 	        		
 	        		// Install app
 					appManager.installApp(parsedApp);
