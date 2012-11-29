@@ -110,6 +110,7 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
+			closeParentWindow();
 			openBrowserServiceRef.openURL(url);
 		}
 	}
