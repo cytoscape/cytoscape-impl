@@ -74,6 +74,15 @@ public class Cy270SimpleSessionLodingTest extends BasicIntegrationTest {
 
 		assertEquals(3*SUBNET_COUNT, tableManager.getAllTables(false).size());
 		assertEquals((9*SUBNET_COUNT) + (15*ROOTNET_COUNT), tableManager.getAllTables(true).size());
+		
+		// Current network and view
+		final CyNetwork curNet = getNetworkByName("galFiltered--child");
+		assertEquals(curNet, applicationManager.getCurrentNetwork());
+		assertEquals(curNet, applicationManager.getCurrentNetworkView().getModel());
+		
+		// Visual Style
+		assertEquals(5, vmm.getAllVisualStyles().size());
+		checkCurrentVisualStyle(vmm.getCurrentVisualStyle());
 	}
 
 	private void checkNetworkView(CyNetwork network){
@@ -81,27 +90,15 @@ public class Cy270SimpleSessionLodingTest extends BasicIntegrationTest {
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
 		assertEquals(1, views.size());
 
-		final CyNetworkView view = views.iterator().next();
-
-		// Visual Style
-		assertEquals(5, vmm.getAllVisualStyles().size());
-		final VisualStyle style = vmm.getVisualStyle(view);
-		checkVisualStyle(style);
-
 		// Check updated view
+		final CyNetworkView view = views.iterator().next();
+		final VisualStyle style = vmm.getVisualStyle(view);
 		style.apply(view);
 		checkView(view);
 	}
 	
 	private void checkNetwork(final CyNetwork network) {
-		assertEquals(53, network.getNodeCount());
-		assertEquals(63, network.getEdgeCount());
-
-		// Selection state
-		Collection<CyRow> selectedNodes = network.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true);
-		Collection<CyRow> selectedEdges = network.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true);
-		assertEquals(0, selectedNodes.size());
-		assertEquals(0, selectedEdges.size());		
+		checkNodeEdgeCount(network, 53, 63, 0, 0);
 	}
 	
 	private void checkAttributes(final CyNetwork network){
@@ -113,7 +110,6 @@ public class Cy270SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertTrue(CyTableUtil.getColumnNames(nodeTable).contains("attrFloat"));
 		assertTrue(CyTableUtil.getColumnNames(nodeTable).contains("attrBoolean"));
 
-		
 		// check attribute values		
 		Object[] rows1 = nodeTable.getMatchingRows("name", "YBL069W").toArray();
 		CyRow row1 = (CyRow)rows1[0];		
@@ -129,7 +125,7 @@ public class Cy270SimpleSessionLodingTest extends BasicIntegrationTest {
 	}
 
 	
-	private void checkVisualStyle(final VisualStyle style) {
+	private void checkCurrentVisualStyle(final VisualStyle style) {
 		assertNotNull(style);
 		assertEquals("Solid", style.getTitle());
 

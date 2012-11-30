@@ -260,6 +260,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			restoreTables(sess);
 			restoreVisualStyles(sess);
 			restoreNetworkSelection(sess, selectedNetworks);
+			restoreCurrentVisualStyle();
 		}
 		
 		currentSession = sess;
@@ -453,12 +454,25 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			
 			// Also set the current view, if there is one
 			final Collection<CyNetworkView> cnViews = nvMgr.getNetworkViews(cn);
-			CyNetworkView cv = cnViews.isEmpty() ? null : cnViews.iterator().next();
+			final CyNetworkView cv = cnViews.isEmpty() ? null : cnViews.iterator().next();
 			appMgr.setCurrentNetworkView(cv);
 		
 			// The selected networks must be set after setting the current one!
 			if (!selectedNets.isEmpty())
 				appMgr.setSelectedNetworks(selectedNets);
+		}
+	}
+
+	private void restoreCurrentVisualStyle() {
+		// Make sure the current visual style is the one applied to the current network view
+		eventHelper.flushPayloadEvents();
+		final CyNetworkView cv = appMgr.getCurrentNetworkView();
+		
+		if (cv != null) {
+			final VisualStyle style = vmMgr.getVisualStyle(cv);
+			
+			if (style != null && !style.equals(vmMgr.getCurrentVisualStyle()))
+				vmMgr.setCurrentVisualStyle(style);
 		}
 	}
 

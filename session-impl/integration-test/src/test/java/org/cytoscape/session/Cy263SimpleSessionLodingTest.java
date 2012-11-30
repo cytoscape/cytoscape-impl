@@ -60,7 +60,6 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 	private void confirm() {
 		// test overall status of current session.
 		checkGlobalStatus();
-		checkVisualStyles();
 
 		// get the parent network in the session
 		CyNetwork net = getNetworkByName("gene_disease_network4.txt");
@@ -82,6 +81,15 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 
 		assertEquals(3*SUBNET_COUNT, tableManager.getAllTables(false).size());
 		assertEquals((9*SUBNET_COUNT) + (15*ROOTNET_COUNT), tableManager.getAllTables(true).size());
+		
+		// Current network and view
+		final CyNetwork curNet = getNetworkByName("gene_disease_network4.txt--child--child.4");
+		assertEquals(curNet, applicationManager.getCurrentNetwork());
+		assertEquals(curNet, applicationManager.getCurrentNetworkView().getModel());
+		
+		// Visual Styles
+		checkVisualStyles();
+		checkCurrentVisualStyle(vmm.getCurrentVisualStyle());
 	}
 
 	private void checkVisualStyles() {
@@ -107,11 +115,11 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertNotNull(gda_geneCentric);
 		assertNotNull(gda_diseaseCentric);
 		assertNotNull(gda_wholeNetwork);
-
-		checkVisualStyle(gda_wholeNetwork);		
 	}
 	
-	private void checkVisualStyle(final VisualStyle style) {
+	private void checkCurrentVisualStyle(final VisualStyle style) {
+		assertEquals("gda_wholeNetwork", style.getTitle());
+		
 		//		Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
 		//		assertEquals(4, mappings.size());
 
@@ -172,14 +180,7 @@ public class Cy263SimpleSessionLodingTest extends BasicIntegrationTest {
 	}
 	
 	private void checkNetwork(final CyNetwork network) {
-		assertEquals(4133, network.getNodeCount());
-		assertEquals(14558, network.getEdgeCount());
-
-		// Selection state
-		Collection<CyRow> selectedNodes = network.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true);
-		Collection<CyRow> selectedEdges = network.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true);
-		assertEquals(0, selectedNodes.size());
-		assertEquals(0, selectedEdges.size());
+		checkNodeEdgeCount(network, 4133, 14558, 0, 0);
 		
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
 

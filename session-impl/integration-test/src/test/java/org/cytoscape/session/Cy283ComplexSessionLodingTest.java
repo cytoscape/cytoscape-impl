@@ -16,7 +16,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
@@ -80,74 +79,62 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(3*SUBNET_COUNT, tableManager.getAllTables(false).size());
 		assertEquals((9*SUBNET_COUNT) + (15*ROOTNET_COUNT), tableManager.getAllTables(true).size());
 
+		// Current network and view
+		final CyNetwork curNet = getNetworkByName(NET4);
+		assertEquals(curNet, applicationManager.getCurrentNetwork());
+		assertEquals(curNet, applicationManager.getCurrentNetworkView().getModel());
+		
 		// Visual Style
 		assertEquals(7, vmm.getAllVisualStyles().size());
+		checkCurrentVisualStyle(vmm.getCurrentVisualStyle());
 	}
 
 	private void checkNetworks() {
 		final Set<CyNetwork> networks = networkManager.getNetworkSet();
 		final Set<CyRootNetwork> rootNetworks = new HashSet<CyRootNetwork>();
 
-		for (CyNetwork network : networks) {
+		for (final CyNetwork net : networks) {
 			// Non-default columns should not be immutable
-			assertCy2CustomColumnsAreMutable(network);
+			assertCy2CustomColumnsAreMutable(net);
 			
-			if (network instanceof CySubNetwork)
-				rootNetworks.add(((CySubNetwork)network).getRootNetwork());
+			if (net instanceof CySubNetwork)
+				rootNetworks.add(((CySubNetwork)net).getRootNetwork());
 			
 			// Pick specific network.
-			String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-			if (networkName.equals(NET1))
-				testNetwork1(network);
-			else if (networkName.equals(NET2))
-				testNetwork2(network);
-			else if (networkName.equals(NET3))
-				testNetwork3(network);
-			else if (networkName.equals(NET4))
-				testNetwork4(network);
-			else if (networkName.equals(NET5))
-				testNetwork5(network);
+			final String networkName = net.getRow(net).get(CyNetwork.NAME, String.class);
+			final Collection<CyNetworkView> networkViews = viewManager.getNetworkViews(net);
+			final CyNetworkView view = networkViews.isEmpty() ? null : networkViews.iterator().next();
+			
+			if (view != null) {
+				// Check updated view
+				final VisualStyle style = vmm.getVisualStyle(view);
+				style.apply(view);
+			}
+			
+			if (networkName.equals(NET1)) {
+				checkNodeEdgeCount(net, 419, 1089, 0, 0);
+				assertTrue(viewManager.viewExists(net));
+				checkView1(view);
+			} else if (networkName.equals(NET2)) {
+				checkNodeEdgeCount(net, 26, 46, 0, 0);
+				assertTrue(viewManager.viewExists(net));
+			} else if (networkName.equals(NET3)) {
+				checkNodeEdgeCount(net, 7, 7, 0, 0);
+				assertTrue(viewManager.viewExists(net));
+			} else if (networkName.equals(NET4)) {
+				checkNodeEdgeCount(net, 331, 362, 82, 110);
+				assertTrue(viewManager.viewExists(net));
+			} else if (networkName.equals(NET5)) {
+				checkNodeEdgeCount(net, 82, 94, 0, 0);
+				assertFalse(viewManager.viewExists(net)); // No view!
+			}
 		}
 		
 		for (CyRootNetwork rootNet : rootNetworks)
 			assertCy2CustomColumnsAreMutable(rootNet);
 	}
 
-	private void testNetwork1(CyNetwork network) {
-
-	}
-
-	private void testNetwork2(CyNetwork network) {
-
-	}
-
-	private void testNetwork3(CyNetwork network) {
-
-	}
-
-	private void testNetwork4(CyNetwork network) {
-		assertEquals(331, network.getNodeCount());
-		assertEquals(362, network.getEdgeCount());
-
-		// Selection state
-		Collection<CyRow> selectedNodes = network.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true);
-		Collection<CyRow> selectedEdges = network.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true);
-		assertEquals(82, selectedNodes.size());
-		assertEquals(110, selectedEdges.size());
-
-		// View test
-		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
-		assertEquals(1, views.size());
-
-		final CyNetworkView view = views.iterator().next();
-		assertEquals(331, view.getNodeViews().size());
-		assertEquals(362, view.getEdgeViews().size());
-
-		final VisualStyle style = vmm.getVisualStyle(view);
-		checkVisualStyle1(style, view);
-	}
-
-	private void checkVisualStyle1(final VisualStyle style, final CyNetworkView view) {
+	private void checkCurrentVisualStyle(final VisualStyle style) {
 		assertNotNull(style);
 		assertEquals("Sample1", style.getTitle());
 
@@ -202,10 +189,6 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 
 		final Set<VisualPropertyDependency<?>> deps = style.getAllVisualPropertyDependencies();
 		assertEquals(3, deps.size());
-		
-		// Check updated view
-		style.apply(view);
-		checkView1(view);
 	}
 	
 	private void checkView1(final CyNetworkView view) {
@@ -223,10 +206,4 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		// Node YBR217W
 		
 	}
-
-	private void testNetwork5(CyNetwork network) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

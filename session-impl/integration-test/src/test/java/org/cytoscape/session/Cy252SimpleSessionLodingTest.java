@@ -76,20 +76,22 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(3, tableManager.getAllTables(false).size());
 		// 15 regular tables + 9 table facades (sub+root-networks)
 		assertEquals(24, tableManager.getAllTables(true).size());
+		
+		// Current network and view
+		final CyNetwork curNet = getNetworkByName("galFiltered.sif");
+		assertEquals(curNet, applicationManager.getCurrentNetwork());
+		assertEquals(curNet, applicationManager.getCurrentNetworkView().getModel());
+		
+		// Visual Style
+		assertEquals(5, vmm.getAllVisualStyles().size());
+		checkCurrentVisualStyle(vmm.getCurrentVisualStyle());
 	}
 
 	private void checkNetwork(final CyNetwork network) {
-		assertEquals(331, network.getNodeCount());
-		assertEquals(362, network.getEdgeCount());
+		checkNodeEdgeCount(network, 331, 362, 0, 0);
 
 		// Non-default columns should not be immutable
 		assertCy2CustomColumnsAreMutable(network);
-		
-		// Selection state
-		Collection<CyRow> selectedNodes = network.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true);
-		Collection<CyRow> selectedEdges = network.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true);
-		assertEquals(0, selectedNodes.size());
-		assertEquals(0, selectedEdges.size());
 
 		// View test
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
@@ -99,19 +101,13 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(331, view.getNodeViews().size());
 		assertEquals(362, view.getEdgeViews().size());
 
-		// Visual Style
-		assertEquals(5, vmm.getAllVisualStyles().size());
-		final VisualStyle style = vmm.getVisualStyle(view);
-		checkVisualStyle(style);
-
-		// Apply the given style
-		style.apply(view);
-
 		// Check updated view
+		final VisualStyle style = vmm.getVisualStyle(view);
+		style.apply(view);
 		checkView(view);
 	}
 
-	private void checkVisualStyle(final VisualStyle style) {
+	private void checkCurrentVisualStyle(final VisualStyle style) {
 		assertNotNull(style);
 		assertEquals("Sample3", style.getTitle());
 
