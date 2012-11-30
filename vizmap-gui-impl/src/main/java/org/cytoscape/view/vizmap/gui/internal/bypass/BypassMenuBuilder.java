@@ -31,6 +31,8 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
 
 final class BypassMenuBuilder {
 	private static final String ROOT_MENU_LABEL = "Bypass Visual Style";
@@ -56,6 +58,8 @@ final class BypassMenuBuilder {
 		this.vpSet = new HashSet<VisualProperty<?>>();
 	}
 
+	private VisualProperty<?> vp_nodeSize = null;
+	
 	/**
 	 * 
 	 * @param netView
@@ -73,6 +77,11 @@ final class BypassMenuBuilder {
 		final CyMenuItem rootMenu = new CyMenuItem(rootJMenu, ROOT_GRAVITY);
 		queue.addAll(root.getChildren());
 		menuMap.put(root, rootMenu.getMenuItem());
+
+		// Node size, width and height
+		JMenuItem menuItemNodeSize = null;
+		JMenuItem menuItemNodeWidth = null;		
+		JMenuItem menuItemNodeHeight = null;		
 
 		final Set<VisualLexiconNode> nextNodes = new HashSet<VisualLexiconNode>();
 
@@ -135,9 +144,23 @@ final class BypassMenuBuilder {
 								applBypassValue(netView, view, vp);
 							}
 						});
+						
+						if (vp.getDisplayName().equalsIgnoreCase(BasicVisualLexicon.NODE_WIDTH.getDisplayName()) ){
+							menuItemNodeWidth = menu;
+						}
+						if (vp.getDisplayName().equalsIgnoreCase(BasicVisualLexicon.NODE_HEIGHT.getDisplayName()) ){
+							menuItemNodeHeight = menu;
+						}
+						
 					}
 				} else {
+					
 					menu = new JMenu(vp.getDisplayName());
+					
+					if (vp.getDisplayName().equalsIgnoreCase(BasicVisualLexicon.NODE_SIZE.getDisplayName())){
+						menuItemNodeSize = menu;
+						vp_nodeSize = vp;
+					}
 				}
 	
 				if (PropertySheetUtil.isCompatible(vp)) {
@@ -149,6 +172,41 @@ final class BypassMenuBuilder {
 			if (queue.isEmpty()) {
 				queue.addAll(nextNodes);
 				nextNodes.clear();
+			}
+		}
+
+		// handle node size
+		if (menuItemNodeSize != null){
+			//
+			JMenuItem menuItemNodeSize1 = new JMenuItem(vp_nodeSize.getDisplayName());
+			menuItemNodeSize1.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					applBypassValue(netView, view, vp_nodeSize);
+				}
+			});
+			
+			menuItemNodeSize.add(menuItemNodeSize1);
+
+			// Check if nose size is locked
+			boolean nodeSizeIsLocked = false;
+			java.util.Iterator it = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies().iterator();	
+			while (it.hasNext()){
+				org.cytoscape.view.vizmap.VisualPropertyDependency dep = (org.cytoscape.view.vizmap.VisualPropertyDependency) it.next();
+				
+				if (dep.getDisplayName().equalsIgnoreCase("Lock node width and height") && dep.isDependencyEnabled()){
+					nodeSizeIsLocked = true;
+				}
+			}
+			
+			if (nodeSizeIsLocked){
+				// In case the Node size is locked, disable menuItem Node_width and Nod_height 
+				menuItemNodeWidth.setEnabled(false);
+				menuItemNodeHeight.setEnabled(false);				
+			}
+			else {
+				// In case the Node size is not locked, disable menuItem Node_size 
+				menuItemNodeSize1.setEnabled(false);
 			}
 		}
 
