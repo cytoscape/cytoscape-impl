@@ -31,15 +31,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 
 	/** Long serial version identifier required by the Serializable class */
 	private static final long serialVersionUID = 7096775814942183176L;
-	
-	/** List of statuses of apps that should not be displayed in the apps listing. */
-	private static final Set<AppStatus> HIDDEN_APP_STATUSES = new HashSet<AppStatus>();
-
-	static {
-		HIDDEN_APP_STATUSES.add(AppStatus.FILE_MOVED);
-		HIDDEN_APP_STATUSES.add(AppStatus.UNINSTALLED);
-	}
-	
+		
     private javax.swing.JScrollPane appsAvailableScrollPane;
     private javax.swing.JTable appsAvailableTable;
     private javax.swing.JLabel appsInstalledLabel;
@@ -326,7 +318,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     	for (App app : appManager.getApps()) {
     		
     		// Hide apps with certain statuses from the table, such as uninstalled ones.
-    		if (app.isDetached() || HIDDEN_APP_STATUSES.contains(app.getStatus())) {
+    		if (app.isDetached()) {
     			// Do nothing
     		} else {
 	    		tableModel.addRow(new Object[]{
@@ -394,9 +386,9 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     			"App description not found." : selectedApp.getDescription();
     		type = "Type of app: ";
     		if (selectedApp instanceof BundleApp) {
-    			type += "OSGi bundle app";
+    			type += "OSGi Bundle-based app";
     		} else if (selectedApp instanceof SimpleApp) {
-    			type += "Simple app";
+    			type += "Standard Java Jar-based app";
     		} else {
     			type += "Unknown";
     		}
