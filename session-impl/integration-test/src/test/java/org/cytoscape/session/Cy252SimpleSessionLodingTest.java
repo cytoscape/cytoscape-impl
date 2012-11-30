@@ -13,7 +13,6 @@ import java.util.Set;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
@@ -36,7 +35,6 @@ import org.ops4j.pax.exam.spi.reactors.AllConfinedStagedReactorFactory;
 
 /**
  * Test for sample file in Cytoscape 2.5.2 distribution
- * 
  */
 @RunWith(JUnit4TestRunner.class)
 @ExamReactorStrategy(AllConfinedStagedReactorFactory.class)
@@ -107,6 +105,7 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		checkView(view);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void checkCurrentVisualStyle(final VisualStyle style) {
 		assertNotNull(style);
 		assertEquals("Sample3", style.getTitle());

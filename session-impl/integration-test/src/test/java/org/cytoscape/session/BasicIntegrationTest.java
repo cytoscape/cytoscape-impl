@@ -22,9 +22,17 @@ import static org.cytoscape.model.CyNetwork.NAME;
 import static org.cytoscape.model.CyNetwork.SELECTED;
 import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_ATTRS;
 import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_NAME;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 import static org.junit.Assert.*;
 import static org.ops4j.pax.exam.CoreOptions.*;
 
+import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +55,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -284,6 +293,20 @@ public abstract class BasicIntegrationTest {
 	
 	protected void checkSelection(CyNetwork net, CyIdentifiable element, boolean selected) {
 		assertEquals(selected, net.getRow(element, LOCAL_ATTRS).get(SELECTED, Boolean.class));
+	}
+	
+	protected void checkNetworkVisualProperties(final CyNetworkView view,
+												final String title, final Color color,
+												final double w, final double h,
+												final double cx, final double cy,
+												final double scale) {
+	assertEquals(title, view.getVisualProperty(NETWORK_TITLE));
+	assertEquals(color, view.getVisualProperty(NETWORK_BACKGROUND_PAINT));
+	assertEquals(new Double(w), view.getVisualProperty(NETWORK_WIDTH));
+	assertEquals(new Double(h), view.getVisualProperty(NETWORK_HEIGHT));
+	assertEquals(new Double(cx), view.getVisualProperty(NETWORK_CENTER_X_LOCATION));
+	assertEquals(new Double(cy), view.getVisualProperty(NETWORK_CENTER_Y_LOCATION));
+	assertEquals(new Double(scale), view.getVisualProperty(NETWORK_SCALE_FACTOR));
 	}
 	
 	protected CyNetwork getNetworkByName(String name) {
