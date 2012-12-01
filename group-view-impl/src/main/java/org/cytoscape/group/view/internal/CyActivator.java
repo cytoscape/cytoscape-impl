@@ -51,7 +51,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties doubleClickProperties = new Properties();
 		doubleClickProperties.setProperty(PREFERRED_ACTION, "OPEN");
-		doubleClickProperties.setProperty(TITLE, "Expand/Collapse group");
+		doubleClickProperties.setProperty(TITLE, "Expand/Collapse Group");
 		registerService(bc,gvsListener,NodeViewTaskFactory.class, doubleClickProperties);
 	}
 }

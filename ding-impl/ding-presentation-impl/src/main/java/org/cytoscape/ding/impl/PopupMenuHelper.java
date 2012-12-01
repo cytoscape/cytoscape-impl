@@ -42,6 +42,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
@@ -67,6 +68,7 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
@@ -100,27 +102,37 @@ class PopupMenuHelper {
 	/**
 	 * Creates a menu based on the EdgeView.
 	 */
-	void createEdgeViewMenu(CyNetwork network, EdgeView edgeView, int x, int y, String action) {
+	void createEdgeViewMenu(EdgeView edgeView, int x, int y, String action) {
 		if (edgeView != null ) {
 			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(m_view.edgeViewTFs,action);
 			Collection<CyEdgeViewContextMenuFactory> usableCMFs = getPreferredActions(m_view.cyEdgeViewContextMenuFactory, action);
-			
 			View<CyEdge> ev = (DEdgeView)edgeView;
+			// remove TaskFactories that can't be executed from double-click menu
+			if (action.equalsIgnoreCase("OPEN")) {
+				Iterator<EdgeViewTaskFactory> i = usableTFs.iterator();
+				while(i.hasNext()) {
+					if(!i.next().isReady(ev,m_view))
+						i.remove();
+				}
+			}
+			
 			int tfCount = usableTFs.size();
 			int menuItemCount = usableTFs.size()+ usableCMFs.size();
-			
-			// build a menu of actions if more than factory exists
-			if (action.equals("OPEN") && menuItemCount == 1 && tfCount == 1) {
-				EdgeViewTaskFactory tf  = usableTFs.iterator().next();
+
+			if (action.equalsIgnoreCase("OPEN") && menuItemCount == 1 && tfCount == 1) {
+				EdgeViewTaskFactory tf = usableTFs.iterator().next();
 				m_view.manager.execute(tf.createTaskIterator(ev, m_view));
 			}
 			else {
-				String edgeLabel = network.getRow(ev.getModel()).get("interaction",String.class);
+				String edgeLabel = m_view.getModel().getRow(ev.getModel()).get("interaction",String.class);
 				JPopupMenu menu = createMenu(edgeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
-				tracker.getGravityTracker(".").addMenuSeparator(-0.1);
-				tracker.getGravityTracker(".").addMenuSeparator(999.99);
+				if(!action.equalsIgnoreCase("OPEN"))
+				{
+					tracker.getGravityTracker(".").addMenuSeparator(-0.1);
+					tracker.getGravityTracker(".").addMenuSeparator(999.99);
+				}
 
 				for ( EdgeViewTaskFactory evtf : usableTFs ) {
 					Object context = null;
@@ -141,30 +153,37 @@ class PopupMenuHelper {
 	/**
 	 * Creates a menu based on the NodeView.
 	 */
-	void createNodeViewMenu(CyNetwork network, NodeView nview, int x, int y , String action) {
+	void createNodeViewMenu(NodeView nview, int x, int y , String action) {
 		if (nview != null ) {
 			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(m_view.nodeViewTFs,action);
 			Collection<CyNodeViewContextMenuFactory> usableCMFs = getPreferredActions(m_view.cyNodeViewContextMenuFactory,action);
+			View<CyNode> nv = (DNodeView)nview;
 			//If the action is NEW, we should also include the Edge Actions
-			if (action.equals("NEW"))
-			{
+			if (action.equalsIgnoreCase("NEW")) {
 				usableTFs.addAll(getPreferredActions(m_view.nodeViewTFs,"Edge"));
 				usableCMFs.addAll(getPreferredActions(m_view.cyNodeViewContextMenuFactory,"Edge"));
 			}
+			// remove TaskFactories that can't be executed from double-click menu
+			else if(action.equalsIgnoreCase("OPEN")) {
+				Iterator<NodeViewTaskFactory> i = usableTFs.iterator();
+				while(i.hasNext()) {
+					if(!i.next().isReady(nv,m_view))
+						i.remove();
+				}
+			}
 			
-			View<CyNode> nv = (DNodeView)nview;
 			int menuItemCount = usableTFs.size()+ usableCMFs.size();
 			int tfCount = usableTFs.size();
-			if ((action.equals("OPEN") || action.equalsIgnoreCase("Edge")) && menuItemCount == 1 && tfCount == 1) {
+			if ((action.equalsIgnoreCase("OPEN") || action.equalsIgnoreCase("Edge")) && menuItemCount == 1 && tfCount == 1) {
 				NodeViewTaskFactory tf  = usableTFs.iterator().next();
 				m_view.manager.execute(tf.createTaskIterator(nv, m_view));
 			}
 			else {
-				String nodeLabel = network.getRow(nv.getModel()).get(CyNetwork.NAME, String.class);
+				String nodeLabel = m_view.getModel().getRow(nv.getModel()).get(CyNetwork.NAME, String.class);
 				JPopupMenu menu = createMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
-				if(usableTFs.size() > 1)
+				if(!action.equalsIgnoreCase("OPEN"))
 				{
 					tracker.getGravityTracker(".").addMenuSeparator(-0.1);
 					tracker.getGravityTracker(".").addMenuSeparator(999.99);
@@ -194,6 +213,19 @@ class PopupMenuHelper {
 		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(m_view.emptySpaceTFs,action);
 		Collection<NetworkViewLocationTaskFactory> usableTFs2 = getPreferredActions(m_view.networkViewLocationTfs,action);
 		Collection<CyNetworkViewContextMenuFactory> usableCMFs = getPreferredActions(m_view.cyNetworkViewContextMenuFactory,action);
+		// remove TaskFactories that can't be executed from double-click menu
+		if(action.equalsIgnoreCase("OPEN")) {
+			Iterator<NetworkViewTaskFactory> i = usableTFs.iterator();
+			while(i.hasNext()) {
+				if(!i.next().isReady(m_view))
+					i.remove();
+			}
+			Iterator<NetworkViewLocationTaskFactory> i2 = usableTFs2.iterator();
+			while(i2.hasNext()) {
+				if(!i2.next().isReady(m_view, rawPt, xformPt))
+					i2.remove();
+			}
+		}
 		
 		int menuItemCount = usableTFs.size()+ usableTFs2.size() +usableCMFs.size();
 		int tfCount = usableTFs.size() + usableTFs2.size();
@@ -212,8 +244,11 @@ class PopupMenuHelper {
 			final JPopupMenu menu = createMenu("Double Click Menu: empty");
 			final JMenuTracker tracker = new JMenuTracker(menu);
 
-			tracker.getGravityTracker(".").addMenuSeparator(-0.1);
-			tracker.getGravityTracker(".").addMenuSeparator(999.99);
+			if(!action.equalsIgnoreCase("OPEN"))
+			{
+				tracker.getGravityTracker(".").addMenuSeparator(-0.1);
+				tracker.getGravityTracker(".").addMenuSeparator(999.99);
+			}
 			
 			for ( NetworkViewTaskFactory nvtf : usableTFs ) {
 				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
@@ -280,9 +315,13 @@ class PopupMenuHelper {
 			gravity = -1;  // Alphabetize by default
 		}
 
-		if (pref == null)
-			pref = APPS_MENU;
-
+		if(pref == null) {
+			if(prefAction != null && prefAction.equalsIgnoreCase("OPEN"))
+				pref = ".";
+			else
+				pref = APPS_MENU;
+		}
+			
 		// otherwise create our own popup menus 
 		final Object targetVisualProperty = props.get("targetVP");
 		boolean isSelected = false;
@@ -356,7 +395,7 @@ class PopupMenuHelper {
 			pref = APPS_MENU;
 
 		// This is a *very* special case we used to help with Dynamic Linkout
-		if (pref.equals(menuItem.getMenuItem().getText()) && menuItem.getMenuItem() instanceof JMenu) {
+		if (pref.equalsIgnoreCase(menuItem.getMenuItem().getText()) && menuItem.getMenuItem() instanceof JMenu) {
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
 			JMenu menu = (JMenu)menuItem.getMenuItem();
 			for (int menuIndex = 0; menuIndex < menu.getItemCount(); menuIndex++) {
