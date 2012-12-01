@@ -557,7 +557,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 					width = WEST_MAX_WIDTH;
 				else if (width < WEST_MIN_WIDTH)
 					width = WEST_MIN_WIDTH;
-				jsp.setDividerLocation(width+jsp.getInsets().left+jsp.getInsets().right+5);
+				jsp.setDividerLocation(width+jsp.getInsets().left+jsp.getInsets().right);
 			} else if (compassDirection == CytoPanelName.EAST) {
 				if (width > EAST_MAX_WIDTH)
 					width = EAST_MAX_WIDTH;
@@ -568,7 +568,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 				                       -jsp.getInsets().right
 				                       -jsp.getInsets().left
 				                       -jsp.getDividerSize()
-				                       -width-5);
+				                       -width);
 			}
 		// TODO: What's the right thing to do with SOUTH?
 		}

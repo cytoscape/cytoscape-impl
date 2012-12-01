@@ -47,8 +47,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyShutdown;
@@ -72,8 +70,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.apple.eawt.FullScreenUtilities;
-
 
 /**
  * The CytoscapeDesktop is the central Window for working with Cytoscape
@@ -89,7 +85,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private static final int DEF_DIVIDER_LOATION = 450;
 	
 	private static final String SMALL_ICON = "/images/c16.png";
-	private static final int DEVIDER_SIZE = 4;
+	private static final int DIVIDER_SIZE = 4;
 	
 	private static final Logger logger = LoggerFactory.getLogger(CytoscapeDesktop.class);
 	
@@ -252,13 +248,13 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 		// create the split pane - hidden by default
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.VERTICAL_SPLIT,
-		                                                    BiModalJSplitPane.MODE_HIDE_SPLIT,
+		                                                    BiModalJSplitPane.MODE_SHOW_SPLIT,
 		                                                    topRightPane, cytoPanelSouth);
 
 		// set the cytopanel container
 		cytoPanelSouth.setCytoPanelContainer(splitPane);
 
-		splitPane.setDividerSize(DEVIDER_SIZE);
+		splitPane.setDividerSize(DIVIDER_SIZE);
 		splitPane.setDividerLocation(DEF_DIVIDER_LOATION);
 
 		// set resize weight - top component gets all the extra space.
@@ -284,7 +280,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
         cytoPanelSouthWest.setMaximumSize(new Dimension(180, 330));
         cytoPanelSouthWest.setPreferredSize(new Dimension(180, 330));
 
-        split.setDividerSize(DEVIDER_SIZE);
+        split.setDividerSize(DIVIDER_SIZE);
 
 		ToolCytoPanelListener t = new ToolCytoPanelListener( split, cytoPanelWest, 
 		                                                     cytoPanelSouthWest );
@@ -310,12 +306,12 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		cytoPanelWest.add(tab1Name, new ImageIcon(getClass().getResource("/images/class_hi.gif")),
 		                  networkPanel, "Cytoscape Network List");
 
-		// create the split pane - hidden by default
+		// create the split pane - displayed by default
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
 		                                                    BiModalJSplitPane.MODE_SHOW_SPLIT,
 		                                                    cytoPanelWest, rightPane);
 
-		splitPane.setDividerSize(DEVIDER_SIZE);
+		splitPane.setDividerSize(DIVIDER_SIZE);
 
 		// set the cytopanel container
 		cytoPanelWest.setCytoPanelContainer(splitPane);
