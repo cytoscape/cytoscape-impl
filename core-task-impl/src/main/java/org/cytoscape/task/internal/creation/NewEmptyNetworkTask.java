@@ -211,30 +211,28 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		this.sourceColumnList = new ListSingleSelection<String>(colNames_source);
 	}
 
-	public void run(TaskMonitor tm) {
+	public void run(final TaskMonitor tm) {
 		tm.setProgress(0.0);
 		
-		String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
-
-		CySubNetwork subNetwork;
+		final String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
+		final CySubNetwork subNetwork;
+		
 		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
 			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
-			CyNetwork rootNetwork = cyNetworkFactory.createNetwork();
-			subNetwork = this.cyRootNetworkManager.getRootNetwork(rootNetwork).addSubNetwork();
-		}
-		else {
+			subNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
+		} else {
 			// Add a new subNetwork to the given collection
 			subNetwork = this.name2RootMap.get(networkCollectionName).addSubNetwork();
 		}
 
 		tm.setProgress(0.2);
 		
-		String networkName = namingUtil.getSuggestedNetworkTitle("Network");
+		final String networkName = namingUtil.getSuggestedNetworkTitle("Network");
 		subNetwork.getRow(subNetwork).set(CyNetwork.NAME, networkName);
 
 		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
 			// Set the name of new root network
-			CyNetwork rootNetwork = subNetwork.getRootNetwork();
+			final CyNetwork rootNetwork = subNetwork.getRootNetwork();
 			rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, networkName);
 		}
 		
