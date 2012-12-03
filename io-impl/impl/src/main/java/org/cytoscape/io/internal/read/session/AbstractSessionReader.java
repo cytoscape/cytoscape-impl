@@ -228,7 +228,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	 */
 	abstract void handleEntry(InputStream is, String entryName) throws Exception;
 	
-	protected InputStream findEntry(String regex) throws IOException {
+	protected InputStream findEntry(String entry) throws IOException {
 		InputStream is = null;
 		ZipInputStream zis = null;
 
@@ -242,7 +242,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 				String name = zen.getName();
 				is = new MarkSupportedInputStream(zis);
 
-				if (name.matches(regex)) {
+				if (name.equals(entry)) {
 					found = true;
 				}
 				
