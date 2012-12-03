@@ -48,9 +48,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -647,25 +645,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	private CyNetworkView getNetworkView(final String name) {
-		CyNetworkView view = null;
-		
-		for (String s : networkViewLookup.keySet()) {
-			String decode = s;
-
-			try {
-				decode = URLDecoder.decode(s, "UTF-8");
-				
-				if (decode.equals(name)) {
-					// this is OK since XGMML only ever reads one network
-					view = networkViewLookup.get(s);
-					break;
-				}
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return view;
+		return networkViewLookup.get(name);
 	}
 
 	private void setBooleanNodeAttr(final CyNetwork net, final List<Node> nodes, final String attrName,
