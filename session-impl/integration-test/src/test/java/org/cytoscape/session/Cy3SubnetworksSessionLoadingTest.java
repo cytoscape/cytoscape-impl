@@ -42,7 +42,6 @@ public class Cy3SubnetworksSessionLoadingTest extends BasicIntegrationTest {
 		assertEquals(5, networkManager.getNetworkSet().size());
 		assertEquals(4, viewManager.getNetworkViewSet().size());
 		assertEquals(1, applicationManager.getSelectedNetworks().size());
-//		assertEquals(0, applicationManager.getSelectedNetworkViews().size()); // TODO: does it matter?--Cy3 does not save view selection state
 		assertEquals(getNetworkByName("Na.1.1"), applicationManager.getCurrentNetwork());
 		assertNull(applicationManager.getCurrentNetworkView());
 		assertEquals("default", vmm.getDefaultVisualStyle().getTitle());

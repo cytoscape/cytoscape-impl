@@ -78,16 +78,12 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(0, renderingEngineManager.getAllRenderingEngines().size());
 		// 3 public tables per subnetwork
 		assertEquals(3, tableManager.getAllTables(false).size());
-		// 6 total tables per network
-		// TODO why not root-network tables?
+		// At least root+base-network; there can be other (private) networks
 		final int totalNet = networkTableManager.getNetworkSet().size();
-		assertTrue(totalNet >= 2); // At least root+base-network; there can be other (private) networks
+		assertTrue(totalNet >= 2);
 		
 		for (CyNetwork net : networkTableManager.getNetworkSet())
 			checkNetworkTables(net);
-		
-		// TODO test root-network tables
-		// TODO test private tables
 	}
 	
 	private void checkNetwork(final CyNetwork net) {
@@ -126,17 +122,11 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(2, view.getEdgeViews().size());
 		
 		// Visual Style
-		assertEquals(8, vmm.getAllVisualStyles().size());
+		assertEquals(9, vmm.getAllVisualStyles().size());
 		final VisualStyle style = vmm.getVisualStyle(view);
 		checkVisualStyle(style);
 		
-		assertEquals(Color.WHITE, view.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT));
-		assertEquals(Double.valueOf(354.0d), view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT));
-		assertEquals(Double.valueOf(526.0d), view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH));
-		assertEquals(1.15d, view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR), 0.001);
-		assertEquals(1.06d, view.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION), 0.009);
-		assertEquals(16.96d, view.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION), 0.009);
-//		assertEquals("Na", view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE)); // TODO: rename not setting title
+		checkNetworkVisualProperties(view, "Na", Color.WHITE, 745d, 244d, 0d, 0d, 1.6105100000000008d);
 		
 		View<CyNode> nodeView = view.getNodeView(net.getNodeList().iterator().next());
 		assertEquals(NodeShapeVisualProperty.ROUND_RECTANGLE, nodeView.getVisualProperty(BasicVisualLexicon.NODE_SHAPE));
@@ -214,6 +204,15 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 			assertTrue(tables.containsValue(net.getTable(CyNetwork.class, SHARED_DEFAULT_ATTRS)));
 			assertFalse(net.getTable(CyNetwork.class, SHARED_ATTRS).isPublic());
 			assertFalse(net.getTable(CyNetwork.class, SHARED_DEFAULT_ATTRS).isPublic());
+			assertEquals(NODE_COUNT, net.getTable(CyNode.class, SHARED_ATTRS).getAllRows().size());
+			assertEquals(NODE_COUNT, net.getTable(CyNode.class, SHARED_DEFAULT_ATTRS).getAllRows().size());
+			assertEquals(EDGE_COUNT, net.getTable(CyEdge.class, SHARED_ATTRS).getAllRows().size());
+			assertEquals(EDGE_COUNT, net.getTable(CyEdge.class, SHARED_DEFAULT_ATTRS).getAllRows().size());
+		} else {
+			assertEquals(NODE_COUNT, net.getTable(CyNode.class, LOCAL_ATTRS).getAllRows().size());
+			assertEquals(NODE_COUNT, net.getTable(CyNode.class, DEFAULT_ATTRS).getAllRows().size());
+			assertEquals(EDGE_COUNT, net.getTable(CyEdge.class, LOCAL_ATTRS).getAllRows().size());
+			assertEquals(EDGE_COUNT, net.getTable(CyEdge.class, DEFAULT_ATTRS).getAllRows().size());
 		}
 		
 		Map<String, CyTable> nodeTables = networkTableManager.getTables(net, CyNode.class);
@@ -222,7 +221,6 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertTrue(nodeTables.containsValue(net.getTable(CyNode.class, HIDDEN_ATTRS)));
 		assertFalse(net.getTable(CyNode.class, LOCAL_ATTRS).isPublic());
 		assertFalse(net.getTable(CyNode.class, HIDDEN_ATTRS).isPublic());
-		assertEquals(NODE_COUNT, net.getTable(CyNode.class, DEFAULT_ATTRS).getAllRows().size());
 		
 		if (net instanceof CyRootNetwork) {
 			assertTrue(nodeTables.containsValue(net.getTable(CyNode.class, SHARED_ATTRS)));
@@ -237,7 +235,6 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertTrue(edgeTables.containsValue(net.getTable(CyEdge.class, HIDDEN_ATTRS)));
 		assertFalse(net.getTable(CyEdge.class, LOCAL_ATTRS).isPublic());
 		assertFalse(net.getTable(CyEdge.class, HIDDEN_ATTRS).isPublic());
-		assertEquals(EDGE_COUNT, net.getTable(CyEdge.class, DEFAULT_ATTRS).getAllRows().size());
 		
 		if (net instanceof CyRootNetwork) {
 			assertTrue(edgeTables.containsValue(net.getTable(CyEdge.class, SHARED_ATTRS)));
