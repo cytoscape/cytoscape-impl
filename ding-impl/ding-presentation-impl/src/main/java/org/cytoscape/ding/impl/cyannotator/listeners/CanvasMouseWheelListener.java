@@ -47,6 +47,5 @@ public class CanvasMouseWheelListener implements MouseWheelListener{
 		} else {
 			networkCanvas.mouseWheelMoved(e);
 		}
-		view.updateView();	
 	}
 }
