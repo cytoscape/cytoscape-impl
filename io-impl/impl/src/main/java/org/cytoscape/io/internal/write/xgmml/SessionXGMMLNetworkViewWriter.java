@@ -116,7 +116,7 @@ public class SessionXGMMLNetworkViewWriter extends GenericXGMMLWriter {
 		Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		
 		for (VisualProperty<?> vp : visualProperties) {
-			if (view.isValueLocked(vp)) {
+			if (view.isDirectlyLocked(vp)) {
 				hasLockedVisualProps = true;
 				break;
 			}

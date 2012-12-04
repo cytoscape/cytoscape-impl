@@ -173,23 +173,19 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// Label position
 	private ObjectPosition labelPosition;
 
-	// Visual Properties used in this node view.
-	private final VisualLexicon lexicon;
-
 	private final VisualMappingManager vmm;
 	
 	private final CyNetworkViewManager netViewMgr; 
 	
 	DNodeView(final VisualLexicon lexicon, final DGraphView graphView, final CyNode model, final VisualMappingManager vmm,
 			final CyNetworkViewManager netViewMgr) {
-		super(model);
+		super(model, lexicon);
 		
 		if (graphView == null)
 			throw new NullPointerException("View must never be null.");
 		if (lexicon == null)
 			throw new NullPointerException("Lexicon must never be null.");
 
-		this.lexicon = lexicon;
 		this.vmm = vmm;
 		this.labelPosition = new ObjectPositionImpl();
 

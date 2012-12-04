@@ -41,6 +41,7 @@ import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
@@ -64,8 +65,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	private LineType lineType;
 	private boolean selected;
 	
-	DEdgeView(final DGraphView graphView, final CyEdge model, final HandleFactory handleFactory) {
-		super(model);
+	DEdgeView(final DGraphView graphView, final CyEdge model, final HandleFactory handleFactory, final VisualLexicon lexicon) {
+		super(model, lexicon);
 
 		if (graphView == null)
 			throw new IllegalArgumentException("Constructor needs its parent DGraphView.");

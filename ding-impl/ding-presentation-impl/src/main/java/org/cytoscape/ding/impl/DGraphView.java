@@ -353,9 +353,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	final DialogTaskManager manager;
 
-	// Will be injected.
-	final VisualLexicon dingLexicon;
-	
 	private final Properties props;
 	
 	private final CyAnnotator cyAnnotator;
@@ -416,7 +413,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final CyNetworkViewManager netViewMgr,
 			final HandleFactory handleFactory,
 			final CyServiceRegistrar registrar) {
-		super(model);
+		super(model, dingLexicon);
 		this.props = new Properties();
 		this.vmm = vmm;
 		this.registrar = registrar;
@@ -425,7 +422,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		long start = System.currentTimeMillis();
 		logger.debug("Phase 1: rendering start.");
 
-		this.dingLexicon = dingLexicon;
 		this.nodeViewTFs = vtfl.nodeViewTFs;
 		this.edgeViewTFs = vtfl.edgeViewTFs;
 		this.emptySpaceTFs = vtfl.emptySpaceTFs; 
@@ -796,7 +792,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		m_drawPersp.addNode(node);
 
-		final DNodeView dNodeView = new DNodeView(dingLexicon, this, node, vmm, netViewMgr);
+		final DNodeView dNodeView = new DNodeView(lexicon, this, node, vmm, netViewMgr);
 		
 		// WARNING: DO not call the following in view creation.  This is VERY slow.
 		//Boolean selected = getModel().getRow(node).get(CyNetwork.SELECTED, Boolean.class);
@@ -838,7 +834,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			m_drawPersp.addEdge(edge);
 
-			dEdgeView = new DEdgeView(this, edge, handleFactory);
+			dEdgeView = new DEdgeView(this, edge, handleFactory, lexicon);
 
 			edgeViewMap.put(edge, dEdgeView);
 			m_contentChanged = true;
@@ -2336,7 +2332,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public VisualLexicon getVisualLexicon() {
-		return this.dingLexicon;
+		return lexicon;
 	}
 
 	@Override
@@ -2567,7 +2563,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void clearValueLock(final VisualProperty<?> vp) {
-		visualPropertyLocks.remove(vp);
+		directLocks.remove(vp);
+		allLocks.remove(vp);
 		applyVisualProperty(vp, visualProperties.get(vp)); // always apply the regular vp
 	}
 	

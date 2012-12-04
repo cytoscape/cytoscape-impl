@@ -95,7 +95,7 @@ final class BypassMenuBuilder {
 	
 				final JMenuItem menu;
 				if (children.isEmpty() && PropertySheetUtil.isCompatible(vp)) {
-					final boolean lock = view.isValueLocked(vp);
+					final boolean lock = view.isDirectlyLocked(vp);
 					if (lock) {
 						menu = new JMenu(vp.getDisplayName());
 						final JMenuItem clear = new JMenuItem("Clear");
@@ -255,7 +255,7 @@ final class BypassMenuBuilder {
 		final VisualStyle style = vmm.getCurrentVisualStyle();
 		
 		for (VisualProperty<?> vp : vpSet) {
-			final boolean lock = nodeView.isValueLocked(vp);
+			final boolean lock = nodeView.isDirectlyLocked(vp);
 			if (lock) {
 				nodeView.clearValueLock(vp);
 				needToUpdateView = true;

@@ -334,7 +334,7 @@ class PopupMenuHelper {
 				else if ( view.getModel() instanceof CyEdge )
 					clazz = CyEdge.class;
 
-				final VisualProperty<?> vp = m_view.dingLexicon.lookup(clazz, targetVisualProperty.toString());
+				final VisualProperty<?> vp = m_view.getVisualLexicon().lookup(clazz, targetVisualProperty.toString());
 				if (vp == null)
 					isSelected = false;
 				else

@@ -26,4 +26,5 @@ public class DummyNetworkView implements CyNetworkView {
 	@Override public Long getSUID() { return null;}
 	@Override public boolean isSet(VisualProperty<?> vp) { return false; }
 	@Override public void dispose() {}
+	@Override public boolean isDirectlyLocked(VisualProperty<?> vp) { return false; }
 }

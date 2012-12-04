@@ -578,7 +578,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             if (value == null)
                 continue;
             
-            if (groupLockedProperties && view.isValueLocked(vp)) {
+            if (groupLockedProperties && view.isDirectlyLocked(vp)) {
                 lockedProperties.add(vp);
                 continue;
             } else {

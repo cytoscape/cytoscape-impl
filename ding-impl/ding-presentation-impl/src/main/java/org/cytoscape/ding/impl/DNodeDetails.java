@@ -595,7 +595,7 @@ class DNodeDetails extends NodeDetails {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 
-		Integer size = null;
+		Number size = null;
 		Font fontFace = null;
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_FONT_SIZE))
 			size = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_FONT_SIZE);
