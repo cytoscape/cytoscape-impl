@@ -308,8 +308,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 			graphView.m_nodeDetails.overrideTransparency(model, transparency);
 			
-			setUnselectedPaint(graphView.m_nodeDetails.unselectedPaint(model));
-			setSelectedPaint(graphView.m_nodeDetails.selectedPaint(model));
+			setUnselectedPaint(graphView.m_nodeDetails.getUnselectedPaint(model));
+			setSelectedPaint(graphView.m_nodeDetails.getSelectedPaint(model));
 			
 			graphView.m_contentChanged = true;
 		}

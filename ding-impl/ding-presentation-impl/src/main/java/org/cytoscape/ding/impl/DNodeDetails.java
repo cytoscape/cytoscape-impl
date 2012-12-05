@@ -249,7 +249,7 @@ class DNodeDetails extends NodeDetails {
 		defaultValues.put(DVisualLexicon.NODE_SELECTED_PAINT, m_selectedColorLowDetailDefault);
 	}
 
-	Paint selectedPaint(CyNode node) {
+	Paint getSelectedPaint(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(DVisualLexicon.NODE_SELECTED_PAINT))
@@ -311,24 +311,33 @@ class DNodeDetails extends NodeDetails {
 	/**
 	 * Note: this will be used for BOTH unselected and selected.
 	 */
-	public Paint unselectedPaint(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_FILL_COLOR))
-			return (Color) dnv.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR);
+	public Paint getUnselectedPaint(final CyNode node) {
+		Paint paint = null;
+		Integer trans = null;
+		final DNodeView dev = dGraphView.getDNodeView(node);
 		
-		final Paint unselectedNodeFillPaint = m_unselectedPaints.get(node);
-
-		if (unselectedNodeFillPaint == null) {
-			// Mapped Value does not exist. Use default
-			if (m_unselectedPaintDefault == null)
-				return DVisualLexicon.NODE_FILL_COLOR.getDefault();
-			else {
-				return m_unselectedPaintDefault;
-			}
+		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
+		if (dev.isValueLocked(DVisualLexicon.NODE_TRANSPARENCY))
+			trans = getTransparency(node);
+		
+		if (dev.isValueLocked(DVisualLexicon.NODE_FILL_COLOR)) {
+			paint = dev.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR);
 		} else {
-			return unselectedNodeFillPaint;
+			paint = m_unselectedPaints.get(node);
+
+			if (paint == null) {
+				// Mapped Value does not exist; use default
+				if (m_unselectedPaintDefault == null)
+					paint = DVisualLexicon.NODE_FILL_COLOR.getDefault();
+				else
+					paint = m_unselectedPaintDefault;
+			}
 		}
+		
+		if (trans != null)
+			paint = dGraphView.getTransparentColor(paint, trans);
+		
+		return paint;
 	}
 
 	void setUnselectedPaintDefault(Paint p) {
@@ -358,9 +367,9 @@ class DNodeDetails extends NodeDetails {
 	@Override
 	public Paint getFillPaint(final CyNode node) {
 		if (selected.contains(node))
-			return selectedPaint(node);
+			return getSelectedPaint(node);
 		else
-			return unselectedPaint(node);
+			return getUnselectedPaint(node);
 	}
 
 	void select(final CyNode node) {

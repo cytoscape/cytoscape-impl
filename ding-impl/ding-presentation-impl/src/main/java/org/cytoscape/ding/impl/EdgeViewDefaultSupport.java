@@ -83,12 +83,12 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 			Float currentWidth = edgeDetails.m_segmentThicknessDefault.floatValue();
 			if (currentWidth.floatValue() != newWidth) {
 				setStrokeWidth(newWidth);
-				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth));
+				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth), lineType);
 			}
 		} else if (vp == EDGE_LINE_TYPE) {
 			lineType = (LineType) value;
 			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(edgeDetails.m_segmentThicknessDefault.floatValue());
-			setStroke(newStroke);
+			setStroke(newStroke, lineType);
 		} else if (vp == EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
 			setSourceEdgeEndUnselectedPaint((Paint) value);
 		} else if (vp == EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
@@ -129,7 +129,7 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		edgeDetails.setEdgeBendDefault(bend);
 	}
 
-	void setCurved(final Boolean curved) {
+	private void setCurved(final Boolean curved) {
 		synchronized (lock) {
 			if (curved)
 				edgeDetails.setLineCurvedDefault(EdgeView.CURVED_LINES);
@@ -138,17 +138,17 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		}
 	}
 
-	void setTransparency(final int trans) {
+	private void setTransparency(int trans) {
 		if (trans < 0 || trans > 255)
-			edgeDetails.transparencyDefault = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
-		else
-			edgeDetails.transparencyDefault = trans;
+			trans = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
+		
+		edgeDetails.setTransparencyDefault(trans);
 
 		setSelectedPaint(edgeDetails.m_selectedPaintDefault);
 		setUnselectedPaint(edgeDetails.m_unselectedPaintDefault);
 	}
 	
-	void setLabelTransparency(int trans) {
+	private void setLabelTransparency(int trans) {
 		if (trans < 0 || trans > 255)
 			trans = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
 
@@ -156,15 +156,15 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		setTextPaint(edgeDetails.m_labelPaintDefault);
 	}
 
-	void setStrokeWidth(float width) {
+	private void setStrokeWidth(float width) {
 		synchronized (lock) {
 			edgeDetails.setSegmentThicknessDefault(width);
 		}
 	}
 
-	void setStroke(Stroke stroke) {
+	private void setStroke(Stroke stroke, LineType type) {
 		synchronized (lock) {
-			edgeDetails.setSegmentStrokeDefault(stroke);
+			edgeDetails.setSegmentStrokeDefault(stroke, type);
 		}
 	}
 

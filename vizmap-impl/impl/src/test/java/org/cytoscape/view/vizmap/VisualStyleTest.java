@@ -265,8 +265,9 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		view.setLockedValue(vp, bypassValue);
 
 		// Apply the new value only for the given view
-		final CyRow row = networkView.getModel().getRow(view.getModel());
-		style.apply(row, view);
+		// TODO: double-check: I don't think it's necessary, because setLockedValue already applies the value to the view
+//		final CyRow row = networkView.getModel().getRow(view.getModel());
+//		style.apply(row, view);
 	}
 	
 	

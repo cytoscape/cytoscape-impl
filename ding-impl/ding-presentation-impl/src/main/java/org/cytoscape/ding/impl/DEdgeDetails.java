@@ -80,8 +80,7 @@ final class DEdgeDetails extends EdgeDetails {
 	private final Map<VisualProperty<?>, Object> defaultValues; 
 
 	// Mapped Values
-	// If value found in these map objects, the value will be used by the
-	// renderer.
+	// If value found in these map objects, the value will be used by the renderer.
 	// Otherwise, default value will be used.
 	Map<CyEdge, Object> m_colorsLowDetail = new WeakHashMap<CyEdge, Object>();
 	Map<CyEdge, Object> m_selectedColorsLowDetail = new WeakHashMap<CyEdge, Object>();
@@ -442,19 +441,23 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public float getWidth(final CyEdge edge) {
+		Float w = null;
 		// Bypass check
 		final DEdgeView edv = dGraphView.getDEdgeView(edge);
-		if (edv.isValueLocked(DVisualLexicon.EDGE_WIDTH))
-			return edv.getVisualProperty(DVisualLexicon.EDGE_WIDTH).floatValue();
+		
+		if (edv.isValueLocked(DVisualLexicon.EDGE_WIDTH)) {
+			w = edv.getVisualProperty(DVisualLexicon.EDGE_WIDTH).floatValue();
+		} else {
+			w = m_segmentThicknesses.get(edge);
+			if (w == null) {
+				if (m_segmentThicknessDefault == null)
+					w = super.getWidth(edge);
+				else
+					w = m_segmentThicknessDefault.floatValue();
+			}
+		}
 
-		final Float thickness = m_segmentThicknesses.get(edge);
-		if (thickness == null)
-			if (m_segmentThicknessDefault == null)
-				return super.getWidth(edge);
-			else
-				return m_segmentThicknessDefault.floatValue();
-
-		return thickness;
+		return w;
 	}
 
 	void setSegmentThicknessDefault(float thick) {
@@ -477,35 +480,36 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public Stroke getStroke(final CyEdge edge) {
+		Stroke stroke = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE)) {
+		
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE) || dev.isValueLocked(DVisualLexicon.EDGE_WIDTH)) {
+			// If one of these properties are locked, the stroke has to be recreated
 			final LineType lineType = dev.getVisualProperty(DVisualLexicon.EDGE_LINE_TYPE);
-			return DLineType.getDLineType(lineType).getStroke(getWidth(edge));
-		}
-
-		Stroke stroke = m_segmentStrokes.get(edge);
-		if (stroke == null) {
-			if (m_segmentStrokeDefault == null)
-				return super.getStroke(edge);
-			else {
-				
-				stroke = m_segmentStrokeDefault;
+			stroke = DLineType.getDLineType(lineType).getStroke(getWidth(edge));
+		} else {
+			stroke = m_segmentStrokes.get(edge);
+			
+			if (stroke == null) {
+				if (m_segmentStrokeDefault == null)
+					stroke = super.getStroke(edge);
+				else
+					stroke = m_segmentStrokeDefault;
 			}
 		}
 
 		return stroke;
 	}
 
-	void setSegmentStrokeDefault(Stroke s) {
+	void setSegmentStrokeDefault(final Stroke s, final LineType t) {
 		m_segmentStrokeDefault = s;
-		// FIXME
-//		defaultValues.put(DVisualLexicon.EDGE_UNSELECTED_PAINT, m_colorLowDetailDefault);
+		defaultValues.put(DVisualLexicon.EDGE_LINE_TYPE, t);
 	}
 
 	/*
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
-	void overrideSegmentStroke(CyEdge edge, Stroke stroke) {
+	void overrideSegmentStroke(final CyEdge edge, final Stroke stroke) {
 		if ((stroke == null) || stroke.equals(super.getStroke(edge)))
 			m_segmentStrokes.remove(edge);
 		else {
@@ -534,18 +538,31 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	Paint getUnselectedPaint(final CyEdge edge) {
+		Paint paint = null;
+		Integer trans = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		
+		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
+		if (dev.isValueLocked(DVisualLexicon.EDGE_TRANSPARENCY))
+			trans = getTransparency(edge);
+		
+		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT)) {
+			paint = dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		} else if (dev.isValueLocked(DVisualLexicon.EDGE_UNSELECTED_PAINT)) {
+			paint = dev.getVisualProperty(DVisualLexicon.EDGE_UNSELECTED_PAINT);
+		} else {
+			paint = m_unselectedPaints.get(edge);
 
-		final Paint paint = m_unselectedPaints.get(edge);
-
-		if (paint == null) {
-			if (m_unselectedPaintDefault == null)
-				return DVisualLexicon.EDGE_UNSELECTED_PAINT.getDefault();
-			else
-				return m_unselectedPaintDefault;
+			if (paint == null) {
+				if (m_unselectedPaintDefault == null)
+					paint = DVisualLexicon.EDGE_UNSELECTED_PAINT.getDefault();
+				else
+					paint = m_unselectedPaintDefault;
+			}
 		}
+		
+		if (trans != null)
+			paint = dGraphView.getTransparentColor(paint, trans);
 
 		return paint;
 	}
@@ -685,7 +702,6 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	void overrideTooltipText(final CyEdge edge, final String text) {
-
 		if ((text == null) || text.equals(""))
 			m_edgeTooltips.remove(edge);
 		else {
@@ -832,7 +848,7 @@ final class DEdgeDetails extends EdgeDetails {
 	public double getLabelWidth(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		// TODO: Edge Lael width?
+		// TODO: Edge Label width?
 
 		final Double width = m_labelWidths.get(edge);
 		if (width == null) {

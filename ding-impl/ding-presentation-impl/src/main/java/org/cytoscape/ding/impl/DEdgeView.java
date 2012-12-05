@@ -642,13 +642,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
-			final float currentWidth = graphView.m_edgeDetails.getWidth(model);
-			final float newWidth = ((Number) value).floatValue();
-			
-			if (currentWidth != newWidth) {
-				setStrokeWidth(newWidth);
-				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth));
-			}
+			final float w = ((Number) value).floatValue();
+			setStrokeWidth(w);
+			setStroke(DLineType.getDLineType(lineType).getStroke(w));
 		} else if (vp == DVisualLexicon.EDGE_LINE_TYPE) {
 			lineType = (LineType) value;
 			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(graphView.m_edgeDetails.getWidth(model));

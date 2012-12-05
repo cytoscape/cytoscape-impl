@@ -187,7 +187,7 @@ public class DNodeViewTest {
 		Paint paint = Color.BLUE;
 		dnv1.setSelectedPaint(paint);
 		
-		final Paint selectedPaint = ((DGraphView)dnv1.getGraphView()).m_nodeDetails.selectedPaint(dnv1.getCyNode());
+		final Paint selectedPaint = ((DGraphView)dnv1.getGraphView()).m_nodeDetails.getSelectedPaint(dnv1.getCyNode());
 		assertEquals(paint, selectedPaint);
 	}
 
@@ -195,7 +195,7 @@ public class DNodeViewTest {
 	@Test
 	public void testSetUnselectedPaint() {
 		dnv1.setUnselectedPaint(Color.PINK);
-		assertEquals(Color.PINK, ((DGraphView)dnv1.getGraphView()).m_nodeDetails.unselectedPaint(dnv1.getCyNode()));
+		assertEquals(Color.PINK, ((DGraphView)dnv1.getGraphView()).m_nodeDetails.getUnselectedPaint(dnv1.getCyNode()));
 	}
 
 

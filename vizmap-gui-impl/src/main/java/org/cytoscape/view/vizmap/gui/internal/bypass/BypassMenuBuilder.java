@@ -243,8 +243,9 @@ final class BypassMenuBuilder {
 		graphObjectView.setLockedValue(vp, bypassValue);
 		
 		// Apply the new value only for the given view
-		final CyRow row = netView.getModel().getRow(graphObjectView.getModel());
-		vmm.getCurrentVisualStyle().apply(row, graphObjectView);
+		// TODO don't do this, because it overwrites some bypassed values with default ones!!! Calling setLockedValue should be enough
+//		final CyRow row = netView.getModel().getRow(graphObjectView.getModel());
+//		vmm.getCurrentVisualStyle().apply(row, graphObjectView);
 		
 		// Redraw the view
 		netView.updateView();
@@ -273,7 +274,5 @@ final class BypassMenuBuilder {
 		public int compare(final VisualLexiconNode node1, final VisualLexiconNode node2) {
 			return node1.compareTo(node2);
 		}
-
 	}
-
 }

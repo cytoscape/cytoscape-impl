@@ -126,24 +126,46 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		final VisualStyle style = vmm.getVisualStyle(view);
 		checkVisualStyle(style);
 		
-		checkNetworkVisualProperties(view, "Na", Color.WHITE, 745d, 244d, 0d, 0d, 1.6105100000000008d);
-		
-		View<CyNode> nodeView = view.getNodeView(net.getNodeList().iterator().next());
-		assertEquals(NodeShapeVisualProperty.ROUND_RECTANGLE, nodeView.getVisualProperty(BasicVisualLexicon.NODE_SHAPE));
-		assertEquals(Double.valueOf(3.0d), nodeView.getVisualProperty(BasicVisualLexicon.NODE_BORDER_WIDTH));
-		assertEquals(Double.valueOf(70.0d), nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH));
-		assertEquals(Double.valueOf(40.0d), nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT));
-		assertEquals(new Color(0x00acad), nodeView.getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
-		assertEquals(new Color(0x333333), nodeView.getVisualProperty(BasicVisualLexicon.NODE_BORDER_PAINT));
-		
-		View<CyEdge> edgeView = view.getEdgeView(net.getEdgeList().iterator().next());
-		assertEquals(Double.valueOf(2.0d), edgeView.getVisualProperty(BasicVisualLexicon.EDGE_WIDTH));
-		assertEquals(new Color(0x333333), edgeView.getVisualProperty(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		checkView(view);
 		
 		// TODO test custom assigned table (e.g. created by a plugin)
 		assertTrue(net.getTable(CyNetwork.class, DEFAULT_ATTRS).isPublic());
 		assertTrue(net.getTable(CyNode.class, DEFAULT_ATTRS).isPublic());
 		assertTrue(net.getTable(CyEdge.class, DEFAULT_ATTRS).isPublic());
+	}
+	
+	private void checkView(final CyNetworkView view) {
+		checkNetworkVisualProperties(view, "Na", Color.WHITE, 745d, 244d, 0d, 0d, 1.6067932272185372d);
+		
+		// Default values
+		View<CyNode> nv = view.getNodeView(getNodeByName(view.getModel(), "Node 1"));
+		assertEquals(NodeShapeVisualProperty.ROUND_RECTANGLE, nv.getVisualProperty(BasicVisualLexicon.NODE_SHAPE));
+		assertEquals(Integer.valueOf(255), nv.getVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY));
+		assertEquals(Double.valueOf(3.0d), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_WIDTH));
+		assertEquals(Integer.valueOf(255), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_TRANSPARENCY));
+		assertEquals(new Color(0x333333), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_PAINT));
+		assertEquals(Double.valueOf(70.0d), nv.getVisualProperty(BasicVisualLexicon.NODE_WIDTH));
+		assertEquals(Double.valueOf(40.0d), nv.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT));
+		assertEquals(new Color(0x00acad), nv.getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
+		
+		View<CyEdge> ev = view.getEdgeView(getEdgeByName(view.getModel(), "Node 1 (interaction) Node 2"));
+		assertEquals(Double.valueOf(2.0d), ev.getVisualProperty(BasicVisualLexicon.EDGE_WIDTH));
+		assertEquals(new Color(0x333333), ev.getVisualProperty(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(Integer.valueOf(255), ev.getVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY));
+		
+		// Bypass
+		nv = view.getNodeView(getNodeByName(view.getModel(), "Node 3"));
+		assertEquals(NodeShapeVisualProperty.TRIANGLE, nv.getVisualProperty(BasicVisualLexicon.NODE_SHAPE));
+		assertEquals(Integer.valueOf(80), nv.getVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY));
+		assertEquals(Double.valueOf(5.0d), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_WIDTH));
+		assertEquals(Integer.valueOf(150), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_TRANSPARENCY));
+		assertEquals(new Color(0x000099), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_PAINT));
+		assertEquals(new Color(0x0099ff), nv.getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
+		
+		ev = view.getEdgeView(getEdgeByName(view.getModel(), "Node 2 (interaction) Node 3"));
+		assertEquals(Double.valueOf(5.0d), ev.getVisualProperty(BasicVisualLexicon.EDGE_WIDTH));
+		assertEquals(new Color(0xff6699), ev.getVisualProperty(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(Integer.valueOf(95), ev.getVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY));
 	}
 	
 	private void checkRootNetwork(final CyRootNetwork net) {

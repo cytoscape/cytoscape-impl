@@ -27,14 +27,13 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 	}
 
 	protected void applyValues(final CyRow row, final View<T> view, final Collection<VisualProperty<?>> vps) {
-		
 		for (final VisualProperty<?> vp : vps) {
 			if (!view.isValueLocked(vp)) {
 				// check mapping exists or not
 				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 	
 				if (mapping != null) {
-					// Mapping rexists.
+					// Mapping exists
 					final Object value = mapping.getMappedValue(row);
 					if (value != null)
 						view.setVisualProperty(vp, value);
@@ -67,8 +66,8 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 			defaultValue = style.getDefaultValue(vp);
 		}
 		
-		// TODO: is this correct?
-		if(!vp.shouldIgnoreDefault())
+		// TODO: Is this correct? Shouldn't default values be applied through CyNetworkView.setViewDefault instead?
+		if (!vp.shouldIgnoreDefault())
 			view.setVisualProperty(vp, defaultValue);
 	}
 
