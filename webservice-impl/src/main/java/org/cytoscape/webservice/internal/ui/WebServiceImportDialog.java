@@ -117,7 +117,9 @@ public class WebServiceImportDialog<T> extends JDialog {
 		if (client instanceof WebServiceGUIClient) {
 			serviceUIPanels.put((WebServiceClient) client, null);
 		}
-		datasourceComboBox.setSelectedItem(client);
+//		datasourceComboBox.setSelectedItem(client);
+		if(datasourceComboBox.getModel().getSize() != 0)
+			datasourceComboBox.setSelectedIndex(0);
 		datasourceComboBoxActionPerformed(null);
 		logger.info("New network import client registered: " + client);
 	}
