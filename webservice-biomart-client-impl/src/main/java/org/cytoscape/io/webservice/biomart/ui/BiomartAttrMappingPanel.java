@@ -34,7 +34,6 @@
  */
 package org.cytoscape.io.webservice.biomart.ui;
 
-import java.awt.Container;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -46,11 +45,11 @@ import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.biomart.BiomartClient;
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
@@ -282,7 +281,9 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 	@Override
 	protected void importAttributes() {
 		// taskManager.setParent(parent);
-		taskManager.execute(client.createTaskIterator(getTableImportQuery()));
+		TaskIterator ti = client.createTaskIterator(getTableImportQuery());
+		ti.append(new ResetAttributesTask());
+		taskManager.execute(ti);
 	}
 
 	public BiomartQuery getTableImportQuery() {
@@ -342,16 +343,16 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 		}
 
 		// Create query
-		return importAttributesFromService(dataset, attrs, filters, keyInHeader, keyAttrName);
+		return importAttributesFromService(dataset, attrs, filters, keyInHeader);
 	}
 
 	private BiomartQuery importAttributesFromService(Dataset dataset, Attribute[] attrs, Filter[] filters,
-			String keyInHeader, String keyAttrName) {
+			String keyInHeader) {
 
 		final String query = XMLQueryBuilder.getQueryString(dataset, attrs, filters);
 
 		final String tableName = "BioMart Annotation: " + (++globalTableCounter);
-		return new BiomartQuery(query, keyAttrName, tableName);
+		return new BiomartQuery(query, keyInHeader, tableName);
 	}
 
 	// //////// Local tasks
@@ -432,6 +433,18 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 				attributeTypeComboBox.addItem(filter);
 		}
 
+	}
+	
+	private final class ResetAttributesTask extends AbstractTask {
+		
+		@Override
+		public void run(TaskMonitor taskMonitor) throws Exception {
+			SwingUtilities.invokeLater(new Runnable() {
+			    public void run() {
+			    	updateAttributeList();
+			    }
+			});
+		}
 	}
 
 	@Override

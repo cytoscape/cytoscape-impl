@@ -1,16 +1,12 @@
 package org.cytoscape.io.webservice.biomart.task;
 
 
-import java.awt.Window;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.io.webservice.biomart.BiomartQuery;
 import org.cytoscape.io.webservice.biomart.rest.BiomartRestClient;
@@ -77,9 +73,6 @@ public class ImportTableTask extends AbstractTask {
 
 		tables.add(newTable);
 		
-		final ShowResultTask messageTask = new ShowResultTask();
-		this.insertTasksAfterCurrentTask(messageTask);
-
 		final TaskIterator ti = mapNetworkAttrTF.createTaskIterator(newTable);
 		this.insertTasksAfterCurrentTask(ti);
 	}
@@ -105,10 +98,10 @@ public class ImportTableTask extends AbstractTask {
 
 		// Search column index of the key
 		for (int i = 0; i < colSize; i++) {
-			globalTable.createColumn(columnNames[i], String.class, false);
-
 			if (columnNames[i].equals(key))
 				keyIdx = i;
+			else
+				globalTable.createColumn(columnNames[i], String.class, false);
 		}
 
 		String[] row;
@@ -143,9 +136,6 @@ public class ImportTableTask extends AbstractTask {
 
 				if ((val != null) && (val.length() != 0)) {
 
-					if (j == keyIdx) {
-						cyRow.set(key, val);
-					}
 					cyRow.set(columnNames[j], val);
 					// if (keyAttrName.equals("ID")) {
 					// testList = attr
@@ -217,27 +207,6 @@ public class ImportTableTask extends AbstractTask {
 
 	public Set<CyTable> getCyTables() {
 		return tables;
-	}
-
-	
-	// Show result.
-	private final class ShowResultTask extends AbstractTask {
-
-		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
-			final CyTable table = tables.iterator().next();
-			if (table != null) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						JOptionPane.showMessageDialog(null,"New table loaded.\n" + table.getTitle() + " contains "
-								+ table.getRowCount() + " rows.", "Table Loaded from BioMart",
-								JOptionPane.INFORMATION_MESSAGE);
-
-					}
-				});
-			}
-		}
 	}
 
 }
