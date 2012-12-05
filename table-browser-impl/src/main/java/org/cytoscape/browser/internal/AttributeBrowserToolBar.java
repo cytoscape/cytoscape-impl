@@ -870,10 +870,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				return;
 
 			if (Arrays.binarySearch(existingAttrs, newAttribName) >= 0) {
-				newAttribName = null;
 				JOptionPane.showMessageDialog(null,
 							      "Column " + newAttribName + " already exists.",
 							      "Error.", JOptionPane.ERROR_MESSAGE);
+				newAttribName = null;
 			}
 		} while (newAttribName == null);
 
