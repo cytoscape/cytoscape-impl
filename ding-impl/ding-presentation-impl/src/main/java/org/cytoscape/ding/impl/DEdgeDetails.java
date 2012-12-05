@@ -617,6 +617,11 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public int getLabelCount(final CyEdge edge) {
+		// Check related bypass
+		final DEdgeView dev = dGraphView.getDEdgeView(edge);
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL) && !dev.getVisualProperty(DVisualLexicon.EDGE_LABEL).isEmpty())
+			return 1;
+		
 		final Integer i = m_labelCounts.get(edge);
 		if (i == null) {
 			if (m_labelCountDefault == null)

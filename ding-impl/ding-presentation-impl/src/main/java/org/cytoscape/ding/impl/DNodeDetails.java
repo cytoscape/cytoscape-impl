@@ -499,6 +499,11 @@ class DNodeDetails extends NodeDetails {
 
 	@Override
 	public int labelCount(final CyNode node) {
+		// Check related bypass
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL) && !dnv.getVisualProperty(DVisualLexicon.NODE_LABEL).isEmpty())
+			return 1;
+		
 		final Integer o = m_labelCounts.get(node);
 
 		if (o == null)

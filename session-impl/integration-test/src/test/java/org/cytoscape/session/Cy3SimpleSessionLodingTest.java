@@ -161,11 +161,13 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(Integer.valueOf(150), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_TRANSPARENCY));
 		assertEquals(new Color(0x000099), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_PAINT));
 		assertEquals(new Color(0x0099ff), nv.getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
+		assertEquals("Node 3 (BYPASS)", nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL));
 		
 		ev = view.getEdgeView(getEdgeByName(view.getModel(), "Node 2 (interaction) Node 3"));
 		assertEquals(Double.valueOf(5.0d), ev.getVisualProperty(BasicVisualLexicon.EDGE_WIDTH));
 		assertEquals(new Color(0xff6699), ev.getVisualProperty(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
 		assertEquals(Integer.valueOf(95), ev.getVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY));
+		assertEquals("2::3 (BYPASS)", ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL));
 	}
 	
 	private void checkRootNetwork(final CyRootNetwork net) {
