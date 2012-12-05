@@ -20,6 +20,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ExpandNodeContextMenuFactory;
+import org.cytoscape.webservice.psicquic.ui.PSIMITagManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -49,6 +50,8 @@ public class CyActivator extends AbstractCyActivator {
 		CreateNetworkViewTaskFactory createViewTaskFactoryServiceRef = getService(bc,
 				CreateNetworkViewTaskFactory.class);
 
+		final PSIMITagManager tagManager = new PSIMITagManager();
+		
 		PSIMI25VisualStyleBuilder vsBuilder = new PSIMI25VisualStyleBuilder(vsFactoryServiceRef,
 				discreteMappingFactoryRef, passthroughMappingFactoryRef);
 
@@ -57,7 +60,7 @@ public class CyActivator extends AbstractCyActivator {
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "Interaction Database Universal Client",
 				"REST version of universal interaction datavase client.", cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
-				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm);
+				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager);
 
 		registerAllServices(bc, psicquicClient, new Properties());
 

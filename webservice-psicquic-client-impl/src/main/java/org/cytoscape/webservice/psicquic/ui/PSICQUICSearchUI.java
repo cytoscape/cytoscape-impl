@@ -86,11 +86,12 @@ public class PSICQUICSearchUI extends JPanel {
 
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
+	private final PSIMITagManager tagManager;
 
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
 			final PSICQUICRestClient client, final TaskManager<?, ?> tmManager,
 			final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
+			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final PSIMITagManager tagManager) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;
@@ -98,6 +99,7 @@ public class PSICQUICSearchUI extends JPanel {
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
+		this.tagManager = tagManager;
 
 		init();
 	}
@@ -122,7 +124,7 @@ public class PSICQUICSearchUI extends JPanel {
 	private final void createDBlistPanel() {
 		// Source Status - list of remote databases
 		this.statesPanel = new SourceStatusPanel("", client, regManager, networkManager, null, taskManager, mode,
-				createViewTaskFactory, vsBuilder, vmm);
+				createViewTaskFactory, vsBuilder, vmm, tagManager);
 		statesPanel.enableComponents(false);
 		this.add(statesPanel);
 	}
@@ -149,6 +151,7 @@ public class PSICQUICSearchUI extends JPanel {
 				if(firstClick) {
 					queryArea.setText("");
 					firstClick = false;
+					searchButton.setEnabled(true);
 				}
 			}
 		});
@@ -187,6 +190,7 @@ public class PSICQUICSearchUI extends JPanel {
 				statesPanel.enableComponents(true);
 			}
 		});
+		searchButton.setEnabled(false);
 
 		refreshButton = new JButton("Refresh");
 		refreshButton.setPreferredSize(new java.awt.Dimension(90, 28));
@@ -214,6 +218,15 @@ public class PSICQUICSearchUI extends JPanel {
 		speciesPanel.setLayout(new BoxLayout(speciesPanel, BoxLayout.X_AXIS));
 		speciesPanel.add(speciesLabel);
 		speciesPanel.add(speciesSelector);
+		
+		speciesSelector.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				searchButton.setEnabled(true);
+			}
+			
+		});
 	}
 	
 	
@@ -281,9 +294,10 @@ public class PSICQUICSearchUI extends JPanel {
 			}
 						
 			statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, result,
-					taskManager, mode, createViewTaskFactory, vsBuilder, vmm);
+					taskManager, mode, createViewTaskFactory, vsBuilder, vmm, tagManager);
 			statesPanel.sort();
 			updateGUILayout();
+			statesPanel.enableComponents(true);
 		}
 	}
 
@@ -346,10 +360,11 @@ public class PSICQUICSearchUI extends JPanel {
 		
 		
 		statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, null,
-				taskManager, mode, createViewTaskFactory, vsBuilder, vmm);
+				taskManager, mode, createViewTaskFactory, vsBuilder, vmm, tagManager);
 		statesPanel.sort();
 		
 		updateGUILayout();
-		statesPanel.setEnabled(false);
+		statesPanel.enableComponents(false);
+		searchButton.setEnabled(false);
 	}
 }

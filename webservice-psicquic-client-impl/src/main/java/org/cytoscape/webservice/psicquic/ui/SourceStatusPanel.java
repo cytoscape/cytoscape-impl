@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +43,12 @@ public class SourceStatusPanel extends JPanel {
 	private static final long serialVersionUID = 6996385373168492882L;
 
 	private static final Color SELECTED_ROW = new Color(0xaa, 0xaa, 0xaa, 200);
+	
+	private static final int IMPORT_COLUMN_INDEX = 0;
+	private static final int STATUS_COLUMN_INDEX = 1;
+	private static final int DB_NAME_COLUMN_INDEX = 2;
+	private static final int RECORD_COUNT_COLUMN_INDEX = 3;
+	private static final int TAG_COLUMN_INDEX = 4;
 
 	private boolean cancelFlag = false;
 
@@ -59,6 +66,8 @@ public class SourceStatusPanel extends JPanel {
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
 	
+	private final PSIMITagManager tagManager;
+	
 	private int interactionsFound = 0;
 
 	/**
@@ -68,12 +77,13 @@ public class SourceStatusPanel extends JPanel {
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
 			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm) {
+			final VisualMappingManager vmm, final PSIMITagManager tagManager) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
 		this.networkManager = networkManager;
 		this.taskManager = taskManager;
+		this.tagManager = tagManager;
 		
 		if(mode == SearchMode.SPECIES)
 			this.mode = SearchMode.MIQL;
@@ -86,6 +96,7 @@ public class SourceStatusPanel extends JPanel {
 		setTableModel(result);
 		
 		refreshGUI();
+		resultTable.setEnabled(false);
 	}
 	
 	private void refreshGUI() {
@@ -102,7 +113,7 @@ public class SourceStatusPanel extends JPanel {
 	}
 
 	public void enableComponents(final boolean enable) {
-		this.clearButtonActionPerformed(null);
+		//this.clearButtonActionPerformed(null);
 
 		this.resultTable.setEnabled(enable);
 		this.resultScrollPane.setEnabled(enable);
@@ -121,12 +132,12 @@ public class SourceStatusPanel extends JPanel {
 
 		TableModel model = this.resultTable.getModel();
 		for (int i = 0; i < model.getRowCount(); i++) {
-			Boolean selected = (Boolean) model.getValueAt(i, 0);
+			Boolean selected = (Boolean) model.getValueAt(i, IMPORT_COLUMN_INDEX);
 			if (selected == null)
 				selected = false;
 
 			if (selected)
-				selectedService.add(model.getValueAt(i, 1).toString());
+				selectedService.add(model.getValueAt(i, DB_NAME_COLUMN_INDEX).toString());
 		}
 
 		return selectedService;
@@ -136,15 +147,17 @@ public class SourceStatusPanel extends JPanel {
 
 		resultTable.getTableHeader().setReorderingAllowed(false);
 		resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		// Checkbox
-		resultTable.getColumnModel().getColumn(0).setPreferredWidth(60);
+		// Import?
+		resultTable.getColumnModel().getColumn(IMPORT_COLUMN_INDEX).setPreferredWidth(60);
+		// Status
+		resultTable.getColumnModel().getColumn(STATUS_COLUMN_INDEX).setPreferredWidth(60);
 		// Name
-		resultTable.getColumnModel().getColumn(1).setPreferredWidth(150);
+		resultTable.getColumnModel().getColumn(DB_NAME_COLUMN_INDEX).setPreferredWidth(120);
+		// Record Number
+		resultTable.getColumnModel().getColumn(RECORD_COUNT_COLUMN_INDEX).setPreferredWidth(120);
+		
 		// Tags
-		resultTable.getColumnModel().getColumn(2).setPreferredWidth(250);
-		// Found
-		resultTable.getColumnModel().getColumn(3).setPreferredWidth(120);
-		resultTable.getColumnModel().getColumn(4).setPreferredWidth(60);
+		resultTable.getColumnModel().getColumn(TAG_COLUMN_INDEX).setPreferredWidth(260);
 
 		resultTable.setSelectionBackground(SELECTED_ROW);
 		resultTable.setDefaultRenderer(String.class, new StringCellRenderer());
@@ -155,10 +168,10 @@ public class SourceStatusPanel extends JPanel {
 
 		final StatusTableModel model = new StatusTableModel();
 		model.addColumn("Import");
-		model.addColumn("Data Source Name");
-		model.addColumn("Tags");
-		model.addColumn("Records Found");
 		model.addColumn("Status");
+		model.addColumn("Database Name");
+		model.addColumn("Records Found");
+		model.addColumn("Database Type (Tags)");
 
 		// Reset counter
 		this.interactionsFound = 0;
@@ -167,14 +180,14 @@ public class SourceStatusPanel extends JPanel {
 			Integer errorID = null;
 			final Object[] rowValues = new Object[5];
 
-			rowValues[1] = serviceName;
-			rowValues[2] = manager.getTagMap().get(serviceName).toString();
+			rowValues[DB_NAME_COLUMN_INDEX] = serviceName;
+			rowValues[TAG_COLUMN_INDEX] = convertTags(serviceName);
 			if (result != null) {
 				final String targetURL = manager.getActiveServices().get(serviceName);
 				if (targetURL != null) {
 					Long targetResult = result.get(targetURL);
 					if (targetResult == null)
-						rowValues[3] = 0;
+						rowValues[RECORD_COUNT_COLUMN_INDEX] = 0;
 					else {
 						final Integer count = targetResult.intValue();
 						if (count > 0)
@@ -183,45 +196,72 @@ public class SourceStatusPanel extends JPanel {
 							errorID = count;
 
 						if (count < 0)
-							rowValues[3] = 0;
+							rowValues[RECORD_COUNT_COLUMN_INDEX] = 0;
 						else
-							rowValues[3] = count;
+							rowValues[RECORD_COUNT_COLUMN_INDEX] = count;
 					}
 				} else
-					rowValues[3] = 0;
+					rowValues[RECORD_COUNT_COLUMN_INDEX] = 0;
 			} else {
-				rowValues[3] = manager.getCountMap().get(serviceName).intValue();
+				rowValues[RECORD_COUNT_COLUMN_INDEX] = manager.getCountMap().get(serviceName).intValue();
 			}
 
 			if (errorID != null) {
 				if (errorID == PSICQUICRestClient.ERROR_CANCEL.intValue())
-					rowValues[4] = "Operation canceled";
+					rowValues[STATUS_COLUMN_INDEX] = "Operation canceled";
 				else if (errorID == PSICQUICRestClient.ERROR_TIMEOUT.intValue()) {
-					rowValues[4] = "Timeout.  Try again later.";
+					rowValues[STATUS_COLUMN_INDEX] = "Timeout.  Try again later.";
 				} else if (errorID == PSICQUICRestClient.ERROR_SEARCH_FAILED.intValue()) {
-					rowValues[4] = "Server returns error.  Try again later.";
+					rowValues[STATUS_COLUMN_INDEX] = "Server returns error.  Try again later.";
 				} else {
-					rowValues[4] = "Unknown error.  Try again later.";
+					rowValues[STATUS_COLUMN_INDEX] = "Unknown error.  Try again later.";
 				}
 			} else {
 				if (manager.isActive(serviceName)) {
-					rowValues[4] = "Active";
-					if (((Integer) rowValues[3]) != 0)
-						rowValues[0] = true;
+					rowValues[STATUS_COLUMN_INDEX] = "Active";
+					if (((Integer) rowValues[RECORD_COUNT_COLUMN_INDEX]) != 0)
+						rowValues[IMPORT_COLUMN_INDEX] = true;
 					else
-						rowValues[0] = false;
+						rowValues[IMPORT_COLUMN_INDEX] = false;
 				} else {
-					rowValues[0] = false;
-					rowValues[4] = "Inactive";
+					rowValues[IMPORT_COLUMN_INDEX] = false;
+					rowValues[STATUS_COLUMN_INDEX] = "Inactive";
 				}
 			}
 			model.addRow(rowValues);
 
 		}
-		this.resultTable = new JTable(model);
+		this.resultTable = new JTable(model) {
+
+			private static final long serialVersionUID = 1804418707227880677L;
+
+			@Override
+			public String getToolTipText(MouseEvent e) {
+				final int row = convertRowIndexToModel(rowAtPoint(e.getPoint()));
+				final TableModel m = getModel();
+				return "<html><strong>" + m.getValueAt(row, DB_NAME_COLUMN_INDEX) + "</strong><br>" + m.getValueAt(row, TAG_COLUMN_INDEX) + "</html>";
+			}
+		};
 		this.resultTable.setAutoCreateRowSorter(true);
 		model.fireTableDataChanged();
 		repaint();
+	}
+	
+	private final String convertTags(final String serviceName) {
+		final StringBuilder builder = new StringBuilder();
+		final List<String> tags = manager.getTagMap().get(serviceName);
+		for(final String tag: tags) {
+			final String psimiName = tagManager.toName(tag);
+			if(psimiName != null)
+				builder.append(psimiName);
+			else
+				builder.append(tag);
+			
+			builder.append(", ");
+		}
+		
+		final String  nameString = builder.toString();
+		return nameString.substring(0, nameString.length()-2);
 	}
 
 	/**
@@ -376,7 +416,7 @@ public class SourceStatusPanel extends JPanel {
 
 	private void clearButtonActionPerformed(ActionEvent evt) {
 		for (int i = 0; i < resultTable.getRowCount(); i++)
-			resultTable.setValueAt(Boolean.FALSE, i, 0);
+			resultTable.setValueAt(Boolean.FALSE, i, IMPORT_COLUMN_INDEX);
 	}
 
 	/**
@@ -384,10 +424,10 @@ public class SourceStatusPanel extends JPanel {
 	 */
 	private void selectAllButtonActionPerformed(ActionEvent evt) {
 		for (int i = 0; i < resultTable.getRowCount(); i++) {
-			if (((Number) resultTable.getValueAt(i, 3)).intValue() == 0)
-				resultTable.setValueAt(Boolean.FALSE, i, 0);
+			if (((Number) resultTable.getValueAt(i, RECORD_COUNT_COLUMN_INDEX)).intValue() == 0)
+				resultTable.setValueAt(Boolean.FALSE, i, IMPORT_COLUMN_INDEX);
 			else
-				resultTable.setValueAt(Boolean.TRUE, i, 0);
+				resultTable.setValueAt(Boolean.TRUE, i, IMPORT_COLUMN_INDEX);
 		}
 	}
 
@@ -415,8 +455,8 @@ public class SourceStatusPanel extends JPanel {
 
 		@Override
 		public boolean isCellEditable(int row, int column) {
-			final int count = (Integer) getValueAt(row, 3);
-			final String sourceName = getValueAt(row, 1).toString();
+			final int count = (Integer) getValueAt(row, RECORD_COUNT_COLUMN_INDEX);
+			final String sourceName = getValueAt(row, DB_NAME_COLUMN_INDEX).toString();
 			if (column == 0 && manager.isActive(sourceName) && count != 0)
 				return true;
 			else
@@ -425,9 +465,9 @@ public class SourceStatusPanel extends JPanel {
 
 		@Override
 		public Class<?> getColumnClass(int colIdx) {
-			if (colIdx == 0)
+			if (colIdx == IMPORT_COLUMN_INDEX)
 				return Boolean.class;
-			else if (colIdx == 3)
+			else if (colIdx == RECORD_COUNT_COLUMN_INDEX)
 				return Integer.class;
 			else
 				return String.class;
@@ -446,8 +486,8 @@ public class SourceStatusPanel extends JPanel {
 				return this;
 			}
 
-			final String serviceName = (String) table.getValueAt(row, 1);
-			final String statusString = (String) table.getValueAt(row, 4);
+			final String serviceName = (String) table.getValueAt(row, DB_NAME_COLUMN_INDEX);
+			final String statusString = (String) table.getValueAt(row, STATUS_COLUMN_INDEX);
 
 			this.setText(value.toString());
 
@@ -463,10 +503,16 @@ public class SourceStatusPanel extends JPanel {
 			else
 				this.setBackground(table.getBackground());
 
-			if(column == 4) {
+			if(column == STATUS_COLUMN_INDEX || column == TAG_COLUMN_INDEX) {
 				this.setHorizontalAlignment(SwingConstants.LEFT);
 			} else {
 				this.setHorizontalAlignment(SwingConstants.CENTER);
+			}
+			
+			if(table.isEnabled() == false) {
+				// Table is disabled.  Grayed-out
+				this.setForeground(Color.LIGHT_GRAY);
+				this.setEnabled(false);
 			}
 			return this;
 		}
@@ -492,8 +538,8 @@ public class SourceStatusPanel extends JPanel {
 				count = 0;
 			}
 
-			final String serviceName = (String) table.getValueAt(row, 1);
-			final String statusString = (String) table.getValueAt(row, 4);
+			final String serviceName = (String) table.getValueAt(row, DB_NAME_COLUMN_INDEX);
+			final String statusString = (String) table.getValueAt(row, STATUS_COLUMN_INDEX);
 
 			this.setText(count.toString());
 
@@ -511,6 +557,11 @@ public class SourceStatusPanel extends JPanel {
 			else
 				this.setBackground(table.getBackground());
 			
+			if(table.isEnabled() == false) {
+				// Table is disabled.  Grayed-out
+				this.setForeground(Color.LIGHT_GRAY);
+				this.setEnabled(false);
+			}
 			return this;
 		}
 	}

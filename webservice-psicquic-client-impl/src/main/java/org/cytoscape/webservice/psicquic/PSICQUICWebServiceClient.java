@@ -16,6 +16,7 @@ import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
 import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
 import org.cytoscape.webservice.psicquic.ui.PSICQUICSearchUI;
+import org.cytoscape.webservice.psicquic.ui.PSIMITagManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
@@ -40,11 +41,12 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	private final OpenBrowser openBrowser;
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
+	private final PSIMITagManager tagManager;
 
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
 			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager,
 			final TaskManager<?, ?> tManager, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final OpenBrowser openBrowser, final MergedNetworkBuilder builder, PSIMI25VisualStyleBuilder vsBuilder, VisualMappingManager vmm) {
+			final OpenBrowser openBrowser, final MergedNetworkBuilder builder, PSIMI25VisualStyleBuilder vsBuilder, VisualMappingManager vmm, final PSIMITagManager tagManager) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;
@@ -53,6 +55,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		this.openBrowser = openBrowser;
 		this.vsBuilder = vsBuilder;
 		this.vmm = vmm;
+		this.tagManager = tagManager;
 
 		regManager = new RegistryManager();
 		client = new PSICQUICRestClient(networkFactory, regManager, builder);
@@ -80,7 +83,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	@Override
 	public Container getQueryBuilderGUI() {
-		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, vsBuilder, vmm);
+		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, vsBuilder, vmm, tagManager);
 	}
 
 	PSICQUICRestClient getRestClient() {
