@@ -567,7 +567,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 					final CyNetworkView view = iFrameMap.get(targetIF);
 					final CyNetwork net = view.getModel();
 					
-					if (net.getDefaultNetworkTable().equals(source)) {
+					if (net.getDefaultNetworkTable() == source) {
 						final String title = record.getRow().get(CyNetwork.NAME, String.class);
 						// We should guarantee this visual property is up to date
 						view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
