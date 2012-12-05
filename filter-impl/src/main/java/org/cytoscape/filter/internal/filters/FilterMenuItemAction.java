@@ -90,7 +90,7 @@ public class FilterMenuItemAction extends AbstractCyAction {
 	}
 
 	public boolean isInToolBar() {
-		return true;
+		return false;
 	}
 
 	public boolean isInMenuBar() {

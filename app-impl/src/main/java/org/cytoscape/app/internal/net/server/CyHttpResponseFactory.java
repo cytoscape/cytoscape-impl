@@ -3,8 +3,8 @@ package org.cytoscape.app.internal.net.server;
 /**
  * Creates response objects. Implementations of {@link CyHttpResponder},
  * {@link CyHttpBeforeResponse}, and {@link CyHttpAfterResponse}
- * will use an this interface to create response objects
- * as its return values.
+ * would use this to create response objects
+ * in its return values.
  */
 public interface CyHttpResponseFactory
 {
@@ -26,7 +26,7 @@ public interface CyHttpResponseFactory
     CyHttpResponse createHttpResponse(int statusCode, String content, String contentType);
 
     /**
-     * Create a response with content with 200 OK.
+     * Create a response with content and 200 OK status code.
      * @param content the text content to send back to the client
      * @param contentType the MIME type of {@code content}; examples of valid
      * MIME types: {@code text/html}, {@code application/json}, {@code application/xml}.

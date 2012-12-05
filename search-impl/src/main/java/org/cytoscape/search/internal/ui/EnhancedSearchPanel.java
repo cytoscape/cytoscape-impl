@@ -26,8 +26,6 @@ public class EnhancedSearchPanel extends JPanel {
 	
 	private static final Logger logger = LoggerFactory.getLogger(EnhancedSearchPanel.class);
 	
-	private Icon searchIcon = new ImageIcon(this.getClass().getResource("/images/search_icon.png"));
-	
 	private static final Font MESSAGE_FONT = new Font("SansSerif", Font.ITALIC, 10);
 	private static final Font REGULAR_FONT = new Font("SansSerif", Font.BOLD, 12);
 	
@@ -39,7 +37,6 @@ public class EnhancedSearchPanel extends JPanel {
 	
 	private final CyNetworkViewManager viewManager;
 	
-	private JLabel lbSearch;
 	private JTextField tfSearchText;
 
 	/** Creates new form NewJPanel */
@@ -89,12 +86,7 @@ public class EnhancedSearchPanel extends JPanel {
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
 
-		lbSearch = new JLabel();
 		tfSearchText = new JTextField();
-
-		lbSearch.setIcon(searchIcon);
-		lbSearch.setName("lbSearch"); // NOI18N
-		add(lbSearch);
 
 		tfSearchText.setToolTipText("<html>Example Search Query:<br><br> YL* -- search from all attributes<br>name:YL*  -- Search by attribute 'name', </html>");
 		tfSearchText.setName("tfSearchText"); // NOI18N

@@ -31,7 +31,7 @@ public interface CyHttpResponse
     /**
      * Get the headers of the response.
      * This should return a mutable map so that {@link CyHttpAfterResponse}
-     * can add or modify headers before a response is sent back to the server.
+     * can add or modify headers before a response is sent back to the client.
      */
     public Map<String,String> getHeaders();
 }

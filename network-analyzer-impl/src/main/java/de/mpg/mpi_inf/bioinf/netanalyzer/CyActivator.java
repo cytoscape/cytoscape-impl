@@ -79,7 +79,7 @@ public class CyActivator extends AbstractCyActivator {
 		analyzerActionProps.put(TOOL_BAR_GRAVITY,"9.8");
 		analyzerActionProps.put(LARGE_ICON_URL,getClass().getResource("/networkAnalyzer24.png").toString());
 		analyzerActionProps.put(SMALL_ICON_URL,getClass().getResource("/networkAnalyzer16.png").toString());
-		analyzerActionProps.put(IN_TOOL_BAR,"true");
+		analyzerActionProps.put(IN_TOOL_BAR,"false");
 		analyzerActionProps.put(TOOLTIP,"Analyze Network");
 		analyzerActionProps.put(ENABLE_FOR, "network");
 		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef, resultPanel);

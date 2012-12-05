@@ -584,7 +584,7 @@ public class CyActivator extends AbstractCyActivator {
 		invertSelectedNodesTaskFactoryProps.setProperty(ACCELERATOR,"cmd i");
 		invertSelectedNodesTaskFactoryProps.setProperty(TITLE,"Invert node selection");
 		invertSelectedNodesTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/invert_selection.png").toString());
-		invertSelectedNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+		invertSelectedNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		invertSelectedNodesTaskFactoryProps.setProperty(TOOLTIP,"Invert Node Selection");
 		invertSelectedNodesTaskFactoryProps.setProperty(COMMAND,"invert-selected-nodes");
 		invertSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
