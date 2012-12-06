@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -23,6 +24,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -43,7 +45,8 @@ public class SourceStatusPanel extends JPanel {
 	private static final long serialVersionUID = 6996385373168492882L;
 
 	private static final Color SELECTED_ROW = new Color(0xaa, 0xaa, 0xaa, 200);
-	
+	private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 14);
+
 	private static final int IMPORT_COLUMN_INDEX = 0;
 	private static final int STATUS_COLUMN_INDEX = 1;
 	private static final int DB_NAME_COLUMN_INDEX = 2;
@@ -65,9 +68,9 @@ public class SourceStatusPanel extends JPanel {
 
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
-	
+
 	private final PSIMITagManager tagManager;
-	
+
 	private int interactionsFound = 0;
 
 	/**
@@ -76,16 +79,16 @@ public class SourceStatusPanel extends JPanel {
 	 */
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm, final PSIMITagManager tagManager) {
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
+			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final PSIMITagManager tagManager) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
 		this.networkManager = networkManager;
 		this.taskManager = taskManager;
 		this.tagManager = tagManager;
-		
-		if(mode == SearchMode.SPECIES)
+
+		if (mode == SearchMode.SPECIES)
 			this.mode = SearchMode.MIQL;
 		else
 			this.mode = mode;
@@ -94,27 +97,22 @@ public class SourceStatusPanel extends JPanel {
 		this.vsBuilder = vsBuilder;
 
 		setTableModel(result);
-		
+
 		refreshGUI();
+		final TitledBorder titledBorder = BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(6, 3, 0, 3),
+				"2. Select Database");
+		titledBorder.setTitleFont(TITLE_FONT);
+		this.setBorder(titledBorder);
+		this.setOpaque(false);
 		resultTable.setEnabled(false);
 	}
-	
+
 	private void refreshGUI() {
 		initComponents();
 		setCoumnWidth();
-
-		// Set number of items:
-		if (interactionsFound > 0) {
-			this.titleLabel.setText("Binary Interactions Found: " + interactionsFound);
-			this.titleLabel.setForeground(Color.GREEN);
-			this.titleLabel.setEnabled(true);
-			this.titleLabel.repaint();
-		}
 	}
 
 	public void enableComponents(final boolean enable) {
-		//this.clearButtonActionPerformed(null);
-
 		this.resultTable.setEnabled(enable);
 		this.resultScrollPane.setEnabled(enable);
 		this.selectAllButton.setEnabled(enable);
@@ -139,7 +137,6 @@ public class SourceStatusPanel extends JPanel {
 			if (selected)
 				selectedService.add(model.getValueAt(i, DB_NAME_COLUMN_INDEX).toString());
 		}
-
 		return selectedService;
 	}
 
@@ -155,9 +152,8 @@ public class SourceStatusPanel extends JPanel {
 		resultTable.getColumnModel().getColumn(DB_NAME_COLUMN_INDEX).setPreferredWidth(120);
 		// Record Number
 		resultTable.getColumnModel().getColumn(RECORD_COUNT_COLUMN_INDEX).setPreferredWidth(120);
-		
 		// Tags
-		resultTable.getColumnModel().getColumn(TAG_COLUMN_INDEX).setPreferredWidth(260);
+		resultTable.getColumnModel().getColumn(TAG_COLUMN_INDEX).setPreferredWidth(280);
 
 		resultTable.setSelectionBackground(SELECTED_ROW);
 		resultTable.setDefaultRenderer(String.class, new StringCellRenderer());
@@ -239,29 +235,30 @@ public class SourceStatusPanel extends JPanel {
 			public String getToolTipText(MouseEvent e) {
 				final int row = convertRowIndexToModel(rowAtPoint(e.getPoint()));
 				final TableModel m = getModel();
-				return "<html><strong>" + m.getValueAt(row, DB_NAME_COLUMN_INDEX) + "</strong><br>" + m.getValueAt(row, TAG_COLUMN_INDEX) + "</html>";
+				return "<html><strong>" + m.getValueAt(row, DB_NAME_COLUMN_INDEX) + "</strong><br>"
+						+ m.getValueAt(row, TAG_COLUMN_INDEX) + "</html>";
 			}
 		};
 		this.resultTable.setAutoCreateRowSorter(true);
 		model.fireTableDataChanged();
 		repaint();
 	}
-	
+
 	private final String convertTags(final String serviceName) {
 		final StringBuilder builder = new StringBuilder();
 		final List<String> tags = manager.getTagMap().get(serviceName);
-		for(final String tag: tags) {
+		for (final String tag : tags) {
 			final String psimiName = tagManager.toName(tag);
-			if(psimiName != null)
+			if (psimiName != null)
 				builder.append(psimiName);
 			else
 				builder.append(tag);
-			
+
 			builder.append(", ");
 		}
-		
-		final String  nameString = builder.toString();
-		return nameString.substring(0, nameString.length()-2);
+
+		final String nameString = builder.toString();
+		return nameString.substring(0, nameString.length() - 2);
 	}
 
 	/**
@@ -272,8 +269,8 @@ public class SourceStatusPanel extends JPanel {
 	@SuppressWarnings("unchecked")
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
-		titlePanel = new javax.swing.JPanel();
-		titleLabel = new javax.swing.JLabel();
+		// titlePanel = new javax.swing.JPanel();
+		// titleLabel = new javax.swing.JLabel();
 		resultScrollPane = new javax.swing.JScrollPane();
 
 		buttonPanel = new javax.swing.JPanel();
@@ -284,21 +281,22 @@ public class SourceStatusPanel extends JPanel {
 		clusterResultCheckBox = new JCheckBox("Merge results into one network");
 		clusterResultCheckBox.setSelected(true);
 
-		titlePanel.setBackground(java.awt.Color.white);
+		// titlePanel.setBackground(java.awt.Color.white);
+		//
+		// titleLabel.setFont(new java.awt.Font("SansSerif", Font.BOLD, 14)); //
+		// NOI18N
+		// titleLabel.setEnabled(false);
+		// titleLabel.setText("Binary Interactions Found: -");
 
-		titleLabel.setFont(new java.awt.Font("SansSerif", Font.BOLD, 14)); // NOI18N
-		titleLabel.setEnabled(false);
-		titleLabel.setText("Binary Interactions Found: -");
-
-		GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
-		titlePanel.setLayout(titlePanelLayout);
-		titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
-								.addContainerGap(40, Short.MAX_VALUE)));
-		titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
-						.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+		// GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
+		// titlePanel.setLayout(titlePanelLayout);
+		// titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		// .addGroup(
+		// titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
+		// .addContainerGap(40, Short.MAX_VALUE)));
+		// titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
+		// titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
+		// .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
 		resultScrollPane.setBackground(java.awt.Color.white);
 		resultScrollPane.setViewportView(resultTable);
@@ -373,13 +371,15 @@ public class SourceStatusPanel extends JPanel {
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(titlePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				// .addComponent(titlePanel, GroupLayout.DEFAULT_SIZE,
+				// GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(resultScrollPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
 				.addComponent(buttonPanel));
 		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
 				layout.createSequentialGroup()
-						.addComponent(titlePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
+						// .addComponent(titlePanel, GroupLayout.PREFERRED_SIZE,
+						// GroupLayout.DEFAULT_SIZE,
+						// GroupLayout.PREFERRED_SIZE)
 						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 						.addComponent(resultScrollPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
 						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -391,7 +391,7 @@ public class SourceStatusPanel extends JPanel {
 	private void importButtonActionPerformed(ActionEvent evt) {
 
 		final boolean mergeNetwork = clusterResultCheckBox.isSelected();
-		
+
 		final Set<String> targetSources = getSelected();
 		final Set<String> sourceURLs = new HashSet<String>();
 		for (String source : targetSources)
@@ -441,8 +441,9 @@ public class SourceStatusPanel extends JPanel {
 
 	private javax.swing.JScrollPane resultScrollPane;
 	private javax.swing.JTable resultTable;
-	private javax.swing.JLabel titleLabel;
-	private javax.swing.JPanel titlePanel;
+
+	// private javax.swing.JLabel titleLabel;
+	// private javax.swing.JPanel titlePanel;
 
 	// End of variables declaration
 
@@ -503,14 +504,14 @@ public class SourceStatusPanel extends JPanel {
 			else
 				this.setBackground(table.getBackground());
 
-			if(column == STATUS_COLUMN_INDEX || column == TAG_COLUMN_INDEX) {
+			if (column == STATUS_COLUMN_INDEX || column == TAG_COLUMN_INDEX) {
 				this.setHorizontalAlignment(SwingConstants.LEFT);
 			} else {
 				this.setHorizontalAlignment(SwingConstants.CENTER);
 			}
-			
-			if(table.isEnabled() == false) {
-				// Table is disabled.  Grayed-out
+
+			if (table.isEnabled() == false) {
+				// Table is disabled. Grayed-out
 				this.setForeground(Color.LIGHT_GRAY);
 				this.setEnabled(false);
 			}
@@ -556,9 +557,9 @@ public class SourceStatusPanel extends JPanel {
 				this.setBackground(table.getSelectionBackground());
 			else
 				this.setBackground(table.getBackground());
-			
-			if(table.isEnabled() == false) {
-				// Table is disabled.  Grayed-out
+
+			if (table.isEnabled() == false) {
+				// Table is disabled. Grayed-out
 				this.setForeground(Color.LIGHT_GRAY);
 				this.setEnabled(false);
 			}
@@ -566,7 +567,6 @@ public class SourceStatusPanel extends JPanel {
 		}
 	}
 
-	
 	/**
 	 * Force to sort row
 	 */
@@ -581,7 +581,7 @@ public class SourceStatusPanel extends JPanel {
 		}
 	}
 
-	void setQuery(final String query){
+	void setQuery(final String query) {
 		this.query = query;
 	}
 }

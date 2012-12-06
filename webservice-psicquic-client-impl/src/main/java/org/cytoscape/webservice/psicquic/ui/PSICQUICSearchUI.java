@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -18,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
@@ -39,10 +41,12 @@ public class PSICQUICSearchUI extends JPanel {
 
 	private static final long serialVersionUID = 3163269742016489767L;
 
-	private static final String MIQL_REFERENCE_PAGE_URL = "http://code.google.com/p/psicquic/wiki/MiqlReference";
-
 	private static final Dimension PANEL_SIZE = new Dimension(680, 500);
-	
+
+	// Preset design elements for Search Panel
+	private static final Color SEARCH_BORDER_COLOR = new Color(0x1E, 0x90, 0xFF, 200);
+	private static final Border SEARCH_BORDER = BorderFactory.createLineBorder(SEARCH_BORDER_COLOR, 2);
+
 	// Color Scheme
 	private static final Color MIQL_COLOR = new Color(0x7f, 0xff, 0xd4);
 	private static final Color ID_LIST_COLOR = new Color(0xff, 0xa5, 0x00);
@@ -51,13 +55,7 @@ public class PSICQUICSearchUI extends JPanel {
 	// Fixed messages
 	private static final String MIQL_MODE = "Search by Query Language (MIQL)";
 	private static final String INTERACTOR_ID_LIST = "Search by ID (gene/protein/compound ID)";
-	private static final String BY_SPECIES = "Search by Species";
-
-	private static final String MIQL_QUERY_AREA_MESSAGE_STRING = "Please enter search query (MIQL) here.  "
-			+ "Currently the result table shows number of all binary interactions available in the database.  "
-			+ "\nIf you need help, please click Syntax Help button below.";
-	private static final String INTERACTOR_LIST_AREA_MESSAGE_STRING = "Please enter list of genes/proteins/compounds, separated by space.  "
-			+ "Currently the result table shows number of all binary interactions available in the database.";
+	private static final String BY_SPECIES = "Search Interactome (this may take long time)";
 
 	private final RegistryManager regManager;
 	private final PSICQUICRestClient client;
@@ -75,9 +73,11 @@ public class PSICQUICSearchUI extends JPanel {
 	private JButton refreshButton;
 
 	private JPanel speciesPanel;
-	
+
 	private JComboBox searchModeSelector;
 	private JComboBox speciesSelector;
+
+	private JPanel searchConditionPanel;
 
 	private SearchMode mode = SearchMode.MIQL;
 	private String searchAreaTitle = MIQL_MODE;
@@ -90,8 +90,8 @@ public class PSICQUICSearchUI extends JPanel {
 
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
 			final PSICQUICRestClient client, final TaskManager<?, ?> tmManager,
-			final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final PSIMITagManager tagManager) {
+			final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm, final PSIMITagManager tagManager) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;
@@ -110,15 +110,29 @@ public class PSICQUICSearchUI extends JPanel {
 		this.setBackground(Color.white);
 		this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
+		searchConditionPanel = new JPanel();
+		searchConditionPanel.setBackground(Color.white);
+		searchConditionPanel.setLayout(new BoxLayout(searchConditionPanel, BoxLayout.Y_AXIS));
+		final TitledBorder searchConditionPanelBorder = BorderFactory.createTitledBorder(SEARCH_BORDER,
+				"1. Enter Search Conditions");
+		searchConditionPanelBorder.setTitleFont(STRONG_FONT);
+		searchConditionPanel.setBorder(searchConditionPanelBorder);
+
 		createDBlistPanel();
 		createQueryPanel();
 		createQueryModePanel();
 		createSpeciesPanel();
-		
+
 		queryModeChanged();
-		
+
 		this.setSize(PANEL_SIZE);
 		this.setPreferredSize(PANEL_SIZE);
+
+		searchConditionPanel.add(queryScrollPane);
+		searchConditionPanel.add(searchPanel);
+
+		this.add(searchConditionPanel);
+		this.add(statesPanel);
 	}
 
 	private final void createDBlistPanel() {
@@ -126,7 +140,6 @@ public class PSICQUICSearchUI extends JPanel {
 		this.statesPanel = new SourceStatusPanel("", client, regManager, networkManager, null, taskManager, mode,
 				createViewTaskFactory, vsBuilder, vmm, tagManager);
 		statesPanel.enableComponents(false);
-		this.add(statesPanel);
 	}
 
 	private final void createQueryPanel() {
@@ -136,20 +149,17 @@ public class PSICQUICSearchUI extends JPanel {
 		queryArea = new JEditorPane();
 
 		final TitledBorder border = new TitledBorder(searchAreaTitle);
-		border.setTitleColor(MIQL_COLOR);
 		border.setTitleFont(STRONG_FONT);
 		queryScrollPane.setBorder(border);
 		queryScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		queryScrollPane.setPreferredSize(new Dimension(500, 150));
 		queryScrollPane.setViewportView(queryArea);
-		this.add(queryScrollPane);
-		
-		queryArea.addMouseListener(new MouseAdapter() {
+		searchConditionPanel.add(queryScrollPane);
 
+		queryArea.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if(firstClick) {
-					queryArea.setText("");
+				if (firstClick) {
 					firstClick = false;
 					searchButton.setEnabled(true);
 				}
@@ -168,7 +178,6 @@ public class PSICQUICSearchUI extends JPanel {
 		this.searchModeSelector.setSelectedItem(INTERACTOR_ID_LIST);
 
 		this.searchModeSelector.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				queryModeChanged();
@@ -205,7 +214,7 @@ public class PSICQUICSearchUI extends JPanel {
 		searchPanel.add(searchButton);
 		searchPanel.add(refreshButton);
 
-		this.add(searchPanel);
+		searchConditionPanel.add(searchPanel);
 	}
 
 	private final void createSpeciesPanel() {
@@ -218,21 +227,17 @@ public class PSICQUICSearchUI extends JPanel {
 		speciesPanel.setLayout(new BoxLayout(speciesPanel, BoxLayout.X_AXIS));
 		speciesPanel.add(speciesLabel);
 		speciesPanel.add(speciesSelector);
-		
-		speciesSelector.addActionListener(new ActionListener() {
 
+		speciesSelector.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				searchButton.setEnabled(true);
 			}
-			
 		});
 	}
-	
-	
+
 	private void refreshButtonActionPerformed() {
 		SwingUtilities.invokeLater(new Runnable() {
-
 			@Override
 			public void run() {
 				regManager.refresh();
@@ -241,31 +246,27 @@ public class PSICQUICSearchUI extends JPanel {
 		});
 	}
 
-
 	private void search() {
 		final SearchRecoredsTask searchTask = new SearchRecoredsTask(client, mode);
 		final Map<String, String> activeSource = regManager.getActiveServices();
 		String query = this.queryArea.getText();
-		
-		
+
 		// Query by species
-		if(mode == SearchMode.SPECIES)
+		if (mode == SearchMode.SPECIES)
 			query = buildSpeciesQuery();
-		
-		
+
 		statesPanel.setQuery(query);
-		
 		searchTask.setQuery(query);
 		searchTask.setTargets(activeSource.values());
 
 		taskManager.execute(new TaskIterator(searchTask, new SetTableTask(searchTask)));
 	}
-	
+
 	private final String buildSpeciesQuery() {
 		mode = SearchMode.SPECIES;
 		final Object selectedItem = this.speciesSelector.getSelectedItem();
 		final Species species = (Species) selectedItem;
-		
+
 		if (species == Species.ALL) {
 			return "*";
 		} else {
@@ -284,34 +285,38 @@ public class PSICQUICSearchUI extends JPanel {
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			final Map<String, Long> result = searchTask.getResult();
-			
+
 			String query;
 			// Query by species
-			if(mode == SearchMode.SPECIES)
+			if (mode == SearchMode.SPECIES)
 				query = buildSpeciesQuery();
 			else {
 				query = queryArea.getText();
 			}
-						
-			statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, result,
-					taskManager, mode, createViewTaskFactory, vsBuilder, vmm, tagManager);
+
+			statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, result, taskManager, mode,
+					createViewTaskFactory, vsBuilder, vmm, tagManager);
 			statesPanel.sort();
 			updateGUILayout();
 			statesPanel.enableComponents(true);
 		}
 	}
 
-	private final void updateGUILayout() {	
+	private final void updateGUILayout() {
+		searchConditionPanel.removeAll();
 		removeAll();
-		
-		add(statesPanel);
-		if(mode == SearchMode.SPECIES)
-			add(speciesPanel);
+
+		if (mode == SearchMode.SPECIES)
+			searchConditionPanel.add(speciesPanel);
 		else
-			add(queryScrollPane);
-		
-		add(searchPanel);
-		
+			searchConditionPanel.add(queryScrollPane);
+
+		searchConditionPanel.add(searchPanel);
+
+		// Add to main panel
+		this.add(searchConditionPanel);
+		this.add(statesPanel);
+
 		if (getRootPane() != null) {
 			Window parentWindow = ((Window) getRootPane().getParent());
 			parentWindow.pack();
@@ -324,45 +329,31 @@ public class PSICQUICSearchUI extends JPanel {
 		final Object selectedObject = this.searchModeSelector.getSelectedItem();
 		if (selectedObject == null)
 			return;
-		
+
 		final String modeString = selectedObject.toString();
-		final Color borderColor;
 		final String query;
 		if (modeString.equals(MIQL_MODE)) {
 			mode = SearchMode.MIQL;
 			searchAreaTitle = MIQL_MODE;
-			// speciesSelector.setEnabled(true);
-			// helpButton.setEnabled(true);
-			queryArea.setText(MIQL_QUERY_AREA_MESSAGE_STRING);
-			borderColor = MIQL_COLOR;
 			query = queryArea.getText();
 		} else if (modeString.equals(INTERACTOR_ID_LIST)) {
 			mode = SearchMode.INTERACTOR;
 			searchAreaTitle = INTERACTOR_ID_LIST;
-			// speciesSelector.setEnabled(false);
-			// helpButton.setEnabled(false);
-			queryArea.setText(INTERACTOR_LIST_AREA_MESSAGE_STRING);
-			borderColor = ID_LIST_COLOR;
 			query = queryArea.getText();
 		} else {
 			mode = SearchMode.SPECIES;
 			searchAreaTitle = BY_SPECIES;
-			borderColor = MIQL_COLOR;
 			query = buildSpeciesQuery();
 		}
 
 		firstClick = true;
 
-		final TitledBorder border = new TitledBorder(searchAreaTitle);
-		border.setTitleColor(borderColor);
-		border.setTitleFont(STRONG_FONT);
-		queryScrollPane.setBorder(border);
-		
-		
-		statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, null,
-				taskManager, mode, createViewTaskFactory, vsBuilder, vmm, tagManager);
+		queryArea.setText("");
+		queryScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, null, taskManager, mode,
+				createViewTaskFactory, vsBuilder, vmm, tagManager);
 		statesPanel.sort();
-		
+
 		updateGUILayout();
 		statesPanel.enableComponents(false);
 		searchButton.setEnabled(false);

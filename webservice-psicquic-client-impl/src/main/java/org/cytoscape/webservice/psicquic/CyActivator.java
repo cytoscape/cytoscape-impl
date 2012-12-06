@@ -25,6 +25,13 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
+	
+	private static final String CLIENT_DISCRIPTION = "<strong>Universal Interaction Database Client</strong>" +
+			"<p>This is a web service client for <a href=\"http://code.google.com/p/psicquic/\">PSICQUIC</a>-compliant databases.</p>" +
+			"<ul><li><a href=\"http://code.google.com/p/psicquic/wiki/MiqlReference\">Query language (MIQL) Syntax</a></li>" +
+			"<li><a href=\"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry?action=STATUS\">List of Supported Databases</a></li></ul>";
+	
+	
 	public CyActivator() {
 		super();
 	}
@@ -59,7 +66,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "Interaction Database Universal Client",
-				"REST version of universal interaction datavase client.", cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
+				CLIENT_DISCRIPTION, cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
 				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager);
 
 		registerAllServices(bc, psicquicClient, new Properties());
