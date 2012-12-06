@@ -24,7 +24,6 @@ import javax.swing.border.LineBorder;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.LogoPanel;
 import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
 import org.cytoscape.welcome.internal.panel.OpenPanel;
 import org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel;
@@ -145,32 +144,27 @@ public class WelcomeScreenDialog extends JDialog {
 	}
 
 	private void createChildPanels() {
-		JPanel panel1 = new JPanel();
-		JPanel panel2 = new JPanel();
-		JPanel panel3 = new JPanel();
-		JPanel panel4 = new JPanel();
+		JPanel openSessionPanel = new JPanel();
+		JPanel newSessionPanel = new JPanel();
+		JPanel newsPanel = new JPanel();
 
-		panel1.setOpaque(false);
-		panel2.setOpaque(false);
-		panel3.setOpaque(false);
-		panel4.setOpaque(false);
+		openSessionPanel.setOpaque(false);
+		newSessionPanel.setOpaque(false);
+		newsPanel.setOpaque(false);
 
 		Color borderPaint = new Color(0xff, 0xff, 0xff, 50);
 		final LineBorder border = new LineBorder(borderPaint, 5, false);
-		panel1.setBorder(border);
-		panel2.setBorder(border);
-		panel3.setBorder(border);
-		panel4.setBorder(border);
+		openSessionPanel.setBorder(border);
+		newSessionPanel.setBorder(border);
+		newsPanel.setBorder(border);
 
-		panel1.setBackground(PANEL_COLOR);
-		panel2.setBackground(PANEL_COLOR);
-		panel3.setBackground(PANEL_COLOR);
-		panel4.setBackground(PANEL_COLOR);
+		openSessionPanel.setBackground(PANEL_COLOR);
+		newSessionPanel.setBackground(PANEL_COLOR);
+		newsPanel.setBackground(PANEL_COLOR);
 
-		setChildPanel(panel1, openPanel, "Open Recent Session");
-		setChildPanel(panel2, importPanel, "Start New Session");
-		setChildPanel(panel3, helpPanel, "News and Links");
-		setLogoPanel(panel4, new LogoPanel());
+		setChildPanel(openSessionPanel, openPanel, "Open Recent Session");
+		setChildPanel(newSessionPanel, importPanel, "Start New Session");
+		setChildPanel(newsPanel, helpPanel, "News and Links");
 
 		final JPanel leftPanel = new JPanel();
 		final JPanel rightPanel = new JPanel();
@@ -179,16 +173,17 @@ public class WelcomeScreenDialog extends JDialog {
 		rightPanel.setOpaque(false);
 		rightPanel.setLayout(new GridLayout(1, 1));
 
-		final JPanel centerPanel = new JPanel();
-		centerPanel.setOpaque(false);
-		centerPanel.setLayout(new GridLayout(2, 1));
+		leftPanel.setOpaque(false);
+		leftPanel.setLayout(new GridLayout(1, 1));
+		rightPanel.setOpaque(false);
+		rightPanel.setLayout(new GridLayout(2, 1));
 
 		mainPanel.setBorder(border);
 
-		leftPanel.add(panel1);
-		leftPanel.add(panel3);
+		rightPanel.add(openSessionPanel);
+		rightPanel.add(newsPanel);
 
-		rightPanel.add(panel2);
+		leftPanel.add(newSessionPanel);
 
 		mainPanel.add(leftPanel);
 		mainPanel.add(rightPanel);
@@ -209,12 +204,6 @@ public class WelcomeScreenDialog extends JDialog {
 		title.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 		titlePanel.add(title);
 		panel.add(titlePanel, BorderLayout.NORTH);
-		panel.add(contentPanel, BorderLayout.CENTER);
-	}
-
-	private void setLogoPanel(JPanel panel, JPanel contentPanel) {
-		contentPanel.setBackground(LOGO_PANEL_COLOR);
-		panel.setLayout(new BorderLayout());
 		panel.add(contentPanel, BorderLayout.CENTER);
 	}
 }

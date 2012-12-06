@@ -1,40 +1,46 @@
 package org.cytoscape.welcome.internal.panel;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.border.Border;
+import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
+import org.cytoscape.welcome.internal.WelcomeScreenDialog;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -50,20 +56,68 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final long serialVersionUID = -8750909701276867389L;
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
+	
+	private static final Icon NEW_ICON;
+	private static final Icon PRESET_ICON;
+	private static final Icon DATABASE_ICON;
+	private static final Icon OPEN_ICON;
+	
+	private static final Pattern METATAG = Pattern.compile("(.*?)<meta>(.+?)</meta>(.*?)");
 
+	static {
+		BufferedImage newImage = null;
+		BufferedImage databaseImage = null;
+		BufferedImage loadImage = null;
+		BufferedImage presetImage = null;
+
+		try {
+			newImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/empty.png"));
+		} catch (IOException e) {
+			logger.warn("Could not create Icon.", e);
+		}
+
+		try {
+			databaseImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(
+					"images/Icons/remote.png"));
+		} catch (IOException e) {
+			logger.warn("Could not create Icon.", e);
+		}
+		try {
+			loadImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/open.png"));
+		} catch (IOException e) {
+			logger.warn("Could not create Icon.", e);
+		}
+		
+		try {
+			presetImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/logo48.png"));
+		} catch (IOException e) {
+			logger.warn("Could not create Icon.", e);
+		}
+
+		if (newImage != null)
+			NEW_ICON = new ImageIcon(newImage);
+		else
+			NEW_ICON = null;
+
+		if (databaseImage != null)
+			DATABASE_ICON = new ImageIcon(databaseImage);
+		else
+			DATABASE_ICON = null;
+
+		if (loadImage != null)
+			OPEN_ICON = new ImageIcon(loadImage);
+		else
+			OPEN_ICON = null;
+		
+		if (presetImage != null)
+			PRESET_ICON = new ImageIcon(presetImage);
+		else
+			PRESET_ICON = null;
+	}
+	
 	public static final String WORKFLOW_ID = "welcomeScreenWorkflowID";
 	public static final String WORKFLOW_NAME = "welcomeScreenWorkflowName";
 	public static final String WORKFLOW_DESCRIPTION = "welcomeScreenWorkflowDescription";
-
-	private JLabel loadNetwork;
-	private JLabel fromDB;
-	private JLabel fromWebService;
-
-	private final ButtonGroup gr = new ButtonGroup();
-	private final JPanel optionPanel = new JPanel();
-
-	// List of Preset Data
-	private JComboBox networkList;
 
 	private final DialogTaskManager guiTaskManager;
 	private final BundleContext bc;
@@ -75,6 +129,10 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private final Map<ButtonModel, TaskFactory> button2taskMap = new HashMap<ButtonModel, TaskFactory>();
 	private JRadioButton noOptionTaskButton;
 
+	private List<JRadioButton> buttonList;
+	private JPanel sourceButtons;
+	private ButtonGroup bGroup;
+
 	public CreateNewNetworkPanel(final BundleContext bc, final DialogTaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
 			final DataSourceManager dsManager) {
@@ -84,28 +142,15 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		this.importNetworkFileTF = importNetworkFileTF;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
-
 		this.dataSourceMap = new HashMap<String, String>();
-		this.networkList = new JComboBox();
-		networkList.setEnabled(false);
 
 		setFromDataSource();
 		initComponents();
-
-		// Enable combo box listener here to avoid unnecessary reaction.
-		this.networkList.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				loadPreset();
-			}
-		});
-
-		networkList.setEnabled(true);
 	}
-
+	
 	private void setFromDataSource() {
-		DefaultComboBoxModel theModel = new DefaultComboBoxModel();
-
+		buttonList = new ArrayList<JRadioButton>();
+		
 		// Extract the URL entries
 		final Collection<DataSource> dataSources = dsManager.getDataSources(DataCategory.NETWORK);
 		final SortedSet<String> labelSet = new TreeSet<String>();
@@ -114,149 +159,128 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 				String link = null;
 				link = ds.getLocation().toString();
 				final String sourceName = ds.getName();
-				final String provider = ds.getProvider();
-				final String sourceLabel = provider + ":" + sourceName;
-				dataSourceMap.put(sourceLabel, link);
-				labelSet.add(sourceLabel);
+				String description = ds.getDescription();
+				Matcher match = METATAG.matcher(description);
+				boolean found = match.matches();
+				if (!found)
+					continue;
+
+				final String tags = match.group(2);
+			
+				final String tooltip = match.group(3);
+				final String[] res = tags.split(",");
+
+				if (res != null) {
+					final List<String> tagList = Arrays.asList(res);
+					if (tagList.contains("preset")) {
+						final String sourceLabel = sourceName;
+						dataSourceMap.put(sourceLabel, link);
+
+						final JRadioButton button = new JRadioButton(sourceLabel);
+						button.setToolTipText(tooltip);
+						buttonList.add(button);
+						labelSet.add(sourceLabel);
+					}
+				}
 			}
 		}
 
-		theModel.addElement("Select a network ...");
-
-		for (final String label : labelSet)
-			theModel.addElement(label);
-
-		this.networkList.setModel(theModel);
+		bGroup = new ButtonGroup();
+		sourceButtons = new JPanel();
+		sourceButtons.setOpaque(false);
+		
+		// Determine Size of Grid
+		int rowCount = buttonList.size()/2;
+		int mod = buttonList.size()%2;
+		sourceButtons.setLayout(new GridLayout(rowCount+mod, 2));
+		for(JRadioButton rb: buttonList) {
+			sourceButtons.add(rb);
+			sourceButtons.setOpaque(false);
+			bGroup.add(rb);
+		}
 	}
 
 	private void initComponents() {
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
+		// Basic layout of this panel (2 rows)
+		this.setLayout(new GridLayout(2,1));
+		
 		// Label border
-		final Border labelPadding = BorderFactory.createEmptyBorder(2, 10, 2, 8);
-
 		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
 
-		//////////////////
-		JLabel lbStartEmpty = new JLabel("Start without data");
-		lbStartEmpty.setFont(COMMAND_FONT);
-		lbStartEmpty.setForeground(COMMAND_FONT_COLOR);
-		lbStartEmpty.setHorizontalAlignment(JLabel.LEFT);
-		lbStartEmpty.setHorizontalTextPosition(JLabel.LEFT);
-		lbStartEmpty.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		lbStartEmpty.addMouseListener(new MouseAdapter() {
+		final JButton createEmptySessionButton = new JButton();
+		createEmptySessionButton.setText("New/Empty Network");
+		createEmptySessionButton.setIcon(NEW_ICON);
+		createEmptySessionButton.setHorizontalAlignment(SwingConstants.LEFT);
+		createEmptySessionButton.setIconTextGap(20);
+		createEmptySessionButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent ev) {
-				//close parent window only.
 				closeParentWindow();
 			}
 		});
-
-		// Start empty session without data
-		final JPanel pnlEmptySession = new JPanel();
-		pnlEmptySession.setLayout(new GridLayout(1, 1));
-		pnlEmptySession.setBorder(BorderFactory.createTitledBorder("Start Empty Session"));
-		pnlEmptySession.setOpaque(false);
-		final Dimension emptyPanelSize = new Dimension(300, 60);
-		lbStartEmpty.setMaximumSize(emptyPanelSize);
-		lbStartEmpty.setBorder(labelPadding);
-		pnlEmptySession.setPreferredSize(emptyPanelSize);
-		pnlEmptySession.setSize(emptyPanelSize);
-		pnlEmptySession.setMaximumSize(emptyPanelSize);
-		pnlEmptySession.add(lbStartEmpty);
-
-		//////////////////
 		
-		this.loadNetwork = new JLabel("Import network from file...");
-		loadNetwork.setFont(COMMAND_FONT);
-		loadNetwork.setForeground(COMMAND_FONT_COLOR);
-		this.loadNetwork.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-		loadNetwork.addMouseListener(new MouseAdapter() {
+		final JButton importFromFileButton = new JButton();
+		importFromFileButton.setText("From Network File...");
+		importFromFileButton.setIcon(OPEN_ICON);
+		importFromFileButton.setHorizontalAlignment(SwingConstants.LEFT);
+		importFromFileButton.setIconTextGap(20);
+		importFromFileButton.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent ev) {
+			public void actionPerformed(ActionEvent arg0) {
 				loadFromFile();
 			}
 		});
 
+		JPanel dbButtonPanel = new JPanel();
+		dbButtonPanel.setLayout(new GridLayout(1,1));
+		dbButtonPanel.setOpaque(false);
+		JButton dbButton = new JButton("From Network Database...");
+		dbButton.setIcon(DATABASE_ICON);
+		dbButton.setIconTextGap(20);
+		dbButton.setHorizontalAlignment(SwingConstants.LEFT);
+		dbButton.addActionListener(new ActionListener() {
 
-		this.fromDB = new JLabel("Import network from reference data set:");
-		fromDB.setFont(COMMAND_FONT);
-		fromDB.setForeground(COMMAND_FONT_COLOR);
-		this.fromWebService = new JLabel("Import Network from Public Database...");
-		fromWebService.setFont(COMMAND_FONT);
-		fromWebService.setForeground(COMMAND_FONT_COLOR);
-		fromWebService.setHorizontalAlignment(JLabel.LEFT);
-		fromWebService.setHorizontalTextPosition(JLabel.LEFT);
-		this.fromWebService.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		this.fromWebService.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent ev) {
+			public void actionPerformed(ActionEvent e) {
 				// Load network from web service.
 				closeParentWindow();
 				try {
 					execute(bc);
-				} catch (InvalidSyntaxException e) {
+				} catch (InvalidSyntaxException ise) {
 					logger.error("Could not execute the action", e);
 				}
 			}
+			
 		});
+		
+		final JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(3, 1));
+		buttonPanel.add(createEmptySessionButton);
+		buttonPanel.add(importFromFileButton);
+		buttonPanel.add(dbButton);
+		this.add(buttonPanel);
 
-		// Remote access
-		final JPanel wsPanel = new JPanel();
-		wsPanel.setLayout(new GridLayout(1, 1));
-		wsPanel.setBorder(BorderFactory.createTitledBorder("Access Remote Service"));
-		wsPanel.setOpaque(false);
-		final Dimension dbPanelSize = new Dimension(300, 60);
-		fromWebService.setMaximumSize(dbPanelSize);
-		fromWebService.setBorder(labelPadding);
-		wsPanel.setPreferredSize(dbPanelSize);
-		wsPanel.setSize(dbPanelSize);
-		wsPanel.setMaximumSize(dbPanelSize);
-		wsPanel.add(fromWebService);
+		final JPanel presetPanel = new JPanel();
+		presetPanel.setBorder(BorderFactory.createTitledBorder("From Preset Network"));
+		presetPanel.setOpaque(false);
+		presetPanel.setLayout(new BorderLayout());
+		JScrollPane buttonScrollPane = new JScrollPane();
+		buttonScrollPane.setViewportView(sourceButtons);
+		presetPanel.add(buttonScrollPane, BorderLayout.CENTER);
+		final JButton importPresetButton = new JButton("Load Preset Network");
+		importPresetButton.addActionListener(new ActionListener() {
 
-		final Dimension importPanelSize = new Dimension(300, 120);
-		final JPanel importPanel = new JPanel();
-		importPanel.setMaximumSize(importPanelSize);
-		importPanel.setLayout(new GridLayout(3, 1));
-		importPanel.setOpaque(false);
-		loadNetwork.setBorder(labelPadding);
-		fromDB.setBorder(labelPadding);
-		networkList.setFont(REGULAR_FONT);
-		networkList.setForeground(REGULAR_FONT_COLOR);
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				loadPreset();
+			}
+			
+		});
+		presetPanel.add(importPresetButton, BorderLayout.SOUTH);
 
-		importPanel.add(loadNetwork);
-		importPanel.add(fromDB);
-		importPanel.add(networkList);
-
-		final JPanel bottomPanel = new JPanel();
-		bottomPanel.setOpaque(false);
-		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
-		bottomPanel.setBorder(BorderFactory.createTitledBorder("Common Workflow"));
-
-		bottomPanel.add(importPanel);
-		bottomPanel.add(initOptionPanel());
-		this.add(pnlEmptySession);
-		this.add(wsPanel);
-		this.add(bottomPanel);
-
+		this.add(presetPanel);
+		
 		createPresetTasks();
-	}
-
-	private JScrollPane initOptionPanel() {
-
-		final JScrollPane optionPane = new JScrollPane();
-		optionPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(REGULAR_FONT_COLOR, 1),
-				"Optional Tasks after Data Import", TitledBorder.CENTER, TitledBorder.CENTER, REGULAR_FONT,
-				REGULAR_FONT_COLOR));
-
-		optionPanel.setLayout(new BoxLayout(optionPanel, BoxLayout.Y_AXIS));
-		optionPanel.setOpaque(false);
-
-		optionPane.setViewportView(optionPanel);
-		optionPane.setOpaque(false);
-		optionPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		return optionPane;
 	}
 
 	private final void loadFromFile() {
@@ -266,7 +290,14 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	private void loadPreset() {
 		// Get selected file from the combo box
-		final Object file = networkList.getSelectedItem();
+		Object file = null;
+		for(JRadioButton button: buttonList) {
+			if(button.isSelected()) {
+				file = button.getText();
+				break;
+			}
+		}
+		
 		if (file == null)
 			return;
 
@@ -284,17 +315,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	}
 
 	private void importNetwork(final TaskIterator loadTaskIt) {
-
-		final ButtonModel selected = gr.getSelection();
-		if (selected != null) {
-			final TaskFactory factory = button2taskMap.get(selected);
-
-			if (factory != null) {
-				final TaskIterator optionalTasks = factory.createTaskIterator();
-				loadTaskIt.append(optionalTasks);
-			}
-		}
-
 		loadTaskIt.append(new ResetTask());
 		closeParentWindow();
 		guiTaskManager.execute(loadTaskIt);
@@ -330,8 +350,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		final JRadioButton taskButton = new JRadioButton(workflowName.toString());
 		taskButton.setFont(REGULAR_FONT);
 		taskButton.setForeground(REGULAR_FONT_COLOR);
-		gr.add(taskButton);
-		optionPanel.add(taskButton);
 		button2taskMap.put(taskButton.getModel(), factory);
 
 		if (description != null)
@@ -346,10 +364,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		noOptionTaskButton = new JRadioButton("No Optional Task");
 		noOptionTaskButton.setFont(REGULAR_FONT);
 		noOptionTaskButton.setForeground(REGULAR_FONT_COLOR);
-		gr.add(noOptionTaskButton);
-		optionPanel.add(noOptionTaskButton);
-
-		gr.setSelected(noOptionTaskButton.getModel(), true);
 	}
 
 	private final class ResetTask extends AbstractTask {
@@ -357,8 +371,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
 
-			gr.setSelected(noOptionTaskButton.getModel(), true);
-			networkList.setSelectedIndex(0);
+//			networkList.setSelectedIndex(0);
 		}
 	}
 }

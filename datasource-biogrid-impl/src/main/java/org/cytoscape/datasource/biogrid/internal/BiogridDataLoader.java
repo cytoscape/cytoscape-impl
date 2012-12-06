@@ -24,6 +24,7 @@ import org.cytoscape.property.CyProperty;
 public class BiogridDataLoader {
 
 	private static final String FILE_LOCATION = "biogrid.file.url";
+	private static final String TAG = "<meta>preset,interactome</meta>"; 
 	
 	// Default resource file location.
 	private static final String DEF_RESOURCE = "biogrid/BIOGRID-ORGANISM-3.2.95.mitab.zip";
@@ -44,6 +45,7 @@ public class BiogridDataLoader {
 		FILTER.put("Drosophila_melanogaster", new String[]{"Fly", "BioGRID","Fly Interactome from BioGRID database"} );
 		FILTER.put("Mus_musculus", new String[]{"Mouse", "BioGRID", "Mouse Interactome from BioGRID database"});
 		FILTER.put("Arabidopsis_thaliana", new String[]{"Arabidopsis", "BioGRID", "Arabidopsis from BioGRID database"});
+		FILTER.put("Caenorhabditis_elegans", new String[]{"C. Elegans", "BioGRID", "Caenorhabditis Elegans from BioGRID database"});
 	}
 
 	public BiogridDataLoader(final CyProperty props, final File settingFileLocation) {
@@ -74,11 +76,12 @@ public class BiogridDataLoader {
 			version = "Unknown";
 		else {
 			String[] nextPart = parts[1].split(".mitab.zip");
-			if(nextPart == null || nextPart.length != 2)
+			if(nextPart == null || nextPart.length != 1)
 				version = "Unknown";
 			else
 				version = nextPart[0];
 		}
+		
 		this.sources = new HashSet<DataSource>();
 		
 		localFile = new File(settingFileLocation, LOCAL);
@@ -142,7 +145,7 @@ public class BiogridDataLoader {
 				processOneEntry(outFile, zis);
 				zis.closeEntry();
 				
-				final DataSource ds = new DefaultDataSource(data[0], data[1], data[2] + " Release " + version, DataCategory.NETWORK, outFile.toURI().toURL());
+				final DataSource ds = new DefaultDataSource(data[0], data[1], TAG + data[2] + " Release " + version, DataCategory.NETWORK, outFile.toURI().toURL());
 				sources.add(ds);
 			}
 
@@ -159,7 +162,7 @@ public class BiogridDataLoader {
 
 		for (File file : dataFiles) {
 			final String[] data = createName(file.getName());
-			final DataSource ds = new DefaultDataSource(data[0], data[1], data[2], DataCategory.NETWORK, file.toURI()
+			final DataSource ds = new DefaultDataSource(data[0], data[1], TAG + data[2] + " Release " + version, DataCategory.NETWORK, file.toURI()
 					.toURL());
 			sources.add(ds);
 		}
