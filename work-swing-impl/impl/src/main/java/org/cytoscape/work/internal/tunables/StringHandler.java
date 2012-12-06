@@ -5,8 +5,15 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.*;
-import javax.swing.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.text.DefaultFormatter;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
@@ -56,6 +63,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 
 		//set Gui
 		textField = new JFormattedTextField(s);
+		((DefaultFormatter)textField.getFormatter()).setOverwriteMode(false);
 		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		final JLabel label = new JLabel(getDescription());
