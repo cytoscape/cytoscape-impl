@@ -62,8 +62,10 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		}
 
 		//set Gui
-		textField = new JFormattedTextField(s);
-		((DefaultFormatter)textField.getFormatter()).setOverwriteMode(false);
+		final DefaultFormatter formatter = new DefaultFormatter();
+		formatter.setOverwriteMode(false);
+		textField = new JFormattedTextField(formatter);
+		textField.setValue(s);
 		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		final JLabel label = new JLabel(getDescription());
