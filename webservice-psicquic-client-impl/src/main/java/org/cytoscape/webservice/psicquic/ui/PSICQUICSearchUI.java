@@ -227,7 +227,8 @@ public class PSICQUICSearchUI extends JPanel {
 		speciesPanel.setLayout(new BoxLayout(speciesPanel, BoxLayout.X_AXIS));
 		speciesPanel.add(speciesLabel);
 		speciesPanel.add(speciesSelector);
-
+		searchButton.setEnabled(true);
+		
 		speciesSelector.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -267,11 +268,7 @@ public class PSICQUICSearchUI extends JPanel {
 		final Object selectedItem = this.speciesSelector.getSelectedItem();
 		final Species species = (Species) selectedItem;
 
-		if (species == Species.ALL) {
-			return "*";
-		} else {
-			return "species:\"" + species.toString() + "\"";
-		}
+		return "species:\"" + species.toString() + "\"";
 	}
 
 	private final class SetTableTask extends AbstractTask {
@@ -306,9 +303,10 @@ public class PSICQUICSearchUI extends JPanel {
 		searchConditionPanel.removeAll();
 		removeAll();
 
-		if (mode == SearchMode.SPECIES)
+		if (mode == SearchMode.SPECIES) {
 			searchConditionPanel.add(speciesPanel);
-		else
+			searchButton.setEnabled(true);
+		} else
 			searchConditionPanel.add(queryScrollPane);
 
 		searchConditionPanel.add(searchPanel);
@@ -336,14 +334,17 @@ public class PSICQUICSearchUI extends JPanel {
 			mode = SearchMode.MIQL;
 			searchAreaTitle = MIQL_MODE;
 			query = queryArea.getText();
+			searchButton.setEnabled(false);
 		} else if (modeString.equals(INTERACTOR_ID_LIST)) {
 			mode = SearchMode.INTERACTOR;
 			searchAreaTitle = INTERACTOR_ID_LIST;
 			query = queryArea.getText();
+			searchButton.setEnabled(false);
 		} else {
 			mode = SearchMode.SPECIES;
 			searchAreaTitle = BY_SPECIES;
 			query = buildSpeciesQuery();
+			searchButton.setEnabled(true);
 		}
 
 		firstClick = true;
@@ -356,6 +357,5 @@ public class PSICQUICSearchUI extends JPanel {
 
 		updateGUILayout();
 		statesPanel.enableComponents(false);
-		searchButton.setEnabled(false);
 	}
 }

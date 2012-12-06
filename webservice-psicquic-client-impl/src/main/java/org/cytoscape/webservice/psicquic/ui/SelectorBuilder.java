@@ -5,7 +5,7 @@ import javax.swing.JComboBox;
 public class SelectorBuilder {
 
 	protected enum Species {
-		ALL("All Species"), HUMAN("Homo sapiens"), MOUSE("Mus musculus"), YEAST("Saccharomyces cerevisiae"), FLY(
+		HUMAN("Homo sapiens"), MOUSE("Mus musculus"), YEAST("Saccharomyces cerevisiae"), FLY(
 				"Drosophila melanogaster"), ROUNDWORM("Caenorhabditis elegans"), ZEBRAFISH("Danio rerio"), MOUSE_EAR_CRESS(
 				"Arabidopsis Thaliana");
 
