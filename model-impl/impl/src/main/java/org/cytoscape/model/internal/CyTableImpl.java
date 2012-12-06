@@ -463,11 +463,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (listElementType == null)
 				throw new NullPointerException("listElementType is null");
 
-			if (types.get(columnName) != null)
-				throw new IllegalArgumentException("column already exists with name: '"
-								   + columnName + "' with type: "
-								   + types.get(columnName).getType());
-
 			checkClass(listElementType);
 
 			VirtualColumnInfo virtualInfo = NonVirtualColumnInfo.create(isImmutable);
@@ -1011,6 +1006,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		String targetName = "failed to create column"; 
 
 		synchronized(this) {
+			final String normalizedColName = normalizeColumnName(virtualColumnName);
+			if (types.containsKey(normalizedColName))
+				throw new IllegalArgumentException("column already exists with name: '" + virtualColumnName
+						+ "' with type: " + types.get(normalizedColName).getType());
+			
 			final CyColumn sourceColumn = sourceTable.getColumn(normalizeColumnName(sourceColumnName));
 			if (sourceColumn == null)
 				throw new IllegalArgumentException("\""+sourceColumnName+"\" is not a column in source table.");
@@ -1026,7 +1026,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			VirtualColumn virtualColumn = new VirtualColumn((CyTableImpl)sourceTable, sourceColumnName, this,
                     sourceTable.getPrimaryKey().getName(), 
                     targetJoinKeyName, isImmutable);
-			targetName = getUniqueColumnName(virtualColumnName);
+			targetName = virtualColumnName;
 
 			final CyColumn targetColumn = new CyColumnImpl(this, targetName, sourceColumn.getType(),
 			                                               sourceColumn.getListElementType(), virtualColumn,
@@ -1042,20 +1042,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, targetName));
 		return targetName;
-	}
-
-	private final String getUniqueColumnName(final String preferredName) {
-		if (getColumn(preferredName) == null)
-			return preferredName;
-
-		String newUniqueName;
-		int i = 0;
-		do {
-			++i;
-			newUniqueName = preferredName + "-" + i;
-		} while (getColumn(newUniqueName) != null);
-
-		return newUniqueName;
 	}
 
 	// Warning: This method is only to be used by CyTableManagerImpl!!!  That's also the reason
@@ -1094,11 +1080,21 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							   + targetJoinKeyName + "\".");
 
 		final Collection<CyColumn> columns = sourceTable.getColumns();
-		for (final CyColumn column : columns) {
-			final String columnName = column.getName();
+		for(final CyColumn column: columns) {
 			// skip the primary key
-			if (columnName.equalsIgnoreCase(sourceJoinKey.getName()))
+			if (column == sourceTable.getPrimaryKey())
 				continue;
+			
+			final String normalizedColName = normalizeColumnName(column.getName());
+			if (types.containsKey(normalizedColName))
+				throw new IllegalArgumentException("column already exists with name: '" + column.getName()
+						+ "' with type: " + types.get(normalizedColName).getType());
+		}
+		for (final CyColumn column : columns) {
+			// skip the primary key
+			if (column == sourceTable.getPrimaryKey())
+				continue;
+			final String columnName = column.getName();
 
 			addVirtualColumn(columnName, columnName, sourceTable, targetJoinKeyName, isImmutable);
 		}

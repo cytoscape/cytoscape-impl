@@ -32,6 +32,7 @@ package org.cytoscape.model.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -73,6 +74,22 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 		}
 		return tables;
 	}
+	
+	private void checkIfAlreadyExists(String columnName) {
+		List<CyTable> tables = localTables();
+		tables.add(0, shared);
+		for(CyTable table: tables) {
+			if (table == null ) {
+				logger.debug("NULL table!");
+				continue;
+			}
+			CyColumn column = table.getColumn(columnName);
+			if(column != null) {
+				throw new IllegalArgumentException("column already exists with name: '" + columnName
+						+ "' with type: " + column.getType());
+			}
+		};
+	}
 
 	
 	public void deleteColumn(String columnName) {
@@ -85,7 +102,7 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 			logger.debug("deleting virtual column: " + columnName + " from local table: " + local.getTitle());
 			local.deleteColumn(columnName);
 		}
-		logger.debug("deleting shared olumn: " + columnName + " from shared table: " + shared.getTitle());
+		logger.debug("deleting shared column: " + columnName + " from shared table: " + shared.getTitle());
 		shared.deleteColumn(columnName);
 	}
 
@@ -94,6 +111,7 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 	}
 
 	public <T> void createColumn(String columnName, Class<?extends T> type, boolean isImmutable, T defaultValue) {
+		checkIfAlreadyExists(columnName);
 		logger.debug("adding real column: '" + columnName + "' to table: " + shared.getTitle());
 		shared.createColumn(columnName, type, isImmutable,defaultValue);
 		for ( CyTable local : localTables() ) {
@@ -112,6 +130,7 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 	}
 
 	public <T> void createListColumn(String columnName, Class<T> listElementType, boolean isImmutable, List<T> defaultValue ) {
+		checkIfAlreadyExists(columnName);
 		logger.debug("adding real List column: '" + columnName + "' to table: " + shared.getTitle());
 		shared.createListColumn(columnName, listElementType, isImmutable, defaultValue);
 		for ( CyTable local : localTables() ) {
@@ -125,13 +144,18 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 	}
 
 	public String addVirtualColumn(String virtualColumn, String sourceColumn, CyTable sourceTable, String targetJoinKey, boolean isImmutable) {
-		virtualColumn = shared.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
+		checkIfAlreadyExists(virtualColumn);
+		shared.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
 		for ( CyTable local : localTables() ) 
 			local.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
 		return virtualColumn;
 	}
 
 	public void addVirtualColumns(CyTable sourceTable, String targetJoinKey, boolean isImmutable) {
+		for(CyColumn column: sourceTable.getColumns()) {
+			if (column != sourceTable.getPrimaryKey())
+				checkIfAlreadyExists(column.getName());
+		}
 		shared.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);
 		for ( CyTable local : localTables() ) 
 			local.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);

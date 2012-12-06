@@ -74,7 +74,10 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 	}
 
 	public void deleteColumn(String columnName) {
-		shared.deleteColumn(columnName);
+		if(shared.getColumn(columnName) != null)
+			shared.deleteColumn(columnName);
+		else
+			local.deleteColumn(columnName);
 	}
 
 	public <T> void createColumn(String columnName, Class<?extends T> type, boolean isImmutable) {
@@ -96,16 +99,24 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 	}
 
 	public String addVirtualColumn(String virtualColumn, String sourceColumn, CyTable sourceTable, String targetJoinKey, boolean isImmutable) {
-		String s = shared.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
-		return s;
+		if(shared.getColumn(targetJoinKey) != null)
+			return shared.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
+		else
+			return local.addVirtualColumn(virtualColumn, sourceColumn, sourceTable, targetJoinKey, isImmutable);
 	}
 
 	public void addVirtualColumns(CyTable sourceTable, String targetJoinKey, boolean isImmutable) {
-		shared.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);
+		if(shared.getColumn(targetJoinKey) != null)
+			shared.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);
+		else
+			local.addVirtualColumns(sourceTable, targetJoinKey, isImmutable);
 	}
 	
 	@Override
 	protected void updateColumnName(String oldName, String newName) {
-		shared.getColumn(oldName).setName(newName);
+		if(shared.getColumn(oldName) != null)
+			shared.getColumn(oldName).setName(newName);
+		else
+			local.getColumn(oldName).setName(newName);
 	}
 }
