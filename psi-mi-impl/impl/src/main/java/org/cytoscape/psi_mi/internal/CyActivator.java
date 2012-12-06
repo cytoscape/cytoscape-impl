@@ -51,10 +51,10 @@ public class CyActivator extends AbstractCyActivator {
 		
 		PsiMiNetworkViewTaskFactory psiMi25NetworkViewTaskFactory = new PsiMiNetworkViewTaskFactory(
 				PsiMiCyFileFilter.PSIMIVersion.PSIMI25, psiMi25Filter, cyNetworkFactoryServiceRef,
-				cyNetworkViewFactoryServiceRef, cyLayoutsServiceRef);
+				cyNetworkViewFactoryServiceRef, cyLayoutsServiceRef, cyNetworkManagerServiceRef, cyRootNetworkManagerServiceRef);
 		PsiMiNetworkViewTaskFactory psiMi10NetworkViewTaskFactory = new PsiMiNetworkViewTaskFactory(
 				PsiMiCyFileFilter.PSIMIVersion.PXIMI10, psiMi1Filter, cyNetworkFactoryServiceRef,
-				cyNetworkViewFactoryServiceRef, cyLayoutsServiceRef);
+				cyNetworkViewFactoryServiceRef, cyLayoutsServiceRef, cyNetworkManagerServiceRef, cyRootNetworkManagerServiceRef);
 
 		PsiMiNetworkWriterFactory psiMi1NetworkViewWriterFactory = new PsiMiNetworkWriterFactory(LEVEL_1,psiMi1Filter);
 		PsiMiNetworkWriterFactory psiMi25NetworkViewWriterFactory = new PsiMiNetworkWriterFactory(LEVEL_2_5,psiMi25Filter);

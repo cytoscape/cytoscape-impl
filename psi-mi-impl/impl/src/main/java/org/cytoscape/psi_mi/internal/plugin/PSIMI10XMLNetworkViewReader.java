@@ -6,13 +6,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-
+import java.util.HashMap;
 import java.util.List;
-
-
+import java.util.Map;
+import java.util.Iterator;
 import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.psi_mi.internal.cyto_mapper.MapToCytoscape;
 import org.cytoscape.psi_mi.internal.data_mapper.MapPsiOneToInteractions;
 import org.cytoscape.psi_mi.internal.model.Interaction;
@@ -21,18 +25,26 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.model.CyNode;
+
 
 public class PSIMI10XMLNetworkViewReader extends AbstractTask implements CyNetworkReader {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PSIMI10XMLNetworkViewReader.class);
 	
 	private static final int BUFFER_SIZE = 16384;
-	
+
 	private final CyNetworkViewFactory networkViewFactory;
 	private final CyNetworkFactory networkFactory;
 	
@@ -42,18 +54,190 @@ public class PSIMI10XMLNetworkViewReader extends AbstractTask implements CyNetwo
 	private CyLayoutAlgorithmManager layouts;
 	
 	private TaskMonitor parentTaskMonitor;
+	private final CyNetworkManager cyNetworkManager;
+	
+	
+	//private final CyNetworkFactory cyNetworkFactory;
+	private final CyRootNetworkManager cyRootNetworkManager;
+	
+	/**
+	 * If this option is selected, reader should create new CyRootNetwork.
+	 */
+	public static final String CRERATE_NEW_COLLECTION_STRING ="Create new network collection";
 
-	public PSIMI10XMLNetworkViewReader(InputStream inputStream, CyNetworkFactory networkFactory, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layouts) {
+	//******** tunables ********************
+
+	public ListSingleSelection<String> rootNetworkList;
+	@Tunable(description = "Network Collection" ,groups=" ")
+	public ListSingleSelection<String> getRootNetworkList(){
+		return rootNetworkList;
+	}
+	public void setRootNetworkList (ListSingleSelection<String> roots){
+		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+			return;
+		}
+		targetColumnList = getTargetColumns(name2RootMap.get(rootNetworkList.getSelectedValue()));
+	}
+
+	public ListSingleSelection<String> sourceColumnList;
+	@Tunable(description = "Mapping Column for New Network:", groups=" ")
+	public ListSingleSelection<String> getSourceColumnList(){
+		return sourceColumnList;
+	}
+	public void setSourceColumnList(ListSingleSelection<String> colList){
+		this.sourceColumnList = colList;
+	}
+	
+	public ListSingleSelection<String> targetColumnList;
+	@Tunable(description = "Mapping Column for Existing Network:",groups=" ", listenForChange={"RootNetworkList"})
+	public ListSingleSelection<String> getTargetColumnList(){
+		return targetColumnList;
+	}
+	public void setTargetColumnList(ListSingleSelection<String> colList){
+		this.targetColumnList = colList;
+	}
+	
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Import Network ";
+	}
+
+	
+	public ListSingleSelection<String> getTargetColumns (CyNetwork network) {
+		CyTable selectedTable = network.getTable(CyNode.class, CyRootNetwork.SHARED_ATTRS);
+		
+		List<String> colNames = new ArrayList<String>();
+		for(CyColumn col: selectedTable.getColumns()) {
+			// Exclude SUID from the mapping key list
+			if (col.getName().equalsIgnoreCase("SUID")){
+				continue;
+			}
+			colNames.add(col.getName());
+		}
+		
+		ListSingleSelection<String> columns = new ListSingleSelection<String>(colNames);
+		
+		//columns.setSelectedValue("shared name"); this does not work, why
+		return columns;
+	}
+
+	
+	protected HashMap<String, CyRootNetwork> name2RootMap;
+	protected Map<Object, CyNode> nMap = new HashMap<Object, CyNode>(10000);
+
+	
+	// Return the rootNetwork based on user selection, if not existed yet, create a new one
+	private CyRootNetwork getRootNetwork(){
+		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
+		CyRootNetwork rootNetwork = this.name2RootMap.get(networkCollectionName);
+
+		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+			CyNetwork newNet = this.networkFactory.createNetwork();
+			return this.cyRootNetworkManager.getRootNetwork(newNet);
+		}
+
+		return rootNetwork;
+	}
+	
+	// Build the key-node map for the entire root network
+	// Note: The keyColName should start with "shared"
+	private void initNodeMap(){	
+		
+		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
+		CyRootNetwork rootNetwork = this.name2RootMap.get(networkCollectionName);
+		
+		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+			return;
+		}
+
+		String targetKeyColName = this.targetColumnList.getSelectedValue();
+		
+		if (rootNetwork == null){
+			return;
+		}
+		
+		Iterator<CyNode> it = rootNetwork.getNodeList().iterator();
+		
+		while (it.hasNext()){
+			CyNode node = it.next();
+			Object keyValue =  rootNetwork.getRow(node).getRaw(targetKeyColName);
+			this.nMap.put(keyValue, node);				
+		}
+	}
+
+	
+	private static HashMap<String, CyRootNetwork> getRootNetworkMap(CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
+
+		HashMap<String, CyRootNetwork> name2RootMap = new HashMap<String, CyRootNetwork>();
+
+		for (CyNetwork net : cyNetworkManager.getNetworkSet()){
+			final CyRootNetwork rootNet = cyRootNetworkManager.getRootNetwork(net);
+			if (!name2RootMap.containsValue(rootNet ) )
+				name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
+		}
+
+		return name2RootMap;
+	}
+	
+	public PSIMI10XMLNetworkViewReader(InputStream inputStream, CyNetworkFactory networkFactory, 
+			CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layouts, 
+			final CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
 		this.inputStream = inputStream;
 		this.networkFactory = networkFactory;
 		this.networkViewFactory = networkViewFactory;
 		this.layouts = layouts;
+		this.cyNetworkManager = cyNetworkManager;
+		this.cyRootNetworkManager = cyRootNetworkManager;
+		
+		// initialize the network Collection
+		this.name2RootMap = getRootNetworkMap(this.cyNetworkManager, this.cyRootNetworkManager);
+		
+		List<String> rootNames = new ArrayList<String>();
+		rootNames.add(CRERATE_NEW_COLLECTION_STRING);
+		rootNames.addAll(name2RootMap.keySet());
+		rootNetworkList = new ListSingleSelection<String>(rootNames);
+		rootNetworkList.setSelectedValue(rootNames.get(0));
+		
+//		if (!SessionUtil.isReadingSessionFile()) {
+//			final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
+//			
+//			if (selectedNetworks != null && selectedNetworks.size() > 0){
+//				CyNetwork selectedNetwork = this.cyApplicationManager.getSelectedNetworks().get(0);
+//				String rootName = "";
+//				if (selectedNetwork instanceof CySubNetwork){
+//					CySubNetwork subnet = (CySubNetwork) selectedNetwork;
+//					CyRootNetwork rootNet = subnet.getRootNetwork();
+//					rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
+//				} else {
+//					// it is a root network
+//					rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
+//				}
+//				
+//				rootNetworkList.setSelectedValue(rootName);
+//			}
+//		}
+		
+		// initialize target attribute list
+		List<String> colNames_target = new ArrayList<String>();
+		colNames_target.add("shared name");
+		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
+	
+		// initialize source attribute list
+		List<String> colNames_source = new ArrayList<String>();
+		colNames_source.add("shared name");
+		this.sourceColumnList = new ListSingleSelection<String>(colNames_source);
+
+		
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		parentTaskMonitor = taskMonitor;
 		long start = System.currentTimeMillis();
+		
+		// support to add network into existing collection
+		this.initNodeMap();
 		
 		taskMonitor.setStatusMessage("Loading PSI-MI 1.x XML file...");
 		taskMonitor.setProgress(0.05d);
@@ -67,7 +251,17 @@ public class PSIMI10XMLNetworkViewReader extends AbstractTask implements CyNetwo
 		taskMonitor.setProgress(0.4d);
 
 		//  Now map to Cytoscape network objects.
-		network = networkFactory.createNetwork();
+		//network = networkFactory.createNetwork();
+		String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
+		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
+			network = networkFactory.createNetwork();
+		}
+		else {
+			// Add a new subNetwork to the given collection
+			network = this.name2RootMap.get(networkCollectionName).addSubNetwork();
+		}
+		
 		final MapToCytoscape mapper2 = new MapToCytoscape(network, interactions, MapToCytoscape.SPOKE_VIEW);
 		mapper2.doMapping();
 
