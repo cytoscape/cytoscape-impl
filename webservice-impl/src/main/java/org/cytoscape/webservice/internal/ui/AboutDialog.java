@@ -1,7 +1,7 @@
 package org.cytoscape.webservice.internal.ui;
 
 import java.awt.Dialog;
-import java.awt.Frame;
+import java.awt.Dimension;
 import java.awt.Window;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,14 +28,21 @@ import org.slf4j.LoggerFactory;
  * About page for web service clients or other plugins. Accepts HTML as the
  * argument.
  */
-public class AboutDialog extends JDialog implements HyperlinkListener {
-	
+public final class AboutDialog extends JDialog implements HyperlinkListener {
+
 	private static final long serialVersionUID = 8966870102741519552L;
 
 	private static final Logger logger = LoggerFactory.getLogger(AboutDialog.class);
 
+	private static final Dimension WINDOW_SIZE = new Dimension(500, 400);
+
 	private final OpenBrowser openBrowser;
 
+	private JEditorPane mainEditorPane;
+	private JScrollPane mainScrollPane;
+	private JLabel titleLabel;
+	private JPanel titlePanel;
+	private JPanel mainPanel;
 
 	/** Creates new form WSAboutDialog */
 	public AboutDialog(Window parent, Dialog.ModalityType modal, final OpenBrowser openBrowser) {
@@ -46,16 +53,20 @@ public class AboutDialog extends JDialog implements HyperlinkListener {
 		mainEditorPane.addHyperlinkListener(this);
 		setLocationRelativeTo(parent);
 		setAlwaysOnTop(true);
+		this.setPreferredSize(WINDOW_SIZE);
+		this.setSize(WINDOW_SIZE);
 	}
 
-	public AboutDialog(Window parent, Dialog.ModalityType modal, String title, Icon icon, URL contentURL, final OpenBrowser openBrowser) {
+	public AboutDialog(Window parent, Dialog.ModalityType modal, String title, Icon icon, URL contentURL,
+			final OpenBrowser openBrowser) {
 		super(parent, modal);
 		this.openBrowser = openBrowser;
 		initComponents();
 		mainEditorPane.setContentType("text/html");
+		this.setPreferredSize(WINDOW_SIZE);
+		this.setSize(WINDOW_SIZE);
 	}
-	
-	
+
 	public void showDialog(String title, Icon icon, String description) {
 		titleLabel.setText(title);
 		titleLabel.setIcon(icon);
@@ -84,7 +95,6 @@ public class AboutDialog extends JDialog implements HyperlinkListener {
 			setVisible(true);
 		}
 	}
-
 
 	private void initComponents() {
 		titlePanel = new JPanel();
@@ -146,19 +156,6 @@ public class AboutDialog extends JDialog implements HyperlinkListener {
 		pack();
 	} // </editor-fold>
 
-	// Variables declaration - do not modify
-	private JEditorPane mainEditorPane;
-	private JScrollPane mainScrollPane;
-	private JLabel titleLabel;
-	private JPanel titlePanel;
-	private JPanel mainPanel;
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
-	 */
 	public void hyperlinkUpdate(HyperlinkEvent e) {
 		if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED)
 			return;
@@ -171,5 +168,4 @@ public class AboutDialog extends JDialog implements HyperlinkListener {
 			logger.warn("Unable to open browser for " + url.toString(), err);
 		}
 	}
-	// End of variables declaration
 }
