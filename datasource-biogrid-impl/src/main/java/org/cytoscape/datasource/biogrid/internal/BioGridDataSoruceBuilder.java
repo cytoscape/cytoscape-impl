@@ -6,12 +6,14 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.io.datasource.DataSource;
+import org.cytoscape.property.CyProperty;
 import org.osgi.framework.BundleContext;
 
 public class BioGridDataSoruceBuilder {
 	
-	public BioGridDataSoruceBuilder(final BundleContext bc, final File settingFileLocation) {
-		BiogridDataLoader task = new BiogridDataLoader(settingFileLocation);
+	public BioGridDataSoruceBuilder(final BundleContext bc, final File settingFileLocation, final CyProperty prop) {
+		BiogridDataLoader task = new BiogridDataLoader(prop, settingFileLocation);
+		
 		try {
 			task.extract();
 		} catch (IOException e) {

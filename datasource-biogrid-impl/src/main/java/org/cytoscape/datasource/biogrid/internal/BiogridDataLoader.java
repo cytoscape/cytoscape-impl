@@ -11,48 +11,74 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.swing.filechooser.FileSystemView;
-
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DefaultDataSource;
+import org.cytoscape.property.CyProperty;
 
 public class BiogridDataLoader {
 
+	private static final String FILE_LOCATION = "biogrid.file.url";
+	
 	// Default resource file location.
-	private static final String DEF_RESOURCE = "biogrid/BIOGRID-ORGANISM-3.1.83.mitab.zip";
+	private static final String DEF_RESOURCE = "biogrid/BIOGRID-ORGANISM-3.2.95.mitab.zip";
 
 	public final static int BUF_SIZE = 1024;
 	private static final String LOCAL = "biogrid";
 	private URL source;
 	private File localFile;
+	
+	private String version;
 
 	private static final Map<String, String[]> FILTER = new HashMap<String, String[]>();
-	
 	private final Set<DataSource> sources;
 
-	
 	static {
-		FILTER.put("Homo_sapiens", new String[]{"Human Interactome", "BioGRID", "Human Interactome from BioGRID database"});
-		FILTER.put("Saccharomyces_cerevisiae", new String[]{"Yeast Interactome", "BioGRID", "Yeast Interactome from BioGRID database"});
-		FILTER.put("Drosophila_melanogaster", new String[]{"Fly Interactome", "BioGRID","Fly Interactome from BioGRID database"} );
-		FILTER.put("Mus_musculus", new String[]{"Mouse Interactome", "BioGRID","Mouse Interactome from BioGRID database"});
+		FILTER.put("Homo_sapiens", new String[]{"Human", "BioGRID", "Human Interactome from BioGRID database"});
+		FILTER.put("Saccharomyces_cerevisiae", new String[]{"Yeast", "BioGRID", "Yeast Interactome from BioGRID database"});
+		FILTER.put("Drosophila_melanogaster", new String[]{"Fly", "BioGRID","Fly Interactome from BioGRID database"} );
+		FILTER.put("Mus_musculus", new String[]{"Mouse", "BioGRID", "Mouse Interactome from BioGRID database"});
+		FILTER.put("Arabidopsis_thaliana", new String[]{"Arabidopsis", "BioGRID", "Arabidopsis from BioGRID database"});
 	}
 
-	public BiogridDataLoader(final File settingFileLocation) {
-		this(null, settingFileLocation);
+	public BiogridDataLoader(final CyProperty props, final File settingFileLocation) {
+		this(props, null, settingFileLocation);
 	}
-	
-	public BiogridDataLoader(final URL dataSource, final File settingFileLocation) {
-		if(dataSource == null)
+
+
+	public BiogridDataLoader(final CyProperty props, final URL dataSource, final File settingFileLocation) {
+		
+		// First priority: optional URL props.
+		final Properties propObject = (Properties) props.getProperties();
+		final String locationString = propObject.getProperty(FILE_LOCATION);
+		
+		if(locationString != null && dataSource == null) {
+			try {
+				source = new URL(locationString);
+			} catch (MalformedURLException e) {
+				source = null;
+			}
+		} else if(dataSource == null) {
 			source = this.getClass().getClassLoader().getResource(DEF_RESOURCE);
-		else
+		} else {
 			this.source = dataSource;
-
+		}
+		
+		String[] parts = source.toString().split("BIOGRID-ORGANISM-");
+		if(parts == null || parts.length != 2)
+			version = "Unknown";
+		else {
+			String[] nextPart = parts[1].split(".mitab.zip");
+			if(nextPart == null || nextPart.length != 2)
+				version = "Unknown";
+			else
+				version = nextPart[0];
+		}
 		this.sources = new HashSet<DataSource>();
 		
 		localFile = new File(settingFileLocation, LOCAL);
@@ -116,7 +142,7 @@ public class BiogridDataLoader {
 				processOneEntry(outFile, zis);
 				zis.closeEntry();
 				
-				final DataSource ds = new DefaultDataSource(data[0], data[1], data[2], DataCategory.NETWORK, outFile.toURI().toURL());
+				final DataSource ds = new DefaultDataSource(data[0], data[1], data[2] + " Release " + version, DataCategory.NETWORK, outFile.toURI().toURL());
 				sources.add(ds);
 			}
 
