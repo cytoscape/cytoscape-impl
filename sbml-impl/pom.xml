@@ -12,7 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
 	<artifactId>sbml-impl</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.0</version>
     <name>Cytoscape SBML Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 	<dependencies>

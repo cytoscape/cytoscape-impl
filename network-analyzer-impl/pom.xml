@@ -7,7 +7,7 @@
 	</parent>
 
 	<artifactId>network-analyzer-impl</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.0</version>
 	<packaging>bundle</packaging>
     <name>Cytoscape NetworkAnalyzer Impl (${project.artifactId})</name>
 

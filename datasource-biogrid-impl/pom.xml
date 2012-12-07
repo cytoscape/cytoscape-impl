@@ -8,7 +8,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>datasource-biogrid-impl</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.0</version>
 	<name>Cytoscape BioGrid Datasource Impl (${project.artifactId})</name>
 
 	<properties>

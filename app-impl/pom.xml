@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>app-impl</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.0</version>
 
 	<name>Cytoscape App Impl (${project.artifactId})</name>
 
