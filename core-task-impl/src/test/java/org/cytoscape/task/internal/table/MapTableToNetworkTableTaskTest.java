@@ -1,6 +1,11 @@
 package org.cytoscape.task.internal.table;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -19,19 +24,16 @@ import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
-import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
-import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.internal.sync.SyncTaskManager;
+import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
+import org.cytoscape.work.internal.sync.SyncTunableMutator;
+import org.cytoscape.work.internal.sync.SyncTunableMutatorFactory;
+import org.cytoscape.work.internal.sync.TunableRecorderManager;
+import org.cytoscape.work.internal.sync.TunableSetterImpl;
 import org.junit.Test;
-
-import static org.mockito.Mockito.mock;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import org.cytoscape.work.internal.sync.*;
 
 
 public class MapTableToNetworkTableTaskTest {
@@ -93,8 +95,7 @@ public class MapTableToNetworkTableTaskTest {
 	
 	
 	public static void mapping(CyTable table, CyNetwork net, boolean selectedOnly) throws Exception{
-		UpdateAddedNetworkAttributes up = new UpdateAddedNetworkAttributes(new MapGlobalToLocalTableTaskFactoryImpl(mock(CyTableManager.class), netMgr, ts), new SyncTaskManager(stm));
-		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, up , rootNetMgr);
+		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		

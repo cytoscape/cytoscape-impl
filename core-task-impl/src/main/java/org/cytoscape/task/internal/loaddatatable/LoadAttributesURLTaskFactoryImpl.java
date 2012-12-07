@@ -9,8 +9,6 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
-import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.task.read.LoadTableURLTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -24,21 +22,19 @@ public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implem
 	private final TunableSetter tunableSetter; 
 	private  final CyNetworkManager netMgr;
 	private final CyTableManager tableMgr;
-	private final UpdateAddedNetworkAttributes updateAddedNetworkAttributes; 
 	private final CyRootNetworkManager rootNetMgr;
 	
 	public LoadAttributesURLTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr,
-			final CyTableManager tabelMgr, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes, final CyRootNetworkManager rootNetMgr) {
+			final CyTableManager tabelMgr, final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
 		this.netMgr = netMgr;
 		this.tableMgr = tabelMgr;
-		this.updateAddedNetworkAttributes = updateAddedNetworkAttributes;
 		this.rootNetMgr = rootNetMgr;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new LoadAttributesURLTask(mgr, netMgr, tableMgr, updateAddedNetworkAttributes, rootNetMgr));
+		return new TaskIterator(2, new LoadAttributesURLTask(mgr, netMgr, tableMgr, rootNetMgr));
 	}
 
 	@Override

@@ -2,16 +2,13 @@ package org.cytoscape.task.internal.loaddatatable;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import java.io.File;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -36,9 +33,7 @@ public class LoadAttributesFileTaskFactoryImplTest {
 	
 	@Mock
 	CyTableManager tabMgr;
-	@Mock 
-	UpdateAddedNetworkAttributes updateAddedNetworkAttributes;
-
+	
 	@Mock
 	CyRootNetworkManager rootNetMgr;
 	
@@ -51,7 +46,7 @@ public class LoadAttributesFileTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesFileTaskFactory() throws Exception {
 
-		final LoadAttributesFileTaskFactoryImpl factory = new LoadAttributesFileTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, updateAddedNetworkAttributes, rootNetMgr);
+		final LoadAttributesFileTaskFactoryImpl factory = new LoadAttributesFileTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 

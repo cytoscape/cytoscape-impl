@@ -23,20 +23,18 @@ public final class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTableT
 	
 	private final CyNetworkManager networkManager;
 	private final TunableSetter tunableSetter; 
-	private final UpdateAddedNetworkAttributes updateAddedNetworkAttributes;
 	private final CyRootNetworkManager rootNetMgr;
 	
-	public MapTableToNetworkTablesTaskFactoryImpl( final CyNetworkManager networkManager, final TunableSetter tunableSetter, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes, final CyRootNetworkManager rootNetMgr ){
+	public MapTableToNetworkTablesTaskFactoryImpl( final CyNetworkManager networkManager, final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr ){
 	
 		this.networkManager = networkManager;
 		this.tunableSetter = tunableSetter;
-		this.updateAddedNetworkAttributes = updateAddedNetworkAttributes;
 		this.rootNetMgr = rootNetMgr;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTable globalTable) {
-		return new TaskIterator(new MapTableToNetworkTablesTask(networkManager, globalTable, updateAddedNetworkAttributes, rootNetMgr));
+		return new TaskIterator(new MapTableToNetworkTablesTask(networkManager, globalTable, rootNetMgr));
 	}
 
 	@Override

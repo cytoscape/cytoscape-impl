@@ -55,7 +55,6 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	private final  CyTableReader reader;
 	private final boolean byReader;
 	private Map<String, CyNetwork> name2NetworkMap;
-	private final UpdateAddedNetworkAttributes updateAddedNetworkAttributes;
 
 
 	@Tunable(description = "Import Data To:")
@@ -75,26 +74,24 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	}
 
 
-	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTableReader reader, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes, final CyRootNetworkManager rootNetworkManager ){
+	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTableReader reader, final CyRootNetworkManager rootNetworkManager ){
 		this.reader = reader;
 		globalTable = null;
 		this.byReader = true;
 		this.networkManager = networkManager;
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
-		this.updateAddedNetworkAttributes = updateAddedNetworkAttributes;
 		this.rootNetworkManager = rootNetworkManager;
 		
 		initTunable(networkManager);
 
 	}
 
-	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTable globalTable, final UpdateAddedNetworkAttributes updateAddedNetworkAttributes, final CyRootNetworkManager rootNetworkManager){
+	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTable globalTable, final CyRootNetworkManager rootNetworkManager){
 		this.networkManager = networkManager;
 		this.globalTable = globalTable;
 		this.byReader = false;
 		this.reader = null;
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
-		this.updateAddedNetworkAttributes = updateAddedNetworkAttributes;
 		this.rootNetworkManager = rootNetworkManager;
 
 		initTunable(networkManager);
@@ -126,25 +123,10 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		if (tableType == TableType.GLOBAL )
 			return;
 
-		List<CyNetwork> networks = new ArrayList<CyNetwork>();
-
 		if (!selectedNetworksOnly)
 			mapTableToDefaultAttrs (tableType);
 		else
-			mapTableToLocalAttrs (tableType);
-
-		
-			if(!selectedNetworksOnly){ //if table should be mapped to all of the tables
-				//add each mapped table to the list for mapping to networks going to be added later
-				if(byReader){
-					if (reader.getTables() != null && reader.getTables().length >0)
-						for(CyTable sourceTable : reader.getTables())
-							updateAddedNetworkAttributes.addMappingToList(sourceTable, tableType.getType());
-				}else
-					updateAddedNetworkAttributes.addMappingToList(globalTable, tableType.getType());
-
-			}
-		 
+			mapTableToLocalAttrs (tableType);		 
 	}
 
 
