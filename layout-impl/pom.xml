@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<properties>
@@ -14,6 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>layout-impl</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
 
 	<name>Cytoscape Layout Impl (${project.artifactId})</name>
 
@@ -120,4 +121,10 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/layout-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/layout-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/layout-impl</url>
+  </scm>
 </project>

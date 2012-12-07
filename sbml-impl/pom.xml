@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 	<properties>
 		<bundle.symbolicName>org.cytoscape.sbml-impl</bundle.symbolicName>
@@ -12,6 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
 	<artifactId>sbml-impl</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
     <name>Cytoscape SBML Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 	<dependencies>
@@ -177,4 +178,10 @@
 			</plugin>
 		</plugins>
 	</build>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/sbml-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/sbml-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/sbml-impl</url>
+  </scm>
 </project>

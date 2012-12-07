@@ -3,10 +3,11 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<artifactId>network-analyzer-impl</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
 	<packaging>bundle</packaging>
     <name>Cytoscape NetworkAnalyzer Impl (${project.artifactId})</name>
 
@@ -145,5 +146,11 @@
         </dependency>
 	</dependencies>
 
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/network-analyzer-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/network-analyzer-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/network-analyzer-impl</url>
+  </scm>
 </project>
 

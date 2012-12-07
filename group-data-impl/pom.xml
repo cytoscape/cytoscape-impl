@@ -2,7 +2,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<properties>
@@ -12,6 +12,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>group-data-impl</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
 
 	<name>Cytoscape Group Data Impl (${project.artifactId})</name>
 
@@ -102,5 +103,11 @@
 			<version>9.0.0</version>
 		</dependency>
 	</dependencies>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/group-data-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/group-data-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/group-data-impl</url>
+  </scm>
 </project>
 

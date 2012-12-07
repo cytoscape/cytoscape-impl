@@ -3,11 +3,12 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>datasource-biogrid-impl</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
 	<name>Cytoscape BioGrid Datasource Impl (${project.artifactId})</name>
 
 	<properties>
@@ -63,4 +64,10 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/datasource-biogrid-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/datasource-biogrid-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/datasource-biogrid-impl</url>
+  </scm>
 </project>

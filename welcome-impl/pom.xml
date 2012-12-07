@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<properties>
@@ -14,6 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>welcome-impl</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
 
 	<name>Cytoscape Welcome Screen Impl (${project.artifactId})</name>
 
@@ -111,4 +112,10 @@
 
 	</dependencies>
 
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/welcome-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/welcome-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/welcome-impl</url>
+  </scm>
 </project>

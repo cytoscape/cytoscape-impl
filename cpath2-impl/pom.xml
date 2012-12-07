@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 	
 	<properties>
@@ -14,6 +14,7 @@
 	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>cpath2-impl</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
 	<name>Cytoscape CPath2 Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 	
@@ -170,4 +171,10 @@
 			</plugin>
 		</plugins>
 	</build>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/cpath2-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/cpath2-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/cpath2-impl</url>
+  </scm>
 </project>

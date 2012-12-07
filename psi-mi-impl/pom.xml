@@ -3,10 +3,11 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<artifactId>psi-mi-impl-parent</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
 	<packaging>pom</packaging>
     <name>Cytoscape PSI-MI Impl Parent (${project.artifactId})</name>
 
@@ -170,5 +171,11 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/psi-mi-impl-parent</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/psi-mi-impl-parent</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/psi-mi-impl-parent</url>
+  </scm>
 </project>
 

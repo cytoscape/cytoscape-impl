@@ -3,10 +3,11 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0-beta2-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<artifactId>model-impl-parent</artifactId>
+  <version>3.0.0-beta2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape Model Impl Parent (${project.artifactId})</name>
 
@@ -123,5 +124,11 @@
 			<version>0.9.4</version>
 		</dependency>
 	</dependencies>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/model-impl-parent</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/model-impl-parent</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/model-impl-parent</url>
+  </scm>
 </project>
 
