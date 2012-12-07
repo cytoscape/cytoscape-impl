@@ -149,7 +149,7 @@ public class NodeDetails {
 	 * rendering mode translucent colors are not supported whereas in full
 	 * detail rendering mode they are.
 	 */
-	public Color colorLowDetail(final CyNode node) {
+	public Color getColorLowDetail(final CyNode node) {
 		return Color.red;
 	}
 
@@ -199,7 +199,7 @@ public class NodeDetails {
 	 * Returns the number of labels that this node has. By default this method
 	 * returns zero.
 	 */
-	public int labelCount(final CyNode node) {
+	public int getLabelCount(final CyNode node) {
 		return 0;
 	}
 
@@ -216,7 +216,7 @@ public class NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 */
-	public String labelText(final CyNode node, final int labelInx) {
+	public String getLabelText(final CyNode node, final int labelInx) {
 		return null;
 	}
 
@@ -260,7 +260,7 @@ public class NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 */
-	public Paint labelPaint(final CyNode node, final int labelInx) {
+	public Paint getLabelPaint(final CyNode node, final int labelInx) {
 		return Color.DARK_GRAY;
 	}
 
@@ -280,11 +280,11 @@ public class NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 * @see #ANCHOR_CENTER
-	 * @see #labelNodeAnchor(int, int)
-	 * @see #labelOffsetVectorX(int, int)
-	 * @see #labelOffsetVectorY(int, int)
+	 * @see #getLabelNodeAnchor(int, int)
+	 * @see #getLabelOffsetVectorX(int, int)
+	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public byte labelTextAnchor(final CyNode node, final int labelInx) {
+	public byte getLabelTextAnchor(final CyNode node, final int labelInx) {
 		return ANCHOR_CENTER;
 	}
 
@@ -304,11 +304,11 @@ public class NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 * @see #ANCHOR_CENTER
-	 * @see #labelTextAnchor(int, int)
-	 * @see #labelOffsetVectorX(int, int)
-	 * @see #labelOffsetVectorY(int, int)
+	 * @see #getLabelTextAnchor(int, int)
+	 * @see #getLabelOffsetVectorX(int, int)
+	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public byte labelNodeAnchor(final CyNode node, final int labelInx) {
+	public byte getLabelNodeAnchor(final CyNode node, final int labelInx) {
 		return ANCHOR_CENTER;
 	}
 
@@ -327,11 +327,11 @@ public class NodeDetails {
 	 * @param labelInx
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
-	 * @see #labelOffsetVectorY(int, int)
-	 * @see #labelTextAnchor(int, int)
-	 * @see #labelNodeAnchor(int, int)
+	 * @see #getLabelOffsetVectorY(int, int)
+	 * @see #getLabelTextAnchor(int, int)
+	 * @see #getLabelNodeAnchor(int, int)
 	 */
-	public float labelOffsetVectorX(final CyNode node, final int labelInx) {
+	public float getLabelOffsetVectorX(final CyNode node, final int labelInx) {
 		return 0.0f;
 	}
 
@@ -350,11 +350,11 @@ public class NodeDetails {
 	 * @param labelInx
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
-	 * @see #labelOffsetVectorX(int, int)
-	 * @see #labelTextAnchor(int, int)
-	 * @see #labelNodeAnchor(int, int)
+	 * @see #getLabelOffsetVectorX(int, int)
+	 * @see #getLabelTextAnchor(int, int)
+	 * @see #getLabelNodeAnchor(int, int)
 	 */
-	public float labelOffsetVectorY(final CyNode node, final int labelInx) {
+	public float getLabelOffsetVectorY(final CyNode node, final int labelInx) {
 		return 0.0f;
 	}
 
@@ -370,7 +370,7 @@ public class NodeDetails {
 	 * 
 	 * @see #LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	public byte labelJustify(final CyNode node, final int labelInx) {
+	public byte getLabelJustify(final CyNode node, final int labelInx) {
 		return LABEL_WRAP_JUSTIFY_CENTER;
 	}
 
@@ -414,10 +414,10 @@ public class NodeDetails {
 	 * method should be abstract, but since it isn't, any real use should
 	 * override this method in a subclass.
 	 * 
-	 * @see #customGraphics(int)
+	 * @see #getCustomGraphics(int)
 	 * @since Cytoscape 2.6
 	 */
-	public int customGraphicCount(final CyNode node) {
+	public int getCustomGraphicCount(final CyNode node) {
 		return 0;
 	}
 
@@ -437,7 +437,7 @@ public class NodeDetails {
 	 */
 	// Should probably be getCustomGraphics(), but all the methods
 	// seem to have this form.
-	public Iterator<CustomGraphicLayer> customGraphics(final CyNode node) {
+	public Iterator<CustomGraphicLayer> getCustomGraphics(final CyNode node) {
 		return new Iterator<CustomGraphicLayer>() {
 			private Iterator<CustomGraphicLayer> _iterator = new ArrayList<CustomGraphicLayer>(0).iterator();
 
@@ -515,7 +515,7 @@ public class NodeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull().
 	 */
-	public double labelWidth(final CyNode node) {
+	public double getLabelWidth(final CyNode node) {
 		return 100.0;
 	}
 

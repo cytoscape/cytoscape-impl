@@ -211,25 +211,25 @@ public class DGraphViewApplyTest {
 
 		// Test labels
 		dgv.setViewDefault(DVisualLexicon.NODE_LABEL_COLOR, labelColor);
-		assertEquals(labelColor.getRed(), ((Color) dgv.m_nodeDetails.labelPaint(node1, 0)).getRed());
-		assertEquals(labelColor.getGreen(), ((Color) dgv.m_nodeDetails.labelPaint(node1, 0)).getGreen());
-		assertEquals(labelColor.getBlue(), ((Color) dgv.m_nodeDetails.labelPaint(node1, 0)).getBlue());
-		assertEquals(255, ((Color) dgv.m_nodeDetails.labelPaint(node1, 0)).getAlpha());
+		assertEquals(labelColor.getRed(), ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getRed());
+		assertEquals(labelColor.getGreen(), ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getGreen());
+		assertEquals(labelColor.getBlue(), ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getBlue());
+		assertEquals(255, ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getAlpha());
 
 		dgv.setViewDefault(DVisualLexicon.NODE_LABEL_TRANSPARENCY, 100);
-		assertEquals(100, ((Color) dgv.m_nodeDetails.labelPaint(node1, 0)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_nodeDetails.labelPaint(node2, 0)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_nodeDetails.labelPaint(node3, 0)).getAlpha());
+		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getAlpha());
+		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node2, 0)).getAlpha());
+		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node3, 0)).getAlpha());
 
 		// Test mappings
 
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_LABEL_COLOR, Color.blue);
-		assertEquals(Color.blue.getBlue(), ((Color) dgv.m_nodeDetails.labelPaint(node1, 0)).getBlue());
+		assertEquals(Color.blue.getBlue(), ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getBlue());
 
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_LABEL_TRANSPARENCY, 20);
-		assertEquals(20, ((Color) dgv.m_nodeDetails.labelPaint(node1, 0)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_nodeDetails.labelPaint(node2, 0)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_nodeDetails.labelPaint(node3, 0)).getAlpha());
+		assertEquals(20, ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getAlpha());
+		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node2, 0)).getAlpha());
+		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node3, 0)).getAlpha());
 
 		// Font
 		dgv.setViewDefault(DVisualLexicon.NODE_LABEL_FONT_SIZE, 20);

@@ -315,9 +315,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 	
-	public void setBorderTransparency(int trans) {
+	public void setBorderTransparency(final int trans) {
 		synchronized (graphView.m_lock) {
-			Integer transparency;
+			final Integer transparency;
 			if (trans < 0 || trans > 255) {
 				// If out of range, use default value.
 				transparency = BasicVisualLexicon.NODE_BORDER_TRANSPARENCY.getDefault();
@@ -327,9 +327,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 			graphView.m_nodeDetails.overrideBorderTransparency(model, transparency);
 			
-			Color currentBorderPaint = ((Color)graphView.m_nodeDetails.getBorderPaint(model));
-			if(currentBorderPaint.getAlpha() != transparency)
-				setBorderPaint(currentBorderPaint);
+			final Color currentBorderPaint = ((Color) graphView.m_nodeDetails.getBorderPaint(model));
+			setBorderPaint(currentBorderPaint);
+			
 			graphView.m_contentChanged = true;
 		}
 	}
@@ -644,7 +644,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public Paint getTextPaint() {
 		synchronized (graphView.m_lock) {
-			return graphView.m_nodeDetails.labelPaint(model, 0);
+			return graphView.m_nodeDetails.getLabelPaint(model, 0);
 		}
 	}
 
@@ -671,7 +671,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			}
 			
 			graphView.m_nodeDetails.overrideLabelTransparency(model, transparency);
-			setTextPaint(graphView.m_nodeDetails.labelPaint(model, 0));
+			setTextPaint(graphView.m_nodeDetails.getLabelPaint(model, 0));
 			graphView.m_contentChanged = true;
 		}
 	}
@@ -680,7 +680,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@Override
 	public String getText() {
 		synchronized (graphView.m_lock) {
-			return graphView.m_nodeDetails.labelText(model, 0);
+			return graphView.m_nodeDetails.getLabelText(model, 0);
 		}
 	}
 
@@ -689,7 +689,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		//synchronized (graphView.m_lock) {
 			graphView.m_nodeDetails.overrideLabelText(model, 0, text);
 
-			if (DEFAULT_LABEL_TEXT.equals(graphView.m_nodeDetails.labelText(model, 0)))
+			if (DEFAULT_LABEL_TEXT.equals(graphView.m_nodeDetails.getLabelText(model, 0)))
 				graphView.m_nodeDetails.overrideLabelCount(model, 0);
 			else
 				graphView.m_nodeDetails.overrideLabelCount(model, 1);
@@ -904,7 +904,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	public double getLabelWidth() {
 		synchronized (graphView.m_lock) {
-			return graphView.m_nodeDetails.labelWidth(model);
+			return graphView.m_nodeDetails.getLabelWidth(model);
 		}
 	}
 

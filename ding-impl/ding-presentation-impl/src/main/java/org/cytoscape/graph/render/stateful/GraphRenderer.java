@@ -639,7 +639,7 @@ public final class GraphRenderer {
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2],
-						                  floatBuff1[3], nodeDetails.colorLowDetail(node));
+						                  floatBuff1[3], nodeDetails.getColorLowDetail(node));
 				}
 			} else { // High detail.
 				while (nodeHits.numRemaining() > 0) {
@@ -652,28 +652,28 @@ public final class GraphRenderer {
 					// Take care of label rendering.
 					if ((lodBits & LOD_NODE_LABELS) != 0) { // Potential label rendering.
 
-						final int labelCount = nodeDetails.labelCount(cyNode);
+						final int labelCount = nodeDetails.getLabelCount(cyNode);
 
 						for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-							final String text = nodeDetails.labelText(cyNode, labelInx);
+							final String text = nodeDetails.getLabelText(cyNode, labelInx);
 							final Font font = nodeDetails.getLabelFont(cyNode, labelInx);
 							final double fontScaleFactor = nodeDetails.labelScaleFactor(cyNode,
 							                                                            labelInx);
-							final Paint paint = nodeDetails.labelPaint(cyNode, labelInx);
-							final byte textAnchor = nodeDetails.labelTextAnchor(cyNode, labelInx);
-							final byte nodeAnchor = nodeDetails.labelNodeAnchor(cyNode, labelInx);
-							final float offsetVectorX = nodeDetails.labelOffsetVectorX(cyNode,
+							final Paint paint = nodeDetails.getLabelPaint(cyNode, labelInx);
+							final byte textAnchor = nodeDetails.getLabelTextAnchor(cyNode, labelInx);
+							final byte nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode, labelInx);
+							final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode,
 							                                                           labelInx);
-							final float offsetVectorY = nodeDetails.labelOffsetVectorY(cyNode,
+							final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode,
 							                                                           labelInx);
 							final byte justify;
 
 							if (text.indexOf('\n') >= 0)
-								justify = nodeDetails.labelJustify(cyNode, labelInx);
+								justify = nodeDetails.getLabelJustify(cyNode, labelInx);
 							else
 								justify = NodeDetails.LABEL_WRAP_JUSTIFY_CENTER;
 
-							final double nodeLabelWidth = nodeDetails.labelWidth(cyNode);
+							final double nodeLabelWidth = nodeDetails.getLabelWidth(cyNode);
 
 							doubleBuff1[0] = floatBuff1[0];
 							doubleBuff1[1] = floatBuff1[1];
@@ -1092,7 +1092,7 @@ public final class GraphRenderer {
 			// don't allow our custom graphics to mutate while we iterate over them:
 			synchronized (nodeDetails.customGraphicsLock(cyNode)) {
 				// This iterator will return CustomGraphicLayers in rendering order:
-				Iterator<CustomGraphicLayer> dNodeIt = nodeDetails.customGraphics(cyNode);
+				Iterator<CustomGraphicLayer> dNodeIt = nodeDetails.getCustomGraphics(cyNode);
 				CustomGraphicLayer cg = null;
 				// The graphic index used to retrieve non custom graphic info corresponds to the zero-based
 				// index of the CustomGraphicLayer returned by the iterator:

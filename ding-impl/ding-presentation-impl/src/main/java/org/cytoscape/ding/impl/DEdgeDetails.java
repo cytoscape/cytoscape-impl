@@ -721,14 +721,15 @@ final class DEdgeDetails extends EdgeDetails {
 		if (dev.isValueLocked(DVisualLexicon.EDGE_TRANSPARENCY))
 			return dev.getVisualProperty(DVisualLexicon.EDGE_TRANSPARENCY);
 
-		final Integer trans = m_edgeTansparencies.get(edge);
+		Integer trans = m_edgeTansparencies.get(edge);
 		if (trans == null) {
 			if (transparencyDefault == null)
-				return DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
+				trans = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
 			else
-				return transparencyDefault;
-		} else
-			return trans;
+				trans = transparencyDefault;
+		}
+		
+		return trans;
 	}
 
 	void setTransparencyDefault(Integer transparency) {
@@ -751,14 +752,15 @@ final class DEdgeDetails extends EdgeDetails {
 		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_TRANSPARENCY))
 			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_TRANSPARENCY);
 
-		final Integer trans = m_edgeLabelTansparencies.get(edge);
+		Integer trans = m_edgeLabelTansparencies.get(edge);
 		if (trans == null) {
 			if (labelTransparencyDefault == null)
-				return DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
+				trans = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
 			else
-				return labelTransparencyDefault;
-		} else
-			return trans;
+				trans = labelTransparencyDefault;
+		}
+		
+		return trans;
 	}
 
 	void setLabelTransparencyDefault(Integer transparency) {
@@ -777,19 +779,26 @@ final class DEdgeDetails extends EdgeDetails {
 	
 	@Override
 	public Font getLabelFont(final CyEdge edge, final int labelInx) {
-		// Check bypass
+		Number size = null;
+		Font font = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_FONT_FACE))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_FONT_FACE);
-
-		final Font font = m_labelFonts.get(edge);
-
-		if (font == null)
-			if (m_labelFontDefault == null)
-				return super.getLabelFont(edge, labelInx);
-			else
-				return m_labelFontDefault;
-
+		
+		// Check bypass
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_FONT_SIZE))
+			size = dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_FONT_SIZE);
+		
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_FONT_FACE)) {
+			font = dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_FONT_FACE);
+		} else {
+			font = m_labelFonts.get(edge);
+	
+			if (font == null)
+				font = m_labelFontDefault != null ? m_labelFontDefault : super.getLabelFont(edge, labelInx);
+		}
+		
+		if (size != null && font != null)
+			font = font.deriveFont(size.floatValue());
+		
 		return font;
 	}
 
@@ -814,19 +823,26 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public Paint getLabelPaint(final CyEdge edge, final int labelInx) {
-		// Check bypass
+		Paint paint = null;
+		Integer trans = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_COLOR))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_COLOR);
+		
+		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_TRANSPARENCY))
+			trans = getLabelTransparency(edge);
+		
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_COLOR)) {
+			// Check bypass
+			paint = dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_COLOR);
+		} else {
+			paint = m_labelPaints.get(edge);
 
-		// final long key = (((long) edge) << 32) | ((long) labelInx);
-		final Paint paint = m_labelPaints.get(edge);
-
-		if (paint == null)
-			if (m_labelPaintDefault == null)
-				return super.getLabelPaint(edge, labelInx);
-			else
-				return m_labelPaintDefault;
+			if (paint == null)
+				paint = m_labelPaintDefault != null ? m_labelPaintDefault : super.getLabelPaint(edge, labelInx);
+		}
+		
+		if (trans != null)
+			paint = dGraphView.getTransparentColor(paint, trans);
 
 		return paint;
 	}

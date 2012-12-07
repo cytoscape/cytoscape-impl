@@ -147,11 +147,19 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(Double.valueOf(70.0d), nv.getVisualProperty(BasicVisualLexicon.NODE_WIDTH));
 		assertEquals(Double.valueOf(40.0d), nv.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT));
 		assertEquals(new Color(0x00acad), nv.getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
+		assertEquals(view.getModel().getRow(nv.getModel()).get(CyNetwork.NAME, String.class), nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL));
+		assertEquals(Integer.valueOf(255), nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY));
+		assertEquals(new Color(0x000000), nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL_COLOR));
+		assertEquals(Integer.valueOf(12), nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL_FONT_SIZE));
 		
 		View<CyEdge> ev = view.getEdgeView(getEdgeByName(view.getModel(), "Node 1 (interaction) Node 2"));
 		assertEquals(Double.valueOf(2.0d), ev.getVisualProperty(BasicVisualLexicon.EDGE_WIDTH));
 		assertEquals(new Color(0x333333), ev.getVisualProperty(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
 		assertEquals(Integer.valueOf(255), ev.getVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY));
+		assertEquals("", ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL));
+		assertEquals(Integer.valueOf(255), ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY));
+		assertEquals(new Color(0x000000), ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL_COLOR));
+		assertEquals(Integer.valueOf(10), ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL_FONT_SIZE));
 		
 		// Bypass
 		nv = view.getNodeView(getNodeByName(view.getModel(), "Node 3"));
@@ -162,12 +170,18 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(new Color(0x000099), nv.getVisualProperty(BasicVisualLexicon.NODE_BORDER_PAINT));
 		assertEquals(new Color(0x0099ff), nv.getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
 		assertEquals("Node 3 (BYPASS)", nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL));
+		assertEquals(new Color(0x9900ff), nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL_COLOR));
+		assertEquals(Integer.valueOf(120), nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY));
+		assertEquals(Integer.valueOf(16), nv.getVisualProperty(BasicVisualLexicon.NODE_LABEL_FONT_SIZE));
 		
 		ev = view.getEdgeView(getEdgeByName(view.getModel(), "Node 2 (interaction) Node 3"));
 		assertEquals(Double.valueOf(5.0d), ev.getVisualProperty(BasicVisualLexicon.EDGE_WIDTH));
 		assertEquals(new Color(0xff6699), ev.getVisualProperty(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
 		assertEquals(Integer.valueOf(95), ev.getVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY));
 		assertEquals("2::3 (BYPASS)", ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL));
+		assertEquals(Integer.valueOf(100), ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY));
+		assertEquals(new Color(0xff0099), ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL_COLOR));
+		assertEquals(Integer.valueOf(8), ev.getVisualProperty(BasicVisualLexicon.EDGE_LABEL_FONT_SIZE));
 	}
 	
 	private void checkRootNetwork(final CyRootNetwork net) {

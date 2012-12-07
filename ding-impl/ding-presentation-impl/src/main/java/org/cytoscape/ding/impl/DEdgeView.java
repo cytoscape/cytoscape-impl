@@ -680,13 +680,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			final Font newFont = ((Font) value).deriveFont(fontSize);
 			setFont(newFont);
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_SIZE) {
-			int newSize = ((Number) value).intValue();
-			if (newSize != fontSize) {
-				fontSize = newSize;
-				final Font f = getFont();
-				if (f != null)
-					setFont(f.deriveFont(newSize));
-			}
+			fontSize = ((Number) value).intValue();
+			final Font f = getFont();
+			if (f != null)
+				setFont(f.deriveFont(fontSize));
 		} else if (vp == BasicVisualLexicon.EDGE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
 		} else if (vp == BasicVisualLexicon.EDGE_VISIBLE) {
