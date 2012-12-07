@@ -7,7 +7,7 @@
 	</parent>
 
 	<artifactId>session-impl-parent</artifactId>
-  <version>3.0.0-beta2-SNAPSHOT</version>
+  <version>3.0.0</version>
 	<packaging>pom</packaging>
     <name>Cytoscape Session Impl Parent (${project.artifactId})</name>
 	

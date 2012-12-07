@@ -9,7 +9,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>datasource-impl</artifactId>
-  <version>3.0.0-beta2-SNAPSHOT</version>
+  <version>3.0.0</version>
 	<name>Cytoscape Datasource Impl (${project.artifactId})</name>
 
 	<properties>
