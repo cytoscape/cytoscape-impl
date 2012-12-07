@@ -139,4 +139,10 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/vizmap-gui-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/vizmap-gui-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/vizmap-gui-impl</url>
+  </scm>
 </project>

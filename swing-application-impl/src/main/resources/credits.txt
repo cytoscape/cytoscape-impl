@@ -20,7 +20,7 @@ please see:
 http://cytoscape.org
 http://nrnb.org
 
-Cytosape Developers, 
+Cytoscape Developers, 
 past and present, 
 in alphabetical order: 
 
@@ -34,9 +34,13 @@ Ethan Cerami
 Rowan Christmas
 Melissa Cline
 Mike Creech
+Barry Demchak
+Yue Dong
 Paul Edlefsen
 Stephanie Fan
 Roza Ghamari
+Oriol Guitart
+Tim Hull
 Trey Ideker
 Liz Kain
 Larissa Kamenkovich
@@ -47,12 +51,19 @@ Brad Kohlenberg
 Allan Kuchinsky
 Nerius Landys
 Willem Ligtenberg
+Christian Lopes
 Samad Lotia
 Andrew Markiel
 James McIninch
+Piet Molenaar
+Jason Montojo
+Scooter Morris
 Keiichiro Ono
 Owen Ozier
+Alexander Pico
 David Reiss
+Igor Rodchenkov
+Johannes Ruscheinski
 Chris Sander
 Paul Shannon
 Robert Sheridan
@@ -61,5 +72,6 @@ Mike Smoot
 James Taylor
 Aditya Vailaya
 Jonathan Wang
+Peng-Liang Wang
 Chris Workman
 
