@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>ding-impl</artifactId>
-  <version>3.0.0-beta2-SNAPSHOT</version>
+  <version>3.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape Ding Impl Parent (${project.artifactId})</name>
 
@@ -17,11 +17,4 @@
 		<module>ding-presentation-impl</module>
 		<module>performance-debug</module>
 	</modules>
-
-
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/ding-impl</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/ding-impl</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/ding-impl</url>
-  </scm>
 </project>

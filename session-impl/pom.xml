@@ -7,7 +7,7 @@
 	</parent>
 
 	<artifactId>session-impl-parent</artifactId>
-  <version>3.0.0-beta2-SNAPSHOT</version>
+  <version>3.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
     <name>Cytoscape Session Impl Parent (${project.artifactId})</name>
 	
@@ -101,10 +101,4 @@
 			<type>test-jar</type>
 		</dependency>
 	</dependencies>
-
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/session-impl-parent</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/session-impl-parent</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/session-impl-parent</url>
-  </scm>
 </project>

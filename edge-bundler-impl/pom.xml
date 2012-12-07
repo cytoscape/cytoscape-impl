@@ -13,7 +13,7 @@
 	</properties>
 
 	<artifactId>edge-bundler-impl</artifactId>
-  <version>3.0.0-beta2-SNAPSHOT</version>
+  <version>3.0.1-SNAPSHOT</version>
 	<name>Cytoscape Edge Bundler Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
@@ -84,10 +84,4 @@
 	</dependencies>
 
 	<description>Written by Gregory Hannum, March 2012</description>
-
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/edge-bundler-impl</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/edge-bundler-impl</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/edge-bundler-impl</url>
-  </scm>
 </project>
