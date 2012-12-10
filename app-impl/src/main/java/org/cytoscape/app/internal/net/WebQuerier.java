@@ -516,6 +516,9 @@ public class WebQuerier {
 						// Replace spaces with underscores
 						String outputFileBasename = webApp.getName().replaceAll("\\s", "_");
 						
+						// Append version information
+						outputFileBasename += "-v" + releaseToDownload.getReleaseVersion();
+						
 						// Strip disallowed characters
 						outputFileBasename = OUTPUT_FILENAME_DISALLOWED_CHARACTERS.matcher(outputFileBasename).replaceAll("");
 						
@@ -531,8 +534,6 @@ public class WebQuerier {
 						}
 						
 						outputFile.createNewFile();
-						
-//						System.out.println("preparing to download");
 						
 					    FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 					    try {
@@ -823,8 +824,11 @@ public class WebQuerier {
 				// in cases where multiple stores give the same hash.
 				if (checksum.indexOf(release.getSha512Checksum().toLowerCase()) != -1
 						&& app.getDescription() == null) {
-					
-					System.out.println("Found description: " + allReleases.get(release).getDescription());
+
+// WebQuerier obtains app information from app store because no description metadata is required
+// in the app zip file itself. This was to allow better App-Bundle interchangeability, not
+// imposing unneeded restrictions on OSGi bundles (from past discussion on mailing list, some time in 2012)
+//					System.out.println("Found description: " + allReleases.get(release).getDescription());
 					app.setDescription(allReleases.get(release).getDescription());
 				}
 			}

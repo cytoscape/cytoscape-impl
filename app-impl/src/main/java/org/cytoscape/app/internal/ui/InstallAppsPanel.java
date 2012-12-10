@@ -499,12 +499,12 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 
     			@Override
     			public void run(TaskMonitor taskMonitor) throws Exception {
-    				taskMonitor.setTitle("Installing app");
+    				taskMonitor.setTitle("Installing requested app");
     				
     				int installedAppCount = 0;
     				double progress = 0;
     				
-    				taskMonitor.setStatusMessage("Installing app");
+    				taskMonitor.setStatusMessage("Downloading app..");
     				
     				for (int index = 0; index < files.length; index++) {
     	        		AppParser appParser = appManager.getAppParser();

@@ -123,6 +123,7 @@ public abstract class App {
 		// Following above Javadoc, e.g. Completely uninstalled, and/or file is completely gone
 		if ((status == AppStatus.UNINSTALLED && appInstance == null)
 				|| status == AppStatus.FILE_MOVED && appInstance == null) {
+			
 			return true;
 		} else {
 			return false;

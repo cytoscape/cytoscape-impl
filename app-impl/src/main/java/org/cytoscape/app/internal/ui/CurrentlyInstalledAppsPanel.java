@@ -22,6 +22,7 @@ import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.BundleApp;
 import org.cytoscape.app.internal.manager.SimpleApp;
+import org.cytoscape.app.internal.util.DebugHelper;
 
 /**
  * This class represents the panel in the App Manager dialog's tab used for checking for currently installed apps.
@@ -320,6 +321,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     		// Hide apps with certain statuses from the table, such as uninstalled ones.
     		if (app.isDetached()) {
     			// Do nothing
+    			DebugHelper.print(this, "Detached app: " + app.getAppName() + ", status: " + app.getStatus());
     		} else {
 	    		tableModel.addRow(new Object[]{
 						app,
@@ -344,6 +346,8 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     		// Count the number of displayed apps
     		if (!app.isDetached()) {
     			listedCount++;
+    		} else {
+    			DebugHelper.print(this, "Detached app: " + app.getAppName() + ", status: " + app.getStatus());
     		}
     	}
     	
