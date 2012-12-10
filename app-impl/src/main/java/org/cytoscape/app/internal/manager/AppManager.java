@@ -251,6 +251,7 @@ public class AppManager implements FrameworkListener {
 		}
 		
 		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
+		DebugHelper.print(this, "Initializing.. obtained " + installedFolderApps.size() + " apps from apps directory.");
 		for (App app: installedFolderApps) {
 			try {
 				boolean appRegistered = false;
