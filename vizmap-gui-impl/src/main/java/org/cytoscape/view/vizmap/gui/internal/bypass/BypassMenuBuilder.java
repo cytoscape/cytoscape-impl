@@ -199,14 +199,16 @@ final class BypassMenuBuilder {
 				}
 			}
 			
-			if (nodeSizeIsLocked){
+			if (nodeSizeIsLocked) {
 				// In case the Node size is locked, disable menuItem Node_width and Nod_height 
-				menuItemNodeWidth.setEnabled(false);
-				menuItemNodeHeight.setEnabled(false);				
-			}
-			else {
+				if(menuItemNodeWidth != null)
+					menuItemNodeWidth.setEnabled(false);
+				if(menuItemNodeHeight != null)
+					menuItemNodeHeight.setEnabled(false);				
+			} else {
 				// In case the Node size is not locked, disable menuItem Node_size 
-				menuItemNodeSize1.setEnabled(false);
+				if(menuItemNodeSize1 != null)
+					menuItemNodeSize1.setEnabled(false);
 			}
 		}
 
