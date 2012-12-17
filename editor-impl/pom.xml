@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>3.1.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
 	<artifactId>editor-impl</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.1.0-SNAPSHOT</version>
 
 	<name>Cytoscape Editor Impl (${project.artifactId})</name>
 
