@@ -563,20 +563,23 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		for (final RowSetRecord record : records) {
 			if (CyNetwork.NAME.equals(record.getColumn())) {
 				// assume payload collection is for same column
-				for (final JInternalFrame targetIF : iFrameMap.keySet()) {
-					final CyNetworkView view = iFrameMap.get(targetIF);
-					final CyNetwork net = view.getModel();
-					
-					if (net.getDefaultNetworkTable() == source) {
-						final String title = record.getRow().get(CyNetwork.NAME, String.class);
-						// We should guarantee this visual property is up to date
-						view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
-						
-						// Do not update the title with the new network name if this visual property is locked
-						if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE))
-							targetIF.setTitle(title);
-						
-						return; // assuming just one row is set.
+				synchronized (iFrameMap) {
+					for (final JInternalFrame targetIF : iFrameMap.keySet()) {
+						final CyNetworkView view = iFrameMap.get(targetIF);
+						final CyNetwork net = view.getModel();
+
+						if (net.getDefaultNetworkTable() == source) {
+							final String title = record.getRow().get(CyNetwork.NAME, String.class);
+							// We should guarantee this visual property is up to date
+							view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
+
+							// Do not update the title with the new network name
+							// if this visual property is locked
+							if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE))
+								targetIF.setTitle(title);
+
+							return; // assuming just one row is set.
+						}
 					}
 				}
 			}

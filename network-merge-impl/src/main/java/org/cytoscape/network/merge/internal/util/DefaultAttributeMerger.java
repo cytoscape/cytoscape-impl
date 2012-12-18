@@ -78,10 +78,10 @@ public class DefaultAttributeMerger implements AttributeMerger {
 			if (colType == ColumnType.STRING) {
 				final String fromValue = fromCyRow.get(fromColumn.getName(), String.class);
 				final String o2 = cyRow.get(column.getName(), String.class);
+				
 				if (o2 == null || o2.length() == 0) { // null or empty attribute
-					if(!column.getVirtualColumnInfo().isVirtual())
-						cyRow.set(column.getName(), fromValue);
-				} else if (fromValue.equals(o2)) { // TODO: neccessary?
+					cyRow.set(column.getName(), fromValue);
+				} else if (fromValue.equals(o2)) { // TODO: necessary?
 					// the same, do nothing
 				} else { // attribute conflict
 					// add to conflict collector
@@ -129,7 +129,9 @@ public class DefaultAttributeMerger implements AttributeMerger {
 				} else { // from list
 					final ColumnType fromPlain = fromColType.toPlain();
 					final List<?> list = fromCyRow.getList(fromColumn.getName(), fromPlain.getType());
-
+					if(list == null)
+						continue;
+					
 					for (final Object listValue:list) {
 						if(listValue == null)
 							continue;
