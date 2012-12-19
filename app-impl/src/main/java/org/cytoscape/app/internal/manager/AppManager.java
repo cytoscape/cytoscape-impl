@@ -227,7 +227,6 @@ public class AppManager implements FrameworkListener {
 		}
 		
 		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
-		DebugHelper.print(this, "Initializing.. obtained " + installedFolderApps.size() + " apps from apps directory.");
 		for (App app: installedFolderApps) {
 			try {
 				boolean appRegistered = false;
@@ -248,13 +247,6 @@ public class AppManager implements FrameworkListener {
 			}
 		}
 		
-		//installAppsInDirectory(new File(getKarafDeployDirectory()), false);
-		//installAppsInDirectory(new File(getInstalledAppsPath()), true);
-		
-		// Load apps from the "uninstalled apps" directory
-		//Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()), true);
-		//apps.addAll(uninstalledApps);
-		
 		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
 	}
 	
@@ -274,17 +266,13 @@ public class AppManager implements FrameworkListener {
 		installAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileCreate(File file) {
-				DebugHelper.print("Install directory file created");
-				
 				App parsedApp = null;
 				try {
-					parsedApp = appParser.parseApp(file);
+					parsedApp = appParser
+							.parseApp(file);
 				} catch (AppParsingException e) {
-					logger.warn(e.getMessage());
 					return;
 				}
-				
-				DebugHelper.print(this + " installObserverCreate", parsedApp.getAppName() + " parsed");
 				
 				App registeredApp = null;
 				for (App app : apps) {
@@ -292,15 +280,12 @@ public class AppManager implements FrameworkListener {
 						registeredApp = app;
 						
 						// Delete old file if it was still there
-						// TODO: Possible rename from filename-2 to filename?
-						File oldFile = registeredApp.getAppFile();
+						File oldFile = registeredApp
+								.getAppFile();
 						
-						if (oldFile.exists() && !registeredApp.getAppFile().equals(parsedApp.getAppFile())) {
-							DebugHelper.print(this + " installObserverCreate", 
-									registeredApp.getAppName() + " moved from " 
-									+ registeredApp.getAppFile().getAbsolutePath() + " to " 
-									+ parsedApp.getAppFile().getAbsolutePath() + ". deleting: " + oldFile);
-							
+						if (oldFile.exists() && !registeredApp
+								.getAppFile().equals(parsedApp
+										.getAppFile())) {
 							FileUtils.deleteQuietly(oldFile);
 						}
 						
@@ -314,9 +299,11 @@ public class AppManager implements FrameworkListener {
 						apps.add(parsedApp);
 						parsedApp.install(appManager);
 					} else {
-						registeredApp.install(appManager);
+						registeredApp.install(
+								appManager);
 					}
 				} catch (AppInstallException e) {
+					logger.warn(e.getLocalizedMessage());
 				}
 
 				fireAppsChangedEvent();
@@ -338,9 +325,8 @@ public class AppManager implements FrameworkListener {
 				DebugHelper.print(this + " installObserverDelete", file.getAbsolutePath() + " deleted.");
 				
 				for (App app : apps) {
-					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
+
 					if (app.getAppFile().equals(file)) {
-						// System.out.println(app + " moved");
 						app.setStatus(AppStatus.FILE_MOVED);
 					}
 				}
@@ -353,17 +339,19 @@ public class AppManager implements FrameworkListener {
 				getDisabledAppsPath(), new SingleLevelFileFilter(new File(getDisabledAppsPath())), IOCase.SYSTEM);
 		
 		// Listen for events on the "disabled apps" folder
-		disableAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
+		disableAlterationObserver.addListener( new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileCreate(File file) {
 				App parsedApp = null;
 				try {
 					parsedApp = appParser.parseApp(file);
 				} catch (AppParsingException e) {
+					logger.warn(e
+							.getLocalizedMessage());
 					return;
 				}
 				
-				DebugHelper.print(this + " disableObserverCreate", parsedApp.getAppName() + " parsed");
+				DebugHelper.print(this + " disableObserver Create", parsedApp.getAppName() + " parsed");
 				
 				App registeredApp = null;
 				for (App app : apps) {

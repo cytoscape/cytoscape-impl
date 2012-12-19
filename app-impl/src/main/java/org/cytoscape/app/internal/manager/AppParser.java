@@ -265,9 +265,9 @@ public class AppParser {
 		return parsedApp;
 	}
 
-    private static List<KarafArchiveApp.KarafFeature> getFeaturesXmlFromJar(final JarFile jarFile) throws AppParsingException
+    private static List<__Unused__KarafArchiveApp.KarafFeature> getFeaturesXmlFromJar(final JarFile jarFile) throws AppParsingException
     {
-        final List<KarafArchiveApp.KarafFeature> featuresList = new LinkedList<KarafArchiveApp.KarafFeature>();
+        final List<__Unused__KarafArchiveApp.KarafFeature> featuresList = new LinkedList<__Unused__KarafArchiveApp.KarafFeature>();
 		final Enumeration<JarEntry> entries = jarFile.entries();
 		while (entries.hasMoreElements()) {
 			JarEntry jarEntry = entries.nextElement();
@@ -296,7 +296,7 @@ public class AppParser {
 									&& qNames.get(0).equalsIgnoreCase("features")
 									&& qNames.get(1).equalsIgnoreCase("feature")) {
 								
-								KarafArchiveApp.KarafFeature feature = new KarafArchiveApp.KarafFeature();
+								__Unused__KarafArchiveApp.KarafFeature feature = new __Unused__KarafArchiveApp.KarafFeature();
 								
 								// Obtain the feature name and version
 								feature.featureName = atts.getValue("name");
