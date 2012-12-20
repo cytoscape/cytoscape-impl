@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.cytoscape.app.internal.manager.App.AppStatus;
+
+// This class represents a node in the app dependency graph, where each node corresponds to an app.
 public class AppDependencyNode {
 	
 	private Set<AppDependencyNode> dependencies = new HashSet<AppDependencyNode>();
@@ -16,15 +19,18 @@ public class AppDependencyNode {
 	private String currentAppName;
 	private String currentAppVersion;
 	
-	private App currentApp;
 	
 	public AppDependencyNode(String appName, String appVersion) {
 		this.currentAppName = appName;
 		this.currentAppVersion = appVersion;
 	}
 	
-	public void setCurrentApp(App app) {
-		this.currentApp = app;
+	public String getNodeAppName() {
+		return currentAppName;
+	}
+	
+	public String getNodeAppVersion() {
+		return currentAppVersion;
 	}
 	
 	public Set<AppDependencyNode> getDependencies() { return dependencies; }
@@ -45,7 +51,7 @@ public class AppDependencyNode {
 		Map<String, App> currentApps = new HashMap<String, App>();
 		
 		for (App app : appManager.getApps()) {
-//			currentApps.put(app.getAppName() + " " + app.get)
+			currentApps.put(app.getAppName() + " " + app.getVersion(), app);
 		}
 		
 		Queue<AppDependencyNode> dependenciesToCheck = new LinkedList<AppDependencyNode>();
@@ -54,6 +60,10 @@ public class AppDependencyNode {
 			dependenciesToCheck.add(node);	
 		}
 		
+		List<String> missingDependencies = new LinkedList<String>();
+		
+		// To check if a dependency is missing, check if it was hashed into the hash table from
+		// a few lines above
 		while (!dependenciesToCheck.isEmpty()) {
 			AppDependencyNode current = dependenciesToCheck.remove();
 			
@@ -63,11 +73,16 @@ public class AppDependencyNode {
 				}
 			} else {
 				// Leaf
-//				AppManager appManager;
-//				if (appManager.getApps())
+				String keyName = current.getNodeAppName() + " " + current.getNodeAppVersion();
+				
+				if (currentApps.get(keyName) == null
+						|| currentApps.get(keyName).getStatus() != AppStatus.INSTALLED) {
+
+					missingDependencies.add(keyName);
+				}
 			}
 		}
 		
-		return null;
+		return missingDependencies;
 	}
 }

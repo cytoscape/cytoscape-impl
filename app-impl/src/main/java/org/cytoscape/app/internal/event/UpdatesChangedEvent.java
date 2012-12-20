@@ -8,7 +8,7 @@ import org.cytoscape.app.internal.net.UpdateManager;
  * update their data to reflect the change.
  */
 public final class UpdatesChangedEvent {
-
+	
 	/** The {@link UpdateManager} that created the event. */
 	private UpdateManager source;
 

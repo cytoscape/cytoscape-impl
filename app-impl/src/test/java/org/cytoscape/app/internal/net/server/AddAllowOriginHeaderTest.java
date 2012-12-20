@@ -37,7 +37,7 @@ public class AddAccessControlAllowOriginHeaderAfterResponseTest {
                 return responseFactory.createHttpResponse(HttpStatus.SC_OK, "test response ok", "text/html");
             }
         });
-        httpd.addAfterResponse(new AddAccessControlAllowOriginHeaderAfterResponse());
+        httpd.addAfterResponse(new AddAllowOriginHeader());
         httpd.start();
 
         HttpURLConnection connection = null;

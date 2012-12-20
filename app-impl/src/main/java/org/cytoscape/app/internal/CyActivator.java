@@ -11,7 +11,7 @@ import org.cytoscape.app.internal.net.server.CyHttpdFactoryImpl;
 import org.cytoscape.app.internal.net.server.ServerSocketFactory;
 import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
-import org.cytoscape.app.internal.net.server.AddAccessControlAllowOriginHeaderAfterResponse;
+import org.cytoscape.app.internal.net.server.AddAllowOriginHeader;
 import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
@@ -384,7 +384,7 @@ public class CyActivator extends AbstractCyActivator {
         final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607));
         httpd.addBeforeResponse(new ScreenOriginsBeforeResponse(WebQuerier.DEFAULT_APP_STORE_URL));
         httpd.addBeforeResponse(new OriginOptionsBeforeResponse("x-csrftoken"));
-        httpd.addAfterResponse(new AddAccessControlAllowOriginHeaderAfterResponse());
+        httpd.addAfterResponse(new AddAllowOriginHeader());
         httpd.addResponder(appGetResponder.new StatusResponder());
         httpd.addResponder(appGetResponder.new InstallResponder());
         httpd.start();
