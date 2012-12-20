@@ -894,9 +894,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private final <T> T getDefaultValue(final String columnName, final T defaultValue) {
 		if ( defaultValue == null ) {
 			final CyColumn column = this.getColumn(columnName);
-			if ( column == null )
+			if ( column == null ) {
 				return null;
-			else
+			} else
 				return (T)(column.getDefaultValue());
 		} else {
 			return defaultValue;

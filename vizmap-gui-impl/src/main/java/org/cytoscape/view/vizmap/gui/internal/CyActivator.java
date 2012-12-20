@@ -282,7 +282,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		Properties fitLabelGeneratorProps = new Properties();
 		fitLabelGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
-		fitLabelGeneratorProps.setProperty("title","Fit label width (SUID to Node Width)");
+		fitLabelGeneratorProps.setProperty("title","Fit label width (Only works with NAME column to width)");
 		fitLabelGeneratorProps.setProperty("menu","context");
 		registerService(bc, fitLabelMappingGenerator, DiscreteMappingGenerator.class, fitLabelGeneratorProps);
 				

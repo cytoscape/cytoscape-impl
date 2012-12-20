@@ -39,6 +39,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DataSourceManager;
+import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.welcome.internal.WelcomeScreenDialog;
 import org.cytoscape.work.AbstractTask;
@@ -122,6 +123,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private final DialogTaskManager guiTaskManager;
 	private final BundleContext bc;
 	private final LoadNetworkURLTaskFactory importNetworkFromURLTF;
+	private final NewEmptyNetworkViewFactory newEmptyNetworkViewFactory;
 	private final TaskFactory importNetworkFileTF;
 	private final DataSourceManager dsManager;
 	private final Map<String, String> dataSourceMap;
@@ -135,11 +137,12 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	public CreateNewNetworkPanel(final BundleContext bc, final DialogTaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
-			final DataSourceManager dsManager) {
+			final DataSourceManager dsManager, final NewEmptyNetworkViewFactory newEmptyNetworkViewFactory) {
 		this.bc = bc;
 
 		this.importNetworkFromURLTF = loadTF;
 		this.importNetworkFileTF = importNetworkFileTF;
+		this.newEmptyNetworkViewFactory = newEmptyNetworkViewFactory;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
 		this.dataSourceMap = new HashMap<String, String>();
@@ -212,10 +215,11 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		createEmptySessionButton.setIcon(NEW_ICON);
 		createEmptySessionButton.setHorizontalAlignment(SwingConstants.LEFT);
 		createEmptySessionButton.setIconTextGap(20);
-		createEmptySessionButton.addMouseListener(new MouseAdapter() {
+		createEmptySessionButton.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent ev) {
+			public void actionPerformed(ActionEvent arg0) {
 				closeParentWindow();
+				guiTaskManager.execute(((TaskFactory)newEmptyNetworkViewFactory).createTaskIterator());
 			}
 		});
 		
