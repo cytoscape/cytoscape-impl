@@ -1,12 +1,17 @@
 package org.cytoscape.view.vizmap.gui.internal.util.mapgenerator;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -35,29 +40,40 @@ public class FitLabelMappingGenerator<V extends Number> extends AbstractDiscrete
 	public <T> Map<T, V> generateMap(final Set<T> tableValues) {
 		// Generate map for the current network view.
 		final CyNetworkView networkView = appManager.getCurrentNetworkView();
+		
+		// If current view is not available, simply return empty map.
 		if(networkView == null)
 			return Collections.emptyMap();
+		
+		// If given set is empty, return empty map.
+		if(tableValues == null || tableValues.isEmpty())
+			return Collections.emptyMap();
+		
+		// This only works with NAME column.
+		final T testName = tableValues.iterator().next();
+		if(testName instanceof String == false)
+			throw new IllegalArgumentException("This generator only works with Name column.");
+	
+		final CyNetwork network = networkView.getModel();
+		final CyTable nodeTable = networkView.getModel().getDefaultNodeTable();
 		
 		final VisualStyle style = vmm.getCurrentVisualStyle();
 		// Check label size mapping exists or not
 		final VisualMappingFunction<?, Integer> fontSizeMapping = style.getVisualMappingFunction(BasicVisualLexicon.NODE_LABEL_FONT_SIZE);
 		// Use default label width for checking.  TODO: should we use mapping?
 		final Double maxLabelWidth = style.getDefaultValue(BasicVisualLexicon.NODE_LABEL_WIDTH);
-		
 		final Map<T, V> valueMap = new HashMap<T, V>();
 		
 		for(final T attrVal: tableValues) {
-			Long suid = null;
-			try {
-				suid = Long.class.cast(attrVal);
-			} catch(Exception e) {
-				throw new IllegalArgumentException("This generator only works with Long (SUID).", e);
-			}
-			final CyNode node = networkView.getModel().getNode(suid);
-			if(node == null)
+			final Collection<CyRow> rows = nodeTable.getMatchingRows(CyNetwork.NAME, attrVal);
+			CyRow row = null;
+			if(rows.isEmpty() == false)
+				row = rows.iterator().next();
+			else
 				continue;
 			
-			final View<CyNode> nodeView = networkView.getNodeView(node);
+			final Long suid = row.get(CyIdentifiable.SUID, Long.class);
+			final View<CyNode> nodeView = networkView.getNodeView(network.getNode(suid));
 			if(nodeView == null)
 				continue;
 			
