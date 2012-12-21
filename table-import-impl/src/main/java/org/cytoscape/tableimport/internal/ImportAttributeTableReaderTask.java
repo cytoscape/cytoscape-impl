@@ -119,9 +119,16 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
 			{
 				
-				for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-					final Sheet sheet = workbook.getSheetAt(i);
+//				for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+//					final Sheet sheet = workbook.getSheetAt(i);
+//
+//					this.reader = new ExcelAttributeSheetReader(sheet, amp);
+//					loadAnnotation(tm);
+//				}
 
+				// Fixed bug# 1668, Only load data from the first sheet, ignore the rest sheets
+				if (workbook.getNumberOfSheets() >0){
+					final Sheet sheet = workbook.getSheetAt(0);
 					this.reader = new ExcelAttributeSheetReader(sheet, amp);
 					loadAnnotation(tm);
 				}
