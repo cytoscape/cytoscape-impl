@@ -41,24 +41,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
-import org.cytoscape.equations.internal.SUIDToEdgeMapper;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.events.AddedEdgesEvent;
 import org.junit.Before;
 import org.junit.Test;
 
 
 public class SourceIDTest {
-	private SUIDToEdgeMapper suidToEdgeMapper;
+	private CyApplicationManager applicationManager;
 
 	@Before
 	public void init() {
@@ -77,14 +76,16 @@ public class SourceIDTest {
 		Collection<CyEdge> edges = new ArrayList<CyEdge>(1);
 		edges.add(edge);
 
-		suidToEdgeMapper = new SUIDToEdgeMapper();
-		suidToEdgeMapper.handleEvent(new AddedEdgesEvent(network, edges));
+		when(network.getEdge(11L)).thenReturn(edge);
+
+		applicationManager = mock(CyApplicationManager.class);
+		when(applicationManager.getCurrentNetwork()).thenReturn(network);
 	}
 
 	@Test
 	public void test() {
 		final EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl());
-		compiler.getParser().registerFunction(new SourceID(suidToEdgeMapper));
+		compiler.getParser().registerFunction(new SourceID(applicationManager));
 		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 		if (!compiler.compile("=SOURCEID(11)", variableNameToTypeMap))
 			fail(compiler.getLastErrorMsg());

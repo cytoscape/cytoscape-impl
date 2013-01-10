@@ -42,24 +42,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
-import org.cytoscape.equations.internal.SUIDToNodeMapper;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.events.AddedNodesEvent;
 import org.junit.Before;
 import org.junit.Test;
 
 
 public class DegreeTest {
-	private SUIDToNodeMapper suidToNodeMapper;
 	private CyApplicationManager applicationManager;
 
 	@Before
@@ -72,13 +69,11 @@ public class DegreeTest {
 
 		final CyNetwork network = mock(CyNetwork.class);
 		when(network.getAdjacentEdgeList(node, CyEdge.Type.ANY)).thenReturn(edgeList);
+		when(network.getNode(101L)).thenReturn(node);
 
 		Collection<CyNode> nodes = new ArrayList<CyNode>(1);
 		nodes.add(node);
 		
-		suidToNodeMapper = new SUIDToNodeMapper();
-		suidToNodeMapper.handleEvent(new AddedNodesEvent(network, nodes));
-
 		applicationManager = mock(CyApplicationManager.class);
 		when(applicationManager.getCurrentNetwork()).thenReturn(network);
 	}
@@ -86,7 +81,7 @@ public class DegreeTest {
 	@Test
 	public void test() {
 		final EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl());
-		compiler.getParser().registerFunction(new Degree(applicationManager, suidToNodeMapper));
+		compiler.getParser().registerFunction(new Degree(applicationManager));
 		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 		if (!compiler.compile("=DEGREE(101)", variableNameToTypeMap))
 			fail(compiler.getLastErrorMsg());

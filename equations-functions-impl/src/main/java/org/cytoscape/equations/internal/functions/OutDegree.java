@@ -30,29 +30,24 @@
 package org.cytoscape.equations.internal.functions;
 
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
-import org.cytoscape.equations.internal.SUIDToNodeMapper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 
 
 
 public class OutDegree extends AbstractFunction {
 	private final CyApplicationManager applicationManager;
-	private final SUIDToNodeMapper suidToNodeMapper;
 
-	public OutDegree(final CyApplicationManager applicationManager,
-			 final SUIDToNodeMapper suidToNodeMapper)
+	public OutDegree(final CyApplicationManager applicationManager)
 	{
 		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "node_ID", "An ID identifying a node.") });
 		this.applicationManager = applicationManager;
-		this.suidToNodeMapper = suidToNodeMapper;
 	}
 
 	/**
@@ -67,7 +62,7 @@ public class OutDegree extends AbstractFunction {
 	 */
 	public String getFunctionSummary() { return "Returns indegree of a node."; }
 
-	public Class getReturnType() { return Long.class; }
+	public Class<?> getReturnType() { return Long.class; }
 
 	/**
 	 *  @param args the function arguments which must be either one object of type Double or Long
@@ -80,7 +75,7 @@ public class OutDegree extends AbstractFunction {
 		if (currentNetwork == null)
 			return (Long)(-1L);
 
-		final CyNode node = suidToNodeMapper.getNode(nodeID);
+		final CyNode node = currentNetwork.getNode(nodeID);
 		if (node == null)
 			throw new IllegalArgumentException("\"" + nodeID + "\" is not a valid node identifier.");
 		
