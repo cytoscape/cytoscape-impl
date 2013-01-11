@@ -84,7 +84,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	static final Dimension DEF_DESKTOP_SIZE = new Dimension(1300, 850);
 	private static final int DEF_DIVIDER_LOATION = 450;
 	
-	private static final String SMALL_ICON = "/images/c16.png";
+	private static final String SMALL_ICON = "/images/logo.png";
 	private static final int DIVIDER_SIZE = 4;
 	
 	private static final Logger logger = LoggerFactory.getLogger(CytoscapeDesktop.class);
