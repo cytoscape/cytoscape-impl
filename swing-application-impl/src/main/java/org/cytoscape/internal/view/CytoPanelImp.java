@@ -736,7 +736,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			//  Add CytoPanel to the New External Frame
 			Container contentPane = externalFrame.getContentPane();
 			contentPane.add(this, BorderLayout.CENTER);
-			final Dimension windowSize = this.getSelectedComponent().getPreferredSize();
+			final Dimension windowSize = this.getSize();
 			
 			int height = windowSize.height;
 			if(height>EAST_MAX_HEIGHT)
