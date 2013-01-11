@@ -732,7 +732,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			//  Add CytoPanel to the New External Window
 			Container contentPane = externalWindow.getContentPane();
 			contentPane.add(this, BorderLayout.CENTER);
-			final Dimension windowSize = this.getSelectedComponent().getPreferredSize();
+			final Dimension windowSize = this.getSize();
 			
 			externalWindow.setSize(windowSize);
 			externalWindow.validate();
