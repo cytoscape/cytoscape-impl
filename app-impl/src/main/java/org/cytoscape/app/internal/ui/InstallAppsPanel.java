@@ -256,6 +256,7 @@ public class InstallAppsPanel extends javax.swing.JPanel {
         tagsTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         tagsTree.setFocusable(false);
         tagsTree.setRootVisible(false);
+        tagsTree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
         tagsScrollPane.setViewportView(tagsTree);
 
         tagsSplitPane.setLeftComponent(tagsScrollPane);
@@ -264,6 +265,7 @@ public class InstallAppsPanel extends javax.swing.JPanel {
         resultsTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         resultsTree.setFocusable(false);
         resultsTree.setRootVisible(false);
+        resultsTree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
         resultsScrollPane.setViewportView(resultsTree);
 
         tagsSplitPane.setRightComponent(resultsScrollPane);
