@@ -6,14 +6,15 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
-public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> {
+public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?,CyNode>> {
 
 	private static final long serialVersionUID = -216647303312376087L;
 	
 	
-	public CustomGraphicsIcon(CyCustomGraphics<?> value, int width, int height,
+	public CustomGraphicsIcon(CyCustomGraphics<?, CyNode> value, int width, int height,
 			String name) {
 		super(value, width, height, name);
 		this.setImage(value.getRenderedImage());

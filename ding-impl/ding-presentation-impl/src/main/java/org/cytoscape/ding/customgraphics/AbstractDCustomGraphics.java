@@ -8,14 +8,18 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyIdentifiable;
+
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
-public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> implements
-		CyCustomGraphics<T>, Taggable {
+public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer, S extends CyIdentifiable> 
+	                    implements CyCustomGraphics<T, S>, Taggable {
 
 	protected static final String DELIMITER = ",";
 	public static final String LIST_DELIMITER = "|";
@@ -83,8 +87,8 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 		return this.height;
 	}
 
-	
-	public List<T> getLayers(CyNetwork network, CyIdentifiable graphObject) {
+	@Override	
+	public List<T> getLayers(CyNetworkView networkView, View<S> graphObject) {
 		return layers;
 	}
 

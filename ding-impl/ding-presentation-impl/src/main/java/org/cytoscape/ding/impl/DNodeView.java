@@ -63,6 +63,7 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -1117,13 +1118,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
 		} else if (vp instanceof CustomGraphicsVisualProperty) {
-			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphicLayer>) value);
+			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphicLayer,CyNode>) value);
 		} else if (vp instanceof ObjectPositionVisualProperty) {
 			applyCustomGraphicsPosition(vp, (ObjectPosition) value);
 		}
 	}
 
-	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphicLayer> customGraphics) {
+	private void applyCustomGraphics(final VisualProperty<?> vp, 
+	                                 final CyCustomGraphics<CustomGraphicLayer,CyNode> customGraphics) {
 		Set<CustomGraphicLayer> dCustomGraphicsSet = cgMap.get(vp);
 		
 		if (dCustomGraphicsSet == null)
@@ -1137,7 +1139,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (customGraphics == null || customGraphics instanceof NullCustomGraphics)
 			return;
 
-		final List<CustomGraphicLayer> layers = customGraphics.getLayers(graphView.getModel(), model);
+		final List<CustomGraphicLayer> layers = customGraphics.getLayers(graphView, this);
 
 		// No need to update
 		if (layers == null || layers.size() == 0)
@@ -1215,7 +1217,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.cgMap.put(parent, currentCG);
 	}
 
-	private CustomGraphicLayer syncSize(CyCustomGraphics<CustomGraphicLayer> graphics, 
+	private CustomGraphicLayer syncSize(CyCustomGraphics<CustomGraphicLayer,CyNode> graphics, 
 	                               final CustomGraphicLayer cg, double width, double height) {
 		// final double nodeW = this.getWidth();
 		// final double nodeH = this.getHeight();

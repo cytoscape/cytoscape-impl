@@ -8,10 +8,11 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.AbstractVisualProperty;
 
 public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCustomGraphics> {
-	public CustomGraphicsVisualProperty(final CyCustomGraphics<CustomGraphicLayer> defaultValue,
+	public CustomGraphicsVisualProperty(final CyCustomGraphics<CustomGraphicLayer, CyNode> defaultValue,
 			                                final CustomGraphicsRange customGraphicsRange, 
 	                                    String id, String displayName, 
 	                                    Class<? extends CyIdentifiable> targetObjectDataType) {
@@ -26,7 +27,7 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 	// Parse the string associated with our visual property.  Note that we depend on the first
 	// part of the string being the class name that was registered with the CustomGraphicsManager
 	@Override
-	public CyCustomGraphics<CustomGraphicLayer> parseSerializableString(String value) {
+	public CyCustomGraphics<CustomGraphicLayer, CyNode> parseSerializableString(String value) {
 		// This is hokey, but we've got no other way to get our hands on the
 		// CustomGraphicsManager since the DVisualLexicon is created statically
 		CustomGraphicsManagerImpl cgMgr = CustomGraphicsManagerImpl.getInstance();

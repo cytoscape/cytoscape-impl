@@ -13,10 +13,11 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public class PersistImageTask implements Task {
 		final ExecutorService exService = Executors
 				.newFixedThreadPool(NUM_THREADS);
 
-		for (final CyCustomGraphics<?> cg : manager.getAllPersistantCustomGraphics()) {
+		for (final CyCustomGraphics<?, CyNode> cg : manager.getAllPersistantCustomGraphics()) {
 			final Image img = cg.getRenderedImage();
 			if (img != null) {
 				try {
