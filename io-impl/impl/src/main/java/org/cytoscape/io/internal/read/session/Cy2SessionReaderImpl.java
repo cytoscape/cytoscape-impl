@@ -83,8 +83,9 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -309,18 +310,25 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 			for (int i = 0; i < netArray.length; i++) {
 				// Process each CyNetwork
-				CyNetwork net = netArray[i];
-				String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
+				final CyNetwork net = netArray[i];
+				final String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				networkLookup.put(netName, net);
 				
 				// Add parent network attribute, to preserve the network hierarchy info from Cytoscape 2.x
-				if (parent != null && !(parent instanceof CyRootNetwork)) {
-					CyRow row = net.getRow(net);
-					
-					if (row.getTable().getColumn(CY2_PARENT_NETWORK_COLUMN) == null)
-						row.getTable().createColumn(CY2_PARENT_NETWORK_COLUMN, Long.class, false);
-					
-					row.set(CY2_PARENT_NETWORK_COLUMN, parent.getSUID());
+				final CyRow row = net.getRow(net, CyNetwork.LOCAL_ATTRS);
+				final CyTable tbl = row.getTable();
+				
+				if (parent instanceof CySubNetwork && tbl.getColumn(CY2_PARENT_NETWORK_COLUMN) == null)
+					tbl.createColumn(CY2_PARENT_NETWORK_COLUMN, Long.class, false);
+				
+				if (tbl.getColumn(CY2_PARENT_NETWORK_COLUMN) != null) {
+					if (parent instanceof CySubNetwork) {
+						row.set(CY2_PARENT_NETWORK_COLUMN, parent.getSUID());
+					} else {
+						// Remove the column to prevent stale values
+						// (e.g. the user imported a Cy3 XGMML that contains this attribute into Cy2)
+						tbl.deleteColumn(CY2_PARENT_NETWORK_COLUMN);
+					}
 				}
 
 				// Restore node/edge selection
