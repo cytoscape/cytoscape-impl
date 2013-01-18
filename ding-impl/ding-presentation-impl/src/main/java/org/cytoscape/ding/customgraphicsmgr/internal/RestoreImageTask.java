@@ -111,9 +111,9 @@ public class RestoreImageTask implements Task {
 				final Object[] args = { manager.getNextAvailableID() };
 				Object obj = constructor.newInstance(args);
 				if (obj instanceof CyCustomGraphics) {
-					final CyCustomGraphics<?,CyNode> cg = (CyCustomGraphics) obj;
+					final CyCustomGraphics<?> cg = (CyCustomGraphics) obj;
 					boolean isExist = false;
-					for(final CyCustomGraphics<?,CyNode> testCG: allCG) {
+					for(final CyCustomGraphics<?> testCG: allCG) {
 						if(testCG.getClass() == cg.getClass())
 							isExist = true;
 					}
@@ -172,7 +172,7 @@ public class RestoreImageTask implements Task {
 			final String[] parts = imageURL.getFile().split("/");
 			final String dispNameString = parts[parts.length-1];
 			if (this.manager.getCustomGraphicsBySourceURL(imageURL) == null && !names.contains(dispNameString)) {
-				final CyCustomGraphics<?,CyNode> cg = new URLImageCustomGraphics(manager.getNextAvailableID(), imageURL.toString());
+				final CyCustomGraphics<?> cg = new URLImageCustomGraphics(manager.getNextAvailableID(), imageURL.toString());
 				if (cg != null) {
 					manager.addCustomGraphics(cg, imageURL);
 					cg.setDisplayName(dispNameString);
@@ -252,7 +252,7 @@ public class RestoreImageTask implements Task {
 					if (image == null)
 						continue;
 
-					final CyCustomGraphics<?,CyNode> cg = new URLImageCustomGraphics(fIdMap.get(f), fMap.get(f), image);
+					final CyCustomGraphics<?> cg = new URLImageCustomGraphics(fIdMap.get(f), fMap.get(f), image);
 					if (cg instanceof Taggable && metatagMap.get(f) != null)
 						((Taggable) cg).getTags().addAll(metatagMap.get(f));
 

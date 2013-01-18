@@ -18,8 +18,8 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
-public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer, S extends CyIdentifiable> 
-	                    implements CyCustomGraphics<T, S>, Taggable {
+public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> 
+	                    implements CyCustomGraphics<T>, Taggable {
 
 	protected static final String DELIMITER = ",";
 	public static final String LIST_DELIMITER = "|";
@@ -88,7 +88,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer, S ex
 	}
 
 	@Override	
-	public List<T> getLayers(CyNetworkView networkView, View<S> graphObject) {
+	public List<T> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
 		return layers;
 	}
 

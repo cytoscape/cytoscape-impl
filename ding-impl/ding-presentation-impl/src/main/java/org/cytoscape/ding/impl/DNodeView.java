@@ -1118,14 +1118,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
 		} else if (vp instanceof CustomGraphicsVisualProperty) {
-			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphicLayer,CyNode>) value);
+			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphicLayer>) value);
 		} else if (vp instanceof ObjectPositionVisualProperty) {
 			applyCustomGraphicsPosition(vp, (ObjectPosition) value);
 		}
 	}
 
 	private void applyCustomGraphics(final VisualProperty<?> vp, 
-	                                 final CyCustomGraphics<CustomGraphicLayer,CyNode> customGraphics) {
+	                                 final CyCustomGraphics<CustomGraphicLayer> customGraphics) {
 		Set<CustomGraphicLayer> dCustomGraphicsSet = cgMap.get(vp);
 		
 		if (dCustomGraphicsSet == null)
@@ -1217,7 +1217,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.cgMap.put(parent, currentCG);
 	}
 
-	private CustomGraphicLayer syncSize(CyCustomGraphics<CustomGraphicLayer,CyNode> graphics, 
+	private CustomGraphicLayer syncSize(CyCustomGraphics<CustomGraphicLayer> graphics, 
 	                               final CustomGraphicLayer cg, double width, double height) {
 		// final double nodeW = this.getWidth();
 		// final double nodeH = this.getHeight();

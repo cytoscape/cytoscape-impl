@@ -17,7 +17,7 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
  * node views.
  * 
  */
-public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphicLayer, CyNode> {
+public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphicLayer> {
 	
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
 	public static BufferedImage DEF_IMAGE;
@@ -31,9 +31,9 @@ public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphicLay
 		}
 	}
 
-	static final CyCustomGraphics<CustomGraphicLayer, CyNode> NULL = new NullCustomGraphics();
+	static final CyCustomGraphics<CustomGraphicLayer> NULL = new NullCustomGraphics();
 
-	public static CyCustomGraphics<CustomGraphicLayer, CyNode> getNullObject() {
+	public static CyCustomGraphics<CustomGraphicLayer> getNullObject() {
 		return NULL;
 	}
 

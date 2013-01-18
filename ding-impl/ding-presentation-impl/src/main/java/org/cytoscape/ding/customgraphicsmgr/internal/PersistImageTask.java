@@ -65,7 +65,7 @@ public class PersistImageTask implements Task {
 		final ExecutorService exService = Executors
 				.newFixedThreadPool(NUM_THREADS);
 
-		for (final CyCustomGraphics<?, CyNode> cg : manager.getAllPersistantCustomGraphics()) {
+		for (final CyCustomGraphics<?> cg : manager.getAllPersistantCustomGraphics()) {
 			final Image img = cg.getRenderedImage();
 			if (img != null) {
 				try {
