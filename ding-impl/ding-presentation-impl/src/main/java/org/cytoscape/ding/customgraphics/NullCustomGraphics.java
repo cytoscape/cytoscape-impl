@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 

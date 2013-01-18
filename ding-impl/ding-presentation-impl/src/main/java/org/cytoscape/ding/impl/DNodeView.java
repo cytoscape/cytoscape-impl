@@ -63,6 +63,7 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -1123,7 +1124,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphicLayer> customGraphics) {
+	private void applyCustomGraphics(final VisualProperty<?> vp, 
+	                                 final CyCustomGraphics<CustomGraphicLayer> customGraphics) {
 		Set<CustomGraphicLayer> dCustomGraphicsSet = cgMap.get(vp);
 		
 		if (dCustomGraphicsSet == null)
@@ -1137,7 +1139,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (customGraphics == null || customGraphics instanceof NullCustomGraphics)
 			return;
 
-		final List<CustomGraphicLayer> layers = customGraphics.getLayers(graphView.getModel(), model);
+		final List<CustomGraphicLayer> layers = customGraphics.getLayers(graphView, this);
 
 		// No need to update
 		if (layers == null || layers.size() == 0)

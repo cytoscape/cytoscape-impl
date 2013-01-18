@@ -8,6 +8,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.AbstractVisualProperty;
 
 public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCustomGraphics> {
