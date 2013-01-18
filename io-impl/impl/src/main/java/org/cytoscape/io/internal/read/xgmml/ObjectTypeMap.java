@@ -46,7 +46,7 @@ public class ObjectTypeMap {
 		case REAL:
 			if (value != null) {
 				if (SUIDUpdater.isUpdatable(name))
-					typedValue = Long.valueOf(value);
+					typedValue = Double.valueOf(value).longValue();
 				else
 					typedValue = Double.valueOf(value);
 			}
