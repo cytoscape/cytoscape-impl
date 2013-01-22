@@ -31,9 +31,7 @@ package org.cytoscape.ding.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
@@ -52,9 +50,8 @@ import org.slf4j.LoggerFactory;
  * This class synchronizes the flagged status of nodes and edges as held by a
  * SelectFilter object of a network with the selection status of the
  * corresponding node and edge views in a GraphView. An object will be selected
- * in the view iff the matching object is flagged in the SelectFilter. This
+ * in the view if the matching object is flagged in the SelectFilter. This
  * class is only used by PhoebeNetworkView, which no longer used anywhere.
- * 
  */
 public class FlagAndSelectionHandler implements GraphViewChangeListener {
 
