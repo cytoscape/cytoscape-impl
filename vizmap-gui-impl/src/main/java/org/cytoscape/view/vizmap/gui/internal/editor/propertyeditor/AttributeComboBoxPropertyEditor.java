@@ -28,8 +28,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.Collator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -105,10 +107,12 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		if (targetSet == null)
 			return;
 		
-		final SortedSet<String> sortedName = new TreeSet<String>();
+		final Collator collator = Collator.getInstance(Locale.getDefault()); // For locale-specific sorting
+		final SortedSet<String> sortedName = new TreeSet<String>(collator);
+		
 		final Set<CyNetwork> networks = networkManager.getNetworkSet();
 
-		for (CyNetwork net : networks) {
+		for (final CyNetwork net : networks) {
 			final AttributeSet currentSet = this.attrManager.getAttributeSet(net, graphObjectType);
 			
 			for (Entry<String, Class<?>> entry: currentSet.getAttrMap().entrySet())
@@ -122,8 +126,7 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		// Add new name if not in the list.
 		box.setSelectedItem(selected);
 
-		logger.debug(graphObjectType + " Column Name Combobox Updated: New Names = "
-				+ targetSet.getAttrMap().keySet());
+		logger.debug(graphObjectType + " Column Name Combobox Updated: New Names = " + targetSet.getAttrMap().keySet());
 	}
 
 	private boolean columnIsAllowed(String name, Class<?> type) {

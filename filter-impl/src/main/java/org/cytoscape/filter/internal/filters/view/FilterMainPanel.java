@@ -37,11 +37,13 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -431,46 +433,38 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 * prefixed either with "node." or "edge.". Those attributes whose data type is neither
 	 * "String" nor "numeric" will be excluded
 	 */
-	private List<Object> getCyAttributesList(CyNetwork network, String pType) {
-		Vector<String> attributeList = new Vector<String>();
-		CyTable table;
+	private List<String> getCyAttributesList(final CyNetwork network, final String pType) {
+		final Vector<String> attributeList = new Vector<String>();
+		CyTable table = null;
 		
 		if (pType.equalsIgnoreCase("node") && network.getNodeCount() > 0) {
 			table = network.getDefaultNodeTable();
 		} else if (pType.equalsIgnoreCase("edge") && network.getEdgeCount() > 0){
 			table = network.getDefaultEdgeTable();
-		} else {
-			return Collections.emptyList();
 		}
 		
-		if (table == null) {
-			return Collections.emptyList();
-		}
-		
-		final Collection<CyColumn> columns = new HashSet<CyColumn>(table.getColumns());
-		for (final CyColumn column : columns) {
-			if(column!= null){
-				//  Show all attributes, with type of String or Number
-				Class<?> type = column.getType();
-
-				//  only show user visible attributes,with type = Number/String/List
-				if ((type == Integer.class)||(type == Double.class)||(type == Boolean.class)||(type == String.class)||(type == List.class)) {
-					attributeList.add(pType + "." + column.getName());
+		if (table != null) {
+			final Collection<CyColumn> columns = new HashSet<CyColumn>(table.getColumns());
+			
+			for (final CyColumn column : columns) {
+				if (column!= null){
+					//  Show all attributes, with type of String or Number
+					final Class<?> type = column.getType();
+	
+					//  only show user visible attributes,with type = Number/String/List
+					if (type == Integer.class || type == Double.class ||
+						type == Boolean.class || type == String.class || type == List.class) {
+						attributeList.add(pType + "." + column.getName());
+					}
 				}
-
-				//  Alphabetical sort
-				Collections.sort(attributeList);
 			}
-		}
-
-		// type conversion
-		Vector<Object> retList = new Vector<Object>();
-
-		for (int i=0; i<attributeList.size(); i++) {
-			retList.add(attributeList.elementAt(i));
+			
+			// Alphabetical sort
+			final Collator collator = Collator.getInstance(Locale.getDefault());
+			Collections.sort(attributeList, collator);
 		}
 		
-		return retList;
+		return attributeList;
 	}
 	
 	/*
@@ -641,7 +635,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			return;
 		}
 		
-		List<Object> av;
+		List<String> av;
 
 		av = getCyAttributesList(network, "node");
 		for (int i = 0; i < av.size(); i++) {
