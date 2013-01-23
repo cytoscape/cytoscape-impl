@@ -1,3 +1,4 @@
+/* %% Ignore-License */
 /*
   Copyright (c) 2001, Nerius Landys
   All rights reserved.

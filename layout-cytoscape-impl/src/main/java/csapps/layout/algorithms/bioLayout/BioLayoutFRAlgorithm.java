@@ -1,3 +1,4 @@
+/* %% Ignore-License */
 /**
  * All rights reserved.
  *

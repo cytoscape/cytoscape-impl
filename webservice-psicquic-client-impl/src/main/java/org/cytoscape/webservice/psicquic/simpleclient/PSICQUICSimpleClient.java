@@ -1,3 +1,4 @@
+/* %% Ignore-License */
 /**
  * Copyright 2010 The European Bioinformatics Institute, and others.
  *
