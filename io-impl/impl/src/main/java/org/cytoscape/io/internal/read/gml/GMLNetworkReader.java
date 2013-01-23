@@ -620,6 +620,10 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		for (KeyValue keyVal : list) {
 			String key = keyVal.key;
 			Object value = keyVal.value;
+			
+			if (key.equals(OUTLINE_WIDTH))
+				key = WIDTH;
+			
 			VisualProperty<?> vp = lexicon.lookup(CyNode.class, key);
 
 			if (vp != null) {
