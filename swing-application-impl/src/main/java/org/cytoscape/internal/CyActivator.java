@@ -316,12 +316,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
 
-		if (isMac()) {
-			new MacCyActivator().start(bc);
-		} else {
-			registerService(bc, exitAction, CyAction.class, new Properties());
-		}
-
 		Properties helpContentsTaskFactoryProps = new Properties();
 		helpContentsTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
 		helpContentsTaskFactoryProps.setProperty(LARGE_ICON_URL, getClass().getResource("/images/ximian/stock_help.png").toString());
@@ -347,12 +341,6 @@ public class CyActivator extends AbstractCyActivator {
 		                helpReportABugTaskFactoryProps);
 
 		
-		Properties helpAboutTaskFactoryProps = new Properties();
-		helpAboutTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
-		helpAboutTaskFactoryProps.setProperty(TITLE, "About...");
-		helpAboutTaskFactoryProps.setProperty(MENU_GRAVITY,"10.0");
-		registerService(bc, helpAboutTaskFactory, TaskFactory.class, helpAboutTaskFactoryProps);
-
 		Properties arrangeGridTaskFactoryProps = new Properties();
 		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeGridTaskFactoryProps.setProperty(ACCELERATOR,"cmd g");
@@ -442,6 +430,19 @@ public class CyActivator extends AbstractCyActivator {
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
+
+		if (isMac()) {
+			new MacCyActivator().start(bc);
+		} else {
+			Properties helpAboutTaskFactoryProps = new Properties();
+			helpAboutTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
+			helpAboutTaskFactoryProps.setProperty(TITLE, "About...");
+			helpAboutTaskFactoryProps.setProperty(MENU_GRAVITY,"10.0");
+
+			registerService(bc, helpAboutTaskFactory, TaskFactory.class, helpAboutTaskFactoryProps);
+			
+			registerService(bc, exitAction, CyAction.class, new Properties());
+		}
 
 		// Full screen actions.  This is platform dependent
 		FullScreenAction fullScreenAction = null;
