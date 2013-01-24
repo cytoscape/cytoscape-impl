@@ -95,8 +95,11 @@ public class JoinTablesTask extends AbstractTask {
 	}
 
 	public void setDataTypeOptions(ListSingleSelection<TableType> options) {
-		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
 				dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+		if(!columnList.getPossibleValues().containsAll(tempList.getPossibleValues()) 
+				|| columnList.getPossibleValues().size() != tempList.getPossibleValues().size())
+			columnList = tempList;
 	}
 
 	public ListSingleSelection<String> rootNetworkList;
@@ -107,8 +110,11 @@ public class JoinTablesTask extends AbstractTask {
 	}
 
 	public void setRootNetworkList(ListSingleSelection<String> roots) {
-		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
 				dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+		if(!columnList.getPossibleValues().containsAll(tempList.getPossibleValues())
+				|| columnList.getPossibleValues().size() != tempList.getPossibleValues().size())
+			columnList = tempList;
 	}
 
 	public ListSingleSelection<String> columnList;
