@@ -26,8 +26,9 @@ package org.cytoscape.internal;
 
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
-import org.cytoscape.internal.dialogs.AboutDialogFactoryImpl;
+import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -43,7 +44,7 @@ public class MacCyActivator extends AbstractCyActivator {
 	public void start(BundleContext context) throws Exception {
 		final CyShutdown shutdown = getService(context, CyShutdown.class);
 		final CyVersion version = getService(context, CyVersion.class);
-		final AboutDialogFactoryImpl aboutDialogFactory = new AboutDialogFactoryImpl(version);
+		final TaskFactory aboutTaskFactory = new HelpAboutTaskFactory(version);
 		final DialogTaskManager taskManager = getService(context,DialogTaskManager.class);
 		
 		Application application = Application.getApplication();
@@ -56,7 +57,7 @@ public class MacCyActivator extends AbstractCyActivator {
 		application.setAboutHandler(new AboutHandler() {
 			@Override
 			public void handleAbout(AboutEvent event) {
-				taskManager.execute(aboutDialogFactory.createTaskIterator());
+				taskManager.execute(aboutTaskFactory.createTaskIterator());
 			}
 		});
 	}
