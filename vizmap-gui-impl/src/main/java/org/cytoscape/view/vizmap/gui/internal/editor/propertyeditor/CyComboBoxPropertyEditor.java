@@ -1,3 +1,4 @@
+/* %% Ignore-License */
 /**
  * @PROJECT.FULLNAME@ @VERSION@ License.
  *
