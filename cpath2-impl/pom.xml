@@ -9,12 +9,11 @@
 	<properties>
 		<bundle.symbolicName>org.cytoscape.cpath2-impl</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.cpath2</bundle.namespace>
-		<paxtools.version>4.1.5b2</paxtools.version>
+		<paxtools.version>4.1.6</paxtools.version>
 	</properties>
 	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>cpath2-impl</artifactId>
-  <version>3.1.0-SNAPSHOT</version>
 	<name>Cytoscape CPath2 Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 	
@@ -97,11 +96,6 @@
         	<artifactId>paxtools-core</artifactId>
         	<version>${paxtools.version}</version>
         </dependency>        
-        <dependency>
-        	<groupId>org.biopax.paxtools</groupId>
-        	<artifactId>biopax-converter</artifactId>
-        	<version>${paxtools.version}</version>
-        </dependency>
 	</dependencies>
 	
 	<build>
