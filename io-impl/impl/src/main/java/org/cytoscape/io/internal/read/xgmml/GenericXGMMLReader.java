@@ -1,36 +1,34 @@
-/*
- Copyright (c) 2006, 2010, The Cytoscape Consortium (www.cytoscape.org)
-
- This library is free software; you can redistribute it and/or modify it
- under the terms of the GNU Lesser General Public License as published
- by the Free Software Foundation; either version 2.1 of the License, or
- any later version.
-
- This library is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
- MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
- documentation provided hereunder is on an "as is" basis, and the
- Institute for Systems Biology and the Whitehead Institute
- have no obligations to provide maintenance, support,
- updates, enhancements or modifications.  In no event shall the
- Institute for Systems Biology and the Whitehead Institute
- be liable to any party for direct, indirect, special,
- incidental or consequential damages, including lost profits, arising
- out of the use of this software and its documentation, even if the
- Institute for Systems Biology and the Whitehead Institute
- have been advised of the possibility of such damage.  See
- the GNU Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public License
- along with this library; if not, write to the Free Software Foundation,
- Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- */
 package org.cytoscape.io.internal.read.xgmml;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,13 +71,37 @@ import org.xml.sax.helpers.ParserAdapter;
 public class GenericXGMMLReader extends AbstractNetworkReader {
 
 	public static final String REPAIR_BARE_AMPERSANDS_PROPERTY = "cytoscape.xgmml.repair.bare.ampersands";
-	
+
 	protected final ReadDataManager readDataMgr;
 	protected final XGMMLParser parser;
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	protected final VisualLexicon visualLexicon;
 	
+	private static final Map<String, String> legacyArrowShapes = new HashMap<String, String>();
 	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
+	
+	static {
+		legacyArrowShapes.put("0", "NONE"); // NO_END
+		legacyArrowShapes.put("1", "DELTA"); // WHITE_DELTA
+		legacyArrowShapes.put("2", "DELTA"); // BLACK_DELTA
+		legacyArrowShapes.put("3", "DELTA"); // EDGE_COLOR_DELTA
+		legacyArrowShapes.put("4", "ARROW"); // WHITE_ARROW
+		legacyArrowShapes.put("5", "ARROW"); // BLACK_ARROW
+		legacyArrowShapes.put("6", "ARROW"); // EDGE_COLOR_ARROW
+		legacyArrowShapes.put("7", "DIAMOND"); // WHITE_DIAMOND
+		legacyArrowShapes.put("8", "DIAMOND"); // BLACK_DIAMOND
+		legacyArrowShapes.put("9", "DIAMOND"); // EDGE_COLOR_DIAMOND
+		legacyArrowShapes.put("10", "CIRCLE"); // WHITE_CIRCLE
+		legacyArrowShapes.put("11", "CIRCLE"); // BLACK_CIRCLE
+		legacyArrowShapes.put("12", "CIRCLE"); // EDGE_COLOR_CIRCLE
+		legacyArrowShapes.put("13", "T"); // WHITE_T
+		legacyArrowShapes.put("14", "T"); // BLACK_T
+		legacyArrowShapes.put("15", "T"); // EDGE_COLOR_T
+		legacyArrowShapes.put("16", "HALF_TOP"); // EDGE_HALF_ARROW_TOP
+		legacyArrowShapes.put("17", "HALF_BOTTOM"); // EDGE_HALF_ARROW_BOTTOM
+		legacyArrowShapes.put("HALF_ARROW_TOP", "HALF_TOP"); // v2.8 bypass
+		legacyArrowShapes.put("HALF_ARROW_BOTTOM", "HALF_BOTTOM"); // v2.8 bypass
+	}
 	
 	public GenericXGMMLReader(final InputStream inputStream,
 							  final CyNetworkViewFactory cyNetworkViewFactory,
@@ -250,6 +272,8 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 				if (vp != null) {
 					if (isXGMMLTransparency(attName))
 						attValue = convertXGMMLTransparencyValue(attValue);
+					else if (isOldArrowShape(attName))
+						attValue = convertOldArrowShapeValue(attValue);
 					
 					final Object parsedValue = vp.parseSerializableString(attValue);
 
@@ -293,10 +317,17 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		return locked;
 	}
 	
-	private static final Pattern TRANSPARENCY_PATTERN = Pattern.compile("(cy:)?(node|edge)Transparency");
+	private static final Pattern XGMML_TRANSPARENCY_PATTERN = Pattern.compile("(cy:)?(node|edge)Transparency");
 	
 	static boolean isXGMMLTransparency(final String attName) {
-		final Matcher matcher = TRANSPARENCY_PATTERN.matcher(attName);
+		final Matcher matcher = XGMML_TRANSPARENCY_PATTERN.matcher(attName);
+		return matcher.matches();
+	}
+	
+	private static final Pattern OLD_ARROW_SHAPE_PATTERN = Pattern.compile("(?i)(cy:|edge)?(source|target)Arrow(Shape)?");
+	
+	static boolean isOldArrowShape(final String attName) {
+		final Matcher matcher = OLD_ARROW_SHAPE_PATTERN.matcher(attName);
 		return matcher.matches();
 	}
 
@@ -317,6 +348,16 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		}
 
 		return "255";
+	}
+	
+	static String convertOldArrowShapeValue(final String s) {
+		// Arrow shape is saved in Cy2 XGMML as integers
+		String value = legacyArrowShapes.get(s);
+		
+		if (value == null)
+			value = s;
+		
+		return value;
 	}
 
 	static String convertOldFontValue(String s) {

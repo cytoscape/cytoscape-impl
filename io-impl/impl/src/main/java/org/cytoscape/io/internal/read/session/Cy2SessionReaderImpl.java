@@ -1,31 +1,28 @@
-/*
- Copyright (c) 2006, 2011, The Cytoscape Consortium (www.cytoscape.org)
-
- This library is free software; you can redistribute it and/or modify it
- under the terms of the GNU Lesser General Public License as published
- by the Free Software Foundation; either version 2.1 of the License, or
- any later version.
-
- This library is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
- MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
- documentation provided hereunder is on an "as is" basis, and the
- Institute for Systems Biology and the Whitehead Institute
- have no obligations to provide maintenance, support,
- updates, enhancements or modifications.  In no event shall the
- Institute for Systems Biology and the Whitehead Institute
- be liable to any party for direct, indirect, special,
- incidental or consequential damages, including lost profits, arising
- out of the use of this software and its documentation, even if the
- Institute for Systems Biology and the Whitehead Institute
- have been advised of the possibility of such damage.  See
- the GNU Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public License
- along with this library; if not, write to the Free Software Foundation,
- Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- */
 package org.cytoscape.io.internal.read.session;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
@@ -83,8 +80,9 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
@@ -309,18 +307,25 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 			for (int i = 0; i < netArray.length; i++) {
 				// Process each CyNetwork
-				CyNetwork net = netArray[i];
-				String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
+				final CyNetwork net = netArray[i];
+				final String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				networkLookup.put(netName, net);
 				
 				// Add parent network attribute, to preserve the network hierarchy info from Cytoscape 2.x
-				if (parent != null && !(parent instanceof CyRootNetwork)) {
-					CyRow row = net.getRow(net);
-					
-					if (row.getTable().getColumn(CY2_PARENT_NETWORK_COLUMN) == null)
-						row.getTable().createColumn(CY2_PARENT_NETWORK_COLUMN, Long.class, false);
-					
-					row.set(CY2_PARENT_NETWORK_COLUMN, parent.getSUID());
+				final CyRow row = net.getRow(net, CyNetwork.LOCAL_ATTRS);
+				final CyTable tbl = row.getTable();
+				
+				if (parent instanceof CySubNetwork && tbl.getColumn(CY2_PARENT_NETWORK_COLUMN) == null)
+					tbl.createColumn(CY2_PARENT_NETWORK_COLUMN, Long.class, false);
+				
+				if (tbl.getColumn(CY2_PARENT_NETWORK_COLUMN) != null) {
+					if (parent instanceof CySubNetwork) {
+						row.set(CY2_PARENT_NETWORK_COLUMN, parent.getSUID());
+					} else {
+						// Remove the column to prevent stale values
+						// (e.g. the user imported a Cy3 XGMML that contains this attribute into Cy2)
+						tbl.deleteColumn(CY2_PARENT_NETWORK_COLUMN);
+					}
 				}
 
 				// Restore node/edge selection

@@ -1,3 +1,4 @@
+/* %% Ignore-License */
 /*
 Copyright 2006 Jerry Huxtable
 

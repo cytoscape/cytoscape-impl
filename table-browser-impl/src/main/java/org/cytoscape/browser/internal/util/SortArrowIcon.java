@@ -1,3 +1,4 @@
+/* %% Ignore-License */
 /*
  * $Archive: SourceJammer$
  * $FileName: SortArrowIcon.java$

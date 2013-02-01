@@ -1,5 +1,29 @@
 package org.cytoscape.welcome.internal.panel;
 
+/*
+ * #%L
+ * Cytoscape Welcome Screen Impl (welcome-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
@@ -39,6 +63,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DataSourceManager;
+import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.welcome.internal.WelcomeScreenDialog;
 import org.cytoscape.work.AbstractTask;
@@ -122,6 +147,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private final DialogTaskManager guiTaskManager;
 	private final BundleContext bc;
 	private final LoadNetworkURLTaskFactory importNetworkFromURLTF;
+	private final NewEmptyNetworkViewFactory newEmptyNetworkViewFactory;
 	private final TaskFactory importNetworkFileTF;
 	private final DataSourceManager dsManager;
 	private final Map<String, String> dataSourceMap;
@@ -135,11 +161,12 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	public CreateNewNetworkPanel(final BundleContext bc, final DialogTaskManager guiTaskManager,
 			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
-			final DataSourceManager dsManager) {
+			final DataSourceManager dsManager, final NewEmptyNetworkViewFactory newEmptyNetworkViewFactory) {
 		this.bc = bc;
 
 		this.importNetworkFromURLTF = loadTF;
 		this.importNetworkFileTF = importNetworkFileTF;
+		this.newEmptyNetworkViewFactory = newEmptyNetworkViewFactory;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
 		this.dataSourceMap = new HashMap<String, String>();
@@ -212,10 +239,11 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		createEmptySessionButton.setIcon(NEW_ICON);
 		createEmptySessionButton.setHorizontalAlignment(SwingConstants.LEFT);
 		createEmptySessionButton.setIconTextGap(20);
-		createEmptySessionButton.addMouseListener(new MouseAdapter() {
+		createEmptySessionButton.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent ev) {
+			public void actionPerformed(ActionEvent arg0) {
 				closeParentWindow();
+				guiTaskManager.execute(((TaskFactory)newEmptyNetworkViewFactory).createTaskIterator());
 			}
 		});
 		

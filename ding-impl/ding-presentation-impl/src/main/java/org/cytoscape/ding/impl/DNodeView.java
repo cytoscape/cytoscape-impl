@@ -1,31 +1,28 @@
-/*
- Copyright (c) 2006, 2007, 2010, The Cytoscape Consortium (www.cytoscape.org)
-
- This library is free software; you can redistribute it and/or modify it
- under the terms of the GNU Lesser General Public License as published
- by the Free Software Foundation; either version 2.1 of the License, or
- any later version.
-
- This library is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
- MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
- documentation provided hereunder is on an "as is" basis, and the
- Institute for Systems Biology and the Whitehead Institute
- have no obligations to provide maintenance, support,
- updates, enhancements or modifications.  In no event shall the
- Institute for Systems Biology and the Whitehead Institute
- be liable to any party for direct, indirect, special,
- incidental or consequential damages, including lost profits, arising
- out of the use of this software and its documentation, even if the
- Institute for Systems Biology and the Whitehead Institute
- have been advised of the possibility of such damage.  See
- the GNU Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public License
- along with this library; if not, write to the Free Software Foundation,
- Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- */
 package org.cytoscape.ding.impl;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -63,6 +60,7 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -1123,7 +1121,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	private void applyCustomGraphics(final VisualProperty<?> vp, final CyCustomGraphics<CustomGraphicLayer> customGraphics) {
+	private void applyCustomGraphics(final VisualProperty<?> vp, 
+	                                 final CyCustomGraphics<CustomGraphicLayer> customGraphics) {
 		Set<CustomGraphicLayer> dCustomGraphicsSet = cgMap.get(vp);
 		
 		if (dCustomGraphicsSet == null)
@@ -1137,7 +1136,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (customGraphics == null || customGraphics instanceof NullCustomGraphics)
 			return;
 
-		final List<CustomGraphicLayer> layers = customGraphics.getLayers(graphView.getModel(), model);
+		final List<CustomGraphicLayer> layers = customGraphics.getLayers(graphView, this);
 
 		// No need to update
 		if (layers == null || layers.size() == 0)

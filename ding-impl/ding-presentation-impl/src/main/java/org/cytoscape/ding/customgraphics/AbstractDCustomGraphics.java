@@ -1,5 +1,29 @@
 package org.cytoscape.ding.customgraphics;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,14 +32,18 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyIdentifiable;
+
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
-public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> implements
-		CyCustomGraphics<T>, Taggable {
+public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> 
+	                    implements CyCustomGraphics<T>, Taggable {
 
 	protected static final String DELIMITER = ",";
 	public static final String LIST_DELIMITER = "|";
@@ -83,8 +111,8 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 		return this.height;
 	}
 
-	
-	public List<T> getLayers(CyNetwork network, CyIdentifiable graphObject) {
+	@Override	
+	public List<T> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
 		return layers;
 	}
 

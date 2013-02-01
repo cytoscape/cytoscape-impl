@@ -1,3 +1,4 @@
+/* %% Ignore-License */
 /*
  * Copyright (C) 2011 Toni Menzel
  *
