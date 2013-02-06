@@ -13,7 +13,7 @@
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
 	<!-- Implementation bundles can have different version number -->
-	<version>3.0.0</version>
+	<version>3.0.1</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
@@ -80,7 +80,6 @@
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
 	</modules>
-
 
 	<!-- Managed dependency.  If bundles are shared by everyone, it should be moved to dependencies section! -->
 	<dependencyManagement>
@@ -335,9 +334,9 @@
 </dependencies>
 
 	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release</url>
+		<connection>scm:git:git://github.com/cytoscape/cytoscape-impl.git</connection>
+		<developerConnection>scm:git:git@github.com:cytoscape/cytoscape-impl.git</developerConnection>
+		<url>https://github.com/cytoscape/cytoscape-impl.git</url>
 	</scm>
 
 	<build>
