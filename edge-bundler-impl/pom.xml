@@ -84,4 +84,10 @@
 	</dependencies>
 
 	<description>Written by Gregory Hannum, March 2012</description>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/edge-bundler-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/edge-bundler-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/edge-bundler-impl</url>
+  </scm>
 </project>
