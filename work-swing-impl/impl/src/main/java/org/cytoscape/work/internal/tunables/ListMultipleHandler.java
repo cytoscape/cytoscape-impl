@@ -39,6 +39,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -113,14 +114,23 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		panel = new JPanel();
 		BorderLayout layout = new BorderLayout();
 		panel.setLayout(layout);
-		final JTextArea jta = new JTextArea(getDescription());
-		jta.setPreferredSize(new Dimension(200, 50));
-		jta.setLineWrap(true);
-		jta.setWrapStyleWord(true);
-		jta.setBorder(padding);
-		panel.add(jta, BorderLayout.PAGE_START);
-		jta.setBackground(null);
-		jta.setEditable(false);
+		String description = getDescription();
+		if (description != null && description.length() > 80) {
+			// Use JTextArea for long descriptions
+			final JTextArea jta = new JTextArea(description);
+			// jta.setPreferredSize(new Dimension(200, 50));
+			jta.setLineWrap(true);
+			jta.setWrapStyleWord(true);
+			// jta.setBorder(padding);
+			panel.add(jta, BorderLayout.PAGE_START);
+			jta.setBackground(panel.getBackground());
+			jta.setEditable(false);
+		} else if (description != null && description.length() > 0) {
+			// Otherwise, use JLabel
+			final JLabel jLabel = new JLabel(description);
+			jLabel.setFont(LABEL_FONT);
+			panel.add(jLabel, BorderLayout.PAGE_START);
+		}
 
 		//put the items in a list
 		itemsContainerList = new JList(listModel);//new JList(listMultipleSelection.getPossibleValues().toArray());

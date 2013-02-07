@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.util.swing.JMenuTracker;
 import org.cytoscape.util.swing.GravityTracker;
@@ -70,6 +71,13 @@ public class CytoscapeMenuBar extends JMenuBar {
 		if (!action.isInMenuBar())
 			return false;
 
+		boolean insertSepBefore = false;
+		boolean insertSepAfter = false;
+		if (action instanceof AbstractCyAction) {
+			insertSepBefore = ((AbstractCyAction)action).insertSeparatorBefore();
+			insertSepAfter = ((AbstractCyAction)action).insertSeparatorAfter();
+		}
+
 		// At present we allow an Action to be in this menu bar only once.
 		if ( actionMenuItemMap.containsKey(action) )
 			return false;
@@ -88,7 +96,11 @@ public class CytoscapeMenuBar extends JMenuBar {
 			menu_item.setAccelerator(accelerator);
 
 		((JMenu) gravityTracker.getMenu()).addMenuListener(action);
+		if (insertSepBefore)
+			gravityTracker.addMenuSeparator(action.getMenuGravity()-.0001);
 		gravityTracker.addMenuItem(menu_item, action.getMenuGravity());
+		if (insertSepAfter)
+			gravityTracker.addMenuSeparator(action.getMenuGravity()+.0001);
 		logger.debug("Inserted action for menu: " + menu_name + " with gravity: " + action.getMenuGravity());
 		actionMenuItemMap.put(action, menu_item);
 
