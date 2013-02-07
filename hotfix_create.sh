@@ -12,7 +12,10 @@ echo "Updating pom version numbers to $targetversion"
 
 git checkout master
 git flow hotfix start $targetversion
-mvn versions:set -DnewVersion=$snapshotversion
+
+## Need to change impl-parent version ONLY, not children.
+#mvn versions:set -DnewVersion=$snapshotversion
+
 mvn -N versions:update-child-modules
 mvn versions:commit
 
