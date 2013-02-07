@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 	<properties>
 		<bundle.symbolicName>org.cytoscape.sbml-impl</bundle.symbolicName>
