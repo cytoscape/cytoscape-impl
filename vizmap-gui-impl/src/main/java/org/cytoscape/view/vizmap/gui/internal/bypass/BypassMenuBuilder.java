@@ -45,26 +45,30 @@ import javax.swing.JSeparator;
 
 import org.cytoscape.application.swing.CyMenuItem;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
 final class BypassMenuBuilder {
+
 	private static final String ROOT_MENU_LABEL = "Bypass Visual Style";
+	private static final String RESET_ALL_MENU_LABEL = "Reset All";
+	private static final String EDIT_BYPASS_MENU_LABEL = "Edit Bypass";
+	private static final String CLEAR_MENU_LABEL = "Clear";
 	
 	// Try to set it at the bottom of context menu
 	private static final float ROOT_GRAVITY = 1000000f;
 
-	private static final Font ENABLED_FONT = new Font("Helvatica", Font.BOLD, 14);
+	private static final Font ENABLED_FONT = new Font("Helvetica", Font.BOLD, 14);
 	private static final Icon ENABLED_ICON = new ImageIcon(
 			BypassMenuBuilder.class.getResource("/images/icons/CrystalClearIcons_Action-lock-silver-icon.png"));
 	private static final Color ENABLED_COLOR = Color.RED;
@@ -82,8 +86,6 @@ final class BypassMenuBuilder {
 		this.vpSet = new HashSet<VisualProperty<?>>();
 	}
 
-	private VisualProperty<?> vp_nodeSize = null;
-	
 	/**
 	 * 
 	 * @param netView
@@ -102,94 +104,114 @@ final class BypassMenuBuilder {
 		queue.addAll(root.getChildren());
 		menuMap.put(root, rootMenu.getMenuItem());
 
-		// Node size, width and height
-		JMenuItem menuItemNodeSize = null;
-		JMenuItem menuItemNodeWidth = null;		
-		JMenuItem menuItemNodeHeight = null;		
-
+		// The dependencies that are enabled in the current visual style will determine which properties
+		// should not be lockable for now.
+		final VisualStyle style = vmm.getCurrentVisualStyle();
+		final Set<VisualProperty<?>> disabledProps = new HashSet<VisualProperty<?>>();
+		final Set<VisualPropertyDependency<?>> depSet = style.getAllVisualPropertyDependencies();
+		
+		for (final VisualPropertyDependency<?> dep : depSet) {
+			// To do the same as in Cytoscape v2.8, we only care about these dependencies
+			if (!dep.getIdString().equals("arrowColorMatchesEdge") && !dep.getIdString().equals("nodeSizeLocked"))
+				continue; // TODO: revisit these requirements and remove this workaround.
+			
+			// In general, the user should not be able to lock the child properties of an enabled dependency.
+			if (dep.isDependencyEnabled())
+				disabledProps.addAll(dep.getVisualProperties());
+			else
+				disabledProps.add(dep.getParentVisualProperty());
+		}
+		
 		final Set<VisualLexiconNode> nextNodes = new HashSet<VisualLexiconNode>();
 
 		while (!queue.isEmpty()) {
-			final VisualLexiconNode curretNode = queue.poll();
-			final VisualProperty<?> vp = curretNode.getVisualProperty();
+			final VisualLexiconNode currentNode = queue.poll();
+			final VisualProperty<?> vp = currentNode.getVisualProperty();
 			
 			if (vp.getTargetDataType().isAssignableFrom(targetClass)) {
-				final Collection<VisualLexiconNode> children = curretNode.getChildren();
+				final Collection<VisualLexiconNode> children = currentNode.getChildren();
 				nextNodes.addAll(children);
-	
-				final JMenuItem menu;
-				if (children.isEmpty() && PropertySheetUtil.isCompatible(vp)) {
-					final boolean lock = view.isDirectlyLocked(vp);
-					if (lock) {
-						menu = new JMenu(vp.getDisplayName());
-						final JMenuItem clear = new JMenuItem("Clear");
-						clear.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								view.clearValueLock(vp);
-								netView.updateView();
-							}
-						});
-						
-						final JMenuItem edit = new JMenuItem("Edit Bypass");
-						edit.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								applBypassValue(netView, view, vp);
-							}
-						});
-						menu.add(clear);
-						menu.add(edit);
-	
-						// Update color
-						menu.setForeground(ENABLED_COLOR);
-						menu.setIcon(ENABLED_ICON);
-						menu.setFont(ENABLED_FONT);
-						VisualLexiconNode parent = curretNode.getParent();
-						
-						while (parent != root) {
-							JMenuItem enabledPath = menuMap.get(parent);
-							enabledPath.setForeground(ENABLED_COLOR);
-							enabledPath.setIcon(ENABLED_ICON);
-							enabledPath.setFont(ENABLED_FONT);
-							parent = parent.getParent();
-						}
-						
-						rootJMenu.setIcon(ENABLED_ICON);
-						rootJMenu.setForeground(ENABLED_COLOR);
-						rootJMenu.setFont(ENABLED_FONT);
-						
-						vpSet.add(vp);
-					} else {
-						menu = new JMenuItem(vp.getDisplayName());
-						menu.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								applBypassValue(netView, view, vp);
-							}
-						});
-						
-						if (vp.getDisplayName().equalsIgnoreCase(BasicVisualLexicon.NODE_WIDTH.getDisplayName()) ){
-							menuItemNodeWidth = menu;
-						}
-						if (vp.getDisplayName().equalsIgnoreCase(BasicVisualLexicon.NODE_HEIGHT.getDisplayName()) ){
-							menuItemNodeHeight = menu;
-						}
-						
-					}
-				} else {
-					
-					menu = new JMenu(vp.getDisplayName());
-					
-					if (vp.getDisplayName().equalsIgnoreCase(BasicVisualLexicon.NODE_SIZE.getDisplayName())){
-						menuItemNodeSize = menu;
-						vp_nodeSize = vp;
-					}
-				}
-	
+				
 				if (PropertySheetUtil.isCompatible(vp)) {
-					menuMap.get(curretNode.getParent()).add(menu);
-					menuMap.put(curretNode, menu);
+					final JMenuItem menu;
+					VisualLexiconNode parentNode = currentNode.getParent();
+					boolean leaf = children.isEmpty();
+					
+					if (!leaf) {
+						// Non-leaf visual property...
+						final JMenuItem nonLeafMenu = new JMenu(vp.getDisplayName());
+						menuMap.put(currentNode, nonLeafMenu);
+						menuMap.get(parentNode).add(nonLeafMenu);
+						
+						// Other non-leaf VPs can cause ClassCastExceptions when their values are propagated
+						// to their descendants, so let's accept only these ones
+						// TODO: What are the generic rules for handling any Lexicon's visual property tree in the UI?
+						if (vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.EDGE_UNSELECTED_PAINT) {
+							// So this VP can also be added as a child of itself
+							parentNode = currentNode;
+							leaf = true;
+						}
+					}
+					
+					if (leaf) {
+						if (view.isDirectlyLocked(vp)) {
+							final JMenuItem clear = new JMenuItem(CLEAR_MENU_LABEL);
+							clear.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(final ActionEvent e) {
+									view.clearValueLock(vp);
+									netView.updateView();
+								}
+							});
+							
+							final JMenuItem edit = new JMenuItem(EDIT_BYPASS_MENU_LABEL);
+							edit.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(final ActionEvent e) {
+									applBypassValue(netView, view, vp);
+								}
+							});
+							
+							menu = new JMenu(vp.getDisplayName());
+							menu.add(clear);
+							menu.add(edit);
+		
+							// Update color and icon
+							JMenuItem enabledItem = menu;
+							VisualLexiconNode enabledParent = parentNode;
+							
+							do {
+								enabledItem.setForeground(ENABLED_COLOR);
+								enabledItem.setIcon(ENABLED_ICON);
+								enabledItem.setFont(ENABLED_FONT);
+								enabledItem = menuMap.get(enabledParent);
+								enabledParent = enabledParent.getParent();
+							} while (enabledItem != null);
+							
+							rootJMenu.setIcon(ENABLED_ICON);
+							rootJMenu.setForeground(ENABLED_COLOR);
+							rootJMenu.setFont(ENABLED_FONT);
+							
+							vpSet.add(vp);
+						} else {
+							menu = new JMenuItem(vp.getDisplayName());
+							menu.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(final ActionEvent e) {
+									applBypassValue(netView, view, vp);
+								}
+							});
+						}
+					
+						menuMap.get(parentNode).add(menu);
+						
+						if (parentNode == currentNode)
+							menuMap.get(parentNode).add(new JSeparator());
+						
+						// Should this visual property be disabled?
+						if (disabledProps.contains(vp))
+							menu.setEnabled(false);
+					}
 				}
 			}
 
@@ -199,47 +221,9 @@ final class BypassMenuBuilder {
 			}
 		}
 
-		// handle node size
-		if (menuItemNodeSize != null){
-			//
-			JMenuItem menuItemNodeSize1 = new JMenuItem(vp_nodeSize.getDisplayName());
-			menuItemNodeSize1.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					applBypassValue(netView, view, vp_nodeSize);
-				}
-			});
-			
-			menuItemNodeSize.add(menuItemNodeSize1);
-
-			// Check if nose size is locked
-			boolean nodeSizeIsLocked = false;
-			java.util.Iterator it = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies().iterator();	
-			while (it.hasNext()){
-				org.cytoscape.view.vizmap.VisualPropertyDependency dep = (org.cytoscape.view.vizmap.VisualPropertyDependency) it.next();
-				
-				if (dep.getDisplayName().equalsIgnoreCase("Lock node width and height") && dep.isDependencyEnabled()){
-					nodeSizeIsLocked = true;
-				}
-			}
-			
-			if (nodeSizeIsLocked) {
-				// In case the Node size is locked, disable menuItem Node_width and Nod_height 
-				if(menuItemNodeWidth != null)
-					menuItemNodeWidth.setEnabled(false);
-				if(menuItemNodeHeight != null)
-					menuItemNodeHeight.setEnabled(false);				
-			} else {
-				// In case the Node size is not locked, disable menuItem Node_size 
-				if(menuItemNodeSize1 != null)
-					menuItemNodeSize1.setEnabled(false);
-			}
-		}
-
 		final JSeparator separator = new JSeparator();
-		final JMenuItem resetMenu = new JMenuItem("Reset All");
+		final JMenuItem resetMenu = new JMenuItem(RESET_ALL_MENU_LABEL);
 		resetMenu.addActionListener(new ActionListener() {
-			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				clearAll(netView, view);
@@ -265,16 +249,18 @@ final class BypassMenuBuilder {
 		final ValueEditor<Object> editor = (ValueEditor<Object>) editorManager.getValueEditor(vp.getRange().getType());
 		final Object bypassValue = editor.showEditor(null, graphObjectView.getVisualProperty(vp));
 		
-		// Set lock for the vp
-		graphObjectView.setLockedValue(vp, bypassValue);
-		
-		// Apply the new value only for the given view
-		// TODO don't do this, because it overwrites some bypassed values with default ones!!! Calling setLockedValue should be enough
-//		final CyRow row = netView.getModel().getRow(graphObjectView.getModel());
-//		vmm.getCurrentVisualStyle().apply(row, graphObjectView);
-		
-		// Redraw the view
-		netView.updateView();
+		if (bypassValue != null) { // null means the action was cancelled
+			// Set lock for the vp
+			graphObjectView.setLockedValue(vp, bypassValue);
+			
+			// Apply the new value only for the given view
+			// TODO don't do this, because it overwrites some bypassed values with default ones!!! Calling setLockedValue should be enough
+//			final CyRow row = netView.getModel().getRow(graphObjectView.getModel());
+//			vmm.getCurrentVisualStyle().apply(row, graphObjectView);
+			
+			// Redraw the view
+			netView.updateView();
+		}
 	}
 
 	private final void clearAll(final CyNetworkView netView, final View<? extends CyIdentifiable> nodeView) {
