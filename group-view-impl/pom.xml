@@ -131,5 +131,11 @@
 			<version>9.0.0</version>
 		</dependency>
 	</dependencies>
+
+  <scm>
+    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/group-view-impl</connection>
+    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/group-view-impl</developerConnection>
+    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/group-view-impl</url>
+  </scm>
 </project>
 
