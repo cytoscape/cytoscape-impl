@@ -64,7 +64,7 @@ final class BypassMenuBuilder {
 	// Try to set it at the bottom of context menu
 	private static final float ROOT_GRAVITY = 1000000f;
 
-	private static final Font ENABLED_FONT = new Font("Helvatica", Font.BOLD, 14);
+	private static final Font ENABLED_FONT = new Font("Helvetica", Font.BOLD, 14);
 	private static final Icon ENABLED_ICON = new ImageIcon(
 			BypassMenuBuilder.class.getResource("/images/icons/CrystalClearIcons_Action-lock-silver-icon.png"));
 	private static final Color ENABLED_COLOR = Color.RED;
@@ -265,16 +265,18 @@ final class BypassMenuBuilder {
 		final ValueEditor<Object> editor = (ValueEditor<Object>) editorManager.getValueEditor(vp.getRange().getType());
 		final Object bypassValue = editor.showEditor(null, graphObjectView.getVisualProperty(vp));
 		
-		// Set lock for the vp
-		graphObjectView.setLockedValue(vp, bypassValue);
-		
-		// Apply the new value only for the given view
-		// TODO don't do this, because it overwrites some bypassed values with default ones!!! Calling setLockedValue should be enough
-//		final CyRow row = netView.getModel().getRow(graphObjectView.getModel());
-//		vmm.getCurrentVisualStyle().apply(row, graphObjectView);
-		
-		// Redraw the view
-		netView.updateView();
+		if (bypassValue != null) { // null means the action was cancelled
+			// Set lock for the vp
+			graphObjectView.setLockedValue(vp, bypassValue);
+			
+			// Apply the new value only for the given view
+			// TODO don't do this, because it overwrites some bypassed values with default ones!!! Calling setLockedValue should be enough
+//			final CyRow row = netView.getModel().getRow(graphObjectView.getModel());
+//			vmm.getCurrentVisualStyle().apply(row, graphObjectView);
+			
+			// Redraw the view
+			netView.updateView();
+		}
 	}
 
 	private final void clearAll(final CyNetworkView netView, final View<? extends CyIdentifiable> nodeView) {
