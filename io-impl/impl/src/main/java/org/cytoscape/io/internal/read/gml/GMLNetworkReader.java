@@ -38,20 +38,22 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.work.TaskMonitor;
 
 /**
@@ -114,7 +116,9 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	private static String OUTLINE = "outline";
 	private static String OUTLINE_WIDTH = "outline_width";
 	private static String DEFAULT_EDGE_INTERACTION = "pp";
-
+	
+	private static Map<String, ArrowShape> legacyArrowShapes = new HashMap<String, ArrowShape>();
+	
 	// Entries in the file
 	List<KeyValue> keyVals;
 
@@ -165,6 +169,27 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	private CyNetworkView view;
 	private CySubNetwork network;
 
+	static {
+		legacyArrowShapes.put("0", ArrowShapeVisualProperty.NONE); // NO_END
+		legacyArrowShapes.put("1", ArrowShapeVisualProperty.DELTA); // WHITE_DELTA
+		legacyArrowShapes.put("2", ArrowShapeVisualProperty.DELTA); // BLACK_DELTA
+		legacyArrowShapes.put("3", ArrowShapeVisualProperty.DELTA); // EDGE_COLOR_DELTA
+		legacyArrowShapes.put("4", ArrowShapeVisualProperty.ARROW); // WHITE_ARROW
+		legacyArrowShapes.put("5", ArrowShapeVisualProperty.ARROW); // BLACK_ARROW
+		legacyArrowShapes.put("6", ArrowShapeVisualProperty.ARROW); // EDGE_COLOR_ARROW
+		legacyArrowShapes.put("7", ArrowShapeVisualProperty.DIAMOND); // WHITE_DIAMOND
+		legacyArrowShapes.put("8", ArrowShapeVisualProperty.DIAMOND); // BLACK_DIAMOND
+		legacyArrowShapes.put("9", ArrowShapeVisualProperty.DIAMOND); // EDGE_COLOR_DIAMOND
+		legacyArrowShapes.put("10", ArrowShapeVisualProperty.CIRCLE); // WHITE_CIRCLE
+		legacyArrowShapes.put("11", ArrowShapeVisualProperty.CIRCLE); // BLACK_CIRCLE
+		legacyArrowShapes.put("12", ArrowShapeVisualProperty.CIRCLE); // EDGE_COLOR_CIRCLE
+		legacyArrowShapes.put("13", ArrowShapeVisualProperty.T); // WHITE_T
+		legacyArrowShapes.put("14", ArrowShapeVisualProperty.T); // BLACK_T
+		legacyArrowShapes.put("15", ArrowShapeVisualProperty.T); // EDGE_COLOR_T
+		legacyArrowShapes.put("16", ArrowShapeVisualProperty.HALF_TOP); // EDGE_HALF_ARROW_TOP
+		legacyArrowShapes.put("17", ArrowShapeVisualProperty.HALF_BOTTOM); // EDGE_HALF_ARROW_BOTTOM
+	}
+	
 	public GMLNetworkReader(InputStream inputStream,
 							CyNetworkFactory networkFactory,
 							CyNetworkViewFactory viewFactory,
@@ -595,6 +620,10 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		for (KeyValue keyVal : list) {
 			String key = keyVal.key;
 			Object value = keyVal.value;
+			
+			if (key.equals(OUTLINE_WIDTH))
+				key = WIDTH;
+			
 			VisualProperty<?> vp = lexicon.lookup(CyNode.class, key);
 
 			if (vp != null) {
@@ -666,17 +695,24 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			if (key.equals(LINE)) {
 				layoutEdgeGraphicsLine(netView, (List<KeyValue>) value, view);
 			} else {
+				Object vpValue = null;
+				
+				if (key.equals(SOURCE_ARROW) || key.equals(TARGET_ARROW)) {
+					key = key.replace("_arrow", "Arrow");
+					vpValue = legacyArrowShapes.get(value.toString());
+				}
+				
 				VisualProperty<?> vp = lexicon.lookup(CyEdge.class, key);
-
+	
 				if (vp != null) {
-					value = vp.parseSerializableString(value.toString());
-
-					if (value != null) {
-						if (isLockedVisualProperty(model, key)) {
-							view.setLockedValue(vp, value);
-						} else {
-							view.setVisualProperty(vp, value);
-						}
+					if (vpValue == null)
+						vpValue = vp.parseSerializableString(value.toString());
+					
+					if (vpValue != null) {
+						if (isLockedVisualProperty(model, key))
+							view.setLockedValue(vp, vpValue);
+						else
+							view.setVisualProperty(vp, vpValue);
 					}
 				} else {
 					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, key, value.toString());
