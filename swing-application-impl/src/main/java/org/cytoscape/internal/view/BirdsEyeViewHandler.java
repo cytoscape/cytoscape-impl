@@ -44,6 +44,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
+import org.cytoscape.view.presentation.NetworkViewRenderer;
+import org.cytoscape.view.presentation.NetworkViewRendererManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.slf4j.Logger;
@@ -60,13 +62,13 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	private static final Dimension DEF_PANEL_SIZE = new Dimension(300, 300);
 	private static final Color DEF_BACKGROUND_COLOR = Color.WHITE;
 
-	// BEV is just a special implementation of RenderingEngine.
-	private final RenderingEngineFactory<CyNetwork> bevFactory;
 	private final JPanel bevPanel;
 	private final Map<CyNetworkView, RenderingEngine<?>> viewToEngineMap;
 	private final CyApplicationManager appManager;
 	private final CyNetworkViewManager netViewManager;
 	private final Map<CyNetworkView, JPanel> presentationMap;
+
+	private final NetworkViewRendererManager rendererManager;
 
 	/**
 	 * Updates Bird's Eye View
@@ -75,11 +77,12 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	 * @param defaultFactory
 	 */
 	public BirdsEyeViewHandler(final CyApplicationManager appManager,
-							   final RenderingEngineFactory<CyNetwork> defaultFactory,
+							   final NetworkViewRendererManager rendererManager,
 							   final CyNetworkViewManager netViewManager) {
 
 		this.appManager = appManager;
 		this.netViewManager = netViewManager;
+		this.rendererManager = rendererManager;
 		this.viewToEngineMap = new WeakHashMap<CyNetworkView, RenderingEngine<?>>();
 		this.presentationMap = new WeakHashMap<CyNetworkView, JPanel>();
 
@@ -88,8 +91,6 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 		this.bevPanel.setPreferredSize(DEF_PANEL_SIZE);
 		this.bevPanel.setSize(DEF_PANEL_SIZE);
 		this.bevPanel.setBackground(DEF_BACKGROUND_COLOR);
-
-		this.bevFactory = defaultFactory;
 	}
 
 	/**
@@ -137,6 +138,8 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 				if (presentationPanel == null) {
 					logger.debug("Creating new BEV for: " + newView);
 					presentationPanel = new JPanel();
+					NetworkViewRenderer renderer = rendererManager.getCurrentNetworkViewRenderer();
+					RenderingEngineFactory<CyNetwork> bevFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT);
 					viewToEngineMap.put(newView, bevFactory.createRenderingEngine(presentationPanel, newView));
 					presentationMap.put((CyNetworkView) newView, presentationPanel);
 				}

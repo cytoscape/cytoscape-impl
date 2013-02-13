@@ -57,6 +57,7 @@ import org.cytoscape.ding.impl.BendFactoryImpl;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.DingRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
@@ -107,6 +108,7 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.presentation.NetworkViewRenderer;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.property.values.BendFactory;
@@ -117,11 +119,15 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
-import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
+//
+// Annotation api
+//
+// Annotation creation
+// Annotation edits and changes
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -196,6 +202,9 @@ public class CyActivator extends AbstractCyActivator {
 				dialogTaskManager, cyServiceRegistrarRef, cyNetworkTableManagerServiceRef,
 				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef, cyNetworkViewManagerServiceRef, handleFactory);
 
+		NetworkViewRenderer renderer = new DingRenderer(dingNetworkViewFactory, dingRenderingEngineFactory, dingNavigationRenderingEngineFactory);
+		registerService(bc, renderer, NetworkViewRenderer.class, new Properties());
+		
 		// Edge Bend editor
 		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(cyNetworkFactory, dingNetworkViewFactory,
 				dingRenderingEngineFactory);

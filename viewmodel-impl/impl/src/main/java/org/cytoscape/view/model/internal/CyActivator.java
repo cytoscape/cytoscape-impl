@@ -29,7 +29,10 @@ import java.util.Properties;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.presentation.NetworkViewRendererManager;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -44,5 +47,12 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManagerImpl cyNetworkViewManager = new CyNetworkViewManagerImpl(cyEventHelperServiceRef,cyNetworkManagerServiceRef);
 		
 		registerAllServices(bc,cyNetworkViewManager, new Properties());
+		
+		NetworkViewRendererManager rendererManager = getService(bc, NetworkViewRendererManager.class);
+		
+		CyNetworkViewFactoryImpl viewFactory = new CyNetworkViewFactoryImpl(rendererManager);
+		Properties viewFactoryProperties = new Properties();
+		viewFactoryProperties.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
+		registerService(bc, viewFactory, CyNetworkViewFactory.class, viewFactoryProperties);
 	}
 }
