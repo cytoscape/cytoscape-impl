@@ -40,6 +40,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,9 +96,12 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		
 	}
 
-	private final class LoadRecentSessionTask extends AbstractTask {
+	public final class LoadRecentSessionTask extends AbstractTask {
 
 		private final CySessionReader reader;
+		
+		@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
+		public boolean changeCurrentSession = true;
 
 		LoadRecentSessionTask(final CySessionReader reader) {
 			this.reader = reader;
@@ -106,6 +110,9 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			logger.debug("Post processiong for session...");
+			
+			if(!changeCurrentSession)
+				return;
 
 			final CySession newSession = reader.getSession();
 			if (newSession == null)
