@@ -105,8 +105,11 @@ public class OpenSessionTask extends AbstractTask {
 	}
 	
 	
-	private final class LoadSessionTask extends AbstractTask {
+	public final class LoadSessionTask extends AbstractTask {
 		CySessionReader reader;
+		
+		@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
+		public boolean changeCurrentSession = true;
 		
 		LoadSessionTask(CySessionReader reader) {
 			this.reader = reader;
@@ -114,6 +117,10 @@ public class OpenSessionTask extends AbstractTask {
 		
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
+			
+			if(!changeCurrentSession)
+				return;
+			
 			final CySession newSession = reader.getSession();
 			if ( newSession == null )
 				throw new NullPointerException("Session could not be read for file: " + file);
