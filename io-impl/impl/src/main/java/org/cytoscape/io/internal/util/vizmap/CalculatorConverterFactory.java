@@ -24,8 +24,11 @@ package org.cytoscape.io.internal.util.vizmap;
  * #L%
  */
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * Simple factory that creates {@link  org.cytoscape.io.internal.util.vizmap.CalculatorConverter}
@@ -38,35 +41,55 @@ public class CalculatorConverterFactory {
 	 * @param calcKey The calculator identifier (e.g. "edgeColorCalculator" or "defaultEdgeColor").
 	 * @return
 	 */
-	public Set<CalculatorConverter> getConverters(String propsKey) {
+	public Set<CalculatorConverter> getConverters(final String propsKey) {
 		Set<CalculatorConverter> convs = new HashSet<CalculatorConverter>();
 
 		if (CalculatorConverter.isConvertible(propsKey)) {
-			Set<String> keys = new HashSet<String>();
-			String legacyPropsKey = null;
-
-			// Old/deprecated styles need to be converted to new properties first!
-			if (propsKey.matches("(?i).*(default)?(node|edge)LineType(Calculator)?")) {
-				// Split in two keys; e.g. defaultEdgeLineStyle + defaultEdgeLineWidth
-				legacyPropsKey = propsKey;
-				keys.add(propsKey.replace("LineType", "LineStyle"));
-				keys.add(propsKey.replace("LineType", "LineWidth"));
-			} else if (propsKey.matches("(?i).*(default)?Edge(Source|Target)Arrow(Calculator)?")) {
-				// Split in two; e.g. defaultEdgeSourceArrowShape + defaultEdgeSourceArrowColor
-				legacyPropsKey = propsKey;
-				keys.add(propsKey.replace("Arrow", "ArrowColor"));
-				keys.add(propsKey.replace("Arrow", "ArrowShape"));
-			} else {
-				// It is NOT an old key
-				keys.add(propsKey);
-			}
+			Set<String> keys = updateLegacyPropsKey(propsKey);
 
 			for (String k : keys) {
-				CalculatorConverter c = new CalculatorConverter(k, legacyPropsKey);
+				CalculatorConverter c = new CalculatorConverter(k, propsKey);
 				convs.add(c);
 			}
 		}
 
 		return convs;
+	}
+	
+	/**
+	 * Converts the key of an old vizmap properties file into one or more updated keys, if necessary.
+	 * @param propsKey Set with one or more updated keys.
+	 * @return
+	 */
+	static Set<String> updateLegacyPropsKey(final String propsKey) {
+		final Set<String> keys = new HashSet<String>();
+		final String[] tokens = propsKey.split("\\.");
+		
+		if (tokens.length < 3)
+			return Collections.singleton(propsKey);
+		
+		final String prefix = tokens[0] + "." + tokens[1] + ".";
+		final String vpId = tokens[2];
+
+		if (vpId.matches("(?i)(default)?(node|edge)LineType(Calculator)?")) {
+			// Split in two keys; e.g. defaultEdgeLineStyle + defaultEdgeLineWidth
+			keys.add(prefix + vpId.replace("LineType", "LineStyle"));
+			keys.add(prefix + vpId.replace("LineType", "LineWidth"));
+		} else if (vpId.matches("(?i)(default)?Edge(Source|Target)Arrow(Calculator)?")) {
+			// Split in two; e.g. defaultEdgeSourceArrowShape + defaultEdgeSourceArrowColor
+			keys.add(prefix + vpId.replace("Arrow", "ArrowColor"));
+			keys.add(prefix + vpId.replace("Arrow", "ArrowShape"));
+		} else if (vpId.matches("(?i)(default)?EdgeColor(Calculator)?")) {
+			// This Cy2 property is equivalent to two properties in Cy3
+			String k1 = vpId.replaceAll("(?i)EdgeColor", BasicVisualLexicon.EDGE_UNSELECTED_PAINT.getIdString());
+			String k2 = vpId.replaceAll("(?i)EdgeColor", BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT.getIdString());
+			keys.add(prefix + k1);
+			keys.add(prefix + k2);
+		} else {
+			// It is NOT an old key
+			keys.add(propsKey);
+		}
+		
+		return keys;
 	}
 }

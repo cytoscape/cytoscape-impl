@@ -74,47 +74,53 @@ public class CalculatorConverterFactoryTest {
 	}
 
 	@Test
-	public void testGetTwoConvertersForSomeOldKeys() throws Exception {
-		testLineTypeConverters("edgeAppearanceCalculator.Sample1.defaultEdgeLineType");
-		testLineTypeConverters("edgeAppearanceCalculator.Sample1.edgeLineTypeCalculator");
-		testLineTypeConverters("nodeAppearanceCalculator.default.defaultNodeLineType");
-		testLineTypeConverters("nodeAppearanceCalculator.default.nodeLineTypeCalculator");
-
-		testArrowConverters("edgeAppearanceCalculator.Sample 1.defaultEdgeSourceArrow");
-		testArrowConverters("edgeAppearanceCalculator.Sample 1.defaultEdgeTargetArrow");
-		testArrowConverters("edgeAppearanceCalculator.default.edgeSourceArrowCalculator");
-		testArrowConverters("edgeAppearanceCalculator.default.edgeTargetArrowCalculator");
+	public void testUpdateLegacyPropsKey() throws Exception {
+		assertLegacyKeyUpdated("nodeAppearanceCalculator.NodeLineTypeCalculator.nodeLineTypeCalculator", 
+				new String[]{"nodeAppearanceCalculator.NodeLineTypeCalculator.nodeLineStyleCalculator", 
+			                 "nodeAppearanceCalculator.NodeLineTypeCalculator.nodeLineWidthCalculator"});
+		
+		// ----------
+		assertLegacyKeyUpdated("edgeAppearanceCalculator.default.defaultEdgeLineType", 
+				new String[]{"edgeAppearanceCalculator.default.defaultEdgeLineStyle", 
+			                 "edgeAppearanceCalculator.default.defaultEdgeLineWidth"});
+		
+		assertLegacyKeyUpdated("edgeAppearanceCalculator.LineTypeCalculator.edgeLineTypeCalculator", 
+				new String[]{"edgeAppearanceCalculator.LineTypeCalculator.edgeLineStyleCalculator", 
+			                 "edgeAppearanceCalculator.LineTypeCalculator.edgeLineWidthCalculator"});
+		
+		// ----------
+		assertLegacyKeyUpdated("edgeAppearanceCalculator.Sample1.defaultEdgeSourceArrow", 
+				new String[]{"edgeAppearanceCalculator.Sample1.defaultEdgeSourceArrowShape", 
+			                 "edgeAppearanceCalculator.Sample1.defaultEdgeSourceArrowColor"});
+		
+		assertLegacyKeyUpdated("edgeAppearanceCalculator.My Arrow Calculator.defaultEdgeTargetArrow", 
+				new String[]{"edgeAppearanceCalculator.My Arrow Calculator.defaultEdgeTargetArrowShape", 
+			                 "edgeAppearanceCalculator.My Arrow Calculator.defaultEdgeTargetArrowColor"});
+		
+		assertLegacyKeyUpdated("edgeAppearanceCalculator.MyArrowCalculator.edgeSourceArrowCalculator", 
+				new String[]{"edgeAppearanceCalculator.MyArrowCalculator.edgeSourceArrowShapeCalculator", 
+							 "edgeAppearanceCalculator.MyArrowCalculator.edgeSourceArrowColorCalculator"});
+		
+		assertLegacyKeyUpdated("edgeAppearanceCalculator.default.edgeTargetArrowCalculator", 
+				new String[]{"edgeAppearanceCalculator.default.edgeTargetArrowShapeCalculator", 
+						     "edgeAppearanceCalculator.default.edgeTargetArrowColorCalculator"});
+		
+		// ----------
+		assertLegacyKeyUpdated("edgeAppearanceCalculator.MyDefaultEdgeColor.defaultEdgeColor", 
+				new String[]{"edgeAppearanceCalculator.MyDefaultEdgeColor.defaultEDGE_UNSELECTED_PAINT", 
+			                 "edgeAppearanceCalculator.MyDefaultEdgeColor.defaultEDGE_STROKE_UNSELECTED_PAINT"});
+		assertLegacyKeyUpdated("edgeAppearanceCalculator.MyEdgeColorCalculator.edgeColorCalculator",
+				new String[]{"edgeAppearanceCalculator.MyEdgeColorCalculator.EDGE_UNSELECTED_PAINTCalculator", 
+				             "edgeAppearanceCalculator.MyEdgeColorCalculator.EDGE_STROKE_UNSELECTED_PAINTCalculator"});
 	}
 
 	// Private methods -----------
+	
+	private void assertLegacyKeyUpdated(final String key, final String[] expectedKeys) {
+		final Set<String> updatedKeys = CalculatorConverterFactory.updateLegacyPropsKey(key);
+		assertEquals(expectedKeys.length, updatedKeys.size());
 
-	private void testLineTypeConverters(String key) {
-		Set<CalculatorConverter> convs = ccf.getConverters(key);
-		assertEquals(2, convs.size());
-
-		boolean hasLineStyleKey = false;
-		boolean hasLineWidthKey = false;
-
-		for (CalculatorConverter c : convs) {
-			hasLineStyleKey |= c.getVisualPropertyId().matches("(?i)[a-z]*LineStyle");
-			hasLineWidthKey |= c.getVisualPropertyId().matches("(?i)[a-z]*LineWidth");
-		}
-
-		assertTrue("Old LineType key generates two converters", hasLineStyleKey == true && hasLineWidthKey == true);
-	}
-
-	private void testArrowConverters(String key) {
-		Set<CalculatorConverter> convs = ccf.getConverters(key);
-		assertEquals(2, convs.size());
-
-		boolean hasArrowShapeKey = false;
-		boolean hasArrowColorKey = false;
-
-		for (CalculatorConverter c : convs) {
-			hasArrowShapeKey |= c.getVisualPropertyId().matches("(?i)[a-z]*ArrowShape");
-			hasArrowColorKey |= c.getVisualPropertyId().matches("(?i)[a-z]*ArrowColor");
-		}
-
-		assertTrue("Old Arrow key generates two converters", hasArrowShapeKey == true && hasArrowColorKey == true);
+		for (final String k : expectedKeys)
+			assertTrue("Converted key \"" + k + "\" not found in " + updatedKeys, updatedKeys.contains(k));
 	}
 }
