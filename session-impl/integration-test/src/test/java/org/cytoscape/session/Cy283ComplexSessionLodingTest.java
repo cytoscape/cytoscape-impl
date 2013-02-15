@@ -187,7 +187,9 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		assertEquals("Sample1", style.getTitle());
 
 		Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
-		assertEquals(4, mappings.size());
+		// Remember that the former "edgeColorCalculator" generates 2 mappings in Cy3
+		// (for EDGE_UNSELECTED_PAINT and EDGE_STROKE_UNSELECTED_PAINT):
+		assertEquals(5, mappings.size());
 
 		// Test defaults
 		NodeShape defaultShape = style.getDefaultValue(NODE_SHAPE);
@@ -217,14 +219,19 @@ public class Cy283ComplexSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(String.class, edgeLabelMapping.getMappingColumnType());
 
 		// Edge Color mapping
-		VisualMappingFunction<?, Paint> edgeColorMapping = style.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
-		assertTrue(edgeColorMapping instanceof DiscreteMapping);
-		assertEquals(CyEdge.INTERACTION, edgeColorMapping.getMappingColumnName());
-		assertEquals(String.class, edgeColorMapping.getMappingColumnType());
-		DiscreteMapping<String, Paint> disc1 = (DiscreteMapping<String, Paint>) edgeColorMapping;
+		VisualMappingFunction<?, Paint> edgeColorMapping1 = style.getVisualMappingFunction(EDGE_UNSELECTED_PAINT);
+		assertTrue(edgeColorMapping1 instanceof DiscreteMapping);
+		assertEquals(CyEdge.INTERACTION, edgeColorMapping1.getMappingColumnName());
+		assertEquals(String.class, edgeColorMapping1.getMappingColumnType());
+		DiscreteMapping<String, Paint> disc1 = (DiscreteMapping<String, Paint>) edgeColorMapping1;
 		assertEquals(new Color(0, 204, 0), disc1.getMapValue("pp"));
 		assertEquals(new Color(255, 0, 51), disc1.getMapValue("pd"));
 		assertEquals(null, disc1.getMapValue("this is an invalid value"));
+		
+		VisualMappingFunction<?, Paint> edgeColorMapping2 = style.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
+		assertTrue(edgeColorMapping2 instanceof DiscreteMapping);
+		assertEquals(CyEdge.INTERACTION, edgeColorMapping2.getMappingColumnName());
+		assertEquals(String.class, edgeColorMapping2.getMappingColumnType());
 
 		VisualMappingFunction<?, LineType> edgeLineStyleMapping = style.getVisualMappingFunction(EDGE_LINE_TYPE);
 		assertTrue(edgeLineStyleMapping instanceof DiscreteMapping);

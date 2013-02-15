@@ -135,7 +135,9 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals("Sample3", style.getTitle());
 
 		Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
-		assertEquals(6, mappings.size());
+		// Remember that the former "edgeColorCalculator" generates 2 mappings in Cy3
+		// (for EDGE_UNSELECTED_PAINT and EDGE_STROKE_UNSELECTED_PAINT):
+		assertEquals(7, mappings.size());
 
 		// Test defaults
 		NodeShape defaultShape = style.getDefaultValue(NODE_SHAPE);
@@ -174,14 +176,19 @@ public class Cy252SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertEquals(Number.class, nodeColorMapping.getMappingColumnType());
 
 		// Edge Color mapping
-		VisualMappingFunction<?, Paint> edgeColorMapping = style.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
-		assertTrue(edgeColorMapping instanceof DiscreteMapping);
-		assertEquals(CyEdge.INTERACTION, edgeColorMapping.getMappingColumnName());
-		assertEquals(String.class, edgeColorMapping.getMappingColumnType());
-		DiscreteMapping<String, Paint> disc1 = (DiscreteMapping<String, Paint>) edgeColorMapping;
+		VisualMappingFunction<?, Paint> edgeColorMapping1 = style.getVisualMappingFunction(EDGE_UNSELECTED_PAINT);
+		assertTrue(edgeColorMapping1 instanceof DiscreteMapping);
+		assertEquals(CyEdge.INTERACTION, edgeColorMapping1.getMappingColumnName());
+		assertEquals(String.class, edgeColorMapping1.getMappingColumnType());
+		DiscreteMapping<String, Paint> disc1 = (DiscreteMapping<String, Paint>) edgeColorMapping1;
 		assertEquals(Color.WHITE, disc1.getMapValue("pp"));
 		assertEquals(new Color(102, 255, 255), disc1.getMapValue("pd"));
 		assertEquals(null, disc1.getMapValue("this is an invalid value"));
+		
+		VisualMappingFunction<?, Paint> edgeColorMapping2 = style.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
+		assertTrue(edgeColorMapping2 instanceof DiscreteMapping);
+		assertEquals(CyEdge.INTERACTION, edgeColorMapping2.getMappingColumnName());
+		assertEquals(String.class, edgeColorMapping2.getMappingColumnType());
 		
 		// Numbers as Tooltip 
 		VisualMappingFunction<?, String> nodeTooltipMapping = style.getVisualMappingFunction(NODE_TOOLTIP);
