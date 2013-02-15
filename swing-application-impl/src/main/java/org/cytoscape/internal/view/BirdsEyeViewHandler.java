@@ -37,6 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.model.CyNetwork;
@@ -44,8 +45,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.view.presentation.NetworkViewRenderer;
-import org.cytoscape.view.presentation.NetworkViewRendererManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.slf4j.Logger;
@@ -68,8 +67,6 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	private final CyNetworkViewManager netViewManager;
 	private final Map<CyNetworkView, JPanel> presentationMap;
 
-	private final NetworkViewRendererManager rendererManager;
-
 	/**
 	 * Updates Bird's Eye View
 	 * 
@@ -77,12 +74,10 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	 * @param defaultFactory
 	 */
 	public BirdsEyeViewHandler(final CyApplicationManager appManager,
-							   final NetworkViewRendererManager rendererManager,
 							   final CyNetworkViewManager netViewManager) {
 
 		this.appManager = appManager;
 		this.netViewManager = netViewManager;
-		this.rendererManager = rendererManager;
 		this.viewToEngineMap = new WeakHashMap<CyNetworkView, RenderingEngine<?>>();
 		this.presentationMap = new WeakHashMap<CyNetworkView, JPanel>();
 
@@ -138,7 +133,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 				if (presentationPanel == null) {
 					logger.debug("Creating new BEV for: " + newView);
 					presentationPanel = new JPanel();
-					NetworkViewRenderer renderer = rendererManager.getCurrentNetworkViewRenderer();
+					NetworkViewRenderer renderer = appManager.getCurrentNetworkViewRenderer();
 					RenderingEngineFactory<CyNetwork> bevFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT);
 					viewToEngineMap.put(newView, bevFactory.createRenderingEngine(presentationPanel, newView));
 					presentationMap.put((CyNetworkView) newView, presentationPanel);

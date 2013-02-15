@@ -28,8 +28,6 @@ import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.view.presentation.NetworkViewRenderer;
-import org.cytoscape.view.presentation.NetworkViewRendererManager;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.osgi.framework.BundleContext;
 
@@ -50,8 +48,5 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, renderingEngineManager, "addRenderingEngineFactory",
 				"removeRenderingEngineFactory", RenderingEngineFactory.class);
 		
-		NetworkViewRendererManager rendererManager = new NetworkViewRendererManagerImpl();
-		registerService(bc, rendererManager, NetworkViewRendererManager.class, new Properties());
-		registerServiceListener(bc, rendererManager, "addNetworkViewRenderer", "removeNetworkViewRenderer", NetworkViewRenderer.class);
 	}
 }

@@ -114,7 +114,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.view.presentation.NetworkViewRendererManager;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -205,9 +204,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cytoscapePropertiesServiceRef,
 		                                                               cyHelpBroker, visualMappingManagerServiceRef);
 
-		NetworkViewRendererManager rendererManager = getService(bc, NetworkViewRendererManager.class);
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
-		                                                                  rendererManager,
 		                                                                  cyNetworkViewManagerServiceRef);
 
 		NetworkPanel networkPanel = new NetworkPanel(cyApplicationManagerServiceRef,
@@ -413,8 +410,6 @@ public class CyActivator extends AbstractCyActivator {
 		                        NetworkViewCollectionTaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator, "addTableTaskFactory",
 		                        "removeTableTaskFactory", TableTaskFactory.class);
-		registerServiceListener(bc, networkViewManager, "addPresentationFactory",
-		                        "removePresentationFactory", RenderingEngineFactory.class);
 		
 		// For Network Panel context menu
 		registerServiceListener(bc, networkPanel, "addNetworkViewTaskFactory",

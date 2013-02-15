@@ -37,6 +37,8 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -65,11 +67,19 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 	private static final int PADDING = 20;
 
 	// Dummy network and its view
-	private final RenderingEngine<CyNetwork> renderingEngine;
+	private RenderingEngine<CyNetwork> renderingEngine;
 	private final VisualMappingManager vmm;
 
 	// For padding.
-	private final JPanel innerPanel;
+	private JPanel innerPanel;
+
+	private final CyNetwork dummyNet;
+
+	private CyNode source;
+
+	private CyNode target;
+
+	private final CyApplicationManager applicationManager;
 
 	/**
 	 * Creates a new DefaultViewPanel object.
@@ -80,32 +90,30 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 	 *            DOCUMENT ME!
 	 */
 	public DefaultViewPanelImpl(final CyNetworkFactory cyNetworkFactory,
-			final CyNetworkViewFactory cyNetworkViewFactory,
-			final RenderingEngineFactory<CyNetwork> presentationFactory, final VisualMappingManager vmm) {
-
-		this.vmm = vmm;
-		this.innerPanel = new JPanel();
-		this.innerPanel.setBorder(new EmptyBorder(PADDING, PADDING, PADDING, PADDING));
-
-		this.setPreferredSize(MIN_SIZE);
-		this.setBorder(new LineBorder(Color.DARK_GRAY, 2));
-		this.setLayout(new BorderLayout());
-		this.add(innerPanel, BorderLayout.CENTER);
-
+			final CyApplicationManager applicationManager, final VisualMappingManager vmm) {
 		// Validate
 		if (cyNetworkFactory == null)
 			throw new NullPointerException("CyNetworkFactory is null.");
 
-		if (cyNetworkViewFactory == null)
-			throw new NullPointerException("CyNetworkViewFactory is null.");
+		if (applicationManager == null)
+			throw new NullPointerException("CyApplicationManager is null.");
 
-		if (presentationFactory == null)
-			throw new NullPointerException("RenderingEngineFactory is null.");
-
-		// Create dummy view.
-		final CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
-		final CyNode source = dummyNet.addNode();
-		final CyNode target = dummyNet.addNode();
+		this.vmm = vmm;
+		this.applicationManager = applicationManager;
+		
+		dummyNet = createNetwork(cyNetworkFactory);
+		
+		this.setPreferredSize(MIN_SIZE);
+		this.setBorder(new LineBorder(Color.DARK_GRAY, 2));
+		this.setLayout(new BorderLayout());
+		
+		innerPanel = createInnerPanel();
+	}
+	
+	CyNetwork createNetwork(CyNetworkFactory cyNetworkFactory) {
+		CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
+		source = dummyNet.addNode();
+		target = dummyNet.addNode();
 
 		dummyNet.getRow(source).set(CyNetwork.NAME, "Source");
 		dummyNet.getRow(target).set(CyNetwork.NAME, "Target");
@@ -114,6 +122,22 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		dummyNet.getRow(edge).set(CyNetwork.NAME, "Source (interaction) Target");
 
 		dummyNet.getRow(dummyNet).set(CyNetwork.NAME, "Default Appearance");
+		return dummyNet;
+	}
+	
+	JPanel createInnerPanel() {
+		removeAll();
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new EmptyBorder(PADDING, PADDING, PADDING, PADDING));
+
+		this.add(panel, BorderLayout.CENTER);
+
+		// Create dummy view.
+		NetworkViewRenderer renderer = applicationManager.getCurrentNetworkViewRenderer();
+		CyNetworkViewFactory cyNetworkViewFactory = renderer.getNetworkViewFactory();
+		RenderingEngineFactory<CyNetwork> presentationFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.VISUAL_STYLE_PREVIEW_CONTEXT);
+		
 		final CyNetworkView dummyview = cyNetworkViewFactory.createNetworkView(dummyNet);
 
 		// Set node locations
@@ -125,23 +149,23 @@ public class DefaultViewPanelImpl extends JPanel implements DefaultViewPanel {
 		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
 		currentStyle.apply(dummyview);
 
-		this.innerPanel
-				.setBackground((Color) currentStyle.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT));
+		panel.setBackground((Color) currentStyle.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT));
 		// Render it in this panel
-		renderingEngine = presentationFactory.createRenderingEngine(innerPanel, dummyview);
+		renderingEngine = presentationFactory.createRenderingEngine(panel, dummyview);
 
 		// Register it to the manager.
 		// renderingEngineManager.addRenderingEngine(renderingEngine);
 		dummyview.fitContent();
 
 		// Remove unnecessary mouse listeners.
-		final int compCount = innerPanel.getComponentCount();
+		final int compCount = panel.getComponentCount();
 		for (int i = 0; i < compCount; i++) {
-			final Component comp = innerPanel.getComponent(i);
+			final Component comp = panel.getComponent(i);
 			final MouseListener[] listeners = comp.getMouseListeners();
 			for (MouseListener ml : listeners)
 				comp.removeMouseListener(ml);
 		}
+		return panel;
 	}
 
 	void updateView(final VisualStyle vs) {

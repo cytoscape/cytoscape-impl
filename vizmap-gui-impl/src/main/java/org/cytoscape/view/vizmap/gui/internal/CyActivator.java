@@ -153,7 +153,8 @@ public class CyActivator extends AbstractCyActivator {
 		ColorManager colorMgr = new ColorManager();
 		IconManager iconManager = new IconManager();
 		VizMapperMenuManager menuManager = new VizMapperMenuManager(dialogTaskManagerServiceRef,propertySheetPanel,vmmServiceRef);
-		DefaultViewPanelImpl defaultViewPanel = new DefaultViewPanelImpl(cyNetworkFactoryServiceRef,graphViewFactoryServiceRef,presentationFactoryServiceRef, vmmServiceRef);
+		
+		DefaultViewPanelImpl defaultViewPanel = new DefaultViewPanelImpl(cyNetworkFactoryServiceRef, cyApplicationManagerServiceRef, vmmServiceRef);
 		
 		VizMapperUtil vizMapperUtil = new VizMapperUtil(vmmServiceRef);
 		SetViewModeAction viewModeAction = new SetViewModeAction();

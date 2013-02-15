@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
@@ -108,7 +109,6 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.presentation.NetworkViewRenderer;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.property.values.BendFactory;
@@ -202,7 +202,10 @@ public class CyActivator extends AbstractCyActivator {
 				dialogTaskManager, cyServiceRegistrarRef, cyNetworkTableManagerServiceRef,
 				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef, cyNetworkViewManagerServiceRef, handleFactory);
 
-		NetworkViewRenderer renderer = new DingRenderer(dingNetworkViewFactory, dingRenderingEngineFactory, dingNavigationRenderingEngineFactory);
+		DingRenderer renderer = DingRenderer.getInstance();
+		renderer.registerNetworkViewFactory(dingNetworkViewFactory);
+		renderer.registerRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT, dingRenderingEngineFactory);
+		renderer.registerRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT, dingNavigationRenderingEngineFactory);
 		registerService(bc, renderer, NetworkViewRenderer.class, new Properties());
 		
 		// Edge Bend editor

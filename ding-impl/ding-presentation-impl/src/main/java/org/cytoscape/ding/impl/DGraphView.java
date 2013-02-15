@@ -60,6 +60,7 @@ import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.JLayeredPane;
 
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
@@ -2713,5 +2714,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	protected <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return null;
+	}
+	
+	@Override
+	public String getRendererId() {
+		return DingRenderer.ID;
 	}
 }

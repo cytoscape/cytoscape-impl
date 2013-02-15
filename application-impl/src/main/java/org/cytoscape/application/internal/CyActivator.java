@@ -26,13 +26,16 @@ package org.cytoscape.application.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -58,5 +61,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,cytoscapeShutdown, new Properties());
 		registerAllServices(bc,cytoscapeVersion, new Properties());
 		registerAllServices(bc,cyApplicationConfiguration, new Properties());
+		
+		registerServiceListener(bc, cyApplicationManager, "addNetworkViewRenderer", "removeNetworkViewRenderer", NetworkViewRenderer.class);
+		DefaultNetworkViewFactory viewFactory = new DefaultNetworkViewFactory(cyApplicationManager);
+		Properties viewFactoryProperties = new Properties();
+		viewFactoryProperties.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
+		registerService(bc, viewFactory, CyNetworkViewFactory.class, viewFactoryProperties);
 	}
 }
