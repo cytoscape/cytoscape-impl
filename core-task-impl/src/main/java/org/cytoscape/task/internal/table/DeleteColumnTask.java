@@ -33,6 +33,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.undo.UndoSupport;
+import javax.swing.SwingUtilities;
 
 
 public final class DeleteColumnTask extends AbstractTableColumnTask implements TunableValidator {
@@ -49,7 +50,12 @@ public final class DeleteColumnTask extends AbstractTableColumnTask implements T
 		undoSupport.postEdit(
 			new DeleteColumnEdit(column));
 		taskMonitor.setProgress(0.3);
-		column.getTable().deleteColumn(column.getName());
+		SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+            	column.getTable().deleteColumn(column.getName());
+            }
+        });
 		taskMonitor.setProgress(1.0);
 	}
 
