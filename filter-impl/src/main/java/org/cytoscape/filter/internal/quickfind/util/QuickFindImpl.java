@@ -37,6 +37,8 @@ import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
 import org.cytoscape.filter.internal.widgets.autocomplete.index.IndexFactory;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -391,6 +393,11 @@ public class QuickFindImpl implements QuickFind {
 	 */
 	private void addToIndex(CyNetwork network, Class<?> attributeType, CyIdentifiable graphObject,
 	                        String controllingAttribute, GenericIndex index) {
+        // make sure our network actually has graphObject
+        if ((graphObject instanceof CyNode) && (!network.containsNode((CyNode) graphObject)))
+            return;
+        if ((graphObject instanceof CyEdge) && (!network.containsEdge((CyEdge) graphObject)))
+            return;
 		CyRow row = network.getRow(graphObject);
 		//  Get attribute values, and index
 		if (attributeType == Integer.class) {
