@@ -74,7 +74,7 @@ public class AbstractNetworkReaderTest {
 	protected CyNetworkViewFactory viewFactory;
 	protected ReadUtils readUtil;
 	protected CyLayoutAlgorithmManager layouts;
-	protected CyNetworkManager networkManager;;
+	protected CyNetworkManager networkManager;
 	protected CyRootNetworkManager rootNetworkManager;
 	protected CyApplicationManager cyApplicationManager;
 	
