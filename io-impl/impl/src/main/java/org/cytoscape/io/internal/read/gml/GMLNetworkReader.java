@@ -29,6 +29,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ import java.util.Vector;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -44,6 +46,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -53,8 +56,11 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for converting a gml object tree into cytoscape
@@ -117,57 +123,63 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	private static String OUTLINE_WIDTH = "outline_width";
 	private static String DEFAULT_EDGE_INTERACTION = "pp";
 	
+	private static final String VIZMAP_PREFIX = "vizmap:";
+	
 	private static Map<String, ArrowShape> legacyArrowShapes = new HashMap<String, ArrowShape>();
 	
 	// Entries in the file
-	List<KeyValue> keyVals;
+	private List<KeyValue> keyVals;
 
 	// Node ID's
-	Map<String, CyNode> nodeIDMap;
-	List<Integer> nodes;
-	List<Integer> sources;
-	List<Integer> targets;
-	List<Boolean> directionality_flags;
-	Vector<String> node_labels;
-	Vector<String> edge_labels;
-	Vector<KeyValue> edge_root_index_pairs;
-	Vector<KeyValue> node_root_index_pairs;
-	Vector<CyEdge> edge_names;
-	Vector<String> node_names;
+	private Map<String, CyNode> nodeIDMap;
+	private List<Integer> nodes;
+	private List<Integer> sources;
+	private List<Integer> targets;
+	private List<Boolean> directionalityFlags;
+	private Vector<String> nodeLabels;
+	private Vector<String> edgeLabels;
+	private Vector<KeyValue> edgeRootIndexPairs;
+	private Vector<KeyValue> nodeRootIndexPairs;
+	private Vector<CyEdge> edgeNames;
+	private Vector<String> nodeNames;
+	private List<Map<String, Object>> nodeAttributes;
+	private List<Map<String, Object>> edgeAttributes;
 
 	// Name for the new visual style
-	String styleName;
+	private String styleName;
 
 	// New Visual Style comverted from GML file.
 	// VisualStyle gmlstyle;
 
 	// Hashes for node & edge attributes
-	Map<String, Double> nodeW;
+	private Map<String, Double> nodeW;
 
 	// Hashes for node & edge attributes
-	Map<String, Double> nodeH;
+	private Map<String, Double> nodeH;
 
 	// Hashes for node & edge attributes
 	// Map<String,NodeShape> nodeShape;
 
 	// Hashes for node & edge attributes
-	Map<String, String> nodeCol;
+	private Map<String, String> nodeCol;
 
 	// Hashes for node & edge attributes
-	Map<String, Double> nodeBWidth;
+	private Map<String, Double> nodeBWidth;
 
 	// Hashes for node & edge attributes
-	Map<String, String> nodeBCol;
-	Map<String, String> edgeCol;
-	Map<String, Float> edgeWidth;
-	Map<String, String> edgeArrow;
-	Map<String, String> edgeShape;
+	private Map<String, String> nodeBCol;
+	private Map<String, String> edgeCol;
+	private Map<String, Float> edgeWidth;
+	private Map<String, String> edgeArrow;
+	private Map<String, String> edgeShape;
 
 	private final RenderingEngineManager renderingEngineManager;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 
 	private CyNetworkView view;
 	private CySubNetwork network;
+	
+	protected static final Logger logger = LoggerFactory.getLogger(GMLNetworkReader.class);
 
 	static {
 		legacyArrowShapes.put("0", ArrowShapeVisualProperty.NONE); // NO_END
@@ -190,19 +202,23 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		legacyArrowShapes.put("17", ArrowShapeVisualProperty.HALF_BOTTOM); // EDGE_HALF_ARROW_BOTTOM
 	}
 	
-	public GMLNetworkReader(InputStream inputStream,
-							CyNetworkFactory networkFactory,
-							CyNetworkViewFactory viewFactory,
-							RenderingEngineManager renderingEngineManager,
-							UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr
-							, CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager, CyApplicationManager cyApplicationManager) {
+	public GMLNetworkReader(final InputStream inputStream,
+							final CyNetworkFactory networkFactory,
+							final CyNetworkViewFactory viewFactory,
+							final RenderingEngineManager renderingEngineManager,
+							final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
+							final CyNetworkManager cyNetworkManager,
+							final CyRootNetworkManager cyRootNetworkManager,
+							final CyApplicationManager cyApplicationManager) {
 		super(inputStream, viewFactory, networkFactory, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
 		this.renderingEngineManager = renderingEngineManager;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 
 		// Set new style name
-		edge_names = new Vector<CyEdge>();
-		node_names = new Vector<String>();
+		edgeNames = new Vector<CyEdge>();
+		nodeNames = new Vector<String>();
+		nodeAttributes = new ArrayList<Map<String, Object>>();
+		edgeAttributes = new ArrayList<Map<String, Object>>();
 	}
 
 	@Override
@@ -256,22 +272,22 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		nodes = new ArrayList<Integer>();
 		sources = new ArrayList<Integer>();
 		targets = new ArrayList<Integer>();
-		directionality_flags = new ArrayList<Boolean>();
-		node_labels = new Vector<String>();
-		edge_labels = new Vector<String>();
-		edge_root_index_pairs = new Vector<KeyValue>();
-		node_root_index_pairs = new Vector<KeyValue>();
+		directionalityFlags = new ArrayList<Boolean>();
+		nodeLabels = new Vector<String>();
+		edgeLabels = new Vector<String>();
+		edgeRootIndexPairs = new Vector<KeyValue>();
+		nodeRootIndexPairs = new Vector<KeyValue>();
 	}
 
 	protected void releaseStructures() {
 		nodes = null;
 		sources = null;
 		targets = null;
-		directionality_flags = null;
-		node_labels = null;
-		edge_labels = null;
-		edge_root_index_pairs = null;
-		node_root_index_pairs = null;
+		directionalityFlags = null;
+		nodeLabels = null;
+		edgeLabels = null;
+		edgeRootIndexPairs = null;
+		nodeRootIndexPairs = null;
 	}
 
 	/**
@@ -297,34 +313,35 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 				// idx, nodes.size()));
 			}
 
-			String label = node_labels.get(idx);
+			final String label = nodeLabels.get(idx);
 
 			if (nodeNameSet.add(label)) {
-				CyNode node;
+				final CyNode node;
+				
 				if (this.rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
 					node = network.addNode();
-				}
-				else {
+				} else {
 					// add to existing network collection
 					if (this.nMap.get(label) != null){
 						// node already existed
 						node = this.nMap.get(label);
+						
 						if (!network.containsNode(node)){
 							network.addNode(node);
 						}
-					}
-					else {
+					} else {
 						// node is new
 						node = network.addNode();
 					}
 				}
 
-				// FIXME this fires too many events!!
+				// Set node attributes
 				network.getRow(node).set(CyNetwork.NAME, label);
+				setAttributes(node, network, nodeAttributes.get(idx));
 
 				nodeIDMap.put(label, node);
 				gml_id2order.put(nodes.get(idx), idx);
-				node_root_index_pairs.get(idx).value = node.getSUID();
+				nodeRootIndexPairs.get(idx).value = node.getSUID();
 			} else {
 				throw new RuntimeException("GML id " + nodes.get(idx) + " has a duplicated label: " + label);
 			}
@@ -343,30 +360,34 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 				// idx, sources.size()));
 			}
 
-			Integer sourceNode = gml_id2order.get(sources.get(idx));
-			Integer targetNode = gml_id2order.get(targets.get(idx));
+			final Integer sourceNode = gml_id2order.get(sources.get(idx));
+			final Integer targetNode = gml_id2order.get(targets.get(idx));
+			
 			if (sourceNode != null && targetNode != null) {
-				String label = edge_labels.get(idx);
-				String sourceName = node_labels.get(sourceNode);
-				String targetName = node_labels.get(targetNode);
+				final String label = edgeLabels.get(idx);
+				final String sourceName = nodeLabels.get(sourceNode);
+				final String targetName = nodeLabels.get(targetNode);
 				String edgeName = sourceName + " (" + label + ") " + targetName;
-				Boolean isDirected = directionality_flags.get(idx);
+				final Boolean isDirected = directionalityFlags.get(idx);
 
-				int duplicate_count = 1;
+				int duplicateCount = 1;
 
 				while (!edgeNameSet.add(edgeName)) {
-					edgeName = sourceName + " (" + label + ") " + targetName + "_" + duplicate_count;
-					duplicate_count += 1;
+					edgeName = sourceName + " (" + label + ") " + targetName + "_" + duplicateCount;
+					duplicateCount += 1;
 				}
 
-				CyNode node_1 = nodeIDMap.get(sourceName);
-				CyNode node_2 = nodeIDMap.get(targetName);
-				CyEdge edge = network.addEdge(node_1, node_2, isDirected.booleanValue());
+				final CyNode node1 = nodeIDMap.get(sourceName);
+				final CyNode node2 = nodeIDMap.get(targetName);
+				CyEdge edge = network.addEdge(node1, node2, isDirected.booleanValue());
+				
+				// Set edge attributes
 				network.getRow(edge).set(CyNetwork.NAME, edgeName);
-				network.getRow(edge).set("interaction", label);
-				edge_names.add(idx, edge);
-
-				edge_root_index_pairs.get(idx).value = edge.getSUID();
+				network.getRow(edge).set(CyEdge.INTERACTION, label);
+				setAttributes(edge, network, edgeAttributes.get(idx));
+				
+				edgeNames.add(idx, edge);
+				edgeRootIndexPairs.get(idx).value = edge.getSUID();
 			} else {
 				throw new RuntimeException("Non-existant source/target node for edge with gml (source,target): " +
 										   sources.get(idx) + "," + targets.get(idx));
@@ -405,15 +426,12 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 */
 	@SuppressWarnings("unchecked")
 	// KeyValue.value cast
-	protected void readGraph(List<KeyValue> list) {
-		for (KeyValue keyVal : list) {
-			if (keyVal.key.equals(NODE)) {
+	protected void readGraph(final List<KeyValue> list) {
+		for (final KeyValue keyVal : list) {
+			if (keyVal.key.equals(NODE))
 				readNode((List<KeyValue>) keyVal.value);
-			}
-
-			if (keyVal.key.equals(EDGE)) {
+			else if (keyVal.key.equals(EDGE))
 				readEdge((List<KeyValue>) keyVal.value);
-			}
 		}
 	}
 
@@ -421,20 +439,24 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 * This will extract the model information from the list which is matched a
 	 * "node" key
 	 */
-	protected void readNode(List<KeyValue> list) {
+	protected void readNode(final List<KeyValue> list) {
 		String label = "";
-		boolean contains_id = false;
+		boolean containsId = false;
 		int id = 0;
-		KeyValue root_index_pair = null;
+		KeyValue rootIndexPair = null;
+		final Map<String, Object> attr = new HashMap<String, Object>();
 
 		for (KeyValue keyVal : list) {
 			if (keyVal.key.equals(ID)) {
-				contains_id = true;
+				containsId = true;
 				id = ((Integer) keyVal.value).intValue();
 			} else if (keyVal.key.equals(LABEL)) {
 				label = (String) keyVal.value;
 			} else if (keyVal.key.equals(ROOT_INDEX)) {
-				root_index_pair = keyVal;
+				rootIndexPair = keyVal;
+			} else if (!keyVal.key.equals(GRAPHICS) && !keyVal.key.startsWith(VIZMAP_PREFIX)) {
+				// This is a regular attribute value
+				attr.put(keyVal.key, keyVal.value);
 			}
 		}
 
@@ -442,13 +464,13 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			label = String.valueOf(id);
 		}
 
-		if (root_index_pair == null) {
-			root_index_pair = new KeyValue(ROOT_INDEX, null);
-			list.add(root_index_pair);
+		if (rootIndexPair == null) {
+			rootIndexPair = new KeyValue(ROOT_INDEX, null);
+			list.add(rootIndexPair);
 		}
 
-		if (!contains_id) {
-			StringWriter stringWriter = new StringWriter();
+		if (!containsId) {
+			final StringWriter stringWriter = new StringWriter();
 
 			try {
 				GMLParser.printList(list, stringWriter);
@@ -458,10 +480,12 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 
 			throw new RuntimeException("The node-associated list\n" + stringWriter + "is missing an id field");
 		} else {
-			node_root_index_pairs.add(root_index_pair);
+			nodeRootIndexPairs.add(rootIndexPair);
 			nodes.add(id);
-			node_labels.add(label);
-			node_names.add(label);
+			nodeLabels.add(label);
+			nodeNames.add(label);
+			
+			nodeAttributes.add(attr);
 		}
 	}
 
@@ -471,40 +495,43 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 */
 	protected void readEdge(List<KeyValue> list) {
 		String label = DEFAULT_EDGE_INTERACTION;
-		boolean contains_source = false;
-		boolean contains_target = false;
+		boolean containsSource = false;
+		boolean containsTarget = false;
 		Boolean isDirected = Boolean.TRUE; // use pre-3.0 cytoscape's as default
 		int source = 0;
 		int target = 0;
-		KeyValue root_index_pair = null;
+		KeyValue rootIndexPair = null;
+		final Map<String, Object> attr = new HashMap<String, Object>();
 
 		for (KeyValue keyVal : list) {
 			if (keyVal.key.equals(SOURCE)) {
-				contains_source = true;
+				containsSource = true;
 				source = ((Integer) keyVal.value).intValue();
 			} else if (keyVal.key.equals(TARGET)) {
-				contains_target = true;
+				containsTarget = true;
 				target = ((Integer) keyVal.value).intValue();
 			} else if (keyVal.key.equals(LABEL)) {
 				label = (String) keyVal.value;
 			} else if (keyVal.key.equals(ROOT_INDEX)) {
-				root_index_pair = keyVal;
+				rootIndexPair = keyVal;
 			} else if (keyVal.key.equals(IS_DIRECTED)) {
 				if (((Integer) keyVal.value) == 1) {
 					isDirected = Boolean.FALSE;
 				} else {
 					isDirected = Boolean.TRUE;
 				}
+			} else if (!keyVal.key.equals(GRAPHICS) && !keyVal.key.startsWith(VIZMAP_PREFIX)) {
+				attr.put(keyVal.key, keyVal.value);
 			}
 		}
 
-		if (root_index_pair == null) {
-			root_index_pair = new KeyValue(ROOT_INDEX, null);
-			list.add(root_index_pair);
+		if (rootIndexPair == null) {
+			rootIndexPair = new KeyValue(ROOT_INDEX, null);
+			list.add(rootIndexPair);
 		}
 
-		if (!contains_source || !contains_target) {
-			StringWriter stringWriter = new StringWriter();
+		if (!containsSource || !containsTarget) {
+			final StringWriter stringWriter = new StringWriter();
 
 			try {
 				GMLParser.printList(list, stringWriter);
@@ -517,10 +544,12 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		} else {
 			sources.add(source);
 			targets.add(target);
-			directionality_flags.add(isDirected);
+			directionalityFlags.add(isDirected);
 
-			edge_labels.add(label);
-			edge_root_index_pairs.add(root_index_pair);
+			edgeLabels.add(label);
+			edgeRootIndexPairs.add(rootIndexPair);
+			
+			edgeAttributes.add(attr);
 		}
 	}
 
@@ -531,7 +560,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 *            the view of the network we want to layout
 	 */
 	@SuppressWarnings("unchecked")
-	public void layout(CyNetworkView view) {
+	public void layout(final CyNetworkView view) {
 		if ((view == null) || (network.getNodeCount() == 0)) {
 			return;
 		}
@@ -544,28 +573,67 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			if (keyVal.key.equals(GRAPH)) {
 				layoutGraph(view, (List<KeyValue>) keyVal.value);
 			} else if (keyVal.key.equals(TITLE) && keyVal.value != null) {
-				CyRow netRow = view.getModel().getRow(view.getModel());
-				String netName = keyVal.value.toString();
-				netRow.set(CyNetwork.NAME, netName);
+				final CyRow netRow = view.getModel().getRow(view.getModel());
+				final String title = keyVal.value.toString();
+				netRow.set(CyNetwork.NAME, title);
+				view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
 			}
 		}
 	}
 
+	private void setAttributes(final CyIdentifiable obj, final CyNetwork network, final Map<String, Object> attrMap) {
+		for (String name : attrMap.keySet()) {
+			final Object val = attrMap.get(name);
+			
+			if (val == null)
+				continue;
+
+			final Class<?> type;
+			
+			if (val instanceof Double)
+				type = Double.class;
+			else if (val instanceof Integer)
+				type = Integer.class;
+			else
+				type = String.class;
+			
+			final CyRow row = network.getRow(obj);
+			final CyTable table = row.getTable();
+            final CyColumn column = table.getColumn(name);
+			
+            if (column == null)
+            	table.createColumn(name, type, false);
+            
+			try {
+				if (type == Double.class)
+					row.set(name, (Double) val);
+				else if (type == Integer.class)
+					row.set(name, (Integer) val);
+				else
+					row.set(name, val.toString());
+			} catch (Exception e) {
+				logger.error("Cannot set value \"" + val + "\" (" + type + ") to column \"" + name + "\" of table \"" + 
+						table + "\".", e);
+				continue;
+			}
+		}
+	}
+	
 	/**
 	 * Lays Out the Graph, based on GML.
 	 */
 	@SuppressWarnings("unchecked")
-	private void layoutGraph(final CyNetworkView myView, List<KeyValue> list) {
+	private void layoutGraph(final CyNetworkView myView, final List<KeyValue> list) {
 		CyEdge edge = null;
 
 		// Count the current edge
 		int ePtr = 0;
 
-		for (KeyValue keyVal : list) {
+		for (final KeyValue keyVal : list) {
 			if (keyVal.key.equals(NODE)) {
 				layoutNode(myView, (List<KeyValue>) keyVal.value);
 			} else if (keyVal.key.equals(EDGE)) {
-				edge = edge_names.get(ePtr);
+				edge = edgeNames.get(ePtr);
 				ePtr++;
 				layoutEdge(myView, (List<KeyValue>) keyVal.value, edge);
 			}
@@ -577,69 +645,38 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 * "node" key. Mostly just a wrapper around layoutNodeGraphics
 	 */
 	@SuppressWarnings("unchecked")
-	private void layoutNode(CyNetworkView myView, List<KeyValue> list) {
-		Long root_index = null;
-		List<KeyValue> graphics_list = new ArrayList<KeyValue>();
+	private void layoutNode(final CyNetworkView netView, final List<KeyValue> list) {
+		Long rootIndex = null;
+		final List<KeyValue> graphicsList = new ArrayList<KeyValue>();
 		String label = null;
+		
 		@SuppressWarnings("unused")
 		int tempid = 0;
 
-		for (KeyValue keyVal : list) {
-			if (keyVal.key.equals(ROOT_INDEX)) {
+		for (final KeyValue keyVal : list) {
+			final String key = keyVal.key;
+			final Object value = keyVal.value;
+			
+			if (key.equals(ROOT_INDEX)) {
 				// For some reason we didn't make an object for this node, so give up now
-				if (keyVal.value == null) {
+				if (value == null)
 					return;
-				}
 
-				root_index = (Long) keyVal.value;
-			} else if (keyVal.key.equals(GRAPHICS)) {
-				graphics_list.addAll((List<KeyValue>) keyVal.value);
-			} else if (keyVal.key.equals(LABEL)) {
-				label = (String) keyVal.value;
-				graphics_list.add(new KeyValue("nodeLabel", label)); // also add label as a visual property
-			} else if (keyVal.key.equals(ID)) {
-				tempid = ((Integer) keyVal.value).intValue();
+				rootIndex = (Long) value;
+			} else if (key.equals(GRAPHICS)) {
+				graphicsList.addAll((List<KeyValue>) value);
+			} else if (key.equals(LABEL)) {
+				label = (String) value;
+				graphicsList.add(new KeyValue("nodeLabel", label)); // also add label as a visual property
+			} else if (key.equals(ID)) {
+				tempid = ((Integer) value).intValue();
 			}
 		}
 
-		View<CyNode> view = myView.getNodeView(network.getNode(root_index.longValue()));
+		final View<CyNode> nodeView = netView.getNodeView(network.getNode(rootIndex.longValue()));
 
-		if (graphics_list != null && view != null) {
-			layoutNodeGraphics(myView, graphics_list, view);
-		}
-	}
-
-	/**
-	 * This will assign node graphic properties based on the values in the list
-	 * matches to the "graphics" key word
-	 */
-	private void layoutNodeGraphics(CyNetworkView netView, List<KeyValue> list, View<CyNode> view) {
-		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
-		CyIdentifiable model = view.getModel();
-
-		for (KeyValue keyVal : list) {
-			String key = keyVal.key;
-			Object value = keyVal.value;
-			
-			if (key.equals(OUTLINE_WIDTH))
-				key = WIDTH;
-			
-			VisualProperty<?> vp = lexicon.lookup(CyNode.class, key);
-
-			if (vp != null) {
-				value = vp.parseSerializableString(keyVal.value.toString());
-
-				if (value != null) {
-					if (isLockedVisualProperty(model, key)) {
-						view.setLockedValue(vp, value);
-					} else {
-						view.setVisualProperty(vp, value);
-					}
-				}
-			} else {
-				unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, key, value.toString());
-			}
-		}
+		if (nodeView != null && !graphicsList.isEmpty())
+			layoutGraphics(netView, graphicsList, nodeView);
 	}
 
 	/**
@@ -647,64 +684,70 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	 * "edge" key world
 	 */
 	@SuppressWarnings("unchecked")
-	private void layoutEdge(CyNetworkView myView, List<KeyValue> list, CyEdge edge) {
+	private void layoutEdge(final CyNetworkView myView, final List<KeyValue> list, final CyEdge edge) {
 		View<CyEdge> edgeView = null;
-		List<KeyValue> graphics_list = null;
-
-		for (KeyValue keyVal : list) {
-			if (keyVal.key.equals(ROOT_INDEX)) {
-				/*
-				 * Previously, we didn't make an object for this edge for some
-				 * reason. Don't try to go any further.
-				 */
-				if (keyVal.value == null) {
-					return;
-				}
-
-				edgeView = myView.getEdgeView(network.getEdge(((Long) keyVal.value).longValue()));
-			} else if (keyVal.key.equals(GRAPHICS)) {
-				graphics_list = (List<KeyValue>) keyVal.value;
-			}
-		}
-
-		if ((edgeView != null) && (graphics_list != null)) {
-			layoutEdgeGraphics(myView, graphics_list, edgeView);
-		}
-	}
-
-	/**
-	 * Assign edge graphics properties
-	 */
-
-	// Bug fix by Kei
-	// Some of the conditions used "value."
-	// They should be key.
-	// Now this method correctly translate the GML input file
-	// into graphics.
-	//
-	@SuppressWarnings("unchecked")
-	private void layoutEdgeGraphics(CyNetworkView netView, List<KeyValue> list, View<CyEdge> view) {
-		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
-		CyIdentifiable model = view.getModel();
+		List<KeyValue> graphicsList = null;
 
 		for (KeyValue keyVal : list) {
 			String key = keyVal.key;
 			Object value = keyVal.value;
 			
-			// This is a polyline obj. However, it will be translated into straight line.
-			if (key.equals(LINE)) {
-				layoutEdgeGraphicsLine(netView, (List<KeyValue>) value, view);
-			} else {
-				Object vpValue = null;
+			if (key.equals(ROOT_INDEX)) {
+				// Previously, we didn't make an object for this edge for some reason. Don't try to go any further.
+				if (value == null)
+					return;
+
+				edgeView = myView.getEdgeView(network.getEdge(((Long) keyVal.value).longValue()));
+			} else if (key.equals(GRAPHICS)) {
+				graphicsList = (List<KeyValue>) value;
+			}
+		}
+
+		if ((edgeView != null) && (graphicsList != null))
+			layoutGraphics(myView, graphicsList, edgeView);
+	}
+
+	/**
+	 * Assigns visual properties to node and edge views, based on the values in the GML "graphics" list.
+	 */
+	@SuppressWarnings("unchecked")
+	private void layoutGraphics(final CyNetworkView netView, final List<KeyValue> list,
+			final View<?  extends CyIdentifiable> view) {
+		final CyIdentifiable model = view.getModel();
+		Class<? extends CyIdentifiable> type = CyNetwork.class;
+		
+		if (model instanceof CyNode)
+			type = CyNode.class;
+		else if (model instanceof CyEdge)
+			type = CyEdge.class;
+
+		for (final KeyValue keyVal : list) {
+			String key = keyVal.key;
+			Object value = keyVal.value;
+			Object vpValue = null;
+			
+			if (type == CyNode.class) {
+				if (key.equals(OUTLINE_WIDTH))
+					key = WIDTH;
+			} else if (type == CyEdge.class) {
+				if (key.equals(LINE)) {
+					// This is a polyline obj. However, it will be translated into straight line.
+					layoutEdgeGraphicsLine(netView, (List<KeyValue>) value, (View<CyEdge>) view);
+					continue;
+				}
 				
 				if (key.equals(SOURCE_ARROW) || key.equals(TARGET_ARROW)) {
 					key = key.replace("_arrow", "Arrow");
 					vpValue = legacyArrowShapes.get(value.toString());
 				}
+			}
 				
-				VisualProperty<?> vp = lexicon.lookup(CyEdge.class, key);
-	
-				if (vp != null) {
+			final Set<VisualProperty<?>> vpSet = getVisualProperties(type, key);
+				
+			if (vpSet.isEmpty()) {
+				unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, key, value.toString());
+			} else {
+				for (final VisualProperty<?> vp : vpSet) {
 					if (vpValue == null)
 						vpValue = vp.parseSerializableString(value.toString());
 					
@@ -714,13 +757,28 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 						else
 							view.setVisualProperty(vp, vpValue);
 					}
-				} else {
-					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, key, value.toString());
 				}
 			}
 		}
 	}
 
+	private Set<VisualProperty<?>> getVisualProperties(final Class<? extends CyIdentifiable> type, final String key) {
+		final Set<VisualProperty<?>> set = new LinkedHashSet<VisualProperty<?>>();
+		
+		if (type == CyEdge.class && key.equals(FILL)) {
+			set.add(BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+			set.add(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		} else {
+			final VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
+			final VisualProperty<?> vp = lexicon.lookup(type, key);
+			
+			if (vp != null)
+				set.add(vp);
+		}
+		
+		return set;
+	}
+	
 	/**
 	 * Assign bend points based on the contents of the list associated with a
 	 * "Line" key We make sure that there is both an x,y present in the
