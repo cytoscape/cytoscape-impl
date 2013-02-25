@@ -67,7 +67,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	static final String PROXY_USERNAME = "proxy.server.userName";
 	static final String PROXY_PASSWORD = "proxy.server.password";
 	
-	private static final List<String> KEYS = Arrays.asList(PROXY_HOST, PROXY_PORT, PROXY_TYPE);
+	private static final List<String> KEYS = Arrays.asList(PROXY_HOST, PROXY_PORT, PROXY_TYPE, PROXY_USERNAME, PROXY_PASSWORD);
 
 	@Tunable(description="Type")
 	public ListSingleSelection<String> type = new ListSingleSelection<String>("direct", "http", "socks");
