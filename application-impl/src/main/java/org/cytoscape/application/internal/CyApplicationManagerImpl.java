@@ -366,11 +366,11 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		return renderers.entrySet().iterator().next().getValue();
 	}
 	
-	void addNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
+	public void addNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
 		renderers.put(renderer.getId(), renderer);
 	}
 
-	void removeNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
+	public void removeNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
 		renderers.remove(renderer.getId());
 	}
 }
