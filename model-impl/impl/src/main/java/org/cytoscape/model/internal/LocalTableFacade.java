@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 	
 	
 	private static final Logger logger = LoggerFactory.getLogger(LocalTableFacade.class);
-	private final CyTable shared;
+	private final SharedTableFacade shared;
 	private final CyTable local;
 
 	public LocalTableFacade(CyTable local, SharedTableFacade shared) {
@@ -59,7 +60,9 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 		for (CyColumn col: shared.getActualTable().getColumns()){
 			final String columnName = col.getName();
 			// skip the primary key
-			if (columnName.equalsIgnoreCase(CyIdentifiable.SUID))
+			if (columnName.equalsIgnoreCase(CyIdentifiable.SUID) 
+			    || columnName.equalsIgnoreCase(CyNetwork.NAME) 
+			    || columnName.equalsIgnoreCase(CyNetwork.SELECTED))
 				continue;
 			local.addVirtualColumn(columnName, columnName, shared.getActualTable(), CyIdentifiable.SUID, col.isImmutable());
 		}
@@ -81,8 +84,13 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 	}
 
 	public <T> void createColumn(String columnName, Class<?extends T> type, boolean isImmutable, T defaultValue) {
-		logger.debug("delegating createColumn '" + columnName + "' from local " + local.getTitle() + " to shared: " + shared.getTitle() + ": " + type.getName() + " " + isImmutable );
-		shared.createColumn(columnName,type,isImmutable,defaultValue);
+		final CyColumn col = shared.getColumn(columnName);
+		if (col == null) {
+			logger.debug("delegating createColumn '" + columnName + "' from local " + local.getTitle() + " to shared: " + shared.getTitle() + ": " + type.getName() + " " + isImmutable );
+			shared.createColumn(columnName, type, isImmutable, defaultValue);
+		} else {
+			local.addVirtualColumn(columnName, columnName, shared.getActualTable(), CyIdentifiable.SUID, isImmutable);
+		}
 	}
 
 	public <T> void createListColumn(String columnName, Class<T> listElementType, boolean isImmutable) {
