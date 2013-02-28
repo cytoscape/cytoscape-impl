@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,9 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 		for (CyColumn col: shared.getActualTable().getColumns()){
 			final String columnName = col.getName();
 			// skip the primary key
-			if (columnName.equalsIgnoreCase(CyIdentifiable.SUID))
+			if (columnName.equalsIgnoreCase(CyIdentifiable.SUID) 
+			    || columnName.equalsIgnoreCase(CyNetwork.NAME) 
+			    || columnName.equalsIgnoreCase(CyNetwork.SELECTED))
 				continue;
 			local.addVirtualColumn(columnName, columnName, shared.getActualTable(), CyIdentifiable.SUID, col.isImmutable());
 		}
