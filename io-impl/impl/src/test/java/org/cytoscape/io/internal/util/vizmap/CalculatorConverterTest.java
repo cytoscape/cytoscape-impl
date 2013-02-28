@@ -132,7 +132,9 @@ public class CalculatorConverterTest {
 		assertTrue(CalculatorConverter.isDefaultProperty("nodeAppearanceCalculator.My style.defaultNodeCustomGraphicsPosition8"));
 		assertTrue(CalculatorConverter.isDefaultProperty("edgeAppearanceCalculator.My style.defaultEdgeToolTip"));
 		assertTrue(CalculatorConverter.isDefaultProperty("edgeAppearanceCalculator.default.defaultEdgeTargetArrowColor"));
-
+		assertTrue(CalculatorConverter.isDefaultProperty("edgeAppearanceCalculator.default.defaultEDGE_UNSELECTED_PAINT"));
+		assertTrue(CalculatorConverter.isDefaultProperty("edgeAppearanceCalculator.default.defaultEDGE_STROKE_UNSELECTED_PAINT"));
+		
 		assertFalse(CalculatorConverter.isDefaultProperty("nodeAppearanceCalculator.My style.nodeLabelCalculator"));
 		assertFalse(CalculatorConverter.isDefaultProperty("nodeAppearanceCalculator.My style.nodeSizeLocked"));
 		assertFalse(CalculatorConverter.isDefaultProperty("edgeAppearanceCalculator.default.defaultNodeSize"));
@@ -147,6 +149,8 @@ public class CalculatorConverterTest {
 		assertTrue(CalculatorConverter.isMappingFunction("nodeAppearanceCalculator.My style.nodeCustomGraphicsPosition4"));
 		assertTrue(CalculatorConverter.isMappingFunction("edgeAppearanceCalculator.default.edgeColorCalculator"));
 		assertTrue(CalculatorConverter.isMappingFunction("nodeAppearanceCalculator.galFiltered Style.nodeLabelColor"));
+		assertTrue(CalculatorConverter.isMappingFunction("edgeAppearanceCalculator.Sample1.EDGE_UNSELECTED_PAINTCalculator"));
+		assertTrue(CalculatorConverter.isMappingFunction("edgeAppearanceCalculator.Sample1.EDGE_STROKE_UNSELECTED_PAINTCalculator"));
 
 		assertFalse(CalculatorConverter.isMappingFunction("nodeAppearanceCalculator.My style.nodeSizeLocked"));
 		assertFalse(CalculatorConverter.isMappingFunction("nodeAppearanceCalculator.My style.defaultNodeShowNestedNetwork"));
