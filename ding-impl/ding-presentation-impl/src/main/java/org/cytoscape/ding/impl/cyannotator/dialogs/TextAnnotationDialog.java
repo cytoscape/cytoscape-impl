@@ -25,19 +25,17 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  */
 
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.geom.Point2D;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 
-public class TextAnnotationDialog extends javax.swing.JFrame {
+public class TextAnnotationDialog extends JDialog {
 
 	private final DGraphView view;
 	private final CyAnnotator cyAnnotator;
@@ -123,6 +121,7 @@ public class TextAnnotationDialog extends javax.swing.JFrame {
 		pack();
 		setSize(TEXT_WIDTH+10, 510);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 			 
 	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {

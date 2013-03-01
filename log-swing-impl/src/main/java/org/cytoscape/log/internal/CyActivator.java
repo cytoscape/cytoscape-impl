@@ -47,9 +47,6 @@ import org.cytoscape.service.util.AbstractCyActivator;
 
 import static org.cytoscape.work.ServiceProperties.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
 		super();

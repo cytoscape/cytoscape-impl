@@ -26,6 +26,7 @@ package org.cytoscape.internal;
 
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.work.TaskFactory;
@@ -44,7 +45,8 @@ public class MacCyActivator extends AbstractCyActivator {
 	public void start(BundleContext context) throws Exception {
 		final CyShutdown shutdown = getService(context, CyShutdown.class);
 		final CyVersion version = getService(context, CyVersion.class);
-		final TaskFactory aboutTaskFactory = new HelpAboutTaskFactory(version);
+		final CySwingApplication swingApplication = getService(context, CySwingApplication.class);
+		final TaskFactory aboutTaskFactory = new HelpAboutTaskFactory(version, swingApplication);
 		final DialogTaskManager taskManager = getService(context,DialogTaskManager.class);
 		
 		Application application = Application.getApplication();

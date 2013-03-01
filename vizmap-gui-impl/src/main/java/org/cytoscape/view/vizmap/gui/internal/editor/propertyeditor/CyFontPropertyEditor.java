@@ -26,8 +26,8 @@ package org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor;
 
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JPanel;
 
@@ -46,12 +46,10 @@ public class CyFontPropertyEditor extends AbstractPropertyEditor {
 	public CyFontPropertyEditor(final FontEditor fontEditor) {
 		this.fontEditor = fontEditor;
 		this.editor = new JPanel();
-		editor.addFocusListener(new FocusListener() {
-			public void focusGained(FocusEvent e) {
+		editor.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent event) {
 				selectFont();
-			}
-
-			public void focusLost(FocusEvent arg0) {
 			}
 		});
 	}

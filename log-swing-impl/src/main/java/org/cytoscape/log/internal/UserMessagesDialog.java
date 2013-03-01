@@ -39,8 +39,6 @@ class UserMessagesDialog {
 		dialog = new JDialog(app.getJFrame(), "User Messages");
 		dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 		dialog.setPreferredSize(new Dimension(850, 400));
-		dialog.setModal(false);
-		dialog.setAlwaysOnTop(false);
 
 		logViewer = new LogViewer(logViewerConfig);
 		dialog.add(logViewer.getComponent(), BorderLayout.CENTER);
