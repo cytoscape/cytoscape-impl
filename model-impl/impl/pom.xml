@@ -16,7 +16,7 @@
 	<artifactId>model-impl</artifactId>
 
     <name>Cytoscape Model Impl (${project.artifactId})</name>
-
+	<version>3.0.1-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<build>
