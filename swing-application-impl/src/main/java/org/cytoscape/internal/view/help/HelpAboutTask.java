@@ -25,18 +25,27 @@ package org.cytoscape.internal.view.help;
  */
 
 
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.application.CyVersion;
 
 public class HelpAboutTask extends AbstractTask {
 	private final CyVersion vers;
+	private final CySwingApplication cySwingApp;
 
-	HelpAboutTask(CyVersion vers) {
+	HelpAboutTask(CyVersion vers, CySwingApplication cySwingApp) {
 		this.vers = vers;
+		this.cySwingApp = cySwingApp;
 	}
 
 	public void run(TaskMonitor tm) {
-		new CreditScreen(vers).showCredits();
+		SwingUtilities.invokeLater(new Runnable() {
+		    public void run() {
+		    	new CreditScreen(vers, cySwingApp).showCredits();
+		    }
+		});
 	}
 }

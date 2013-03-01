@@ -26,7 +26,6 @@ package org.cytoscape.internal.view;
 
 
 import java.awt.BorderLayout;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -48,6 +47,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,6 +58,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -65,7 +66,6 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.event.CyEventHelper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +143,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	/**
 	 * External window used to hold the floating CytoPanel.
 	 */
-	private JFrame externalFrame;
+	private JDialog externalWindow;
 
 	/**
 	 * The float icon.
@@ -207,6 +207,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private static final String CLOSE_PNG = "ximian/stock_close-16.png";
 
 	private final CyEventHelper cyEventHelper;
+	private final JFrame parent;
 
 	/**
 	 * Constructor.
@@ -216,9 +217,11 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * @param cytoPanelState    The starting CytoPanel state.
 	 */
 	public CytoPanelImp(final CytoPanelName compassDirection, final int tabPlacement,
-			final CytoPanelState cytoPanelState, final CyEventHelper eh) {
+			final CytoPanelState cytoPanelState, final CyEventHelper eh, 
+			final CySwingApplication cySwingApp) {
 		
 		this.cyEventHelper = eh;
+		this.parent = cySwingApp.getJFrame();
 		// setup our tabbed pane
 		tabbedPane = new JTabbedPane(tabPlacement);
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -719,28 +722,23 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		showCytoPanel(CytoPanelState.FLOAT);
 
 		if (!isFloating()) {
-			// new frame to place this CytoPanel
-			externalFrame = new JFrame();
+			// new window to place this CytoPanel
+			externalWindow = new JDialog(parent);
 			
-			// When floating, Cytopanel is always on top.
-			externalFrame.setAlwaysOnTop(true);
 			
 			// add listener to handle when window is closed
 			addWindowListener();
 
-			//  Add CytoPanel to the New External Frame
-			Container contentPane = externalFrame.getContentPane();
+			//  Add CytoPanel to the New External Window
+			Container contentPane = externalWindow.getContentPane();
 			contentPane.add(this, BorderLayout.CENTER);
 			final Dimension windowSize = this.getSelectedComponent().getPreferredSize();
 			
-			int height = windowSize.height;
-			if(height>EAST_MAX_HEIGHT)
-				windowSize.height = EAST_MAX_HEIGHT;
-			externalFrame.setSize(windowSize);
-			externalFrame.validate();
+			externalWindow.setSize(windowSize);
+			externalWindow.validate();
 
-			// set proper title of frame
-			externalFrame.setTitle(getTitle());
+			// set proper title of window
+			externalWindow.setTitle(getTitle());
 
 			// set proper button icon/text
 			floatButton.setIcon(dockIcon);
@@ -749,10 +747,10 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			// set float label text
 			floatLabel.setText("");
 			
-			// set location of external frame
-			setLocationOfExternalFrame(externalFrame);
+			// set location of external window
+			setLocationOfExternalWindow(externalWindow);
 			// lets show it
-			externalFrame.setVisible(true);
+			externalWindow.setVisible(true);
 
 			// set our new state
 			this.cytoPanelState = CytoPanelState.FLOAT;
@@ -782,7 +780,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 		if (isFloating()) {
 			// remove cytopanel from external view
-			externalFrame.remove(this);
+			externalWindow.remove(this);
 
 			// add this cytopanel back to cytopanel container
 			if (cytoPanelContainer == null) {
@@ -791,8 +789,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 			cytoPanelContainer.insertCytoPanel(this, compassDirection);
 
-			// dispose of the external frame
-			externalFrame.dispose();
+			// dispose of the external window
+			externalWindow.dispose();
 
 			// set proper button icon/text
 			floatButton.setIcon(floatIcon);
@@ -831,7 +829,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * Adds the listener to the floating window.
 	 */
 	private void addWindowListener() {
-		externalFrame.addWindowListener(new WindowAdapter() {
+		externalWindow.addWindowListener(new WindowAdapter() {
 				/**
 				 * Window is Closing.
 				 *
@@ -845,11 +843,11 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	}
 
 	/**
-	 * Sets the Location of the External Frame.
+	 * Sets the Location of the External Window.
 	 *
-	 * @param externalWindow ExternalFrame Object.
+	 * @param externalWindow ExternalWindow Object.
 	 */
-	private void setLocationOfExternalFrame(JFrame externalWindow) {
+	private void setLocationOfExternalWindow(JDialog externalWindow) {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension screenDimension = tk.getScreenSize();
 
@@ -857,7 +855,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		Rectangle containerBounds = cytoPanelContainer.getBounds();
 		containerBounds.setLocation(cytoPanelContainer.getLocationOnScreen());
 
-		Point p = CytoPanelUtil.getLocationOfExternalFrame(screenDimension, containerBounds,
+		Point p = CytoPanelUtil.getLocationOfExternalWindow(screenDimension, containerBounds,
 		                                                   externalWindow.getSize(),
 		                                                   compassDirection, false);
 

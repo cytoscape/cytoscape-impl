@@ -110,7 +110,7 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 
 				editorDialog.setTitle("Continuous Mapping Editor for " + mapping.getVisualProperty().getDisplayName());
 				editorDialog.setLocationRelativeTo(editor);
-				editorDialog.setAlwaysOnTop(true);
+				editorDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
 				editorDialog.setVisible(true);
 				isEditorDialogActive = true;
 				currentDialog = editorDialog;

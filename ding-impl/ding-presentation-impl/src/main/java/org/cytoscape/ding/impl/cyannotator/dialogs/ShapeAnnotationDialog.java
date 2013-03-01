@@ -29,6 +29,7 @@ import java.awt.Point;
 import java.awt.Robot;
 import java.awt.geom.Point2D;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 
 import org.cytoscape.ding.impl.DGraphView;
@@ -36,7 +37,7 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
-public class ShapeAnnotationDialog extends javax.swing.JFrame {
+public class ShapeAnnotationDialog extends JDialog {
 
 	private javax.swing.JButton applyButton;
 	private javax.swing.JButton cancelButton;
@@ -125,6 +126,7 @@ public class ShapeAnnotationDialog extends javax.swing.JFrame {
 		pack();
 		setSize(520, 525);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 
 	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {

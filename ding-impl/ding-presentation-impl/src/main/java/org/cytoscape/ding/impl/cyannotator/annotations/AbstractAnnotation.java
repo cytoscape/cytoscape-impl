@@ -25,31 +25,24 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  */
 
 import java.awt.AlphaComposite;
-import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.Point;
 import java.awt.RenderingHints;
-
 import java.awt.geom.Point2D;
-
-import java.util.List;
-import java.util.HashSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
 import org.cytoscape.ding.impl.DGraphView;
-
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
@@ -340,7 +333,7 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		}
 	}
 
-	public JFrame getModifyDialog() {return null;}
+	public JDialog getModifyDialog() {return null;}
 
 	// Protected methods
 	protected void updateAnnotationAttributes() {

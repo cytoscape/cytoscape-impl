@@ -76,7 +76,7 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		mainEditorPane.setEditable(false);
 		mainEditorPane.addHyperlinkListener(this);
 		setLocationRelativeTo(parent);
-		setAlwaysOnTop(true);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 		this.setPreferredSize(WINDOW_SIZE);
 		this.setSize(WINDOW_SIZE);
 	}
@@ -129,7 +129,6 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("About");
-		setAlwaysOnTop(true);
 
 		titlePanel.setBackground(new java.awt.Color(255, 255, 255));
 

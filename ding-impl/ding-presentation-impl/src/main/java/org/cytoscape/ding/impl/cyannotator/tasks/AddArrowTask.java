@@ -26,10 +26,9 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 
 
-import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
 
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
@@ -62,9 +61,9 @@ public class AddArrowTask extends AbstractNetworkViewTask {
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
 			
-		 			JFrame frame = annotationFactory.createAnnotationFrame((DGraphView)view, location);	
-					frame.setLocation((int)location.getX(), (int)location.getY());
-					frame.setVisible(true);
+		 			JDialog dialog = annotationFactory.createAnnotationDialog((DGraphView)view, location);	
+					dialog.setLocation((int)location.getX(), (int)location.getY());
+					dialog.setVisible(true);
 				}
 			});
 		}

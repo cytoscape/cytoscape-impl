@@ -25,6 +25,7 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
+import java.awt.Dialog;
 import java.awt.Window;
 
 import javax.swing.JPanel;
@@ -112,8 +113,7 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 			tunableDialog.setLocationRelativeTo(parent);
 			
 			tunableDialog.setTitle(getTitle(objectWithTunables));
-			tunableDialog.setModal(true);
-			tunableDialog.setAlwaysOnTop(true);
+			tunableDialog.setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
 			tunableDialog.setVisible(true);
 		
 		

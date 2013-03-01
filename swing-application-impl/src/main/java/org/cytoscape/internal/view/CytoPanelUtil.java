@@ -51,7 +51,7 @@ public class CytoPanelUtil {
 	private static final int INSET = 5;
 
 	/**
-	 * Gets Location of External Frame, based on current UI Dimensions.
+	 * Gets Location of External Window, based on current UI Dimensions.
 	 *
 	 * @param screenDimension  Current Screen Dimensions.
 	 * @param containerBounds  Container Bounds Rectangle.
@@ -59,7 +59,7 @@ public class CytoPanelUtil {
 	 * @param compassDirection Compass Direction, SwingConstants.
 	 * @return Point Object.
 	 */
-	public static Point getLocationOfExternalFrame(Dimension screenDimension,
+	public static Point getLocationOfExternalWindow(Dimension screenDimension,
 	                                               Rectangle containerBounds,
 	                                               Dimension frameDimension, final CytoPanelName compassDirection,
 	                                               boolean outputDiagnostics)
@@ -115,7 +115,7 @@ public class CytoPanelUtil {
 	}
 
 	/**
-	 * Outputs Diagnostics Related to Screen/Frame Dimensions.
+	 * Outputs Diagnostics Related to Screen/Window Dimensions.
 	 */
 	private static void outputDiagnostics(Dimension screenDimension, Rectangle containerBounds,
 	                                      Dimension preferredSizeOfPanel, final CytoPanelName compassDirection)
