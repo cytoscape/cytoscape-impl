@@ -54,71 +54,71 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>property-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>property-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>datasource-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>datasource-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>equations-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>model-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>group-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>group-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>work-headless-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-headless-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>presentation-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>presentation-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>layout-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>layout-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>viewmodel-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>vizmap-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>vizmap-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-                        <groupId>org.cytoscape</groupId>
-                        <artifactId>application-impl</artifactId>
-                        <version>${project.version}</version>
-                        <scope>test</scope>
-                </dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>application-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-impl</artifactId>

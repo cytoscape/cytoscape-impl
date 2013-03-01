@@ -97,7 +97,7 @@
 				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
-			
+
 			<!-- Cytoscape API -->
 			<dependency>
 				<groupId>org.cytoscape</groupId>
@@ -315,29 +315,23 @@
 
 	<!-- Shared dependency for all projects. -->
 	<dependencies>
-	<dependency>
-		<groupId>org.ops4j.pax.logging</groupId>
-		<artifactId>pax-logging-api</artifactId>
-		<version>1.5.2</version>
-		<scope>provided</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.osgi</groupId>
-		<artifactId>org.osgi.core</artifactId>
-		<version>${osgi.api.version}</version>
-	</dependency>
-	<dependency>
-		<groupId>org.cytoscape</groupId>
-		<artifactId>service-api</artifactId>
-		<version>${cytoscape.api.version}</version>
-	</dependency>
-</dependencies>
-
-	<scm>
-		<connection>scm:git:git://github.com/cytoscape/cytoscape-impl.git</connection>
-		<developerConnection>scm:git:git@github.com:cytoscape/cytoscape-impl.git</developerConnection>
-		<url>https://github.com/cytoscape/cytoscape-impl.git</url>
-	</scm>
+		<dependency>
+			<groupId>org.ops4j.pax.logging</groupId>
+			<artifactId>pax-logging-api</artifactId>
+			<version>1.5.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>${osgi.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>service-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<!-- This is for m2eclipse plugin, and haemless to command line version. -->
@@ -373,29 +367,24 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>${maven-release-plugin.version}</version>
-				<configuration>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<preparationGoals>clean install</preparationGoals>
-					<goals>deploy</goals>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<version>${maven-source-plugin.version}</version>
 				<executions>
-				    <execution>
-                        <id>aggregate-source</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>aggregate</goal>
-                        </goals>
-                    </execution>
+					<execution>
+						<id>aggregate-source</id>
+						<phase>package</phase>
+						<goals>
+							<goal>aggregate</goal>
+						</goals>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
+	<scm>
+		<connection>scm:git:git://github.com/cytoscape/cytoscape-impl.git</connection>
+		<developerConnection>scm:git:git@github.com:cytoscape/cytoscape-impl.git</developerConnection>
+		<url>https://github.com/cytoscape/cytoscape-impl.git</url>
+	</scm>
 </project>
