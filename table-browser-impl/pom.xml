@@ -13,8 +13,8 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>table-browser-impl</artifactId>
-  <version>3.0.0</version>
-    <name>Cytoscape Table Browser Impl (${project.artifactId})</name>
+  	<version>3.0.1-SNAPSHOT</version>
+    	<name>Cytoscape Table Browser Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
 	<build>
