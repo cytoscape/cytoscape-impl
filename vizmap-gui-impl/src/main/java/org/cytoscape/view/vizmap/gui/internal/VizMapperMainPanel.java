@@ -284,6 +284,9 @@ public class VizMapperMainPanel extends AbstractVizMapperPanel implements Visual
 			image = null;
 		}
 
+		if (engine == null) {
+			return;
+		}
 		defaultImageManager.put(vs, engine.createImage((int) size.getWidth(), (int) size.getHeight()));
 	}
 

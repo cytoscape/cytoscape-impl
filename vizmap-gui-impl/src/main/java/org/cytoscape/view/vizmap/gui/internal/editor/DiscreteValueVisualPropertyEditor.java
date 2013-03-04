@@ -25,6 +25,7 @@ package org.cytoscape.view.vizmap.gui.internal.editor;
  */
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,7 +61,7 @@ public class DiscreteValueVisualPropertyEditor<T> extends BasicVisualPropertyEdi
 			ContinuousMappingCellRendererFactory cellRendererFactory, final Set<T> values, final int iconW, final int iconH) {
 		super(type, propEditor, ContinuousEditorType.DISCRETE, cellRendererFactory);
 
-		this.values = values;
+		this.values = new HashSet<T>(values);
 		this.iconH = iconH;
 		this.iconW = iconW;
 
