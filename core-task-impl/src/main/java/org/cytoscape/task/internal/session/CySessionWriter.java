@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 
@@ -83,15 +84,33 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 		if (filters.size() > 1)
 			throw new IllegalArgumentException("Found too many session filters.");
 
-		if (!outputFile.getName().endsWith(".cys")) {
-			outputFile = new File(outputFile.getPath() + ".cys");
-			logger.warn("File name is changed to " + outputFile.getName());
+		String filepath = outputFile.getAbsolutePath();
+		
+		if (!filepath.toLowerCase().endsWith(".cys")) {
+			filepath += ".cys";
+			outputFile = new File(filepath);
 		}
-
-		// Write to a temporary file first, to prevent the original file from being damaged, in case there is any error
-		final String filename = outputFile.getName() + ".tmp";
-		final File tmpFile = new File(System.getProperty("java.io.tmpdir"), filename);
-		tmpFile.deleteOnExit();
+		
+		if (!canWrite(outputFile)) {
+			throw new IOException(
+					"Session not saved. Cytoscape does not have write permission to save the session at \""
+							+ outputFile.getParentFile().getAbsolutePath()
+							+ "\". Choose another folder or change the folder permissions.");
+		}
+		
+		// Write to a temporary file first, to prevent the original file from being damaged, in case there is any error	
+		File tmpFile = new File(filepath + ".tmp");
+		int count = 0;
+		
+		while (tmpFile.exists() && count < 100) {
+			try {
+				// Just in case there is already a temporary file with the same name
+				tmpFile.delete();
+			} catch (final Exception e) {
+				logger.warn("Cannot delete old temporary session file: " + tmpFile, e);
+				tmpFile = new File(tmpFile.getAbsolutePath() + ".tmp" + (++count));
+			}
+		}
 		
 		final CyWriter writer = writerMgr.getWriter(session, filters.get(0), tmpFile);
 		
@@ -104,6 +123,33 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 		insertTasksAfterCurrentTask(writer, replaceFileTask);
 	}
 
+	boolean canWrite(final File file) {
+		final File dir = file.isDirectory() ? file : file.getParentFile();
+		
+		if (!dir.canWrite()) {
+			// Should be enough for most OSs
+			return false;
+		} else {
+			// File.canWrite doesn't work well on Windows, so let's try a workaround
+			final File dummy = new File(dir, "empty_" + System.currentTimeMillis() + ".tmp"); 
+			
+			try {
+				// Create and delete a dummy file in order to check file permissions.
+				dummy.createNewFile();
+			} catch(final IOException ioe) {
+				return false;
+			} finally {
+				try {
+					if (dummy != null) dummy.delete();
+				} catch(final Exception e) {
+					logger.warn("Cannot delete dummy file used to test write permission: " + dummy, e);
+				}
+			}
+		}
+		
+		return true;
+	}
+
 	static boolean HasFileExtension(final String pathName) {
 		final int lastDotPos = pathName.lastIndexOf('.');
 		final int lastSlashPos = pathName.lastIndexOf(File.separatorChar);
@@ -111,30 +157,75 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 	}
 	
 	private class ReplaceFileTask extends AbstractTask {
-		private final File source;
-		private final File target;
+		private final File temp;
+		private final File output;
 		
-		public ReplaceFileTask(final File source, final File target) {
-			this.source = source;
-			this.target = target;
+		public ReplaceFileTask(final File temp, final File output) {
+			this.temp = temp;
+			this.output = output;
 		}
 
 		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
-			if (target.exists()) {
-				target.delete();
-			}
-			boolean success = source.renameTo(target);
+		public void run(final TaskMonitor taskMonitor) throws Exception {
+			File backup = null;
 			
-			if (success) {
-				try {
-					source.delete();
-				} catch (Exception e) {
-					logger.warn("Cannot delete temp file: " + source.getAbsolutePath(), e);
+			// If the there is already a session file, create a backup first
+			if (output.exists()) {
+				backup = new File(output.getAbsolutePath() + ".bkp");
+				int count = 0;
+				
+				while (backup.exists() && count < 100) {
+					try {
+						// Just in case there is already a backup file with the same name
+						// (depending on the OS, the destination file has to be deleted before calling renameTo()).
+						backup.delete();
+					} catch (final Exception e) {
+						logger.warn("Cannot delete old session backup file: " + backup, e);
+						backup = new File(output.getAbsolutePath() + ".bkp" + (++count));
+					}
+				}
+				
+				// Try to move the original session file to the backup one
+				if (output.renameTo(backup)) {
+					if (output.exists()) {
+						// This should never happen, but let's make sure the file is deleted,
+						// because we will move the temporary file to the actual output one
+						// (again, the OS may require the destination file to be deleted first).
+						try {
+							output.delete();
+						} catch (final Exception e) {
+							logger.warn("Cannot delete old session file: " + output, e);
+						}
+					}
+				} else {
+					throw new RuntimeException("Cannot create a backup of the original session file. " +
+							"The current session was saved at: " + temp.getAbsolutePath());
+				}
+			}
+			
+			// Finally try to move the temporary file (current saved session) to the original output file
+			if (temp.renameTo(output)) {
+				if (temp.exists()) {
+					// This should never happen, but make sure the temp file is deleted.
+					try {
+						temp.delete();
+					} catch (final Exception e) {
+						logger.warn("Cannot delete temporary file: " + temp.getAbsolutePath(), e);
+					}
+				}
+				
+				// Now it's safe to delete the backup, if there is one.
+				if (backup != null && backup.exists()) {
+					try {
+						backup.delete();
+					} catch (final Exception e) {
+						logger.warn("Cannot delete backup file: " + backup.getAbsolutePath(), e);
+					}
 				}
 			} else {
-				throw new RuntimeException("Session not saved: Cannot copy temporary file to " + 
-						target.getAbsolutePath());
+				throw new RuntimeException("Cannot move the temporary file of the saved session to " + 
+						output.getAbsolutePath() +  ". The current session was saved at: " + 
+						temp.getAbsolutePath());
 			}
 		}
 	}
