@@ -27,7 +27,6 @@ package org.cytoscape.application.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -89,6 +88,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	private NetworkViewRenderer currentRenderer;
 	private Map<String, NetworkViewRenderer> renderers;
+
+	private NetworkViewRenderer defaultRenderer;
 
 	public CyApplicationManagerImpl(final CyEventHelper cyEventHelper,
 	                                final CyNetworkManager networkManager,
@@ -354,16 +355,18 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	private NetworkViewRenderer getDefaultRenderer() {
+		if (defaultRenderer != null) {
+			return defaultRenderer;
+		}
+		
 		if (renderers.isEmpty()) {
 			return null;
 		}
 		
-		// TODO: We should let the user set the default renderer explicitly
-		//       in the future.
-		
 		// Since renderers is a LinkedHashSet, the iterator gives back entries
 		// in insertion order.
-		return renderers.entrySet().iterator().next().getValue();
+		defaultRenderer = renderers.entrySet().iterator().next().getValue();
+		return defaultRenderer;
 	}
 	
 	public void addNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
@@ -372,5 +375,18 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	public void removeNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
 		renderers.remove(renderer.getId());
+		if (defaultRenderer == renderer) {
+			defaultRenderer = null;
+		}
+	}
+	
+	@Override
+	public NetworkViewRenderer getDefaultNetworkViewRenderer() {
+		return getDefaultRenderer();
+	}
+	
+	@Override
+	public void setDefaultNetworkViewRenderer(NetworkViewRenderer renderer) {
+		defaultRenderer = renderer;
 	}
 }

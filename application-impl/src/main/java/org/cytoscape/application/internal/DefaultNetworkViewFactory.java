@@ -16,7 +16,7 @@ public class DefaultNetworkViewFactory implements CyNetworkViewFactory {
 	
 	@Override
 	public CyNetworkView createNetworkView(CyNetwork network) {
-		NetworkViewRenderer renderer = applicationManager.getCurrentNetworkViewRenderer();
+		NetworkViewRenderer renderer = applicationManager.getDefaultNetworkViewRenderer();
 		CyNetworkViewFactory viewFactory = renderer.getNetworkViewFactory();
 		return viewFactory.createNetworkView(network);
 	}
