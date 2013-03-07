@@ -290,9 +290,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			return createSimplePanel(title, vertical, displayed);
 		// See if we need to create an XOR panel
 		if (gh.controlsMutuallyExclusiveNestedChildren()) {
-			final XorPanel xp = new XorPanel(title, gh);
-			
-			return xp;
+			return new XorPanel(title, gh);
 		} else {
 			// Figure out if the collapsable flag is set
 			final String displayState = gh.getParams().getProperty("displayState");
