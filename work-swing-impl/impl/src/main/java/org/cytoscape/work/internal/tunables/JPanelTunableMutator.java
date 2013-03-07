@@ -238,7 +238,6 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 					if (g.equals(""))
 						throw new IllegalArgumentException("A group's name must not be \"\".");
 					groupNames = groupNames + g;
-					System.out.println("group: " + groupNames + " child: " +  gh.getChildKey() + "hasChildren: " + gh.controlsMutuallyExclusiveNestedChildren());
 					if (!panels.containsKey(groupNames)) {
 						panels.put(groupNames,
 						           createJPanel(g, gh, groupToVerticalMap.get(g),
@@ -289,10 +288,8 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			final Boolean vertical, final Boolean displayed) {
 		if (gh == null)
 			return createSimplePanel(title, vertical, displayed);
-		System.out.println("desc: " + gh.getDescription());
 		// See if we need to create an XOR panel
 		if (gh.controlsMutuallyExclusiveNestedChildren()) {
-			System.out.println("need a xor panel");
 			final XorPanel xp = new XorPanel(title, gh);
 			
 			return xp;
@@ -314,13 +311,11 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 					 */
 					private void repackEnclosingDialog() {
 						Container container = cp.getParent();
-						System.out.println("trying to pack 1");
 						while (container != null && !(container instanceof JDialog))
 							container = container.getParent();
 						if (container != null)
 						{
 							((JDialog)container).pack();
-							System.out.println("trying to pack 2");
 						}
 					}
 				});
