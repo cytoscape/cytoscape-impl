@@ -87,6 +87,9 @@ public class CyGroupViewSettings {
 		} else {
 			doubleClickAction.setSelectedValue(settings.getDoubleClickAction());
 		}
+
+		useNestedNetworks = settings.getUseNestedNetworks();
+		hideGroupNode = settings.getHideGroupNode();
 	}
 
 	public DoubleClickAction getDoubleClickAction() {
