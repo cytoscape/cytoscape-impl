@@ -33,22 +33,21 @@ import java.io.File;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-
-
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 //Provides a way to create ImageAnnotations
 
-public class LoadImageDialog extends javax.swing.JFrame {
+public class LoadImageDialog extends JDialog {
 
 	private final DGraphView view;
 	private final CyAnnotator cyAnnotator; 
@@ -66,12 +65,12 @@ public class LoadImageDialog extends javax.swing.JFrame {
 		initComponents(this.getContentPane());
 		setSize(474, 445);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 
 	private void initComponents(Container pane) {
 
 		setTitle("Select an Image");
-		setAlwaysOnTop(true);
 		setResizable(false);
 
 		setMinimumSize(new java.awt.Dimension(625, 440));

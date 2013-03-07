@@ -24,27 +24,33 @@ package org.cytoscape.internal.view.help;
  * #L%
  */
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Graphics;
-import java.awt.Color;
-import java.awt.Window;
-import java.awt.Toolkit;
-import java.awt.Insets;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.util.List;
-import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import org.cytoscape.application.CyVersion;
-
+import org.cytoscape.application.swing.CySwingApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,15 +62,17 @@ public class CreditScreen {
 	private Timer timer;
 	private ImageIcon image;
 	private List<String> lines;
-	private JWindow window; 
+	private JDialog dialog; 
 	private static final Logger logger = LoggerFactory.getLogger(CreditScreen.class);
 	private static final String CREDIT_IMAGE = "/images/CytoscapeCredits.png";
 	private static final String CREDITS = "/credits.txt";
 	private final String version;
+	private final JFrame parent;
 
 
-	public CreditScreen(CyVersion vers) {
+	public CreditScreen(CyVersion vers, CySwingApplication cySwingApp) {
 		version = vers.getVersion();
+		parent = cySwingApp.getJFrame();
 		try {
 			image = new ImageIcon(getClass().getResource(CREDIT_IMAGE)); 
 			BufferedReader br = new BufferedReader(
@@ -78,30 +86,27 @@ public class CreditScreen {
 	}
 
 	public void showCredits() {
-		window = new JWindow();
+		dialog = new JDialog(parent,true);
+		dialog.setUndecorated(true);
 		final ScrollingLinesPanel panel = new ScrollingLinesPanel(image, lines);
-		window.add(panel);
-		window.pack();
-		window.validate();
-		window.setPreferredSize(panel.getPreferredSize());
-		window.requestFocusInWindow();
-		centerWindowLocation(window);
-		window.setAlwaysOnTop(true);
-		window.setVisible(true);
+		dialog.add(panel);
+		dialog.pack();
+		dialog.validate();
+		dialog.setPreferredSize(panel.getPreferredSize());
+		centerDialogLocation(dialog);
 
 		Action scrollText = new AbstractAction() {
 			private final static long serialVersionUID = 1202340446391603L;
-			boolean shouldDraw = false;
 
 			public void actionPerformed(ActionEvent e) {
 				panel.incrementYPos();
-				window.repaint();
+				dialog.repaint();
 			}
 		};
 
 		timer = new Timer(100, scrollText);
 
-		window.addMouseListener(new MouseListener() {
+		dialog.addMouseListener(new MouseListener() {
 				public void mouseClicked(MouseEvent e) {
 					hideCredits();
 				}
@@ -112,6 +117,7 @@ public class CreditScreen {
 			});
 
 		timer.start();
+		dialog.setVisible(true);
 	}
 
 	public void hideCredits() {
@@ -167,20 +173,20 @@ public class CreditScreen {
 	/**
 	 *  DOCUMENT ME!
 	 *
-	 * @param window DOCUMENT ME!
+	 * @param dialog DOCUMENT ME!
 	 */
-	protected void centerWindowOnScreen(Window window) {
-		centerWindowSize(window);
-		centerWindowLocation(window);
-		window.setVisible(true);
+	protected void centerDialogOnScreen(JDialog dialog) {
+		centerDialogSize(dialog);
+		centerDialogLocation(dialog);
+		dialog.setVisible(true);
 	} 
 
 	/**
 	 *  DOCUMENT ME!
 	 *
-	 * @param window DOCUMENT ME!
+	 * @param dialog DOCUMENT ME!
 	 */
-	protected void centerWindowSize(Window window) {
+	protected void centerDialogSize(JDialog dialog) {
 		Dimension screen_size = Toolkit.getDefaultToolkit().getScreenSize();
 		GraphicsConfiguration configuration = GraphicsEnvironment.getLocalGraphicsEnvironment()
 		                                                         .getDefaultScreenDevice()
@@ -192,18 +198,18 @@ public class CreditScreen {
 		screen_size.height -= screen_insets.top;
 		screen_size.height -= screen_insets.bottom;
 
-		Dimension frame_size = window.getSize();
+		Dimension frame_size = dialog.getSize();
 		frame_size.width = (int) (screen_size.width * .75);
 		frame_size.height = (int) (screen_size.height * .75);
-		window.setSize(frame_size);
+		dialog.setSize(frame_size);
 	} 
 
 	/**
 	 *  DOCUMENT ME!
 	 *
-	 * @param window DOCUMENT ME!
+	 * @param dialog DOCUMENT ME!
 	 */
-	protected void centerWindowLocation(Window window) {
+	protected void centerDialogLocation(JDialog dialog) {
 		Dimension screen_size = Toolkit.getDefaultToolkit().getScreenSize();
 		GraphicsConfiguration configuration = GraphicsEnvironment.getLocalGraphicsEnvironment()
 		                                                         .getDefaultScreenDevice()
@@ -215,13 +221,13 @@ public class CreditScreen {
 		screen_size.height -= screen_insets.top;
 		screen_size.height -= screen_insets.bottom;
 
-		Dimension frame_size = window.getSize();
-		window.setLocation(((screen_size.width / 2) - (frame_size.width / 2)) + screen_insets.left,
+		Dimension frame_size = dialog.getSize();
+		dialog.setLocation(((screen_size.width / 2) - (frame_size.width / 2)) + screen_insets.left,
 		                   ((screen_size.height / 2) - (frame_size.height / 2)) + screen_insets.top);
 	}
 
     public void hideScreen() {
-        if ((window != null) && window.isVisible())
-            window.dispose();
+        if ((dialog != null) && dialog.isVisible())
+            dialog.dispose();
     }
 }

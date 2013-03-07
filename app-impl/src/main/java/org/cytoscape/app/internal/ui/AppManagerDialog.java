@@ -63,13 +63,12 @@ public class AppManagerDialog extends javax.swing.JDialog {
         this.taskManager = taskManager;
         initComponents();
         
-        this.setLocationRelativeTo(parent);
-        this.setVisible(true);
-        
         // Create new manage download sites dialog
         manageDownloadSitesDialog = new ManageDownloadSitesDialog(
-        		parent, false, downloadSitesManager);
+        		parent, true, downloadSitesManager);
         manageDownloadSitesDialog.setLocationRelativeTo(this);
+        
+        this.setLocationRelativeTo(parent);
     }
    
     private void initComponents() {

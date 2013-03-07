@@ -1,5 +1,4 @@
 #Cytoscape Property File
-#Wed Apr 06 15:28:22 PDT 2005
 viewThreshold=100000
 defaultVisualStyle=default
 canonicalizeNames=true
@@ -12,7 +11,7 @@ maximizeViewOnCreate=false
 proxy.server=
 proxy.server.port=
 proxy.server.type=
-cytoscape.version.number=3.0.0
+cytoscape.version.number=3.0.1
 exportTextAsShape=true
 vizmapper.cntMapperUpperLimit=2000
 undo.limit=10

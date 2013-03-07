@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -454,11 +455,18 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			
 			if (targetTable.getColumn(columnData.getName()) == null) {
 				CyTable sourceTable = filenameTableMap.get(columnData.getSourceTable());
-				targetTable.addVirtualColumn(columnData.getName(),
-											 columnData.getSourceColumn(),
-											 sourceTable,
-											 columnData.getTargetJoinKey(),
-											 columnData.isImmutable());
+				
+				try {
+					targetTable.addVirtualColumn(columnData.getName(),
+												 columnData.getSourceColumn(),
+												 sourceTable,
+												 columnData.getTargetJoinKey(),
+												 columnData.isImmutable());
+				} catch (Exception e) {
+					logger.error("Error restoring virtual column \"" + columnData.getName() + "\" in table \"" + 
+							targetTable + "\"(" + columnData.getTargetTable() + ")--source table: \"" + sourceTable + 
+							"\"(" + columnData.getSourceTable() + ")", e);
+				}
 			}
 		}
 	}
@@ -508,13 +516,17 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		}
 	}
 	
-	private void mergeTables(CyTable source, CyTable target, Class<? extends CyIdentifiable> type) {
+	private void mergeTables(final CyTable source, final CyTable target, final Class<? extends CyIdentifiable> type) {
 		CyColumn sourceKey = source.getPrimaryKey();
 		CyColumn targetKey = target.getPrimaryKey();
 		String keyName = sourceKey.getName();
 
 		// Make sure keys match
 		if (keyName.equals(targetKey.getName())) {
+			// Merge columns first, because even if the source table has no rows to merge,
+			// the columns have to be restored
+			mergeColumns(keyName, source, target);
+			
 			for (CyRow sourceRow : source.getAllRows()) {
 				Long key = sourceRow.get(keyName, Long.class);
 				CyIdentifiable entry = cache.getObjectById(key, type);
@@ -529,32 +541,42 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		}
 	}
 
+	private void mergeColumns(final String keyName, final CyTable source, final CyTable target) {
+		for (CyColumn column : source.getColumns()) {
+			String columnName = column.getName();
+
+			if (columnName.equals(keyName))
+				continue;
+
+			if (target.getColumn(columnName) == null) {
+				Class<?> type = column.getType();
+				boolean immutable = column.isImmutable();
+	
+				if (type.equals(List.class)) {
+					Class<?> elementType = column.getListElementType();
+					target.createListColumn(columnName, elementType, immutable);
+				} else {
+					target.createColumn(columnName, type, immutable);
+				}
+			}
+		}
+	}
+
 	private void mergeRow(String keyName, CyRow sourceRow, CyRow targetRow) {
 		for (CyColumn column : sourceRow.getTable().getColumns()) {
 			String columnName = column.getName();
 
-			if (columnName.equals(keyName)) {
+			if (columnName.equals(keyName))
 				continue;
-			}
 
 			Class<?> type = column.getType();
-			boolean immutable = column.isImmutable();
-			CyTable targetTable = targetRow.getTable();
 
 			if (type.equals(List.class)) {
 				Class<?> elementType = column.getListElementType();
 				List<?> list = sourceRow.getList(columnName, elementType);
-
-				if (targetTable.getColumn(columnName) == null)
-					targetTable.createListColumn(columnName, elementType, immutable);
-
 				targetRow.set(columnName, list);
 			} else {
 				Object value = sourceRow.get(columnName, type);
-
-				if (targetTable.getColumn(columnName) == null)
-					targetTable.createColumn(columnName, type, immutable);
-
 				targetRow.set(columnName, value);
 			}
 		}

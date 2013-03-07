@@ -30,23 +30,15 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.RenderingHints;
-import java.awt.geom.Rectangle2D;
-
 import java.util.Map;
 
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.BoundedTextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
                                        implements BoundedTextAnnotation, TextAnnotation {
@@ -159,7 +151,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		setSize((int)width+2, (int)height+2);
 	}
 	
-	public JFrame getModifyDialog() {
+	public JDialog getModifyDialog() {
 			return new BoundedTextAnnotationDialog(this);
 	}
 

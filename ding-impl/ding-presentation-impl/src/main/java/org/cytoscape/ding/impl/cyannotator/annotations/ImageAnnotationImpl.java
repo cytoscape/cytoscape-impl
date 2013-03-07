@@ -37,25 +37,19 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.awt.image.VolatileImage;
-
+import java.net.URL;
 import java.util.Map;
 
-import java.net.URL;
+import javax.swing.JDialog;
 
-import javax.swing.JFrame;
-
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
-
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
-
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -345,7 +339,7 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		customGraphicsManager.setUsedInCurrentSession(cg, false);
 	}
 
-	public JFrame getModifyDialog() {
+	public JDialog getModifyDialog() {
 			return new ImageAnnotationDialog(this);
 	}
 

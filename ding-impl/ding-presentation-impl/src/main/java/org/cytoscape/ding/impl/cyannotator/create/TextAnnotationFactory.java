@@ -24,18 +24,20 @@ package org.cytoscape.ding.impl.cyannotator.create;
  * #L%
  */
 
-import org.cytoscape.ding.impl.DGraphView;
-import javax.swing.JFrame;
 import java.awt.geom.Point2D;
 import java.util.Map;
+
+import javax.swing.JDialog;
+
+import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 
 public class TextAnnotationFactory implements AnnotationFactory {
 
-	public JFrame createAnnotationFrame(DGraphView view, Point2D location) {
+	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
 		return new TextAnnotationDialog(view, location);
 	}
 

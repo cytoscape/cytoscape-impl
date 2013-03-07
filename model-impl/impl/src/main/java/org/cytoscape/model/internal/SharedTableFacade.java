@@ -63,38 +63,40 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 	private List<CyTable> localTables() {
 		logger.debug("  - looking for local tables: ");
 		List<CyTable> tables = new ArrayList<CyTable>();
-		tables.add( netTableMgr.getTable( rootNetwork, type, CyNetwork.LOCAL_ATTRS ) );
+		final CyTable rootTbl = netTableMgr.getTable(rootNetwork, type, CyNetwork.LOCAL_ATTRS);
+		
+		if (rootTbl != null)
+			tables.add(rootTbl);
+		
 		for (CyNetwork sub : rootNetwork.getSubNetworkList()) {
 			logger.debug("  -- found subnetwork with local tables: " + sub.toString());
-			tables.add( netTableMgr.getTable( sub, type, CyNetwork.LOCAL_ATTRS ) );
+			final CyTable netTbl = netTableMgr.getTable(sub, type, CyNetwork.LOCAL_ATTRS);
+			
+			if (netTbl != null)
+				tables.add(netTbl);
 		}
+		
 		return tables;
 	}
 	
 	private void checkIfAlreadyExists(String columnName) {
-		List<CyTable> tables = localTables();
-		tables.add(0, shared);
-		for(CyTable table: tables) {
-			if (table == null ) {
-				logger.debug("NULL table!");
-				continue;
-			}
+		final List<CyTable> tables = localTables();
+		
+		if (shared != null)
+			tables.add(0, shared);
+		
+		for (CyTable table: tables) {
 			CyColumn column = table.getColumn(columnName);
-			if(column != null) {
+			
+			if (column != null) {
 				throw new IllegalArgumentException("column already exists with name: '" + columnName
 						+ "' with type: " + column.getType());
 			}
 		};
 	}
 
-	
 	public void deleteColumn(String columnName) {
 		for ( CyTable local : localTables() ) {
-			if ( local == null ) {
-				logger.debug("NULL table!");
-				continue;
-			}
-				
 			logger.debug("deleting virtual column: " + columnName + " from local table: " + local.getTitle());
 			local.deleteColumn(columnName);
 		}
@@ -111,11 +113,6 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 		logger.debug("adding real column: '" + columnName + "' to table: " + shared.getTitle());
 		shared.createColumn(columnName, type, isImmutable,defaultValue);
 		for ( CyTable local : localTables() ) {
-			if ( local == null ) {
-				logger.debug("NULL table!");
-				continue;
-			}
-				
 			logger.debug("adding virtual column: " + columnName + " to local table: " + local.getTitle());
 			local.addVirtualColumn(columnName,columnName,shared,CyIdentifiable.SUID,isImmutable);
 		}
@@ -130,10 +127,6 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 		logger.debug("adding real List column: '" + columnName + "' to table: " + shared.getTitle());
 		shared.createListColumn(columnName, listElementType, isImmutable, defaultValue);
 		for ( CyTable local : localTables() ) {
-			if ( local == null ) {
-				logger.debug("NULL table!");
-				continue;
-			}
 			logger.debug("adding virtual list column: " + columnName + " to local table: " + local.getTitle());
 			local.addVirtualColumn(columnName,columnName,shared,CyIdentifiable.SUID,isImmutable);
 		}

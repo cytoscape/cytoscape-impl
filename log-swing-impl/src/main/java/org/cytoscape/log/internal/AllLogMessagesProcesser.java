@@ -25,7 +25,7 @@ package org.cytoscape.log.internal;
  */
 
 import java.util.concurrent.BlockingQueue;
-import org.ops4j.pax.logging.spi.PaxAppender;
+
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
 class AllLogMessagesProcesser extends QueueProcesser

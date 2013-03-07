@@ -54,7 +54,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -84,16 +84,14 @@ import org.cytoscape.network.merge.internal.model.MatchingAttributeImpl;
 import org.cytoscape.network.merge.internal.task.NetworkMergeTask;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
 
 /**
  * 
- * Main frame for advance network merge
+ * Main dialog for advance network merge
  */
-public class NetworkMergeFrame extends JFrame {
+public class NetworkMergeDialog extends JDialog {
 	
 	private static final long serialVersionUID = 1013626339762545400L;
 	private boolean altDifferenceIsChecked = false;
@@ -103,10 +101,9 @@ public class NetworkMergeFrame extends JFrame {
 	private final TaskManager<?, ?> taskManager;
 	private CreateNetworkViewTaskFactory netViewCreator;
 
-	/** Creates new form NetworkMergeFrame */
-	public NetworkMergeFrame(CyNetworkManager cnm, CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager,
+	/** Creates new form NetworkMergeDialog */
+	public NetworkMergeDialog(CyNetworkManager cnm, CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager,
 			CreateNetworkViewTaskFactory netViewCreator) {
-		frame = this;
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		this.cnm = cnm;
@@ -216,7 +213,7 @@ public class NetworkMergeFrame extends JFrame {
 				if (selectOp == Operation.DIFFERENCE && nSelectedNetwork > 2) {
 					final int ioption = JOptionPane
 							.showConfirmDialog(
-									frame,
+									NetworkMergeDialog.this,
 									"Only the first two networks in the selected network list will be merged for difference operation. All the other selected networks will be removed. Are you sure?",
 									"Warning: only two networks will be kept", JOptionPane.YES_NO_OPTION);
 					if (ioption == JOptionPane.NO_OPTION) {
@@ -367,7 +364,7 @@ public class NetworkMergeFrame extends JFrame {
 				if (getOperation() == Operation.DIFFERENCE && selectedNetworkData.getSize() + indices.length > 2) {
 					JOptionPane
 							.showMessageDialog(
-									frame,
+									NetworkMergeDialog.this,
 									"Difference operation only supports two networks. If you need to replace the selected network, remove it first and select the new one.",
 									"Warning", JOptionPane.WARNING_MESSAGE);
 					return;
@@ -850,11 +847,7 @@ public class NetworkMergeFrame extends JFrame {
 				dim = new Dimension(500, 450);
 			}
 		} else {
-			if (frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
-				return;
-			}
-
-			Dimension dim_curr = frame.getSize(); // current dim
+			Dimension dim_curr = this.getSize(); // current dim
 			int width_curr = dim_curr.width;
 			int height_curr = dim_curr.height;
 
@@ -872,7 +865,7 @@ public class NetworkMergeFrame extends JFrame {
 			dim = new Dimension(width, height);
 		}
 
-		frame.setSize(dim);
+		this.setSize(dim);
 	}
 
 	/*
@@ -890,8 +883,6 @@ public class NetworkMergeFrame extends JFrame {
 	private MatchingAttribute matchingAttribute;
 	private Map<String, Map<String, Set<String>>> selectedNetworkAttributeIDType;
 	private String tgtType;
-
-	private Frame frame;
 
 	private final ImageIcon UNION_ICON = new ImageIcon(getClass().getResource("/images/union.png"));
 	private final ImageIcon INTERSECTION_ICON = new ImageIcon(getClass().getResource("/images/intersection.png"));
