@@ -17,4 +17,4 @@ vizmapper.cntMapperUpperLimit=2000
 undo.limit=10
 defaultPluginDownloadUrl=http://chianti.ucsd.edu/cyto_web/plugins3/plugins3.xml
 showQuickStartAtStartup= false
-taskThreadSize=10485760
+taskStackSize=10485760

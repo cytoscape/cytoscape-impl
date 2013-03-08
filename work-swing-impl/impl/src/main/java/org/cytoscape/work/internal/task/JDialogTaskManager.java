@@ -74,9 +74,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	static final TimeUnit DELAY_TIMEUNIT = TimeUnit.SECONDS;
 	
 	/**
-	 * The default size (in bytes) of the thread(s) used to execute a Task.
+	 * The default size (in bytes) of the stack used to execute a Task.
 	 */
-	private final static long DEFAULT_THREAD_SIZE = 10485760;
+	private final static long DEFAULT_STACK_SIZE = 10485760;
 	
 	/**
 	 * The default Cytoscape property object.
@@ -247,14 +247,14 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 
 		@Override
 		public Thread newThread(Runnable r) {
-			long threadSize;
+			long stackSize;
 			try {
 				Properties props = cyProperty.getProperties();
-				threadSize = Long.parseLong(props.getProperty("taskThreadSize"));
+				stackSize = Long.parseLong(props.getProperty("taskStackSize"));
 			} catch (Exception e) {	
-				threadSize = DEFAULT_THREAD_SIZE;
+				stackSize = DEFAULT_STACK_SIZE;
 			}
-			return new Thread(null, r, "Task Thread", threadSize);
+			return new Thread(null, r, "Task Thread", stackSize);
 		}
 
 	}
