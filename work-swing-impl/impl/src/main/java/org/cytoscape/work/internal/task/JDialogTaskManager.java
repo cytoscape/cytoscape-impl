@@ -26,6 +26,7 @@ package org.cytoscape.work.internal.task;
 
 
 import java.awt.Window;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
@@ -70,7 +72,22 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * The time unit of <code>DELAY_BEFORE_SHOWING_DIALOG</code>.
 	 */
 	static final TimeUnit DELAY_TIMEUNIT = TimeUnit.SECONDS;
-
+	
+	/**
+	 * The default size (in bytes) of the thread(s) used to execute a Task.
+	 */
+	private final static long DEFAULT_THREAD_SIZE = 10485760;
+	
+	/**
+	 * The default Cytoscape property object.
+	 */
+	private final CyProperty<Properties> cyProperty;
+	
+	/**
+	 * Used to create Threads for executed tasks.
+	 */
+	private TaskThreadFactory taskThreadFactory;
+	
 	/**
 	 * Used for calling <code>Task.run()</code>.
 	 */
@@ -106,15 +123,17 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * <li><code>cancelExecutorService</code> is the same as <code>taskExecutorService</code>.</li>
 	 * </ul>
 	 */
-	public JDialogTaskManager(final JDialogTunableMutator tunableMutator) {
+	public JDialogTaskManager(final JDialogTunableMutator tunableMutator, final CyProperty<Properties> cyProperty) {
 		super(tunableMutator);
 		this.dialogTunableMutator = tunableMutator;
+		this.cyProperty = cyProperty;
 
 		parent = null;
-		taskExecutorService = Executors.newCachedThreadPool();
+		taskThreadFactory = new TaskThreadFactory();
+		taskExecutorService = Executors.newCachedThreadPool(taskThreadFactory);
 		addShutdownHook(taskExecutorService);
 		
-		timedDialogExecutorService = Executors.newSingleThreadScheduledExecutor();
+		timedDialogExecutorService = Executors.newSingleThreadScheduledExecutor(taskThreadFactory);
 		addShutdownHook(timedDialogExecutorService);
 		
 		cancelExecutorService = taskExecutorService;
@@ -193,7 +212,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		}
 
 		// create the task thread
-		final Runnable tasks = new TaskThread(first, taskMonitor, taskIterator); 
+		final Runnable tasks = new TaskRunnable(first, taskMonitor, taskIterator); 
 
 		// submit the task thread for execution
 		final Future<?> executorFuture = taskExecutorService.submit(tasks);
@@ -223,14 +242,30 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 
 		timedDialogExecutorService.schedule(timedOpen, DELAY_BEFORE_SHOWING_DIALOG, DELAY_TIMEUNIT);
 	}
+	
+	private class TaskThreadFactory implements ThreadFactory {
 
-	private class TaskThread implements Runnable {
+		@Override
+		public Thread newThread(Runnable r) {
+			long threadSize;
+			try {
+				Properties props = cyProperty.getProperties();
+				threadSize = Long.parseLong(props.getProperty("taskThreadSize"));
+			} catch (Exception e) {	
+				threadSize = DEFAULT_THREAD_SIZE;
+			}
+			return new Thread(null, r, "Task Thread", threadSize);
+		}
+
+	}
+	
+	private class TaskRunnable implements Runnable {
 		
 		private final SwingTaskMonitor taskMonitor;
 		private final TaskIterator taskIterator;
 		private final Task first;
 
-		TaskThread(final Task first, final SwingTaskMonitor tm, final TaskIterator ti) {
+		TaskRunnable(final Task first, final SwingTaskMonitor tm, final TaskIterator ti) {
 			this.first = first;
 			this.taskMonitor = tm;
 			this.taskIterator = ti;
