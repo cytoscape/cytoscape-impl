@@ -2004,7 +2004,7 @@ public final class GraphGraphics {
 			checkDispatchThread();
 			checkCleared();
 		}
-		
+
 		m_g2d.translate(xOffset, yOffset);
 		if(paint instanceof TexturePaint) {
 			final BufferedImage bImg = ((TexturePaint) paint).getImage();
@@ -2037,7 +2037,7 @@ public final class GraphGraphics {
 			checkDispatchThread();
 			checkCleared();
 		}
-		
+
 		if (cg instanceof PaintedShape) {
 			m_g2d.translate(xOffset, yOffset);
 			PaintedShape ps = (PaintedShape)cg;
