@@ -15,5 +15,5 @@ cytoscape.version.number=3.0.1
 exportTextAsShape=true
 vizmapper.cntMapperUpperLimit=2000
 undo.limit=10
-showQuickStartAtStartup= false
+showQuickStartAtStartup=false
 taskStackSize=10485760
