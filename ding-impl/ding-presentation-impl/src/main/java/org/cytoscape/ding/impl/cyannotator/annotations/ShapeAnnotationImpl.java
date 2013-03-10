@@ -105,7 +105,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
   public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
     super(cyAnnotator, view, argMap);
-    this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
     this.fillColor = getColor(argMap, FILLCOLOR, null);
     setFillColor(fillColor);
     this.fillOpacity = getDouble(argMap, FILLOPACITY, 100.0);
@@ -115,6 +114,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.shapeHeight = getDouble(argMap, HEIGHT, 100.0);
 
     this.borderWidth = getDouble(argMap, EDGETHICKNESS, 1.0);
+    this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
     this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
     this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
@@ -193,10 +193,25 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
   
   public Paint getBorderColor() {return borderColor;}
+  public double getBorderOpacity() {return borderOpacity;}
   public Paint getFillColor() {return fillColor;}
+  public double getFillOpacity() {return fillOpacity;}
     
-  public void setBorderColor(Paint border) {borderColor = border;}
-  public void setFillColor(Paint fill) {fillColor = fill;}
+  public void setBorderColor(Paint border) {
+		borderColor = border;
+	}
+
+	public void setBorderOpacity(double opacity) {
+		borderOpacity = opacity;
+	}
+
+  public void setFillColor(Paint fill) {
+		fillColor = fill;
+	}
+
+	public void setFillOpacity(double opacity) {
+		fillOpacity = opacity;
+	}
     
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
