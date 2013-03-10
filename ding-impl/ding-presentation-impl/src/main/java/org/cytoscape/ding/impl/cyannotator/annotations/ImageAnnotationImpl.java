@@ -265,9 +265,13 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 
 	public Paint getBorderColor() {return borderColor;}
 	public Paint getFillColor() {return null;}
+	public double getFillOpacity() {return 100.0;}
+	public double getBorderOpacity() {return 100.0;}
 
 	public void setBorderColor(Paint border) {borderColor = border;}
 	public void setFillColor(Paint fill) {}
+	public void setFillOpacity(double opacity) {}
+	public void setBorderOpacity(double opacity) {}
 
 	public Shape getShape() {
 		return new Rectangle2D.Double((double)getX(), (double)getY(), imageWidth, imageHeight);
