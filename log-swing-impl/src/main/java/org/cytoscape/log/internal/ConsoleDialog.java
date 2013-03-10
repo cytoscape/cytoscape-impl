@@ -27,40 +27,35 @@ package org.cytoscape.log.internal;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Date;
-import java.util.Hashtable;
-import java.text.DateFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.swing.BorderFactory;
-import javax.swing.JDialog;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.event.DocumentEvent;
@@ -72,16 +67,16 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.apache.log4j.Level;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.ops4j.pax.logging.spi.PaxLoggingEvent;
-import org.apache.log4j.Level;
 
 class ConsoleDialog {
 	static class LogEvent {
@@ -194,8 +189,6 @@ class ConsoleDialog {
 
 		dialog = new JDialog(app.getJFrame(), "Developer's Log Console", Dialog.ModalityType.MODELESS);
 		dialog.setLayout(new GridBagLayout());
-		dialog.setModal(false);
-		dialog.setAlwaysOnTop(false);
 
 		filterTextField = new JTextField();
 		makeFilterTextFieldValid();

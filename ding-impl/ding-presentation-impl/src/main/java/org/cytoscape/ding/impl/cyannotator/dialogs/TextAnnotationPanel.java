@@ -267,8 +267,8 @@ public class TextAnnotationPanel extends javax.swing.JPanel {
 			}
 		});
 
-		tASelectColor.setVisible(true);
 		tASelectColor.setSize(435, 420);
+		tASelectColor.setVisible(true);
 	}
 
 	private void fontStyleListValueChanged(javax.swing.event.ListSelectionEvent evt) {

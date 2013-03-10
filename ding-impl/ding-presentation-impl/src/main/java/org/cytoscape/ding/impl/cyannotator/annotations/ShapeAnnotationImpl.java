@@ -26,21 +26,17 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
-import javax.swing.JFrame;
-
 import java.util.Map;
+
+import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation.ShapeType;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 
 public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnnotation {
@@ -244,7 +240,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
 	}
 
-	public JFrame getModifyDialog() {
+	public JDialog getModifyDialog() {
 		return new ShapeAnnotationDialog(this);
 	}
 

@@ -28,17 +28,18 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.geom.Point2D;
+
+import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.api.BoundedTextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
 
-public class BoundedTextAnnotationDialog extends javax.swing.JFrame {
+public class BoundedTextAnnotationDialog extends JDialog {
 
 	private javax.swing.JButton applyButton;
 	private javax.swing.JButton cancelButton;
@@ -136,6 +137,7 @@ public class BoundedTextAnnotationDialog extends javax.swing.JFrame {
 		pack();
 		setSize(520, y+80 );
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 
 	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {

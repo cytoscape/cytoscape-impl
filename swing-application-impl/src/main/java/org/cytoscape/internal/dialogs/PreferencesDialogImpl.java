@@ -110,8 +110,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		pack();
 		// set location relative to owner/parent
 		this.setLocationRelativeTo(owner);
-		this.setVisible(true);
-		
+		this.setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 
 	

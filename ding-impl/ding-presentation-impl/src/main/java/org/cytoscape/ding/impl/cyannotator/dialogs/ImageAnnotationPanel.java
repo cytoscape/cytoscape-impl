@@ -285,9 +285,9 @@ public class ImageAnnotationPanel extends javax.swing.JPanel {
 				previewPanel.repaint();
 			}
 		});
-	
-		sASelectColor.setVisible(true);
-		sASelectColor.setSize(435, 420);		
+		
+		sASelectColor.setSize(435, 420);
+		sASelectColor.setVisible(true);		
 		//2 -> EdgeColor
 	}
 

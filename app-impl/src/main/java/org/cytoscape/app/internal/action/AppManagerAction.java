@@ -133,11 +133,10 @@ public class AppManagerAction extends AbstractCyAction {
 				
 		// Create and display the App Manager dialog
 		if (appManagerDialog == null) {
-			appManagerDialog = new AppManagerDialog(appManager, downloadSitesManager, fileUtil, taskManager, swingApplication.getJFrame(), false);
-		} else {
-			appManagerDialog.pack();
-			appManagerDialog.setVisible(true);
-		}
+			appManagerDialog = new AppManagerDialog(appManager, downloadSitesManager, fileUtil, taskManager, swingApplication.getJFrame(), true);
+		} 
+		appManagerDialog.pack();
+		appManagerDialog.setVisible(true);
 	}
 
 }

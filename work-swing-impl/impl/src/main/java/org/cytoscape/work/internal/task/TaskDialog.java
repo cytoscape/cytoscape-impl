@@ -263,6 +263,7 @@ class TaskDialog extends JDialog {
 	    im.put( KeyStroke.getKeyStroke( "released ENTER" ), "released" );
 
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				if (errorOccurred)

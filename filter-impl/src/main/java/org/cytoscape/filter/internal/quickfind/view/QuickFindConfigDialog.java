@@ -148,16 +148,6 @@ public class QuickFindConfigDialog extends JDialog {
 		String title = VisualPropertyUtil.get(lexicon, view, "NETWORK_TITLE", BasicVisualLexicon.NETWORK, String.class);
 		this.setTitle("Configure Search Options for:  " + title);
 
-		//  If we are working on Linux, set always on top to true.
-		//  This is a hack to deal with numerous z-ordering bugs on Linux.
-		String os = System.getProperty("os.name");
-
-		if (os != null) {
-			if (os.toLowerCase().startsWith("linux")) {
-				this.setAlwaysOnTop(true);
-			}
-		}
-
 		//  Create Master Panel
 		JPanel masterPanel = new JPanel();
 		masterPanel.setBorder(new EmptyBorder(10, 10, 10, 10));

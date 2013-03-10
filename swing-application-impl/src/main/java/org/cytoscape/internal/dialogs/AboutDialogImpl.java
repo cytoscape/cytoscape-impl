@@ -99,7 +99,6 @@ class AboutDialogImpl extends javax.swing.JDialog implements HyperlinkListener {
 		mainEditorPane.setEditable(false);
 		mainEditorPane.addHyperlinkListener(this);
 		setLocationRelativeTo(parent);
-		setAlwaysOnTop(true);
 	}
 
 	/** This method is called from within the constructor to
@@ -118,7 +117,6 @@ class AboutDialogImpl extends javax.swing.JDialog implements HyperlinkListener {
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("About");
-		setAlwaysOnTop(true);
 
 		titlePanel.setBackground(new java.awt.Color(255, 255, 255));
 

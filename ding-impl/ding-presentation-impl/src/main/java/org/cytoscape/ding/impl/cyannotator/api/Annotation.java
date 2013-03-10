@@ -24,21 +24,16 @@ package org.cytoscape.ding.impl.cyannotator.api;
  * #L%
  */
 
-import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
 
 
 public interface Annotation {
@@ -84,7 +79,7 @@ public interface Annotation {
 	public void update();
 	public void contentChanged();
 
-	public JFrame getModifyDialog();
+	public JDialog getModifyDialog();
 
 	// Overrides of Component
 	public void paint(Graphics g);

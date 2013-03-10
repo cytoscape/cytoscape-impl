@@ -318,9 +318,9 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 				previewPanel.repaint();
 			}
 		});
-	
-		sASelectColor.setVisible(true);
-		sASelectColor.setSize(435, 420);		
+		
+		sASelectColor.setSize(435, 420);
+		sASelectColor.setVisible(true);		
 		//2 -> EdgeColor
 	}
 
@@ -335,8 +335,8 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 			}
 		});
 	
-		sASelectColor.setVisible(true);
 		sASelectColor.setSize(435, 420);
+		sASelectColor.setVisible(true);
 		//1 -> FillColor
 	}
 
