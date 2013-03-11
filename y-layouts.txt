@@ -1,0 +1,8 @@
+yFiles is a yWorks commercial software product, and its source code is not open to
+the public. Cytoscape distributes an obfuscated yFiles jar.
+
+If you are a member of the Cytoscape core development team and would like to access
+the Cytoscape code that interfaces with the yFiles library, you can access the
+private SVN repository here:
+
+   svn+ssh://grenache.ucsd.edu/cellar/common/yfiles-svn/branches/yfiles3
