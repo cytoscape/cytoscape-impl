@@ -42,12 +42,14 @@ import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 
-public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener, NetworkAddedListener, NetworkAboutToBeDestroyedListener {
+public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener,ColumnNameChangedListener, NetworkAddedListener, NetworkAboutToBeDestroyedListener {
 
 	private static final Set<Class<? extends CyIdentifiable>> GRAPH_OBJECTS;
 
@@ -148,6 +150,25 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 					continue;
 
 				this.attrSets.get(network).get(objectType).getAttrMap().remove(e.getColumnName());
+				return;
+			}
+		}
+	}
+	
+	@Override
+	public void handleEvent(ColumnNameChangedEvent e) {
+		final CyTable table = e.getSource();
+
+		for (CyNetwork network : tableSets.keySet()) {
+			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = tableSets.get(network);
+			for (final Class<? extends CyIdentifiable> objectType : GRAPH_OBJECTS) {
+				final Set<CyTable> targetTables = tMap.get(objectType);
+				if (!targetTables.contains(table))
+					continue;
+
+				this.attrSets.get(network).get(objectType).getAttrMap().remove(e.getOldColumnName());
+				this.attrSets.get(network).get(objectType).getAttrMap()
+				.put(e.getNewColumnName(), table.getColumn(e.getNewColumnName()).getType());
 				return;
 			}
 		}
