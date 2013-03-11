@@ -126,14 +126,14 @@ class GraphicsUtilities {
 		if (annotation.getFillColor() != null) {
 			// System.out.println("drawShape: fill color = "+annotation.getFillColor());
 			// System.out.println("drawShape: fill opacity = "+annotation.getFillOpacity());
-			g2.setPaint(annotation.getFillColor());
+			g2.setPaint(mixColor(annotation.getFillColor(), annotation.getFillOpacity()));
 			g2.fill(shape);
 		}
 
 		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
 			// System.out.println("drawShape: border color = "+annotation.getBorderColor());
 			// System.out.println("drawShape: border opacity = "+annotation.getBorderOpacity());
-			g2.setPaint(annotation.getBorderColor());
+			g2.setPaint(mixColor(annotation.getBorderColor(), annotation.getBorderOpacity()));
 			g2.setStroke(new BasicStroke(border));
 			g2.draw(shape);
 		} else if (annotation.isSelected()) {
@@ -412,6 +412,12 @@ class GraphicsUtilities {
 
 		// TODO: Flip for other end
 		return radians;
+	}
+
+	static private Paint mixColor(Paint p, double value) {
+		if (p == null || !(p instanceof Color)) return p;
+		Color c = (Color)p;
+		return new Color(c.getRed(), c.getGreen(), c.getBlue(), ((int)value)*255/100);
 	}
 
 }
