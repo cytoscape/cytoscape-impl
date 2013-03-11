@@ -24,7 +24,7 @@ package org.cytoscape.edge.bundler.internal;
  * #L%
  */
 
-import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
@@ -32,6 +32,7 @@ import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
 import java.util.Properties;
 import org.osgi.framework.BundleContext;
+import org.cytoscape.application.CyApplicationManager;
 
 import static org.cytoscape.work.ServiceProperties.*;
 
@@ -47,29 +48,33 @@ public class CyActivator extends AbstractCyActivator {
 		BendFactory bf = getService(bc, BendFactory.class);
 		VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
 		VisualMappingFunctionFactory discreteFactory = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=discrete)");
+		CyApplicationManager cam = getService(bc, CyApplicationManager.class);
 		
-		EdgeBundlerTaskFactory edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 0);
+		EdgeBundlerTaskFactory edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 0, cam);
 		Properties edgeBundlerTaskFactoryProps = new Properties();
+		edgeBundlerTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
 		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"11.0");
 		edgeBundlerTaskFactoryProps.setProperty(TITLE,"All Nodes and Edges");
-		registerService(bc,edgeBundlerTaskFactory,NetworkViewTaskFactory.class, edgeBundlerTaskFactoryProps);
+		registerService(bc,edgeBundlerTaskFactory,NetworkTaskFactory.class, edgeBundlerTaskFactoryProps);
 		
 		
-		edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 1);
+		edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 1, cam);
 		edgeBundlerTaskFactoryProps = new Properties();
+		edgeBundlerTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
 		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"12.0");
 		edgeBundlerTaskFactoryProps.setProperty(TITLE,"Selected Nodes Only");
-		registerService(bc,edgeBundlerTaskFactory,NetworkViewTaskFactory.class, edgeBundlerTaskFactoryProps);
+		registerService(bc,edgeBundlerTaskFactory,NetworkTaskFactory.class, edgeBundlerTaskFactoryProps);
 		
 		
-		edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 2);
+		edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 2, cam);
 		edgeBundlerTaskFactoryProps = new Properties();
+		edgeBundlerTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
 		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"13.0");
 		edgeBundlerTaskFactoryProps.setProperty(TITLE,"Selected Edges Only");
-		registerService(bc,edgeBundlerTaskFactory,NetworkViewTaskFactory.class, edgeBundlerTaskFactoryProps);
+		registerService(bc,edgeBundlerTaskFactory,NetworkTaskFactory.class, edgeBundlerTaskFactoryProps);
 	}
 }
 
