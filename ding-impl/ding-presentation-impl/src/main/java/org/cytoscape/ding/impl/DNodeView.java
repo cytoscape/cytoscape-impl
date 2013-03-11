@@ -1163,9 +1163,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			CustomGraphicLayer finalCG = newCG;
 
 			if (sync) {
+				// System.out.println("Synching size to "+this.getWidth()+"x"+this.getHeight());
 				// Size is locked to node size.				
 				finalCG = syncSize(customGraphics, newCG, this.getWidth(), this.getHeight());
 			} else if (customSize != null) {
+				// System.out.println("Synching size to "+customSize);
 				// Size should be set to customSize
 				finalCG = syncSize(customGraphics, newCG, customSize, customSize);
 			}
@@ -1224,6 +1226,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		// we can use our own width and height
 		if (originalBounds == null) return cg;
 
+		if (width == 0.0 || height == 0.0) return cg;
+
 		final double cgW = originalBounds.getWidth();
 		final double cgH = originalBounds.getHeight();
 
@@ -1238,11 +1242,15 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (cg instanceof PaintedShape) {
 			scale = AffineTransform.getScaleInstance(fit * width / cgW, fit * height / cgH);
 		} else {
+			double scaleW = width/cgW;
+			double scaleH = height/cgH;
 			// Case 2: node height value is larger than width
-			if (width >= height) {
-				scale = AffineTransform.getScaleInstance(fit * (width / cgW) * (height / width), fit * height / cgH);
+			if (scaleW >= scaleH) {
+				scale = AffineTransform.getScaleInstance(fit * scaleH, fit * scaleH);
+				// scale = AffineTransform.getScaleInstance(fit * (width / cgW) * (height / width), fit * height / cgH);
 			} else {
-				scale = AffineTransform.getScaleInstance(fit * width / cgW, fit * (height / cgH) * (width / height));
+				scale = AffineTransform.getScaleInstance(fit * scaleW, fit * scaleW);
+				// scale = AffineTransform.getScaleInstance(fit * (width / cgW) * (height / width), fit * height / cgH);
 			}
 		}
 		

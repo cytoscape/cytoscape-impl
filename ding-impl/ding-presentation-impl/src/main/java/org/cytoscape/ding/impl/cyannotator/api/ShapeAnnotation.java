@@ -68,10 +68,14 @@ public interface ShapeAnnotation extends Annotation {
 	public void setBorderWidth(double width);
 
 	public Paint getBorderColor();
+	public double getBorderOpacity();
 	public Paint getFillColor();
+	public double getFillOpacity();
 
 	public void setBorderColor(Paint border);
+	public void setBorderOpacity(double opacity);
 	public void setFillColor(Paint fill);
+	public void setFillOpacity(double opacity);
 
 	public Shape getShape();
 }
