@@ -96,7 +96,10 @@ public class OpenSessionTask extends AbstractTask {
 		if (cancelled)
 			return;
 
-		insertTasksAfterCurrentTask(new LoadSessionTask(reader));
+		if(appManager.getCurrentNetwork() == null && appManager.getCurrentTable() == null)
+			insertTasksAfterCurrentTask(new LoadSessionTaskWithoutWarning(reader));
+		else
+			insertTasksAfterCurrentTask(new LoadSessionTask(reader));
 		taskMonitor.setProgress(1.0);
 	}
 	
@@ -120,6 +123,35 @@ public class OpenSessionTask extends AbstractTask {
 			
 			if(!changeCurrentSession)
 				return;
+			
+			final CySession newSession = reader.getSession();
+			if ( newSession == null )
+				throw new NullPointerException("Session could not be read for file: " + file);
+
+			sessionMgr.setCurrentSession(newSession, file.getAbsolutePath());
+			
+			// Set Current network: this is necessary to update GUI.
+			final RenderingEngine<CyNetwork> currentEngine = appManager.getCurrentRenderingEngine();
+			if(currentEngine != null)
+				appManager.setCurrentRenderingEngine(currentEngine);
+			
+			taskMonitor.setProgress(1.0);
+			taskMonitor.setStatusMessage("Session file " + file + " successfully loaded.");
+			
+			// Add this session file URL as the most recent file.
+			tracker.add(file.toURI().toURL());
+		}
+	}
+	
+	public final class LoadSessionTaskWithoutWarning extends AbstractTask {
+		CySessionReader reader;
+		
+		LoadSessionTaskWithoutWarning(CySessionReader reader) {
+			this.reader = reader;
+		}
+		
+		@Override
+		public void run(TaskMonitor taskMonitor) throws Exception {
 			
 			final CySession newSession = reader.getSession();
 			if ( newSession == null )
