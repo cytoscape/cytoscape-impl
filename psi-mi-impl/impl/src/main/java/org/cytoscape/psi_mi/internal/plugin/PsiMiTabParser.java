@@ -30,20 +30,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +49,6 @@ public class PsiMiTabParser {
 	private static final Logger logger = LoggerFactory.getLogger(PsiMiTabParser.class);
 
 	private static final int BUFFER_SIZE = 100000;
-
 	private static final String ATTR_PREFIX = "PSIMI-25.";
 
 	// Node Attr Names
@@ -63,9 +58,7 @@ public class PsiMiTabParser {
 	private static final String TAXONDBS = ATTR_PREFIX + "taxon DB";
 
 	// Edge Attr Names
-	private static final String INTERACTION = CyEdge.INTERACTION; // should
-																	// already
-																	// exist
+	private static final String INTERACTION = CyEdge.INTERACTION;
 	private static final String DETECTION_METHOD_ID = ATTR_PREFIX + "detection method ID";
 	private static final String DETECTION_METHOD = ATTR_PREFIX + "detection method";
 	private static final String INTERACTION_TYPE = ATTR_PREFIX + "interaction type";
@@ -80,23 +73,12 @@ public class PsiMiTabParser {
 	private static final String CHEBI = "chebi";
 	private static final String COMPOUND = "compound";
 
-	//private Map<String, CyNode> nodeMap;
-
 	private final InputStream inputStream;
-	private final CyNetworkFactory cyNetworkFactory;
-
-	private final CyNetworkManager cyNetworkManager;
-	private final CyRootNetworkManager cyRootNetworkManager; 
 	
-	
-	private boolean cancelFlag = false;
+	private volatile boolean cancelFlag = false;
 
-	public PsiMiTabParser(final InputStream inputStream, final CyNetworkFactory cyNetworkFactory, 
-			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager) {
+	public PsiMiTabParser(final InputStream inputStream) {
 		this.inputStream = inputStream;
-		this.cyNetworkFactory = cyNetworkFactory;
-		this.cyNetworkManager = cyNetworkManager;
-		this.cyRootNetworkManager = cyRootNetworkManager;
 	}
 
 	public CyNetwork parse(final TaskMonitor taskMonitor) throws IOException {
@@ -105,9 +87,7 @@ public class PsiMiTabParser {
 
 		taskMonitor.setProgress(-1.0);
 
-		//this.nodeMap = new HashMap<String, CyNode>();
-
-		final CyNetwork network = this.rootNetwork.addSubNetwork();//cyNetworkFactory.createNetwork();
+		CyNetwork network = this.rootNetwork.addSubNetwork();
 
 		initColumns(network);
 
@@ -117,9 +97,14 @@ public class PsiMiTabParser {
 
 		long interactionCount = 0;
 		while ((line = br.readLine()) != null) {
+			
+			// Check cancel state
 			if (cancelFlag) {
-				cleanup(br);
-				return network;
+				System.out.println("Loading canceld.");
+				br.close();
+				network.dispose();
+				network = null;
+				throw new IOException("Network loading process canceled by user.");
 			}
 
 			// Ignore comment line
@@ -137,87 +122,17 @@ public class PsiMiTabParser {
 		}
 
 		br.close();
-		//nodeMap.clear();
-		//nodeMap = null;
-
 		logger.info("MITAB Parse finished in " + (System.currentTimeMillis() - start) + " msec.");
 
 		return network;
 	}
 
-//	private void processMinimum(final CyNetwork network, final MITABLine25 mline, final String line) {
-//		mline.readLine(line);
-//
-//		final String sourceRawID = mline.sourceRawID;
-//		final String targetRawID = mline.targetRawID;
-//
-//		// create nodes
-//		CyNode source = nodeMap.get(sourceRawID);
-//		if (source == null) {
-//			source = network.addNode();
-//			nodeMap.put(sourceRawID, source);
-//		}
-//		CyNode target = nodeMap.get(targetRawID);
-//		if (target == null) {
-//			target = network.addNode();
-//			nodeMap.put(targetRawID, target);
-//		}
-//
-//		final CyRow sourceRow = network.getRow(source);
-//		final CyRow targetRow = network.getRow(target);
-//
-//		// set various node attrs
-//		sourceRow.set(CyNetwork.NAME, sourceRawID);
-//		targetRow.set(CyNetwork.NAME, targetRawID);
-//
-//		setInteractorType(sourceRow, mline.srcAliases);
-//		setInteractorType(targetRow, mline.tgtAliases);
-//
-//		setAliases(sourceRow, mline.srcAliases, mline.srcDBs);
-//		setAliases(targetRow, mline.tgtAliases, mline.tgtDBs);
-//
-//		setTaxID(sourceRow, mline.srcTaxonIDs, mline.srcTaxonDBs);
-//		setTaxID(targetRow, mline.tgtTaxonIDs, mline.tgtTaxonDBs);
-//
-//		// create edge
-//		final CyEdge e = network.addEdge(source, target, true);
-//		CyRow edgeRow = network.getRow(e);
-//
-//		// set various edge attrs
-//		String interactionId = "unknown";
-//		if (mline.interactionIDs.size() > 0)
-//			interactionId = mline.interactionIDs.get(0);
-//
-//		edgeRow.set(INTERACTION, interactionId);
-//		edgeRow.set(CyNetwork.NAME, sourceRawID + " (" + interactionId + ") " + targetRawID);
-//
-//		setTypedEdgeListAttribute(edgeRow, mline.interactionTypes, INTERACTION_TYPE_ID, INTERACTION_TYPE);
-//		setTypedEdgeListAttribute(edgeRow, mline.detectionMethods, DETECTION_METHOD_ID, DETECTION_METHOD);
-//		setEdgeListAttribute(edgeRow, mline.sourceDBs, SOURCE_DB);
-//		setEdgeListAttribute(edgeRow, mline.edgeScoreStrings, EDGE_SCORE);
-//
-//		setPublication(edgeRow, mline.publicationValues, mline.publicationDBs);
-//		setAuthors(edgeRow, mline.authors);
-//	}
 
 	private void processFull(final CyNetwork network, final MITABLine25 mline, final String line) {
 		mline.readLine(line);
 
 		final String sourceRawID = mline.sourceRawID;
 		final String targetRawID = mline.targetRawID;
-
-
-		// create nodes
-//		CyNode source = nodeMap.get(sourceRawID);
-//		if (source == null) {
-//			source = network.addNode();
-//			nodeMap.put(sourceRawID, source);
-//		}
-//		CyNode target = nodeMap.get(targetRawID);
-//		if (target == null) {
-//			target = network.addNode();
-//			nodeMap.put(targetRawID, target);
-//		}
 
 		CyNode source;
 		if (this.nMap.get(sourceRawID) == null){
@@ -259,8 +174,6 @@ public class PsiMiTabParser {
 			
 			sourceRow.set(dbName, mline.sourceIDs.get(i));
 		}
-		
-		
 
 		setInteractorType(sourceRow, mline.srcAliases);
 		setInteractorType(targetRow, mline.tgtAliases);
@@ -371,14 +284,8 @@ public class PsiMiTabParser {
 		}
 	}
 
-	public void cancel() {
+	void cancel() {
 		cancelFlag = true;
-	}
-
-	private void cleanup(final Reader br) throws IOException {
-		br.close();
-		//nodeMap.clear();
-		//nodeMap = null;
 	}
 
 	private void setInteractorType(CyRow row, List<String> aliases) {
