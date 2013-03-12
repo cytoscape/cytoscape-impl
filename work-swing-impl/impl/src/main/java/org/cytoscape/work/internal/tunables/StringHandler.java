@@ -42,6 +42,8 @@ import javax.swing.text.DefaultFormatter;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -50,6 +52,8 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  * @author pasteur
  */
 public class StringHandler extends AbstractGUITunableHandler implements ActionListener {
+	
+	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
 	
 	private static final Font TEXT_FONT = new Font("SansSerif", Font.PLAIN,12);
 	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD ,13);
@@ -81,11 +85,10 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		try {
 			s = (String)getValue();
 		} catch (final Exception e) {
-			e.printStackTrace();
+			logger.error("Could not initialize String Tunable.", e);
 			s = "";
 		}
 
-		//set Gui
 		final DefaultFormatter formatter = new DefaultFormatter();
 		formatter.setOverwriteMode(false);
 		textField = new JFormattedTextField(formatter);
@@ -93,14 +96,12 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		final JLabel label = new JLabel(getDescription());
-		label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 		label.setFont(LABEL_FONT);
-		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		label.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		textField.setFont(TEXT_FONT);
-		
 		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.addActionListener(this);
-		textField.setPreferredSize(new Dimension(200, 25));
+		textField.setPreferredSize(new Dimension(200, 14));
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
@@ -117,7 +118,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 			s = (String)getValue();
 			textField.setValue(s);
 		} catch (final Exception e) {
-			e.printStackTrace();
+			logger.error("Could not set String Tunable.", e);
 		}
 	}
 	
@@ -132,7 +133,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 			if (string != null)
 				setValue(string);
 		} catch (final Exception e) {
-			e.printStackTrace();
+			logger.error("Could not set String Tunable.", e);
 		}
 	}
 	
@@ -150,8 +151,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		try {
 			return text;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.warn("Could not set String Tunable.", e);
 			return "";
 		}
 		
@@ -159,7 +159,6 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-
 		handle();
 	}
 }
