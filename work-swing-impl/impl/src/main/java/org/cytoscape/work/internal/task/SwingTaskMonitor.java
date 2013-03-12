@@ -33,16 +33,13 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class SwingTaskMonitor implements TaskMonitor {
 	
 	final private ExecutorService cancelExecutorService;
 	final private Window parent;
-	final static private Logger logger = LoggerFactory.getLogger(SwingTaskMonitor.class);
 
-	private boolean cancelled = false;
+	private volatile boolean cancelled = false;
 	private TaskDialog dialog = null;
 	private Task task;
 	private String title = null;
@@ -95,7 +92,6 @@ class SwingTaskMonitor implements TaskMonitor {
 
 		dialog = new TaskDialog(parent, this);
 		dialog.setLocationRelativeTo(parent);
-		
 		
 		if (title != null)
 			dialog.setTaskTitle(title);
@@ -156,7 +152,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		close();
 	}
 
-	public boolean cancelled() {
+	protected boolean cancelled() {
 		return cancelled;
 	}
 
@@ -231,7 +227,9 @@ class SwingTaskMonitor implements TaskMonitor {
 		// the Task throws an exception
 		if (dialog == null)
 			open();
-		dialog.setException(exception, "The task could not be completed because an error has occurred.");
+
+		if(dialog!= null)
+			dialog.setException(exception, "The task could not be completed because an error has occurred.");
 	}
 
 	public synchronized boolean isShowingException() {
