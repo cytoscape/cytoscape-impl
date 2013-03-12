@@ -69,6 +69,8 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 enum ObjectType {
     LIST("list"),
@@ -148,6 +150,8 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     private Writer writer;
 
     private boolean doFullEncoding;
+    
+    final static private Logger logger = LoggerFactory.getLogger(GenericXGMMLWriter.class);
 
     public GenericXGMMLWriter(final OutputStream outputStream,
                               final RenderingEngineManager renderingEngineMgr,
@@ -652,12 +656,18 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void writeVisualPropertyAtt(View<? extends CyIdentifiable> view, VisualProperty vp) throws IOException {
-        Object value = view.getVisualProperty(vp);
-        value = vp.toSerializableString(value);
-        
-        if (value != null) {
-            writeAttributeXML(vp.getIdString(), ObjectType.STRING, value, false, true);
+    	Object value = view.getVisualProperty(vp);
+    	
+    	try {
+	        value = vp.toSerializableString(value);
+    	} catch (final ClassCastException e) {
+        	logger.error("Error getting serializable string of Visual Property \"" + vp.getIdString() + "\" (value: " +
+        			value + ")", e);
+        	return;
         }
+	        
+        if (value != null)
+            writeAttributeXML(vp.getIdString(), ObjectType.STRING, value, false, true);
     }
     
     /**
