@@ -33,29 +33,34 @@ import org.cytoscape.model.CyNetwork;
  * 
  * 
  */
-
 public interface NetworkMerge {
-    
-    public enum Operation {
-        UNION("union"),INTERSECTION("intersection"),DIFFERENCE("difference");
-        private String opName;
-        
-        private Operation(final String opName) {
-            this.opName = opName;            
-        }
 
-        public String toString() {
-            return opName;
-        }
-    }
-    
-    /**
-     * Merge networks into one.
-     * @param toNetwork merge to this network
-     * @param fromNetworks networks to be merged
-     * @param op operation
-     * @param title title of the merged network
-     * @return the merged network.
-     */
-    public CyNetwork mergeNetwork(CyNetwork toNetwork, List<CyNetwork> fromNetworks, Operation op);
+	public enum Operation {
+		UNION("union"), INTERSECTION("intersection"), DIFFERENCE("difference");
+		
+		private String opName;
+
+		private Operation(final String opName) {
+			this.opName = opName;
+		}
+
+		public String toString() {
+			return opName;
+		}
+	}
+
+	/**
+	 * Merge networks into one.
+	 * 
+	 * @param toNetwork
+	 *            merge to this network
+	 * @param fromNetworks
+	 *            networks to be merged
+	 * @param op
+	 *            operation
+	 * @param title
+	 *            title of the merged network
+	 * @return the merged network.
+	 */
+	public CyNetwork mergeNetwork(CyNetwork toNetwork, List<CyNetwork> fromNetworks, Operation op);
 }
