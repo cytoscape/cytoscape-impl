@@ -24,6 +24,8 @@ package org.cytoscape.application.internal;
  * #L%
  */
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +38,10 @@ import org.cytoscape.property.CyProperty;
  */
 public class CyVersionImpl implements CyVersion {
 
+	private static final String PROPERTY_FILE = "config.properties";
+
+	private static final String APPLICATION_VERSION_PROPERTY = "application.version";
+
 	private final static Pattern p = Pattern.compile(CyVersion.VERSION_REGEX);
 
 	private final int major;
@@ -44,16 +50,30 @@ public class CyVersionImpl implements CyVersion {
 	private final String qualifier;
 	private final String version;
 
+	@SuppressWarnings("deprecation")
 	public CyVersionImpl(final CyProperty<Properties> props) {
-		version = props.getProperties().getProperty(CyVersion.VERSION_PROPERTY_NAME);
+		InputStream stream = getClass().getResourceAsStream(PROPERTY_FILE);
+		if ( stream == null )
+			throw new NullPointerException("Application properties are missing");
+		
+		Properties properties = new Properties();
+		try {
+			properties.load(stream);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		version = properties.getProperty(APPLICATION_VERSION_PROPERTY); 
 
 		if ( version == null )
-			throw new NullPointerException("No version number found in the provided properties with property name: " + CyVersion.VERSION_PROPERTY_NAME);
+			throw new NullPointerException("No version number found in the provided properties");
 
 		Matcher m = p.matcher(version);
 
 		if ( !m.matches() )
 			throw new IllegalArgumentException("Malformed version number: " + version + "  The version number must match this regular expression: " + CyVersion.VERSION_REGEX);
+
+		props.getProperties().setProperty(CyVersion.VERSION_PROPERTY_NAME, version);
 
 		major = Integer.parseInt(m.group(1));
 		minor = Integer.parseInt(m.group(2));
