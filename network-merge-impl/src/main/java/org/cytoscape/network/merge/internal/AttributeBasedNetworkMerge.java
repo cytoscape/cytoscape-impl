@@ -24,25 +24,24 @@ package org.cytoscape.network.merge.internal;
  * #L%
  */
 
-import org.cytoscape.network.merge.internal.util.AttributeValueMatcher;
-import org.cytoscape.network.merge.internal.util.DefaultAttributeValueMatcher;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.network.merge.internal.model.AttributeMapping;
 import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 import org.cytoscape.network.merge.internal.util.AttributeMerger;
+import org.cytoscape.network.merge.internal.util.AttributeValueMatcher;
 import org.cytoscape.network.merge.internal.util.ColumnType;
+import org.cytoscape.network.merge.internal.util.DefaultAttributeValueMatcher;
 import org.cytoscape.work.TaskMonitor;
-
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 
 /**
  * Column based network merge
@@ -57,7 +56,6 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge {
 	private final AttributeValueMatcher attributeValueMatcher;
 	private final AttributeMerger attributeMerger;
 
-	
 	/**
 	 * 
 	 * @param matchingAttribute
@@ -82,9 +80,10 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge {
 	 */
 	public AttributeBasedNetworkMerge(final MatchingAttribute matchingAttribute,
 			final AttributeMapping nodeAttributeMapping, final AttributeMapping edgeAttributeMapping,
-			final AttributeMerger attributeMerger, AttributeValueMatcher attributeValueMatcher, final TaskMonitor taskMonitor) {
+			final AttributeMerger attributeMerger, AttributeValueMatcher attributeValueMatcher,
+			final TaskMonitor taskMonitor) {
 		super(taskMonitor);
-		
+
 		if (matchingAttribute == null || nodeAttributeMapping == null || edgeAttributeMapping == null
 				|| attributeMerger == null || attributeValueMatcher == null) {
 			throw new java.lang.NullPointerException();
@@ -98,22 +97,19 @@ public class AttributeBasedNetworkMerge extends AbstractNetworkMerge {
 
 	@Override
 	protected boolean matchNode(final CyNetwork net1, final CyNode n1, final CyNetwork net2, final CyNode n2) {
-		if (net1 == null || n1 == null || net2 == null || n2 == null) {
-			throw new java.lang.NullPointerException();
-		}
+		if (net1 == null || n1 == null || net2 == null || n2 == null)
+			throw new NullPointerException();
 
 		// TODO: should it match if n1==n2?
-		if (n1 == n2) {
+		if (n1 == n2)
 			return true;
-		}
 
 		CyColumn attr1 = matchingAttribute.getAttributeForMatching(net1);
 		CyColumn attr2 = matchingAttribute.getAttributeForMatching(net2);
-
-		if (attr1 == null || attr2 == null) {
-			throw new java.lang.IllegalArgumentException("Please specify the matching table column first");
-		}
-
+		
+		if (attr1 == null || attr2 == null)
+			throw new IllegalArgumentException("Please specify the matching table column first");
+		
 		return attributeValueMatcher.matched(n1, attr1, n2, attr2);
 	}
 
