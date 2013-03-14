@@ -605,7 +605,12 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 					final int cellRow = browserTable.getSelectedRow();
 					final int cellColumn = browserTable.getSelectedColumn();
 
-					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, cellColumn)) {
+					// Map the screen index of column to internal index of the table model
+					String colName = browserTable.getColumnName(cellColumn);
+					int colIndex = browserTableModel.mapColumnNameToColumnIndex(colName);
+					
+					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, colIndex)) {
+						
 						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
 								"Information", JOptionPane.INFORMATION_MESSAGE);
 					} else {
