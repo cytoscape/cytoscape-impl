@@ -36,16 +36,19 @@ import org.cytoscape.work.TaskMonitor;
 
 class SwingTaskMonitor implements TaskMonitor {
 	
+	private static final String ERROR_MESSAGE = "The task could not be completed because an error has occurred.";
+	
 	final private ExecutorService cancelExecutorService;
 	final private Window parent;
 
-	private volatile boolean cancelled = false;
-	private TaskDialog dialog = null;
+	private volatile boolean cancelled;
+	private TaskDialog dialog;
 	private Task task;
-	private String title = null;
-	private String statusMessage = null;
-	private int progress = 0;
-	private Future<?> future = null;
+	private String title;
+	private String statusMessage;
+	private int progress;
+	private Exception exception;
+	private Future<?> future;
 	private int expectedNumTasks = 1;
 	private int currentTaskNum = -1; // so that the first task is numbered 0
 	private boolean showDialog = true;
@@ -87,6 +90,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			});
 			return;
 		}
+		
 		if (dialog != null)
 			return;
 
@@ -95,10 +99,16 @@ class SwingTaskMonitor implements TaskMonitor {
 		
 		if (title != null)
 			dialog.setTaskTitle(title);
-		if (statusMessage != null)
-			dialog.setStatus(statusMessage);
-		if (progress != 0)
-			dialog.setPercentCompleted(progress);
+		
+		if (exception == null) {
+			if (statusMessage != null)
+				dialog.setStatus(statusMessage);
+			if (progress != 0)
+				dialog.setPercentCompleted(progress);
+		} else {
+			dialog.setException(exception, ERROR_MESSAGE);
+			exception = null;
+		}
 		
 		dialog.setVisible(showDialog);
 	}
@@ -223,17 +233,18 @@ class SwingTaskMonitor implements TaskMonitor {
 			});
 			return;
 		}
-		// force the dialog box to be created if
-		// the Task throws an exception
-		if (dialog == null)
+		
+		// force the dialog box to be created if the Task throws an exception
+		if (dialog == null) {
+			this.exception = exception;
 			open();
-
-		if(dialog!= null)
-			dialog.setException(exception, "The task could not be completed because an error has occurred.");
+		} else {
+			dialog.setException(exception, ERROR_MESSAGE);
+		}
 	}
 
 	public synchronized boolean isShowingException() {
-		return dialog.errorOccurred();
+		return dialog != null && dialog.errorOccurred();
 	}
 
 	public synchronized boolean isOpened() {
