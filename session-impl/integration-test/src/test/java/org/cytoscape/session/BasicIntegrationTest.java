@@ -208,6 +208,7 @@ public abstract class BasicIntegrationTest {
 				mavenBundle().groupId("org.cytoscape").artifactId("layout-impl").version(implBundleVersion).startLevel(15),
 				mavenBundle().groupId("org.cytoscape").artifactId("viewmodel-impl").version(implBundleVersion).startLevel(15),
 				mavenBundle().groupId("org.cytoscape").artifactId("vizmap-impl").version(implBundleVersion).startLevel(15),
+				mavenBundle().groupId("org.cytoscape.distribution").artifactId("application-metadata-impl").version(implBundleVersion).startLevel(15).noStart(),
 
 				mavenBundle().groupId("org.cytoscape").artifactId("application-impl").version(implBundleVersion).startLevel(17),
 
