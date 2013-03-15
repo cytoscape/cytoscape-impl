@@ -75,7 +75,6 @@ public class GroupNodesTask extends AbstractTask {
 		// Now some trickery to actually name the group.  Note that we need to change
 		// both the NAME and SHARED_NAME columns
 		CyRow groupRow = ((CySubNetwork)net).getRootNetwork().getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
-		System.out.println("Setting group name to "+groupName);
 		groupRow.set(CyRootNetwork.SHARED_NAME, groupName);
 		// mgr.addGroup(group);
 		tm.setProgress(1.0d);
