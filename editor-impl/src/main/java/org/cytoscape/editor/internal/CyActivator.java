@@ -144,6 +144,16 @@ public class CyActivator extends AbstractCyActivator {
 		cutNodeTaskFactoryProps.setProperty(TITLE, "Cut");
 		registerService(bc, cutNodeTaskFactory, NodeViewTaskFactory.class, cutNodeTaskFactoryProps);
 
+		// Rename node
+		NodeViewTaskFactory renameNodeTaskFactory = 
+			new RenameNodeTaskFactory(undoSupportServiceRef);
+		Properties renameNodeTaskFactoryProps = new Properties();
+		renameNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		renameNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+		renameNodeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.2f");
+		renameNodeTaskFactoryProps.setProperty(TITLE, "Rename Node");
+		registerService(bc, renameNodeTaskFactory, NodeViewTaskFactory.class, renameNodeTaskFactoryProps);
+
 		NodeViewTaskFactory addNestedNetworkTaskFactory = 
 			new AddNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
 		Properties addNestedNetworkProps = new Properties();
