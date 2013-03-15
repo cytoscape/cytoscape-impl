@@ -13,9 +13,7 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>editor-impl</artifactId>
-  <version>3.0.0</version>
 
 	<name>Cytoscape Editor Impl (${project.artifactId})</name>
 
