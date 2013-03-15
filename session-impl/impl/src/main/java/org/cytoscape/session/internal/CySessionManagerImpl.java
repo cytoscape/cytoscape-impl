@@ -61,9 +61,13 @@ import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
@@ -87,6 +91,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private final VisualMappingManager vmMgr;
 	private final CyNetworkViewManager nvMgr;
 	private final CyRootNetworkManager rootNetMgr;
+	private final RenderingEngineManager renderingEngineMgr;
 	private final CyGroupManager grMgr;
 	private final CyServiceRegistrar registrar;
 	private final UndoSupport undo;
@@ -104,6 +109,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 								final VisualMappingManager vmMgr,
 								final CyNetworkViewManager nvMgr,
 								final CyRootNetworkManager rootNetMgr,
+								final RenderingEngineManager renderingEngineMgr,
 								final CyGroupManager grMgr,
 								final CyServiceRegistrar registrar,
 								final UndoSupport undo) {
@@ -115,6 +121,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		this.vmMgr = vmMgr;
 		this.nvMgr = nvMgr;
 		this.rootNetMgr = rootNetMgr;
+		this.renderingEngineMgr = renderingEngineMgr;
 		this.grMgr = grMgr;
 		this.registrar = registrar;
 		this.sessionProperties = new HashSet<CyProperty<?>>();
@@ -402,14 +409,25 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	
 	private void restoreVisualStyles(final CySession sess) {
 		logger.debug("Restoring visual styles...");
-		// Register visual styles 
+		// Register visual styles
+		final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
+		final String DEFAULT_STYLE_NAME = defStyle.getTitle();
+		
 		final Set<VisualStyle> styles = sess.getVisualStyles();
 		final Map<String, VisualStyle> stylesMap = new HashMap<String, VisualStyle>();
 
 		if (styles != null) {
 			for (VisualStyle vs : styles) {
-				vmMgr.addVisualStyle(vs);
+				if (vs.getTitle().equals(DEFAULT_STYLE_NAME)) {
+					// Update the current default style, because it can't be replaced or removed
+					updateVisualStyle(vs, defStyle);
+					vs = defStyle;
+				}
+				
 				stylesMap.put(vs.getTitle(), vs);
+				
+				if (!vs.equals(defStyle))
+					vmMgr.addVisualStyle(vs);
 			}
 		}
 		
@@ -417,8 +435,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		final Map<CyNetworkView, String> viewStyleMap = sess.getViewVisualStyleMap();
 		
 		if (viewStyleMap != null) {
-			final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
-			
 			for (Entry<CyNetworkView, String> entry : viewStyleMap.entrySet()) {
 				final CyNetworkView netView = entry.getKey();
 				final String stName = entry.getValue();
@@ -436,6 +452,43 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 	
+	/**
+	 * @param source the Visual Style that will provide the new properties and values.
+	 * @param target the Visual Style that will be updated.
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void updateVisualStyle(final VisualStyle source, final VisualStyle target) {
+		// First clean up the target
+		final HashSet<VisualMappingFunction<?, ?>> mapingSet = 
+				new HashSet<VisualMappingFunction<?, ?>>(target.getAllVisualMappingFunctions());
+		
+		for (final VisualMappingFunction<?, ?> mapping : mapingSet)
+			target.removeVisualMappingFunction(mapping.getVisualProperty());
+		
+		final Set<VisualPropertyDependency<?>> depList = 
+				new HashSet<VisualPropertyDependency<?>>(target.getAllVisualPropertyDependencies());
+		
+		for (final VisualPropertyDependency<?> dep : depList)
+			target.removeVisualPropertyDependency(dep);
+		
+		// Copy the default visual properties, mappings and dependencies from source to target
+		final VisualLexicon lexicon = renderingEngineMgr.getDefaultVisualLexicon();
+		final Set<VisualProperty<?>> properties = lexicon.getAllVisualProperties();
+		
+		for (final VisualProperty vp : properties) {
+			if (!vp.equals(BasicVisualLexicon.NETWORK)
+					&& !vp.equals(BasicVisualLexicon.NODE)
+					&& !vp.equals(BasicVisualLexicon.EDGE))
+				target.setDefaultValue(vp, source.getDefaultValue(vp));
+		}
+		
+		for (final VisualPropertyDependency<?> dep : source.getAllVisualPropertyDependencies())
+			target.addVisualPropertyDependency(dep);
+		
+		for (final VisualMappingFunction<?, ?> mapping : source.getAllVisualMappingFunctions())
+			target.addVisualMappingFunction(mapping);
+	}
+
 	private void restoreNetworkSelection(final CySession sess, final List<CyNetwork> selectedNets) {
 		// If the current view/network was not set, set the first selected network as current
 		if (!selectedNets.isEmpty()) {

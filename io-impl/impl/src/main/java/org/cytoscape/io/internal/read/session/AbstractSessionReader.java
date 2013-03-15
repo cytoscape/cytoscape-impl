@@ -133,10 +133,14 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	 * Hook method for actions that need to be executed after reading the entries of the cys file.
 	 */
 	protected void complete(TaskMonitor tm) throws Exception {
+		if (cancelled) return;
+		
 		tm.setProgress(0.9);
 		tm.setTitle("Process network pointers");
 		tm.setStatusMessage("Processing network pointers...");
 		processNetworkPointers();
+		
+		if (cancelled) return;
 		
 		tm.setProgress(0.95);
 		tm.setTitle("Finalize");
@@ -187,7 +191,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 			ZipEntry zen = null;
 	
 			// Extract cysession.xml and the other files, except the XGMML ones:
-			while ((zen = zis.getNextEntry()) != null) {
+			while ((zen = zis.getNextEntry()) != null && !cancelled) {
 				tm.setStatusMessage("Extracting zip entry #" + ++count);
 				
 				String entryName = zen.getName();

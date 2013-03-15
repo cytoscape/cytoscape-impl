@@ -188,9 +188,10 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
 	@Override
 	protected void complete(TaskMonitor tm) throws Exception {
-		if (cysession == null) {
+		if (cancelled) return;
+		
+		if (cysession == null)
 			throw new FileNotFoundException("Cannot find the " + CYSESSION_FILE + " file.");
-		}
 
 		tm.setProgress(0.4);
 		tm.setTitle("Recreate networks");
@@ -235,6 +236,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		Network childNet = null;
 		
 		for (int i = 0; i < numChildren; i++) {
+			if (cancelled) return;
+			
 			child = children.get(i);
 			childNet = netMap.get(child.getId());
 
@@ -365,7 +368,13 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		String fileName = items[items.length - 1];
 
 		String tmpDir = System.getProperty("java.io.tmpdir");
-		File theFile = new File(tmpDir, fileName);
+		File file = new File(tmpDir, fileName);
+		
+		try {
+			file.deleteOnExit();
+		} catch (Exception e) {
+			logger.warn("This temporary app file may not be deleted on exit: " + file.getAbsolutePath(), e);
+		}
 
 		try {
 			// Write input stream into tmp file
@@ -373,12 +382,12 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			BufferedReader in = null;
 
 			in = new BufferedReader(new InputStreamReader(is));
-			out = new BufferedWriter(new FileWriter(theFile));
+			out = new BufferedWriter(new FileWriter(file));
 
 			// Write to tmp file
 			String inputLine;
 
-			while ((inputLine = in.readLine()) != null) {
+			while ((inputLine = in.readLine()) != null && !cancelled) {
 				out.write(inputLine);
 				out.newLine();
 			}
@@ -390,12 +399,14 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			return;
 		}
 
+		if (cancelled) return;
+		
 		// Put the file into appFileListMap
 		if (!appFileListMap.containsKey(appName))
 			appFileListMap.put(appName, new ArrayList<File>());
 
 		List<File> fileList = appFileListMap.get(appName);
-		fileList.add(theFile);
+		fileList.add(file);
 	}
 
 	private void extractVizmap(InputStream is, String entryName) throws Exception {
@@ -450,12 +461,12 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 		final String fileName = items[items.length - 1];		
 		final String tmpDir = System.getProperty(TEMP_DIR);
-		final File theFile = new File(tmpDir, fileName);
+		final File file = new File(tmpDir, fileName);
 
 		try {
 			// Write input stream into temp file (Use binary streams to support images/movies/etc.)
 			final BufferedInputStream bin = new BufferedInputStream(is);
-			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(theFile));
+			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 			final byte buf[] = new byte[256];
 			
 			int len;
@@ -465,7 +476,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			output.flush();
 			output.close();
 			bin.close();
-
 		} catch (IOException e) {
 			logger.error("Error: read from zip: " + entryName, e);
 			return;
@@ -474,7 +484,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		// Put the file into appFileListMap
 		if (!appFileListMap.containsKey(DING_CG_MANAGER_NAME)) appFileListMap.put(DING_CG_MANAGER_NAME, new ArrayList<File>());
 		List<File> fileList = appFileListMap.get(DING_CG_MANAGER_NAME);
-		fileList.add(theFile);
+		fileList.add(file);
 	}
 
 	private void extractSessionState(InputStream is, String entryName) throws Exception {
@@ -505,7 +515,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					edgeSelectionLookup.put(netName, selEdges);
 				}
 			}
-			
 			
 			// Convert the old cysession to core the required 3.0 core plugin files:
 			// Actually we just need to extract the "networkFrames" and "cytopanels" data from the Cysession object
@@ -567,6 +576,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		// Network attributes and visual styles
 		if (cysession.getNetworkTree() != null) {
 			for (final Network net : cysession.getNetworkTree().getNetwork()) {
+				if (cancelled) return;
+				
 				// We no longer have the concept of one top-level network root,
 				// so let's ignore a network with that name.
 				if (net.getId().equals(NETWORK_ROOT))

@@ -7,7 +7,6 @@
 	</parent>
 
 	<artifactId>session-impl-parent</artifactId>
-  <version>3.0.0</version>
 	<packaging>pom</packaging>
     <name>Cytoscape Session Impl Parent (${project.artifactId})</name>
 	
@@ -73,6 +72,10 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>presentation-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
