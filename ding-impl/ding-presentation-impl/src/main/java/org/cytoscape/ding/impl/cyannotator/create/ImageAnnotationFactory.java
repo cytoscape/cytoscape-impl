@@ -24,15 +24,17 @@ package org.cytoscape.ding.impl.cyannotator.create;
  * #L%
  */
 
-import org.cytoscape.ding.impl.DGraphView;
-import javax.swing.JFrame;
 import java.awt.geom.Point2D;
 import java.util.Map;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
+
+import javax.swing.JDialog;
+
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
 
 public class ImageAnnotationFactory implements AnnotationFactory {
 	private final CustomGraphicsManager customGraphicsManager;
@@ -41,7 +43,7 @@ public class ImageAnnotationFactory implements AnnotationFactory {
 		this.customGraphicsManager = customGraphicsManager;
 	}
 
-	public JFrame createAnnotationFrame(DGraphView view, Point2D location) {
+	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
 		return new LoadImageDialog(view, location, customGraphicsManager);
 	}
 

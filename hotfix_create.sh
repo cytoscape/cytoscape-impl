@@ -1,13 +1,12 @@
 #!/bin/sh
 
-# Experimental script to automate hotfix branch creation.
-
 targetversion=$1
 snapshotversion="$targetversion-SNAPSHOT"
 
 # Add validater here.
 
 echo "============ Hotfix branch generator ===============\n"
+
 echo "Current branch is \n$(git branch -v)"
 echo "Updating pom version numbers to $targetversion"
 

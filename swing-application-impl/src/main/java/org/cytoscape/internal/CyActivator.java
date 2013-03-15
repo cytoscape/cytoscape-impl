@@ -24,14 +24,8 @@ package org.cytoscape.internal;
  * #L%
  */
 
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
-import static org.cytoscape.application.swing.CytoPanelName.WEST;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.CASCADE;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.GRID;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.HORIZONTAL;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.VERTICAL;
+import static org.cytoscape.application.swing.CytoPanelName.*;
+import static org.cytoscape.internal.view.CyDesktopManager.Arrange.*;
 import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
@@ -49,10 +43,8 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
-import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.actions.BookmarkAction;
-import org.cytoscape.internal.actions.CommandListAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.FullScreenAction;
@@ -274,7 +266,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                              cytoscapeDesktop);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
 		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef, cyVersionServiceRef);
-		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersionServiceRef);
+		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersionServiceRef, cytoscapeDesktop);
 		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop, GRID);
 		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
 		                                                                      CASCADE);

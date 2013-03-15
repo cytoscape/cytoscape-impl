@@ -29,7 +29,10 @@ package org.cytoscape.task.internal.zoom;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -40,12 +43,14 @@ import org.junit.Test;
 public class ZoomInTaskFactoryTest {
 	@Test
 	public void testGetTaskIterator() {
-		CyNetworkView view = mock(CyNetworkView.class);
-
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		ZoomInTaskFactory factory = new ZoomInTaskFactory(undoSupport);
+                CyApplicationManager cyApplicationManagerServiceRef = mock(CyApplicationManager.class);
+                CyNetworkView cnv = mock(CyNetworkView.class);
+                when(cyApplicationManagerServiceRef.getCurrentNetworkView()).thenReturn(cnv);
+		ZoomInTaskFactory factory = new ZoomInTaskFactory(undoSupport, cyApplicationManagerServiceRef);
 
-		TaskIterator ti = factory.createTaskIterator(view);
+                CyNetwork network = mock(CyNetwork.class);
+		TaskIterator ti = factory.createTaskIterator(network);
 		assertNotNull(ti);
 
 		assertTrue( ti.hasNext() );

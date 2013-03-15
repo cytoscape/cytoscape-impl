@@ -25,21 +25,25 @@ package org.cytoscape.task.internal.zoom;
  */
  
 
-
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class ZoomOutTaskFactory extends AbstractNetworkViewTaskFactory {
+public class ZoomOutTaskFactory extends AbstractNetworkTaskFactory {
 	private final UndoSupport undoSupport;
+	private final CyApplicationManager cyApplicationManagerServiceRef;
 
-	public ZoomOutTaskFactory(final UndoSupport undoSupport) {
+	public ZoomOutTaskFactory(final UndoSupport undoSupport, final CyApplicationManager cam) {
 		this.undoSupport = undoSupport;
+		this.cyApplicationManagerServiceRef = cam;
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView view) {
+	public TaskIterator createTaskIterator(CyNetwork network) {
+		CyNetworkView view = cyApplicationManagerServiceRef.getCurrentNetworkView();
 		return new TaskIterator(new ZoomOutTask(undoSupport, view));
 	} 
 }

@@ -28,11 +28,12 @@ package org.cytoscape.ding;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NetworkTaskFactory;
 
-public class ShowGraphicsDetailsTaskFactory implements NetworkViewTaskFactory {
+public class ShowGraphicsDetailsTaskFactory implements NetworkTaskFactory {
 
 	private CyApplicationManager applicationManagerServiceRef;
 	private final DingGraphLOD dingGraphLOD;
@@ -45,16 +46,16 @@ public class ShowGraphicsDetailsTaskFactory implements NetworkViewTaskFactory {
 	}
 	
 	
-	public TaskIterator createTaskIterator(CyNetworkView networkView){
+	public TaskIterator createTaskIterator(CyNetwork network){
 		return new TaskIterator(new ShowGraphicsDetailsTask(applicationManagerServiceRef, dingGraphLOD, dingGraphLODAll));
 	}
 	
 	/**
 	 * Returns true if this task factory is ready to produce a TaskIterator.
-	 * @param networkView
+	 * @param network
 	 * @return true if this task factory is ready to produce a TaskIterator.
 	 */
-	public boolean isReady(CyNetworkView networkView){
+	public boolean isReady(CyNetwork network){
 		return true;
 	}
 }

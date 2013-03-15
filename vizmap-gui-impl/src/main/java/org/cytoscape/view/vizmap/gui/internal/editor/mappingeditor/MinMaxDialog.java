@@ -98,7 +98,7 @@ public class MinMaxDialog extends JDialog {
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("Set Range");
-		setAlwaysOnTop(true);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 		setResizable(false);
 
 		minLabel.setFont(new java.awt.Font("SansSerif", 1, 12));

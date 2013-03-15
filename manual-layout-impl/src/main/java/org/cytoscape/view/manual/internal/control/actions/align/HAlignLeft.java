@@ -48,7 +48,7 @@ public class HAlignLeft extends AbstractControlAction {
 
 	protected void control(List<View<CyNode>> nodes) {
 		for ( View<CyNode> n : nodes ) {
-			double w = n.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION) / 2;
+			double w = n.getVisualProperty(BasicVisualLexicon.NODE_WIDTH) / 2;
 			n.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, X_min + w);
 		}
 	}

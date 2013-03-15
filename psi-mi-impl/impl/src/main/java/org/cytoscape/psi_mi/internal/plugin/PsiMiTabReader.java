@@ -228,13 +228,12 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 		colNames_source.add("shared name");
 		this.sourceColumnList = new ListSingleSelection<String>(colNames_source);
 		
-		parser = new PsiMiTabParser(is, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+		parser = new PsiMiTabParser(is);
 
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		
 		this.parentTaskMonitor = taskMonitor;
 		
 		// support to add network into existing collection
@@ -272,6 +271,14 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 
+		if(cancelled) {
+			if(network != null) {
+				network.dispose();
+				network = null;
+			}
+			throw new RuntimeException("Network loading canceled by user.");
+		}
+		
 		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
 
 		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
@@ -294,6 +301,7 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 
 	@Override
 	public void cancel() {
+		super.cancel();
 		parser.cancel();
 	}
 }

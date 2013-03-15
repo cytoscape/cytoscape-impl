@@ -29,9 +29,9 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Insets;
 import java.awt.Window;
 
-// TODO move to work-swing-impl
 public final class TunableDialog extends JDialog {
 
 	private static final long serialVersionUID = 7438623438647443009L;
@@ -102,7 +102,7 @@ public final class TunableDialog extends JDialog {
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
 		getContentPane().add(jScrollPane1, gridBagConstraints);
 
 		pnlButtons.setName("pnlButtons"); // NOI18N
@@ -131,7 +131,7 @@ public final class TunableDialog extends JDialog {
 		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
 		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+		gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
 		getContentPane().add(pnlButtons, gridBagConstraints);
 		jScrollPane1.setViewportView(optionPanel);
 		pack();

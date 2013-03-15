@@ -25,20 +25,23 @@ package org.cytoscape.internal.view.help;
  */
 
 
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.application.CyVersion;
 
 
 public class HelpAboutTaskFactory extends AbstractTaskFactory {
 
 	private final CyVersion vers;
+	private final CySwingApplication cySwingApp;
 
-	public HelpAboutTaskFactory(CyVersion vers) {
+	public HelpAboutTaskFactory(CyVersion vers, CySwingApplication cySwingApp) {
 		this.vers = vers;
+		this.cySwingApp = cySwingApp;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new HelpAboutTask(vers));
+		return new TaskIterator(new HelpAboutTask(vers, cySwingApp));
 	}
 }

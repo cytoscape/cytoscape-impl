@@ -26,14 +26,12 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 
 
-import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
 
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -60,9 +58,9 @@ public class EditAnnotationTask extends AbstractNetworkViewTask {
 		if ( view instanceof DGraphView ) {
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
-		 			JFrame frame = annotation.getModifyDialog();	
-					frame.setVisible(true);
-					frame.setLocation((int)location.getX(), (int)location.getY());
+		 			JDialog dialog = annotation.getModifyDialog();	
+					dialog.setLocation((int)location.getX(), (int)location.getY());
+					dialog.setVisible(true);
 				}
 			});
 		}

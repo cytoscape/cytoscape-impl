@@ -88,15 +88,21 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void propagateLockedVisualProperty(Object value, Collection<VisualLexiconNode> roots) {
-		LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
+	private void propagateLockedVisualProperty(final VisualProperty parent, final Collection<VisualLexiconNode> roots, 
+			final Object value) {
+		final LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
 		nodes.addAll(roots);
+		
 		while (!nodes.isEmpty()) {
-			VisualLexiconNode node = nodes.pop();
-			VisualProperty visualProperty = node.getVisualProperty();
-			if (!isDirectlyLocked(visualProperty)) {
-				allLocks.put(visualProperty, value);
-				applyVisualProperty(visualProperty, value);
+			final VisualLexiconNode node = nodes.pop();
+			final VisualProperty vp = node.getVisualProperty();
+			
+			if (!isDirectlyLocked(vp)) {
+				if (parent.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
+					allLocks.put(vp, value);
+					applyVisualProperty(vp, value);
+				}
+				
 				nodes.addAll(node.getChildren());
 			}
 		}
@@ -114,7 +120,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		
 		applyVisualProperty(vp, value);
 		VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
-		propagateLockedVisualProperty(value, node.getChildren());
+		propagateLockedVisualProperty(vp, node.getChildren(), value);
 	}
 
 	@Override

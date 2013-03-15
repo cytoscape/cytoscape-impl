@@ -101,6 +101,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -434,15 +435,15 @@ public class CyActivator extends AbstractCyActivator {
 		showGraphicsDetailsTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
 		showGraphicsDetailsTaskFactoryProps.setProperty(TITLE, "Show/Hide Graphics Details");
 		showGraphicsDetailsTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");		
-		registerService(bc, showGraphicsDetailsTaskFactory, NetworkViewTaskFactory.class, showGraphicsDetailsTaskFactoryProps);
+		registerService(bc, showGraphicsDetailsTaskFactory, NetworkTaskFactory.class, showGraphicsDetailsTaskFactoryProps);
 
-		//
+		final String vtfFilter = String.format("(| (!(%s=*)) (%s=true))", IN_CONTEXT_MENU, IN_CONTEXT_MENU); // if IN_CONTEXT_MENU is not specified, default to true
 		registerServiceListener(bc, vtfListener, "addNodeViewTaskFactory", "removeNodeViewTaskFactory",
-				NodeViewTaskFactory.class);
+				NodeViewTaskFactory.class, vtfFilter);
 		registerServiceListener(bc, vtfListener, "addEdgeViewTaskFactory", "removeEdgeViewTaskFactory",
-				EdgeViewTaskFactory.class);
+				EdgeViewTaskFactory.class, vtfFilter);
 		registerServiceListener(bc, vtfListener, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory",
-				NetworkViewTaskFactory.class);
+				NetworkViewTaskFactory.class, vtfFilter);
 		registerServiceListener(bc, vtfListener, "addNetworkViewLocationTaskFactory",
 				"removeNetworkViewLocationTaskFactory", NetworkViewLocationTaskFactory.class);
 		registerServiceListener(bc, vtfListener, "addCyEdgeViewContextMenuFactory",

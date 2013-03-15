@@ -32,6 +32,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -42,13 +44,14 @@ import org.junit.Test;
 public class FitContentTaskFactoryTest {
 	@Test
 	public void testGetTaskIterator() {
-		CyNetworkView view = mock(CyNetworkView.class);
-		
 		UndoSupport undoSupport = mock(UndoSupport.class);
-
-		FitContentTaskFactory factory = new FitContentTaskFactory(undoSupport);
+		CyApplicationManager cyApplicationManagerServiceRef = mock(CyApplicationManager.class);
+		CyNetworkView cnv = mock(CyNetworkView.class);
+		when(cyApplicationManagerServiceRef.getCurrentNetworkView()).thenReturn(cnv);
+		FitContentTaskFactory factory = new FitContentTaskFactory(undoSupport, cyApplicationManagerServiceRef);
 		
-		TaskIterator ti = factory.createTaskIterator(view);
+                CyNetwork network = mock(CyNetwork.class);
+		TaskIterator ti = factory.createTaskIterator(network);
 		assertNotNull(ti);
 		
 		assertTrue( ti.hasNext() );
