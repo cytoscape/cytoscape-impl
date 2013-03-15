@@ -25,6 +25,8 @@ package org.cytoscape.task.internal.export.table;
  */
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyTableWriterManager;
@@ -34,6 +36,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 
 /**
  * A utility Task implementation specifically for writing {@link org.cytoscape.model.CyTable} objects.
@@ -52,6 +55,13 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 		if ( table == null )
 			throw new NullPointerException("Table is null");
 		this.table = table;
+		final List<String> availableFormats = new ArrayList<String>();
+		for(String format: options.getPossibleValues()){
+			if(!format.contains(".cytable")) {
+				availableFormats.add(format);
+			}
+		}
+		options = new ListSingleSelection<String>(availableFormats);
 	}
 
 	/**
