@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -375,32 +374,40 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		String fileName = items[items.length - 1];
 
 		final String tmpDir = System.getProperty(TEMP_DIR);
-		final File theFile = new File(tmpDir, fileName);
+		final File file = new File(tmpDir, fileName);
 
+		try {
+			file.deleteOnExit();
+		} catch (Exception e) {
+			logger.warn("This temporary app file may not be deleted on exit: " + file.getAbsolutePath(), e);
+		}
+		
 		try {
 			// Write input stream into temp file (Use binary streams to support images/movies/etc.)
 			final BufferedInputStream bin = new BufferedInputStream(is);
-			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(theFile));
+			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 			final byte buf[] = new byte[256];
 			
 			int len;
-			while ((len = bin.read(buf)) != -1)
+			while ((len = bin.read(buf)) != -1 && !cancelled)
 				output.write(buf, 0, len);
 			
 			output.flush();
 			output.close();
 			bin.close();
-
 		} catch (IOException e) {
 			logger.error("Error: read from zip: " + entryName, e);
 			return;
 		}
+		
+		if (cancelled) return;
 
 		// Put the file into appFileListMap
-		if (!appFileListMap.containsKey(appName)) appFileListMap.put(appName, new ArrayList<File>());
+		if (!appFileListMap.containsKey(appName))
+			appFileListMap.put(appName, new ArrayList<File>());
 
 		List<File> fileList = appFileListMap.get(appName);
-		fileList.add(theFile);
+		fileList.add(file);
 	}
 
 	private void extractVizmap(InputStream is, String entryName) throws Exception {
@@ -483,6 +490,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			}
 
 			for (final CyTableMetadataBuilder builder : builders) {
+				if (cancelled) return;
+				
 				builder.setNetwork(network);
 				mergeNetworkTable(network, builder);
 				CyTableMetadata metadata = builder.build();

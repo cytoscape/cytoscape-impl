@@ -231,8 +231,11 @@ public class Cy3SimpleSessionLodingTest extends BasicIntegrationTest {
 		assertNotNull(style);
 		assertEquals(vmm.getDefaultVisualStyle(), style);
 		
+		assertEquals(3, style.getAllVisualPropertyDependencies().size());
+		
 		Collection<VisualMappingFunction<?, ?>> mappings = style.getAllVisualMappingFunctions();
 		assertEquals(1, mappings.size());
+		
 		VisualMappingFunction<?, ?> labelMapping = mappings.iterator().next();
 		assertTrue(labelMapping instanceof PassthroughMapping);
 		assertEquals(BasicVisualLexicon.NODE_LABEL, labelMapping.getVisualProperty());

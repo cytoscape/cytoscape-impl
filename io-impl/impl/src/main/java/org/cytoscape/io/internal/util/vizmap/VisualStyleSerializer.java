@@ -53,7 +53,6 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -73,7 +72,6 @@ public class VisualStyleSerializer {
 
 	private final CalculatorConverterFactory calculatorConverterFactory;
 	private final VisualStyleFactory visualStyleFactory;
-	private final VisualMappingManager visualMappingManager;
 	private final RenderingEngineManager renderingEngineManager;
 	private final VisualMappingFunctionFactory discreteMappingFactory;
 	private final VisualMappingFunctionFactory continuousMappingFactory;
@@ -85,14 +83,12 @@ public class VisualStyleSerializer {
 
 	public VisualStyleSerializer(final CalculatorConverterFactory calculatorConverterFactory,
 								 final VisualStyleFactory visualStyleFactory,
-								 final VisualMappingManager visualMappingManager,
 								 final RenderingEngineManager renderingEngineManager,
 								 final VisualMappingFunctionFactory discreteMappingFactory,
 								 final VisualMappingFunctionFactory continuousMappingFactory,
 								 final VisualMappingFunctionFactory passthroughMappingFactory) {
 		this.calculatorConverterFactory = calculatorConverterFactory;
 		this.visualStyleFactory = visualStyleFactory;
-		this.visualMappingManager = visualMappingManager;
 		this.renderingEngineManager = renderingEngineManager;
 		this.discreteMappingFactory = discreteMappingFactory;
 		this.continuousMappingFactory = continuousMappingFactory;
@@ -147,22 +143,11 @@ public class VisualStyleSerializer {
 
 		if (vizmap != null) {
 			final List<org.cytoscape.io.internal.util.vizmap.model.VisualStyle> vsModelList = vizmap.getVisualStyle();
-			VisualStyle defStyle = visualMappingManager.getDefaultVisualStyle();
-			final String DEFAULT_STYLE_NAME = defStyle.getTitle();
 
 			for (org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel : vsModelList) {
 				final String styleName = vsModel.getName();
 				// Each new style should be created from the default one:
-				final VisualStyle vs;
-
-				if (styleName.equals(DEFAULT_STYLE_NAME)) {
-					// If loading the default style, do not create another one,
-					// but just modify the current default object!
-					vs = defStyle;
-					// TODO: delete mappings?
-				} else {
-					vs = visualStyleFactory.createVisualStyle(styleName);
-				}
+				final VisualStyle vs = visualStyleFactory.createVisualStyle(styleName);
 
 				// Set the visual properties and mappings:
 				if (vsModel.getNetwork() != null)
@@ -174,10 +159,7 @@ public class VisualStyleSerializer {
 
 				// Restore dependency
 				restoreDependencies(vs, vsModel);
-				
-				// Do not add the modified default style to the list!
-				if (!vs.equals(defStyle)) 
-					styles.add(vs);
+				styles.add(vs);
 			}
 		}
 
