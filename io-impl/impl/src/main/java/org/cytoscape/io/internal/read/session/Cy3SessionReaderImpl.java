@@ -114,7 +114,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyNetworkTableManager networkTableMgr;
-	private final CyRootNetworkManager rootNetworkMgr;
 
 	private Map<String, CyTable> filenameTableMap;
 	private Map<CyTableMetadataBuilder, String> builderFilenameMap;
@@ -133,7 +132,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 							    final CSVCyReaderFactory csvCyReaderFactory,
 							    final CyNetworkTableManager networkTableMgr,
 							    final CyRootNetworkManager rootNetworkMgr) {
-		super(sourceInputStream, cache, groupUtil);
+		super(sourceInputStream, cache, groupUtil, rootNetworkMgr);
 
 		if (suidUpdater == null) throw new NullPointerException("SUID updater is null.");
 		this.suidUpdater = suidUpdater;
@@ -153,9 +152,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (networkTableMgr == null) throw new NullPointerException("network table manager is null.");
 		this.networkTableMgr = networkTableMgr;
 		
-		if (rootNetworkMgr == null) throw new NullPointerException("root network manager is null.");
-		this.rootNetworkMgr = rootNetworkMgr;
-
 		filenameTableMap = new HashMap<String, CyTable>();
 		builderFilenameMap = new HashMap<CyTableMetadataBuilder, String>();
 	}
@@ -167,7 +163,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 	
 	@Override
-	protected void handleEntry(InputStream is, String entryName) throws Exception {
+	protected void handleEntry(final InputStream is, final String entryName) throws Exception {
 		if (!networksExtracted) {
 			// First pass..
 			if (entryName.contains("/" + APPS_FOLDER)) {
@@ -240,6 +236,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	
 	private void extractCyTableSessionState(InputStream is, String entryName) throws IOException {
 		CyTablesXMLReader reader = new CyTablesXMLReader(is);
+		
 		try {
 			reader.run(taskMonitor);
 			virtualColumns = reader.getCyTables().getVirtualColumns().getVirtualColumn();
@@ -306,11 +303,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void extractNetworks(InputStream is, String entryName) throws Exception {
 		CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		CyNetwork[] netArray = reader.getNetworks();
+		final CyNetwork[] netArray = reader.getNetworks();
 		
-		for (CyNetwork net : netArray) {
+		for (final CyNetwork net : netArray) {
 			// Add its root-network to the lookup map first
-			CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(net);
+			final CyRootNetwork rootNet = rootNetworkManager.getRootNetwork(net);
 			
 			if (!networkLookup.containsKey(rootNet.getSUID()));
 				networkLookup.put(rootNet.getSUID(), rootNet);
@@ -341,7 +338,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (oldNetId != null) {
 			final CyNetwork network = cache.getNetwork(oldNetId);
 			
-			if (network != null) {
+			if (network != null && !cancelled) {
 				// Create the view
 				final CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 				reader.run(taskMonitor);
@@ -453,11 +450,12 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 	
 	private void restoreVirtualColumns() {
-		if (virtualColumns == null) {
+		if (virtualColumns == null)
 			return;
-		}
 		
 		for (VirtualColumn columnData : virtualColumns) {
+			if (cancelled) return;
+			
 			CyTable targetTable = filenameTableMap.get(columnData.getTargetTable());
 			
 			if (targetTable.getColumn(columnData.getName()) == null) {
@@ -537,6 +535,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			mergeColumns(keyName, source, target);
 			
 			for (CyRow sourceRow : source.getAllRows()) {
+				if (cancelled) return;
+				
 				Long key = sourceRow.get(keyName, Long.class);
 				CyIdentifiable entry = cache.getObjectById(key, type);
 				Long mappedKey = entry != null ? entry.getSUID() : null;
@@ -573,6 +573,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 	private void mergeRow(String keyName, CyRow sourceRow, CyRow targetRow) {
 		for (CyColumn column : sourceRow.getTable().getColumns()) {
+			if (cancelled) return;
+			
 			String columnName = column.getName();
 
 			if (columnName.equals(keyName))

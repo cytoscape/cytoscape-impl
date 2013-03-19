@@ -45,6 +45,8 @@ import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableMetadata;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
@@ -61,6 +63,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected InputStream sourceInputStream;
 	protected final ReadCache cache;
 	protected final GroupUtil groupUtil;
+	protected final CyRootNetworkManager rootNetworkManager;
 	
 	protected DummyTaskMonitor taskMonitor;
 	
@@ -77,14 +80,17 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 
 	public AbstractSessionReader(final InputStream sourceInputStream,
 								 final ReadCache cache,
-								 final GroupUtil groupUtil) {
+								 final GroupUtil groupUtil,
+								 final CyRootNetworkManager rootNetworkManager) {
 		assert sourceInputStream != null;
 		assert cache != null;
 		assert groupUtil != null;
+		assert rootNetworkManager != null;
 		
 		this.sourceInputStream = new ReusableInputStream(sourceInputStream); // So it can be read multiple times
 		this.cache = cache;
 		this.groupUtil = groupUtil;
+		this.rootNetworkManager = rootNetworkManager;
 		
 		this.logger = LoggerFactory.getLogger(this.getClass());
 	}
@@ -112,7 +118,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 		return ret;
 	}
-	
+
 	/**
 	 * Every action that needs to happen before reading the cys file should be executed here.
 	 */
@@ -153,12 +159,34 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 	/**
 	 * Use this methods to dispose temporary resources.
+	 * This method must always be invoked, even if this task is cancelled.
 	 */
 	protected void cleanUp(TaskMonitor tm) {
 		try {
 			((ReusableInputStream) sourceInputStream).reallyClose();
 		} catch (Exception e) {
 			logger.error("Error closing source input stream.", e);
+		}
+		
+		if (cancelled) {
+			// Dispose CyNetworkViews and CyNetworks
+			for (final CyNetworkView view : networkViews)
+				view.dispose();
+			
+			final Set<CyRootNetwork> rootNetworks = new HashSet<CyRootNetwork>();
+			
+			// Get all networks from the ReadCache, because it also contains unregistered networks
+			// such as group networks.
+			for (final CyNetwork net : cache.getNetworks()) {
+				net.dispose();
+				rootNetworks.add(rootNetworkManager.getRootNetwork(net));
+			}
+			
+			for (final CyRootNetwork rootNet : rootNetworks)
+				rootNet.dispose();
+			
+			networkViews.clear();
+			networks.clear();
 		}
 		
 		cache.dispose();
