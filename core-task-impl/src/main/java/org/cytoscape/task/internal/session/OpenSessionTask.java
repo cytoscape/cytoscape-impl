@@ -79,6 +79,7 @@ public class OpenSessionTask extends AbstractTask {
 	/**
 	 * Clear current session and open the cys file.
 	 */
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 
 		taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
@@ -101,6 +102,14 @@ public class OpenSessionTask extends AbstractTask {
 		else
 			insertTasksAfterCurrentTask(new LoadSessionTask(reader));
 		taskMonitor.setProgress(1.0);
+	}
+	
+	@Override
+	public void cancel() {
+		super.cancel();
+		
+		if (reader != null)
+			reader.cancel(); // Remember to cancel the Session Reader!
 	}
 	
 	CySession getCySession() {

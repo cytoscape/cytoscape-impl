@@ -24,6 +24,7 @@ package org.cytoscape.io.internal.util;
  * #L%
  */
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -164,6 +165,10 @@ public class ReadCache {
 	
 	public CyNetwork getNetwork(Object oldId) {
 		return networkByIdMap.get(oldId);
+	}
+	
+	public Collection<CyNetwork> getNetworks() {
+		return networkByIdMap.values();
 	}
 	
 	public CyNetworkView getNetworkView(Object oldId) {

@@ -66,6 +66,7 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		this.targetSession = targetSession;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		CySessionReader reader = null;
 		try {
@@ -94,6 +95,13 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 			reader.run(taskMonitor);
 		}
 		
+		@Override
+		public void cancel() {
+			super.cancel();
+			
+			if (reader != null)
+				reader.cancel(); // Remember to cancel the Session Reader!
+		}
 	}
 
 	public final class LoadRecentSessionTask extends AbstractTask {
@@ -131,6 +139,14 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 
 			// Add this session file URL as the most recent file.
 			tracker.add(targetSession);
+		}
+		
+		@Override
+		public void cancel() {
+			super.cancel();
+			
+			if (reader != null)
+				reader.cancel(); // Remember to cancel the Session Reader!
 		}
 	}
 
