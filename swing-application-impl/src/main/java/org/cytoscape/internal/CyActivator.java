@@ -85,6 +85,7 @@ import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -147,6 +148,7 @@ public class CyActivator extends AbstractCyActivator {
 		CySessionReaderManager sessionReaderManagerServiceRef = getService(bc, CySessionReaderManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
+		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 
@@ -293,7 +295,8 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cyServiceRegistrarServiceRef,
 		                                                                     cySessionManagerServiceRef,
 		                                                                     sessionReaderManagerServiceRef,
-		                                                                     cyApplicationManagerServiceRef);
+		                                                                     cyApplicationManagerServiceRef,
+		                                                                     cyNetworkTableManagerServiceRef);
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());

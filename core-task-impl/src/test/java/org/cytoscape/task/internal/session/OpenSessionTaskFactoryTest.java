@@ -32,6 +32,7 @@ import static org.mockito.Mockito.mock;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
@@ -43,20 +44,21 @@ public class OpenSessionTaskFactoryTest {
 	
 	@Test
 	public void testRun() throws Exception {
-
 		CySessionManager mgr = mock(CySessionManager.class);;
 		CySessionReaderManager rmgr = mock(CySessionReaderManager.class);
-		CyApplicationManager appManager = mock(CyApplicationManager.class);
+		CyApplicationManager appMgr = mock(CyApplicationManager.class);
 		RecentlyOpenedTracker tracker = mock(RecentlyOpenedTracker.class);
 		TunableSetter ts = mock(TunableSetter.class);
-
 		SynchronousTaskManager synchronousTaskManager = mock(SynchronousTaskManager.class);
-		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, rmgr, appManager, tracker, synchronousTaskManager,ts);
+		CyNetworkTableManager netTableMgr = mock(CyNetworkTableManager.class);
+		
+		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, rmgr, appMgr, netTableMgr, tracker,
+				synchronousTaskManager,ts);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 		
-		assertTrue( ti.hasNext() );
+		assertTrue(ti.hasNext());
 		Task t = ti.next();
 		assertNotNull( t );				
 	}	
