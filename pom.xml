@@ -25,7 +25,6 @@
 	<modules>
 		<module>biopax-impl</module>
 		<module>command-executor-impl</module>
-		<module>core-task-impl</module>
 		<module>cpath2-impl</module>
 		<module>ding-impl</module>
 		<module>editor-impl</module>
@@ -77,6 +76,7 @@
 		<module>gui-cmdline-parser-impl</module>
 		<module>edge-bundler-impl</module>
 		<module>scripting-impl</module>
+		<module>core-task-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
 	</modules>
