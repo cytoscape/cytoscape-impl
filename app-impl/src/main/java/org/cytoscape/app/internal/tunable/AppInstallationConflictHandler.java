@@ -8,13 +8,18 @@ import java.lang.reflect.Method;
 import javax.swing.JOptionPane;
 
 import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.task.ResolveAppInstallationConflictTask.AppInstallationConflict;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AppInstallationConflictHandler extends AbstractGUITunableHandler implements DirectlyPresentableTunableHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(AppInstallationConflictHandler.class);
+	
 	protected AppInstallationConflictHandler(Field field, Object instance, Tunable tunable) {
 		super(field, instance, tunable);
 	}
@@ -36,11 +41,9 @@ public class AppInstallationConflictHandler extends AbstractGUITunableHandler im
 					+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_CANCEL_OPTION);
 			conflict.setReplaceApp(response);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.warn("Error accessing conflict object",e);
 		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.warn("Exception thrown by conflict object",e);
 		}
 		return true;
 	}
