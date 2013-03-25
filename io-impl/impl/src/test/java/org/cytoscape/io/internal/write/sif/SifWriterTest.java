@@ -86,7 +86,6 @@ public class SifWriterTest {
 		
 		assertTrue(lines.contains("Alone"));
 		assertTrue(lines.contains("n1\t-\tn1"));
-		assertTrue(lines.contains("n2 日本語\t-\tn3"));
 		reader.close();
 	}
 
