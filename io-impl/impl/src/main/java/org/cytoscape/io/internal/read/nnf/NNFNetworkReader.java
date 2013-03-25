@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -92,7 +93,8 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 		tm.setProgress(0.0);
 
 		// Create buffered reader from given InputStream
-		final BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+		final BufferedReader in = new BufferedReader(
+				new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()));
 				
 		in.mark(9999999);
 		
