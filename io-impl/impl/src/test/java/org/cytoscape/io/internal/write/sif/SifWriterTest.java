@@ -8,7 +8,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,10 +37,10 @@ public class SifWriterTest {
 		CyNode n1 = network1.addNode();
 		CyNode n2 = network1.addNode();
 		CyNode n3 = network1.addNode();
-		
+
 		// Not connected
 		CyNode n4 = network1.addNode();
-		
+
 		CyEdge e1 = network1.addEdge(n1, n2, true);
 		CyEdge e2 = network1.addEdge(n2, n3, true);
 		CyEdge e3 = network1.addEdge(n1, n3, true);
@@ -69,23 +72,26 @@ public class SifWriterTest {
 		SifWriter writer = new SifWriter(os, network1);
 		writer.run(null);
 		os.close();
-		
+
 		// Read contents
 		System.out.println("Temp = " + temp.getAbsolutePath());
-		BufferedReader reader = new BufferedReader(new FileReader((temp)));
+		FileInputStream fileInputStream = new FileInputStream(temp);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream, Charset.forName("UTF-8")
+				.newDecoder()));
 		String line = null;
-		
+
 		final List<String> lines = new ArrayList<String>();
-		while((line = reader.readLine()) != null) {
+		while ((line = reader.readLine()) != null) {
 			lines.add(line);
 			System.out.println("Line = " + line);
 		}
-		
+
 		// Total 5 Edges
 		assertEquals(5, lines.size());
-		
+
 		assertTrue(lines.contains("Alone"));
 		assertTrue(lines.contains("n1\t-\tn1"));
+		assertTrue(lines.contains("n2 日本語\t-\tn3"));
 		reader.close();
 	}
 
