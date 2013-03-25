@@ -29,18 +29,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-//import java.util.HashMap;
-//import java.util.Map;
+import java.nio.charset.Charset;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-//import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -48,12 +47,13 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-//import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+//import java.util.HashMap;
+//import java.util.Map;
+//import org.cytoscape.model.CyTable;
+//import org.cytoscape.work.util.ListSingleSelection;
 //import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 
 /**
  * Reader for graphs in the interactions file format. Given the filename,
@@ -96,7 +96,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 
 		String line;
 		final BufferedReader br =
-			new BufferedReader(new InputStreamReader(inputStream), 128*1024);
+			new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()), 128*1024);
 
 		String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
 

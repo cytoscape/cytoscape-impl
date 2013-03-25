@@ -27,14 +27,18 @@ package org.cytoscape.internal.task;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -51,30 +55,35 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 	private final CySessionManager sessionManager;
 	private final CySessionReaderManager readerManager;
 	private final CyApplicationManager appManager;
+	private final CyNetworkTableManager netTableManager;
 	private final RecentlyOpenedTracker tracker;
-	
 	private final URL targetSession;
+	
+	private Set<CyNetwork> currentNetworkSet;
 
 	
 	public OpenRecentSessionTaskFactory(final CySessionManager sessionManager, final CySessionReaderManager readerManager,
-			final CyApplicationManager appManager, final RecentlyOpenedTracker tracker, final URL targetSession) {
+			final CyApplicationManager appManager, final CyNetworkTableManager netTableManager, 
+			final RecentlyOpenedTracker tracker, final URL targetSession) {
 		this.sessionManager = sessionManager;
 		this.readerManager = readerManager;
 		this.appManager = appManager;
+		this.netTableManager = netTableManager;
 		this.tracker = tracker;
-		
 		this.targetSession = targetSession;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		CySessionReader reader = null;
+		
 		try {
 			reader = readerManager.getReader(targetSession.toURI(), targetSession.toString());
 		} catch (URISyntaxException e) {
 			throw new IllegalStateException("URL is invalid.", e);
 		}
 		
-		if(reader == null)
+		if (reader == null)
 			throw new NullPointerException("Could not find reader.");
 		
 		return new TaskIterator(new LoadSessionFromURLTask(reader), new LoadRecentSessionTask(reader));
@@ -91,9 +100,18 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
+			// Save the current network set, in case loading the new session is cancelled later
+			currentNetworkSet = new HashSet<CyNetwork>(netTableManager.getNetworkSet());
 			reader.run(taskMonitor);
 		}
 		
+		@Override
+		public void cancel() {
+			super.cancel();
+			
+			if (reader != null)
+				reader.cancel(); // Remember to cancel the Session Reader!
+		}
 	}
 
 	public final class LoadRecentSessionTask extends AbstractTask {
@@ -111,8 +129,10 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			logger.debug("Post processiong for session...");
 			
-			if(!changeCurrentSession)
+			if (!changeCurrentSession) {
+				disposeCancelledSession();
 				return;
+			}
 
 			final CySession newSession = reader.getSession();
 			if (newSession == null)
@@ -132,6 +152,34 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 			// Add this session file URL as the most recent file.
 			tracker.add(targetSession);
 		}
+		
+		@Override
+		public void cancel() {
+			super.cancel();
+			disposeCancelledSession();
+		}
+		
+		private synchronized void disposeCancelledSession() {
+			final CySession newSession = reader.getSession();
+			
+			if (newSession != null) {
+				for (final CyNetworkView view : newSession.getNetworkViews())
+					view.dispose();
+			}
+			
+			if (currentNetworkSet != null) {
+				// This is necessary because the new CySession contains only registered networks;
+				// unregistered networks (e.g. CyGroup networks) may have been loaded and need to be disposed as well.
+				// The Network Table Manager should contain all networks, including the unregistered ones.
+				final Set<CyNetwork> newNetworkSet = new HashSet<CyNetwork>(netTableManager.getNetworkSet());
+				
+				for (final CyNetwork net : newNetworkSet) {
+					if (!currentNetworkSet.contains(net))
+						net.dispose();
+				}
+				
+				currentNetworkSet = null;
+			}
+		}
 	}
-
 }

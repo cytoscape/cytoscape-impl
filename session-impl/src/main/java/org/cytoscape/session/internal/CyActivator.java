@@ -38,6 +38,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
@@ -58,6 +59,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
 		CyRootNetworkManager cyRootNetworkManagerServiceRef = getService(bc, CyRootNetworkManager.class);
+		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		UndoSupport undo = getService(bc, UndoSupport.class);
@@ -66,7 +68,8 @@ public class CyActivator extends AbstractCyActivator {
 		CySessionManagerImpl cySessionManager = new CySessionManagerImpl(cyEventHelperServiceRef,
 				cyApplicationManagerServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef,
 				cyNetworkTableManagerServiceRef, visualMappingManagerServiceRef, cyNetworkViewManagerServiceRef,
-				cyRootNetworkManagerServiceRef, cyGroupManagerServiceRef, cyServiceRegistrarServiceRef, undo);
+				cyRootNetworkManagerServiceRef, renderingEngineManagerServiceRef, cyGroupManagerServiceRef,
+				cyServiceRegistrarServiceRef, undo);
 
 		registerService(bc, cyNetworkNaming, CyNetworkNaming.class, new Properties());
 		registerAllServices(bc, cySessionManager, new Properties());

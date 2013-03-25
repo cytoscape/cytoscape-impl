@@ -120,7 +120,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	private final CyNetworkReaderManager networkReaderMgr;
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
-	private final CyRootNetworkManager rootNetworkManager;
 
 	protected Cysession cysession;
 	private final Map<String, CyNetwork> networkLookup = new HashMap<String, CyNetwork>();
@@ -136,7 +135,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 								final CyPropertyReaderManager propertyReaderMgr,
 								final VizmapReaderManager vizmapReaderMgr,
 								final CyRootNetworkManager rootNetworkManager) {
-		super(sourceInputStream, cache, groupUtil);
+		super(sourceInputStream, cache, groupUtil, rootNetworkManager);
 		
 		if (networkReaderMgr == null)
 			throw new NullPointerException("network reader manager is null.");
@@ -149,16 +148,12 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		if (vizmapReaderMgr == null)
 			throw new NullPointerException("vizmap reader manager is null.");
 		this.vizmapReaderMgr = vizmapReaderMgr;
-
-		if (rootNetworkManager == null)
-			throw new NullPointerException("root network factory is null.");
-		this.rootNetworkManager = rootNetworkManager;
-
+		
 		xgmmlEntries = new HashMap<String, String>();
 	}
 	
 	@Override
-	protected void handleEntry(InputStream is, String entryName) throws Exception {		
+	protected void handleEntry(final InputStream is, final String entryName) throws Exception {		
 		if (entryName.contains("/" + PLUGINS_FOLDER)) {
 			extractPluginEntry(is, entryName);
 		} else if (entryName.endsWith(CYSESSION_FILE)) {
@@ -188,9 +183,10 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
 	@Override
 	protected void complete(TaskMonitor tm) throws Exception {
-		if (cysession == null) {
+		if (cancelled) return;
+		
+		if (cysession == null)
 			throw new FileNotFoundException("Cannot find the " + CYSESSION_FILE + " file.");
-		}
 
 		tm.setProgress(0.4);
 		tm.setTitle("Recreate networks");
@@ -235,6 +231,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		Network childNet = null;
 		
 		for (int i = 0; i < numChildren; i++) {
+			if (cancelled) return;
+			
 			child = children.get(i);
 			childNet = netMap.get(child.getId());
 
@@ -270,7 +268,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				}
 
 				// Always try to load child networks, even if the parent network is bad
-				if (childNet.getChild().size() != 0)
+				if (!cancelled && childNet.getChild().size() != 0)
 					walkNetworkTree(childNet, cy2Parent, netMap, tm);
 			}
 		}
@@ -308,6 +306,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			for (int i = 0; i < netArray.length; i++) {
 				// Process each CyNetwork
 				final CyNetwork net = netArray[i];
+				
 				final String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				networkLookup.put(netName, net);
 				
@@ -339,10 +338,10 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				
 				networks.add(net);
 			
-				if (i == 0 && createView) {
+				if (!cancelled && i == 0 && createView) {
 					// Create a network view for the first network only,
 					// which is supposed to be the top-level one
-					CyNetworkView view = reader.buildCyNetworkView(net);
+					final CyNetworkView view = reader.buildCyNetworkView(net);
 					networkViewLookup.put(netName, view);
 					networkViews.add(view);
 					cache.cache(netName, view);
@@ -365,7 +364,13 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		String fileName = items[items.length - 1];
 
 		String tmpDir = System.getProperty("java.io.tmpdir");
-		File theFile = new File(tmpDir, fileName);
+		File file = new File(tmpDir, fileName);
+		
+		try {
+			file.deleteOnExit();
+		} catch (Exception e) {
+			logger.warn("This temporary app file may not be deleted on exit: " + file.getAbsolutePath(), e);
+		}
 
 		try {
 			// Write input stream into tmp file
@@ -373,12 +378,12 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			BufferedReader in = null;
 
 			in = new BufferedReader(new InputStreamReader(is));
-			out = new BufferedWriter(new FileWriter(theFile));
+			out = new BufferedWriter(new FileWriter(file));
 
 			// Write to tmp file
 			String inputLine;
 
-			while ((inputLine = in.readLine()) != null) {
+			while ((inputLine = in.readLine()) != null && !cancelled) {
 				out.write(inputLine);
 				out.newLine();
 			}
@@ -390,12 +395,14 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			return;
 		}
 
+		if (cancelled) return;
+		
 		// Put the file into appFileListMap
 		if (!appFileListMap.containsKey(appName))
 			appFileListMap.put(appName, new ArrayList<File>());
 
 		List<File> fileList = appFileListMap.get(appName);
-		fileList.add(theFile);
+		fileList.add(file);
 	}
 
 	private void extractVizmap(InputStream is, String entryName) throws Exception {
@@ -450,12 +457,12 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 		final String fileName = items[items.length - 1];		
 		final String tmpDir = System.getProperty(TEMP_DIR);
-		final File theFile = new File(tmpDir, fileName);
+		final File file = new File(tmpDir, fileName);
 
 		try {
 			// Write input stream into temp file (Use binary streams to support images/movies/etc.)
 			final BufferedInputStream bin = new BufferedInputStream(is);
-			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(theFile));
+			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 			final byte buf[] = new byte[256];
 			
 			int len;
@@ -465,7 +472,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			output.flush();
 			output.close();
 			bin.close();
-
 		} catch (IOException e) {
 			logger.error("Error: read from zip: " + entryName, e);
 			return;
@@ -474,7 +480,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		// Put the file into appFileListMap
 		if (!appFileListMap.containsKey(DING_CG_MANAGER_NAME)) appFileListMap.put(DING_CG_MANAGER_NAME, new ArrayList<File>());
 		List<File> fileList = appFileListMap.get(DING_CG_MANAGER_NAME);
-		fileList.add(theFile);
+		fileList.add(file);
 	}
 
 	private void extractSessionState(InputStream is, String entryName) throws Exception {
@@ -505,7 +511,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					edgeSelectionLookup.put(netName, selEdges);
 				}
 			}
-			
 			
 			// Convert the old cysession to core the required 3.0 core plugin files:
 			// Actually we just need to extract the "networkFrames" and "cytopanels" data from the Cysession object
@@ -567,6 +572,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		// Network attributes and visual styles
 		if (cysession.getNetworkTree() != null) {
 			for (final Network net : cysession.getNetworkTree().getNetwork()) {
+				if (cancelled) return;
+				
 				// We no longer have the concept of one top-level network root,
 				// so let's ignore a network with that name.
 				if (net.getId().equals(NETWORK_ROOT))
@@ -585,6 +592,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					// Convert 2.x hidden state (cysession.xml) to 3.x visual properties
 					if (net.getHiddenEdges() != null) {
 						for (final Edge edgeObject : net.getHiddenEdges().getEdge()) {
+							if (cancelled) return;
+							
 							final String name = edgeObject.getId();
 							final CyEdge e = cache.getEdge(name);
 
@@ -604,6 +613,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					
 					if (net.getHiddenNodes() != null) {
 						for (final Node nodeObject : net.getHiddenNodes().getNode()) {
+							if (cancelled) return;
+							
 							final String name = nodeObject.getId();
 							final CyNode n = cache.getNodeByName(name);
 
@@ -631,9 +642,11 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			if (desktop != null && desktop.getNetworkFrames() != null) {
 				List<NetworkFrame> frames = desktop.getNetworkFrames().getNetworkFrame();
 
-				for (NetworkFrame nf : frames) {
+				for (final NetworkFrame nf : frames) {
+					if (cancelled) return;
+					
 					// Set sizes
-					CyNetworkView view = getNetworkView(nf.getFrameID());
+					final CyNetworkView view = getNetworkView(nf.getFrameID());
 					
 					if (view != null) {
 						BigInteger w = nf.getWidth();
@@ -658,6 +671,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		if (net != null && nodes != null) {
 			// set attr values based on ids
 			for (final Node nodeObject : nodes) {
+				if (cancelled) return;
+				
 				String name = nodeObject.getId();
 				// The XGMML node "id" is only used internally, by the XGMML parser--the name is the real ID.
 				CyNode n = cache.getNodeByName(name);
@@ -675,6 +690,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		if (net != null && edges != null) {
 			// set attr values based on ids
 			for (final Edge edgeObject : edges) {
+				if (cancelled) return;
+				
 				String name = edgeObject.getId();
 				// In 2.x, XGMML edge elements have no "id" attribute--the label is the id.
 				CyEdge e = cache.getEdge(name); 

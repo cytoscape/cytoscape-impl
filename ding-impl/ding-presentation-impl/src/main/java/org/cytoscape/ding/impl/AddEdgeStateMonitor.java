@@ -25,12 +25,12 @@ package org.cytoscape.ding.impl;
  */
 
 
+import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.datatransfer.Transferable;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -55,6 +55,7 @@ class AddEdgeStateMonitor {
 
 	private final InnerCanvas canvas;
 	private final DGraphView m_view;
+	private final Stroke eraseStroke;
 
 	private static Map<CyNetworkView,CyNode> sourceNodes = new WeakHashMap<CyNetworkView,CyNode>();
 	private static Map<CyNetworkView,Point2D> sourcePoints = new WeakHashMap<CyNetworkView,Point2D>();
@@ -62,6 +63,7 @@ class AddEdgeStateMonitor {
 	AddEdgeStateMonitor(InnerCanvas canvas, DGraphView m_view) {
 		this.canvas = canvas;
 		this.m_view = m_view;
+		eraseStroke = new BasicStroke(2.0f);
 	}
 
 	boolean addingEdge() {
@@ -117,15 +119,18 @@ class AddEdgeStateMonitor {
         y2 = y2 + (((y1 - y2) / lineLen) * offset);
         x2 = x2 + (((x1 - x2) / lineLen) * offset);
 
-        Graphics g = canvas.getGraphics();
+        Graphics2D g = (Graphics2D) canvas.getGraphics();
 
         Color saveColor = g.getColor();
 
         if (saveX1 != Double.MIN_VALUE) {
             DingCanvas backgroundCanvas = m_view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS);
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(eraseStroke);
             g.setColor(backgroundCanvas.getBackground());
             g.drawLine(((int) saveX1) - 1, ((int) saveY1) - 1, ((int) saveX2) + 1,
                    ((int) saveY2) + 1);
+            g.setStroke(oldStroke);
         }
 
         canvas.update(g);
