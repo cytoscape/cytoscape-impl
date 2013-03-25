@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,9 +58,8 @@ public class NnfWriter implements CyWriter {
 		taskMonitor.setProgress(0.0);
 		taskMonitor.setStatusMessage("Exporting Nested Networks...");
 
-		final Writer writer = new OutputStreamWriter(outputStream);
-				
-		
+		final Writer writer = new OutputStreamWriter(outputStream, Charset.forName("UTF-8").newEncoder());
+
 		final Set<CyNetwork> networks = this.cyNetworkManagerServiceRef.getNetworkSet();
 		final float networkCount = networks.size();
 		try {
