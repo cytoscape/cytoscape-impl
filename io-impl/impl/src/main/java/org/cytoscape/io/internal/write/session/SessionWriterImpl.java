@@ -155,22 +155,27 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		this.taskMonitor = tm;
-		tm.setProgress(0.0);
-		tm.setTitle("Writing Session File");
-		tm.setStatusMessage("Preparing...");
 		
 		try {
 			init(tm);
 			write(tm);
 		} finally {
-			complete(tm);
+			try {
+				if (zos != null)
+					zos.close();
+			} catch (Exception e) {
+				logger.error("Error closing zip output stream", e);
+			}
 		}
 		
-		tm.setStatusMessage("Done.");
-		tm.setProgress(1.0);
+		complete(tm);
 	}
 
 	private void init(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
+		tm.setTitle("Writing Session File");
+		tm.setStatusMessage("Preparing...");
+		
 		zos = new ZipOutputStream(outputStream);
 		prepareGroups(); // Groups require specific metadata
 	}
@@ -222,15 +227,13 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	}
 	
 	private void complete(TaskMonitor tm) {
-		try {
-			if (zos != null)
-				zos.close();
-		} catch (Exception e) {
-			logger.error("Error closing zip output stream", e);
-		}
-
+		if (cancelled) return;
+		
 		// Tell the groupUtils that we're done
 		groupUtils.groupsSerialized(session.getNetworks(), session.getNetworkViews());
+		
+		tm.setStatusMessage("Done.");
+		tm.setProgress(1.0);
 	}
 	
 	/**
@@ -261,6 +264,8 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 */
 	private void zipProperties() throws Exception {
 		for (CyProperty<?> cyProps : session.getProperties()) {
+			if (cancelled) return;
+			
 			String filename = null;
 			CyFileFilter filter = null;
 			Class<?> type = cyProps.getPropertyType();
@@ -305,7 +310,9 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		}
 		
 		for (CyRootNetwork rn : rootNetworks) {
-			String xgmmlFile = SessionUtil.getXGMMLFilename(rn);
+			if (cancelled) return;
+			
+			String xgmmlFile = SessionUtil.getXGMMLFilename(rn);if (xgmmlFile.contains("_ERROR")) throw new Exception("Simulating exception...");
 			zos.putNextEntry(new ZipEntry(sessionDir + NETWORKS_FOLDER + xgmmlFile) );
 			
 			CyWriter writer = networkViewWriterFactory.createWriter(zos, rn);
@@ -323,7 +330,9 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private void zipNetworkViews() throws Exception {
 		final Set<CyNetworkView> netViews = session.getNetworkViews();
 
-		for (CyNetworkView view : netViews) {
+		for (final CyNetworkView view : netViews) {
+			if (cancelled) return;
+			
 			String xgmmlFile = SessionUtil.getXGMMLFilename(view);
 			zos.putNextEntry(new ZipEntry(sessionDir + NETWORK_VIEWS_FOLDER + xgmmlFile) );
 			
@@ -341,7 +350,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 * @throws IOException
 	 */
 	private void zipFileListMap() throws IOException {
-
 		// fire an event to tell apps we're ready to save!
 		Map<String, List<File>> appFileMap = session.getAppFileListMap(); 
 
@@ -357,6 +365,8 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 					continue;
 	
 				for (File theFile : theFileList) {
+					if (cancelled) return;
+					
 					if ((theFile == null) || (!theFile.exists()))
 						continue;
 	
@@ -381,6 +391,8 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		Set<CyTableMetadata> tableData = session.getTables();
 		
 		for (CyTableMetadata metadata : tableData) {
+			if (cancelled) return;
+			
 			CyTable table = metadata.getTable();
 			
 			if (table.getSavePolicy() != SavePolicy.SESSION_FILE)
