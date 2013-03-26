@@ -63,7 +63,7 @@ public class GraphGraphicsTest extends TestCase {
 
 	public void setUp() {
 		image = new BufferedImage(canvasSize,canvasSize,BufferedImage.TYPE_INT_ARGB);
-		currentGraphGraphics = new GraphGraphics(image,false);
+		currentGraphGraphics = new GraphGraphics(image,false,true);
 		currentGraphGraphics.clear(Color.white,0,0,1.0);
 		oldGraphGraphics = new OldGraphGraphics(image,false);
 		oldGraphGraphics.clear(Color.white,0,0,1.0);

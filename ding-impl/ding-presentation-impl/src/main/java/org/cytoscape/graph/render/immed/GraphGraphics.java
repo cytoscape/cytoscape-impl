@@ -221,6 +221,7 @@ public final class GraphGraphics {
 	private Graphics2D m_g2d;
 	private Graphics2D m_gMinimal; // We use mostly java.awt.Graphics methods.
 	private boolean m_cleared;
+	private boolean m_clear;
 
 	// This member variable only to be used from within defineCustomNodeShape().
 	private byte m_lastCustomShapeType = s_last_shape;
@@ -260,10 +261,14 @@ public final class GraphGraphics {
 	 *            this value set to true during the testing phase; set it to
 	 *            false once you are sure that code does not mis-use this
 	 *            module.
+	 * @param clear
+	 *            if this is true, we will clear the image before drawing.  This should
+	 *            only ever be false when we're printing....
 	 */
-	public GraphGraphics(final Image image, final boolean debug) {
+	public GraphGraphics(final Image image, final boolean debug, final boolean clear) {
 		this.image = image;
 		m_debug = debug;
+		m_clear = clear;
 		m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
 		m_cleared = false;
 	}
@@ -329,11 +334,13 @@ public final class GraphGraphics {
 
 		m_g2d = (Graphics2D) image.getGraphics();
 
-		final Composite origComposite = m_g2d.getComposite();
-		m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
-		m_g2d.setPaint(bgPaint);
-		m_g2d.fillRect(0, 0, image.getWidth(null), image.getHeight(null));
-		m_g2d.setComposite(origComposite);
+		if (m_clear) {
+			final Composite origComposite = m_g2d.getComposite();
+			m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+			m_g2d.setPaint(bgPaint);
+			m_g2d.fillRect(0, 0, image.getWidth(null), image.getHeight(null));
+			m_g2d.setComposite(origComposite);
+		}
 		
 		// For detailed view, render high quality image as much as possible.
 		

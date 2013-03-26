@@ -232,6 +232,9 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// get image graphics
 		final Graphics2D image2D = image.createGraphics();
 		// System.out.println("drawCanvas: new scaleFactor = "+scaleFactor+", xCenter = "+xCenter+", yCenter = "+yCenter);
+		if (m_isOpaque)
+			clearImage(image2D);
+
 		double xOffset = ((image.getWidth()/2)/scaleFactor - xCenter);
 		double yOffset = ((image.getHeight()/2)/scaleFactor - yCenter);
 
@@ -297,6 +300,9 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 */
 	public void print(Graphics graphics) {
 		isPrinting = true;
+		// Only do this if we're opaque (i.e. the background canvas)
+		if (m_isOpaque)
+			clearImage((Graphics2D)graphics);
 		this.printChildren(graphics);
 		isPrinting = false;
 	}

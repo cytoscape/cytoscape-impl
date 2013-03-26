@@ -1865,7 +1865,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		synchronized (m_lock) {
 			GraphRenderer.renderGraph(m_drawPersp, m_spacial, lod, m_nodeDetails,
-			                          m_edgeDetails, m_hash, new GraphGraphics(img, false),
+			                          m_edgeDetails, m_hash, new GraphGraphics(img, false, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor);
 		}
 
