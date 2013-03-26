@@ -1007,6 +1007,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		@Override
 		void singleLeftClick(MouseEvent e) {
+			// System.out.println("MousePressed ----> singleLeftClick");
 			m_undoable_edit = null;
 		
 			m_currMouseButton = 1;
@@ -1264,7 +1265,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 		@Override
 		void singleLeftClick(MouseEvent e) {
-			//System.out.println("MouseDragged ----> singleLeftClick");
+			// System.out.println("MouseDragged ----> singleLeftClick");
 			if (m_button1NodeDrag) {
 				// save selected node and edge positions
 				if (m_undoable_edit == null) {
@@ -1355,6 +1356,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			// Note: the fake clicks are here for OSX but I do not see a reason to disable them on other systems
 			switch (e.getModifiersEx()) {
 			case MouseEvent.BUTTON1_DOWN_MASK:
+				singleLeftClick(e);
+				break;
+			// The above case isn't sufficient to allow extended selection
+			// via drags
+			case (MouseEvent.BUTTON1_DOWN_MASK|MouseEvent.SHIFT_DOWN_MASK):
 				singleLeftClick(e);
 				break;
 			case MouseEvent.BUTTON2_DOWN_MASK:
