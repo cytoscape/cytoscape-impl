@@ -708,35 +708,13 @@ public class WebQuerier {
 					if (highestVersionRelease != null
 							&& compareVersions(highestVersionRelease.getReleaseVersion(), app.getVersion()) < 0) {
 						
-						// System.out.println(highestVersionRelease.getReleaseVersion() + " won vs " + app.getVersion());
+						Update update = new Update();
+						update.setUpdateVersion(highestVersionRelease.getReleaseVersion());
+						update.setApp(app);
+						update.setWebApp(webApp);
+						update.setRelease(highestVersionRelease);
 						
-						if (app.getSha512Checksum() == null) {
-							try {
-								app.setSha512Checksum(appManager.getAppParser().getChecksum(app.getAppFile()));
-							} catch (AppParser.ChecksumException e) {
-								app.setSha512Checksum(null);
-							}
-						}
-						
-						if (app.getSha512Checksum() != null) {
-							String checksum = app.getSha512Checksum().substring(app.getSha512Checksum().indexOf(":") + 1);
-							
-							// Check if the app is listed in the releases
-							for (WebApp.Release release : webApp.getReleases()) {
-								if (release.getSha512Checksum().toLowerCase().indexOf(checksum.toLowerCase()) != -1) {
-									
-									// System.out.println("Matching hash found");
-									
-									Update update = new Update();
-									update.setUpdateVersion(highestVersionRelease.getReleaseVersion());
-									update.setApp(app);
-									update.setWebApp(webApp);
-									update.setRelease(highestVersionRelease);
-									
-									return update;
-								}
-							}
-						}						
+						return update;
 					}
 				}
 			}
