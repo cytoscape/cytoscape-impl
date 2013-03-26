@@ -217,7 +217,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 */
 	@Override
 	public void internalFrameActivated(InternalFrameEvent e) {
-		final CyNetworkView targetView = iFrameMap.get(e.getInternalFrame());
+		final JInternalFrame frame = e.getInternalFrame();
+		
+		if (frame.isClosed())
+			return;
+		
+		final CyNetworkView targetView = iFrameMap.get(frame);
 		
 		if (targetView != null) {
 			final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
@@ -228,13 +233,13 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	
 				if (currentEngine == null || currentEngine.getViewModel() != targetView)
 					appMgr.setCurrentRenderingEngine(presentationMap.get(targetView));
-			}
-			
-			if(viewUpdateRequired.contains(targetView)) {
-				viewUpdateRequired.remove(targetView);
-				final VisualStyle style = vmm.getVisualStyle(targetView);
-				style.apply(targetView);
-				targetView.updateView();
+				
+				if (viewUpdateRequired.contains(targetView)) {
+					viewUpdateRequired.remove(targetView);
+					final VisualStyle style = vmm.getVisualStyle(targetView);
+					style.apply(targetView);
+					targetView.updateView();
+				}
 			}
 		}
 	}
@@ -319,10 +324,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final void removeView(final CyNetworkView view) {
 		try {
 			JInternalFrame frame = presentationContainerMap.get(view);
+			
 			if (frame != null) {
-				RenderingEngine<CyNetwork> removed = this.presentationMap.remove(view);
-				
+				RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
 				logger.debug("Removing rendering engine: " + removed);
+				
+				viewUpdateRequired.remove(frame);
 				iFrameMap.remove(frame);
 				
 				frame.getRootPane().getLayeredPane().removeAll();
