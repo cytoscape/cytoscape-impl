@@ -26,12 +26,19 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -45,14 +52,16 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 
 	private final VisualMappingManager vmm;
 	private final VizmapReaderManager vizmapReaderMgr;
-
+	private final RenderingEngineManager renderingEngineMgr;
 	private final File vizmapFile;
 
 	public ImportDefaultVizmapTask(final VizmapReaderManager vizmapReaderMgr,
 								   final VisualMappingManager vmm,
-								   final CyApplicationConfiguration config) {
+								   final CyApplicationConfiguration config,
+								   final RenderingEngineManager renderingEngineMgr) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmm = vmm;
+		this.renderingEngineMgr = renderingEngineMgr;
 		this.vizmapFile = new File(config.getConfigurationDirectoryLocation(), PRESET_VIZMAP_FILE);
 	}
 
@@ -73,17 +82,21 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 		if (reader == null)
 			throw new NullPointerException("Failed to find Default Vizmap loader.");
 
-		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader, vmm));
+		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader, vmm, renderingEngineMgr));
 	}
 
 	private static final class AddVisualStylesTask extends AbstractTask {
 
 		private final VizmapReader reader;
 		private final VisualMappingManager vmMgr;
+		private final RenderingEngineManager renderingEngineMgr;
 
-		public AddVisualStylesTask(final VizmapReader reader, final VisualMappingManager vmMgr) {
+		public AddVisualStylesTask(final VizmapReader reader,
+								   final VisualMappingManager vmMgr,
+								   final RenderingEngineManager renderingEngineMgr) {
 			this.reader = reader;
 			this.vmMgr = vmMgr;
+			this.renderingEngineMgr = renderingEngineMgr;
 		}
 
 		@Override
@@ -92,29 +105,82 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 			final Set<VisualStyle> styles = reader.getVisualStyles();
 
 			if (styles != null) {
+				final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
+				final String DEFAULT_STYLE_NAME = defStyle.getTitle();
+				VisualStyle newDefStyle = null;
 				int count = 1;
 				int total = styles.size();
 
-				for (VisualStyle vs : styles) {
+				for (final VisualStyle vs : styles) {
 					if (cancelled)
 						break;
-					taskMonitor.setStatusMessage(count + " of " + total + ": " + vs.getTitle());
-					vmMgr.addVisualStyle(vs);
-					taskMonitor.setProgress(count / total);
-					count++;
+					
+					if (vs.getTitle().equals(DEFAULT_STYLE_NAME)) {
+						newDefStyle = vs; // Don't add another "default" style!
+					} else {
+						taskMonitor.setStatusMessage(count + " of " + total + ": " + vs.getTitle());
+						vmMgr.addVisualStyle(vs);
+						taskMonitor.setProgress(count / total);
+						count++;
+					}
 				}
 
 				if (cancelled) {
-					// remove recently added styles
-					for (VisualStyle vs : styles)
-						vmMgr.removeVisualStyle(vs);
-
-					taskMonitor.setProgress(1.0);
+					// Remove recently added styles
+					for (final VisualStyle vs : styles) {
+						if (!vs.getTitle().equals(DEFAULT_STYLE_NAME))
+							vmMgr.removeVisualStyle(vs);
+					}
+				} else {
+					// Update the current default style, because it can't be replaced or removed.
+					// NOTE: Cannot cancel this task from this point forward!
+					if (newDefStyle != null) {
+						taskMonitor.setStatusMessage(total + " of " + total + ": " + DEFAULT_STYLE_NAME);
+						updateVisualStyle(newDefStyle, defStyle);
+					}
+					
+					vmMgr.setCurrentVisualStyle(defStyle);
 				}
-
-				final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
-				vmMgr.setCurrentVisualStyle(defStyle);
+				
+				taskMonitor.setProgress(1.0);
 			}
+		}
+		
+		/**
+		 * @param source the Visual Style that will provide the new properties and values.
+		 * @param target the Visual Style that will be updated.
+		 */
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		private void updateVisualStyle(final VisualStyle source, final VisualStyle target) {
+			// First clean up the target
+			final HashSet<VisualMappingFunction<?, ?>> mapingSet = 
+					new HashSet<VisualMappingFunction<?, ?>>(target.getAllVisualMappingFunctions());
+			
+			for (final VisualMappingFunction<?, ?> mapping : mapingSet)
+				target.removeVisualMappingFunction(mapping.getVisualProperty());
+			
+			final Set<VisualPropertyDependency<?>> depList = 
+					new HashSet<VisualPropertyDependency<?>>(target.getAllVisualPropertyDependencies());
+			
+			for (final VisualPropertyDependency<?> dep : depList)
+				target.removeVisualPropertyDependency(dep);
+			
+			// Copy the default visual properties, mappings and dependencies from source to target
+			final VisualLexicon lexicon = renderingEngineMgr.getDefaultVisualLexicon();
+			final Set<VisualProperty<?>> properties = lexicon.getAllVisualProperties();
+			
+			for (final VisualProperty vp : properties) {
+				if (!vp.equals(BasicVisualLexicon.NETWORK)
+						&& !vp.equals(BasicVisualLexicon.NODE)
+						&& !vp.equals(BasicVisualLexicon.EDGE))
+					target.setDefaultValue(vp, source.getDefaultValue(vp));
+			}
+			
+			for (final VisualPropertyDependency<?> dep : source.getAllVisualPropertyDependencies())
+				target.addVisualPropertyDependency(dep);
+			
+			for (final VisualMappingFunction<?, ?> mapping : source.getAllVisualMappingFunctions())
+				target.addVisualMappingFunction(mapping);
 		}
 	}
 }

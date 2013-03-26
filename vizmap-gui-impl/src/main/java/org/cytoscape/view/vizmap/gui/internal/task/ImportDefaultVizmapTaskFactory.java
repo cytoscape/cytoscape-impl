@@ -26,6 +26,7 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -35,17 +36,20 @@ public class ImportDefaultVizmapTaskFactory extends AbstractTaskFactory {
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final VisualMappingManager vmm;
 	private final CyApplicationConfiguration config;
+	private final RenderingEngineManager renderingEngineMgr;
 
 	public ImportDefaultVizmapTaskFactory(final VizmapReaderManager vizmapReaderMgr,
 										  final VisualMappingManager vmm,
-										  final CyApplicationConfiguration config) {
+										  final CyApplicationConfiguration config,
+										  final RenderingEngineManager renderingEngineMgr) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmm = vmm;
 		this.config = config;
+		this.renderingEngineMgr = renderingEngineMgr;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ImportDefaultVizmapTask(vizmapReaderMgr, vmm, config));
+		return new TaskIterator(new ImportDefaultVizmapTask(vizmapReaderMgr, vmm, config, renderingEngineMgr));
 	}
 }
