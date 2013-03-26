@@ -63,6 +63,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
+
 /**
  * This class is responsible for querying the Cytoscape App Store web service to obtain
  * information about available apps and app updates.
@@ -422,8 +425,21 @@ public class WebQuerier {
 				}
 			}
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (final IOException e) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "<html>" +
+                        "Unable to connect to the App Store website to get the list of apps.<br><br>" +
+                        "<blockquote><tt>" + e.getClass().getName() + ": " + e.getMessage() + "</tt></blockquote><br><br>" +
+                        "Please make sure your internet connection is working.<br><br>" +
+                        "If you are behind a proxy, make sure the settings are correct by<br>" +
+                        "going to <i>Edit</i> &gt; <i>Settings</i> &gt; <i>Proxy Settings</i>.",
+                        "Unable to get list of apps",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            });
 			e.printStackTrace();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
