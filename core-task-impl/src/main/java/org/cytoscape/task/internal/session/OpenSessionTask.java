@@ -27,14 +27,18 @@ package org.cytoscape.task.internal.session;
 
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -58,81 +62,125 @@ public class OpenSessionTask extends AbstractTask {
 	
 	private final CySessionManager sessionMgr;
 	private final CySessionReaderManager readerMgr;
-	
 	private final CyApplicationManager appManager;
+	private final CyNetworkTableManager netTableManager;
 	private final RecentlyOpenedTracker tracker;
 	
 	private CySessionReader reader;
+	private Set<CyNetwork> currentNetworkSet;
 
 	/**
 	 * Constructor.<br>
 	 * Add a menu item under "File" and set shortcut.
 	 */
 	public OpenSessionTask(final CySessionManager mgr, final CySessionReaderManager readerManager,
-			final CyApplicationManager appManager, final RecentlyOpenedTracker tracker) {
+			final CyApplicationManager appManager, final CyNetworkTableManager netTableManager,
+			final RecentlyOpenedTracker tracker) {
 		this.sessionMgr = mgr;
 		this.readerMgr = readerManager;
 		this.appManager = appManager;
+		this.netTableManager = netTableManager;
 		this.tracker = tracker;
 	}
 
 	/**
 	 * Clear current session and open the cys file.
 	 */
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-
 		taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
 		taskMonitor.setProgress(0.0);
 
-		if ( file == null )
+		if (file == null)
 			throw new NullPointerException("No file specified.");
 		
 		reader = readerMgr.getReader(file.toURI(),file.getName());
+		
 		if (reader == null)
 			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
+		
+		// Save the current network set, in case loading the new session is cancelled later
+		currentNetworkSet = new HashSet<CyNetwork>(netTableManager.getNetworkSet());
+		
 		taskMonitor.setProgress(0.2);
 		reader.run(taskMonitor);
 		taskMonitor.setProgress(0.8);
+		
 		if (cancelled)
 			return;
 
-		if(appManager.getCurrentNetwork() == null && appManager.getCurrentTable() == null)
+		if (appManager.getCurrentNetwork() == null && appManager.getCurrentTable() == null)
 			insertTasksAfterCurrentTask(new LoadSessionTaskWithoutWarning(reader));
 		else
 			insertTasksAfterCurrentTask(new LoadSessionTask(reader));
+		
 		taskMonitor.setProgress(1.0);
 	}
 	
+	@Override
+	public void cancel() {
+		super.cancel();
+		
+		if (reader != null)
+			reader.cancel(); // Remember to cancel the Session Reader!
+	}
+
 	CySession getCySession() {
 		return reader.getSession();
 	}
 	
+	private synchronized void disposeCancelledSession() {
+		final CySession newSession = reader.getSession();
+		
+		if (newSession != null) {
+			for (final CyNetworkView view : newSession.getNetworkViews())
+				view.dispose();
+		}
+		
+		if (currentNetworkSet != null) {
+			// This is necessary because the new CySession contains only registered networks;
+			// unregistered networks (e.g. CyGroup networks) may have been loaded and need to be disposed as well.
+			// The Network Table Manager should contain all networks, including the unregistered ones.
+			final Set<CyNetwork> newNetworkSet = new HashSet<CyNetwork>(netTableManager.getNetworkSet());
+			
+			for (final CyNetwork net : newNetworkSet) {
+				if (!currentNetworkSet.contains(net))
+					net.dispose();
+			}
+			
+			currentNetworkSet = null;
+		}
+	}
 	
 	public final class LoadSessionTask extends AbstractTask {
-		CySessionReader reader;
 		
 		@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
 		public boolean changeCurrentSession = true;
 		
-		LoadSessionTask(CySessionReader reader) {
+		private final CySessionReader reader;
+		
+		LoadSessionTask(final CySessionReader reader) {
 			this.reader = reader;
 		}
 		
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
-			
-			if(!changeCurrentSession)
+			if (!changeCurrentSession) {
+				disposeCancelledSession();
 				return;
+			}
 			
 			final CySession newSession = reader.getSession();
-			if ( newSession == null )
+			
+			if (newSession == null)
 				throw new NullPointerException("Session could not be read for file: " + file);
 
 			sessionMgr.setCurrentSession(newSession, file.getAbsolutePath());
 			
 			// Set Current network: this is necessary to update GUI.
 			final RenderingEngine<CyNetwork> currentEngine = appManager.getCurrentRenderingEngine();
-			if(currentEngine != null)
+			
+			if (currentEngine != null)
 				appManager.setCurrentRenderingEngine(currentEngine);
 			
 			taskMonitor.setProgress(1.0);
@@ -141,27 +189,35 @@ public class OpenSessionTask extends AbstractTask {
 			// Add this session file URL as the most recent file.
 			tracker.add(file.toURI().toURL());
 		}
+
+		@Override
+		public void cancel() {
+			super.cancel();
+			disposeCancelledSession();
+		}
 	}
 	
 	public final class LoadSessionTaskWithoutWarning extends AbstractTask {
-		CySessionReader reader;
 		
-		LoadSessionTaskWithoutWarning(CySessionReader reader) {
+		private final CySessionReader reader;
+
+		LoadSessionTaskWithoutWarning(final CySessionReader reader) {
 			this.reader = reader;
 		}
 		
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
-			
 			final CySession newSession = reader.getSession();
-			if ( newSession == null )
+			
+			if (newSession == null)
 				throw new NullPointerException("Session could not be read for file: " + file);
 
 			sessionMgr.setCurrentSession(newSession, file.getAbsolutePath());
 			
 			// Set Current network: this is necessary to update GUI.
 			final RenderingEngine<CyNetwork> currentEngine = appManager.getCurrentRenderingEngine();
-			if(currentEngine != null)
+			
+			if (currentEngine != null)
 				appManager.setCurrentRenderingEngine(currentEngine);
 			
 			taskMonitor.setProgress(1.0);

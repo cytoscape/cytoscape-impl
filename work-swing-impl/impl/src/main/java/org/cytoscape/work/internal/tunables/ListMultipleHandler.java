@@ -69,6 +69,9 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 	private DefaultListModel listModel;
 	private ListMultipleSelection<T> listMultipleSelection;
 
+	private static final Font TEXT_FONT = new Font("SansSerif", Font.PLAIN,12);
+	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD ,13);
+
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListMultipleSelection</code> type
 	 *
@@ -110,7 +113,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 			return;
 		}
 
-		final Border padding = BorderFactory.createEmptyBorder(5, 10, 5, 10);
 		panel = new JPanel();
 		BorderLayout layout = new BorderLayout();
 		panel.setLayout(layout);
@@ -118,10 +120,9 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		if (description != null && description.length() > 80) {
 			// Use JTextArea for long descriptions
 			final JTextArea jta = new JTextArea(description);
-			// jta.setPreferredSize(new Dimension(200, 50));
+
 			jta.setLineWrap(true);
 			jta.setWrapStyleWord(true);
-			// jta.setBorder(padding);
 			panel.add(jta, BorderLayout.PAGE_START);
 			jta.setBackground(panel.getBackground());
 			jta.setEditable(false);
@@ -137,7 +138,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		for ( T value : getMultipleSelection().getPossibleValues() ) 
 			listModel.addElement(value);
 		
-		itemsContainerList.setFont(new Font("sansserif",Font.PLAIN,11));
+		itemsContainerList.setFont(TEXT_FONT);
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		itemsContainerList.addListSelectionListener(this);
 		
@@ -162,7 +163,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		final JScrollPane scrollpane = new JScrollPane(itemsContainerList);
 		scrollpane.setAutoscrolls(true);
 		scrollpane.setOpaque(false);
-		scrollpane.setBorder(padding);
+		scrollpane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 		panel.add(scrollpane, BorderLayout.CENTER);
 	}
 

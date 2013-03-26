@@ -233,7 +233,7 @@ public class CyActivator extends AbstractCyActivator {
 		CysessionReaderFactory cysessionReaderFactory = new CysessionReaderFactory(cysessionFilter);
 		BookmarkReaderFactory bookmarkReaderFactory = new BookmarkReaderFactory(bookmarksFilter);
 		PropertiesReaderFactory propertiesReaderFactory = new PropertiesReaderFactory(propertiesFilter);
-		VisualStyleSerializer visualStyleSerializer = new VisualStyleSerializer(calculatorConverterFactory,visualStyleFactoryServiceRef,visualMappingManagerServiceRef,renderingEngineManagerServiceRef,discreteMappingFactoryServiceRef,continuousMappingFactoryServiceRef,passthroughMappingFactoryServiceRef);
+		VisualStyleSerializer visualStyleSerializer = new VisualStyleSerializer(calculatorConverterFactory,visualStyleFactoryServiceRef,renderingEngineManagerServiceRef,discreteMappingFactoryServiceRef,continuousMappingFactoryServiceRef,passthroughMappingFactoryServiceRef);
 		VizmapXMLReaderFactory vizmapXMLReaderFactory = new VizmapXMLReaderFactory(vizmapXMLFilter,visualStyleSerializer);
 		VizmapPropertiesReaderFactory vizmapPropertiesReaderFactory = new VizmapPropertiesReaderFactory(vizmapPropertiesFilter,visualStyleSerializer);
 		BitmapWriterFactory pngWriterFactory = new BitmapWriterFactory(pngFilter);
