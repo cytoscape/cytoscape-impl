@@ -564,26 +564,32 @@ class CyGroupImpl implements CyGroup {
  	 * CyGroupManager, only.
  	 */
 	public void destroyGroup() {
-		for (CyNetwork net: networkSet)
-			expand(net);
-
-		// Destroy the subNetwork
-		rootNetwork.removeSubNetwork(getGroupNetwork());
-		groupNode.setNetworkPointer(null);
-
-		// Release all of our external edges
-		externalEdges = null;
-
-		// Remove all of our metaEdges from the root network
-		rootNetwork.removeEdges(metaEdges);
-
-		// If our group node was not provided, destroy it if it doesn't have any member edges
-		if (!nodeProvided && rootNetwork.containsNode(groupNode) && memberEdges.size() == 0) {
-			rootNetwork.removeNodes(Collections.singletonList(groupNode));
+		final CySubNetwork groupNet = getGroupNetwork();
+		
+		if (groupNet != null) {
+			for (CyNetwork net: networkSet)
+				expand(net);
+	
+			// Destroy the subNetwork
+			rootNetwork.removeSubNetwork(groupNet);
+			groupNode.setNetworkPointer(null);
 		}
 
-		networkSet = null;
-		collapseSet = null;
+		// Release all of our external edges
+		externalEdges.clear();
+
+		if (groupNet != null) {
+			// Remove all of our metaEdges from the root network
+			rootNetwork.removeEdges(metaEdges);
+			metaEdges.clear();
+
+			// If our group node was not provided, destroy it if it doesn't have any member edges
+			if (!nodeProvided && rootNetwork.containsNode(groupNode) && memberEdges.size() == 0)
+				rootNetwork.removeNodes(Collections.singletonList(groupNode));
+		}
+
+		networkSet.clear();
+		collapseSet.clear();
 	}
 
 	protected synchronized void addMetaEdge(CyEdge edge) {
@@ -602,7 +608,7 @@ class CyGroupImpl implements CyGroup {
 
 	@Override
 	public String toString() {
-		return "Group suid: " + groupNode.getSUID() + " node: " + groupNode;
+		return "Group: groupNode: " + groupNode;
 	}
 
 	private boolean inSameRoot(CyNetwork network) {

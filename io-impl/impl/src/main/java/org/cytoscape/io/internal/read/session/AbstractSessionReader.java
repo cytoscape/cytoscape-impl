@@ -37,6 +37,7 @@ import java.util.WeakHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.io.internal.read.MarkSupportedInputStream;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
@@ -169,6 +170,10 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		}
 		
 		if (cancelled) {
+			// Destroy groups
+			final Set<CyGroup> groups = groupUtil.getGroups(cache.getNetworks());
+			groupUtil.destroyGroups(groups);
+			
 			// Dispose CyNetworkViews and CyNetworks
 			for (final CyNetworkView view : networkViews)
 				view.dispose();
@@ -294,7 +299,6 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	abstract void createObjectMap();
 
 	protected void createGroups() {
-		groupUtil.disposeAllGroups(); // TODO: it should be done by the Session bundle, not IO
 		groupUtil.createGroups(networks, networkViews);
 	}
 	
