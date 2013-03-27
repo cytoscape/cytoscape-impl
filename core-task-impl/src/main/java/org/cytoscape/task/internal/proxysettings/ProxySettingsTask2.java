@@ -89,6 +89,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	private final Map<String,String> oldSettings;
 	private final Properties properties;
 
+
 	public ProxySettingsTask2(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil) {
 		this.streamUtil = streamUtil;
 		oldSettings = new HashMap<String,String>();
@@ -108,7 +109,28 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 			hostname = "";
 			port = 0;
 		}
+
+        assignSystemProperties();
 	}
+
+    public void assignSystemProperties() {
+        if ("direct".equals(type.getSelectedValue())) {
+            System.setProperty("http.proxyHost", "");
+            System.setProperty("http.proxyPort", "");
+            System.setProperty("socksProxyHost", "");
+            System.setProperty("socksProxyPort", "");
+        } else if ("http".equals(type.getSelectedValue())) {
+            System.setProperty("http.proxyHost", hostname);
+            System.setProperty("http.proxyPort", Integer.toString(port));
+            System.setProperty("socksProxyHost", "");
+            System.setProperty("socksProxyPort", "");
+        } else if ("socks".equals(type.getSelectedValue())) {
+            System.setProperty("http.proxyHost", "");
+            System.setProperty("http.proxyPort", "");
+            System.setProperty("socksProxyHost", hostname);
+            System.setProperty("socksProxyPort", Integer.toString(port));
+        }
+    }
 
 	private static String encode(String text) throws IOException {
 		if (text == null) {
@@ -187,6 +209,8 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 				}
 			}
 		}
+        
+        assignSystemProperties();
 	}
 
 	void revertProxySettings() {
@@ -197,6 +221,8 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 				properties.setProperty(key, oldSettings.get(key));
 		}
 		oldSettings.clear();
+        
+        assignSystemProperties();
 	}
 
 	void dumpSettings(String title) {

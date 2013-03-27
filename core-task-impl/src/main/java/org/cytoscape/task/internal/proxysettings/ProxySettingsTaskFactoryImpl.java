@@ -41,6 +41,9 @@ public class ProxySettingsTaskFactoryImpl extends AbstractTaskFactory {
 	public ProxySettingsTaskFactoryImpl(CyProperty<Properties> proxyProperties, StreamUtil streamUtil) {
 		this.proxyProperties = proxyProperties;
 		this.streamUtil = streamUtil;
+
+        // Force reading of proxy properties to assign System properties
+        (new ProxySettingsTask2(proxyProperties, streamUtil)).assignSystemProperties();
 	}
 
 	public TaskIterator createTaskIterator() {
