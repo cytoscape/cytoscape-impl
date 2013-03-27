@@ -156,17 +156,6 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 			}
 		}
 		
-		if (windows) {
-			try {
-				// Try to make it a hidden file on Windows
-				final Process p = Runtime.getRuntime().exec("attrib +H " + tmpFile.getPath());
-			    p.waitFor();
-			} catch (final Exception e) {
-				logger.warn("Error trying to make temporary session file hidden on " + osName + ": " + 
-						tmpFile.getAbsolutePath(), e);
-			}
-		}
-		
 		try {
 			tmpFile.deleteOnExit();
 		} catch (final Exception e) {
