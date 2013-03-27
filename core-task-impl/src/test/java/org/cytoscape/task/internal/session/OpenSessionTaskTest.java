@@ -32,10 +32,13 @@ import java.io.File;
 import java.util.Collections;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -48,9 +51,12 @@ public class OpenSessionTaskTest {
 	
 	@Mock private TaskMonitor tm;
 	@Mock private CySessionManager mgr;
-	@Mock private CySessionReaderManager readerManager;
-	@Mock private CyApplicationManager appManager;
+	@Mock private CySessionReaderManager readerMgr;
+	@Mock private CyApplicationManager appMgr;
+	@Mock private CyNetworkManager netMgr;
+	@Mock private CyTableManager tableMgr;
 	@Mock private CyNetworkTableManager netTableMgr;
+	@Mock private CyGroupManager grMgr;
 	@Mock private RecentlyOpenedTracker tracker;
 	
 	@Mock private CySessionReader reader;
@@ -64,12 +70,12 @@ public class OpenSessionTaskTest {
 		when(netTableMgr.getNetworkSet()).thenReturn(Collections.EMPTY_SET);
 		
 		sampleFile = new File("./src/test/resources/test_session1.cys");
-		when(readerManager.getReader(sampleFile.toURI(),sampleFile.getName())).thenReturn(reader);
+		when(readerMgr.getReader(sampleFile.toURI(),sampleFile.getName())).thenReturn(reader);
 	}
 	
 	@Test
 	public void testRun() throws Exception {
-		final OpenSessionTask t = new OpenSessionTask(mgr, readerManager, appManager, netTableMgr, tracker);
+		final OpenSessionTask t = new OpenSessionTask(mgr, readerMgr, appMgr, netMgr, tableMgr, netTableMgr, grMgr, tracker);
 		t.setTaskIterator(new TaskIterator(t));
 
 		t.file = sampleFile;

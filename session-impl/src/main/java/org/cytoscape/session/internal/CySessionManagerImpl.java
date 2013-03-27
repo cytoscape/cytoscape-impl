@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -230,7 +231,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 		if (sess == null) {
 			logger.debug("Creating empty session...");
-			grMgr.reset(); // TODO: move this line to disposeCurrentSession() when possible. See http://code.cytoscape.org/redmine/issues/1520
 			
 			final Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 			final Set<CyProperty<?>> props = getAllProperties();
@@ -521,6 +521,17 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	private void disposeCurrentSession() {
 		logger.debug("Disposing current session...");
+		
+		// Destroy groups
+		final Set<CyGroup> groups = new HashSet<CyGroup>();
+		
+		for (final CyNetwork n : netMgr.getNetworkSet())
+			groups.addAll(grMgr.getGroupSet(n));
+		
+		for (final CyGroup gr : groups)
+			grMgr.destroyGroup(gr);
+		// TODO: This can't be done, because the Group Manager may contain groups from the new session, which are being registered in io-impl
+//		grMgr.reset();
 		
 		// Destroy network views
 		final Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
