@@ -24,8 +24,12 @@ package org.cytoscape.internal;
  * #L%
  */
 
+import java.util.Properties;
+
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -49,11 +53,23 @@ public class MacCyActivator extends AbstractCyActivator {
 		final TaskFactory aboutTaskFactory = new HelpAboutTaskFactory(version, swingApplication);
 		final DialogTaskManager taskManager = getService(context,DialogTaskManager.class);
 		
+		final CyShutdownEvent[] lastShutdownEvent = new CyShutdownEvent[1];
+		CyShutdownListener listener = new CyShutdownListener() {
+			@Override
+			public void handleEvent(CyShutdownEvent e) {
+				lastShutdownEvent[0] = e;
+			}
+		};
+		registerService(context, listener, CyShutdownListener.class, new Properties());
+		
 		Application application = Application.getApplication();
 		application.setQuitHandler(new QuitHandler() {
 			@Override
 			public void handleQuitRequestWith(QuitEvent event, QuitResponse response) {
 				shutdown.exit(0);
+				if (lastShutdownEvent[0] != null && !lastShutdownEvent[0].actuallyShutdown()) {
+					response.cancelQuit();
+				}
 			}
 		});
 		application.setAboutHandler(new AboutHandler() {
