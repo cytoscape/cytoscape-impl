@@ -166,7 +166,13 @@ public class Parser {
 		if (line.hasOption("b"))
 			startupConfig.setBundlePlugins(line.getOptionValues("b"));
 
-		// Either load the session ...
+		// it the only argument is a session file, load it
+		if (line.getOptions().length == 0 && line.getArgs().length == 1 && line.getArgs()[0].endsWith(".cys")){
+			startupConfig.setSession(line.getArgs()[0]);
+			return;
+		}
+		
+		// Either load the session ...		
 		if (line.hasOption("s")) {
 			startupConfig.setSession(line.getOptionValue("s"));
 
