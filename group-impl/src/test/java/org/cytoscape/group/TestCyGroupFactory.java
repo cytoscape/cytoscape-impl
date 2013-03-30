@@ -174,6 +174,62 @@ public class TestCyGroupFactory {
         assertEqualWithoutOrder(net.getEdgeList(), Arrays.asList(edge1, edge2, edge3, edge4, edge5, edge6));
     }
 
+		// Test maintenance of meta-edges
+		// Create two groups that share edges
+		// Collapse both and expand them in the opposite order
+    @Test
+    public void testMetaEdges() throws Exception
+    {
+			// Set up our data structures
+			final CyGroupFactory factory = TestCyGroupFactory.getFactory();
+			final NetworkTestSupport support = new NetworkTestSupport();
+			final CyNetwork net = support.getNetwork();
+	
+			final CyNode nodeA = net.addNode();
+			final CyNode nodeB = net.addNode();
+			final CyNode nodeC = net.addNode();
+			final CyNode nodeD = net.addNode();
+			final CyNode nodeE = net.addNode();
+
+			final CyEdge edge1 = net.addEdge(nodeA, nodeE, false);
+			final CyEdge edge2 = net.addEdge(nodeE, nodeB, false);
+			final CyEdge edge3 = net.addEdge(nodeE, nodeC, false);
+			final CyEdge edge4 = net.addEdge(nodeE, nodeD, false);
+			final CyEdge edge5 = net.addEdge(nodeC, nodeB, false);
+			final CyEdge edge6 = net.addEdge(nodeC, nodeD, false);
+
+			final CyGroup group1 = factory.createGroup(net, null, Arrays.asList(nodeA, nodeB, nodeC), null, true);
+			assertNotNull(group1);
+			assertEqualWithoutOrder(group1.getNodeList(), Arrays.asList(nodeA, nodeB, nodeC));
+			assertEqualWithoutOrder(group1.getInternalEdgeList(), Arrays.asList(edge5));
+			assertEqualWithoutOrder(group1.getExternalEdgeList(), Arrays.asList(edge1, edge2, edge3, edge6));
+
+			final CyGroup group2 = factory.createGroup(net, null, Arrays.asList(nodeD, nodeE), null, true);
+			assertNotNull(group2);
+			assertEqualWithoutOrder(group2.getNodeList(), Arrays.asList(nodeD, nodeE));
+			assertEqualWithoutOrder(group2.getInternalEdgeList(), Arrays.asList(edge4));
+			assertTrue(group2.getExternalEdgeList().size()==6); // 4 external edges + 2 meta-edges
+
+			// Collapse both groups
+			group1.collapse(net);
+			assertTrue(group1.isCollapsed(net));
+
+			group2.collapse(net);
+			assertTrue(group2.isCollapsed(net));
+
+			assertEqualWithoutOrder(net.getNodeList(), Arrays.asList(group1.getGroupNode(), group2.getGroupNode()));
+
+			// Expand in opposite order
+			group1.expand(net);
+			assertEqualWithoutOrder(net.getNodeList(), Arrays.asList(nodeA, nodeB, nodeC, group2.getGroupNode()));
+			assertTrue(net.getEdgeList().size()==4); // 1 internal edge + 3 meta-edges
+
+			group2.expand(net);
+			assertEqualWithoutOrder(net.getNodeList(), Arrays.asList(nodeA, nodeB, nodeC, nodeD, nodeE));
+			assertEqualWithoutOrder(net.getEdgeList(), Arrays.asList(edge1, edge2, edge3, edge4, edge5, edge6));
+
+		}
+
     private static <T> void assertEqualWithoutOrder(final Collection<T> a, final Collection<T> b)
     {
         final Set<T> aset = new HashSet<T>(a);
