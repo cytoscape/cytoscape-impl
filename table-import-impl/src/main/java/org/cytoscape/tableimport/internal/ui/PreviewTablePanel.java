@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -766,7 +767,7 @@ public class PreviewTablePanel extends JPanel {
 				String line = null;
 				int i = 0;
 
-				bufRd = new BufferedReader(new InputStreamReader(is));
+				bufRd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
 				// Test first two lines to check the file type.
 				while ((line = bufRd.readLine()) != null) {
 					if (i == 0) {
@@ -909,7 +910,7 @@ public class PreviewTablePanel extends JPanel {
 		Vector data;
 		int maxColumn;
 
-			BufferedReader bufRd = new BufferedReader(new InputStreamReader( tempIs));
+			BufferedReader bufRd = new BufferedReader(new InputStreamReader(tempIs, Charset.forName("UTF-8").newDecoder()));
 				/*
 				 * Generate reg. exp. for delimiter.
 				 */
