@@ -415,6 +415,7 @@ public class CyActivator extends AbstractCyActivator {
 		                        "removeTableTaskFactory", TableTaskFactory.class);
 		registerServiceListener(bc, networkViewManager, "addPresentationFactory",
 		                        "removePresentationFactory", RenderingEngineFactory.class);
+		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu
 		registerServiceListener(bc, networkPanel, "addNetworkViewTaskFactory",

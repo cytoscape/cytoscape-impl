@@ -29,11 +29,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
 
 
 /**
@@ -47,7 +47,7 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 
 	public CyLayoutsImpl(final CyProperty<Properties> p, CyLayoutAlgorithm defaultLayout) {
 		this.cyProps = p;
-		layoutMap = new HashMap<String,CyLayoutAlgorithm>();
+		layoutMap = new ConcurrentHashMap<String,CyLayoutAlgorithm>();
 		addLayout(defaultLayout, new HashMap());
 	}
 

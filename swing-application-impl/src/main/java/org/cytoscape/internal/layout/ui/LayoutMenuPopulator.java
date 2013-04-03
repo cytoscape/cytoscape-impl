@@ -72,6 +72,9 @@ public class LayoutMenuPopulator implements MenuListener {
 
     public void removeLayout(CyLayoutAlgorithm layout, Map props) {
         algorithmMap.remove(layout);
+        if (menuMap.containsKey(layout)) {
+            layoutMenu.remove(menuMap.remove(layout));
+        }
     }
 
     /**
@@ -120,8 +123,7 @@ public class LayoutMenuPopulator implements MenuListener {
 
             // Remove the old menu
             if (menuMap.containsKey(layout)) {
-                layoutMenu.remove(menuMap.get(layout));
-                menuMap.remove(layout);
+                layoutMenu.remove(menuMap.remove(layout));
             }
         
             boolean usesNodeAttrs = false;

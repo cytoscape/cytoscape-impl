@@ -37,6 +37,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -50,6 +51,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -173,6 +175,26 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 	}
 
+    void addLayout(CyLayoutAlgorithm layout) {
+    	SwingUtilities.invokeLater(new Runnable() {
+    		@Override
+    		public void run() {
+    	        initialize();
+    		}
+    	});
+    }
+
+    void removeLayout(final CyLayoutAlgorithm layout) {
+    	SwingUtilities.invokeLater(new Runnable() {
+    		@Override
+    		public void run() {
+    	    	if (currentLayout == layout) {
+    	    		algorithmPanel.removeAll();
+    	    	}
+    	    	initialize();
+    		}
+    	});
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -375,6 +397,10 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		for ( CyLayoutAlgorithm algo : cyLayoutAlgorithmManager.getAllLayouts()) 
 			algorithmSelector.addItem(algo);
 		
+		if (currentLayout != null) {
+			algorithmSelector.setSelectedItem(currentLayout);
+		}
+
 		// For the tabbedPanel "Set preferred Layout"
 		this.cmbLayoutAlgorithms.removeAllItems();
 		
@@ -383,12 +409,16 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.cmbLayoutAlgorithms.addItem("Select preferred algorithm");
 
 		for ( CyLayoutAlgorithm algo : cyLayoutAlgorithmManager.getAllLayouts()) 
-			this.cmbLayoutAlgorithms.addItem(algo);	
+			this.cmbLayoutAlgorithms.addItem(algo);
 	}
 
 	private class AlgorithmActionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			Object o = algorithmSelector.getSelectedItem();
+			if (o == null) {
+				return;
+			}
+			
 			// if it's a string, that means it's the instructions
 			if (!(o instanceof String)) {
 				currentLayout = (CyLayoutAlgorithm)o;
