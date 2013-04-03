@@ -41,7 +41,8 @@ import org.slf4j.LoggerFactory;
 public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 	
 	public static final Pattern XGMML_HEADER_PATTERN = Pattern
-			.compile("<graph[^<>]+[\\'\"]http://www.cs.rpi.edu/XGMML[\\'\"][^<>]*>");
+			.compile("<graph[\\s]+[^<>]*[\\'\"]http://www.cs.rpi.edu/XGMML[\\'\"][^<>]*>|"     // XGMML namespace
+					+ "<!DOCTYPE[\\s]+graph[\\s]+[^<>]*[\\'\"][^<>]*xgmml.dtd[\\'\"][^<>]*>"); // or XGMML DTD
 	
 	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLFileFilter.class);
 	

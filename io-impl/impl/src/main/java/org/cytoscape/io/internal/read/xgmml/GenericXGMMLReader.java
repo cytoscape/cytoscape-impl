@@ -66,6 +66,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.ParserAdapter;
 
 public class GenericXGMMLReader extends AbstractNetworkReader {
@@ -195,10 +196,16 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 
 		try {
 			// Get our parser
-			SAXParser sp = spf.newSAXParser();
-			ParserAdapter pa = new ParserAdapter(sp.getParser());
+			final SAXParser sp = spf.newSAXParser();
+			// Ignore the DTD declaration
+			final XMLReader reader = sp.getXMLReader();
+			reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			reader.setFeature("http://xml.org/sax/features/validation", false);
+			// Make the SAX1 Parser act as a SAX2 XMLReader
+			final ParserAdapter pa = new ParserAdapter(sp.getParser());
 			pa.setContentHandler(parser);
 			pa.setErrorHandler(parser);
+			// Parse the XGMML input
 			pa.parse(new InputSource(inputStream));
 		} catch (OutOfMemoryError oe) {
 			// It's not generally a good idea to catch OutOfMemoryErrors, but in
@@ -214,8 +221,11 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 			throw e;
 		} finally {
 			if (inputStream != null) {
-				inputStream.close();
-				inputStream = null;
+				try {
+					inputStream.close();
+				} catch (Exception e) {
+					logger.warn("Cannot close XGMML input stream", e);
+				}
 			}
 		}
 	}
