@@ -72,16 +72,16 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	@Tunable(description="Type")
 	public ListSingleSelection<String> type = new ListSingleSelection<String>("direct", "http", "socks");
 
-	@Tunable(description="Proxy Server",groups={"param"},dependsOn="type!=direct",params="alignments=horizontal;displayState=hidden")
+	@Tunable(description="Proxy Server",groups={"Options"},dependsOn="type!=direct",params="displayState=hidden")
 	public String hostname="";
 
-	@Tunable(description="Port",groups={"param"},dependsOn="type!=direct",params="alignments=horizontal;displayState=hidden")
+	@Tunable(description="Port",groups={"Options"},dependsOn="type!=direct",params="displayState=hidden")
 	public int port=0;
 
-	@Tunable(description="User Name", groups={"param"},dependsOn="type!=direct", params="alignments=horizontal;displayState=hidden")
+	@Tunable(description="User Name", groups={"Options"},dependsOn="type!=direct", params="displayState=hidden")
 	public String userName;
 	
-	@Tunable(description="Password", groups={"param"},dependsOn="type!=direct", params="alignments=horizontal;displayState=hidden")
+	@Tunable(description="Password", groups={"Options"},dependsOn="type!=direct", params="displayState=hidden")
 	public String password;
 	
 	private final StreamUtil streamUtil;

@@ -56,7 +56,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
 	
 	private static final Font TEXT_FONT = new Font("SansSerif", Font.PLAIN,12);
-	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD ,13);
+	private static final Font LABEL_FONT = new Font("SansSerif", Font.PLAIN ,12);
 	
 	private JFormattedTextField textField;
 
@@ -97,7 +97,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		final JLabel label = new JLabel(getDescription());
 		label.setFont(LABEL_FONT);
-		label.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		textField.setFont(TEXT_FONT);
 		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.addActionListener(this);
