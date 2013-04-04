@@ -252,6 +252,18 @@ class PopupMenuHelper {
 			}
 			
 			for ( NetworkViewTaskFactory nvtf : usableTFs ) {
+				// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HACK ALERT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
+				// Until we get better control over NetworkViewTaskFactories, there are a couple
+				// of Menu bar menus that appear in the network view context menu that have no
+				// business being there.  This hack skips those menu items....
+				// I, Scooter, am responsible for this hack.....
+				// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HACK ALERT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
+				Map props = m_view.emptySpaceTFs.get(nvtf);
+				String pref = (String)(props.get(PREFERRED_MENU));
+				if (pref != null && pref.length() > 0 && 
+				    (pref.startsWith("File") || pref.startsWith("Layout")))
+					continue;	// Skip any "File" or "Layout" menus
+				
 				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
 				addMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
 			}
@@ -422,7 +434,7 @@ class PopupMenuHelper {
 		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU);
 		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU);
 		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_LAYOUT_MENU);
+		// tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_LAYOUT_MENU);
 		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_APPS_MENU);
 		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_PREFERENCES_MENU);
 	}
