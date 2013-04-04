@@ -41,6 +41,8 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
@@ -51,7 +53,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-public class GlobalTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener, TableAddedListener, TablePrivacyChangedListener {
+public class GlobalTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener, RowsSetListener, TableAddedListener, TablePrivacyChangedListener {
 
 	private static final long serialVersionUID = 2269984225983802421L;
 
@@ -95,6 +97,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 			return;
 
 		currentTable = table;
+		//applicationManager.setCurrentGlobalTable(table);
 		showSelectedTable();
 	}
 
@@ -114,6 +117,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 					@Override
 					public void run() {
 						serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
+						//applicationManager.setCurrentGlobalTable(null);
 						showSelectedTable();
 					}
 				});
@@ -141,6 +145,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 					new Runnable() {
 						public void run() {
 							serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class, new Properties());
+							//applicationManager.setCurrentGlobalTable(newTable);
 						}
 					});
 			}
@@ -173,6 +178,18 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		}else
 			comboBoxModel.addAndSetSelectedItem(table);
 		
+	}
+	
+	@Override
+	public void handleEvent(final RowsSetEvent e) {
+		BrowserTableModel model = (BrowserTableModel) getCurrentBrowserTable().getModel();
+		CyTable dataTable = model.getDataTable();
+
+		if (e.getSource() != dataTable)
+			return;		
+		synchronized (this) {
+				model.fireTableDataChanged();
+		}
 	}
 
 	
