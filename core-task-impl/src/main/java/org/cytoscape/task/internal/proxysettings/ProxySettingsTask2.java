@@ -69,8 +69,10 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	
 	private static final List<String> KEYS = Arrays.asList(PROXY_HOST, PROXY_PORT, PROXY_TYPE, PROXY_USERNAME, PROXY_PASSWORD);
 
+    private static final List<String> PROXY_TYPES = Arrays.asList("direct", "http", "socks");
+
 	@Tunable(description="Type")
-	public ListSingleSelection<String> type = new ListSingleSelection<String>("direct", "http", "socks");
+	public ListSingleSelection<String> type = new ListSingleSelection<String>(PROXY_TYPES);
 
 	@Tunable(description="Proxy Server",groups={"Options"},dependsOn="type!=direct",params="displayState=hidden")
 	public String hostname="";
@@ -95,7 +97,12 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 		oldSettings = new HashMap<String,String>();
 		properties = proxyProperties.getProperties();
 		try {
-			type.setSelectedValue(properties.getProperty(PROXY_TYPE));
+            final String proxyType = properties.getProperty(PROXY_TYPE);
+            if (PROXY_TYPES.contains(proxyType)) {
+                type.setSelectedValue(proxyType);
+            } else {
+                type.setSelectedValue("direct");
+            }
 			hostname = properties.getProperty(PROXY_HOST);
 			port = Integer.parseInt(properties.getProperty(PROXY_PORT));
 			userName = properties.getProperty(PROXY_USERNAME);
@@ -105,7 +112,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 				password = null;
 			}
 		} catch (IllegalArgumentException e) {
-			type.setSelectedValue("direct");
+            type.setSelectedValue("direct");
 			hostname = "";
 			port = 0;
 		}
