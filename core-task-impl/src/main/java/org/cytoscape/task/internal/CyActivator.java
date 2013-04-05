@@ -32,6 +32,7 @@ import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
@@ -842,6 +843,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkImageTaskFactoryProps.setProperty(TITLE,"Network View as Graphics...");
 		exportNetworkImageTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.7");
 		exportNetworkImageTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+		exportNetworkImageTaskFactoryProps.setProperty(IN_CONTEXT_MENU,"false");
 		exportNetworkImageTaskFactoryProps.setProperty(TOOLTIP,"Export Network Image to File");
 		exportNetworkImageTaskFactoryProps.setProperty(COMMAND,"export-network-image");
 		exportNetworkImageTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
@@ -857,6 +859,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkViewTaskFactoryProps.setProperty(TITLE,"Network...");
 		exportNetworkViewTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/net_file_export.png").toString());
 		exportNetworkViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+		exportNetworkViewTaskFactoryProps.setProperty(IN_CONTEXT_MENU,"false");
 		exportNetworkViewTaskFactoryProps.setProperty(TOOLTIP,"Export Network to File");
 		exportNetworkViewTaskFactoryProps.setProperty(COMMAND,"export-network");
 		exportNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
