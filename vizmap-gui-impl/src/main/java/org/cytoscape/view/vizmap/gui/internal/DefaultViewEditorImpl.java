@@ -191,7 +191,8 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 		for (VisualLexicon lexicon : lexSet) {
 			for (VisualProperty<?> vp : props) {
-				if (lexicon.getVisualLexiconNode(vp).getChildren().size() == 0)
+				VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
+				if (node != null && node.getChildren().size() == 0)
 					propSet.add(vp);
 			}
 		}
@@ -206,8 +207,10 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 		for (VisualLexicon lexicon : lexSet) {
 			for (VisualProperty<?> vp : props) {
-				if (lexicon.getVisualLexiconNode(vp).getChildren().size() == 0
-						&& lexicon.getVisualLexiconNode(vp).getParent().getVisualProperty() == BasicVisualLexicon.NETWORK)
+				VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
+				if (node != null
+						&& node.getChildren().size() == 0
+						&& node.getParent().getVisualProperty() == BasicVisualLexicon.NETWORK)
 					propSet.add(vp);
 			}
 		}

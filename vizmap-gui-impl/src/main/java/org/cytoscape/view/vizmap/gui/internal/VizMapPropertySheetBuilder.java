@@ -308,6 +308,11 @@ public class VizMapPropertySheetBuilder {
 					final Set<?> vpGroup = dep.getVisualProperties();
 					VisualProperty<?> firstVP = (VisualProperty<?>) vpGroup.iterator().next();
 					final VisualLexiconNode node = lex.getVisualLexiconNode(firstVP);
+					
+					if (node == null) {
+						continue;
+					}
+					
 					final VisualProperty<?> parentVP = node.getParent().getVisualProperty();
 					if (unusedVisualPropType.contains(parentVP) == false && style.getVisualMappingFunction(parentVP) == null)
 						unusedVisualPropType.add(parentVP);
