@@ -129,7 +129,6 @@ public class XorPanel extends JPanel {
 		@Override public String getChildKey() { return null; }
 		@Override public boolean controlsMutuallyExclusiveNestedChildren() { return false; }
 		@Override public String[] getGroups() { return null; }
-		@Override public double getGravity() { return 0.0; }
 		@Override public String getDescription() { return null; }
 		@Override public Object getValue() { return null; }
 		@Override public void setValue(final Object newValue) { }
