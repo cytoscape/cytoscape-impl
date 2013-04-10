@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -40,7 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
-import org.cytoscape.property.CyProperty;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.util.swing.OpenBrowser;
 
 public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
@@ -56,16 +55,16 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 	private final Map<JLabel, String> urlMap;
 
 	private final OpenBrowser openBrowserServiceRef;
-	private final CyProperty<Properties> cyProps;
+	private final CyVersion version;
 
 	private final StatusPanel statusPanel;
 
 	public NewsAndLinkPanel(final StatusPanel statusPanel, final OpenBrowser openBrowserServiceRef,
-			CyProperty<Properties> cyProps) {
+			CyVersion version) {
 		labelSet = new ArrayList<JLabel>();
 		urlMap = new HashMap<JLabel, String>();
 		this.openBrowserServiceRef = openBrowserServiceRef;
-		this.cyProps = cyProps;
+		this.version = version;
 		this.statusPanel = statusPanel;
 		initComponents();
 	}
@@ -88,7 +87,7 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 		bugReport = new JLabel("<html><u>Report a bug</u></html>");
 
 		// get Cytoscape version
-		String cyversion = this.cyProps.getProperties().getProperty("cytoscape.version.number");
+		String cyversion = version.getVersion();
 
 		// get OS string
 		String os_str = System.getProperty("os.name") + "_" + System.getProperty("os.version");
