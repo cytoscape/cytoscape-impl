@@ -7,13 +7,12 @@
 	</parent>
 
 	<artifactId>model-impl-parent</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape Model Impl Parent (${project.artifactId})</name>
 
 	<modules>
 		<module>impl</module>
-		<!-- <module>it</module> <module>performance</module> -->
 		<module>performance-debug</module>
 		<module>table-performance-debug</module>
 	</modules>
