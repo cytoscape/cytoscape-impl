@@ -7,7 +7,7 @@
 	</parent>
 
 	<artifactId>model-impl-parent</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+	<version>3.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape Model Impl Parent (${project.artifactId})</name>
 
@@ -17,47 +17,7 @@
 		<module>table-performance-debug</module>
 	</modules>
 
-
-	<build>
-		<plugins>
-			<plugin>
-				<inherited>false</inherited>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>${maven-release-plugin.version}</version>
-				<configuration>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<goals>deploy</goals>
-					<!-- so that impl bundles with modules will build correctly -->
-					<preparationGoals>clean install</preparationGoals>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
 	<repositories>
-		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>cytoscape_releases</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Cytoscape Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
-		</repository>
 		<repository>
 			<!-- For guava-osgi -->
 			<id>sonatype</id>
@@ -84,6 +44,7 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
 			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -96,12 +57,14 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>equations-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version}]</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>
 			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -111,6 +74,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.guava-osgi</groupId>
@@ -123,6 +87,4 @@
 			<version>0.9.4</version>
 		</dependency>
 	</dependencies>
-
 </project>
-

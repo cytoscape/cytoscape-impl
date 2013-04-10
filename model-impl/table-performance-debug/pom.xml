@@ -60,18 +60,13 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version}]</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.ops4j.pax.logging</groupId>
-			<artifactId>pax-logging-api</artifactId>
-			<version>1.5.2</version>
 		</dependency>
 	</dependencies>
 </project>
