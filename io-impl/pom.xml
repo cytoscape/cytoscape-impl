@@ -7,7 +7,7 @@
 	</parent>
 
 	<artifactId>io-impl-parent</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape IO Impl Parent (${project.artifactId})</name>
 
@@ -178,14 +178,14 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>[3.0.0,)</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>[3.0.0,)</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
