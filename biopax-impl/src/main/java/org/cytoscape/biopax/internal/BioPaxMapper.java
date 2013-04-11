@@ -223,15 +223,15 @@ public class BioPaxMapper {
 		//  default Quick Find Index
 		AttributeUtil.set(network, network, "quickfind.default_index", CyNetwork.NAME, String.class);
 
-		// Serialize and Save the BioPAX L3 model as RDF+XML (OWL) 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			convertToOWL(model, baos);
-			AttributeUtil.set(network, network, CyNetwork.HIDDEN_ATTRS, 
-					BioPaxUtil.BIOPAX_DATA, baos.toString("UTF-8"), String.class);
-		} catch (Exception e) {
-			log.error("Serializing BioPAX to RDF/XML string failed.", e);
-		}
+//		// Serialize and Save the BioPAX L3 model as RDF+XML (OWL) 
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		try {
+//			convertToOWL(model, baos);
+//			AttributeUtil.set(network, network, CyNetwork.HIDDEN_ATTRS, 
+//					BioPaxUtil.BIOPAX_DATA, baos.toString("UTF-8"), String.class);
+//		} catch (Exception e) {
+//			log.error("Serializing BioPAX to RDF/XML string failed.", e);
+//		}
 		
 		return network;
 	}
