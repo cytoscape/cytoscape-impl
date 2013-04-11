@@ -151,6 +151,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-impl</artifactId>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-api</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>

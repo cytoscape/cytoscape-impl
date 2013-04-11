@@ -35,31 +35,6 @@
     </build>
 
 
-	<repositories>
-		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>cytoscape_releases</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Cytoscape Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
-		</repository>
-	</repositories>
-
 	<!--
 	Dependencies included here should *ONLY* be for the impl bundle.
 	All additional dependencies necessary for the integration tests (it) 
@@ -147,31 +122,31 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>model-impl</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -184,27 +159,33 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
 			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-impl</artifactId>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${cytoscape.api.version}]</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
