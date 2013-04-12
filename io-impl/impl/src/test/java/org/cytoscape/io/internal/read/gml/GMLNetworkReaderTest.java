@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
@@ -96,12 +97,7 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	
 	@Test
 	public void testReadGml() throws Exception {
-		File file = new File("src/test/resources/testData/gml/example1.gml");
-		GMLNetworkReader reader = new GMLNetworkReader(new FileInputStream(file), netFactory, viewFactory,
-													   renderingEngineManager, unrecognizedVisualPropertyMgr,
-													   networkManager, rootNetworkManager, cyApplicationManager);
-		reader.run(taskMonitor);
-		
+		final GMLNetworkReader reader = readGML("src/test/resources/testData/gml/example1.gml");
 		final CyNetwork[] networks = reader.getNetworks();
 		final CyNetworkView[] networkViews = new CyNetworkView[networks.length];
 		int i = 0;
@@ -125,12 +121,7 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	
 	@Test
 	public void testReadGmlAttributes() throws Exception {
-		File file = new File("src/test/resources/testData/gml/example2.gml");
-		GMLNetworkReader reader = new GMLNetworkReader(new FileInputStream(file), netFactory, viewFactory,
-													   renderingEngineManager, unrecognizedVisualPropertyMgr, 
-													   networkManager, rootNetworkManager, cyApplicationManager);
-		reader.run(taskMonitor);
-		
+		final GMLNetworkReader reader = readGML("src/test/resources/testData/gml/example2.gml");
 		final CyNetwork[] networks = reader.getNetworks();
 		final CyNetworkView[] networkViews = new CyNetworkView[networks.length];
 		int i = 0;
@@ -209,5 +200,115 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		assertEquals(LineTypeVisualProperty.SOLID, ev.getVisualProperty(EDGE_LINE_TYPE));
 		assertEquals(ArrowShapeVisualProperty.CIRCLE, ev.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
 		assertEquals(ArrowShapeVisualProperty.DIAMOND, ev.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+	}
+	
+	@Test
+	public void testReadYEdArrows() throws Exception {
+		final GMLNetworkReader reader = readGML("src/test/resources/testData/gml/yed_arrows.gml");
+		
+		final CyNetwork[] networks = reader.getNetworks();
+		assertEquals(1, networks.length);
+		
+		final CyNetwork net = networks[0];
+		final CyNetworkView view = reader.buildCyNetworkView(net);
+		
+		final CyEdge e1 = getEdgeByName(net, "n1 () n2");
+		final CyEdge e2 = getEdgeByName(net, "n2 () n3");
+		final CyEdge e3 = getEdgeByName(net, "n3 () n1");
+		final CyEdge e4 = getEdgeByName(net, "n3 () n4");
+		
+		// Test arrows as specified here: http://docs.yworks.com/yfiles/doc/developers-guide/gml.html
+		final View<CyEdge> ev1 = view.getEdgeView(e1);
+		assertEquals(ArrowShapeVisualProperty.NONE, ev1.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.ARROW, ev1.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev2 = view.getEdgeView(e2);
+		assertEquals(ArrowShapeVisualProperty.DELTA, ev2.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, ev2.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev3 = view.getEdgeView(e3);
+		assertEquals(ArrowShapeVisualProperty.DIAMOND, ev3.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.CIRCLE, ev3.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev4 = view.getEdgeView(e4);
+		assertEquals(ArrowShapeVisualProperty.NONE, ev4.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, ev4.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+	}
+	
+	@Test
+	public void testReadCy2Arrows() throws Exception {
+		final GMLNetworkReader reader = readGML("src/test/resources/testData/gml/cy2_arrows.gml");
+		
+		final CyNetwork[] networks = reader.getNetworks();
+		assertEquals(1, networks.length);
+		
+		final CyNetwork net = networks[0];
+		final CyNetworkView view = reader.buildCyNetworkView(net);
+		
+		final CyEdge e1 = getEdgeByName(net, "n1 () n2");
+		final CyEdge e2 = getEdgeByName(net, "n2 () n3");
+		final CyEdge e3 = getEdgeByName(net, "n3 () n1");
+		final CyEdge e4 = getEdgeByName(net, "n3 () n4");
+		final CyEdge e5 = getEdgeByName(net, "n1 (DirectedEdge) n4");
+		final CyEdge e6 = getEdgeByName(net, "n2 (DirectedEdge) n4");
+		
+		// Test arrows as specified here: http://docs.yworks.com/yfiles/doc/developers-guide/gml.html
+		final View<CyEdge> ev1 = view.getEdgeView(e1);
+		assertEquals(ArrowShapeVisualProperty.NONE, ev1.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.ARROW, ev1.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev2 = view.getEdgeView(e2);
+		assertEquals(ArrowShapeVisualProperty.DELTA, ev2.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, ev2.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev3 = view.getEdgeView(e3);
+		assertEquals(ArrowShapeVisualProperty.DIAMOND, ev3.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.CIRCLE, ev3.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev4 = view.getEdgeView(e4);
+		assertEquals(ArrowShapeVisualProperty.NONE, ev4.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, ev4.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev5 = view.getEdgeView(e5);
+		assertEquals(ArrowShapeVisualProperty.T, ev5.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, ev5.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev6 = view.getEdgeView(e6);
+		assertEquals(ArrowShapeVisualProperty.HALF_BOTTOM, ev6.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.HALF_TOP, ev6.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+	}
+	
+	@Test
+	public void testReadOldGalFilteredArrows() throws Exception {
+		// This file is distributed in the sampleData folder of previous Cy2 versions
+		// and uses only the attribute key "arrow" (not "sourceArrow" or "source_Arrow", as yEd and Cy3)
+		final GMLNetworkReader reader = readGML("src/test/resources/testData/gml/galFiltered_old.gml");
+		
+		final CyNetwork[] networks = reader.getNetworks();
+		assertEquals(1, networks.length);
+		
+		final CyNetwork net = networks[0];
+		final CyNetworkView view = reader.buildCyNetworkView(net);
+		
+		final CyEdge e1 = getEdgeByName(net, "YPR124W (pd) YMR021C");
+		final CyEdge e2 = getEdgeByName(net, "YGR074W (pp) YBR043C");
+		
+		final View<CyEdge> ev1 = view.getEdgeView(e1);
+		assertEquals(ArrowShapeVisualProperty.NONE, ev1.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.ARROW, ev1.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+		
+		final View<CyEdge> ev2 = view.getEdgeView(e2);
+		assertEquals(ArrowShapeVisualProperty.NONE, ev2.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
+		assertEquals(ArrowShapeVisualProperty.NONE, ev2.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
+	}
+	
+	private GMLNetworkReader readGML(final String filename) throws Exception {
+		final File file = new File(filename);
+		GMLNetworkReader reader = new GMLNetworkReader(new FileInputStream(file), netFactory, viewFactory,
+													   renderingEngineManager, unrecognizedVisualPropertyMgr, 
+													   networkManager, rootNetworkManager, cyApplicationManager);
+		reader.run(taskMonitor);
+		
+		return reader;
 	}
 }
