@@ -41,6 +41,7 @@ import java.util.Properties;
 
 import javax.swing.Icon;
 
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
@@ -386,5 +387,10 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	@Override
 	public void dispose() {
 		registrar.unregisterAllServices(this);
+	}
+	
+	@Override
+	public String getRendererId() {
+		return DingRenderer.ID;
 	}
 }

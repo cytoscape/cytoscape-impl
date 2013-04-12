@@ -48,6 +48,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -106,17 +107,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final Map<JInternalFrame, InternalFrameListener> frameListeners;
 	private final Properties props;
 
-	// Supports multiple presentations
-	private final Map<String, RenderingEngineFactory<CyNetwork>> factories;
-	private RenderingEngineFactory<CyNetwork> currentRenderingEngineFactory;
-
-	// TODO: discuss the name and key of props.
-	private static final String ID = "id";
-
-	// TODO: for now, use this as default. But in the future, we should provide
-	// UI to select presentation.
-	private static final String DEFAULT_PRESENTATION = "ding";
-
 	private final CyNetworkViewManager netViewMgr;
 	private final CyApplicationManager appMgr;
 	private final RenderingEngineManager renderingEngineMgr;
@@ -134,7 +124,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			throw new NullPointerException("CyNetworkViewManager is null.");
 		
 		this.renderingEngineMgr = renderingEngineManager;
-		this.factories = new HashMap<String, RenderingEngineFactory<CyNetwork>>();
 
 		this.netViewMgr = netViewMgr;
 		this.appMgr = appMgr;
@@ -151,34 +140,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		iFrameMap = new WeakHashMap<JInternalFrame, CyNetworkView>();
 		frameListeners = new HashMap<JInternalFrame, InternalFrameListener>();
 		viewUpdateRequired = new HashSet<CyNetworkView>();
-	}
-
-	/**
-	 * Dynamically add rendering engine factories. Will be used by Spring DM.
-	 * 
-	 * @param factory
-	 * @param props
-	 */
-	public void addPresentationFactory(RenderingEngineFactory<CyNetwork> factory,
-			@SuppressWarnings("rawtypes") Map props) {
-		logger.info("Adding New Rendering Engine Factory...");
-
-		Object rendererID = props.get(ID);
-		if (rendererID == null)
-			throw new IllegalArgumentException("Renderer ID is null.");
-
-		factories.put(rendererID.toString(), factory);
-		if (currentRenderingEngineFactory == null && rendererID.equals(DEFAULT_PRESENTATION)) {
-			currentRenderingEngineFactory = factory;
-			logger.info(rendererID + " is registered as the default rendering engine.");
-		}
-
-		logger.info("New Rendering Engine is Available: " + rendererID);
-	}
-
-	public void removePresentationFactory(RenderingEngineFactory<CyNetwork> factory,
-			@SuppressWarnings("rawtypes") Map props) {
-		factories.remove(props.get(ID));
 	}
 
 	/**
@@ -402,7 +363,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 		final long start = System.currentTimeMillis();
 		logger.debug("Rendering start: view model = " + view.getSUID());
-		final RenderingEngine<CyNetwork> renderingEngine = currentRenderingEngineFactory.createRenderingEngine(iframe, view);
+		NetworkViewRenderer renderer = appMgr.getCurrentNetworkViewRenderer();
+		RenderingEngineFactory<CyNetwork> engineFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+		final RenderingEngine<CyNetwork> renderingEngine = engineFactory.createRenderingEngine(iframe, view);
 		renderingEngineMgr.addRenderingEngine(renderingEngine);
 		
 		logger.debug("Rendering finished in " + (System.currentTimeMillis() - start) + " m sec.");

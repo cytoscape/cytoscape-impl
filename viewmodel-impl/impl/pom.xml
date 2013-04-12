@@ -50,4 +50,12 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>application-api</artifactId>
+		 	<version>3.1.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
 </project>

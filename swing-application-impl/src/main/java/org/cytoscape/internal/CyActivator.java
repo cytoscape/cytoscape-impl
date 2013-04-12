@@ -203,7 +203,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cyHelpBroker, visualMappingManagerServiceRef);
 
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
-		                                                                  dingNavigationPresentationFactoryServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);
 
 		NetworkPanel networkPanel = new NetworkPanel(cyApplicationManagerServiceRef,
@@ -413,8 +412,6 @@ public class CyActivator extends AbstractCyActivator {
 		                        NetworkViewCollectionTaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator, "addTableTaskFactory",
 		                        "removeTableTaskFactory", TableTaskFactory.class);
-		registerServiceListener(bc, networkViewManager, "addPresentationFactory",
-		                        "removePresentationFactory", RenderingEngineFactory.class);
 		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu

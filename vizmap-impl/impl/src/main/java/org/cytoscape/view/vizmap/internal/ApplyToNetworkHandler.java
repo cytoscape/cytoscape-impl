@@ -95,6 +95,11 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		
 		for (final VisualProperty<?> vp : vps) {
 			final VisualLexiconNode node = lex.getVisualLexiconNode(vp);
+			
+			if (node == null) {
+				continue;
+			}
+			
 			final Collection<VisualLexiconNode> children = node.getChildren();
 
 			if (children.isEmpty()) {

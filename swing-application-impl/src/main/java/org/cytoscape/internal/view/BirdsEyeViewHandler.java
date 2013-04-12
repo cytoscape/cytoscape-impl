@@ -37,6 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.model.CyNetwork;
@@ -60,8 +61,6 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	private static final Dimension DEF_PANEL_SIZE = new Dimension(300, 300);
 	private static final Color DEF_BACKGROUND_COLOR = Color.WHITE;
 
-	// BEV is just a special implementation of RenderingEngine.
-	private final RenderingEngineFactory<CyNetwork> bevFactory;
 	private final JPanel bevPanel;
 	private final Map<CyNetworkView, RenderingEngine<?>> viewToEngineMap;
 	private final CyApplicationManager appManager;
@@ -75,7 +74,6 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	 * @param defaultFactory
 	 */
 	public BirdsEyeViewHandler(final CyApplicationManager appManager,
-							   final RenderingEngineFactory<CyNetwork> defaultFactory,
 							   final CyNetworkViewManager netViewManager) {
 
 		this.appManager = appManager;
@@ -88,8 +86,6 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 		this.bevPanel.setPreferredSize(DEF_PANEL_SIZE);
 		this.bevPanel.setSize(DEF_PANEL_SIZE);
 		this.bevPanel.setBackground(DEF_BACKGROUND_COLOR);
-
-		this.bevFactory = defaultFactory;
 	}
 
 	/**
@@ -137,6 +133,8 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 				if (presentationPanel == null) {
 					logger.debug("Creating new BEV for: " + newView);
 					presentationPanel = new JPanel();
+					NetworkViewRenderer renderer = appManager.getCurrentNetworkViewRenderer();
+					RenderingEngineFactory<CyNetwork> bevFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT);
 					viewToEngineMap.put(newView, bevFactory.createRenderingEngine(presentationPanel, newView));
 					presentationMap.put((CyNetworkView) newView, presentationPanel);
 				}

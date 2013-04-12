@@ -28,12 +28,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
@@ -80,8 +83,13 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	// Trackers for current network object
 	private CyNetwork currentNetwork;
 	private CyNetworkView currentNetworkView;
-	private RenderingEngine<CyNetwork> currentRenderer;
+	private RenderingEngine<CyNetwork> currentRenderingEngine;
 	private CyTable currentTable;
+
+	private NetworkViewRenderer currentRenderer;
+	private Map<String, NetworkViewRenderer> renderers;
+
+	private NetworkViewRenderer defaultRenderer;
 
 	public CyApplicationManagerImpl(final CyEventHelper cyEventHelper,
 	                                final CyNetworkManager networkManager,
@@ -91,6 +99,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		this.networkViewManager = networkViewManager;
 
 		selectedNetworkViews = new LinkedList<CyNetworkView>();
+		renderers = new LinkedHashMap<String, NetworkViewRenderer>() ;
 	}
 
 	@Override
@@ -140,7 +149,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		RenderingEngine<?> renderingEngine = event.getRenderingEngine();
 		
 		synchronized (this) {
-			if (renderingEngine == currentRenderer) {
+			if (renderingEngine == currentRenderingEngine) {
 				setCurrentRenderingEngine(null);
 			}
 		}
@@ -278,18 +287,28 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public RenderingEngine<CyNetwork> getCurrentRenderingEngine() {
-		return currentRenderer;
+		return currentRenderingEngine;
 	}
 
 	@Override
 	public void setCurrentRenderingEngine(RenderingEngine<CyNetwork> engine) {
-		boolean changed = (engine == null && currentRenderer != null)
-				|| (engine != null && !engine.equals(currentRenderer));
+		boolean changed = (engine == null && currentRenderingEngine != null)
+				|| (engine != null && !engine.equals(currentRenderingEngine));
 		
-		this.currentRenderer = engine;
+		this.currentRenderingEngine = engine;
+		
+		if (engine != null) {
+			currentRenderer = getRenderer(engine.getRendererId());
+		} else {
+			currentRenderer = null;
+		}
 		
 		if (changed)
-			cyEventHelper.fireEvent(new SetCurrentRenderingEngineEvent(this, this.currentRenderer));
+			cyEventHelper.fireEvent(new SetCurrentRenderingEngineEvent(this, this.currentRenderingEngine));
+	}
+
+	private NetworkViewRenderer getRenderer(String rendererId) {
+		return renderers.get(rendererId);
 	}
 
 	@Override
@@ -325,5 +344,49 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		setSelectedNetworkViews(null);
 		setCurrentRenderingEngine(null);
 		setCurrentTable(null);
+	}
+	
+	@Override
+	public NetworkViewRenderer getCurrentNetworkViewRenderer() {
+		if (currentRenderer != null) {
+			return currentRenderer;
+		}
+		return getDefaultRenderer();
+	}
+
+	private NetworkViewRenderer getDefaultRenderer() {
+		if (defaultRenderer != null) {
+			return defaultRenderer;
+		}
+		
+		if (renderers.isEmpty()) {
+			return null;
+		}
+		
+		// Since renderers is a LinkedHashSet, the iterator gives back entries
+		// in insertion order.
+		defaultRenderer = renderers.entrySet().iterator().next().getValue();
+		return defaultRenderer;
+	}
+	
+	public void addNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
+		renderers.put(renderer.getId(), renderer);
+	}
+
+	public void removeNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
+		renderers.remove(renderer.getId());
+		if (defaultRenderer == renderer) {
+			defaultRenderer = null;
+		}
+	}
+	
+	@Override
+	public NetworkViewRenderer getDefaultNetworkViewRenderer() {
+		return getDefaultRenderer();
+	}
+	
+	@Override
+	public void setDefaultNetworkViewRenderer(NetworkViewRenderer renderer) {
+		defaultRenderer = renderer;
 	}
 }

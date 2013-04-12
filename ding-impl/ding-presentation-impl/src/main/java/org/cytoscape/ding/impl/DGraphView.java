@@ -60,6 +60,7 @@ import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.JLayeredPane;
 
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
@@ -2152,8 +2153,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	private String title;
 
-	private AddDeleteHandler addDeleteHandler;
-
 	/**
 	 * DOCUMENT ME!
 	 *
@@ -2693,8 +2692,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			if (servicesRegistered)
 				return;
 			registrar.registerAllServices(this, new Properties());
-			addDeleteHandler = new AddDeleteHandler(this);
-			registrar.registerAllServices(addDeleteHandler, new Properties());
 			servicesRegistered = true;
 		}
 	}
@@ -2705,8 +2702,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			if (!servicesRegistered)
 				return;
 			registrar.unregisterAllServices(this);
-			if (addDeleteHandler != null)
-				registrar.unregisterAllServices(addDeleteHandler);
 			servicesRegistered = false;
 			
 			m_lis[0] = null;
@@ -2719,5 +2714,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	protected <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return null;
+	}
+	
+	@Override
+	public String getRendererId() {
+		return DingRenderer.ID;
 	}
 }

@@ -59,6 +59,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
+import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -105,7 +108,7 @@ import com.l2fprod.common.swing.plaf.blue.BlueishButtonUI;
  * 
  */
 public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor, SetCurrentVisualStyleListener,
-		LexiconStateChangedListener, PropertyChangeListener {
+		LexiconStateChangedListener, PropertyChangeListener, SetCurrentRenderingEngineListener {
 
 	private final static long serialVersionUID = 1202339876675416L;
 
@@ -188,7 +191,8 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 		for (VisualLexicon lexicon : lexSet) {
 			for (VisualProperty<?> vp : props) {
-				if (lexicon.getVisualLexiconNode(vp).getChildren().size() == 0)
+				VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
+				if (node != null && node.getChildren().size() == 0)
 					propSet.add(vp);
 			}
 		}
@@ -203,8 +207,10 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 		for (VisualLexicon lexicon : lexSet) {
 			for (VisualProperty<?> vp : props) {
-				if (lexicon.getVisualLexiconNode(vp).getChildren().size() == 0
-						&& lexicon.getVisualLexiconNode(vp).getParent().getVisualProperty() == BasicVisualLexicon.NETWORK)
+				VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
+				if (node != null
+						&& node.getChildren().size() == 0
+						&& node.getParent().getVisualProperty() == BasicVisualLexicon.NETWORK)
 					propSet.add(vp);
 			}
 		}
@@ -630,6 +636,12 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 
 		mainView.updateView();
 		mainView.repaint();
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentRenderingEngineEvent e) {
+		NetworkViewRenderer renderer = cyApplicationManager.getCurrentNetworkViewRenderer();
+		mainView.rendererChanged(renderer);
 	}
 	
 	private static class VisualPropertyComparator implements Comparator<VisualProperty<?>> {

@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
@@ -48,5 +47,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc, renderingEngineManager, "addRenderingEngineFactory",
 				"removeRenderingEngineFactory", RenderingEngineFactory.class);
+		
 	}
 }
