@@ -113,12 +113,18 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	private static String SOURCE_ARROW = "source_arrow";
 	private static String TARGET_ARROW = "target_arrow";
 
+	// Support for yEd GML dialect
+	private static final String YED_ARROW = "arrow";
+	private static final String YED_SOURCE_ARROW = "sourceArrow";
+	private static final String YED_TARGET_ARROW = "targetArrow";
+
 	// States of the ends of arrows
 	private static String ARROW = "arrow";
 	private static String ARROW_NONE = "none";
 	private static String ARROW_FIRST = "first";
 	private static String ARROW_LAST = "last";
 	private static String ARROW_BOTH = "both";
+	
 	private static String OUTLINE = "outline";
 	private static String OUTLINE_WIDTH = "outline_width";
 	private static String DEFAULT_EDGE_INTERACTION = "pp";
@@ -126,6 +132,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 	private static final String VIZMAP_PREFIX = "vizmap:";
 	
 	private static Map<String, ArrowShape> legacyArrowShapes = new HashMap<String, ArrowShape>();
+	private static Map<String, ArrowShape> yedArrowShapes = new HashMap<String, ArrowShape>();
 	
 	// Entries in the file
 	private List<KeyValue> keyVals;
@@ -200,6 +207,15 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		legacyArrowShapes.put("15", ArrowShapeVisualProperty.T); // EDGE_COLOR_T
 		legacyArrowShapes.put("16", ArrowShapeVisualProperty.HALF_TOP); // EDGE_HALF_ARROW_TOP
 		legacyArrowShapes.put("17", ArrowShapeVisualProperty.HALF_BOTTOM); // EDGE_HALF_ARROW_BOTTOM
+
+		// See http://docs.yworks.com/yfiles/doc/developers-guide/gml.html
+		yedArrowShapes.put("none", ArrowShapeVisualProperty.NONE);
+		yedArrowShapes.put("delta", ArrowShapeVisualProperty.DELTA);
+		yedArrowShapes.put("white_delta", ArrowShapeVisualProperty.DELTA);
+		yedArrowShapes.put("diamond", ArrowShapeVisualProperty.DIAMOND);
+		yedArrowShapes.put("white_diamond", ArrowShapeVisualProperty.DIAMOND);
+		yedArrowShapes.put("short", ArrowShapeVisualProperty.ARROW);
+		yedArrowShapes.put("standard", ArrowShapeVisualProperty.ARROW);
 	}
 	
 	public GMLNetworkReader(final InputStream inputStream,
@@ -721,6 +737,9 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		else if (model instanceof CyEdge)
 			type = CyEdge.class;
 
+		boolean srcArrowParsed = false;
+		boolean tgtArrowParsed = false;
+		
 		for (final KeyValue keyVal : list) {
 			String key = keyVal.key;
 			Object value = keyVal.value;
@@ -736,9 +755,28 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 					continue;
 				}
 				
-				if (key.equals(SOURCE_ARROW) || key.equals(TARGET_ARROW)) {
-					key = key.replace("_arrow", "Arrow");
-					vpValue = legacyArrowShapes.get(value.toString());
+				if (key.equals(YED_ARROW) && !(srcArrowParsed || tgtArrowParsed)) {
+					if (value.toString().equals(ARROW_NONE))
+						continue;
+					
+					if (value.toString().equals(ARROW_FIRST))
+						key = YED_SOURCE_ARROW;
+					else if (value.toString().equals(ARROW_LAST))
+						key = YED_TARGET_ARROW;
+					
+					vpValue = ArrowShapeVisualProperty.ARROW;
+				} else {
+					if (key.equals(YED_SOURCE_ARROW) || key.equals(YED_TARGET_ARROW)) {
+						vpValue = yedArrowShapes.get(value.toString());
+					} else if (key.equals(SOURCE_ARROW) || key.equals(TARGET_ARROW)) {
+						key = key.replace("_arrow", "Arrow");
+						vpValue = legacyArrowShapes.get(value.toString());
+					}
+				
+					if (key.equals(YED_SOURCE_ARROW))
+						srcArrowParsed = true;
+					if (key.equals(YED_TARGET_ARROW))
+						tgtArrowParsed = true;
 				}
 			}
 				
@@ -761,13 +799,16 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			}
 		}
 	}
-
+	
 	private Set<VisualProperty<?>> getVisualProperties(final Class<? extends CyIdentifiable> type, final String key) {
 		final Set<VisualProperty<?>> set = new LinkedHashSet<VisualProperty<?>>();
 		
 		if (type == CyEdge.class && key.equals(FILL)) {
 			set.add(BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
 			set.add(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		} else if (type == CyEdge.class && key.equals(ARROW)) {
+			set.add(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE);
+			set.add(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
 		} else {
 			final VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
 			final VisualProperty<?> vp = lexicon.lookup(type, key);
