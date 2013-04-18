@@ -29,12 +29,12 @@ import java.util.Properties;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyWriterFactory;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
-import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
@@ -74,7 +74,7 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	public void start(BundleContext bc) {
-		
+		CyProperty<Properties> cyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		DataSourceManager dsManager = getService(bc, DataSourceManager.class);
 
 		FileUtil fileUtilRef = getService(bc,FileUtil.class);
@@ -84,7 +84,7 @@ public class CyActivator extends AbstractCyActivator {
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
 
 
-		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator);
+		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef);
 
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 

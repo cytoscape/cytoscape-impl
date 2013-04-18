@@ -133,7 +133,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			newNet.getRow(node).set(CyNetwork.SELECTED, false);
 			if (groupMgr.isGroup(node, parentNetwork)) {
 				CyGroup group = groupMgr.getGroup(node, parentNetwork);
-				GroupUtils.addGroupToNetwork(groupMgr.getGroup(node, parentNetwork), parentNetwork, newNet);
+				GroupUtils.addGroupToNetwork(group, parentNetwork, newNet);
 			}
 		}
 

@@ -1,66 +1,44 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 
-	<artifactId>session-impl-parent</artifactId>
-  <version>3.0.0</version>
-	<packaging>pom</packaging>
-    <name>Cytoscape Session Impl Parent (${project.artifactId})</name>
-	
-	<modules>
-		<module>impl</module>
-		<module>integration-test</module>
-	</modules>
+	<properties>
+		<bundle.symbolicName>org.cytoscape.session-impl</bundle.symbolicName>
+		<bundle.namespace>org.cytoscape.session.internal</bundle.namespace>
+	</properties>
 
-	<repositories>
-		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>cytoscape_releases</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Cytoscape Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
-		</repository>
-	</repositories>
+	<groupId>org.cytoscape</groupId>
+	<artifactId>session-impl</artifactId>
+
+	<name>Cytoscape Session Impl (${project.artifactId})</name>
+
+	<packaging>bundle</packaging>
 
 	<build>
 		<plugins>
 			<plugin>
-				<inherited>false</inherited>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>${maven-release-plugin.version}</version>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${maven-bundle-plugin.version}</version>
+				<extensions>true</extensions>
 				<configuration>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<goals>deploy</goals>
-					<!-- so that impl bundles with modules will build correctly -->
-					<preparationGoals>clean install</preparationGoals>
+					<instructions>
+						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+					</instructions>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
-	<!-- Dependencies included here should *ONLY* be for the impl bundle. All 
-		additional dependencies necessary for the integration tests (it) should be 
-		kept in the it/pom.xml -->
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -76,13 +54,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>presentation-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-api</artifactId>
 		</dependency>
-		
+
 		<!-- for testing -->	
 		<dependency>
 			<groupId>junit</groupId>
@@ -102,9 +84,4 @@
 		</dependency>
 	</dependencies>
 
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/session-impl-parent</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/session-impl-parent</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/session-impl-parent</url>
-  </scm>
 </project>

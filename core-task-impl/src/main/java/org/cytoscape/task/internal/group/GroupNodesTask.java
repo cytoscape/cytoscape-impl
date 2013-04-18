@@ -32,12 +32,16 @@ import org.cytoscape.group.CyGroupManager;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 
 import org.cytoscape.view.model.CyNetworkView;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 
 public class GroupNodesTask extends AbstractTask {
@@ -45,6 +49,9 @@ public class GroupNodesTask extends AbstractTask {
 	private CyGroupManager mgr;
 	private CyGroupFactory factory;
 	private UndoSupport undoSupport;
+
+	@Tunable(description="Enter group name: ")
+	public String groupName = null;
 
 	public GroupNodesTask(UndoSupport undoSupport, CyNetworkView netView, CyGroupManager mgr, CyGroupFactory factory) {
 		if (netView == null)
@@ -65,6 +72,10 @@ public class GroupNodesTask extends AbstractTask {
 		// those edges that are also selected, but for now....
 		CyGroup group = factory.createGroup(net, selNodes, null, true);
 		undoSupport.postEdit(new GroupEdit(net, mgr, factory, group));
+		// Now some trickery to actually name the group.  Note that we need to change
+		// both the NAME and SHARED_NAME columns
+		CyRow groupRow = ((CySubNetwork)net).getRootNetwork().getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
+		groupRow.set(CyRootNetwork.SHARED_NAME, groupName);
 		// mgr.addGroup(group);
 		tm.setProgress(1.0d);
 	}

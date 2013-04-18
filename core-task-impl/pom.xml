@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 
 	<properties>
@@ -14,39 +14,10 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>core-task-impl</artifactId>
-  <version>3.0.0</version>
 
 	<name>Cytoscape Core Task Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
-
-
-	<repositories>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
-		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
-		<repository>
-			<id>cytoscape_releases</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Cytoscape Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
-		</repository>
-	</repositories>
 
 	<build>
 		<plugins>
@@ -137,26 +108,32 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version})</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-impl</artifactId>
+			<version>[3.0.0,${project.version})</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version})</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version})</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version})</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -186,27 +163,22 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version})</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version})</version>
 			<scope>test</scope>
 		</dependency>
 			<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-impl</artifactId>
-			<version>${project.version}</version>
+			<version>[3.0.0,${project.version})</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/core-task-impl</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/core-task-impl</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/core-task-impl</url>
-  </scm>
 </project>

@@ -27,36 +27,47 @@ package org.cytoscape.task.internal.session;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TunableSetter;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 public class OpenSessionTaskFactoryTest {
 	
+	@Mock private TaskMonitor tm;
+	@Mock private CySessionManager mgr;
+	@Mock private CySessionReaderManager readerMgr;
+	@Mock private CyApplicationManager appMgr;
+	@Mock private CyNetworkManager netMgr;
+	@Mock private CyTableManager tableMgr;
+	@Mock private CyNetworkTableManager netTableMgr;
+	@Mock private CyGroupManager grMgr;
+	@Mock private TunableSetter ts;
+	@Mock private RecentlyOpenedTracker tracker;
+	
 	@Test
 	public void testRun() throws Exception {
-
-		CySessionManager mgr = mock(CySessionManager.class);;
-		CySessionReaderManager rmgr = mock(CySessionReaderManager.class);
-		CyApplicationManager appManager = mock(CyApplicationManager.class);
-		RecentlyOpenedTracker tracker = mock(RecentlyOpenedTracker.class);
-		TunableSetter ts = mock(TunableSetter.class);
-
-		SynchronousTaskManager synchronousTaskManager = mock(SynchronousTaskManager.class);
-		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, rmgr, appManager, tracker, synchronousTaskManager,ts);
+		MockitoAnnotations.initMocks(this);
+		
+		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, readerMgr, appMgr, netMgr, tableMgr,
+				netTableMgr, grMgr, tracker, ts);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 		
-		assertTrue( ti.hasNext() );
+		assertTrue(ti.hasNext());
 		Task t = ti.next();
 		assertNotNull( t );				
 	}	

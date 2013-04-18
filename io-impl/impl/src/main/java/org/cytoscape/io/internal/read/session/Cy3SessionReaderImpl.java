@@ -114,7 +114,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyNetworkTableManager networkTableMgr;
-	private final CyRootNetworkManager rootNetworkMgr;
 
 	private Map<String, CyTable> filenameTableMap;
 	private Map<CyTableMetadataBuilder, String> builderFilenameMap;
@@ -133,7 +132,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 							    final CSVCyReaderFactory csvCyReaderFactory,
 							    final CyNetworkTableManager networkTableMgr,
 							    final CyRootNetworkManager rootNetworkMgr) {
-		super(sourceInputStream, cache, groupUtil);
+		super(sourceInputStream, cache, groupUtil, rootNetworkMgr);
 
 		if (suidUpdater == null) throw new NullPointerException("SUID updater is null.");
 		this.suidUpdater = suidUpdater;
@@ -153,9 +152,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (networkTableMgr == null) throw new NullPointerException("network table manager is null.");
 		this.networkTableMgr = networkTableMgr;
 		
-		if (rootNetworkMgr == null) throw new NullPointerException("root network manager is null.");
-		this.rootNetworkMgr = rootNetworkMgr;
-
 		filenameTableMap = new HashMap<String, CyTable>();
 		builderFilenameMap = new HashMap<CyTableMetadataBuilder, String>();
 	}
@@ -167,7 +163,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 	
 	@Override
-	protected void handleEntry(InputStream is, String entryName) throws Exception {
+	protected void handleEntry(final InputStream is, final String entryName) throws Exception {
 		if (!networksExtracted) {
 			// First pass..
 			if (entryName.contains("/" + APPS_FOLDER)) {
@@ -240,6 +236,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	
 	private void extractCyTableSessionState(InputStream is, String entryName) throws IOException {
 		CyTablesXMLReader reader = new CyTablesXMLReader(is);
+		
 		try {
 			reader.run(taskMonitor);
 			virtualColumns = reader.getCyTables().getVirtualColumns().getVirtualColumn();
@@ -306,11 +303,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void extractNetworks(InputStream is, String entryName) throws Exception {
 		CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		CyNetwork[] netArray = reader.getNetworks();
+		final CyNetwork[] netArray = reader.getNetworks();
 		
-		for (CyNetwork net : netArray) {
+		for (final CyNetwork net : netArray) {
 			// Add its root-network to the lookup map first
-			CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(net);
+			final CyRootNetwork rootNet = rootNetworkManager.getRootNetwork(net);
 			
 			if (!networkLookup.containsKey(rootNet.getSUID()));
 				networkLookup.put(rootNet.getSUID(), rootNet);
@@ -341,7 +338,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (oldNetId != null) {
 			final CyNetwork network = cache.getNetwork(oldNetId);
 			
-			if (network != null) {
+			if (network != null && !cancelled) {
 				// Create the view
 				final CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 				reader.run(taskMonitor);
@@ -374,32 +371,40 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		String fileName = items[items.length - 1];
 
 		final String tmpDir = System.getProperty(TEMP_DIR);
-		final File theFile = new File(tmpDir, fileName);
+		final File file = new File(tmpDir, fileName);
 
+		try {
+			file.deleteOnExit();
+		} catch (Exception e) {
+			logger.warn("This temporary app file may not be deleted on exit: " + file.getAbsolutePath(), e);
+		}
+		
 		try {
 			// Write input stream into temp file (Use binary streams to support images/movies/etc.)
 			final BufferedInputStream bin = new BufferedInputStream(is);
-			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(theFile));
+			final BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 			final byte buf[] = new byte[256];
 			
 			int len;
-			while ((len = bin.read(buf)) != -1)
+			while ((len = bin.read(buf)) != -1 && !cancelled)
 				output.write(buf, 0, len);
 			
 			output.flush();
 			output.close();
 			bin.close();
-
 		} catch (IOException e) {
 			logger.error("Error: read from zip: " + entryName, e);
 			return;
 		}
+		
+		if (cancelled) return;
 
 		// Put the file into appFileListMap
-		if (!appFileListMap.containsKey(appName)) appFileListMap.put(appName, new ArrayList<File>());
+		if (!appFileListMap.containsKey(appName))
+			appFileListMap.put(appName, new ArrayList<File>());
 
 		List<File> fileList = appFileListMap.get(appName);
-		fileList.add(theFile);
+		fileList.add(file);
 	}
 
 	private void extractVizmap(InputStream is, String entryName) throws Exception {
@@ -445,20 +450,28 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 	
 	private void restoreVirtualColumns() {
-		if (virtualColumns == null) {
+		if (virtualColumns == null)
 			return;
-		}
 		
 		for (VirtualColumn columnData : virtualColumns) {
+			if (cancelled) return;
+			
 			CyTable targetTable = filenameTableMap.get(columnData.getTargetTable());
 			
 			if (targetTable.getColumn(columnData.getName()) == null) {
 				CyTable sourceTable = filenameTableMap.get(columnData.getSourceTable());
-				targetTable.addVirtualColumn(columnData.getName(),
-											 columnData.getSourceColumn(),
-											 sourceTable,
-											 columnData.getTargetJoinKey(),
-											 columnData.isImmutable());
+				
+				try {
+					targetTable.addVirtualColumn(columnData.getName(),
+												 columnData.getSourceColumn(),
+												 sourceTable,
+												 columnData.getTargetJoinKey(),
+												 columnData.isImmutable());
+				} catch (Exception e) {
+					logger.error("Error restoring virtual column \"" + columnData.getName() + "\" in table \"" + 
+							targetTable + "\"(" + columnData.getTargetTable() + ")--source table: \"" + sourceTable + 
+							"\"(" + columnData.getSourceTable() + ")", e);
+				}
 			}
 		}
 	}
@@ -475,6 +488,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			}
 
 			for (final CyTableMetadataBuilder builder : builders) {
+				if (cancelled) return;
+				
 				builder.setNetwork(network);
 				mergeNetworkTable(network, builder);
 				CyTableMetadata metadata = builder.build();
@@ -508,14 +523,20 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		}
 	}
 	
-	private void mergeTables(CyTable source, CyTable target, Class<? extends CyIdentifiable> type) {
+	private void mergeTables(final CyTable source, final CyTable target, final Class<? extends CyIdentifiable> type) {
 		CyColumn sourceKey = source.getPrimaryKey();
 		CyColumn targetKey = target.getPrimaryKey();
 		String keyName = sourceKey.getName();
 
 		// Make sure keys match
 		if (keyName.equals(targetKey.getName())) {
+			// Merge columns first, because even if the source table has no rows to merge,
+			// the columns have to be restored
+			mergeColumns(keyName, source, target);
+			
 			for (CyRow sourceRow : source.getAllRows()) {
+				if (cancelled) return;
+				
 				Long key = sourceRow.get(keyName, Long.class);
 				CyIdentifiable entry = cache.getObjectById(key, type);
 				Long mappedKey = entry != null ? entry.getSUID() : null;
@@ -529,32 +550,44 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		}
 	}
 
-	private void mergeRow(String keyName, CyRow sourceRow, CyRow targetRow) {
-		for (CyColumn column : sourceRow.getTable().getColumns()) {
+	private void mergeColumns(final String keyName, final CyTable source, final CyTable target) {
+		for (CyColumn column : source.getColumns()) {
 			String columnName = column.getName();
 
-			if (columnName.equals(keyName)) {
+			if (columnName.equals(keyName))
 				continue;
+
+			if (target.getColumn(columnName) == null) {
+				Class<?> type = column.getType();
+				boolean immutable = column.isImmutable();
+	
+				if (type.equals(List.class)) {
+					Class<?> elementType = column.getListElementType();
+					target.createListColumn(columnName, elementType, immutable);
+				} else {
+					target.createColumn(columnName, type, immutable);
+				}
 			}
+		}
+	}
+
+	private void mergeRow(String keyName, CyRow sourceRow, CyRow targetRow) {
+		for (CyColumn column : sourceRow.getTable().getColumns()) {
+			if (cancelled) return;
+			
+			String columnName = column.getName();
+
+			if (columnName.equals(keyName))
+				continue;
 
 			Class<?> type = column.getType();
-			boolean immutable = column.isImmutable();
-			CyTable targetTable = targetRow.getTable();
 
 			if (type.equals(List.class)) {
 				Class<?> elementType = column.getListElementType();
 				List<?> list = sourceRow.getList(columnName, elementType);
-
-				if (targetTable.getColumn(columnName) == null)
-					targetTable.createListColumn(columnName, elementType, immutable);
-
 				targetRow.set(columnName, list);
 			} else {
 				Object value = sourceRow.get(columnName, type);
-
-				if (targetTable.getColumn(columnName) == null)
-					targetTable.createColumn(columnName, type, immutable);
-
 				targetRow.set(columnName, value);
 			}
 		}

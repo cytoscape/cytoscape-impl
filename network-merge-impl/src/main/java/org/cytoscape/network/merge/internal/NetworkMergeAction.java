@@ -24,17 +24,17 @@ package org.cytoscape.network.merge.internal;
  * #L%
  */
 
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.network.merge.internal.ui.NetworkMergeFrame;
-import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.network.merge.internal.ui.NetworkMergeDialog;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.work.TaskManager;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-
-import java.awt.event.ActionEvent;
+import org.cytoscape.work.TaskManager;
 
 
 public class NetworkMergeAction extends AbstractCyAction {
@@ -71,11 +71,10 @@ public class NetworkMergeAction extends AbstractCyAction {
 	@Override
 	public void actionPerformed(final ActionEvent ae) {
 
-		final NetworkMergeFrame frame = new NetworkMergeFrame(cnm, cnf, cnn, taskManager, netViewCreator);
-		frame.setLocationRelativeTo(swingApp.getJFrame());
-		frame.setVisible(true);
-		// TODO: make this value user-editable (always on top or not).
-		frame.setAlwaysOnTop(true);
+		final NetworkMergeDialog dialog = new NetworkMergeDialog(cnm, cnf, cnn, taskManager, netViewCreator);
+		dialog.setLocationRelativeTo(swingApp.getJFrame());
+		dialog.setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
+		dialog.setVisible(true);
 	}
 
 }

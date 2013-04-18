@@ -30,14 +30,11 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.Rectangle;
-
 import java.awt.font.FontRenderContext;
-
-import javax.swing.JFrame;
-
 import java.util.Map;
+
+import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -180,7 +177,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.font = font; 
 	}
 
-	public JFrame getModifyDialog() {
+	public JDialog getModifyDialog() {
 		return new TextAnnotationDialog(this);
 	}
 

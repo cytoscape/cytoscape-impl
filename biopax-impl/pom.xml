@@ -3,13 +3,13 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 	
 	<properties>
 		<bundle.symbolicName>org.cytoscape.biopax-impl</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.biopax</bundle.namespace>
-		<paxtools.version>4.1.5b2</paxtools.version>
+		<paxtools.version>4.1.6</paxtools.version>
 	</properties>
 	
 	<modelVersion>4.0.0</modelVersion>
@@ -70,11 +70,6 @@
 	        <version>${paxtools.version}</version>
         </dependency>
         <dependency>
-        	<groupId>org.biopax.paxtools</groupId>
-        	<artifactId>biopax-converter</artifactId>
-        	<version>${paxtools.version}</version>
-        </dependency>
-        <dependency>
             <groupId>cytoscape-temp</groupId>
             <artifactId>woodstox-core-lgpl</artifactId>
             <version>[4.0.5, 5.0.0)</version>
@@ -117,9 +112,4 @@
 		</plugins>
 	</build>
 
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/biopax-impl</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/biopax-impl</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/biopax-impl</url>
-  </scm>
 </project>

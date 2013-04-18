@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>work-swing-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 
 	<properties>
@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>work-swing-impl</artifactId>
 
-    <name>Cytoscape Work Swing Impl (${project.artifactId})</name>
+    	<name>Cytoscape Work Swing Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
 

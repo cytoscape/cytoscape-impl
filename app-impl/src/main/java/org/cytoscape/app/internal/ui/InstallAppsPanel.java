@@ -24,23 +24,21 @@ package org.cytoscape.app.internal.ui;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -49,7 +47,6 @@ import java.util.Vector;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -68,19 +65,17 @@ import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.manager.AppParser;
-import org.cytoscape.app.internal.manager.BundleApp;
-import org.cytoscape.app.internal.net.DownloadStatus;
 import org.cytoscape.app.internal.net.ResultsFilterer;
-import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
+import org.cytoscape.app.internal.task.InstallAppFromAppStoreTask;
+import org.cytoscape.app.internal.task.InstallAppFromFileTask;
+import org.cytoscape.app.internal.task.ShowInstalledAppsIfChangedTask;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedEvent;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedListener;
-import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.Task;
@@ -280,6 +275,7 @@ public class InstallAppsPanel extends javax.swing.JPanel {
         tagsTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         tagsTree.setFocusable(false);
         tagsTree.setRootVisible(false);
+        tagsTree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
         tagsScrollPane.setViewportView(tagsTree);
 
         tagsSplitPane.setLeftComponent(tagsScrollPane);
@@ -288,6 +284,7 @@ public class InstallAppsPanel extends javax.swing.JPanel {
         resultsTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         resultsTree.setFocusable(false);
         resultsTree.setRootVisible(false);
+        resultsTree.getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
         resultsScrollPane.setViewportView(resultsTree);
 
         tagsSplitPane.setRightComponent(resultsScrollPane);
@@ -506,6 +503,10 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 	}
 
 	private void installFromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {
+		List<String> sha1Checksums = new ArrayList<String>();
+		for(App app: appManager.getApps()) {
+			sha1Checksums.add(app.getSha512Checksum());
+		}
     	// Setup a the file filter for the open file dialog
     	FileChooserFilter fileChooserFilter = new FileChooserFilter("Jar, Zip, and Karaf Kar Files (*.jar, *.zip, *.kar)",
     			new String[]{"jar", "zip", "kar"});
@@ -518,101 +519,15 @@ public class InstallAppsPanel extends javax.swing.JPanel {
     			"Choose file(s)", FileUtil.LOAD, FileUtil.LAST_DIRECTORY, "Install", true, fileChooserFilters);
     	
         if (files != null) {
-        	
-        	taskManager.execute(new TaskIterator(new Task() {
-
-    			@Override
-    			public void run(TaskMonitor taskMonitor) throws Exception {
-    				taskMonitor.setTitle("Installing app");
-    				
-    				int installedAppCount = 0;
-    				double progress = 0;
-    				
-    				taskMonitor.setStatusMessage("Installing app");
-    				
-    				for (int index = 0; index < files.length; index++) {
-    	        		AppParser appParser = appManager.getAppParser();
-    	        		
-    	        		App parsedApp = null;
-    	        		
-    	        		parsedApp = appParser.parseApp(files[index]);
-						
-    	        		{
-    	        			String parsedAppName = parsedApp.getAppName();
-    	        			
-    	        			Set<App> collidingApps = checkAppNameCollision(parsedAppName);
-    	        			
-    	        			// TODO: Only do replace for bundle apps due to simple apps requiring restart for uninstall.
-    	        			// TODO: Possibly may be good idea to show whether an app is a bundle app, on the app description page.
-    	        			if (collidingApps.size() == 1 && collidingApps.iterator().next() instanceof BundleApp) {
-    	        				App app = collidingApps.iterator().next();
-    	        				
-    	        				int response;
-    	        				
-    	        				response = JOptionPane.showConfirmDialog(parent, "There is an app \"" + app.getAppName()
-	        							+ "\" with the same name. It is version " + app.getVersion() + ", while the" 
-	        							+ " one you're about to install is version " + parsedApp.getVersion() 
-	        							+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_CANCEL_OPTION);
-    	        				
-	        					if (response == JOptionPane.YES_OPTION) {
-	        						installedAppCount += 1;
-	        						appManager.uninstallApp(app);
-	        						appManager.installApp(parsedApp);
-	        					}
-	        					
-	        					if (response == JOptionPane.NO_OPTION) {
-	        						// Install both
-	        						appManager.installApp(parsedApp);
-	        					}
-	        					
-	        					if (response == JOptionPane.CANCEL_OPTION) {
-	        						// Do nothing
-	        					}
-	        					
-    	        			} else {
-    	        				installedAppCount += 1;
-    	        				System.out.println("Installing");
-    	        				appManager.installApp(parsedApp);
-    	        			}
-    	        			
-    	        		}
-    	        		
-    	        		
-    	        	}
-    				
-    	        	taskMonitor.setProgress(1.0);
-    	        	
-    	        	if (parent instanceof AppManagerDialog) {
-    	        		if (installedAppCount > 0) {
-    	        			((AppManagerDialog) parent).changeTab(1);
-    	        		}
-    	        	}
-    			}
-
-    			@Override
-    			public void cancel() {
-    			}
-    			
-    		}));
+        	TaskIterator ti = new TaskIterator();
+        	for(File appFile: files) {
+        		ti.append(new InstallAppFromFileTask(appFile, appManager));
+        	}
+        	ti.append(new ShowInstalledAppsIfChangedTask(appManager, parent));
+        	taskManager.setExecutionContext(parent);
+        	taskManager.execute(ti);
         }
     }
-    
-	private Set<App> checkAppNameCollision(String appName) {
-		Set<App> collidingApps = new HashSet<App>();
-		
-		for (App app : appManager.getApps()) {
-			if (appName.equalsIgnoreCase(app.getAppName())) {
-				
-				if (app.isDetached() == false) {
-					collidingApps.add(app);
-				}
-			}
-		}
-		
-		
-		
-		return collidingApps;
-	}
 	
     /**
      * Attempts to insert newlines into a given string such that each line has no 
@@ -662,75 +577,8 @@ public class InstallAppsPanel extends javax.swing.JPanel {
     
     private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {
     	final WebQuerier webQuerier = appManager.getWebQuerier();
-        final WebApp appToDownload = selectedApp;
-        
-		taskManager.execute(new TaskIterator(new Task() {
-			private DownloadStatus status;
-
-			@Override
-			public void run(TaskMonitor taskMonitor) throws Exception {
-				status = new DownloadStatus(taskMonitor);
-				taskMonitor.setTitle("Installing App from App Store");
-				
-				double progress = 0;
-					
-				taskMonitor.setStatusMessage("Installing app: " + appToDownload.getFullName());
-				
-				// Download app
-        		File appFile = webQuerier.downloadApp(appToDownload, null, new File(appManager.getDownloadedAppsPath()), status);
-				
-        		if (appFile != null) {
-	        		// Parse app
-	        		App parsedApp = appManager.getAppParser().parseApp(appFile);
-	        		
-	        		// Check for name collisions
-	        		Set<App> collidingApps = checkAppNameCollision(parsedApp.getAppName());
-	        		
-	        		// TODO: Only do replace for bundle apps due to simple apps requiring restart for uninstall.
-	        		if (collidingApps.size() == 1 && collidingApps.iterator().next() instanceof BundleApp) {
-	        			App collidingApp = collidingApps.iterator().next();
-		        		
-	        			int response = JOptionPane.showConfirmDialog(parent, "There is an app \"" + collidingApp.getAppName()
-    							+ "\" with the same name, version " + collidingApp.getVersion() + ". The" 
-    							+ " one you're about to install is version " + parsedApp.getVersion() 
-    							+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_CANCEL_OPTION);
-        				
-    					if (response == JOptionPane.YES_OPTION) {
-    						// Replace app
-    						appManager.uninstallApp(collidingApp);
-    						appManager.installApp(parsedApp);
-    					}
-    					
-    					if (response == JOptionPane.NO_OPTION) {
-    						// Install both
-    						appManager.installApp(parsedApp);
-    					}
-    					
-    					if (response == JOptionPane.CANCEL_OPTION) {
-    						// Do nothing, do not install
-    					}
-	        		} else {
-	        			appManager.installApp(parsedApp);
-	        		}
-					
-        		} else {
-        			
-        			// Log error: no download links were found for app
-        			logger.warn("Unable to find download URL for about-to-be-installed " + appToDownload.getFullName());
-        			DebugHelper.print("Unable to find download url for: " + appToDownload.getFullName());
-        		}
-	        	
-	        	taskMonitor.setProgress(1.0);
-			}
-
-			@Override
-			public void cancel() {
-				if (status != null) {
-					status.cancel();
-				}
-			}
-			
-		}));
+    	taskManager.setExecutionContext(parent);
+		taskManager.execute(new TaskIterator(new InstallAppFromAppStoreTask(selectedApp, webQuerier, appManager)));
     }
     
     private void buildTagsTree() {

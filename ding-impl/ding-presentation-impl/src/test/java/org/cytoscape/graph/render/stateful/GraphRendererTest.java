@@ -39,7 +39,7 @@ public class GraphRendererTest extends TestCase {
 
 	public void setUp() {
 		Image img = new BufferedImage(500,500,BufferedImage.TYPE_INT_ARGB);
-		grafx = new GraphGraphics( img, false);
+		grafx = new GraphGraphics( img, false, true);
 	}
 
 	// normal without anchors

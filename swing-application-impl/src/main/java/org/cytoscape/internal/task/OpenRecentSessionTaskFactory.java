@@ -27,19 +27,28 @@ package org.cytoscape.internal.task;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,33 +59,51 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 	private final CySessionManager sessionManager;
 	private final CySessionReaderManager readerManager;
 	private final CyApplicationManager appManager;
+	private final CyNetworkManager netManager;
+	private final CyTableManager tableManager;
+	private final CyNetworkTableManager netTableManager;
+	private final CyGroupManager grManager;
 	private final RecentlyOpenedTracker tracker;
-	
 	private final URL targetSession;
+	
+	private Set<CyNetwork> currentNetworkSet;
+	private Set<CyGroup> currentGroupSet;
 
 	
-	public OpenRecentSessionTaskFactory(final CySessionManager sessionManager, final CySessionReaderManager readerManager,
-			final CyApplicationManager appManager, final RecentlyOpenedTracker tracker, final URL targetSession) {
+	public OpenRecentSessionTaskFactory(final CySessionManager sessionManager,
+										final CySessionReaderManager readerManager,
+										final CyApplicationManager appManager,
+										final CyNetworkManager netManager,
+										final CyTableManager tableManager,
+										final CyNetworkTableManager netTableManager,
+										final CyGroupManager grManager,
+										final RecentlyOpenedTracker tracker,
+										final URL targetSession) {
 		this.sessionManager = sessionManager;
 		this.readerManager = readerManager;
 		this.appManager = appManager;
+		this.netManager = netManager;
+		this.tableManager = tableManager;
+		this.netTableManager = netTableManager;
+		this.grManager = grManager;
 		this.tracker = tracker;
-		
 		this.targetSession = targetSession;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		CySessionReader reader = null;
+		
 		try {
 			reader = readerManager.getReader(targetSession.toURI(), targetSession.toString());
 		} catch (URISyntaxException e) {
 			throw new IllegalStateException("URL is invalid.", e);
 		}
 		
-		if(reader == null)
+		if (reader == null)
 			throw new NullPointerException("Could not find reader.");
 		
-		return new TaskIterator(new LoadSessionFromURLTask(reader), new LoadRecentSessionTask(reader));
+		return new TaskIterator(new LoadSessionFromURLTask(reader));
 	}
 	
 	private final class LoadSessionFromURLTask extends AbstractTask {
@@ -90,24 +117,35 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
+			// Save the current network and group set, in case loading the new session is cancelled later
+			currentNetworkSet = new HashSet<CyNetwork>(netTableManager.getNetworkSet());
+			currentGroupSet = new HashSet<CyGroup>();
+			
+			for (final CyNetwork n : currentNetworkSet)
+				currentGroupSet.addAll(grManager.getGroupSet(n));
+			
 			reader.run(taskMonitor);
+			
+			if (cancelled)
+				return;
+
+			if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
+				insertTasksAfterCurrentTask(new LoadSessionWithoutWarningTask());
+			else
+				insertTasksAfterCurrentTask(new LoadSessionWithWarningTask());
 		}
 		
-	}
-
-	private final class LoadRecentSessionTask extends AbstractTask {
-
-		private final CySessionReader reader;
-
-		LoadRecentSessionTask(final CySessionReader reader) {
-			this.reader = reader;
-		}
-
 		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
-			logger.debug("Post processiong for session...");
-
+		public void cancel() {
+			super.cancel();
+			
+			if (reader != null)
+				reader.cancel(); // Remember to cancel the Session Reader!
+		}
+		
+		private void changeCurrentSession(TaskMonitor taskMonitor) throws Exception {
 			final CySession newSession = reader.getSession();
+			
 			if (newSession == null)
 				throw new NullPointerException("Session could not be read for file: " + targetSession.toString());
 
@@ -118,13 +156,71 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 			final RenderingEngine<CyNetwork> currentEngine = appManager.getCurrentRenderingEngine();
 			if (currentEngine != null)
 				appManager.setCurrentRenderingEngine(currentEngine);
-
+			
 			taskMonitor.setProgress(1.0);
 			taskMonitor.setStatusMessage("Session file " + file + " successfully loaded.");
 
 			// Add this session file URL as the most recent file.
 			tracker.add(targetSession);
 		}
-	}
+		
+		private synchronized void disposeCancelledSession() {
+			final CySession newSession = reader.getSession();
+			
+			if (newSession != null) {
+				for (final CyNetworkView view : newSession.getNetworkViews())
+					view.dispose();
+			}
+			
+			if (currentNetworkSet != null) {
+				// Dispose cancelled networks and groups:
+				// This is necessary because the new CySession contains only registered networks;
+				// unregistered networks (e.g. CyGroup networks) may have been loaded and need to be disposed as well.
+				// The Network Table Manager should contain all networks, including the unregistered ones.
+				final Set<CyNetwork> newNetworkSet = new HashSet<CyNetwork>(netTableManager.getNetworkSet());
+				
+				for (final CyNetwork net : newNetworkSet) {
+					if (!currentNetworkSet.contains(net)) {
+						for (final CyGroup gr : grManager.getGroupSet(net)) {
+							if (currentGroupSet != null && !currentGroupSet.contains(gr))
+								grManager.destroyGroup(gr);
+						}
+						
+						net.dispose();
+					}
+				}
+				
+				currentGroupSet = null;
+				currentNetworkSet = null;
+			}
+		}
+		
+		public final class LoadSessionWithWarningTask extends AbstractTask {
+			
+			@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
+			public boolean changeCurrentSession = true;
+			
+			@Override
+			public void run(TaskMonitor taskMonitor) throws Exception {
+				if (changeCurrentSession) 
+					changeCurrentSession(taskMonitor);
+				else
+					disposeCancelledSession();
+			}
 
+			@Override
+			public void cancel() {
+				super.cancel();
+				disposeCancelledSession();
+			}
+		}
+		
+		public final class LoadSessionWithoutWarningTask extends AbstractTask {
+			
+			@Override
+			public void run(TaskMonitor taskMonitor) throws Exception {
+				changeCurrentSession(taskMonitor);
+			}
+		}
+	}
 }

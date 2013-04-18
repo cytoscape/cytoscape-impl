@@ -24,14 +24,8 @@ package org.cytoscape.internal;
  * #L%
  */
 
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
-import static org.cytoscape.application.swing.CytoPanelName.WEST;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.CASCADE;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.GRID;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.HORIZONTAL;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.VERTICAL;
+import static org.cytoscape.application.swing.CytoPanelName.*;
+import static org.cytoscape.internal.view.CyDesktopManager.Arrange.*;
 import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
@@ -49,10 +43,9 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
-import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.internal.actions.BookmarkAction;
-import org.cytoscape.internal.actions.CommandListAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.FullScreenAction;
@@ -93,6 +86,8 @@ import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -155,6 +150,9 @@ public class CyActivator extends AbstractCyActivator {
 		CySessionReaderManager sessionReaderManagerServiceRef = getService(bc, CySessionReaderManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
+		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
+		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
+		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 
@@ -274,7 +272,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                              cytoscapeDesktop);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
 		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef, cyVersionServiceRef);
-		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersionServiceRef);
+		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersionServiceRef, cytoscapeDesktop);
 		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop, GRID);
 		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
 		                                                                      CASCADE);
@@ -301,7 +299,11 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cyServiceRegistrarServiceRef,
 		                                                                     cySessionManagerServiceRef,
 		                                                                     sessionReaderManagerServiceRef,
-		                                                                     cyApplicationManagerServiceRef);
+		                                                                     cyApplicationManagerServiceRef,
+		                                                                     cyNetworkManagerServiceRef,
+		                                                                     cyTableManagerServiceRef,
+		                                                                     cyNetworkTableManagerServiceRef,
+		                                                                     cyGroupManagerServiceRef);
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());
@@ -315,12 +317,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
-
-		if (isMac()) {
-			new MacCyActivator().start(bc);
-		} else {
-			registerService(bc, exitAction, CyAction.class, new Properties());
-		}
 
 		Properties helpContentsTaskFactoryProps = new Properties();
 		helpContentsTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
@@ -347,12 +343,6 @@ public class CyActivator extends AbstractCyActivator {
 		                helpReportABugTaskFactoryProps);
 
 		
-		Properties helpAboutTaskFactoryProps = new Properties();
-		helpAboutTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
-		helpAboutTaskFactoryProps.setProperty(TITLE, "About...");
-		helpAboutTaskFactoryProps.setProperty(MENU_GRAVITY,"10.0");
-		registerService(bc, helpAboutTaskFactory, TaskFactory.class, helpAboutTaskFactoryProps);
-
 		Properties arrangeGridTaskFactoryProps = new Properties();
 		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeGridTaskFactoryProps.setProperty(ACCELERATOR,"cmd g");
@@ -442,6 +432,19 @@ public class CyActivator extends AbstractCyActivator {
 		                        CyProperty.class);
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
+
+		if (isMac()) {
+			new MacCyActivator().start(bc);
+		} else {
+			Properties helpAboutTaskFactoryProps = new Properties();
+			helpAboutTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
+			helpAboutTaskFactoryProps.setProperty(TITLE, "About...");
+			helpAboutTaskFactoryProps.setProperty(MENU_GRAVITY,"10.0");
+
+			registerService(bc, helpAboutTaskFactory, TaskFactory.class, helpAboutTaskFactoryProps);
+			
+			registerService(bc, exitAction, CyAction.class, new Properties());
+		}
 
 		// Full screen actions.  This is platform dependent
 		FullScreenAction fullScreenAction = null;

@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 
 	<properties>
@@ -84,9 +84,4 @@
 		</dependency>
 	</dependencies>
 
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/work-headless-impl</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/work-headless-impl</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/work-headless-impl</url>
-  </scm>
 </project>

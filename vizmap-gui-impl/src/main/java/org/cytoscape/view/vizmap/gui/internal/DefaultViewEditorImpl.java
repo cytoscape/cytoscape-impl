@@ -513,13 +513,16 @@ public class DefaultViewEditorImpl extends JDialog implements DefaultViewEditor,
 				final Set<VisualPropertyDependency<?>> dependencies = selectedStyle.getAllVisualPropertyDependencies();
 				for (VisualPropertyDependency<?> dep : dependencies) {
 					if (dep.isDependencyEnabled()) {
-						Set<VisualProperty<?>> props = dep.getVisualProperties();
 						final VisualProperty<?> parentVP = dep.getParentVisualProperty();
-						if (model.contains(parentVP) == false)
-							model.addElement(parentVP);
-						
-						for (VisualProperty<?> prop : props)
-							model.removeElement(prop);
+
+						if (parentVP.getTargetDataType() == key) {
+							if (model.contains(parentVP) == false)
+								model.addElement(parentVP);
+
+							Set<VisualProperty<?>> props = dep.getVisualProperties();
+							for (VisualProperty<?> prop : props)
+								model.removeElement(prop);
+						}
 					}
 				}
 			}

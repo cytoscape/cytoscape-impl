@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,8 +91,6 @@ public class GroupUtil {
 			if (!(net instanceof CySubNetwork))
 				continue;
 
-			// Get the root network
-			CyRootNetwork rootNetwork = ((CySubNetwork)net).getRootNetwork();
 			// Get all of our groups
 			Set<CyGroup> groupSet = groupMgr.getGroupSet(net);
 
@@ -104,9 +103,7 @@ public class GroupUtil {
 		}
 	}
 
-	public void groupsSerialized(final Collection<CyNetwork> networks, 
-	                             final Collection<CyNetworkView> views) {
-
+	public void groupsSerialized(final Collection<CyNetwork> networks, final Collection<CyNetworkView> views) {
 		if (networks == null)
 			return;
 
@@ -233,18 +230,7 @@ public class GroupUtil {
 					}
 				}
 			}
-
-			/*
-			System.out.print("Node "+n+": is ");
-			if (!collapsed) System.out.print("not ");
-			System.out.print("collapsed and is ");
-			if (cy2group) 
-				System.out.println("a cy2 group");
-			else
-				System.out.println("a cy3 group");
-			*/
-
-
+			
 			// If we're not collapsed, remove the group node from the network before
 			// we create the group
 			if (!collapsed) {
@@ -267,10 +253,18 @@ public class GroupUtil {
 				}
 
 			}
-
+			
 			// Create the group
-			final CyGroup group = groupFactory.createGroup(net, n, true);
-
+			final CyGroup group;
+// TODO: Do not create more than one instance of a CyGroup for the same group node.
+//			if (groupMgr.isGroup(n, rootNet)) {
+//				group = groupMgr.getGroup(n, rootNet);
+//				group.addGroupToNetwork(net);
+//				group.collapse(net);
+//			} else {
+				group = groupFactory.createGroup(net, n, true);
+//			}
+			
 			// Add in the missing external edges if we're collapsed
 			// CyRow groupNodeRow = net.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			if (snRow.isSet(EXTERNAL_EDGE_ATTRIBUTE)) {
@@ -334,9 +328,19 @@ public class GroupUtil {
 				updateGroupNodeLocation(view, group.getGroupNode());
 		}
 	}
+	
+	public Set<CyGroup> getGroups(final Collection<CyNetwork> networks) {
+		final Set<CyGroup> groups = new HashSet<CyGroup>();
 
-	public void disposeAllGroups() {
-		groupMgr.reset();
+		for (final CyNetwork net : networks)
+			groups.addAll(groupMgr.getGroupSet(net));
+		
+		return groups;
+	}
+	
+	public void destroyGroups(final Set<CyGroup> groups) {
+		for (final CyGroup gr : groups)
+			groupMgr.destroyGroup(gr);
 	}
 	
 	private void updateExternalEdgeAttribute(final CyGroup group) {
@@ -418,7 +422,6 @@ public class GroupUtil {
 		createListColumn(hiddenSubTable, Y_LOCATION_ATTR, Double.class);
 		createListColumn(hiddenSubTable, GROUP_NETWORKS_ATTRIBUTE, Long.class);
 
-
 		for (CyNode child: netPointer.getNodeList()) {
 			CyRow row = hiddenSubTable.getRow(child.getSUID());
 
@@ -492,8 +495,7 @@ public class GroupUtil {
 
 	public void disableNestedNetworkIcon(final CyNetworkView view, CyNode n) {
 		View<CyNode> nView = view.getNodeView(n);
-		nView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, 
-		                     Boolean.FALSE);
+		nView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, Boolean.FALSE);
 	}
 	
 	private void createColumn(CyTable table, String column, Class<?> type) {
@@ -512,10 +514,10 @@ public class GroupUtil {
 		    edge.getTarget() != group.getGroupNode())
 			return false;
 
-    Boolean meta = rootNetwork.getRow(edge, CyNetwork.HIDDEN_ATTRS).
-                            get(ISMETA_EDGE_ATTR, Boolean.class, Boolean.FALSE);
-
-    return meta.booleanValue();
+	    Boolean meta = rootNetwork.getRow(edge, CyNetwork.HIDDEN_ATTRS).
+	                            get(ISMETA_EDGE_ATTR, Boolean.class, Boolean.FALSE);
+	
+	    return meta.booleanValue();
 	}
 
 	private boolean metaExists(CyGroup group, CyEdge edge) {

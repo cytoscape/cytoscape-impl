@@ -25,6 +25,9 @@ package org.cytoscape.task.internal.proxysettings;
  */
 
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +39,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
@@ -59,38 +64,95 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	static final String PROXY_HOST = "proxy.server";
 	static final String PROXY_PORT = "proxy.server.port";
 	static final String PROXY_TYPE = "proxy.server.type";
+	static final String PROXY_USERNAME = "proxy.server.userName";
+	static final String PROXY_PASSWORD = "proxy.server.password";
 	
-	private static final List<String> KEYS = Arrays.asList(PROXY_HOST, PROXY_PORT, PROXY_TYPE);
+	private static final List<String> KEYS = Arrays.asList(PROXY_HOST, PROXY_PORT, PROXY_TYPE, PROXY_USERNAME, PROXY_PASSWORD);
+
+    private static final List<String> PROXY_TYPES = Arrays.asList("direct", "http", "socks");
 
 	@Tunable(description="Type")
-	public ListSingleSelection<String> type = new ListSingleSelection<String>("direct", "http", "socks");
+	public ListSingleSelection<String> type = new ListSingleSelection<String>(PROXY_TYPES);
 
-	@Tunable(description="Proxy Server",groups={"param"},dependsOn="type!=direct",params="alignments=horizontal;displayState=hidden")
+	@Tunable(description="Proxy Server",groups={"Options"},dependsOn="type!=direct",params="displayState=hidden")
 	public String hostname="";
 
-	@Tunable(description="Port",groups={"param"},dependsOn="type!=direct",params="alignments=horizontal;displayState=hidden")
+	@Tunable(description="Port",groups={"Options"},dependsOn="type!=direct",params="displayState=hidden")
 	public int port=0;
 
+	@Tunable(description="User Name", groups={"Options"},dependsOn="type!=direct", params="displayState=hidden")
+	public String userName;
+	
+	@Tunable(description="Password", groups={"Options"},dependsOn="type!=direct", params="displayState=hidden")
+	public String password;
+	
 	private final StreamUtil streamUtil;
 
 	private final Map<String,String> oldSettings;
 	private final Properties properties;
+
 
 	public ProxySettingsTask2(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil) {
 		this.streamUtil = streamUtil;
 		oldSettings = new HashMap<String,String>();
 		properties = proxyProperties.getProperties();
 		try {
-			type.setSelectedValue(properties.getProperty(PROXY_TYPE));
+            final String proxyType = properties.getProperty(PROXY_TYPE);
+            if (PROXY_TYPES.contains(proxyType)) {
+                type.setSelectedValue(proxyType);
+            } else {
+                type.setSelectedValue("direct");
+            }
 			hostname = properties.getProperty(PROXY_HOST);
 			port = Integer.parseInt(properties.getProperty(PROXY_PORT));
+			userName = properties.getProperty(PROXY_USERNAME);
+			try {
+				password = decode(properties.getProperty(PROXY_PASSWORD, null));
+			} catch (IOException e) {
+				password = null;
+			}
 		} catch (IllegalArgumentException e) {
-			type.setSelectedValue("direct");
+            type.setSelectedValue("direct");
 			hostname = "";
 			port = 0;
 		}
+
+        assignSystemProperties();
 	}
 
+    public void assignSystemProperties() {
+        if ("direct".equals(type.getSelectedValue())) {
+            System.setProperty("http.proxyHost", "");
+            System.setProperty("http.proxyPort", "");
+            System.setProperty("socksProxyHost", "");
+            System.setProperty("socksProxyPort", "");
+        } else if ("http".equals(type.getSelectedValue())) {
+            System.setProperty("http.proxyHost", hostname);
+            System.setProperty("http.proxyPort", Integer.toString(port));
+            System.setProperty("socksProxyHost", "");
+            System.setProperty("socksProxyPort", "");
+        } else if ("socks".equals(type.getSelectedValue())) {
+            System.setProperty("http.proxyHost", "");
+            System.setProperty("http.proxyPort", "");
+            System.setProperty("socksProxyHost", hostname);
+            System.setProperty("socksProxyPort", Integer.toString(port));
+        }
+    }
+
+	private static String encode(String text) throws IOException {
+		if (text == null) {
+			return null;
+		}
+		return DatatypeConverter.printBase64Binary(text.getBytes("UTF-8"));
+	}
+	
+	private static String decode(String text) throws IOException {
+		if (text == null) {
+			return null;
+		}
+		return new String(DatatypeConverter.parseBase64Binary(text), "UTF-8");
+	}
+	
 	public ValidationState getValidationState(final Appendable errMsg) {
 	
 		storeProxySettings();
@@ -145,7 +207,17 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 			properties.setProperty(PROXY_TYPE, proxyType);
 			properties.setProperty(PROXY_HOST, hostname);
 			properties.setProperty(PROXY_PORT, Integer.toString(port));
+			if (userName != null && !userName.isEmpty() && password != null && !password.isEmpty()) {
+				properties.setProperty(PROXY_USERNAME, userName);
+				try {
+					properties.setProperty(PROXY_PASSWORD, encode(password));
+				} catch (IOException e) {
+					throw new IllegalArgumentException(e);
+				}
+			}
 		}
+        
+        assignSystemProperties();
 	}
 
 	void revertProxySettings() {
@@ -156,6 +228,8 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 				properties.setProperty(key, oldSettings.get(key));
 		}
 		oldSettings.clear();
+        
+        assignSystemProperties();
 	}
 
 	void dumpSettings(String title) {
@@ -178,6 +252,8 @@ final class TestProxySettings implements Callable<Exception> {
 		try {
 			final URL url = new URL(TEST_URL);
 			streamUtil.getInputStream(url).close();
+		} catch (ProtocolException e) {
+			return new IOException("Unable to validate proxy settings.  Please ensure your user name and password are correct (if required).", e);
 		} catch (final Exception ex) {
 			return ex;
 		}

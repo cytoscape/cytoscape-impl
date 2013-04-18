@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 
 	<properties>
@@ -13,8 +13,8 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>table-browser-impl</artifactId>
-  <version>3.0.0</version>
-    <name>Cytoscape Table Browser Impl (${project.artifactId})</name>
+  	<version>3.0.1</version>
+    	<name>Cytoscape Table Browser Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
 	<build>
@@ -131,9 +131,4 @@
 		</dependency>
 	</dependencies>
 
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/table-browser-impl</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/table-browser-impl</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/table-browser-impl</url>
-  </scm>
 </project>

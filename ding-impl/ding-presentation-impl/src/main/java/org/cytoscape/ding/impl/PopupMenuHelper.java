@@ -127,6 +127,7 @@ class PopupMenuHelper {
 
 				if(!action.equalsIgnoreCase("OPEN"))
 				{
+					initializeEdgeTracker(tracker);
 					tracker.getGravityTracker(".").addMenuSeparator(-0.1);
 					tracker.getGravityTracker(".").addMenuSeparator(999.99);
 				}
@@ -168,6 +169,7 @@ class PopupMenuHelper {
 						i.remove();
 				}
 			}
+
 			
 			int menuItemCount = usableTFs.size()+ usableCMFs.size();
 			int tfCount = usableTFs.size();
@@ -182,6 +184,7 @@ class PopupMenuHelper {
 
 				if(!action.equalsIgnoreCase("OPEN"))
 				{
+					initializeNodeTracker(tracker);
 					tracker.getGravityTracker(".").addMenuSeparator(-0.1);
 					tracker.getGravityTracker(".").addMenuSeparator(999.99);
 				}
@@ -243,11 +246,24 @@ class PopupMenuHelper {
 
 			if(!action.equalsIgnoreCase("OPEN"))
 			{
+				initializeNetworkTracker(tracker);
 				tracker.getGravityTracker(".").addMenuSeparator(-0.1);
 				tracker.getGravityTracker(".").addMenuSeparator(999.99);
 			}
 			
 			for ( NetworkViewTaskFactory nvtf : usableTFs ) {
+				// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HACK ALERT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
+				// Until we get better control over NetworkViewTaskFactories, there are a couple
+				// of Menu bar menus that appear in the network view context menu that have no
+				// business being there.  This hack skips those menu items....
+				// I, Scooter, am responsible for this hack.....
+				// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HACK ALERT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
+				Map props = m_view.emptySpaceTFs.get(nvtf);
+				String pref = (String)(props.get(PREFERRED_MENU));
+				if (pref != null && pref.length() > 0 && 
+				    (pref.startsWith("File") || pref.startsWith("Layout")))
+					continue;	// Skip any "File" or "Layout" menus
+				
 				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
 				addMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
 			}
@@ -318,7 +334,7 @@ class PopupMenuHelper {
 			else
 				pref = APPS_MENU;
 		}
-			
+	
 		// otherwise create our own popup menus 
 		final Object targetVisualProperty = props.get("targetVP");
 		boolean isSelected = false;
@@ -348,6 +364,7 @@ class PopupMenuHelper {
 			if (last > 0) {
 				title = pref.substring(last + 1);
 				pref = pref.substring(0, last);
+				// System.out.println("no title, pref = "+pref);
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
 				final JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem, toolTip);
 				if (useCheckBoxMenuItem) {
@@ -370,6 +387,7 @@ class PopupMenuHelper {
 
 		// title and preferred menu
 		} else {
+			// System.out.println("title, pref = "+pref);
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
 			if (insertSepBefore)
 				gravityTracker.addMenuSeparator(gravity-.0001);
@@ -407,7 +425,45 @@ class PopupMenuHelper {
 		return;
 	}
 	
-
+	// We need to "seed" the tracker menu or we wind up with
+	// some very unfortunate order effects if a bundle doesn't
+	// use the right context menu specifiers
+	private void initializeNetworkTracker(JMenuTracker tracker) {
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU);
+		// tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_LAYOUT_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_APPS_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_PREFERENCES_MENU);
+	}
+	
+	// We need to "seed" the tracker menu or we wind up with
+	// some very unfortunate order effects if a bundle doesn't
+	// use the right context menu specifiers
+	private void initializeNodeTracker(JMenuTracker tracker) {
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_NESTED_NETWORKS_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_APPS_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU);
+		// tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_DYNAMIC_LINKOUTS_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_PREFERENCES_MENU);
+	}
+	
+	// We need to "seed" the tracker menu or we wind up with
+	// some very unfortunate order effects if a bundle doesn't
+	// use the right context menu specifiers
+	private void initializeEdgeTracker(JMenuTracker tracker) {
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_SELECT_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_APPS_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU);
+		// tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_DYNAMIC_LINKOUTS_MENU);
+		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_PREFERENCES_MENU);
+	}
 
 	private JMenuItem createMenuItem(TaskFactory tf, String title, boolean useCheckBoxMenuItem, String toolTipText) {
 		JMenuItem item;

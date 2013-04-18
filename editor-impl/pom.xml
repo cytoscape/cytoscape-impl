@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 
 	<properties>
@@ -13,9 +13,7 @@
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.cytoscape</groupId>
 	<artifactId>editor-impl</artifactId>
-  <version>3.0.0</version>
 
 	<name>Cytoscape Editor Impl (${project.artifactId})</name>
 
@@ -108,9 +106,4 @@
 
 	</dependencies>
 
-  <scm>
-    <connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/editor-impl</connection>
-    <developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release/editor-impl</developerConnection>
-    <url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release/editor-impl</url>
-  </scm>
 </project>

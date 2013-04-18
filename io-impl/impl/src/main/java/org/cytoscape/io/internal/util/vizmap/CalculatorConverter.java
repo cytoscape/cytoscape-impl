@@ -105,8 +105,11 @@ public class CalculatorConverter {
 		oldArrowColors.put("BLACK", "0,0,0");
 	}
 
-	CalculatorConverter(String propsKey, String legacyPropsKey) {
+	CalculatorConverter(final String propsKey, String legacyPropsKey) {
 		this.propsKey = propsKey;
+		
+		// Make legacy key null if it's actually the same as the new key, so we know it was never an old key
+		legacyPropsKey = propsKey.equalsIgnoreCase(legacyPropsKey) ? null : legacyPropsKey;
 		this.legacyPropsKey = legacyPropsKey;
 		
 		this.key = propsKey.split("\\.")[2];
@@ -167,6 +170,8 @@ public class CalculatorConverter {
 						String[] vv = value.split("_");
 						if (vv.length == 2) return vv[1];
 					}
+				} else {
+					return value;
 				}
 			} else {
 				// No need to update the value
@@ -429,9 +434,9 @@ public class CalculatorConverter {
 			// Globals
 			b |= key.matches("globalAppearanceCalculator\\.[^\\.]+\\.default[a-zA-Z]+Color");
 			// Nodes
-			b |= key.matches("nodeAppearanceCalculator\\.[^\\.]+\\.defaultNode\\w+");
+			b |= key.matches("nodeAppearanceCalculator\\.[^\\.]+\\.default(Node|NODE)\\w+");
 			// Edges
-			b |= key.matches("edgeAppearanceCalculator\\.[^\\.]+\\.defaultEdge[a-zA-Z]+");
+			b |= key.matches("edgeAppearanceCalculator\\.[^\\.]+\\.default(Edge|EDGE)[a-zA-Z_]+");
 		}
 
 		return b;
@@ -441,8 +446,8 @@ public class CalculatorConverter {
 		boolean b = false;
 
 		if (key != null) {
-			b |= key.matches("(node|edge)AppearanceCalculator\\.[^\\.]+\\."
-							 + "\\1((CustomGraphics(Position)?\\d+)|LabelColor|([a-zA-Z]+Calculator))");
+			b |= key.matches("(?i)(node|edge)AppearanceCalculator\\.[^\\.]+\\."
+							 + "\\1((CustomGraphics(Position)?\\d+)|LabelColor|([a-zA-Z_]+Calculator))");
 		}
 
 		return b;
@@ -482,4 +487,11 @@ public class CalculatorConverter {
 		return calcKey;
 	}
 
+	@Override
+	public String toString() {
+		return "CalculatorConverter [propsKey=" + propsKey
+				+ ", legacyPropsKey=" + legacyPropsKey + ", key=" + key
+				+ ", legacyKey=" + legacyKey + ", visualPropertyId="
+				+ visualPropertyId + ", targetType=" + targetType + "]";
+	}
 }

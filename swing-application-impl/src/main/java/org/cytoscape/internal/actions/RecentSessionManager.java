@@ -27,9 +27,7 @@ package org.cytoscape.internal.actions;
 import java.awt.event.ActionEvent;
 import java.io.FileNotFoundException;
 import java.net.URL;
-import java.util.Dictionary;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -41,9 +39,13 @@ import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.internal.task.OpenRecentSessionTaskFactory;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionLoadedEvent;
@@ -69,19 +71,33 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 	private final CySessionManager sessionManager;
 	private final CySessionReaderManager readerManager;
 	private final CyApplicationManager appManager;
+	private final CyNetworkManager netManager;
+	private final CyTableManager tableManager;
+	private final CyNetworkTableManager netTableManager;
+	private final CyGroupManager grManager;
 
 	private final Set<OpenRecentSessionTaskFactory> currentMenuItems;
 	
 	private final DummyAction factory;
 
-	public RecentSessionManager(final RecentlyOpenedTracker tracker, final CyServiceRegistrar registrar,
-			final CySessionManager sessionManager, final CySessionReaderManager readerManager,
-			final CyApplicationManager appManager) {
+	public RecentSessionManager(final RecentlyOpenedTracker tracker,
+								final CyServiceRegistrar registrar,
+								final CySessionManager sessionManager,
+								final CySessionReaderManager readerManager,
+								final CyApplicationManager appManager,
+								final CyNetworkManager netManager,
+								final CyTableManager tableManager,
+								final CyNetworkTableManager netTableManager,
+								final CyGroupManager grManager) {
 		this.tracker = tracker;
 		this.registrar = registrar;
 		this.sessionManager = sessionManager;
 		this.readerManager = readerManager;
 		this.appManager = appManager;
+		this.netManager = netManager;
+		this.tableManager = tableManager;
+		this.netTableManager = netTableManager;
+		this.grManager = grManager;
 		
 		this.currentMenuItems = new HashSet<OpenRecentSessionTaskFactory>();
 
@@ -111,7 +127,8 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 			prop.put(ServiceProperties.PREFERRED_MENU, MENU_CATEGORY);
 			prop.put(ServiceProperties.TITLE, url.getFile());
 			prop.put(ServiceProperties.MENU_GRAVITY, "6.0");
-			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager, appManager, tracker, url);
+			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager,
+					appManager, netManager, tableManager, netTableManager, grManager, tracker, url);
 			registrar.registerService(factory, TaskFactory.class, prop);
 
 			this.currentMenuItems.add(factory);

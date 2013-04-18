@@ -27,7 +27,12 @@ package org.cytoscape.io.internal.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.net.Authenticator;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.URL;
@@ -36,6 +41,8 @@ import java.util.Properties;
 import java.util.jar.JarInputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
@@ -56,8 +63,22 @@ public class StreamUtilImpl implements StreamUtil {
 	private static final int msConnectionTimeout = 2000;
 	private Properties properties;
 	
+	private String userName;
+	private String password;
+	
 	public StreamUtilImpl(CyProperty<Properties> proxyProperties) {
 		properties = proxyProperties.getProperties();
+		
+		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
+		Authenticator.setDefault(new Authenticator() {
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication() {
+				if (userName == null || password == null) {
+					return null;
+				}
+				return new PasswordAuthentication(userName, password.toCharArray());
+			}
+		});
 	}
 
 	@Override
@@ -107,19 +128,45 @@ public class StreamUtilImpl implements StreamUtil {
 		}
 		String hostName = properties.getProperty("proxy.server");
 		String portString = properties.getProperty("proxy.server.port");
+		userName = properties.getProperty("proxy.server.userName");
+		String encodedPassword = properties.getProperty("proxy.server.password");
+		
+		if (userName != null && userName.isEmpty()) {
+			userName = null;
+		}
+		
+		if (encodedPassword != null) {
+			try {
+				password = decode(encodedPassword);
+			} catch (IOException e) {
+				password = null;
+			}
+		}
+		
 		try {
 			int port = Integer.parseInt(portString);
+			Type type = null;
 			if ("http".equals(proxyType)) {
-				return new Proxy(Type.HTTP, new InetSocketAddress(hostName, port));
+				type = Type.HTTP;
 			}
 			if ("socks".equals(proxyType)) {
-				return new Proxy(Type.SOCKS, new InetSocketAddress(hostName, port));
+				type = Type.SOCKS;
 			}
+			if (type == null) {
+				return Proxy.NO_PROXY;
+			}
+			return new Proxy(type, new InetSocketAddress(hostName, port));
 		} catch (NumberFormatException e) {
 		}
 		return Proxy.NO_PROXY;
 	}
 
+	private String decode(String text) throws IOException {
+		if (text == null) {
+			return null;
+		}
+		return new String(DatatypeConverter.parseBase64Binary(text), "UTF-8");
+	}
 
 	/**
 	 * Obtain a URLConnection for a given URL. Ensure proxy servers are

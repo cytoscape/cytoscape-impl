@@ -45,7 +45,7 @@ public class LinkoutTask extends AbstractTask {
 	private final OpenBrowser browser;
 	private final CyNetwork network;
 
-	private static final String REGEX = "%.+%";
+	private static final String REGEX = "%.+?%";
 	private static final Pattern regexPattern = Pattern.compile(REGEX);
 
 	public LinkoutTask(String link, OpenBrowser browser, CyNetwork network, CyIdentifiable... tableEntries) {

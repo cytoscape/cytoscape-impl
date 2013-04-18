@@ -63,6 +63,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
+
 /**
  * This class is responsible for querying the Cytoscape App Store web service to obtain
  * information about available apps and app updates.
@@ -422,8 +425,21 @@ public class WebQuerier {
 				}
 			}
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (final IOException e) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "<html>" +
+                        "Unable to connect to the App Store website to get the list of apps.<br><br>" +
+                        "<blockquote><tt>" + e.getClass().getName() + ": " + e.getMessage() + "</tt></blockquote><br><br>" +
+                        "Please make sure your internet connection is working.<br><br>" +
+                        "If you are behind a proxy, make sure the settings are correct by<br>" +
+                        "going to <i>Edit</i> &gt; <i>Settings</i> &gt; <i>Proxy Settings</i>.",
+                        "Unable to get list of apps",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            });
 			e.printStackTrace();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -540,6 +556,9 @@ public class WebQuerier {
 						// Replace spaces with underscores
 						String outputFileBasename = webApp.getName().replaceAll("\\s", "_");
 						
+						// Append version information
+						outputFileBasename += "-v" + releaseToDownload.getReleaseVersion();
+						
 						// Strip disallowed characters
 						outputFileBasename = OUTPUT_FILENAME_DISALLOWED_CHARACTERS.matcher(outputFileBasename).replaceAll("");
 						
@@ -555,8 +574,6 @@ public class WebQuerier {
 						}
 						
 						outputFile.createNewFile();
-						
-//						System.out.println("preparing to download");
 						
 					    FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 					    try {
@@ -707,35 +724,13 @@ public class WebQuerier {
 					if (highestVersionRelease != null
 							&& compareVersions(highestVersionRelease.getReleaseVersion(), app.getVersion()) < 0) {
 						
-						// System.out.println(highestVersionRelease.getReleaseVersion() + " won vs " + app.getVersion());
+						Update update = new Update();
+						update.setUpdateVersion(highestVersionRelease.getReleaseVersion());
+						update.setApp(app);
+						update.setWebApp(webApp);
+						update.setRelease(highestVersionRelease);
 						
-						if (app.getSha512Checksum() == null) {
-							try {
-								app.setSha512Checksum(appManager.getAppParser().getChecksum(app.getAppFile()));
-							} catch (AppParser.ChecksumException e) {
-								app.setSha512Checksum(null);
-							}
-						}
-						
-						if (app.getSha512Checksum() != null) {
-							String checksum = app.getSha512Checksum().substring(app.getSha512Checksum().indexOf(":") + 1);
-							
-							// Check if the app is listed in the releases
-							for (WebApp.Release release : webApp.getReleases()) {
-								if (release.getSha512Checksum().toLowerCase().indexOf(checksum.toLowerCase()) != -1) {
-									
-									// System.out.println("Matching hash found");
-									
-									Update update = new Update();
-									update.setUpdateVersion(highestVersionRelease.getReleaseVersion());
-									update.setApp(app);
-									update.setWebApp(webApp);
-									update.setRelease(highestVersionRelease);
-									
-									return update;
-								}
-							}
-						}						
+						return update;
 					}
 				}
 			}
@@ -847,8 +842,11 @@ public class WebQuerier {
 				// in cases where multiple stores give the same hash.
 				if (checksum.indexOf(release.getSha512Checksum().toLowerCase()) != -1
 						&& app.getDescription() == null) {
-					
-					System.out.println("Found description: " + allReleases.get(release).getDescription());
+
+// WebQuerier obtains app information from app store because no description metadata is required
+// in the app zip file itself. This was to allow better App-Bundle interchangeability, not
+// imposing unneeded restrictions on OSGi bundles (from past discussion on mailing list, some time in 2012)
+//					System.out.println("Found description: " + allReleases.get(release).getDescription());
 					app.setDescription(allReleases.get(release).getDescription());
 				}
 			}

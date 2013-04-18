@@ -28,7 +28,10 @@ package org.cytoscape.work.internal.tunables.utils;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -37,6 +40,7 @@ import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
@@ -61,7 +65,7 @@ public class XorPanel extends JPanel {
 		gh.addDependent(new GUITunableHandlerSwitchListener());
 
 		switchPanel = new JPanel();
-		contentPanel = new JPanel(new CardLayout());
+		contentPanel = new JPanel(new CyCardLayout());
 		TitledBorder titleborder = BorderFactory.createTitledBorder(title);
 		titleborder.setTitleColor(Color.GREEN);
 		setBorder(titleborder);
@@ -108,6 +112,17 @@ public class XorPanel extends JPanel {
 		public void checkDependency(String name, String state) {
 			CardLayout cl = (CardLayout) contentPanel.getLayout();
 			cl.show(contentPanel, state);
+			repackEnclosingDialog();
+		}
+		
+		private void repackEnclosingDialog() {
+			Container container = contentPanel.getParent();
+			while (container != null && !(container instanceof JDialog))
+				container = container.getParent();
+			if (container != null)
+			{
+				((JDialog)container).pack();
+			}
 		}
 
 		@Override public String dependsOn() { return null; }

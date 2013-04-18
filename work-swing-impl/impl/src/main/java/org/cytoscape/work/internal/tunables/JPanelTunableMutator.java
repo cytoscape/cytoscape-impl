@@ -288,7 +288,6 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			final Boolean vertical, final Boolean displayed) {
 		if (gh == null)
 			return createSimplePanel(title, vertical, displayed);
-
 		// See if we need to create an XOR panel
 		if (gh.controlsMutuallyExclusiveNestedChildren()) {
 			return new XorPanel(title, gh);
@@ -313,7 +312,9 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 						while (container != null && !(container instanceof JDialog))
 							container = container.getParent();
 						if (container != null)
+						{
 							((JDialog)container).pack();
+						}
 					}
 				});
 				

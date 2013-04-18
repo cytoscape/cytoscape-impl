@@ -56,7 +56,6 @@ public class FontEditor extends JDialog implements ValueEditor<Font> {
 	public Font showEditor(final Component parent, final Font initialValue) {
 		this.setLocationRelativeTo(parent);
 		setModal(true);
-		setAlwaysOnTop(true);
 		font = initialValue;
 		if(font != null)
 			chooser.setSelectedFont(font.deriveFont(1F));

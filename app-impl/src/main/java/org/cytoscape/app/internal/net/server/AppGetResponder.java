@@ -33,10 +33,13 @@ import java.util.regex.Pattern;
 
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppParsingException;
+import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.DownloadStatus;
 import org.cytoscape.app.internal.net.WebApp;
+import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -174,8 +177,7 @@ public class AppGetResponder {
 						
 						try {
 							App app = appManager.getAppParser().parseApp(appFile);
-							
-							appManager.installApp(app);
+							installOrUpdate(app);
 						} catch (AppParsingException e) {
 							installStatus = "install-failed";
 							installError = "The installation could not be completed because there were errors in the app file. "
@@ -183,7 +185,11 @@ public class AppGetResponder {
 						} catch (AppInstallException e) {
 							installStatus = "install-failed";
 							installError = "The app file passed checking, but the app manager encountered errors while attempting" 
-								+ "install. Details: " + e.getMessage();
+								+ " to install. Details: " + e.getMessage();
+						} catch (AppUninstallException e) {
+							installStatus = "install-failed";
+							installError = "The app file passed checking, but the app manager encountered errors while attempting" 
+								+ " to uninstall old version. Details: " + e.getMessage();
 						}
 					}
 				} else {
@@ -197,5 +203,27 @@ public class AppGetResponder {
             }
             return responseData;
         }
+
+		private void installOrUpdate(App app) throws AppInstallException, AppUninstallException {
+			// Check if another version of the app is already installed.
+			App installedApp = getInstalledApp(app);
+			if (installedApp != null) {
+				appManager.uninstallApp(installedApp);
+			}
+			appManager.installApp(app);
+		}
+		
+		private App getInstalledApp(App referenceApp) {
+			App installedApp = null;
+			for (App app : appManager.getApps()) {
+				if (app.getStatus() == AppStatus.INSTALLED && referenceApp.getAppName().equals(app.getAppName())) {
+					// Find the app with the most recent version if multiple versions are found.
+					if (installedApp == null || WebQuerier.compareVersions(referenceApp.getVersion(), installedApp.getVersion()) < 0) {
+						installedApp = app;
+					}
+				}
+			}
+			return installedApp;
+		}
     }
 }

@@ -326,6 +326,9 @@ public class JoinTablesTask extends AbstractTask {
 				if (col == sourceTable.getPrimaryKey())
 					continue;
 
+				if (!source2targetColumnMap.containsKey(col.getName()))
+					continue;  // skip this column
+
 				String targetColName = source2targetColumnMap.get(col.getName());
 
 				if (col.getType() == List.class)
@@ -343,13 +346,26 @@ public class JoinTablesTask extends AbstractTask {
 		for (CyColumn col : sourceTable.getColumns()) {
 			if (col == sourceTable.getPrimaryKey())
 				continue;
-			String targetColName = getUniqueColumnName(targetTable, col.getName());
+			// This is a bad idea!  It prevents users from updating data in existing
+			// columns, which is a common case
+			// String targetColName = getUniqueColumnName(targetTable, col.getName());
+			String targetColName = col.getName();
+
+			if (targetTable.getColumn(targetColName) == null) {
+				if (col.getType() == List.class)
+					targetTable.createListColumn(targetColName, col.getListElementType(), col.isImmutable());
+				else
+					targetTable.createColumn(targetColName, col.getType(), col.isImmutable(), col.getDefaultValue());
+			} else {
+				CyColumn targetCol = targetTable.getColumn(targetColName);
+				if ((targetCol.getType() != col.getType()) ||
+				    (col.getType() == List.class && (targetCol.getListElementType() != col.getListElementType()))) {
+					logger.error("Column '"+targetColName+"' has a different type in the target table -- skipping column");
+					continue;
+				}
+			}
 
 			source2targetColumnMap.put(col.getName(), targetColName);
-			if (col.getType() == List.class)
-				targetTable.createListColumn(targetColName, col.getListElementType(), col.isImmutable());
-			else
-				targetTable.createColumn(targetColName, col.getType(), col.isImmutable(), col.getDefaultValue());
 		}
 	}
 

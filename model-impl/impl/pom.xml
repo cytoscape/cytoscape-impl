@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>model-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 
 	<properties>
@@ -15,12 +15,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>model-impl</artifactId>
 
-    <name>Cytoscape Model Impl (${project.artifactId})</name>
-
+	<name>Cytoscape Model Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
 	<build>
-    	<plugins>
+		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

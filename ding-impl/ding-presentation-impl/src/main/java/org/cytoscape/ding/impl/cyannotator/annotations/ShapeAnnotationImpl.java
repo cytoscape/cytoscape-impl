@@ -26,21 +26,17 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
-import javax.swing.JFrame;
-
 import java.util.Map;
+
+import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation.ShapeType;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 
 public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnnotation {
@@ -105,7 +101,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
   public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
     super(cyAnnotator, view, argMap);
-    this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
     this.fillColor = getColor(argMap, FILLCOLOR, null);
     setFillColor(fillColor);
     this.fillOpacity = getDouble(argMap, FILLOPACITY, 100.0);
@@ -115,6 +110,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.shapeHeight = getDouble(argMap, HEIGHT, 100.0);
 
     this.borderWidth = getDouble(argMap, EDGETHICKNESS, 1.0);
+    this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
     this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
     this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
@@ -193,10 +189,25 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
   
   public Paint getBorderColor() {return borderColor;}
+  public double getBorderOpacity() {return borderOpacity;}
   public Paint getFillColor() {return fillColor;}
+  public double getFillOpacity() {return fillOpacity;}
     
-  public void setBorderColor(Paint border) {borderColor = border;}
-  public void setFillColor(Paint fill) {fillColor = fill;}
+  public void setBorderColor(Paint border) {
+		borderColor = border;
+	}
+
+	public void setBorderOpacity(double opacity) {
+		borderOpacity = opacity;
+	}
+
+  public void setFillColor(Paint fill) {
+		fillColor = fill;
+	}
+
+	public void setFillOpacity(double opacity) {
+		fillOpacity = opacity;
+	}
     
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
@@ -229,7 +240,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
 	}
 
-	public JFrame getModifyDialog() {
+	public JDialog getModifyDialog() {
 		return new ShapeAnnotationDialog(this);
 	}
 

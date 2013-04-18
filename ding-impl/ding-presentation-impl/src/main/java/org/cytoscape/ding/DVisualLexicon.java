@@ -112,39 +112,39 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			"NODE_CUSTOMPAINT_9", "Node Custom Paint 9", CyNode.class);
 
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_1 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_1", "Node Custom Graphics Size 1",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_2 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_2", "Node Custom Graphics Size 2",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_3 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_3", "Node Custom Graphics Size 3",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_4 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_4", "Node Custom Graphics Size 4",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_5 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_5", "Node Custom Graphics Size 5",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_6 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_6", "Node Custom Graphics Size 6",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_7 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_7", "Node Custom Graphics Size 7",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_8 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_8", "Node Custom Graphics Size 8",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_9 = new DoubleVisualProperty(
-			50.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
+			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
 			"NODE_CUSTOMGRAPHICS_SIZE_9", "Node Custom Graphics Size 9",
 			CyNode.class);
 

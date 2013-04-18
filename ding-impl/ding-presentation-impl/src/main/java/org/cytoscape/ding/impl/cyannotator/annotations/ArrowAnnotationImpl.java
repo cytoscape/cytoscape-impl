@@ -29,28 +29,22 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
-import javax.swing.JFrame;
-
 import java.util.Map;
 import java.util.UUID;
 
-import org.cytoscape.model.CyNode;
+import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowType;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
+import org.cytoscape.model.CyNode;
 
 public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnnotation {
 	private Paint lineColor = Color.BLACK; // These are paint's so we can do gradients
@@ -411,7 +405,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		setSize((int)shapeWidth, (int)shapeHeight);
 	}
 
-	public JFrame getModifyDialog() {
+	public JDialog getModifyDialog() {
 		return new ArrowAnnotationDialog(this);
 	}
 

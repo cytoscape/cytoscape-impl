@@ -25,19 +25,14 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  */
 
 
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Paint;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class SelectColor extends JFrame {
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+
+public class SelectColor extends JDialog {
 	private ActionListener okListener;
 	
 	public SelectColor() {
@@ -54,9 +49,9 @@ public class SelectColor extends JFrame {
 		okButton = new javax.swing.JButton();
 		cancelButton = new javax.swing.JButton();
 
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setTitle("Select Color");
-		setAlwaysOnTop(true);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 		setResizable(false);
 		getContentPane().setLayout(null);
 		getContentPane().add(jColorChooser1);
@@ -81,6 +76,7 @@ public class SelectColor extends JFrame {
 		cancelButton.setBounds(345, 351, 75, 23);
 
 		pack();
+		setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 
 	public void setOKListener(ActionListener l) {

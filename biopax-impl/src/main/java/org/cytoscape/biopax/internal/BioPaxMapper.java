@@ -26,7 +26,6 @@ package org.cytoscape.biopax.internal;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,7 +33,6 @@ import org.biopax.paxtools.controller.AbstractTraverser;
 import org.biopax.paxtools.controller.ObjectPropertyEditor;
 import org.biopax.paxtools.controller.PropertyEditor;
 import org.biopax.paxtools.controller.SimpleEditorMap;
-import org.biopax.paxtools.io.SimpleIOHandler;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.*;
@@ -43,7 +41,6 @@ import org.biopax.paxtools.util.ClassFilterSet;
 import org.biopax.paxtools.util.Filter;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
-import org.cytoscape.biopax.internal.util.BioPaxUtil.StaxHack;
 import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.util.ExternalLink;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
@@ -222,28 +219,10 @@ public class BioPaxMapper {
 	
 		//  default Quick Find Index
 		AttributeUtil.set(network, network, "quickfind.default_index", CyNetwork.NAME, String.class);
-
-		// Serialize and Save the BioPAX L3 model as RDF+XML (OWL) 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			convertToOWL(model, baos);
-			AttributeUtil.set(network, network, CyNetwork.HIDDEN_ATTRS, 
-					BioPaxUtil.BIOPAX_DATA, baos.toString("UTF-8"), String.class);
-		} catch (Exception e) {
-			log.error("Serializing BioPAX to RDF/XML string failed.", e);
-		}
 		
 		return network;
 	}
 
-	private void convertToOWL(final Model model, final ByteArrayOutputStream stream) {
-		StaxHack.runWithHack(new Runnable() {
-			@Override
-			public void run() {
-				new SimpleIOHandler().convertToOWL(model, stream);
-			}
-		});
-	}
 	
 	private void createMemberEdges(CyNetwork network) {
 		// for each PE,

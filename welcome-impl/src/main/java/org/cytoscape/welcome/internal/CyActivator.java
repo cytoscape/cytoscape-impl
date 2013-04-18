@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -46,7 +45,6 @@ import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.presentation.property.values.BendFactory;
@@ -74,8 +72,6 @@ public class CyActivator extends AbstractCyActivator {
 		final CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		CyVersion cyVersion = getService(bc, CyVersion.class);
-		final ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc,
-				ApplyPreferredLayoutTaskFactory.class);
 		final NewEmptyNetworkViewFactory newEmptyNetworkViewFactory = getService(bc, NewEmptyNetworkViewFactory.class);
 		
 		BendFactory bendFactory = getService(bc, BendFactory.class);
@@ -99,8 +95,6 @@ public class CyActivator extends AbstractCyActivator {
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		TaskFactory importNetworkFileTF = getService(bc, TaskFactory.class, "(id=loadNetworkFileTaskFactory)");
 		LoadNetworkURLTaskFactory importNetworkTF = getService(bc, LoadNetworkURLTaskFactory.class);
-		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
-				CyApplicationConfiguration.class);
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
 		@SuppressWarnings("unchecked")
 		CyProperty<Properties> cytoscapePropertiesServiceRef = getService(bc, CyProperty.class,
@@ -117,7 +111,7 @@ public class CyActivator extends AbstractCyActivator {
 		// TODO: implement contents
 		final StatusPanel statusPanel = new StatusPanel(cyVersion);
 		final NewsAndLinkPanel helpPanel = new NewsAndLinkPanel(statusPanel, openBrowserServiceRef,
-				cytoscapePropertiesServiceRef);
+				cyVersion);
 
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, openPanel,

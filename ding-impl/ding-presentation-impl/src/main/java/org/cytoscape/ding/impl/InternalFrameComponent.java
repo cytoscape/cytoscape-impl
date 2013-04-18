@@ -171,7 +171,7 @@ public class InternalFrameComponent extends JComponent implements Printable {
 		backgroundCanvas.print(g);
 		
 		// This is a work-around, otherwise we lose backgroundCanvas color
-		networkCanvas.setBackground(backgroundCanvas.getBackground());
+		// networkCanvas.setBackground(backgroundCanvas.getBackground());
 		
 		networkCanvas.print(g);
 		foregroundCanvas.print(g);

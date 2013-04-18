@@ -39,6 +39,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -67,6 +68,9 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 	private JList itemsContainerList;
 	private DefaultListModel listModel;
 	private ListMultipleSelection<T> listMultipleSelection;
+
+	private static final Font TEXT_FONT = new Font("SansSerif", Font.PLAIN,12);
+	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD ,13);
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListMultipleSelection</code> type
@@ -109,25 +113,21 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 			return;
 		}
 
-		final Border padding = BorderFactory.createEmptyBorder(5, 10, 5, 10);
 		panel = new JPanel();
 		BorderLayout layout = new BorderLayout();
 		panel.setLayout(layout);
-		final JTextArea jta = new JTextArea(getDescription());
-		jta.setPreferredSize(new Dimension(200, 50));
-		jta.setLineWrap(true);
-		jta.setWrapStyleWord(true);
-		jta.setBorder(padding);
+
+		JLabel jta = new JLabel(getDescription());
+		jta.setFont(LABEL_FONT);
+		jta.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		panel.add(jta, BorderLayout.PAGE_START);
-		jta.setBackground(null);
-		jta.setEditable(false);
 
 		//put the items in a list
 		itemsContainerList = new JList(listModel);//new JList(listMultipleSelection.getPossibleValues().toArray());
 		for ( T value : getMultipleSelection().getPossibleValues() ) 
 			listModel.addElement(value);
 		
-		itemsContainerList.setFont(new Font("sansserif",Font.PLAIN,11));
+		itemsContainerList.setFont(TEXT_FONT);
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		itemsContainerList.addListSelectionListener(this);
 		
@@ -152,7 +152,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		final JScrollPane scrollpane = new JScrollPane(itemsContainerList);
 		scrollpane.setAutoscrolls(true);
 		scrollpane.setOpaque(false);
-		scrollpane.setBorder(padding);
+		scrollpane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 		panel.add(scrollpane, BorderLayout.CENTER);
 	}
 

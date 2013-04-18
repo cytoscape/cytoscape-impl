@@ -24,7 +24,7 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-
+import java.awt.Dialog;
 import java.awt.Window;
 
 import javax.swing.JPanel;
@@ -32,11 +32,13 @@ import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * Interceptor of <code>Tunable</code> that will be applied on <code>GUITunableHandlers</code>.
- *
- * <p><pre>
+ * Interceptor of <code>Tunable</code> that will be applied on
+ * <code>GUITunableHandlers</code>.
+ * 
+ * <p>
+ * 
+ * <pre>
  * To set the new value to the original objects contained in the <code>GUITunableHandlers</code>:
  * <ul>
  *   <li>Creates the parent container for the GUI, or use the one that is specified </li>
@@ -50,8 +52,10 @@ import org.slf4j.LoggerFactory;
  *     if the modifications have been validated by the user.
  *   </li>
  * </ul>
- * </pre></p>
- *
+ * </pre>
+ * 
+ * </p>
+ * 
  * @author pasteur
  */
 public class JDialogTunableMutator extends JPanelTunableMutator {
@@ -60,25 +64,26 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 	private Logger logger = LoggerFactory.getLogger(JDialogTunableMutator.class);
 
 	private Window parent = null;
-	
+
 	/**
 	 * Constructor.
 	 */
 	public JDialogTunableMutator() {
 		super();
 	}
-	
+
 	/** {@inheritDoc} */
 	public void setConfigurationContext(Object win) {
-		if ( win == null )
+		if (win == null)
 			return;
 
-		if ( win instanceof Window )
-			parent = (Window)win;
+		if (win instanceof Window)
+			parent = (Window) win;
 		else
-			throw new IllegalArgumentException("Dialog configuration context must be a Window, but it's a: " + win.getClass() );
+			throw new IllegalArgumentException("Dialog configuration context must be a Window, but it's a: "
+					+ win.getClass());
 	}
-	
+
 	/** {@inheritDoc} */
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 		final JPanel panel = buildConfiguration(objectWithTunables, parent);
@@ -89,47 +94,45 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 
 		// found the special case of the file handle cancel panel,
 		// which means we should quit now
-		else if ( panel == HANDLER_CANCEL_PANEL )
+		else if (panel == HANDLER_CANCEL_PANEL)
 			return false;
 
 		else
 			return displayGUI(panel, objectWithTunables);
 	}
 
-	/** 
+	/**
 	 * This implements the final action in execUI() and executes the UI.
-	 * @param optionPanel  the panel containing the various UI elements corresponding to individual tunables
-	 * @param objectWithTunables    represents the objects annotated with tunables
+	 * 
+	 * @param optionPanel
+	 *            the panel containing the various UI elements corresponding to
+	 *            individual tunables
+	 * @param objectWithTunables
+	 *            represents the objects annotated with tunables
 	 */
 	private boolean displayGUI(final JPanel optionPanel, Object objectWithTunables) {
 		TunableDialog tunableDialog;
 		boolean result = false;
 		String userInput;
-		
-		do 
-		{
+
+		do {
 			tunableDialog = new TunableDialog(parent, optionPanel);
 			tunableDialog.setLocationRelativeTo(parent);
-			
+
 			tunableDialog.setTitle(getTitle(objectWithTunables));
-			tunableDialog.setModal(true);
-			tunableDialog.setAlwaysOnTop(true);
+			tunableDialog.setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
 			tunableDialog.setVisible(true);
-		
-		
-		    userInput = tunableDialog.getUserInput();
-		    if (userInput.equalsIgnoreCase("OK"))
-		    {
-		    	result = super.validateAndWriteBack(objectWithTunables);	
-		    }
-		}
-		while(userInput.equalsIgnoreCase("OK") == true && result == false);
-		
-		
-		if (userInput.equalsIgnoreCase("OK")){
+
+			userInput = tunableDialog.getUserInput();
+			if (userInput.equalsIgnoreCase("OK")) {
+				result = super.validateAndWriteBack(objectWithTunables);
+			}
+		} while (userInput.equalsIgnoreCase("OK") == true && result == false);
+
+		if (userInput.equalsIgnoreCase("OK")) {
 			return result;
-		} else { 
-			return false;			
+		} else {
+			return false;
 		}
 	}
 }

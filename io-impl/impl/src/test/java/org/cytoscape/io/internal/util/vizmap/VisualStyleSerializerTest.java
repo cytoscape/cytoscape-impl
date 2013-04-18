@@ -65,7 +65,6 @@ import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -89,17 +88,13 @@ public class VisualStyleSerializerTest {
 	private VisualStyleSerializer serializer;
 	private NullVisualProperty twoDRoot;
 	private BasicVisualLexicon lexicon;
-	private VisualStyle defaultStyle;
 
 	@Before
 	public void setUp() throws Exception {
 		evtHelper = mock(CyEventHelper.class);
 		twoDRoot = new NullVisualProperty("2D_ROOT", "2D Root Visual Property");
 		lexicon = new BasicVisualLexicon(twoDRoot);
-		defaultStyle = new DummyVisualStyle(DEFAULT_STYLE_NAME);
-		
-		final VisualMappingManager visualMappingManager = mock(VisualMappingManager.class);
-		when(visualMappingManager.getDefaultVisualStyle()).thenReturn(defaultStyle);
+		VisualStyle defaultStyle = new DummyVisualStyle(DEFAULT_STYLE_NAME);
 		
 		final VisualStyleFactory visualStyleFactory = mockVisualStyleFactory(defaultStyle);
 		final VisualMappingFunctionFactory discreteMappingFactory = mockMappingFunctionFactory(DiscreteMapping.class);
@@ -111,7 +106,7 @@ public class VisualStyleSerializerTest {
 
 		final CalculatorConverterFactory calcFactory = new CalculatorConverterFactory();
 
-		serializer = new VisualStyleSerializer(calcFactory, visualStyleFactory, visualMappingManager,
+		serializer = new VisualStyleSerializer(calcFactory, visualStyleFactory,
 				renderingEngineManager, discreteMappingFactory, continuousMappingFactory, passthroughMappingFactory);
 	}
 
@@ -142,14 +137,15 @@ public class VisualStyleSerializerTest {
 	public void testCy240Vizmap() throws Exception {
 		Properties props = loadVizmapProps("v240_vizmap.props");
 		Set<VisualStyle> styles = serializer.createVisualStyles(props);
-		assertEquals(3,  styles.size()); // "default" is not returned
-		assertVisualStylesNotNull(styles, new String[] { "Sample1", "Sample2", "SimpleBioMoleculeEditor" });
+		assertEquals(4,  styles.size());
+		assertVisualStylesNotNull(styles, new String[] { "default", "Sample1", "Sample2", "SimpleBioMoleculeEditor" });
 		
 		// Test visual styles (defaults, mappings and dependencies)
 		// -----
-		VisualStyle def = defaultStyle;
+		VisualStyle def = getVisualStyleByTitle(styles, DEFAULT_STYLE_NAME);
 		
 		assertEquals(new Color(204,204,254), def.getDefaultValue(NETWORK_BACKGROUND_PAINT));
+		assertEquals(new Color(0,0,255), def.getDefaultValue(EDGE_UNSELECTED_PAINT));
 		assertEquals(new Color(0,0,255), def.getDefaultValue(EDGE_STROKE_UNSELECTED_PAINT));
 		assertEquals(new Color(254,0,0), def.getDefaultValue(EDGE_STROKE_SELECTED_PAINT));
 		assertEquals(new Color(255,153,153), def.getDefaultValue(NODE_FILL_COLOR));
@@ -248,8 +244,8 @@ public class VisualStyleSerializerTest {
 	public void testCy252Vizmap() throws Exception {
 		Properties props = loadVizmapProps("v252_vizmap.props");
 		Set<VisualStyle> styles = serializer.createVisualStyles(props);
-		assertEquals(4,  styles.size()); // "default" is not returned
-		assertVisualStylesNotNull(styles, new String[] { "Sample1", "Sample2", "Sample3", "SimpleBioMoleculeEditor" });
+		assertEquals(5,  styles.size());
+		assertVisualStylesNotNull(styles, new String[] { "default", "Sample1", "Sample2", "Sample3", "SimpleBioMoleculeEditor" });
 		
 		// Test one style
 		// -----
@@ -274,6 +270,7 @@ public class VisualStyleSerializerTest {
 		assertEquals("", s3.getDefaultValue(NODE_TOOLTIP));
 		
 		assertEquals(1, s3.getDefaultValue(EDGE_WIDTH).intValue());
+		assertEquals(new Color(153,153,255), s3.getDefaultValue(EDGE_UNSELECTED_PAINT));
 		assertEquals(new Color(153,153,255), s3.getDefaultValue(EDGE_STROKE_UNSELECTED_PAINT));
 		assertEquals(new Color(255,0,0), s3.getDefaultValue(EDGE_STROKE_SELECTED_PAINT));
 		assertEquals(255, s3.getDefaultValue(EDGE_TRANSPARENCY).intValue());
@@ -335,8 +332,8 @@ public class VisualStyleSerializerTest {
 	public void testCy270Vizmap() throws Exception {
 		Properties props = loadVizmapProps("v270_vizmap.props");
 		Set<VisualStyle> styles = serializer.createVisualStyles(props);
-		assertEquals(1,  styles.size()); // "default" is not returned
-		assertVisualStylesNotNull(styles, new String[] { "Binary_SIF_Version_1" });
+		assertEquals(2,  styles.size());
+		assertVisualStylesNotNull(styles, new String[] { "default", "Binary_SIF_Version_1" });
 		
 		// Test visual styles (defaults, mappings and dependencies)
 		// -----
@@ -363,6 +360,7 @@ public class VisualStyleSerializerTest {
 		assertEquals(Boolean.TRUE, s.getDefaultValue(NODE_NESTED_NETWORK_IMAGE_VISIBLE));
 		
 		assertEquals(4, s.getDefaultValue(EDGE_WIDTH).intValue());
+		assertEquals(new Color(0,0,0), s.getDefaultValue(EDGE_UNSELECTED_PAINT));
 		assertEquals(new Color(0,0,0), s.getDefaultValue(EDGE_STROKE_UNSELECTED_PAINT));
 		assertEquals(new Color(255,0,0), s.getDefaultValue(EDGE_STROKE_SELECTED_PAINT));
 		assertEquals(255, s.getDefaultValue(EDGE_TRANSPARENCY).intValue());
@@ -417,14 +415,15 @@ public class VisualStyleSerializerTest {
 	public void testCy283Vizmap() throws Exception {
 		Properties props = loadVizmapProps("v283_vizmap.props");
 		Set<VisualStyle> styles = serializer.createVisualStyles(props);
-		assertEquals(5,  styles.size()); // "default" is not returned
-		assertVisualStylesNotNull(styles, new String[] { "Sample1", "Solid", "Universe", "galFiltered Style", "Nested Network Style" });
+		assertEquals(6,  styles.size());
+		assertVisualStylesNotNull(styles, new String[] { "default", "Sample1", "Solid", "Universe", "galFiltered Style", "Nested Network Style" });
 		
 		// Test visual styles (defaults, mappings and dependencies)
 		// -----
 		VisualStyle sample1 = getVisualStyleByTitle(styles, "Sample1");
 		
 		assertEquals(new Color(255,255,204), sample1.getDefaultValue(NETWORK_BACKGROUND_PAINT));
+		assertEquals(Color.BLACK, sample1.getDefaultValue(EDGE_UNSELECTED_PAINT));
 		assertEquals(Color.BLACK, sample1.getDefaultValue(EDGE_STROKE_UNSELECTED_PAINT));
 		assertEquals(new Color(255,0,1), sample1.getDefaultValue(EDGE_STROKE_SELECTED_PAINT));
 		assertEquals(Font.decode("Default-PLAIN-10"), sample1.getDefaultValue(EDGE_LABEL_FONT_FACE));
@@ -464,11 +463,17 @@ public class VisualStyleSerializerTest {
 		PassthroughMapping<String, String> eLabelMp = (PassthroughMapping<String, String>) sample1.getVisualMappingFunction(EDGE_LABEL);
 		assertEquals(INTERACTION, eLabelMp.getMappingColumnName());
 		
-		DiscreteMapping<String, Paint> eColorMp = (DiscreteMapping<String, Paint>) sample1.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
-		assertEquals(INTERACTION, eColorMp.getMappingColumnName());
-		assertEquals(String.class, eColorMp.getMappingColumnType());
-		assertEquals(new Color(255, 0, 51), eColorMp.getMapValue("pd"));
-		assertEquals(new Color(0, 204, 0), eColorMp.getMapValue("pp"));
+		DiscreteMapping<String, Paint> eColorMp1 = (DiscreteMapping<String, Paint>) sample1.getVisualMappingFunction(EDGE_UNSELECTED_PAINT);
+		assertEquals(INTERACTION, eColorMp1.getMappingColumnName());
+		assertEquals(String.class, eColorMp1.getMappingColumnType());
+		assertEquals(new Color(255, 0, 51), eColorMp1.getMapValue("pd"));
+		assertEquals(new Color(0, 204, 0), eColorMp1.getMapValue("pp"));
+		
+		DiscreteMapping<String, Paint> eColorMp2 = (DiscreteMapping<String, Paint>) sample1.getVisualMappingFunction(EDGE_STROKE_UNSELECTED_PAINT);
+		assertEquals(INTERACTION, eColorMp2.getMappingColumnName());
+		assertEquals(String.class, eColorMp2.getMappingColumnType());
+		assertEquals(new Color(255, 0, 51), eColorMp2.getMapValue("pd"));
+		assertEquals(new Color(0, 204, 0), eColorMp2.getMapValue("pp"));
 		
 		DiscreteMapping<String, LineType> eTypeMp = (DiscreteMapping<String, LineType>) sample1.getVisualMappingFunction(EDGE_LINE_TYPE);
 		assertEquals(INTERACTION, eTypeMp.getMappingColumnName());

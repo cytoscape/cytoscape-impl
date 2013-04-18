@@ -24,10 +24,16 @@ package org.cytoscape.internal;
  * #L%
  */
 
+import java.util.Properties;
+
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
-import org.cytoscape.internal.dialogs.AboutDialogFactoryImpl;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -43,20 +49,33 @@ public class MacCyActivator extends AbstractCyActivator {
 	public void start(BundleContext context) throws Exception {
 		final CyShutdown shutdown = getService(context, CyShutdown.class);
 		final CyVersion version = getService(context, CyVersion.class);
-		final AboutDialogFactoryImpl aboutDialogFactory = new AboutDialogFactoryImpl(version);
+		final CySwingApplication swingApplication = getService(context, CySwingApplication.class);
+		final TaskFactory aboutTaskFactory = new HelpAboutTaskFactory(version, swingApplication);
 		final DialogTaskManager taskManager = getService(context,DialogTaskManager.class);
+		
+		final CyShutdownEvent[] lastShutdownEvent = new CyShutdownEvent[1];
+		CyShutdownListener listener = new CyShutdownListener() {
+			@Override
+			public void handleEvent(CyShutdownEvent e) {
+				lastShutdownEvent[0] = e;
+			}
+		};
+		registerService(context, listener, CyShutdownListener.class, new Properties());
 		
 		Application application = Application.getApplication();
 		application.setQuitHandler(new QuitHandler() {
 			@Override
 			public void handleQuitRequestWith(QuitEvent event, QuitResponse response) {
 				shutdown.exit(0);
+				if (lastShutdownEvent[0] != null && !lastShutdownEvent[0].actuallyShutdown()) {
+					response.cancelQuit();
+				}
 			}
 		});
 		application.setAboutHandler(new AboutHandler() {
 			@Override
 			public void handleAbout(AboutEvent event) {
-				taskManager.execute(aboutDialogFactory.createTaskIterator());
+				taskManager.execute(aboutTaskFactory.createTaskIterator());
 			}
 		});
 	}

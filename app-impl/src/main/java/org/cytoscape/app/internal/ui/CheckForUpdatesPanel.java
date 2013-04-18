@@ -428,14 +428,18 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 				
 				DefaultTableModel tableModel = (DefaultTableModel) updatesTable.getModel();
 				
-				for (Update update : updateManager.getUpdates()) {	
-		    			tableModel.addRow(new Object[]{
+				for (Update update : updateManager.getUpdates()) {
+					if (!update.getApp().isDetached()) {
+		    			
+						tableModel.addRow(new Object[]{
 		    				update,
 		    				update.getApp().getVersion(),
 		    				update.getUpdateVersion(),
 		    				(update.getRelease().getBaseUrl() 
-		    						+ update.getRelease().getRelativeUrl()).replaceAll("//+", "/").replaceFirst(":/", "://")
-					});
+		    						+ update.getRelease().getRelativeUrl()).replaceAll("//+", "/").replaceFirst(":/", "://")				
+						});
+						
+					}
 		    	}
 			}
     		

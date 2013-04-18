@@ -24,13 +24,14 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Vector;
 
@@ -47,7 +48,6 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
 
 
 public class AttributeListModel
@@ -99,14 +99,15 @@ public class AttributeListModel
 		attributeNames = new ArrayList<String>();
 		final CyTable attributes = browserTableModel.getAttributes();
 		
-		
 		for (final CyColumn col : attributes.getColumns()){
 			attributeNames.add(col.getName());
 		}
-		Collections.sort(attributeNames);
+		
+		// Locale-specific sorting
+		final Collator collator = Collator.getInstance(Locale.getDefault());
+		Collections.sort(attributeNames, collator);
 
-		notifyListeners(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0,
-		                                  attributeNames.size()));
+		notifyListeners(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, attributeNames.size()));
 	}
 
 	/**

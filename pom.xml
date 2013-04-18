@@ -13,11 +13,11 @@
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
 	<!-- Implementation bundles can have different version number -->
-	<version>3.0.0</version>
+	<version>3.0.1</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
-		<cytoscape.api.version>3.0.0</cytoscape.api.version>
+		<cytoscape.api.version>3.0.1</cytoscape.api.version>
 		<cytoscape.support.version>3.0.0</cytoscape.support.version>
 	</properties>
 
@@ -25,7 +25,6 @@
 	<modules>
 		<module>biopax-impl</module>
 		<module>command-executor-impl</module>
-		<module>core-task-impl</module>
 		<module>cpath2-impl</module>
 		<module>ding-impl</module>
 		<module>editor-impl</module>
@@ -77,10 +76,10 @@
 		<module>gui-cmdline-parser-impl</module>
 		<module>edge-bundler-impl</module>
 		<module>scripting-impl</module>
+		<module>core-task-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
 	</modules>
-
 
 	<!-- Managed dependency.  If bundles are shared by everyone, it should be moved to dependencies section! -->
 	<dependencyManagement>
@@ -98,7 +97,7 @@
 				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
-			
+
 			<!-- Cytoscape API -->
 			<dependency>
 				<groupId>org.cytoscape</groupId>
@@ -316,29 +315,23 @@
 
 	<!-- Shared dependency for all projects. -->
 	<dependencies>
-	<dependency>
-		<groupId>org.ops4j.pax.logging</groupId>
-		<artifactId>pax-logging-api</artifactId>
-		<version>1.5.2</version>
-		<scope>provided</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.osgi</groupId>
-		<artifactId>org.osgi.core</artifactId>
-		<version>${osgi.api.version}</version>
-	</dependency>
-	<dependency>
-		<groupId>org.cytoscape</groupId>
-		<artifactId>service-api</artifactId>
-		<version>${cytoscape.api.version}</version>
-	</dependency>
-</dependencies>
-
-	<scm>
-		<connection>scm:svn:http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release</connection>
-		<developerConnection>scm:svn:svn+ssh://grenache.ucsd.edu/cellar/common/svn/core3/impl/branches/3.0.0-release</developerConnection>
-		<url>http://chianti.ucsd.edu/svn/core3/impl/branches/3.0.0-release</url>
-	</scm>
+		<dependency>
+			<groupId>org.ops4j.pax.logging</groupId>
+			<artifactId>pax-logging-api</artifactId>
+			<version>1.5.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>${osgi.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>service-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<!-- This is for m2eclipse plugin, and haemless to command line version. -->
@@ -374,29 +367,24 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>${maven-release-plugin.version}</version>
-				<configuration>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<preparationGoals>clean install</preparationGoals>
-					<goals>deploy</goals>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<version>${maven-source-plugin.version}</version>
 				<executions>
-				    <execution>
-                        <id>aggregate-source</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>aggregate</goal>
-                        </goals>
-                    </execution>
+					<execution>
+						<id>aggregate-source</id>
+						<phase>package</phase>
+						<goals>
+							<goal>aggregate</goal>
+						</goals>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
+	<scm>
+		<connection>scm:git:git://github.com/cytoscape/cytoscape-impl.git</connection>
+		<developerConnection>scm:git:git@github.com:cytoscape/cytoscape-impl.git</developerConnection>
+		<url>https://github.com/cytoscape/cytoscape-impl.git</url>
+	</scm>
 </project>

@@ -85,7 +85,8 @@ public class SupportedFileTypesManager {
 		Set<String> allExtensions = new HashSet<String>();
 		for (final CyFileFilterProvider factory : factories) {
 			CyFileFilter filter = factory.getFileFilter();
-			if (filter.getDataCategory() != category)
+			// this is a hack to exclude internal session table format
+			if (filter.getExtensions().contains("cytable") || filter.getDataCategory() != category)
 				continue;
 
 			String description = filter.getDescription();
