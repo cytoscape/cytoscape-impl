@@ -13,11 +13,11 @@
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
 	<!-- Implementation bundles can have different version number -->
-	<version>3.0.1-SNAPSHOT</version>
+	<version>3.0.1</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
-		<cytoscape.api.version>3.0.1-SNAPSHOT</cytoscape.api.version>
+		<cytoscape.api.version>3.0.1</cytoscape.api.version>
 		<cytoscape.support.version>3.0.0</cytoscape.support.version>
 	</properties>
 
