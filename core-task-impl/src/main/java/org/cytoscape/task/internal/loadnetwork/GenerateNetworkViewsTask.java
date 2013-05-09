@@ -24,8 +24,8 @@ package org.cytoscape.task.internal.loadnetwork;
  * #L%
  */
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
@@ -34,14 +34,15 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.AbstractObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
-class GenerateNetworkViewsTask extends AbstractTask {
+class GenerateNetworkViewsTask extends AbstractObservableTask<Collection<CyNetworkView>> {
 	private final String name;
 	private final CyNetworkReader viewReader;
 	private final CyNetworkManager networkManager;
@@ -49,10 +50,12 @@ class GenerateNetworkViewsTask extends AbstractTask {
 	private final CyNetworkNaming namingUtil;
 	private final int viewThreshold;
 	private final VisualMappingManager vmm;
+	private final CyNetworkViewFactory nullNetworkViewFactory;
 
 	public GenerateNetworkViewsTask(final String name, final CyNetworkReader viewReader,
 				final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager,
-				final CyNetworkNaming namingUtil, final int viewThreshold, final VisualMappingManager vmm) {
+				final CyNetworkNaming namingUtil, final int viewThreshold, final VisualMappingManager vmm,
+				final CyNetworkViewFactory nullNetworkViewFactory) {
 		this.name = name;
 		this.viewReader = viewReader;
 		this.networkManager = networkManager;
@@ -60,6 +63,7 @@ class GenerateNetworkViewsTask extends AbstractTask {
 		this.namingUtil = namingUtil;
 		this.viewThreshold = viewThreshold;
 		this.vmm = vmm;
+		this.nullNetworkViewFactory = nullNetworkViewFactory;
 	}
 
 	public void run(final TaskMonitor taskMonitor) throws Exception {
@@ -70,6 +74,7 @@ class GenerateNetworkViewsTask extends AbstractTask {
 		double numNets = (double)(networks.length);
 		int i = 0;
 
+		Collection<CyNetworkView> result = new ArrayList<CyNetworkView>();
 		for (CyNetwork network : networks) {
 			// Use original name if exists
 			String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
@@ -93,6 +98,9 @@ class GenerateNetworkViewsTask extends AbstractTask {
 						&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)
 						&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION))
 					view.fitContent();
+				result.add(view);
+			} else {
+				result.add(nullNetworkViewFactory.createNetworkView(network));
 			}
 			taskMonitor.setProgress((double)(++i)/numNets);
 		}
@@ -129,5 +137,6 @@ class GenerateNetworkViewsTask extends AbstractTask {
 				}
 			}			
 		}
+		finish(result);
 	}
 }

@@ -31,12 +31,14 @@ import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractObservableTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 
-public class LoadVizmapFileTask extends AbstractTask {
+public class LoadVizmapFileTask extends AbstractObservableTask<Set<VisualStyle>> {
 
 	@ProvidesTitle
 	public String getTitle() {
@@ -68,6 +70,12 @@ public class LoadVizmapFileTask extends AbstractTask {
 			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
 
 		addVSTask = new AddVisualStylesTask(reader, vmMgr);
+		addVSTask.addObserver(new TaskObserver<Set<VisualStyle>>() {
+			@Override
+			public void taskFinished(Set<VisualStyle> result) {
+				finish(result);
+			}
+		});
 
 		insertTasksAfterCurrentTask(reader, addVSTask);
 		taskMonitor.setProgress(1.0);
@@ -78,7 +86,7 @@ public class LoadVizmapFileTask extends AbstractTask {
 	}
 }
 
-class AddVisualStylesTask extends AbstractTask {
+class AddVisualStylesTask extends AbstractObservableTask<Set<VisualStyle>> {
 
 	private final VizmapReader reader;
 	private final VisualMappingManager vmMgr;
@@ -116,6 +124,7 @@ class AddVisualStylesTask extends AbstractTask {
 			}
 		}
 		taskMonitor.setProgress(1.0);
+		finish(styles);
 	}
 
 	public Set<VisualStyle> getStyles() {

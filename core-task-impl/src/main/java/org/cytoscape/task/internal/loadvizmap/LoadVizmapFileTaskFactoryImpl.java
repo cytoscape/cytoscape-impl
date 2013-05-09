@@ -45,6 +45,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +57,6 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final VisualMappingManager vmMgr;
 	private final SynchronousTaskManager<?> syncTaskManager;
-
-	private LoadVizmapFileTask task;
 
 	private final TunableSetter tunableSetter;
 
@@ -71,8 +70,11 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		task = new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
-		return new TaskIterator(2, task);
+		return new TaskIterator(2, createTask());
+	}
+	
+	public LoadVizmapFileTask createTask() {
+		return new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
 	}
 
 	public Set<VisualStyle> loadStyles(File f) {
@@ -82,8 +84,9 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		Map<String, Object> m = new HashMap<String, Object>();
 		m.put("file", f);
 
+		LoadVizmapFileTask task = createTask();
 		syncTaskManager.setExecutionContext(m);
-		syncTaskManager.execute(createTaskIterator());
+		syncTaskManager.execute(new TaskIterator(2, task));
 
 		return task.getStyles();
 	}
@@ -113,6 +116,16 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m);
 	}
 
+	@Override
+	public TaskIterator createTaskIterator(File file, TaskObserver<Set<VisualStyle>> observer) {
+		final Map<String, Object> tunables = new HashMap<String, Object>();
+		tunables.put("file", file);
+
+		LoadVizmapFileTask task = new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
+		task.addObserver(observer);
+		return tunableSetter.createTaskIterator(new TaskIterator(2, task), tunables);
+	}
+	
 	// Read the inputStream and save the content in a tmp file
 	private File getFileFromStream(final InputStream is) throws IOException {
 

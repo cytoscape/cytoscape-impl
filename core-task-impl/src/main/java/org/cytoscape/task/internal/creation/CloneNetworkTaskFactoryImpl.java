@@ -35,11 +35,13 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.create.CloneNetworkTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 
 public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory implements CloneNetworkTaskFactory {
     private final CyNetworkManager networkMgr;
@@ -54,6 +56,7 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
     private final CyGroupManager groupMgr;
 	private final CyGroupFactory groupFactory;
 	private final RenderingEngineManager renderingEngineMgr;
+	private final CyNetworkViewFactory nullNetworkViewFactory;
 
     public CloneNetworkTaskFactoryImpl(final CyNetworkManager networkMgr,
     								   final CyNetworkViewManager networkViewMgr,
@@ -66,7 +69,8 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
     								   final CyRootNetworkManager rootNetMgr,
     								   final CyGroupManager groupMgr,
     								   final CyGroupFactory groupFactory,
-    								   final RenderingEngineManager renderingEngineMgr) {
+    								   final RenderingEngineManager renderingEngineMgr,
+    								   CyNetworkViewFactory nullNetworkViewFactory) {
     	this.networkMgr = networkMgr;
 		this.networkViewMgr = networkViewMgr;
 		this.vmm = vmm;
@@ -79,10 +83,22 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
 		this.groupMgr = groupMgr;
 		this.groupFactory = groupFactory;
 		this.renderingEngineMgr = renderingEngineMgr;
+		this.nullNetworkViewFactory = nullNetworkViewFactory;
     }
 
     public TaskIterator createTaskIterator(CyNetwork network) {
     	return new TaskIterator(2,new CloneNetworkTask(network, networkMgr, networkViewMgr, vmm, netFactory, 
-    			netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr));
+    			netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory));
+    }
+    
+    @Override
+    public TaskIterator createTaskIterator(CyNetwork network, TaskObserver<CyNetworkView> observer) {
+    	CloneNetworkTask task = new CloneNetworkTask(network, networkMgr, networkViewMgr, vmm, netFactory, 
+    			netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory);
+    	if (observer == null) {
+    		throw new IllegalArgumentException("observer cannot be null");
+    	}
+    	task.addObserver(observer);
+    	return new TaskIterator(2, task);
     }
 }

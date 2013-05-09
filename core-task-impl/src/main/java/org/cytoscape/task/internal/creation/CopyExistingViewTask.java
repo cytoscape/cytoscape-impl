@@ -39,6 +39,7 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractObservableTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -46,7 +47,7 @@ import org.cytoscape.work.TaskMonitor;
  * A utility task that copies the node positions and visual style to a new
  * network view from an existing network view.
  */
-class CopyExistingViewTask extends AbstractTask {
+class CopyExistingViewTask extends AbstractObservableTask<CyNetworkView> {
 
 	private final CyNetworkView newView;
 	private final CyNetworkView sourceView;
@@ -157,6 +158,7 @@ class CopyExistingViewTask extends AbstractTask {
 			newView.fitContent();
 		
 		tm.setProgress(1.0);
+		finish(newView);
 	}
 
 	// may return null if nodes don't somehow line up!
