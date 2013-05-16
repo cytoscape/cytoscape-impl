@@ -78,7 +78,7 @@ public class CytoscapeToolBar extends JToolBar {
 		JButton button = new JButton(action); 
 		button.setBorderPainted(false);
 		button.setRolloverEnabled(true);
-		button.setText("");
+		button.setHideActionText(true);
 		componentGravity.put(button,action.getToolbarGravity());
 
 		//  If SHORT_DESCRIPTION exists, use this as tool-tip
