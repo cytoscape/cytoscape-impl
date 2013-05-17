@@ -24,6 +24,12 @@ package org.cytoscape.view.vizmap.gui.internal.bypass;
  * #L%
  */
 
+import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+
 import java.util.Map;
 import java.util.Properties;
 
@@ -33,17 +39,16 @@ import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
-import static org.cytoscape.work.ServiceProperties.*;
 
 /**
  * Creates Visual Style Bypass menu.
  * 
  */
+@Deprecated
 public final class BypassManager {
 	
 	private final CyServiceRegistrar registrar;

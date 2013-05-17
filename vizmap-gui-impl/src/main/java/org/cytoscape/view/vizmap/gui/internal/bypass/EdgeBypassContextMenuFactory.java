@@ -33,6 +33,7 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 
+@Deprecated
 public class EdgeBypassContextMenuFactory implements CyEdgeViewContextMenuFactory {
 
 	private final VisualLexiconNode root;

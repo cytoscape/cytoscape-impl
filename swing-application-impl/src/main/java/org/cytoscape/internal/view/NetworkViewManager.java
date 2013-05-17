@@ -74,8 +74,12 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
+import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
+import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +89,8 @@ import org.slf4j.LoggerFactory;
  */
 public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
-		RowsSetListener, VisualStyleChangedListener, UpdateNetworkPresentationListener {
+		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
+		VisualStyleSetListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -585,6 +590,26 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 	}
 
+	@Override
+	public void handleEvent(final SetCurrentVisualStyleEvent e) {
+		final VisualStyle style = e.getVisualStyle();
+		
+		if (style != null) {
+			final CyNetworkView curView = getSelectedNetworkView();
+			
+			if (curView != null)
+				vmm.setVisualStyle(style, curView);
+		}
+	}
+	
+	@Override
+	public void handleEvent(final VisualStyleSetEvent e) {
+		final CyNetworkView view = e.getNetworkView();
+		
+		if (view != null)
+			view.updateView();
+	}
+	
 	@Override
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView view = e.getSource();

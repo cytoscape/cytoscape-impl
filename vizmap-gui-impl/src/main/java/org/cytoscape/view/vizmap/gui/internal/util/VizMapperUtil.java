@@ -54,6 +54,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 public class VizMapperUtil {
 	
 	private static final Map<Class<? extends CyIdentifiable>, VisualProperty<Visualizable>> TARGET_TYPE_MAP;
+	
 	static {
 		TARGET_TYPE_MAP = new HashMap<Class<? extends CyIdentifiable>, VisualProperty<Visualizable>>();
 		TARGET_TYPE_MAP.put(CyNode.class, BasicVisualLexicon.NODE);
@@ -61,39 +62,30 @@ public class VizMapperUtil {
 		TARGET_TYPE_MAP.put(CyNetwork.class, BasicVisualLexicon.NETWORK);
 	}
 	
-
 	private final VisualMappingManager vmm;
 	
 	public VizMapperUtil(final VisualMappingManager vmm) {
 		this.vmm = vmm;
 	}
 	
-	
 	public Set<VisualProperty<?>> getVisualPropertySet(final Class<?> targetDataType) {
 		final Set<VisualProperty<?>> props = new HashSet<VisualProperty<?>>();
 		
 		final Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
-		for(final VisualLexicon lex: lexSet) {
+		
+		for (final VisualLexicon lex: lexSet) {
 			final Set<VisualProperty<?>> vps = lex.getAllVisualProperties();
-			for(final VisualProperty<?> vp: vps) {
-				if(vp.getTargetDataType().equals(targetDataType))
+			
+			for (final VisualProperty<?> vp: vps) {
+				if (vp.getTargetDataType().equals(targetDataType))
 					props.add(vp);
 			}
 		}
 		
 		return props;
 	}
-	
 
-	/**
-	 * Get a new Visual Style name
-	 * 
-	 * @param s
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public String getStyleName(Component parentComponent, final VisualStyle vs) {
+	public String getStyleName(final Component parentComponent, final VisualStyle vs) {
 		String suggestedName = null;
 		List<String> vsNames = getVisualStyleNames();
 
@@ -118,65 +110,10 @@ public class VizMapperUtil {
 		}
 	}
 	
-	public VisualProperty<Visualizable> getCategory(Class<? extends CyIdentifiable> targetDataType) {
+	public VisualProperty<Visualizable> getCategory(final Class<? extends CyIdentifiable> targetDataType) {
 		return TARGET_TYPE_MAP.get(targetDataType);
 	}
 	
-	
-	
-
-//	public DiscreteMapping<?, ?> getSelectedProperty(VisualStyle style,
-//			PropertySheetPanel propertySheetPanel) {
-//
-//		final int selectedRow = propertySheetPanel.getTable().getSelectedRow();
-//
-//		if (selectedRow < 0)
-//			return null;
-//
-//		final Item item = (Item) propertySheetPanel.getTable().getValueAt(
-//				selectedRow, 0);
-//		final VizMapperProperty<?> prop = (VizMapperProperty<?>) item
-//				.getProperty();
-//		final Object hidden = prop.getHiddenObject();
-//
-//		if (hidden instanceof VisualProperty) {
-//			final VisualProperty<?> type = (VisualProperty<?>) hidden;
-//
-//			final VisualMappingFunction<?, ?> oMap = style
-//					.getVisualMappingFunction(type);
-//
-//			if ((oMap instanceof DiscreteMapping) == false)
-//				return null;
-//			else
-//				return (DiscreteMapping<?, ?>) oMap;
-//		}
-//
-//		return null;
-//	}
-
-//	public VisualProperty<?> getSelectedVisualProperty(
-//			PropertySheetPanel propertySheetPanel) {
-//
-//		final int selectedRow = propertySheetPanel.getTable().getSelectedRow();
-//
-//		if (selectedRow < 0)
-//			return null;
-//
-//		final Item item = (Item) propertySheetPanel.getTable().getValueAt(
-//				selectedRow, 0);
-//
-//		if (item.getProperty() instanceof VizMapperProperty) {
-//			final VizMapperProperty<?> prop = (VizMapperProperty<?>) item
-//					.getProperty();
-//			final Object hidden = prop.getHiddenObject();
-//
-//			if (hidden instanceof VisualProperty)
-//				return (VisualProperty<?>) hidden;
-//		}
-//
-//		return null;
-//	}
-
 	private List<String> getVisualStyleNames() {
 		final List<String> vsNames = new ArrayList<String>();
 
@@ -185,5 +122,4 @@ public class VizMapperUtil {
 
 		return vsNames;
 	}
-
 }

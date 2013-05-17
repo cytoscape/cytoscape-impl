@@ -32,10 +32,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
-import org.cytoscape.view.vizmap.gui.internal.EditorWindowManager;
-import org.cytoscape.view.vizmap.gui.internal.VizMapPropertySheetBuilder;
-import org.cytoscape.view.vizmap.gui.internal.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
@@ -51,11 +49,7 @@ public abstract class AbstractVizMapperAction extends AbstractCyAction {
 	protected VizMapperMainPanel vizMapperMainPanel;
 	protected IconManager iconManager;
 
-	protected VizMapPropertySheetBuilder vizMapPropertySheetBuilder;
-
 	protected final PropertySheetPanel propertySheetPanel;
-
-	protected EditorWindowManager editorWindowManager;
 
 	protected Properties vizmapUIResource;
 
@@ -65,38 +59,32 @@ public abstract class AbstractVizMapperAction extends AbstractCyAction {
 
 	protected final CyApplicationManager applicationManager;
 
-	public AbstractVizMapperAction(String name, CyApplicationManager applicationManager,
+	public AbstractVizMapperAction(final String name, final CyApplicationManager applicationManager,
 			final PropertySheetPanel propertySheetPanel) {
 		super(name);
 		this.propertySheetPanel = propertySheetPanel;
 		this.applicationManager = applicationManager;
 	}
 
-
 	public void setDefaultAppearenceBuilder(DefaultViewEditor defViewEditor) {
 		this.defViewEditor = defViewEditor;
 	}
 
-	
 	public void setVmm(VisualMappingManager vmm) {
 		this.vmm = vmm;
 	}
-
 	
 	public void setVizMapperMainPanel(VizMapperMainPanel vizMapperMainPanel) {
 		this.vizMapperMainPanel = vizMapperMainPanel;
 	}
-
 	
 	public void setMenuLabel(final String menuLabel) {
 		this.menuLabel = menuLabel;
 	}
-
 	
 	public void setIconId(final String iconId) {
 		this.iconId = iconId;
 	}
-
 	
 	public void setIconManager(IconManager iconManager) {
 		this.iconManager = iconManager;

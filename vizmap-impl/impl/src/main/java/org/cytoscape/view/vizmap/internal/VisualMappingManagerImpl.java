@@ -145,8 +145,10 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		if (this.visualStyles.contains(vs) == false)
 			this.visualStyles.add(vs);
 
-		if (changed)
+		if (changed) {
+			vs.apply(nv);
 			cyEventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
+		}
 	}
 
 	/**
@@ -159,19 +161,22 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		if (vs == defaultStyle)
 			throw new IllegalArgumentException("Cannot remove default visual style.");
 
-		// Use default for all views using this vs.
-		if (this.network2VisualStyleMap.values().contains(vs)) {
-			for (final CyNetworkView view : network2VisualStyleMap.keySet()) {
-				if (network2VisualStyleMap.get(view).equals(vs))
-					network2VisualStyleMap.put(view, defaultStyle);
-			}
-		}
-
 		logger.info("Visual Style about to be removed from VMM: " + vs.getTitle());
 		cyEventHelper.fireEvent(new VisualStyleAboutToBeRemovedEvent(this, vs));
 		visualStyles.remove(vs);
-		vs = null;
-
+		
+		// Change current style, if it is the deleted one
+		if (currentStyle == vs)
+			setCurrentVisualStyle(getDefaultVisualStyle());
+		
+		// Use default for all views using this vs.
+		if (network2VisualStyleMap.values().contains(vs)) {
+			for (final CyNetworkView view : network2VisualStyleMap.keySet()) {
+				if (network2VisualStyleMap.get(view).equals(vs))
+					setVisualStyle(defaultStyle, view);
+			}
+		}
+		
 		logger.info("Total Number of VS in VMM after remove = " + visualStyles.size());
 	}
 

@@ -57,7 +57,7 @@ import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 
-
+@Deprecated
 final class BypassMenuBuilder {
 
 	private static final String ROOT_MENU_LABEL = "Bypass Visual Style";

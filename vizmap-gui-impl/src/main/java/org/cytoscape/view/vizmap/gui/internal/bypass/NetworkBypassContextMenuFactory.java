@@ -31,6 +31,7 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 
+@Deprecated
 final class NetworkBypassContextMenuFactory implements CyNetworkViewContextMenuFactory {
 
 	private final VisualLexiconNode root;

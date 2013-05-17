@@ -43,11 +43,12 @@ public class IconManager {
 	public Icon getIcon(String name) {
 		final Icon icon = iconMap.get(name);
 		
-		if(icon == null) {
+		if (icon == null) {
 			// This should return default icon.
 			return null;
-		} else
+		} else {
 			return icon;
+		}
 	}
 
 	private void loadIcon() {

@@ -39,9 +39,6 @@ public class ModifyBrightnessAction  {
 
 	/**
 	 * Creates a new BrightnessListener object.
-	 * 
-	 * @param type
-	 *            DOCUMENT ME!
 	 */
 	public ModifyBrightnessAction(final int type, CyTableManager tableMgr) {
 		this.functionType = type;
@@ -56,7 +53,7 @@ public class ModifyBrightnessAction  {
 
 		//FIXME
 //		/*
-//		 * Check Selected poperty
+//		 * Check Selected property
 //		 */
 //		final int selectedRow = propertySheetPanel.getTable().getSelectedRow();
 //
