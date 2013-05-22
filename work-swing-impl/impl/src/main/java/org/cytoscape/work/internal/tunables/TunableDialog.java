@@ -135,7 +135,9 @@ public final class TunableDialog extends JDialog {
 		getContentPane().add(pnlButtons, gridBagConstraints);
 		jScrollPane1.setViewportView(optionPanel);
 		pack();
-		setSize(this.getSize().width + 30, this.getSize().height + 30);
+		// Shouldn't call setSize after we pack.  Leads to really ugly dialogs if we only
+		// have a single tunable
+		// setSize(this.getSize().width + 30, this.getSize().height + 30);
 	}// </editor-fold>
 
 	// Variables declaration - do not modify
