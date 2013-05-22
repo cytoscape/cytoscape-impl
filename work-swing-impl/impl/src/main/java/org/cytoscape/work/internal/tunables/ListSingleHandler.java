@@ -95,7 +95,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		final JLabel textArea = new JLabel(getDescription());
 		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		textArea.setFont(LABEL_FONT);
+		textArea.setFont(GUIDefaults.LABEL_FONT);
 		textArea.setVerticalTextPosition(SwingConstants.CENTER);
 		panel.add(textArea);
 
