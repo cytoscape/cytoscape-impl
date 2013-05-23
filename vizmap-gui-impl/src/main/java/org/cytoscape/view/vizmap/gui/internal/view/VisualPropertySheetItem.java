@@ -34,11 +34,13 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
+import org.jdesktop.swingx.icon.EmptyIcon;
 
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
@@ -121,12 +123,16 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	public void update() {
 		updateSelection();
-		getDefaultBtn().setIcon(model.getDefaultValueIcon(VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
+		updateDefaultButton();
 		updateBypassButton(getBypassBtn());
 		updateMapping();
 		
 		if (mappingPnl != null && mappingPnl.isVisible())
 			updateMappingPanelHeight();
+	}
+	
+	public void updateDefaultButton() {
+		getDefaultBtn().setIcon(getIcon(model.getDefaultValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 	}
 	
 	public void updateBypassButton() {
@@ -160,6 +166,13 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		model.addPropertyChangeListener("lockedValueState", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(final PropertyChangeEvent e) {
+				updateBypassButton();
+			}
+		});
+		model.addPropertyChangeListener("renderingEngine", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(final PropertyChangeEvent e) {
+				updateDefaultButton();
 				updateBypassButton();
 			}
 		});
@@ -331,7 +344,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	protected JButton getDefaultBtn() {
 		if (defaultBtn == null) {
-			final Icon icon = model.getDefaultValueIcon(VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
+			final Icon icon = getIcon(model.getDefaultValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
 			defaultBtn = new JButton(icon);
 			setButtonLookAndFeel(defaultBtn);
 			final Object value = model.getDefaultValue();
@@ -355,7 +368,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	protected DropDownMenuButton getBypassBtn() {
 		if (bypassBtn == null) {
 			bypassBtn = new DropDownMenuButton(getBypassMenu(), false);
-			bypassBtn.setIcon(model.getLockedValueIcon(VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
+			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			setButtonLookAndFeel(bypassBtn);
 			updateBypassButton(bypassBtn);
 		}
@@ -385,7 +398,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		btn.setEnabled(state != LockedValueState.DISABLED);
 		
 		// TODO: create better icons
-		btn.setIcon(model.getLockedValueIcon(VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
+		btn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 		
 		if (state == LockedValueState.ENABLED_UNIQUE_VALUE) {
 			btn.setText(null);
@@ -425,6 +438,20 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		final Border b2 = BorderFactory.createLineBorder(borderColor, 1); // actual border
 		final Border b3 = BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD, BUTTON_H_PAD); // padding
 		btn.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(b1, b2), b3));
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private Icon getIcon(final T value, final int width, final int height) {// TODO should not be part of this class
+		Icon icon = null;
+		final RenderingEngine<?> engine = model.getRenderingEngine();
+		
+		if (engine != null && value != null)
+			icon = engine.createIcon((VisualProperty) model.getVisualProperty(), value, width, height);
+		
+		if (icon == null)
+			icon = new EmptyIcon(width, height);
+		
+		return icon;
 	}
 	
 	private void updateMappingPanelHeight() {

@@ -220,11 +220,6 @@ public class VisualPropertySheet extends JPanel{
 		item.setVisible(visible);
 	}
 	
-	public void update() {
-		for (final VisualPropertySheetItem<?> vpSheetItem : items)
-			vpSheetItem.update();
-	}
-	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {

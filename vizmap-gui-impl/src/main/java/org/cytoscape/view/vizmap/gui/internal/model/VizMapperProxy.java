@@ -152,11 +152,21 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public RenderingEngine<CyNetwork> getCurrentRenderingEngine() {
-		return servicesUtil.get(CyApplicationManager.class).getCurrentRenderingEngine();
+		RenderingEngine<CyNetwork> engine = servicesUtil.get(CyApplicationManager.class).getCurrentRenderingEngine();
+		
+		if (engine == null)
+			getDefaultRenderingEngine(getCurrentVisualStyle());
+		
+		return engine;
 	}
 	
 	public RenderingEngineFactory<CyNetwork> getCurrentRenderingEngineFactory() {// TODO How to get the current one?
 		return servicesUtil.get(RenderingEngineFactory.class);
+	}
+	
+	public void getDefaultRenderingEngine(final VisualStyle style) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	public VisualLexicon getCurrentVisualLexicon() {

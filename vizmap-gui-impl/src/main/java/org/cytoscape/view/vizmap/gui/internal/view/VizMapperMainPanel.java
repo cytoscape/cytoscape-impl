@@ -173,8 +173,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	@Override
 	public RenderingEngine<CyNetwork> getRenderingEngine() {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO ???
+		return getStylesBtn().getRenderingEngine(getStylesBtn().getSelectedItem());
 	}
 	
 	@Override
@@ -217,23 +217,13 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return (VisualPropertySheet) getPropertiesPn().getSelectedComponent();
 	}
 	
-	public synchronized void updateVisualStyles(final SortedSet<VisualStyle> styles, final CyNetworkView previewNetView,
+	public void updateVisualStyles(final SortedSet<VisualStyle> styles, final CyNetworkView previewNetView,
 			final RenderingEngineFactory<CyNetwork> engineFactory) {
 		this.previewNetView = previewNetView;
 		this.engineFactory = engineFactory;
 		
 		final VisualStyleDropDownButton vsBtn = getStylesBtn();
 		vsBtn.setItems(styles);
-//		cmb.removeAllItems();
-		defViewPanelsMap.clear();
-//		
-		for (final VisualStyle vs : styles) {
-			final JPanel p = new JPanel();
-//			p.setSize(120, 80);
-			defViewPanelsMap.put(vs.getTitle(), p);
-//			
-//			cmb.addItem(vs);
-		}
 	}
 	
 	// --- EVENTS ---
@@ -393,7 +383,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		private int cols;
 		
 		private JDialog dialog;
-		private LinkedList<VisualStyle> items;
+		private LinkedList<VisualStyle> styles;
 		private VisualStyle selectedItem;
 		private VisualStyle focusedItem;
 		
@@ -402,7 +392,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		public VisualStyleDropDownButton() {
 			super(true);
-			items = new LinkedList<VisualStyle>();
+			styles = new LinkedList<VisualStyle>();
 			vsPanelMap = new HashMap<VisualStyle, JPanel>();
 			engineMap = new HashMap<String, RenderingEngine<CyNetwork>>();
 			
@@ -411,32 +401,52 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					if (items != null && !items.isEmpty())
+					if (styles != null && !styles.isEmpty())
 						showDialog();
 				}
 			});
 		}
 		
-		public synchronized void setItems(final SortedSet<VisualStyle> Item) {
-			items.clear();
+		public void setItems(final SortedSet<VisualStyle> styles) {
+			this.styles.clear();
 			
-			if (Item != null)
-				items.addAll(Item);
+			if (styles != null)
+				this.styles.addAll(styles);
 			
-			setEnabled(!items.isEmpty());
+			createPreviewRenderingEngines();
+			setEnabled(!this.styles.isEmpty());
 		}
 		
-		public synchronized void setSelectedItem(final VisualStyle item) {
-			if (item == null || (items != null && items.contains(item) && !item.equals(selectedItem))) {
-				setText(item != null ? item.getTitle() : "");
+		public void setSelectedItem(final VisualStyle vs) {
+			if (vs == null || (styles != null && styles.contains(vs) && !vs.equals(selectedItem))) {
+				setText(vs != null ? vs.getTitle() : "");
 				final VisualStyle oldStyle = selectedItem;
-				selectedItem = item;
-				firePropertyChange("selectedItem", oldStyle, item);
+				selectedItem = vs;
+				firePropertyChange("selectedItem", oldStyle, vs);
 			}
 		}
 		
-		public synchronized VisualStyle getSelectedItem() {
+		public VisualStyle getSelectedItem() {
 			return selectedItem;
+		}
+		
+		public RenderingEngine<CyNetwork> getRenderingEngine(final VisualStyle vs) {
+			return vs != null ? engineMap.get(vs.getTitle()) : null;
+		}
+		
+		private void createPreviewRenderingEngines() {
+			if (styles != null) {
+				defViewPanelsMap.clear();
+				engineMap.clear();
+				
+				for (final VisualStyle vs : styles) {
+					final JPanel p = new JPanel();
+					defViewPanelsMap.put(vs.getTitle(), p);
+					
+					final RenderingEngine<CyNetwork> engine = engineFactory.createRenderingEngine(p, previewNetView);
+					engineMap.put(vs.getTitle(), engine);
+				}
+			}
 		}
 		
 		private void showDialog() {
@@ -475,8 +485,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			mainPnl.setBackground(UIManager.getColor("Table.background"));
 			setKeyBindings(mainPnl);
 			
-			if (items != null) {
-				for (final VisualStyle vs : items) {
+			if (styles != null) {
+				for (final VisualStyle vs : styles) {
 					final JPanel itemPnl = createItem(vs);
 					mainPnl.add(itemPnl);
 				}
@@ -535,13 +545,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			// Preview image
 			if (engineFactory != null && previewNetView != null) {
 				// TODO review
-				RenderingEngine<CyNetwork> engine = engineMap.get(vs.getTitle());
-				final JPanel p = defViewPanelsMap.get(vs.getTitle());
-				
-				if (engine == null && p != null) {
-					engine = engineFactory.createRenderingEngine(p, previewNetView);
-					engineMap.put(vs.getTitle(), engine);
-				}
+				final RenderingEngine<CyNetwork> engine = getRenderingEngine(vs);
 				
 				if (engine != null) {
 					vs.apply(previewNetView);
@@ -572,8 +576,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 		
 		private void setFocus(final int index) {
-			if (index > -1 && index < items.size()) {
-				final VisualStyle vs = items.get(index);
+			if (index > -1 && index < styles.size()) {
+				final VisualStyle vs = styles.get(index);
 				setFocus(vs);
 			}
 		}
@@ -619,7 +623,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			}
 		}
 
-		private synchronized void closeDialog() {
+		private void closeDialog() {
 			if (dialog != null) {
 				vsPanelMap.clear();
 				dialog.dispose();
@@ -671,10 +675,10 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 				} else if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE)) {
 					setSelectedItem(focusedItem);
 					closeDialog();
-				} else if (!items.isEmpty()) {
-					final VisualStyle vs = focusedItem != null ? focusedItem : items.getFirst();
-					final int size = items.size();
-					final int idx = items.indexOf(vs);
+				} else if (!styles.isEmpty()) {
+					final VisualStyle vs = focusedItem != null ? focusedItem : styles.getFirst();
+					final int size = styles.size();
+					final int idx = styles.indexOf(vs);
 					int newIdx = idx;
 					
 					if (cmd.equals(VK_RIGHT)) {
