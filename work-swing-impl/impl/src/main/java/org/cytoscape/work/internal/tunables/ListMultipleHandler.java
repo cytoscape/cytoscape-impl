@@ -29,7 +29,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.LayoutManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -53,6 +52,7 @@ import javax.swing.DefaultListModel;
 import javax.xml.ws.handler.MessageContext.Scope;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.ListMultipleSelection;
 
@@ -68,9 +68,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 	private JList itemsContainerList;
 	private DefaultListModel listModel;
 	private ListMultipleSelection<T> listMultipleSelection;
-
-	private static final Font TEXT_FONT = new Font("SansSerif", Font.PLAIN,12);
-	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD ,13);
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListMultipleSelection</code> type
@@ -129,7 +126,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		} else if (description != null && description.length() > 0) {
 			// Otherwise, use JLabel
 			final JLabel jLabel = new JLabel(description);
-			jLabel.setFont(LABEL_FONT);
+			jLabel.setFont(GUIDefaults.LABEL_FONT);
 			panel.add(jLabel, BorderLayout.PAGE_START);
 		}
 
@@ -138,7 +135,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		for ( T value : getMultipleSelection().getPossibleValues() ) 
 			listModel.addElement(value);
 		
-		itemsContainerList.setFont(TEXT_FONT);
+		itemsContainerList.setFont(GUIDefaults.TEXT_FONT);
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		itemsContainerList.addListSelectionListener(this);
 		

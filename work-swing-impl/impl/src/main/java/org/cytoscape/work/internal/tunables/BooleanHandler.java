@@ -26,7 +26,6 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -82,7 +81,7 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 		checkBox = new JCheckBox();
 		checkBox.setSelected(getBoolean());
 		JLabel label = new JLabel(getDescription());
-		label.setFont(new Font(null, Font.PLAIN, 12));
+		label.setFont(GUIDefaults.LABEL_FONT);
 		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		checkBox.addActionListener(this);
 

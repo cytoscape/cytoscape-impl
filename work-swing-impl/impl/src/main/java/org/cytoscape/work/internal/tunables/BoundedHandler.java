@@ -26,7 +26,6 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
@@ -104,7 +103,7 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 			final T bounded = getBounded();
 			if (useSlider) {
 				JLabel label = new JLabel(title);
-				label.setFont(new Font(null, Font.PLAIN,12));
+				label.setFont(GUIDefaults.LABEL_FONT);
 				label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 				panel.add(label,BorderLayout.WEST);
 				slider = new mySlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
@@ -115,7 +114,7 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 				final JLabel label =
 					new JLabel(title + " (max: " + bounded.getLowerBound().toString()
 					          + " min: " + bounded.getUpperBound().toString() + ")" );
-				label.setFont(new Font(null, Font.PLAIN,12));
+				label.setFont(GUIDefaults.LABEL_FONT);
 				label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 				boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 				                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
@@ -151,7 +150,7 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 				final JLabel label =
 					new JLabel(title + " (max: " + bounded.getLowerBound().toString()
 					          + " min: " + bounded.getUpperBound().toString() + ")" );
-				label.setFont(new Font(null, Font.PLAIN,12));
+				label.setFont(GUIDefaults.LABEL_FONT);
 				boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 				                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 				                                  bounded.isUpperBoundStrict());
