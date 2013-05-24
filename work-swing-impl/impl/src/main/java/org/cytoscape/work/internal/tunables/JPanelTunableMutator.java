@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Arrays;
 
@@ -46,6 +47,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.work.AbstractTunableInterceptor;
+import org.cytoscape.work.AbstractTunableHandler;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.TunableValidator;
@@ -147,6 +149,17 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			++otherCount;
 
 		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
+
+		if (handlers != null ) {
+			// Remove any tunables that aren't appropriate for a GUI context
+			ListIterator<GUITunableHandler> li = handlers.listIterator();
+			while (li.hasNext()) {
+				GUITunableHandler gh = li.next();
+				String context = gh.getParams().get(AbstractTunableHandler.CONTEXT).toString();
+				if (context.equalsIgnoreCase("nogui"))
+					li.remove();
+			}
+		}
 
 		// Sanity check:
 		if (factoryCount > 0) {

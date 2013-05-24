@@ -35,6 +35,7 @@ import java.lang.reflect.Method;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -125,6 +126,16 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+
+		// Set the tooltip.  Note that at this point, we're setting
+		// the tooltip on the entire panel.  This may or may not be
+		// the right thing to do.
+		if (getTooltip() != null && getTooltip().length() > 0) {
+			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
+			tipManager.setInitialDelay(1);
+			tipManager.setDismissDelay(7500);
+			panel.setToolTipText(getTooltip());
 		}
 	}
 

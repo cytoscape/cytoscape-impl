@@ -45,6 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneLayout;
+import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -162,6 +163,16 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		scrollpane.setOpaque(false);
 		scrollpane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 		panel.add(scrollpane, BorderLayout.CENTER);
+
+		// Set the tooltip.  Note that at this point, we're setting
+		// the tooltip on the entire panel.  This may or may not be
+		// the right thing to do.
+		if (getTooltip() != null && getTooltip().length() > 0) {
+			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
+			tipManager.setInitialDelay(1);
+			tipManager.setDismissDelay(7500);
+			panel.setToolTipText(getTooltip());
+		}
 	}
 
 	

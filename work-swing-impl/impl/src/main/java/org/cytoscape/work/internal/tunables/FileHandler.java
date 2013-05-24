@@ -49,6 +49,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.util.swing.FileChooserFilter;
@@ -195,6 +196,16 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 			titleLabel.setText(description);
 		
 		panel.setPreferredSize(PANEL_SIZE_DIMENSION);
+
+		// Set the tooltip.  Note that at this point, we're setting
+		// the tooltip on the entire panel.  This may or may not be
+		// the right thing to do.
+		if (getTooltip() != null && getTooltip().length() > 0) {
+			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
+			tipManager.setInitialDelay(1);
+			tipManager.setDismissDelay(7500);
+			panel.setToolTipText(getTooltip());
+		}
 	}
 
 	private String getFileCategory() {
