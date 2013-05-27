@@ -25,14 +25,17 @@ package org.cytoscape.browser.internal;
  */
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JTable;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -86,13 +89,20 @@ public class PopupMenuHelper {
 	}
 
 	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue, final Class<? extends CyIdentifiable> tableType, final Component invoker,
-			final int x, final int y) {
-		if (tableCellFactoryMap.isEmpty())
-			return;
-
+			final int x, final int y, final JTable table) {
 		final JPopupMenu menu = new JPopupMenu();
 		
-		// Add preset menue items
+		// Add preset menu items
+		menu.add(new JMenuItem(new AbstractAction("Edit") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Point point = new Point(x, y);
+				int row = table.rowAtPoint(point);
+				int column = table.columnAtPoint(point);
+				table.editCellAt(row, column);
+				table.transferFocus();
+			}
+		}));
 		final Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
 		if (value != null)
 			menu.add(getOpenLinkMenu(value.toString()));
