@@ -1045,7 +1045,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			final CyColumn targetColumn = new CyColumnImpl(this, targetName, sourceColumn.getType(),
 			                                               sourceColumn.getListElementType(), virtualColumn,
-			                                               /* isPrimaryKey = */ false, isImmutable, null);
+			                                               /* isPrimaryKey = */ false, isImmutable, sourceColumn.getDefaultValue());
 			
 			((CyTableImpl) sourceTable).addDependent(sourceColumnName, targetColumn);
 

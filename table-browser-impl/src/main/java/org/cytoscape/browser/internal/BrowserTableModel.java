@@ -186,7 +186,11 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		if (row == null)
 			return null;
 
-		final Object raw = row.getRaw(columnName);
+		Object raw = row.getRaw(columnName);
+		if (raw == null) {
+			CyColumn column = row.getTable().getColumn(columnName);
+			raw = column.getDefaultValue();
+		}
 		if (raw == null)
 			return null;
 

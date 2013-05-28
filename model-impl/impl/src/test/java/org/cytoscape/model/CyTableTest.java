@@ -233,4 +233,16 @@ public class CyTableTest extends AbstractCyTableTest {
 
 		assertEquals(row1.get("ss", String.class), "XXXabc");
 	}
+	
+	@Test
+	public void testDefaultColumnValue() {
+		table.createColumn("test", String.class, false, "foo");
+		CyRow row1 = table.getRow(1L);
+		assertEquals("foo", row1.get("test", String.class));
+		assertEquals("foo", table.getColumn("test").getDefaultValue());
+		
+		table2.addVirtualColumn("virtualtest", "test", table, table.getPrimaryKey().getName(), true);
+		assertEquals("foo", table2.getRow(1L).get("virtualtest", String.class));		
+		assertEquals("foo", table2.getColumn("virtualtest").getDefaultValue());
+	}
 }
