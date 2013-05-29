@@ -198,6 +198,11 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 	
 	@Override
 	protected boolean isSerializable(final CyNetwork net) {
-    	return net.getSavePolicy() == SavePolicy.SESSION_FILE;
+    	return net.getSavePolicy() == SavePolicy.SESSION_FILE && !isDisposed(net);
     }
+	
+	private boolean isDisposed(final CyNetwork net) {
+		return net.getDefaultNetworkTable() == null || net.getDefaultNodeTable() == null ||
+			   net.getDefaultEdgeTable() == null;
+	}
 }
