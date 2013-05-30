@@ -55,6 +55,7 @@ import org.cytoscape.io.DataCategory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
@@ -174,7 +175,8 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	private void setGui() {
 		//titleSeparator = new JSeparator();
 		titleLabel = new JLabel();
-		titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		titleLabel.setFont(GUIDefaults.LABEL_FONT);
+		titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 1, 5));
 		image = new ImageIcon(getClass().getResource("/images/ximian/stock_open.png"));
 		fileTextField = new JTextField();
 		fileTextField.setName("fileTextField");
