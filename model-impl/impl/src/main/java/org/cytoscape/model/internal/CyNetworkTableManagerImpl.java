@@ -47,6 +47,34 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 		// up this map whenever CyNetworks get garbage collected.
 		tables = new WeakHashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, Map<String, CyTable>>>();
 	}
+
+	@Override
+	public Class<? extends CyIdentifiable> getTableType(CyTable table) {
+		for (Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> typeMap: tables.values()) {
+			for (Class<? extends CyIdentifiable> classType: typeMap.keySet()) {
+				for (CyTable tab: typeMap.get(classType).values()) {
+					if (tab.equals(table)) {
+						return classType;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public String getTableNamespace(CyTable table) {
+		for (Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> typeMap: tables.values()) {
+			for (Map<String, CyTable> stMap: typeMap.values()) {
+				for (String ns: stMap.keySet()) {
+					if (stMap.get(ns).equals(table)) {
+						return ns;
+					}
+				}
+			}
+		}
+		return null;
+	}
 	
 	@Override
 	public void setTable(CyNetwork network, Class<? extends CyIdentifiable> type, String namespace, CyTable table) {		
