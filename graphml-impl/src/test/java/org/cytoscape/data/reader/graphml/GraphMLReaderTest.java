@@ -24,6 +24,7 @@ package org.cytoscape.data.reader.graphml;
  * #L%
  */
 
+import static org.cytoscape.model.CyNetwork.NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -109,39 +110,44 @@ public class GraphMLReaderTest {
 		final CyNetwork[] networks = reader.getNetworks();
 		assertNotNull(networks);
 		assertEquals(1, networks.length);
-		final CyNetwork network = networks[0];
-		assertEquals(6, network.getNodeCount());
-		assertEquals(7, network.getEdgeCount());
-
-		List<CyNode> nodeList = network.getNodeList();
-		final CyNode node1 = nodeList.get(0);
-		assertNotNull(node1);
 		
-		List<CyEdge> edgeList = network.getEdgeList();
-		CyEdge edge1 = edgeList.get(0);
-		assertNotNull(edge1);
+		final CyNetwork net = networks[0];
+		assertEquals(6, net.getNodeCount());
+		assertEquals(7, net.getEdgeCount());
 
-		edge1 = null;
-
-		// find edge "e0"
-		for (CyEdge edge: edgeList) {
-			if (network.getRow(edge).get(CyNetwork.NAME, String.class).equals("n0 (-) n1")) {
-				edge1 = edge;
-				break;
-			}
-		}
-		assertNotNull(edge1);
+		final CyNode n1 = getNodeByName(net, "n0");
+		assertNotNull(n1);
 		
-		final CyColumn colorCol = network.getDefaultNodeTable().getColumn("color");
-		final CyColumn weightCol = network.getDefaultEdgeTable().getColumn("weight");
+		final CyEdge e1 = getEdgeByName(net, "n0 (-) n1");
+		assertNotNull(e1);
+		
+		final CyColumn colorCol = net.getDefaultNodeTable().getColumn("color");
+		final CyColumn rankCol = net.getDefaultNodeTable().getColumn("rank");
+		final CyColumn degreeCol = net.getDefaultNodeTable().getColumn("degree");
+		final CyColumn scoreCol = net.getDefaultNodeTable().getColumn("score");
+		final CyColumn taggedCol = net.getDefaultNodeTable().getColumn("tagged");
+		final CyColumn weightCol = net.getDefaultEdgeTable().getColumn("weight");
 		
 		assertNotNull(colorCol);
+		assertNotNull(rankCol);
+		assertNotNull(degreeCol);
+		assertNotNull(scoreCol);
+		assertNotNull(taggedCol);
 		assertNotNull(weightCol);
 		
 		assertEquals(String.class, colorCol.getType());
+		assertEquals(Integer.class, rankCol.getType());
+		assertEquals(Long.class, degreeCol.getType());
+		assertEquals(Double.class, scoreCol.getType()); // GraphML "float" is converted to Double by Cytoscape
+		assertEquals(Boolean.class, taggedCol.getType());
 		assertEquals(Double.class, weightCol.getType());
 		
-		assertEquals(Double.valueOf(1.0d), network.getRow(edge1).get("weight", Double.class));
+		assertEquals("green", net.getRow(n1).get("color", String.class));
+		assertEquals(Integer.valueOf(3), net.getRow(n1).get("rank", Integer.class));
+		assertEquals(Long.valueOf(2), net.getRow(n1).get("degree", Long.class));
+		assertEquals(Double.valueOf(0.95d), net.getRow(n1).get("score", Double.class));
+		assertEquals(Boolean.TRUE, net.getRow(n1).get("tagged", Boolean.class));
+		assertEquals(Double.valueOf(1.0d), net.getRow(e1).get("weight", Double.class));
 	}
 
 	@Test
@@ -226,6 +232,24 @@ public class GraphMLReaderTest {
 		final CyNetwork child3 = networks[3];
 		assertEquals(2, child3.getNodeCount());
 		assertEquals(1, child3.getEdgeCount());
+	}
+	
+	private CyNode getNodeByName(final CyNetwork net, final String name) {
+		for (CyNode n : net.getNodeList()) {
+			if (name.equals(net.getRow(n).get(NAME, String.class)))
+				return n;
+		}
+		
+		return null;
+	}
+	
+	private CyEdge getEdgeByName(final CyNetwork net, final String name) {
+		for (CyEdge e : net.getEdgeList()) {
+			if (name.equals(net.getRow(e).get(NAME, String.class)))
+				return e;
+		}
+		
+		return null;
 	}
 
 }
