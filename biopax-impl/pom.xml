@@ -63,6 +63,11 @@
 			<artifactId>group-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>service-api</artifactId>
+			<scope>provided</scope>
+		</dependency>		
         <dependency>
 	        <groupId>org.biopax.paxtools</groupId>
 	        <artifactId>paxtools-core</artifactId>
@@ -101,9 +106,8 @@
 							org.biopax.paxtools.*
 						</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.internal.CyActivator</Bundle-Activator>
-						<Embed-Dependency>
-							*;groupId=org.biopax.paxtools;scope=compile|runtime;type=!pom;inline=true,
-						</Embed-Dependency>
+						<Embed-Dependency>*;scope=runtime|compile;optional=false</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
 						<Import-Package>*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>

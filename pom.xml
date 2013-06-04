@@ -224,6 +224,11 @@
 				<artifactId>command-executor-api</artifactId>
 				<version>${cytoscape.api.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>service-api</artifactId>
+				<version>${cytoscape.api.version}</version>
+			</dependency>
 
 			<!-- test jars -->
 			<dependency>
@@ -329,7 +334,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
-			<version>${cytoscape.api.version}</version>
 		</dependency>
 	</dependencies>
 
