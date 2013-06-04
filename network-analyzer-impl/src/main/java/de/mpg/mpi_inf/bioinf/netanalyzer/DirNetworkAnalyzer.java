@@ -40,8 +40,6 @@ import java.util.WeakHashMap;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.CCInfo;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.DegreeDistribution;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.LogBinDistribution;
@@ -96,8 +94,8 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 		this.edgeBetweenness = new WeakHashMap<CyEdge, Double>();
 		this.stress = new HashMap<CyNode, Long>();
 		computeNB = true;
-		AttributeSetup.createDirectedNodeAttributes(aNetwork.getDefaultNodeTable());
-		AttributeSetup.createEdgeAttributes(aNetwork.getDefaultEdgeTable());
+		AttributeSetup.createDirectedNodeAttributes(aNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
+		AttributeSetup.createEdgeAttributes(aNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
 	}
 
 	/*
