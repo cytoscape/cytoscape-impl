@@ -32,7 +32,7 @@ import java.awt.Frame;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 
@@ -59,21 +59,21 @@ class FileUtilImpl implements FileUtil {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public File getFile(final Component parent, final String title, final int load_save_custom,
+	public File getFile(final Component parent, final String title, final int loadSaveCustom,
 			final Collection<FileChooserFilter> filters) {
-		return getFile(parent, title, load_save_custom, null, null, filters);
+		return getFile(parent, title, loadSaveCustom, null, null, filters);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public File getFile(final Component parent, final String title, final int load_save_custom,
-	                    final String start_dir, final String custom_approve_text,
+	public File getFile(final Component parent, final String title, final int loadSaveCustom,
+	                    final String startDir, final String customApproveText,
 	                    final Collection<FileChooserFilter> filters)
 	{
-		File[] result = getFiles(parent, title, load_save_custom, start_dir,
-					 custom_approve_text, false, filters);
+		File[] result = getFiles(parent, title, loadSaveCustom, startDir,
+					 customApproveText, false, filters);
 
 		return ((result == null) || (result.length <= 0)) ? null : result[0];
 	}
@@ -83,10 +83,10 @@ class FileUtilImpl implements FileUtil {
 	 */
 	@Override
 	public File[] getFiles(final Component parent, final String title,
-	                       final int load_save_custom,
+	                       final int loadSaveCustom,
 	                       final Collection<FileChooserFilter> filters)
 	{
-		return getFiles(parent, title, load_save_custom, null, null, true, filters);
+		return getFiles(parent, title, loadSaveCustom, null, null, true, filters);
 	}
 
 	/**
@@ -94,26 +94,26 @@ class FileUtilImpl implements FileUtil {
 	 */
 	@Override
 	public File[] getFiles(final Component parent, final String title,
-	                       final int load_save_custom, final String start_dir,
-	                       final String custom_approve_text,
+	                       final int loadSaveCustom, final String startDir,
+	                       final String customApproveText,
 	                       final Collection<FileChooserFilter> filters)
 	{
-		return getFiles(parent, title, load_save_custom, start_dir,
-				custom_approve_text, true, filters);
+		return getFiles(parent, title, loadSaveCustom, startDir,
+				customApproveText, true, filters);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public File[] getFiles(final Component parent, final String title, final int load_save_custom, String start_dir,
-			final String custom_approve_text, final boolean multiselect, final Collection<FileChooserFilter> filters) {
+	public File[] getFiles(final Component parent, final String title, final int loadSaveCustom, String startDir,
+			final String customApproveText, final boolean multiselect, final Collection<FileChooserFilter> filters) {
 		
 		if (parent == null)
 			throw new NullPointerException("\"parent\" must not be null.");
 
-		if (start_dir == null)
-			start_dir = coreProperties.getProperty(FileUtil.LAST_DIRECTORY, System.getProperty("user.dir"));
+		if (startDir == null)
+			startDir = coreProperties.getProperty(FileUtil.LAST_DIRECTORY, System.getProperty("user.dir"));
 		
 		final String osName = System.getProperty("os.name");
 		
@@ -126,19 +126,19 @@ class FileUtilImpl implements FileUtil {
 			try {
 				final FileDialog chooser;
 				if (parent instanceof Frame)
-					chooser = new FileDialog((Frame) parent, title, load_save_custom);
+					chooser = new FileDialog((Frame) parent, title, loadSaveCustom);
 				else if (parent instanceof Dialog)
-					chooser = new FileDialog((Dialog) parent, title, load_save_custom);
+					chooser = new FileDialog((Dialog) parent, title, loadSaveCustom);
 				else if (parent instanceof JMenuItem) {
 					JComponent jcomponent = (JComponent) ((JPopupMenu)parent.getParent()).getInvoker();
-					chooser = new FileDialog((Frame) jcomponent.getTopLevelAncestor(), title, load_save_custom);
+					chooser = new FileDialog((Frame) jcomponent.getTopLevelAncestor(), title, loadSaveCustom);
 				} else {
 					throw new IllegalArgumentException("Cannot (not implemented yet) create a dialog " +
 							"own by a parent component of type: " + parent.getClass().getCanonicalName());
 				}
 
-				if (start_dir != null)
-					chooser.setDirectory(start_dir);
+				if (startDir != null)
+					chooser.setDirectory(startDir);
 				
 				chooser.setModal(true);
 				chooser.setFilenameFilter(new CombinedFilenameFilter(filters));
@@ -150,9 +150,31 @@ class FileUtilImpl implements FileUtil {
 					final File[] results = new File[1];
 					String newFileName = chooser.getFile();
 					
-					//We need to do this check in the writers/readers
-					//if (load_save_custom == SAVE)
-					//	newFileName = addFileExt(filters, newFileName);
+					if (loadSaveCustom == SAVE) {
+						// Is the filename missing an extension?
+						final String fileNameWithExt = addFileExt(filters, newFileName);
+						
+						if (!fileNameWithExt.equals(newFileName)) {
+							final File file = new File(chooser.getDirectory() + File.separator + fileNameWithExt);
+							
+							if (file.exists()) {
+								int answer =
+										JOptionPane.showConfirmDialog(
+											parent,
+											"The file '" + file.getName()
+											+ "' already exists. Are you sure you want to overwrite it?",
+											"File exists",
+											JOptionPane.YES_NO_OPTION,
+											JOptionPane.WARNING_MESSAGE);
+									
+								if (answer == JOptionPane.NO_OPTION) // Try again
+									return getFiles(parent, title, loadSaveCustom, file.getParent(), customApproveText,
+											multiselect, filters);
+								
+								newFileName = fileNameWithExt;
+							}
+						}
+					}
 					
 					results[0] = new File(chooser.getDirectory() + File.separator + newFileName);
 
@@ -162,14 +184,14 @@ class FileUtilImpl implements FileUtil {
 					return results;
 				}
 			} finally {
-				if(fileDialogForDirectories != null)
+				if (fileDialogForDirectories != null)
 					System.setProperty("apple.awt.fileDialogForDirectories", fileDialogForDirectories);
 			}
 
 			return null;
 		} else {
 			// this is not a Mac, use the Swing based file dialog
-			final File start = new File(start_dir);
+			final File start = new File(startDir);
 			final JFileChooser chooser = new JFileChooser(start);
 			
 			// set multiple selection, if applicable
@@ -177,7 +199,7 @@ class FileUtilImpl implements FileUtil {
 
 			// set the dialog title
 			chooser.setDialogTitle(title);
-			chooser.setAcceptAllFileFilterUsed(load_save_custom == LOAD);
+			chooser.setAcceptAllFileFilterUsed(loadSaveCustom == LOAD);
 
 			int i = 0;
 			FileChooserFilter defaultFilter = null;
@@ -198,7 +220,7 @@ class FileUtilImpl implements FileUtil {
 			File tmp = null;
 
 			// set the dialog type
-			if (load_save_custom == LOAD) {
+			if (loadSaveCustom == LOAD) {
 				if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 					if (multiselect)
 						results = chooser.getSelectedFiles();
@@ -230,11 +252,11 @@ class FileUtilImpl implements FileUtil {
 						extensionFound = false;
 					}
 				}
-			} else if (load_save_custom == SAVE) {
+			} else if (loadSaveCustom == SAVE) {
 				if (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION) {
-					if (multiselect)
+					if (multiselect) {
 						results = chooser.getSelectedFiles();
-					else if ((tmp = chooser.getSelectedFile()) != null) {
+					} else if ((tmp = chooser.getSelectedFile()) != null) {
 						results = new File[1];
 						results[0] = tmp;
 					}
@@ -242,24 +264,34 @@ class FileUtilImpl implements FileUtil {
 					// FileDialog checks for overwrites, but JFileChooser does
 					// not, so we need to do so ourselves:
 					for (int k = 0; k < results.length; ++k) {
-						if (results[k].exists()) {
+						File file = results[k];
+						final String filePath = file.getAbsolutePath();
+						final String filePathWithExt = addFileExt(filters, filePath);
+						
+						// Add an extension to the filename, if necessary and possible
+						if (!filePathWithExt.equals(filePath)) {
+							file = new File(filePathWithExt);
+							results[k] = file;
+						}
+							
+						if (file.exists()) {
 							int answer =
 								JOptionPane.showConfirmDialog(
 									chooser,
-									"The file '"
-									+ results[k].getName()
-									+ "' already exists, are you sure you want to overwrite it?",
+									"The file '" + file.getName()
+									+ "' already exists. Are you sure you want to overwrite it?",
 									"File exists",
 									JOptionPane.YES_NO_OPTION,
 									JOptionPane.WARNING_MESSAGE);
-							if (answer == JOptionPane.NO_OPTION){
-								return null;
-							}
+							
+							if (answer == JOptionPane.NO_OPTION) // Try again
+								return getFiles(parent, title, loadSaveCustom, file.getParent(), customApproveText,
+										multiselect, filters);
 						}
 					}
 				}
 			} else {
-				if (chooser.showDialog(parent, custom_approve_text) == JFileChooser.APPROVE_OPTION) {
+				if (chooser.showDialog(parent, customApproveText) == JFileChooser.APPROVE_OPTION) {
 					if (multiselect)
 						results = chooser.getSelectedFiles();
 					else if ((tmp = chooser.getSelectedFile()) != null) {
@@ -277,32 +309,28 @@ class FileUtilImpl implements FileUtil {
 		}
 	}
 	
-	private String addFileExt(final Collection<FileChooserFilter> filters, final String fileName) {
-		final Set<String> extSet = new HashSet<String>();
-		for(final FileChooserFilter filter: filters) {
+	private String addFileExt(final Collection<FileChooserFilter> filters, String fileName) {
+		final Set<String> extSet = new LinkedHashSet<String>();
+		
+		for (final FileChooserFilter filter : filters) {
 			final String[] exts = filter.getExtensions();
-			for(String ext:exts)
+			
+			for (String ext : exts)
 				extSet.add(ext);
 		}
 		
-		// Check file name has  
-		final String upperName = fileName.toUpperCase();
-		for(String ext: extSet) {
-			if(upperName.endsWith("." + ext.toUpperCase()))
-				return fileName;
+		// If there is more than one possible extension, don't add any extension here,
+		// because we don't know which one should be chosen.
+		if (extSet.size() == 1) {
+			// Check file name has the extension
+			final String upperName = fileName.toUpperCase();
+			final String ext = extSet.iterator().next();
+			
+			if (!upperName.endsWith("." + ext.toUpperCase()))
+				fileName = fileName + "." + ext;
 		}
 		
-		
-		// Need to add ext
-		String fullFileName = fileName;
-		try {
-			fullFileName = fileName + "." + extSet.iterator().next();
-		}
-		catch(Exception e){
-			//If the category is "UNSPECIFIED", we may get null-pointer exception here
-		}
-		
-		return fullFileName;
+		return fileName;
 	}
 
 	private static final class CombinedFilenameFilter implements FilenameFilter {
