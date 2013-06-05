@@ -83,7 +83,8 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 
 		if (m.matches()){
 			desiredTitle = desiredTitle.substring(0, m.start(1)-1);
-			start = Integer.decode(m.group(1)) + 1;
+			String gr = m.group(1); //happens to be "" (empty str.) because of \\d*
+			start = (gr.isEmpty())? 1 : Integer.decode(gr) + 1;
 		}
 
 		for (int i = start; true; i++) {
