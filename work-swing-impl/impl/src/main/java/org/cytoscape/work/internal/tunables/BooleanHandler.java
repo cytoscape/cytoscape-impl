@@ -145,7 +145,7 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 		
 		//optionPane = new JOptionPane(getDescription());
 		//optionPane.setOptionType(JOptionPane.YES_NO_OPTION);
-		return  optionPane.showOptionDialog(possibleParent, getDescription(), "", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+		return  optionPane.showOptionDialog(possibleParent, getDescription(), getParams().getProperty("ForceSetTitle", " "), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 	}
 
 	/**

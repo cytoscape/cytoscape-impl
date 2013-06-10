@@ -197,7 +197,7 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		
 		public final class LoadSessionWithWarningTask extends AbstractTask {
 			
-			@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
+			@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true;ForceSetTitle=Open Session")
 			public boolean changeCurrentSession = true;
 			
 			@Override
