@@ -257,7 +257,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			}
 
 			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
-			style.addVisualMappingFunction(newMapping);
+			style.addVisualMappingFunction(newMapping); // TODO
 		} else {
 			newMapping = currentMapping;
 		}

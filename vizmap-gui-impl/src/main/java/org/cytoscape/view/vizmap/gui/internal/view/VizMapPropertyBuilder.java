@@ -390,6 +390,7 @@ public class VizMapPropertyBuilder {
 						
 			if (editor != null) {
 				final TableCellRenderer renderer = editor.getDiscreteTableCellRenderer();
+				
 				if (renderer != null)
 					cellRendererFactory.registerRenderer(valProp, renderer);
 				

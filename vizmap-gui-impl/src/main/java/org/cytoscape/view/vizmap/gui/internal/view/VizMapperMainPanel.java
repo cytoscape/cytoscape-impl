@@ -217,6 +217,15 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return (VisualPropertySheet) getPropertiesPn().getSelectedComponent();
 	}
 	
+	public void setCurrentVisualPropertySheet(final VisualPropertySheet sheet) {
+		if (sheet != null) {
+			final int idx = getPropertiesPn().indexOfTab(sheet.getModel().getTitle());
+			
+			if (idx != -1)
+				getPropertiesPn().setSelectedIndex(idx);
+		}
+	}
+	
 	public void updateVisualStyles(final SortedSet<VisualStyle> styles, final CyNetworkView previewNetView,
 			final RenderingEngineFactory<CyNetwork> engineFactory) {
 		this.previewNetView = previewNetView;

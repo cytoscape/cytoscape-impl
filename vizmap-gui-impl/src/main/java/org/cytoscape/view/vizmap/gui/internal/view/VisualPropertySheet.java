@@ -3,7 +3,9 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
-import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -26,10 +28,13 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -43,6 +48,7 @@ import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -54,6 +60,7 @@ import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 public class VisualPropertySheet extends JPanel{
 
 	private JPanel toolBarPnl;
+	private JPanel vpListHeaderPnl;
 	private JScrollPane vpListScr;
 	private DropDownMenuButton addVpsBtn;
 	private JPopupMenu addVpsMenu;
@@ -223,9 +230,17 @@ public class VisualPropertySheet extends JPanel{
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
-		setLayout(new BorderLayout());
-		add(getToolBarPnl(), BorderLayout.NORTH);
-		add(getVpListScr(), BorderLayout.CENTER);
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getToolBarPnl())
+				.addComponent(getVpListHeaderPnl())
+				.addComponent(getVpListScr()));
+		layout.setHorizontalGroup(layout.createParallelGroup()
+				.addComponent(getToolBarPnl())
+				.addComponent(getVpListHeaderPnl())
+				.addComponent(getVpListScr()));
 	}
 	
 	private JPanel getToolBarPnl() {
@@ -249,6 +264,35 @@ public class VisualPropertySheet extends JPanel{
 		}
 		
 		return toolBarPnl;
+	}
+	
+	private JPanel getVpListHeaderPnl() {
+		if (vpListHeaderPnl == null) {
+			vpListHeaderPnl = new JPanel();
+			vpListHeaderPnl.setBackground(Color.DARK_GRAY);
+			vpListHeaderPnl.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+			vpListHeaderPnl.setLayout(new BoxLayout(vpListHeaderPnl, BoxLayout.X_AXIS));
+			
+			vpListHeaderPnl.add(Box.createRigidArea(new Dimension(2, 12)));
+			
+			final JLabel defLbl = new HeaderLabel("Def.");
+			defLbl.setToolTipText("Default Value");
+			vpListHeaderPnl.add(defLbl);
+			
+			if (model.getTargetDataType() != CyNetwork.class) {
+				final JLabel mapLbl = new HeaderLabel("Map.");
+				mapLbl.setToolTipText("Visual Mapping");
+				vpListHeaderPnl.add(mapLbl);
+			}
+			
+			final JLabel bypassLbl = new HeaderLabel("Byp.");
+			bypassLbl.setToolTipText("Bypass");
+			vpListHeaderPnl.add(bypassLbl);
+			
+			vpListHeaderPnl.add(Box.createHorizontalGlue());
+		}
+		
+		return vpListHeaderPnl;
 	}
 	
 	private JScrollPane getVpListScr() {
@@ -484,6 +528,27 @@ public class VisualPropertySheet extends JPanel{
 		// Update the selected state of each menu item
 		for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
 			entry.getValue().setSelected(entry.getKey().isVisible());
+		}
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private static class HeaderLabel extends JLabel {
+		
+		final static Font font = new Font("Arial", Font.BOLD, 10);
+		final static Color fgColor = Color.WHITE;
+		
+		HeaderLabel(final String text) {
+			super(text);
+			setFont(font);
+			setForeground(fgColor);
+			setHorizontalAlignment(CENTER);
+			setVerticalAlignment(BOTTOM);
+			
+			final Dimension d = new Dimension(VisualPropertySheetItem.VPButtonUI.getPreferredWidth(), 18);
+			setMinimumSize(d);
+			setPreferredSize(d);
+			setMaximumSize(d);
 		}
 	}
 }

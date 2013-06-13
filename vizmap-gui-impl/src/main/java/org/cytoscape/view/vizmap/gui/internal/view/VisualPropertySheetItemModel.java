@@ -79,6 +79,10 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 		return title;
 	}
 	
+	public String getId() {
+		return dependency != null ? dependency.getIdString() : visualProperty.getIdString();
+	}
+	
 	public Class<? extends CyIdentifiable> getTargetDataType() {
 		return getVisualProperty().getTargetDataType();
 	}
