@@ -343,6 +343,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		else
 			width = originalWidth;
 
+		resizeCustomGraphics(width/getWidth(), 1.0);
+
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return false;
@@ -382,6 +384,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			height = getVisualProperty(DVisualLexicon.NODE_HEIGHT);
 		else
 			height = originalHeight;
+
+		resizeCustomGraphics(1.0, height/getHeight());
 		
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
@@ -1144,16 +1148,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		// Check dependency. Sync size or not.
 		final VisualProperty<Double> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
-		Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
-		boolean sync = false;
+		boolean sync = syncToNode();
 		
-		for(VisualPropertyDependency dep:dependencies) {
-			if(dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
-				sync = dep.isDependencyEnabled();
-				break;
-			}
-		}
-
 		final VisualProperty<ObjectPosition> cgPositionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(vp);
 		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
 		final Double customSize = getVisualProperty(cgSizeVP);
@@ -1214,6 +1210,51 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		currentCG.addAll(newList);
 
 		this.cgMap.put(parent, currentCG);
+	}
+
+	private void resizeCustomGraphics(double widthScale, double heightScale) {
+		// System.out.println("resizing custom graphics to "+widthScale+", "+heightScale);
+		boolean sync = syncToNode();
+		if (!sync || cgMap == null || cgMap.isEmpty()) return;
+
+		// Get all of our custom graphics layers
+		for (VisualProperty<?> vp: cgMap.keySet()) {
+			final Set<CustomGraphicLayer> currentCG = cgMap.get(vp);
+			if (currentCG == null || currentCG.size() == 0) continue;
+
+			// Resize
+			final Set<CustomGraphicLayer> newList = new HashSet<CustomGraphicLayer>();
+			for (CustomGraphicLayer g : currentCG)
+				newList.add(resizeCustomGraphicsLayer(g, widthScale, heightScale));
+
+			currentCG.clear();
+			currentCG.addAll(newList);
+
+			this.cgMap.put(vp, currentCG);
+		}
+	}
+
+	CustomGraphicLayer resizeCustomGraphicsLayer(CustomGraphicLayer cg, double widthScale, double heightScale) {
+		removeCustomGraphic(cg);
+		AffineTransform scale = AffineTransform.getScaleInstance(widthScale, heightScale);
+		CustomGraphicLayer newCG = cg.transform(scale);
+		addCustomGraphic(newCG);
+		return newCG;
+	}
+
+	private boolean syncToNode() {
+		boolean sync = false;
+		if (vmm.getCurrentVisualStyle() != null) {
+			Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
+		
+			for(VisualPropertyDependency dep:dependencies) {
+				if(dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
+					sync = dep.isDependencyEnabled();
+					break;
+				}
+			}
+		}
+		return sync;
 	}
 
 	private CustomGraphicLayer syncSize(CyCustomGraphics<CustomGraphicLayer> graphics, 
