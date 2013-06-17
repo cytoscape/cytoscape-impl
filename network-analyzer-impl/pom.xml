@@ -3,11 +3,10 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>network-analyzer-impl</artifactId>
-  <version>3.0.0</version>
 	<packaging>bundle</packaging>
     <name>Cytoscape NetworkAnalyzer Impl (${project.artifactId})</name>
 

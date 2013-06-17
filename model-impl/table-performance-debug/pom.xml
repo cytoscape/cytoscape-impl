@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>model-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.1</version>
+		<version>3.0.2-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -60,7 +60,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-impl</artifactId>
-			<version>[3.0.0,${project.version}]</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>

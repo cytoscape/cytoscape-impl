@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>io-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.1</version>
+		<version>3.0.2-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -58,12 +58,12 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>[3.0.0,${project.version}]</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-impl</artifactId>
-			<version>[3.0.0,${project.version}]</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -75,19 +75,19 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>[3.0.0,${project.version}]</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
-			<version>[3.0.0,${project.version}]</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
-			<version>[3.0.0,${project.version}]</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -95,13 +95,13 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
-			<version>[3.0.0,${project.version}]</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
-			<version>[3.0.0,${project.version}]</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>

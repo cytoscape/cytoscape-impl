@@ -2,7 +2,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.2-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -12,7 +12,6 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>group-data-impl</artifactId>
-  <version>3.0.0</version>
 
 	<name>Cytoscape Group Data Impl (${project.artifactId})</name>
 

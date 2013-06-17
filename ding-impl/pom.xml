@@ -5,11 +5,10 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.1</version>
+		<version>3.0.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ding-impl</artifactId>
-	<version>3.0.1</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape Ding Impl Parent (${project.artifactId})</name>
 
