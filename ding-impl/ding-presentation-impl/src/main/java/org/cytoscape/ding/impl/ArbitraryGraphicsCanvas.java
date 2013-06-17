@@ -353,17 +353,19 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * image2D Graphics2D
 	 */
 	private void clearImage(Graphics2D image2D) {
-		// set color alpha based on opacity setting
-		int alpha = (m_isOpaque) ? 255 : 0;
-		Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
-		                                  m_backgroundColor.getBlue(), alpha);
+		if (m_img != null) {
+			// set color alpha based on opacity setting
+			int alpha = (m_isOpaque) ? 255 : 0;
+			Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
+			                                  m_backgroundColor.getBlue(), alpha);
 
-		// set the alpha composite on the image, and clear its area
-		Composite origComposite = image2D.getComposite();
-		image2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
-		image2D.setPaint(backgroundColor);
-		image2D.fillRect(0, 0, m_img.getWidth(null), m_img.getHeight(null));
-		image2D.setComposite(origComposite);
+			// set the alpha composite on the image, and clear its area
+			Composite origComposite = image2D.getComposite();
+			image2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+			image2D.setPaint(backgroundColor);
+			image2D.fillRect(0, 0, m_img.getWidth(null), m_img.getHeight(null));
+			image2D.setComposite(origComposite);
+		}
 	}
 
 	private void contentChanged() {
