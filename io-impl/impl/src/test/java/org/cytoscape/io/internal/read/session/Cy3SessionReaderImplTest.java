@@ -24,18 +24,59 @@ package org.cytoscape.io.internal.read.session;
  * #L%
  */
 
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.regex.Matcher;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
+import org.cytoscape.io.internal.util.GroupUtil;
+import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.session.SessionUtil;
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.read.CyPropertyReaderManager;
+import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class Cy3SessionReaderImplTest {
+	
+	private Cy3SessionReaderImpl reader;
+	private TableTestSupport tblTestSupport;
+	
+	@Before
+	public void setUp() {
+		InputStream is = mock(InputStream.class);
+		CyNetworkTableManager netTblMgr = mock(CyNetworkTableManager.class);
+		ReadCache cache = new ReadCache(netTblMgr);
+		GroupUtil groupUtil = mock(GroupUtil.class);
+		SUIDUpdater suidUpdater = mock(SUIDUpdater.class);
+		CyNetworkReaderManager netReaderMgr = mock(CyNetworkReaderManager.class);
+		CyPropertyReaderManager propReaderMgr = mock(CyPropertyReaderManager.class);
+		VizmapReaderManager vizmapReaderMgr = mock(VizmapReaderManager.class);
+		CSVCyReaderFactory csvCyReaderFactory = mock(CSVCyReaderFactory.class);
+		CyRootNetworkManager rootNetMgr = mock(CyRootNetworkManager.class);
+		
+		reader = new Cy3SessionReaderImpl(is, cache, groupUtil, suidUpdater, netReaderMgr, 
+				propReaderMgr, vizmapReaderMgr, csvCyReaderFactory, netTblMgr, rootNetMgr);
+		tblTestSupport = new TableTestSupport();
+	}
+	
 	@Test
 	public void testEscaping() throws Exception {
 		NetworkViewTestSupport support = new NetworkViewTestSupport();
@@ -59,6 +100,150 @@ public class Cy3SessionReaderImplTest {
 		}
 	}
 
+	@Test
+	public void testRestoreVirtualColumns() throws Exception {
+		VirtualColumn vcA1 = new VirtualColumn();
+		vcA1.setName("vcA1");
+		vcA1.setSourceColumn("cA");
+		vcA1.setSourceJoinKey("id");
+		vcA1.setTargetJoinKey("id");
+		vcA1.setSourceTable("Tbl1");
+		vcA1.setTargetTable("Tbl2");
+		vcA1.setImmutable(false);
+		
+		VirtualColumn vcA2 = new VirtualColumn();
+		vcA2.setName("vcA2");
+		vcA2.setSourceColumn("vcA1");
+		vcA2.setSourceJoinKey("id");
+		vcA2.setTargetJoinKey("id");
+		vcA2.setSourceTable("Tbl2");
+		vcA2.setTargetTable("Tbl3");
+		vcA2.setImmutable(false);
+		
+		VirtualColumn vcA3 = new VirtualColumn();
+		vcA3.setName("vcA3");
+		vcA3.setSourceColumn("vcA2");
+		vcA3.setSourceJoinKey("id");
+		vcA3.setTargetJoinKey("id");
+		vcA3.setSourceTable("Tbl3");
+		vcA3.setTargetTable("Tbl4");
+		vcA3.setImmutable(false);
+		
+		VirtualColumn vcB = new VirtualColumn();
+		vcB.setName("cB");
+		vcB.setSourceColumn("cB");
+		vcB.setSourceJoinKey("cA");
+		vcB.setTargetJoinKey("vcA3");
+		vcB.setSourceTable("Tbl5");
+		vcB.setTargetTable("Tbl4");
+		vcB.setImmutable(true);
+		
+		CyTableFactory tblFactory = tblTestSupport.getTableFactory();
+		
+		CyTable tbl1 = tblFactory.createTable("Tbl1", "id", Integer.class, false, true);
+		tbl1.createColumn("cA", String.class, true);
+		CyTable tbl2 = tblFactory.createTable("Tbl2", "id", Integer.class, true, true);
+		CyTable tbl3 = tblFactory.createTable("Tbl3", "id", Integer.class, true, false);
+		CyTable tbl4 = tblFactory.createTable("Tbl4", "id", Integer.class, true, false);
+		CyTable tbl5 = tblFactory.createTable("Tbl5", "cA", String.class, true, false);
+		tbl5.createColumn("cB", Boolean.class, true);
+		
+		reader.filenameTableMap.put(tbl1.getTitle(), tbl1);
+		reader.filenameTableMap.put(tbl2.getTitle(), tbl2);
+		reader.filenameTableMap.put(tbl3.getTitle(), tbl3);
+		reader.filenameTableMap.put(tbl4.getTitle(), tbl4);
+		reader.filenameTableMap.put(tbl5.getTitle(), tbl5);
+		
+		// Set this order to see if it works when virtual columns depend on other virtual columns
+		reader.virtualColumns.add(vcB); // the virtual column "vcA3" (used as target join key) hasn't been created yet
+		reader.virtualColumns.add(vcA3); // the virtual column "vcA2" hasn't been created yet
+		reader.virtualColumns.add(vcA2); // the virtual column "vcA1" hasn't been created yet
+		reader.virtualColumns.add(vcA1); 
+		
+		reader.restoreVirtualColumns();
+		
+		// --- Test ---
+		
+		{
+			CyColumn c = tbl2.getColumn("vcA1");
+			assertNotNull(c);
+			assertTrue(c.getVirtualColumnInfo().isVirtual());
+			assertEquals("cA", c.getVirtualColumnInfo().getSourceColumn());
+			assertEquals(tbl1, c.getVirtualColumnInfo().getSourceTable());
+			assertFalse(c.isImmutable());
+		}
+		{
+			CyColumn c = tbl3.getColumn("vcA2");
+			assertNotNull(c);
+			assertTrue(c.getVirtualColumnInfo().isVirtual());
+			assertEquals("vcA1", c.getVirtualColumnInfo().getSourceColumn());
+			assertEquals(tbl2, c.getVirtualColumnInfo().getSourceTable());
+			assertFalse(c.isImmutable());
+		}
+		{
+			CyColumn c = tbl4.getColumn("vcA3");
+			assertNotNull(c);
+			assertTrue(c.getVirtualColumnInfo().isVirtual());
+			assertEquals("vcA2", c.getVirtualColumnInfo().getSourceColumn());
+			assertEquals(tbl3, c.getVirtualColumnInfo().getSourceTable());
+			assertFalse(c.isImmutable());
+		}
+		{
+			CyColumn c = tbl4.getColumn("cB");
+			assertNotNull(c);
+			assertTrue(c.getVirtualColumnInfo().isVirtual());
+			assertEquals("cB", c.getVirtualColumnInfo().getSourceColumn());
+			assertEquals(tbl5, c.getVirtualColumnInfo().getSourceTable());
+			assertTrue(c.isImmutable());
+		}
+	}
+	
+	@Test(expected=Exception.class)
+	public void testRestoreVirtualColumnsWithCircularDependencies() throws Exception {
+		// This should never happen, but let's make sure it doesn't get into an infinite loop
+		{
+			VirtualColumn vc = new VirtualColumn();
+			vc.setName("a");
+			vc.setSourceColumn("a");
+			vc.setSourceJoinKey("id");
+			vc.setTargetJoinKey("id");
+			vc.setSourceTable("t2");
+			vc.setTargetTable("t3");
+			reader.virtualColumns.add(vc);
+		}
+		{
+			VirtualColumn vc = new VirtualColumn();
+			vc.setName("a");
+			vc.setSourceColumn("a");
+			vc.setSourceJoinKey("id");
+			vc.setTargetJoinKey("id");
+			vc.setSourceTable("t1");
+			vc.setTargetTable("t2");
+			reader.virtualColumns.add(vc);
+		}
+		{
+			VirtualColumn vc = new VirtualColumn();
+			vc.setName("a");
+			vc.setSourceColumn("a");
+			vc.setSourceJoinKey("id");
+			vc.setTargetJoinKey("id");
+			vc.setSourceTable("t2");
+			vc.setTargetTable("t3");
+			reader.virtualColumns.add(vc);
+		}
+		
+		CyTableFactory tblFactory = tblTestSupport.getTableFactory();
+		CyTable tbl1 = tblFactory.createTable("t1", "id", Integer.class, true, true);
+		CyTable tbl2 = tblFactory.createTable("t2", "id", Integer.class, true, true);
+		CyTable tbl3 = tblFactory.createTable("t3", "id", Integer.class, true, true);
+		
+		reader.filenameTableMap.put(tbl1.getTitle(), tbl1);
+		reader.filenameTableMap.put(tbl2.getTitle(), tbl2);
+		reader.filenameTableMap.put(tbl3.getTitle(), tbl3);
+		
+		reader.restoreVirtualColumns();
+	}
+	
 	private String decode(String encodedText) throws UnsupportedEncodingException {
 		return URLDecoder.decode(encodedText, "UTF-8");
 	}
