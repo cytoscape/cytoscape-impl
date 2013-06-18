@@ -46,10 +46,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -115,10 +117,10 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyNetworkTableManager networkTableMgr;
 
-	private Map<String, CyTable> filenameTableMap;
+	protected final Map<String, CyTable> filenameTableMap;
 	private Map<CyTableMetadataBuilder, String> builderFilenameMap;
 
-	private List<VirtualColumn> virtualColumns;
+	protected final List<VirtualColumn> virtualColumns;
 	private boolean networksExtracted;
 
 
@@ -152,6 +154,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (networkTableMgr == null) throw new NullPointerException("network table manager is null.");
 		this.networkTableMgr = networkTableMgr;
 		
+		virtualColumns = new LinkedList<VirtualColumn>();
 		filenameTableMap = new HashMap<String, CyTable>();
 		builderFilenameMap = new HashMap<CyTableMetadataBuilder, String>();
 	}
@@ -239,7 +242,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		
 		try {
 			reader.run(taskMonitor);
-			virtualColumns = reader.getCyTables().getVirtualColumns().getVirtualColumn();
+			virtualColumns.addAll(reader.getCyTables().getVirtualColumns().getVirtualColumn());
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
@@ -449,28 +452,59 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			properties.add(cyProps);
 	}
 	
-	private void restoreVirtualColumns() {
+	protected void restoreVirtualColumns() throws Exception {
 		if (virtualColumns == null)
 			return;
 		
-		for (VirtualColumn columnData : virtualColumns) {
+		final Queue<VirtualColumn> queue = new LinkedList<VirtualColumn>();
+		queue.addAll(virtualColumns);
+		
+		// Will be used to prevent infinite loops if there are circular references or missing table/columns
+		VirtualColumn markedColumn = null; // First column marked as depending on a missing column
+		int lastSize = queue.size();
+		
+		while (!queue.isEmpty()) {
 			if (cancelled) return;
 			
-			CyTable targetTable = filenameTableMap.get(columnData.getTargetTable());
+			final VirtualColumn vcData = queue.poll();
+			final CyTable tgtTable = filenameTableMap.get(vcData.getTargetTable());
+			final String colName = vcData.getName();
 			
-			if (targetTable.getColumn(columnData.getName()) == null) {
-				CyTable sourceTable = filenameTableMap.get(columnData.getSourceTable());
+			if (tgtTable.getColumn(colName) == null) {
+				final CyTable srcTable = filenameTableMap.get(vcData.getSourceTable());
+				final String srcColName = vcData.getSourceColumn();
+				final String tgtJoinKey = vcData.getTargetJoinKey();
 				
-				try {
-					targetTable.addVirtualColumn(columnData.getName(),
-												 columnData.getSourceColumn(),
-												 sourceTable,
-												 columnData.getTargetJoinKey(),
-												 columnData.isImmutable());
-				} catch (Exception e) {
-					logger.error("Error restoring virtual column \"" + columnData.getName() + "\" in table \"" + 
-							targetTable + "\"(" + columnData.getTargetTable() + ")--source table: \"" + sourceTable + 
-							"\"(" + columnData.getSourceTable() + ")", e);
+				if (srcTable.getColumn(srcColName) != null && tgtTable.getColumn(tgtJoinKey) != null) {
+					try {
+						tgtTable.addVirtualColumn(colName, srcColName, srcTable, tgtJoinKey, vcData.isImmutable());
+						markedColumn = null; // Reset it!
+					} catch (Exception e) {
+						throw new Exception("Error restoring virtual column \"" + colName + "\" in table \"" + 
+								tgtTable + "\"(" + vcData.getTargetTable() + ")--source table: \"" + srcTable + 
+								"\"(" + vcData.getSourceTable() + ")", e);
+					}
+				} else {
+					queue.add(vcData);
+					
+					if (markedColumn == null) {
+						// Mark this element and save the queue's size
+						markedColumn = vcData;
+						lastSize = queue.size();
+					} else if (vcData == markedColumn && queue.size() == lastSize) {
+						// The iteration reached the same marked column again and the queue's size hasn't decreased,
+						// which means that the remaining elements in the queue cannot be resolved
+						final StringBuilder msg = new StringBuilder(
+								"Cannot restore the following virtual columns because of missing or circular dependencies: ");
+						String prefix = "";
+						
+						for (final VirtualColumn vc : queue) {
+							msg.append(prefix + vc.getTargetTable() + "." + vc.getName());
+							prefix = ", ";
+						}
+						
+						throw new Exception(msg.toString());
+					}
 				}
 			}
 		}
