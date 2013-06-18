@@ -1030,13 +1030,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (sourceColumn == null)
 				throw new IllegalArgumentException("\""+sourceColumnName+"\" is not a column in source table.");
 
-			final CyColumn targetJoinKeyType = this.getColumn(targetJoinKeyName);
-			if (targetJoinKeyType == null)
+			final CyColumn targetJoinKey = this.getColumn(targetJoinKeyName);
+			if (targetJoinKey == null)
 				throw new IllegalArgumentException("\""+ targetJoinKeyName +"\" is not a known column in this table.");
 
-			final CyColumn sourceJoinKeyType = sourceTable.getPrimaryKey();
-			if (sourceJoinKeyType.getType() != targetJoinKeyType.getType())
-				throw new IllegalArgumentException("\""+sourceColumnName+"\" has a different type from \""+targetJoinKeyName+"\".");
+			final CyColumn sourceJoinKey = sourceTable.getPrimaryKey();
+			if (sourceJoinKey.getType() != targetJoinKey.getType())
+				throw new IllegalArgumentException("\""+sourceJoinKey.getName()+"\" has a different type from \""+targetJoinKeyName+"\".");
 
 			VirtualColumn virtualColumn = new VirtualColumn((CyTableImpl)sourceTable, sourceColumnName, this,
                     sourceTable.getPrimaryKey().getName(), 
