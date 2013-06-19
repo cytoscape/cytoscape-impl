@@ -55,8 +55,6 @@ public class VizMapperProxy extends Proxy
 	public static final String NAME = "VisualStyleProxy";
 	
 	private final SortedSet<VisualStyle> visualStyles;
-	private VisualStyle currentVisualStyle;
-	
 	private final ServicesUtil servicesUtil;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -122,20 +120,17 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public synchronized VisualStyle getCurrentVisualStyle() {
-		return currentVisualStyle;
+		return servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
 	}
 
-	public synchronized void setCurrentVisualStyle(final VisualStyle vs) {
+	public void setCurrentVisualStyle(final VisualStyle vs) {
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 		boolean changed = false;
 		
 		synchronized (this) {
-			if (vs != currentVisualStyle) {
-				currentVisualStyle = vs;
+			if (vs != getCurrentVisualStyle()) {
 				changed = true;
-				
-				if (vs != vmMgr.getCurrentVisualStyle())
-					vmMgr.setCurrentVisualStyle(vs);
+				vmMgr.setCurrentVisualStyle(vs);
 			}
 		}
 		
@@ -284,7 +279,7 @@ public class VizMapperProxy extends Proxy
 		if (view != null) {
 			final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getVisualStyle(view);
 			
-			if (style != currentVisualStyle)
+			if (style != getCurrentVisualStyle())
 				setCurrentVisualStyle(style);
 		}
 		

@@ -668,25 +668,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
-	private void updateVisualPropertySheetItems(final Set<VisualProperty<?>> properties) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				for (final VisualProperty<?> vp : properties) {
-					final Class<? extends CyIdentifiable> targetDataType = vp.getTargetDataType();
-					final VisualPropertySheet sheet = vizMapperMainPanel.getVisualPropertySheet(targetDataType);
-					
-					if (sheet != null) {
-						final VisualPropertySheetItem<?> vpSheetItem = sheet.getItem(vp);
-						
-						if (vpSheetItem != null)
-							vpSheetItem.updateBypassButton();
-					}
-				}
-			}
-		});
-	}
-	
 	private <T, S extends CyIdentifiable> void updateVpInfoLockedState(final VisualPropertySheetItemModel<T> model,
 			   final Set<T> lockedValues, final Set<View<S>> selectedViews) {
 		T value = null;
@@ -820,12 +801,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 
 	private void onSelectedVisualStyleChanged(final PropertyChangeEvent e) {
-		if (!ignoreVisualStyleSelectedEvents) {
+		final VisualStyle vs = (VisualStyle) e.getNewValue();
+		
+		if (!ignoreVisualStyleSelectedEvents && vs != proxy.getCurrentVisualStyle()) {
 			// Update proxy
-			final Thread t = new Thread() { // TODO Use a Task?
+			final Thread t = new Thread() {
 				@Override
 				public void run() {
-					final VisualStyle vs = (VisualStyle) e.getNewValue();
 					proxy.setCurrentVisualStyle(vs);
 				};
 			};

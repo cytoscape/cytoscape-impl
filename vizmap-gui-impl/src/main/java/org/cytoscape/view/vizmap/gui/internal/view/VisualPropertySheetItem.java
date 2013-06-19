@@ -585,10 +585,12 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				if (prop == null)
 					return null;
 
-				if (prop.getDisplayName().equals(VizMapPropertyBuilder.GRAPHICAL_MAP_VIEW))
+				final String displayName = prop.getDisplayName();
+				
+				if (displayName.equals(VizMapPropertyBuilder.GRAPHICAL_MAP_VIEW))
 					return "Click to edit this mapping...";
 
-				if (prop.getDisplayName() == "Controlling Attribute" || prop.getDisplayName() == "Mapping Type")
+				if (displayName.equals(VizMapPropertyBuilder.COLUMN) || displayName.equals(VizMapPropertyBuilder.MAPPING_TYPE))
 					return "<html><Body BgColor=\"white\"><font Size=\"4\" Color=\"#" + colorString.substring(2, 8)
 							+ "\"><strong>" + prop.getDisplayName() + " = " + prop.getValue()
 							+ "</font></strong></body></html>";

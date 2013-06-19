@@ -176,9 +176,6 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 			if (icons != null && index >= 0 && component instanceof JLabel)
 				lbl.setIcon(icons[index]);
 
-			if (value == null)
-				lbl.setText("-- Select Value --");
-
 			return lbl;
 		}
 	}

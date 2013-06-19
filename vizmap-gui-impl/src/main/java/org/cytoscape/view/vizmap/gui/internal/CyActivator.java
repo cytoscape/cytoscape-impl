@@ -29,9 +29,6 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.util.Properties;
 
-import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.event.CyEventHelper;
@@ -145,20 +142,7 @@ public class CyActivator extends AbstractCyActivator {
 		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,visualMappingManagerServiceRef);
 		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(visualMappingManagerServiceRef);
 		
-		DefaultTableCellRenderer emptyBoxRenderer = new DefaultTableCellRenderer();
-		DefaultTableCellRenderer filledBoxRenderer = new DefaultTableCellRenderer();
-		emptyBoxRenderer = new DefaultTableCellRenderer();
-		emptyBoxRenderer.setHorizontalTextPosition(SwingConstants.CENTER);
-		emptyBoxRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-		emptyBoxRenderer.setBackground(new Color(0, 200, 255, 20));
-		emptyBoxRenderer.setForeground(Color.red);
-		emptyBoxRenderer.setFont(new Font("SansSerif", Font.BOLD, 12));
-
-		filledBoxRenderer = new DefaultTableCellRenderer();
-		filledBoxRenderer.setBackground(Color.white);
-		filledBoxRenderer.setForeground(Color.blue);
-
-		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyApplicationManagerServiceRef, editorManager, emptyBoxRenderer, filledBoxRenderer);
+		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyApplicationManagerServiceRef, editorManager);
 		
 		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(visualMappingManagerServiceRef);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(visualMappingManagerServiceRef,visualStyleFactoryServiceRef);

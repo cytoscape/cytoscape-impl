@@ -24,6 +24,8 @@ package org.cytoscape.view.vizmap.gui.internal.view;
  * #L%
  */
 
+import java.awt.Color;
+import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +34,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
@@ -68,24 +72,21 @@ import com.l2fprod.common.propertysheet.PropertySheetTable;
  */
 public class VizMapPropertyBuilder {
 
+	public static final String COLUMN = "Column";
+	public static final String MAPPING_TYPE = "Mapping Type";
 	public static final String GRAPHICAL_MAP_VIEW = "Graphical View";
 	
 	private static final Logger logger = LoggerFactory.getLogger(VizMapPropertyBuilder.class);
 
-	private final DefaultTableCellRenderer emptyBoxRenderer;
-	private final DefaultTableCellRenderer filledBoxRenderer;
+	private final DefaultTableCellRenderer defaultTableCellRenderer;
 
 	private final EditorManager editorManager;
 	private final CyApplicationManager appManager;
 
-	public VizMapPropertyBuilder(final CyApplicationManager appManager,
-								 final EditorManager editorManager,
-								 final DefaultTableCellRenderer emptyBoxRenderer,
-								 final DefaultTableCellRenderer filledBoxRenderer) {
+	public VizMapPropertyBuilder(final CyApplicationManager appManager, final EditorManager editorManager) {
 		this.appManager = appManager;
 		this.editorManager = editorManager;
-		this.emptyBoxRenderer = emptyBoxRenderer;
-		this.filledBoxRenderer = filledBoxRenderer;
+		this.defaultTableCellRenderer = new DefaultVizMapTableCellRenderer();
 	}
 
 	/**
@@ -104,24 +105,27 @@ public class VizMapPropertyBuilder {
 						CellType.VISUAL_PROPERTY_TYPE, visualProperty, String.class);
 
 		// Build Property object
-		columnProp.setDisplayName("Column");
-		columnProp.setValue("Select Column");
+		columnProp.setDisplayName(COLUMN);
+		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
+				columnProp, defaultTableCellRenderer);
 		
-		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, V>> mappingProp = 
+		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, V>> mapTypeProp = 
 				new VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, V>>(
-						CellType.MAPPING_TYPE, "Mapping Type", VisualMappingFunctionFactory.class);
+						CellType.MAPPING_TYPE, MAPPING_TYPE, VisualMappingFunctionFactory.class);
 		
-		mappingProp.setDisplayName("Mapping Type");
+		mapTypeProp.setDisplayName(MAPPING_TYPE);
+		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
+				mapTypeProp, defaultTableCellRenderer);
 
 		propertySheetPanel.addProperty(0, columnProp);
-		propertySheetPanel.addProperty(1, mappingProp);
+		propertySheetPanel.addProperty(1, mapTypeProp);
 		propertySheetPanel.repaint();
 		
 		final PropertyEditorRegistry propEditorRegistry = 
 				(PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory();
 		propEditorRegistry.registerEditor(columnProp, 
 				editorManager.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) visualProperty.getTargetDataType()));
-		propEditorRegistry.registerEditor(mappingProp, editorManager.getDefaultComboBoxEditor("mappingTypeEditor"));
+		propEditorRegistry.registerEditor(mapTypeProp, editorManager.getDefaultComboBoxEditor("mappingTypeEditor"));
 	}
 	
 	/**
@@ -145,27 +149,27 @@ public class VizMapPropertyBuilder {
 						CellType.VISUAL_PROPERTY_TYPE, vp, String.class);
 
 		// Build Property object
-		columnProp.setDisplayName("Column");
-		columnProp.setInternalValue(factory); // TODO Why???
+		columnProp.setDisplayName(COLUMN);
+		columnProp.setValue(visualMapping.getMappingColumnName());
+		columnProp.setInternalValue(factory);
 
 		final String attrName = visualMapping.getMappingColumnName();
 		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<K, V>> mapTypeProp = 
 				new VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<K, V>>(
-						CellType.MAPPING_TYPE, "Mapping Type", VisualMappingFunctionFactory.class);
+						CellType.MAPPING_TYPE, MAPPING_TYPE, VisualMappingFunctionFactory.class);
 
-		if (attrName == null) {
-			columnProp.setValue("Select Column");
-			((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
-					columnProp, emptyBoxRenderer);
-		} else {
-			columnProp.setValue(attrName);
-			((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
-					columnProp, filledBoxRenderer);
-		}
+		if (attrName == null)
+			columnProp.setValue(null);
+			
+		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
+				columnProp, defaultTableCellRenderer);
 
-		mapTypeProp.setDisplayName("Mapping Type");
+		mapTypeProp.setDisplayName(MAPPING_TYPE);
 		mapTypeProp.setValue(factory); // Set mapping type as string.
 		mapTypeProp.setInternalValue(visualMapping);
+		
+		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
+				mapTypeProp, defaultTableCellRenderer);
 
 		// TODO: Should refactor factory.
 
@@ -243,6 +247,7 @@ public class VizMapPropertyBuilder {
 
 			// FIXME
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, propertySheetPanel);
+			propertySheetPanel.getTable().setRowHeight(propertySheetPanel.getTable().getRowHeight()); // TODO remove this line
 
 		} else if (visualMapping instanceof ContinuousMapping) {
 			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
@@ -296,8 +301,8 @@ public class VizMapPropertyBuilder {
 					final CellType cellType = ((VizMapperProperty<?, ?, ?>) p).getCellType();
 					
 					if (cellType == CellType.CONTINUOUS || cellType == CellType.DISCRETE) {
-//						if (cellType == CellType.CONTINUOUS)
-//							rendReg.unregisterRenderer(p);
+						if (cellType == CellType.CONTINUOUS)
+							rendReg.unregisterRenderer(p);
 						
 						propertySheetPanel.removeProperty(p);
 					}
@@ -402,6 +407,25 @@ public class VizMapPropertyBuilder {
 			
 			valProp.setValue(val);
 			valProp.setInternalValue(mapping);
+		}
+	}
+	
+	private static class DefaultVizMapTableCellRenderer extends DefaultTableCellRenderer {
+		
+		private static final long serialVersionUID = 3837281348887354114L;
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+				int row, int column) {
+			final Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			
+			if (c instanceof JLabel && value == null)
+				((JLabel) c).setText("-- select value --");
+			
+			if (!isSelected)
+				c.setForeground(Color.DARK_GRAY);
+			
+			return c;
 		}
 	}
 }
