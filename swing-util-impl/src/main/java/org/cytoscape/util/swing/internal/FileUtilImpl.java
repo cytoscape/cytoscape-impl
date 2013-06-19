@@ -229,27 +229,29 @@ class FileUtilImpl implements FileUtil {
 						results[0] = tmp;
 					}
 					
-					boolean extensionFound = false;
-					for (int k = 0; k < results.length; ++k) {
-						String path = results[k].getPath();
-						for (final FileChooserFilter filter : filters) {
-							String []filterExtensions = filter.getExtensions();
-							for (int t = 0; t < filterExtensions.length; ++t) {
-								if(path.endsWith("."+filterExtensions[t]))
-									extensionFound = true;
+					if (filters != null && !filters.isEmpty()) {
+						boolean extensionFound = false;
+						for (int k = 0; k < results.length; ++k) {
+							String path = results[k].getPath();
+							for (final FileChooserFilter filter : filters) {
+								String []filterExtensions = filter.getExtensions();
+								for (int t = 0; t < filterExtensions.length; ++t) {
+									if(path.endsWith("."+filterExtensions[t]))
+										extensionFound = true;
+								}
 							}
+							if (!extensionFound) {
+									JOptionPane.showMessageDialog(
+										chooser,
+										"Cytoscape does not recognize files with suffix '"
+										+ path.substring(path.lastIndexOf("."))
+										+ "' . Please choose another file.",
+										"File extension incorrect",
+										JOptionPane.WARNING_MESSAGE);
+									return null;
+							}
+							extensionFound = false;
 						}
-						if (!extensionFound) {
-								JOptionPane.showMessageDialog(
-									chooser,
-									"Cytoscape does not recognize files with suffix '"
-									+ path.substring(path.lastIndexOf("."))
-									+ "' . Please choose another file.",
-									"File extension incorrect",
-									JOptionPane.WARNING_MESSAGE);
-								return null;
-						}
-						extensionFound = false;
 					}
 				}
 			} else if (loadSaveCustom == SAVE) {
