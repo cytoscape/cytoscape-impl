@@ -87,7 +87,7 @@
 			 <executions>
 			   <execution>
 				 <id>copy-javahelp</id>
-				 <phase>generate-sources</phase>
+				 <phase>process-resources</phase>
 				 <goals>
 				   <goal>unpack</goal>
 				 </goals>
