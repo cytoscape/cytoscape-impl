@@ -26,55 +26,46 @@ package org.cytoscape.task.internal.loaddatatable;
 
 
 
-import java.net.URI;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.task.read.LoadTableFileTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 
 
-abstract class AbstractLoadAttributesTask extends AbstractTask {
-
-	private final CyTableReaderManager mgr;
+public class ImportAttributesFileTaskFactoryImpl extends AbstractTaskFactory implements LoadTableFileTaskFactory{
+	private CyTableReaderManager mgr;
+	
+	private final TunableSetter tunableSetter; 
 	private final CyNetworkManager netMgr;
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	
-	public AbstractLoadAttributesTask(final CyTableReaderManager mgr, final CyNetworkManager netMgr, final CyTableManager tabelMgr, 
-			final CyRootNetworkManager rootNetMgr) {
+	public ImportAttributesFileTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr, 
+			final CyTableManager tabelMgr,final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
+		this.tunableSetter = tunableSetter;
 		this.netMgr = netMgr;
 		this.tableMgr = tabelMgr;
 		this.rootNetMgr = rootNetMgr;
 	}
 
-	void loadTable(final String name, final URI uri, boolean combine, final TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setStatusMessage("Finding Table Data Reader...");
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(2, new ImportAttributesFileTask(mgr, netMgr, tableMgr, rootNetMgr));
+	}
 
-		CyTableReader reader = mgr.getReader(uri,uri.toString());
+	@Override
+	public TaskIterator createTaskIterator(File file) {
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("file", file);
 
-		
-		if (reader == null)
-			throw new NullPointerException("Failed to find reader for specified file.");
-		if(combine)
-		{
-
-			taskMonitor.setStatusMessage("Importing Data Table...");
-			
-			insertTasksAfterCurrentTask(new CombineReaderAndMappingTask( reader, netMgr, rootNetMgr));
-			//, new AddImportedTableTask(tableMgr, reader)); //imported tables are not getting registered anymore
-		}
-		else
-		{
-			taskMonitor.setStatusMessage("Loading Data Table...");
-			
-			insertTasksAfterCurrentTask(new ReaderTableTask( reader, netMgr, rootNetMgr) , new AddImportedTableTask(tableMgr, reader));
-		}
-		
+		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }
-
