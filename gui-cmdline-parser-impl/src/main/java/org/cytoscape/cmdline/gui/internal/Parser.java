@@ -96,13 +96,13 @@ public class Parser {
 
 		opt.addOption(OptionBuilder
 		              .withLongOpt("plugin")
-		              .withDescription("Load a SIMPLIFIED plugin jar file/URL.")
+		              .withDescription("Load a SIMPLIFIED plugin jar file/URL (not implemented in current release).")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("p"));
 
 		opt.addOption(OptionBuilder
 		              .withLongOpt("bundle")
-		              .withDescription("Load a BUNDLE plugin jar file or URL.")
+		              .withDescription("Load a BUNDLE plugin jar file or URL (not implemented in current release).")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("b"));
 
