@@ -379,19 +379,41 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				});
 				
 				// Bypass popup menu items
-				final JPopupMenu bypassMenu = vpSheetItem.getBypassMenu();
-				bypassMenu.add(new JMenuItem(new AbstractAction("Set Bypass...") {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						openLockedValueEditor(e, vpSheetItem);
-					}
-				}));
-				bypassMenu.add(new JMenuItem(new AbstractAction("Remove Bypass") {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						removeLockedValue(e, vpSheetItem);
-					}
-				}));
+				if (vpSheetItem.getModel().isLockedValueAllowed()) {
+					final JPopupMenu bypassMenu = new JPopupMenu();
+					
+					bypassMenu.add(new JMenuItem(new AbstractAction("Set Bypass...") {
+						@Override
+						public void actionPerformed(final ActionEvent e) {
+							openLockedValueEditor(e, vpSheetItem);
+						}
+					}));
+					bypassMenu.add(new JMenuItem(new AbstractAction("Remove Bypass") {
+						@Override
+						public void actionPerformed(final ActionEvent e) {
+							removeLockedValue(e, vpSheetItem);
+						}
+					}));
+					
+					vpSheetItem.getBypassBtn().addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(final ActionEvent e) {
+							final LockedValueState state = vpSheetItem.getModel().getLockedValueState();
+							final DropDownMenuButton btn = vpSheetItem.getBypassBtn();
+							
+							if (state == LockedValueState.ENABLED_NOT_SET) {
+								// There is only one option to execute, so do it now, rather than showing the popup menu
+								openLockedValueEditor(e, vpSheetItem);
+								// Make sure the drop-down menu is removed, so it's not displayed
+								// after this action is executed
+								btn.setPopupMenu(null);
+							} else {
+								bypassMenu.show(btn, 0, btn.getHeight());
+								bypassMenu.requestFocusInWindow();
+							}
+						}
+					});
+				}
 				
 				// Right-click
 				vpSheetItem.addMouseListener(new MouseAdapter() {
@@ -673,11 +695,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		T value = null;
 		LockedValueState state = LockedValueState.DISABLED;
 
-		if (lockedValues.isEmpty() && !selectedViews.isEmpty()) {
-			state = LockedValueState.ENABLED_NOT_SET;
-		} else if (lockedValues.size() == 1) {
+		if (lockedValues.size() == 1) {
 			value = lockedValues.iterator().next();
-			state = LockedValueState.ENABLED_UNIQUE_VALUE;
+			state = value == null ? LockedValueState.ENABLED_NOT_SET : LockedValueState.ENABLED_UNIQUE_VALUE;
 		} else if (lockedValues.size() > 1) {
 			state = LockedValueState.ENABLED_MULTIPLE_VALUES;
 		}
@@ -769,7 +789,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		model.setLockedValue(newValue);
 		model.setLockedValueState(newValue == null ? 
 				LockedValueState.ENABLED_NOT_SET : LockedValueState.ENABLED_UNIQUE_VALUE);
-		vpSheetItem.updateBypassButton();
 		
 		curNetView.updateView();
 	}
@@ -795,7 +814,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		model.setLockedValue(null);
 		model.setLockedValueState(LockedValueState.ENABLED_NOT_SET);
-		vpSheetItem.updateBypassButton();
 		
 		curNetView.updateView();
 	}

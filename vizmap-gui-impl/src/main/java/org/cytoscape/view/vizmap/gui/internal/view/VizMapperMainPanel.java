@@ -278,31 +278,22 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private JPanel getStylesPnl() {
 		if (stylesPnl == null) {
 			stylesPnl = new JPanel();
-			
-			final JLabel curStyleLabel = new JLabel("Current Visual Style");
+			stylesPnl.setBorder(BorderFactory.createTitledBorder("Current Visual Style"));
 			
 			final GroupLayout stylesPanelLayout = new GroupLayout(stylesPnl);
 			stylesPnl.setLayout(stylesPanelLayout);
 			
 			stylesPanelLayout.setHorizontalGroup(stylesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
 					.addGroup(stylesPanelLayout.createSequentialGroup()
-							.addContainerGap()
-							.addGroup(stylesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-									.addComponent(curStyleLabel)
-									.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE))
+							.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE)
 							.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 							.addComponent(getOptionsBtn(), GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
-							.addContainerGap()
 					));
 			stylesPanelLayout.setVerticalGroup(stylesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-					.addGroup(stylesPanelLayout.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(curStyleLabel)
-							.addGroup(stylesPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-									.addComponent(getStylesBtn(), GroupLayout.PREFERRED_SIZE,
-												  GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-									.addComponent(getOptionsBtn()))
-					));
+					.addComponent(getStylesBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+							GroupLayout.PREFERRED_SIZE)
+					.addComponent(getOptionsBtn())
+					);
 		}
 		
 		return stylesPnl;
@@ -385,9 +376,16 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	class VisualStyleDropDownButton extends DropDownMenuButton {
 
-		private static final int ITEM_WIDTH = 120;
-		private static final int MAX_COLUMNS = 3;
-		private static final int MAX_ROWS = 5;
+		final int ITEM_WIDTH = 120;
+		final int MAX_COLUMNS = 3;
+		final int MAX_ROWS = 5;
+		
+		final Color BG_COLOR = Color.WHITE;
+		final Color FG_COLOR = UIManager.getColor("Table.foreground");
+		final Color SEL_BG_COLOR = UIManager.getColor("Table.focusCellBackground");
+		final Color SEL_FG_COLOR = UIManager.getColor("Table.focusCellForeground");
+		final Color BORDER_COLOR = new Color(212, 212, 212);
+		final Color FOCUS_COLOR = UIManager.getColor("Focus.color");
 		
 		private int cols;
 		
@@ -518,8 +516,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 		
 		private JPanel createItem(final VisualStyle vs) {
-			final Color BG_COLOR = UIManager.getColor("Table.background");
-			
 			final JPanel panel = new JPanel(new BorderLayout());
 			panel.setBackground(BG_COLOR);
 			
@@ -597,13 +593,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 
 		private void updateItem(final JPanel panel, final VisualStyle vs) {
-			final Color BG_COLOR = UIManager.getColor("Table.background");
-			final Color FG_COLOR = UIManager.getColor("Table.foreground");
-			final Color SEL_BG_COLOR = UIManager.getColor("Table.focusCellBackground");
-			final Color SEL_FG_COLOR = UIManager.getColor("Table.focusCellForeground");
-			final Color BORDER_COLOR = UIManager.getColor("Separator.foreground");
-			final Color FOCUS_COLOR = UIManager.getColor("Focus.color");
-			
 			final Border border = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2,  2,  2,  2),
 					BorderFactory.createLineBorder(BORDER_COLOR, 1));
 			final Border focusBorder = BorderFactory.createLineBorder(FOCUS_COLOR, 3);

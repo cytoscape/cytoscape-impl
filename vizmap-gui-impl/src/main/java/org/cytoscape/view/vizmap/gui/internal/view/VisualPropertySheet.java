@@ -1,8 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -31,7 +28,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -42,9 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -177,7 +171,7 @@ public class VisualPropertySheet extends JPanel{
 			
 			// Add an empty panel to fill the vertical gap
 			final JPanel fillPnl = new JPanel();
-			fillPnl.setBackground(UIManager.getColor("Table.background"));
+			fillPnl.setBackground(VisualPropertySheetItem.BG_COLOR);
 			c.fill = GridBagConstraints.BOTH;
 			c.weighty = 1;
 			p.add(fillPnl, c);
@@ -246,21 +240,9 @@ public class VisualPropertySheet extends JPanel{
 	private JPanel getToolBarPnl() {
 		if (toolBarPnl == null) {
 			toolBarPnl = new JPanel();
-			
-			final JToolBar toolBar = new JToolBar();
-			toolBar.setOpaque(false);
-			toolBar.setBorder(BorderFactory.createEmptyBorder());
-			// TODO
-			
-			final GroupLayout toolbarPnlLayout = new GroupLayout(toolBarPnl);
-			toolBarPnl.setLayout(toolbarPnlLayout);
-			
-			toolbarPnlLayout.setHorizontalGroup(toolbarPnlLayout.createSequentialGroup()
-					.addComponent(getAddVpsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(toolBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE));
-			toolbarPnlLayout.setVerticalGroup(toolbarPnlLayout.createParallelGroup(Alignment.CENTER)
-					.addComponent(getAddVpsBtn())
-					.addComponent(toolBar));
+			toolBarPnl.setLayout(new BoxLayout(toolBarPnl, BoxLayout.X_AXIS));
+			toolBarPnl.add(getAddVpsBtn());
+			toolBarPnl.add(Box.createHorizontalGlue());
 		}
 		
 		return toolBarPnl;
@@ -535,13 +517,13 @@ public class VisualPropertySheet extends JPanel{
 	
 	private static class HeaderLabel extends JLabel {
 		
-		final static Font font = new Font("Arial", Font.BOLD, 10);
-		final static Color fgColor = Color.WHITE;
+		final static Font FONT = new Font("Arial", Font.BOLD, 10);
+		final static Color FG_COLOR = Color.WHITE;
 		
 		HeaderLabel(final String text) {
 			super(text);
-			setFont(font);
-			setForeground(fgColor);
+			setFont(FONT);
+			setForeground(FG_COLOR);
 			setHorizontalAlignment(CENTER);
 			setVerticalAlignment(BOTTOM);
 			

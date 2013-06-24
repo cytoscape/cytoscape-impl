@@ -51,8 +51,8 @@ public class DropDownMenuButton extends JButton {
 	private JPopupMenu popupMenu;
 	private final boolean showMenuArrowIcon;
 	private final ActionListener defaultActionListener;
-	protected boolean isShowingPopup;
-	protected boolean showPopup;
+//	protected boolean isShowingPopup;
+//	protected boolean showPopup;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -181,7 +181,7 @@ public class DropDownMenuButton extends JButton {
 			buttonIcon.paintIcon(this, g, x, y);
 		}
 	}
-
+	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private synchronized void updateEnabled() {

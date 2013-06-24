@@ -30,13 +30,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.cytoscape.model.CyNode;
@@ -71,12 +68,32 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private static final int BUTTON_V_PAD = 2;
 	private static final int BUTTON_H_PAD = 4;
 	
+	static final Color FG_COLOR = new Color(115, 115, 115);
+	static final Color BG_COLOR = Color.WHITE;
+	static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
 	
-	private Color fgColor = new Color(115, 115, 115);
-	private Color bgColor = UIManager.getColor("Table.background");
-	private Color selectedBgColor = new Color(222, 234, 252);
-	private Color borderColor = UIManager.getColor("Separator.foreground");
-	private Color disabledColor = UIManager.getColor("Panel.background");
+	static final Color BTN_BORDER_COLOR = new Color(200, 200, 200);
+	static final Color BTN_BORDER_DISABLED_COLOR = new Color(238, 238, 238);
+	static final int BTN_H_MARGIN = 1;
+	static final int BTN_BORDER_WIDTH = 1;
+	
+	private static final Border BTN_BORDER;
+	private static final Border BTN_BORDER_DISABLED;
+	
+	static {
+		Border marginBorder = BorderFactory.createEmptyBorder(1, BTN_H_MARGIN, 0, BTN_H_MARGIN);
+		Border padBorder = BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD + 1,
+				BUTTON_H_PAD);
+		Border border = BorderFactory.createMatteBorder(BTN_BORDER_WIDTH, BTN_BORDER_WIDTH, 0, BTN_BORDER_WIDTH,
+				BTN_BORDER_COLOR);
+		BTN_BORDER =  BorderFactory.createCompoundBorder(
+				BorderFactory.createCompoundBorder(marginBorder, border), padBorder);
+		
+		Border disBorder = BorderFactory.createMatteBorder(BTN_BORDER_WIDTH, BTN_BORDER_WIDTH, 0, BTN_BORDER_WIDTH, 
+				BTN_BORDER_DISABLED_COLOR);
+		BTN_BORDER_DISABLED =  BorderFactory.createCompoundBorder(
+				BorderFactory.createCompoundBorder(marginBorder, disBorder), padBorder);
+	}
 	
 	private JPanel topPnl;
 	private JPanel mappingPnl;
@@ -86,7 +103,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private JToggleButton mappingBtn;
 	private DropDownMenuButton bypassBtn;
 	private JCheckBox dependencyCkb;
-	private JPopupMenu bypassMenu;
 	private JLabel titleLbl;
 	private PropertySheetTable propSheetTbl;
 	
@@ -141,7 +157,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	public void update() {
 		updateSelection();
 		updateDefaultButton();
-		updateBypassButton(getBypassBtn());
+		updateBypassButton();
 		updateMapping();
 		
 		if (model.getVisualMappingFunction() != null)
@@ -156,7 +172,35 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	}
 	
 	public void updateBypassButton() {
-		updateBypassButton(getBypassBtn());
+		final LockedValueState state = model.getLockedValueState();
+		final DropDownMenuButton btn = getBypassBtn();
+		
+		btn.setEnabled(state != LockedValueState.DISABLED);
+		btn.setBorder(btn.isEnabled() ? BTN_BORDER : BTN_BORDER_DISABLED);
+		
+		// TODO: create better icons
+		btn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
+		
+		if (state == LockedValueState.ENABLED_UNIQUE_VALUE) {
+			btn.setText(null);
+		} else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES) {
+			btn.setText("?");
+		} else {
+			btn.setText("");
+		}
+		
+		final String elementsStr = model.getTargetDataType() == CyNode.class ? "nodes" : "edges";
+		
+		String toolTipText = "No bypass";
+		
+		if (state == LockedValueState.DISABLED)
+			toolTipText = "To bypass the visual property, first select one or more " + elementsStr;
+		else if (state == LockedValueState.ENABLED_UNIQUE_VALUE)
+			toolTipText = "Bypass: " + model.getLockedValue();
+		else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES)
+			toolTipText = "The selected " + elementsStr + " have different bypass values";
+		
+		btn.setToolTipText(toolTipText);
 	}
 	
 	public void updateMapping() {
@@ -170,8 +214,8 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
-		setBackground(bgColor);
-		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
+		setBackground(BG_COLOR);
+		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BTN_BORDER_COLOR));
 		setLayout(new BorderLayout());
 		
 		add(getTopPnl(), BorderLayout.NORTH);
@@ -361,8 +405,8 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			expandCollapseBtn.setMinimumSize(d);
 			expandCollapseBtn.setPreferredSize(d);
 			expandCollapseBtn.setMaximumSize(d);
-			expandCollapseBtn.setForeground(fgColor);
-			expandCollapseBtn.setBackground(bgColor);
+			expandCollapseBtn.setForeground(FG_COLOR);
+			expandCollapseBtn.setBackground(BG_COLOR);
 			expandCollapseBtn.setBorder(
 					BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD, BUTTON_H_PAD));
 			expandCollapseBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -443,21 +487,13 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	protected DropDownMenuButton getBypassBtn() {
 		if (bypassBtn == null) {
-			bypassBtn = new DropDownMenuButton(getBypassMenu(), false);
+			bypassBtn = new DropDownMenuButton(false);
 			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			bypassBtn.setUI(new VPButtonUI());
-			updateBypassButton(bypassBtn);
+			updateBypassButton();
 		}
 		
 		return bypassBtn;
-	}
-	
-	protected JPopupMenu getBypassMenu() {
-		if (bypassMenu == null) {
-			bypassMenu = new JPopupMenu();
-		}
-		
-		return bypassMenu;
 	}
 	
 	private JLabel getTitleLbl() {
@@ -467,37 +503,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		}
 		
 		return titleLbl;
-	}
-	
-	private void updateBypassButton(final JButton btn) {
-		final LockedValueState state = model.getLockedValueState();
-		
-//		btn.setVisible(state != LockedValueState.DISABLED);
-		btn.setEnabled(state != LockedValueState.DISABLED);
-		
-		// TODO: create better icons
-		btn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
-		
-		if (state == LockedValueState.ENABLED_UNIQUE_VALUE) {
-			btn.setText(null);
-		} else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES) {
-			btn.setText("?");
-		} else {
-			btn.setText("");
-		}
-		
-		final String elementsStr = model.getTargetDataType() == CyNode.class ? "nodes" : "edges";
-		
-		String toolTipText = "No bypass";
-		
-		if (state == LockedValueState.DISABLED)
-			toolTipText = "To bypass the visual property, first select one or more " + elementsStr;
-		else if (state == LockedValueState.ENABLED_UNIQUE_VALUE)
-			toolTipText = "Bypass: " + model.getLockedValue();
-		else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES)
-			toolTipText = "The selected " + elementsStr + " have different bypass values";
-		
-		btn.setToolTipText(toolTipText);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -532,10 +537,10 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	}
 	
 	private void updateSelection() {
-		getTopPnl().setBackground(selected ? selectedBgColor : bgColor);
+		getTopPnl().setBackground(selected ? SELECTED_BG_COLOR : BG_COLOR);
 		
 		if (model.isVisualMappingAllowed()) {
-			getShowMappingBtn().setBackground(selected ? selectedBgColor : bgColor);
+			getShowMappingBtn().setBackground(selected ? SELECTED_BG_COLOR : BG_COLOR);
 			getShowMappingBtn().repaint();
 		}
 	}
@@ -684,13 +689,10 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	static class VPButtonUI extends BasicButtonUI {
 
-		private static final int H_MARGIN = 1;
-		private static final int BORDER_WIDTH = 1;
-		
-		private static final Color BG_OVER_COLOR = new Color(224, 232, 246);
-		private static final Color BORDER_OVER_COLOR = new Color(152, 180, 226);
-		private static final Color BG_SELECTED_COLOR = new Color(193, 210, 238);
-		private static final Color BORDER_SELECTED_COLOR = new Color(125, 125, 125);
+		static final Color BG_OVER_COLOR = new Color(224, 232, 246);
+		static final Color BORDER_OVER_COLOR = new Color(152, 180, 226);
+		static final Color BG_SELECTED_COLOR = new Color(193, 210, 238);
+		static final Color BORDER_SELECTED_COLOR = new Color(125, 125, 125);
 		
 		public VPButtonUI() {
 			super();
@@ -707,22 +709,11 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			btn.setVerticalAlignment(SwingConstants.CENTER);
 			btn.setHorizontalAlignment(SwingConstants.CENTER);
 			btn.setFocusPainted(false);
-			btn.setBackground(UIManager.getColor("Table.background"));
+			btn.setBackground(BG_COLOR);
 			btn.setForeground(Color.DARK_GRAY);
 			btn.setFocusable(false);
 			btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-			
-			// margin
-			final Border b1 = BorderFactory.createEmptyBorder(1, H_MARGIN, 0, H_MARGIN);
-			// actual border
-			final Border b2 = BorderFactory.createMatteBorder(BORDER_WIDTH, BORDER_WIDTH, 0, BORDER_WIDTH,
-					UIManager.getColor("Separator.foreground"));
-			// padding
-			final Border b3 = 
-					BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD + 1, BUTTON_H_PAD);
-			final CompoundBorder cb1 = 
-					BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(b1, b2), b3);
-			btn.setBorder(cb1);
+			btn.setBorder(btn.isEnabled() ? BTN_BORDER : BTN_BORDER_DISABLED);
 		}
 
 		@Override
@@ -759,7 +750,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		}
 		
 		static int getPreferredWidth() {
-			return VALUE_ICON_WIDTH + 2*H_MARGIN + 2*BORDER_WIDTH + 2*BUTTON_H_PAD;
+			return VALUE_ICON_WIDTH + 2*BTN_H_MARGIN + 2*BTN_BORDER_WIDTH + 2*BUTTON_H_PAD;
 		}
 	}
 }
