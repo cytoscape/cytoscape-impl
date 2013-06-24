@@ -67,6 +67,7 @@ class TFExecutor implements Executor {
 		public void setStatusMessage(String statusMessage) {
 			//System.out.println("set statusMessage: " + statusMessage);
 		}
-
+        public void showMessage(TaskMonitor.Level level, String message) {
+        }
 	}
 }

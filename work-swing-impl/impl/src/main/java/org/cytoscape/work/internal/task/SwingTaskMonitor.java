@@ -196,6 +196,10 @@ class SwingTaskMonitor implements TaskMonitor {
 			dialog.setStatus(statusMessage);
 	}
 
+    public void showMessage(TaskMonitor.Level level, String message) {
+        setStatusMessage(message);
+    }
+
 	public void setProgress(final double progress) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {

@@ -50,8 +50,22 @@ class LoggingTaskMonitor implements TaskMonitor {
 	}
 
 	public void setStatusMessage(String statusMessage) {
-		logger.info("Task (" + task.toString() + ") status: " + statusMessage);
+		showMessage(TaskMonitor.Level.INFO, statusMessage);
 	}
+
+    public void showMessage(TaskMonitor.Level level, String message) {
+        switch(level) {
+            case INFO:
+                logger.info("Task (" + task.toString() + ") status: " + message);
+                break;
+            case WARN:
+                logger.warn("Task (" + task.toString() + ") status: " + message);
+                break;
+            case ERROR:
+                logger.error("Task (" + task.toString() + ") status: " + message);
+                break;
+        }
+    }
 
 	public void setProgress(double progress) {
 		int prog = (int) Math.floor(progress * 100);

@@ -39,4 +39,7 @@ public class NullTaskMonitor implements TaskMonitor {
 	@Override
 	public void setStatusMessage(String statusMessage) {
 	}
+
+    public void showMessage(TaskMonitor.Level level, String message) {
+    }
 }

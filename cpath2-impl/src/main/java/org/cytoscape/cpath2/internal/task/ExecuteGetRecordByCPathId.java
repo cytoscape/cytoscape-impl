@@ -558,6 +558,9 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		@Override
 		public void setTitle(String arg0) {
 		}
+
+        public void showMessage(TaskMonitor.Level level, String mesage) {
+        }
 	}
 
 	private void fixDisplayName(Model model) {
