@@ -36,6 +36,7 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
+import org.cytoscape.work.internal.task.TaskManagerImpl;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
@@ -85,6 +86,7 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef);
+		DialogTaskManager dialogTaskManager = new TaskManagerImpl(jDialogTunableMutator, cyPropertyServiceRef);
 
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 
@@ -122,8 +124,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,undoSupport,UndoSupport.class, undoSupportProps);
 		registerService(bc,undoSupport,SwingUndoSupport.class, undoSupportProps);
 
-		registerService(bc,jDialogTaskManager,DialogTaskManager.class, new Properties());
-		registerService(bc,jDialogTaskManager,TaskManager.class, new Properties());
+		//registerService(bc,jDialogTaskManager,DialogTaskManager.class, new Properties());
+		//registerService(bc,jDialogTaskManager,TaskManager.class, new Properties());
+		registerService(bc,dialogTaskManager,DialogTaskManager.class, new Properties());
+		registerService(bc,dialogTaskManager,TaskManager.class, new Properties());
 
 		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
 		
@@ -147,6 +151,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,supportedFileTypesManager,"addCyWriterTaskFactory","removeCyWriterTaskFactory",CyWriterFactory.class);
 
 		registerServiceListener(bc,jDialogTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
+		registerServiceListener(bc,dialogTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
 
 		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
