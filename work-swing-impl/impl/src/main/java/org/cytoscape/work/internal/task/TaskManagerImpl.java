@@ -115,7 +115,7 @@ class TaskRunner implements Runnable {
 	final TaskManagerImpl manager;
 	final ExecutorService cancelExecutor;
 	final TaskIterator iterator;
-	final TaskWindow.TaskUI ui;
+	final TaskUI ui;
 
 	boolean cancelled = false;
 	Task currentTask = null;
@@ -175,7 +175,7 @@ class TaskRunner implements Runnable {
 
 	class CancelListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			ui.hideCancelButton();
+			ui.disableCancelButton();
 			ui.setCancelStatus("Cancelling");
 			cancelled = true;
 			if (currentTask != null) {
@@ -192,10 +192,10 @@ class TaskRunner implements Runnable {
 class TaskMonitorImpl implements TaskMonitor {
 	private static int NUM_LEVELS = TaskMonitor.Level.values().length;
 
-	final TaskWindow.TaskUI ui;
+	final TaskUI ui;
 	final int[] levelCounts = new int[NUM_LEVELS];
 
-	public TaskMonitorImpl(TaskWindow.TaskUI ui) {
+	public TaskMonitorImpl(TaskUI ui) {
 		this.ui = ui;
 	}
 

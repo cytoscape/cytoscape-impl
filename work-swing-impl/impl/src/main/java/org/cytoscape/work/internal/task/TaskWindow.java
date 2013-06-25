@@ -41,32 +41,6 @@ import java.lang.reflect.InvocationTargetException;
  * the user interface for individual tasks.
  */
 class TaskWindow {
-	/**
-	 * Manipulates an individual task panel's user interface.
-	 * Calls to these methods don't have to be on the
-	 * Swing thread.
-	 *
-	 * The task's user interface consists of these components:
-	 * <ul>
-	 * <li>The task title at the top of the task panel</li>
-	 * <li>The progress bar below the title</li>
-	 * <li>A cancel button next to the progress bar</li>
-	 * <li>A message panel below the progress bar with the most recent message shown at the top</li>
-	 * <li>A cancel status message field to the right of the message panel</li>
-	 * </ul>
-	 */
-	public static interface TaskUI {
-		/**
-		 * Hides the progress bar, the cancel button, and the cancel status field.
-		 */
-		public void setTaskAsCompleted();
-		public void setTitle(String title);
-		public void setProgress(float progress);
-		public void addMessage(Icon icon, String msg);
-		public void addCancelListener(ActionListener l);
-		public void setCancelStatus(String status);
-		public void hideCancelButton();
-	}
 
 	protected final JDialog dialog;
 	protected final JScrollPane scrollPane;
@@ -106,20 +80,9 @@ class TaskWindow {
 	}
 	
 	public TaskUI createTaskUI() {
-		final TaskUIImpl[] taskUI = new TaskUIImpl[1]; // a hack to get around the "final" requirement for anonymous classes
-		//try {
-			//SwingUtilities.invokeAndWait(new Runnable() {
-				//public void run() {
-					taskUI[0] = new TaskUIImpl();
-					tasks.add(taskUI[0]);
-					tasksPanel.add(taskUI[0].getPanel());
-				//}
-			//});
-		//} catch (InterruptedException e) {
-			//return null;
-		//} catch (InvocationTargetException e) {
-			//return null;
-		//}
+		final TaskUIImpl taskUI = new TaskUIImpl();
+		tasks.add(taskUI);
+		tasksPanel.add(taskUI.getPanel());
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -128,7 +91,7 @@ class TaskWindow {
 			}
 		});
 
-		return taskUI[0];
+		return taskUI;
 	}
 
 	class CleanAction implements ActionListener {
@@ -147,7 +110,7 @@ class TaskWindow {
 	}
 }	
 
-class TaskUIImpl implements TaskWindow.TaskUI {
+class TaskUIImpl implements TaskUI {
 	private static JLabel labelWithFont(String style) {
 		final JLabel label = new JLabel();
 		if (style == null)
@@ -260,11 +223,11 @@ class TaskUIImpl implements TaskWindow.TaskUI {
 		cancelStatusLabel.setText(status);
 	}
 
-	public void hideCancelButton() {
+	public void disableCancelButton() {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					hideCancelButton();
+					disableCancelButton();
 				}
 			});
 			return;
