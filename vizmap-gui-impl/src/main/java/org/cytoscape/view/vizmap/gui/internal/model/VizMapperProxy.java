@@ -124,11 +124,12 @@ public class VizMapperProxy extends Proxy
 	}
 
 	public void setCurrentVisualStyle(final VisualStyle vs) {
+		final VisualStyle curVs = getCurrentVisualStyle();
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 		boolean changed = false;
 		
 		synchronized (this) {
-			if (vs != getCurrentVisualStyle()) {
+			if (vs != null && !vs.equals(curVs)) {
 				changed = true;
 				vmMgr.setCurrentVisualStyle(vs);
 			}

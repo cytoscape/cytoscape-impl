@@ -70,6 +70,7 @@ import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMapp
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.BooleanVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.ColorVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.EditorManagerImpl;
@@ -233,25 +234,25 @@ public class CyActivator extends AbstractCyActivator {
 		rainbowGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
 		rainbowGeneratorProps.setProperty("title","Rainbow");
 		rainbowGeneratorProps.setProperty("menu","context");
-		registerService(bc,rainbowGenerator,DiscreteMappingGenerator.class, rainbowGeneratorProps);
+		registerService(bc,rainbowGenerator, DiscreteMappingGenerator.class, rainbowGeneratorProps);
 
 		Properties rainbowOscGeneratorProps = new Properties();
 		rainbowOscGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
 		rainbowOscGeneratorProps.setProperty("title","Rainbow OSC");
 		rainbowOscGeneratorProps.setProperty("menu","context");
-		registerService(bc,rainbowOscGenerator,DiscreteMappingGenerator.class, rainbowOscGeneratorProps);
+		registerService(bc,rainbowOscGenerator, DiscreteMappingGenerator.class, rainbowOscGeneratorProps);
 
 		Properties randomColorGeneratorProps = new Properties();
 		randomColorGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
 		randomColorGeneratorProps.setProperty("title","Random Color");
 		randomColorGeneratorProps.setProperty("menu","context");
-		registerService(bc,randomColorGenerator,DiscreteMappingGenerator.class, randomColorGeneratorProps);
+		registerService(bc,randomColorGenerator, DiscreteMappingGenerator.class, randomColorGeneratorProps);
 		
 		Properties numberSeriesGeneratorProps = new Properties();
 		numberSeriesGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
 		numberSeriesGeneratorProps.setProperty("title","Number Series");
 		numberSeriesGeneratorProps.setProperty("menu","context");
-		registerService(bc,seriesGenerator,DiscreteMappingGenerator.class, numberSeriesGeneratorProps);
+		registerService(bc,seriesGenerator, DiscreteMappingGenerator.class, numberSeriesGeneratorProps);
 		
 		Properties randomNumberGeneratorProps = new Properties();
 		randomNumberGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
@@ -293,17 +294,15 @@ public class CyActivator extends AbstractCyActivator {
 																		  servicesUtil,
 																		  editorManager,
 																		  vizMapPropertyBuilder);
+		final VizMapperMenuMediator vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
 		
 		final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand = new ImportDefaultVisualStylesCommand(servicesUtil);
 		final LoadVisualStylesCommand loadVisualStylesCommand = new LoadVisualStylesCommand(servicesUtil);
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,
 																 vizMapperMediator,
+																 vizMapperMenuMediator,
 																 importDefaultVisualStylesCommand,
 																 loadVisualStylesCommand);
-		
-		final VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager,
-				attributeSetManager, vizMapperUtil, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
-		registerServiceListener(bc, vizMapEventHandlerManager, "registerPCL", "unregisterPCL", RenderingEngineFactory.class);
 		
 		registerAllServices(bc, vizMapperProxy, new Properties());
 		registerAllServices(bc, vizMapperMediator, new Properties());
@@ -311,6 +310,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, vizMapperMediator, "onCyActionRegistered", "onCyActionUnregistered", CyAction.class);
 		registerServiceListener(bc, vizMapperMediator, "onTaskFactoryRegistered", "onTaskFactoryUnregistered", TaskFactory.class);
 		registerServiceListener(bc, vizMapperMediator, "onMappingGeneratorRegistered", "onMappingGeneratorUnregistered", DiscreteMappingGenerator.class);
+		
+		registerServiceListener(bc, vizMapperMenuMediator, "onRenderingEngineFactoryRegistered", "onRenderingEngineFactoryUnregistered", RenderingEngineFactory.class);
+		
+		final VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager,
+				attributeSetManager, vizMapperUtil, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
+		registerServiceListener(bc, vizMapEventHandlerManager, "registerPCL", "unregisterPCL", RenderingEngineFactory.class);
 		
 		new ApplicationFacade(startupCommand).startup();
 	}

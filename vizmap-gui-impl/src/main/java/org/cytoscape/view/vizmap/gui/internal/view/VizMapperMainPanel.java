@@ -213,11 +213,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		vpSheetMap.clear();
 	}
 	
-	public VisualPropertySheet getCurrentVisualPropertySheet() {
+	public VisualPropertySheet getSelectedVisualPropertySheet() {
 		return (VisualPropertySheet) getPropertiesPn().getSelectedComponent();
 	}
 	
-	public void setCurrentVisualPropertySheet(final VisualPropertySheet sheet) {
+	public void setSelectedVisualPropertySheet(final VisualPropertySheet sheet) {
 		if (sheet != null) {
 			final int idx = getPropertiesPn().indexOfTab(sheet.getModel().getTitle());
 			
@@ -352,7 +352,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			removeVpMi.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					final VisualPropertySheet vpSheet = getCurrentVisualPropertySheet();
+					final VisualPropertySheet vpSheet = getSelectedVisualPropertySheet();
 					
 					for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
 						vpSheet.setVisible(item, false);
@@ -512,7 +512,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 //			dialog.setSize(new Dimension(dialog.getSize().width, 390));
 			dialog.setVisible(true);
 			dialog.requestFocus();
-//System.out.println(dialog.getX() + "," + dialog.getY()+ " | " + dialog.getSize());
 		}
 		
 		private JPanel createItem(final VisualStyle vs) {

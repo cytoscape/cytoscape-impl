@@ -4,8 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
@@ -73,7 +75,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
 	
 	static final Color BTN_BORDER_COLOR = new Color(200, 200, 200);
-	static final Color BTN_BORDER_DISABLED_COLOR = new Color(238, 238, 238);
+	static final Color BTN_BORDER_DISABLED_COLOR = new Color(248, 248, 248);
 	static final int BTN_H_MARGIN = 1;
 	static final int BTN_BORDER_WIDTH = 1;
 	
@@ -81,18 +83,15 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private static final Border BTN_BORDER_DISABLED;
 	
 	static {
-		Border marginBorder = BorderFactory.createEmptyBorder(1, BTN_H_MARGIN, 0, BTN_H_MARGIN);
 		Border padBorder = BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD + 1,
 				BUTTON_H_PAD);
-		Border border = BorderFactory.createMatteBorder(BTN_BORDER_WIDTH, BTN_BORDER_WIDTH, 0, BTN_BORDER_WIDTH,
-				BTN_BORDER_COLOR);
-		BTN_BORDER =  BorderFactory.createCompoundBorder(
-				BorderFactory.createCompoundBorder(marginBorder, border), padBorder);
+		Border border = BorderFactory.createMatteBorder(BTN_BORDER_WIDTH, BTN_BORDER_WIDTH, 0,
+				BTN_BORDER_WIDTH, BTN_BORDER_COLOR);
+		BTN_BORDER =  BorderFactory.createCompoundBorder(border, padBorder);
 		
-		Border disBorder = BorderFactory.createMatteBorder(BTN_BORDER_WIDTH, BTN_BORDER_WIDTH, 0, BTN_BORDER_WIDTH, 
-				BTN_BORDER_DISABLED_COLOR);
-		BTN_BORDER_DISABLED =  BorderFactory.createCompoundBorder(
-				BorderFactory.createCompoundBorder(marginBorder, disBorder), padBorder);
+		Border disBorder = BorderFactory.createMatteBorder(BTN_BORDER_WIDTH, BTN_BORDER_WIDTH, 0,
+				BTN_BORDER_WIDTH, BTN_BORDER_DISABLED_COLOR);
+		BTN_BORDER_DISABLED =  BorderFactory.createCompoundBorder(disBorder, padBorder);
 	}
 	
 	private JPanel topPnl;
@@ -101,7 +100,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private ExpandCollapseButton expandCollapseBtn;
 	private JButton defaultBtn;
 	private JToggleButton mappingBtn;
-	private DropDownMenuButton bypassBtn;
+	private JButton bypassBtn;
 	private JCheckBox dependencyCkb;
 	private JLabel titleLbl;
 	private PropertySheetTable propSheetTbl;
@@ -173,7 +172,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	public void updateBypassButton() {
 		final LockedValueState state = model.getLockedValueState();
-		final DropDownMenuButton btn = getBypassBtn();
+		final JButton btn = getBypassBtn();
 		
 		btn.setEnabled(state != LockedValueState.DISABLED);
 		btn.setBorder(btn.isEnabled() ? BTN_BORDER : BTN_BORDER_DISABLED);
@@ -248,24 +247,34 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			topPnl.setBorder(BorderFactory.createEmptyBorder(1, 2, 0, 2));
 			topPnl.setLayout(new BoxLayout(topPnl, BoxLayout.X_AXIS));
 			
+			topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
+			
 			if (model.getVisualPropertyDependency() == null)
 				topPnl.add(getDefaultBtn());
 			else
 				topPnl.add(getDependencyCkb());
 			
-			if (model.isVisualMappingAllowed())
-				topPnl.add(getMappingBtn());
+			topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
 			
-			if (model.isLockedValueAllowed())
+			if (model.isVisualMappingAllowed()) {
+				topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
+				topPnl.add(getMappingBtn());
+				topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
+			}
+			
+			if (model.isLockedValueAllowed()) {
+				topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
 				topPnl.add(getBypassBtn());
+				topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
+			}
 			
 			topPnl.add(Box.createHorizontalStrut(4));
 			topPnl.add(getTitleLbl());
 			topPnl.add(Box.createHorizontalGlue());
 			topPnl.add(Box.createHorizontalStrut(4));
 			
-//			if (model.isVisualMappingAllowed())
-//				topPnl.add(getShowMappingBtn()); // Network view properties don't have visual mappings
+			if (model.isVisualMappingAllowed())
+				topPnl.add(getShowMappingBtn()); // Network view properties don't have visual mappings
 			
 			topPnl.add(Box.createRigidArea(new Dimension(0, HEIGHT)));
 			
@@ -430,8 +439,8 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	protected JButton getDefaultBtn() {
 		if (defaultBtn == null) {
-			final Icon icon = getIcon(model.getDefaultValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
-			defaultBtn = new JButton(icon);
+			defaultBtn = new VizMapperButton();
+			defaultBtn.setIcon(getIcon(model.getDefaultValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			defaultBtn.setUI(new VPButtonUI());
 			final Object value = model.getDefaultValue();
 			
@@ -453,8 +462,8 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	protected JToggleButton getMappingBtn() {
 		if (mappingBtn == null) {
-			final Icon icon = getIcon(null, VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT); // TODO
-			mappingBtn = new JToggleButton(icon);
+			mappingBtn = new VizMapperToggleButton();
+			mappingBtn.setIcon(getIcon(null, VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			mappingBtn.setUI(new VPButtonUI());
 			mappingBtn.setHorizontalAlignment(JLabel.CENTER);
 			updateMappingIcon();
@@ -485,9 +494,9 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		return mappingBtn;
 	}
 	
-	protected DropDownMenuButton getBypassBtn() {
+	protected JButton getBypassBtn() {
 		if (bypassBtn == null) {
-			bypassBtn = new DropDownMenuButton(false);
+			bypassBtn = new VizMapperButton();
 			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			bypassBtn.setUI(new VPButtonUI());
 			updateBypassButton();
@@ -686,6 +695,86 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	        g2.dispose();
 	    }
 	}
+
+	static class VizMapperButton extends JButton {
+
+		static final Color BG_COLOR_1 = new Color(226, 226, 226);
+		static final Color BG_COLOR_2 = Color.WHITE;
+		static final Color BG_DISABLED_COLOR = new Color(248, 248, 248);
+		
+		VizMapperButton() {
+			setContentAreaFilled(false);
+		}
+
+		@Override
+		protected void paintComponent(final Graphics g) {
+			paintBackground(g, this);
+			super.paintComponent(g);
+		}
+		
+		static void paintBackground(final Graphics g, final AbstractButton btn) {
+			final Graphics2D g2 = (Graphics2D) g.create();
+			final Paint p;
+			
+			if (btn.isEnabled())
+				p = new GradientPaint(new Point(0, 0), BG_COLOR_1, new Point(0, btn.getHeight()), BG_COLOR_2);
+			else
+				p = BG_DISABLED_COLOR;
+			
+			g2.setPaint(p);
+			g2.fillRect(0, 0, btn.getWidth(), btn.getHeight());
+			g2.dispose();
+		}
+	}
+	
+	static class VizMapperToggleButton extends JToggleButton {
+		
+		VizMapperToggleButton() {
+			setContentAreaFilled(false);
+		}
+		
+		@Override
+		protected void paintComponent(final Graphics g) {
+			VizMapperButton.paintBackground(g, this);
+			super.paintComponent(g);
+//	        paintArrow(g);
+		}
+
+		/**
+		 * Paint expand/collapse arrow.
+		 */
+		private void paintArrow(final Graphics g) {
+	        final Graphics2D g2 = (Graphics2D) g;
+	        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	        
+	        final int lp = 2; // left padding
+//	        final int rp = 3 * getHeight() / 4; // right padding
+//	        final int tp = 3 * getHeight() / 4; // top padding
+	        final int rp = (3 * getHeight() / 4) + 1; // right padding
+	        final int tp = (3 * getHeight() / 4) + 1; // top padding
+	        final int bp = 1; // bottom padding
+	        final int w = getWidth() - lp - rp; // arrow width
+	        final int h = getHeight() - tp - bp; // arrow height
+	        
+	        if (w > 0 && h > 0) {
+		        final int[] xx;
+		        final int[] yy;
+		        
+		        if (isSelected()) {
+		        	xx = new int[]{ lp, lp+w/2, lp+w };
+			        yy = new int[]{ tp, tp+h,   tp };
+		        } else {
+//		        	xx = new int[]{ lp,   lp+w/2, lp+w };
+//			        yy = new int[]{ tp+h, tp,     tp+h };
+		        	xx = new int[]{ lp, lp+w,   lp };
+			        yy = new int[]{ tp, tp+h/2, tp+h };
+		        }
+		        
+		        g2.setPaint(Color.GRAY);
+		        g2.fill(new Polygon(xx, yy, 3));
+	        }
+		}
+	}
 	
 	static class VPButtonUI extends BasicButtonUI {
 
@@ -731,17 +820,17 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				
 				g.fillRect(0, 0, c.getWidth() - 1, c.getHeight());
 
-				if (btnModel.isSelected())
-					g.setColor(BORDER_SELECTED_COLOR);
-				else
-					g.setColor(BORDER_OVER_COLOR);
-				
-				if (btnModel.isSelected())
-					g.drawPolyline(new int[]{ 0,                 0, c.getWidth() - 1, c.getWidth() - 1 },
-								   new int[]{ c.getHeight() - 1, 0, 0,                c.getHeight() - 1 },
-								   4);
-				else
-					g.drawRect(0, 0, c.getWidth() - 1 , c.getHeight() - 1);
+//				if (btnModel.isSelected())
+//					g.setColor(BORDER_SELECTED_COLOR);
+//				else
+//					g.setColor(BORDER_OVER_COLOR);
+//				
+//				if (btnModel.isSelected())
+//					g.drawPolyline(new int[]{ 0,                 0, c.getWidth() - 1, c.getWidth() - 1 },
+//								   new int[]{ c.getHeight() - 1, 0, 0,                c.getHeight() - 1 },
+//								   4);
+//				else
+//					g.drawRect(0, 0, c.getWidth() - 1 , c.getHeight() - 1);
 				
 				g.setColor(oldColor);
 			}

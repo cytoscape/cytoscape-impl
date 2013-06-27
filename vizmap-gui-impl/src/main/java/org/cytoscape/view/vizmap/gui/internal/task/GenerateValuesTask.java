@@ -65,12 +65,12 @@ public class GenerateValuesTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor monitor) throws Exception {
-		final VisualPropertySheet curVpSheet = vizMapperPanel.getCurrentVisualPropertySheet();
+		final VisualPropertySheet selVpSheet = vizMapperPanel.getSelectedVisualPropertySheet();
 		
-		if (curVpSheet == null)
+		if (selVpSheet == null)
 			return;
 		
-		final Set<VisualPropertySheetItem<?>> vpSheetItems = curVpSheet.getSelectedItems();
+		final Set<VisualPropertySheetItem<?>> vpSheetItems = selVpSheet.getSelectedItems();
 // TODO Should not manipulate GUI components directly--change the [view]model instead!
 		
 		for (final VisualPropertySheetItem<?> vpsItem : vpSheetItems) {

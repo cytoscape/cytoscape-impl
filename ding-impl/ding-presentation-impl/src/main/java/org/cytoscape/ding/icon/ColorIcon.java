@@ -37,7 +37,7 @@ public class ColorIcon extends VisualPropertyIcon<Color> {
 	private static final long serialVersionUID = 5636448639330547200L;
 	
 	private static final float ARC_RATIO = 0.35f;
-	private static final Stroke STROKE = new BasicStroke(1.0f);
+	private static final Stroke STROKE = new BasicStroke(0.5f);
 
 	public ColorIcon(final Color value, final int width, final int height, final String name) {
 		super(value, width, height, name);
