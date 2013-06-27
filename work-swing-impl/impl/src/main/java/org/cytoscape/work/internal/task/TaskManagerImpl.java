@@ -196,6 +196,7 @@ class TaskMonitorImpl implements TaskMonitor {
 	final int[] levelCounts = new int[NUM_LEVELS];
 
 	String title = null;
+	String secondaryTitle = null;
 	double progress = -1.0;
 	List<TaskMonitor.Level> messageLevels = new ArrayList<TaskMonitor.Level>();
 	List<String> messages = new ArrayList<String>();
@@ -205,11 +206,17 @@ class TaskMonitorImpl implements TaskMonitor {
 		this.window = window;
 	}
 
-	public void setTitle(final String title) {
-		if (ui == null) {
-			this.title = title;
-		} else {
-			ui.setTitle(title);
+	public void setTitle(final String newTitle) {
+		if (title == null)
+			this.title = newTitle;
+		else
+			secondaryTitle = newTitle;
+
+		if (ui != null) {
+			if (secondaryTitle == null)
+				ui.setTitle(title);
+			else
+				ui.setTitle(String.format("<html>%s&nbsp;&nbsp;&nbsp;&nbsp;<font size=\"-1\">%s</font></html>", title, secondaryTitle));
 		}
 	}
 
@@ -296,7 +303,6 @@ class TaskMonitorImpl implements TaskMonitor {
 
 		if (title != null) {
 			setTitle(title);
-			title = null;
 		}
 
 		if (progress >= 0.0) {
