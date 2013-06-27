@@ -3,9 +3,13 @@ package org.cytoscape.work.internal.task;
 import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import java.net.URL;
 
@@ -31,6 +35,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> implements DialogTaskManager {
 	final TaskWindow taskWindow = new TaskWindow();
 	final ExecutorService executor = Executors.newCachedThreadPool();
+	final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
 	final JDialogTunableMutator dialogTunableMutator;
 	final CyProperty<Properties> property;
@@ -68,7 +73,7 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 
 	public void execute(final TaskIterator iterator, Object tunableContext) {
 		dialogTunableMutator.setConfigurationContext(parentWindow);
-		final TaskRunner taskRunner = new TaskRunner(this, executor, iterator, taskWindow);
+		final TaskRunner taskRunner = new TaskRunner(this, executor, scheduledExecutor, iterator, taskWindow);
 		executor.submit(taskRunner);
 	}
 
@@ -96,6 +101,78 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 }
 
 class TaskRunner implements Runnable {
+	final TaskManagerImpl manager;
+	final ExecutorService cancelExecutor;
+	final ScheduledExecutorService scheduledExecutor;
+	final TaskIterator iterator;
+	final TaskMonitorImpl monitor;
+
+	boolean cancelled = false;
+	boolean finished = false;
+	Task currentTask = null;
+
+	public TaskRunner(final TaskManagerImpl manager, ExecutorService cancelExecutor, ScheduledExecutorService scheduledExecutor, TaskIterator iterator, TaskWindow window) {
+		this.manager = manager;
+		this.cancelExecutor = cancelExecutor;
+		this.scheduledExecutor = scheduledExecutor;
+		this.iterator = iterator;
+		monitor = new TaskMonitorImpl(window);
+		monitor.setCancelListener(new CancelListener());
+	}
+
+	public void run() {
+		try {
+			manager.updateParent();
+			if (!iterator.hasNext())
+				return;
+			currentTask = iterator.next();
+			if (!manager.showTunables(currentTask))
+				return;
+			scheduledExecutor.schedule(new Runnable() {
+				public void run() {
+					if (!finished)
+						monitor.showUI();
+				}
+			}, 1000L, TimeUnit.MILLISECONDS);
+			currentTask.run(monitor);
+			while (iterator.hasNext() && !cancelled) {
+				currentTask = iterator.next();
+				if (manager.showTunables(currentTask)) {
+					currentTask.run(monitor);
+				} else {
+					cancelled = true;
+				}
+			}
+			if (cancelled) {
+				monitor.setAsCancelled();
+			} else {
+				monitor.setAsFinished();
+			}
+		} catch (Exception e) {
+			monitor.setAsExceptionOccurred(e);
+			e.printStackTrace();
+		} finally {
+			manager.clearParent();
+		}
+		finished = true;
+	}
+
+	class CancelListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			cancelled = true;
+			monitor.setAsCancelling();
+			if (currentTask != null) {
+				cancelExecutor.submit(new Runnable() {
+					public void run() {
+						currentTask.cancel();
+					}
+				});
+			}
+		}
+	}
+}
+
+class TaskMonitorImpl implements TaskMonitor {
 	public static final Map<String,URL> ICON_URLS = new HashMap<String,URL>();
 	static {
 		ICON_URLS.put("info", TaskRunner.class.getResource("/images/info-icon.png"));
@@ -112,99 +189,36 @@ class TaskRunner implements Runnable {
 		}
 	}
 
-	final TaskManagerImpl manager;
-	final ExecutorService cancelExecutor;
-	final TaskIterator iterator;
-	final TaskUI ui;
-
-	boolean cancelled = false;
-	Task currentTask = null;
-
-	public TaskRunner(final TaskManagerImpl manager, ExecutorService cancelExecutor, TaskIterator iterator, TaskWindow window) {
-		this.manager = manager;
-		this.cancelExecutor = cancelExecutor;
-		this.iterator = iterator;
-		ui = window.createTaskUI();
-		ui.addCancelListener(new CancelListener());
-	}
-
-	public void run() {
-		final TaskMonitorImpl monitor = new TaskMonitorImpl(ui);
-		try {
-			manager.updateParent();
-			while (iterator.hasNext() && !cancelled) {
-				currentTask = iterator.next();
-				if (manager.showTunables(currentTask)) {
-					currentTask.run(monitor);
-				} else {
-					cancelled = true;
-				}
-			}
-			if (cancelled) {
-				ui.addMessage(ICONS.get("cancelled"), "Cancelled.");
-			} else {
-				ui.addMessage(ICONS.get("finished"), buildFinishedString(monitor));
-			}
-		} catch (Exception e) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, "Could not be completed: " + e.getMessage());
-			e.printStackTrace();
-		} finally {
-			manager.clearParent();
-		}
-		ui.setTaskAsCompleted();
-	}
-
-	private String buildFinishedString(final TaskMonitorImpl monitor) {
-		final int[] levelCounts = monitor.getLevelCounts();
-		final StringBuffer buffer = new StringBuffer();
-		buffer.append("<html>Finished.&nbsp;&nbsp;");
-		for (final TaskMonitor.Level level : TaskMonitor.Level.values()) {
-			final int levelCount = levelCounts[level.ordinal()];
-			if (levelCount == 0)
-				continue;
-			buffer.append("&nbsp;&nbsp;");
-			buffer.append("<img align=\"baseline\" src=\"");
-			buffer.append(ICONS.get(level.toString().toLowerCase()));
-			buffer.append("\">");
-			buffer.append("&nbsp;");
-			buffer.append(levelCount);
-		}
-		buffer.append("</html>");
-		return buffer.toString();
-	}
-
-	class CancelListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			ui.disableCancelButton();
-			ui.setCancelStatus("Cancelling");
-			cancelled = true;
-			if (currentTask != null) {
-				cancelExecutor.submit(new Runnable() {
-					public void run() {
-						currentTask.cancel();
-					}
-				});
-			}
-		}
-	}
-}
-
-class TaskMonitorImpl implements TaskMonitor {
 	private static int NUM_LEVELS = TaskMonitor.Level.values().length;
 
-	final TaskUI ui;
+	final TaskWindow window;
+	TaskUI ui = null;
 	final int[] levelCounts = new int[NUM_LEVELS];
 
-	public TaskMonitorImpl(TaskUI ui) {
-		this.ui = ui;
+	String title = null;
+	double progress = -1.0;
+	List<TaskMonitor.Level> messageLevels = new ArrayList<TaskMonitor.Level>();
+	List<String> messages = new ArrayList<String>();
+	ActionListener cancelListener = null;
+
+	public TaskMonitorImpl(TaskWindow window) {
+		this.window = window;
 	}
 
 	public void setTitle(final String title) {
-		ui.setTitle(title);
+		if (ui == null) {
+			this.title = title;
+		} else {
+			ui.setTitle(title);
+		}
 	}
 
 	public void setProgress(double progress) {
-		ui.setProgress((float) progress);
+		if (ui == null) {
+			this.progress = progress;
+		} else {
+			ui.setProgress((float) progress);
+		}
 	}
 
 	public void setStatusMessage(String message) {
@@ -213,10 +227,95 @@ class TaskMonitorImpl implements TaskMonitor {
 
 	public void showMessage(TaskMonitor.Level level, String message) {
 		levelCounts[level.ordinal()]++;
-		ui.addMessage(TaskRunner.ICONS.get(level.toString().toLowerCase()), message);
+		if (ui == null) {
+			messageLevels.add(level);
+			messages.add(message);
+		} else {
+			ui.addMessage(ICONS.get(level.toString().toLowerCase()), message);
+		}
 	}
 
-	public int[] getLevelCounts() {
-		return levelCounts;
+	public void setAsFinished() {
+		if (ui == null) {
+			if (levelCounts[TaskMonitor.Level.WARN.ordinal()] + levelCounts[TaskMonitor.Level.ERROR.ordinal()] > 0)
+				showUI();
+			else
+				return;
+		}
+
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append("<html>Finished.&nbsp;&nbsp;");
+		for (final TaskMonitor.Level level : TaskMonitor.Level.values()) {
+			final int levelCount = levelCounts[level.ordinal()];
+			if (levelCount == 0)
+				continue;
+			buffer.append("&nbsp;&nbsp;");
+			buffer.append("<img align=\"baseline\" src=\"");
+			buffer.append(ICON_URLS.get(level.toString().toLowerCase()));
+			buffer.append("\">");
+			buffer.append("&nbsp;");
+			buffer.append(levelCount);
+		}
+		buffer.append("</html>");
+		ui.addMessage(ICONS.get("finished"), buffer.toString());
+		ui.setTaskAsCompleted();
+	}
+
+	public void setAsCancelling() {
+		ui.disableCancelButton();
+		ui.setCancelStatus("Cancelling");
+	}
+
+	public void setAsCancelled() {
+		if (ui == null)
+			showUI();
+		ui.addMessage(ICONS.get("cancelled"), "Cancelled.");
+		ui.setTaskAsCompleted();
+	}
+
+	public void setAsExceptionOccurred(final Exception exception) {
+		if (ui == null)
+			showUI();
+		ui.addMessage(ICONS.get("error"), "Could not be completed: " + exception.getMessage());
+		ui.setTaskAsCompleted();
+	}
+
+	public void setCancelListener(ActionListener listener) {
+		if (ui == null) {
+			cancelListener = listener;
+		} else {
+			ui.addCancelListener(listener);
+		}
+	}
+
+	public synchronized void showUI() {
+		if (ui != null)
+			return;
+
+		ui = window.createTaskUI();
+
+		if (title != null) {
+			setTitle(title);
+			title = null;
+		}
+
+		if (progress >= 0.0) {
+			setProgress(progress);
+		}
+
+		for (int i = 0; i < messages.size(); i++) {
+			final TaskMonitor.Level level = messageLevels.get(i);
+			final String message = messages.get(i);
+			showMessage(level, message);
+		}
+		messages.clear();
+		messages = null;
+		messageLevels.clear();
+		messageLevels = null;
+
+		if (cancelListener != null) {
+			setCancelListener(cancelListener);
+			cancelListener = null;
+		}
 	}
 }
