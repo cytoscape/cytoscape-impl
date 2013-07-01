@@ -251,6 +251,7 @@ class TaskUIImpl implements TaskUI {
 	public TaskUIImpl() {
 		titleLabel = labelWithFont("bold 16");
 		progressBar = new RoundedProgressBar();
+		progressBar.setIndeterminate();
 		cancelLabel = new CancelButton();
 
 		msgsPanel = new JPanel();

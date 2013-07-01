@@ -15,9 +15,9 @@ import java.awt.event.ActionEvent;
 public class RoundedProgressBar extends JComponent {
 	protected static final float CORNER_RADIUS = 5.2f;
 	protected static final float HEIGHT = 6.0f;
-	protected static final Color FG_COLOR = new Color(0x2FA5ED);
+	protected static final Color FG_COLOR = new Color(0x527057);
 	protected static final Color BK_COLOR = new Color(0xd3d3d3);
-	protected static final Color INDET_FG_COLOR = new Color(0x2FA5ED);
+	protected static final Color INDET_FG_COLOR = FG_COLOR;
 	protected static final float INDET_BAR_WIDTH = 100.0f;
 	protected static final int INDET_UPDATE_MS = 50;
 	protected static final double INDET_UPDATE_INCREMENT = 0.015;
