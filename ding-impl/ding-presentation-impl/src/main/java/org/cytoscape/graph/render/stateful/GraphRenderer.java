@@ -486,9 +486,11 @@ public final class GraphRenderer {
 										edgeAnchorPointX = trgXAdj;
 										edgeAnchorPointY = trgYAdj;
 									} else if (edgeAnchor == EdgeDetails.EDGE_ANCHOR_MIDPOINT) {
-										grafx.getEdgePath(srcArrow, srcArrowSize, trgArrow,
-										                  trgArrowSize, srcXAdj, srcYAdj, anchors,
-										                  trgXAdj, trgYAdj, path2d);
+										if (!grafx.getEdgePath(srcArrow, srcArrowSize, trgArrow,
+										                       trgArrowSize, srcXAdj, srcYAdj, anchors,
+										                       trgXAdj, trgYAdj, path2d)) {
+											continue;
+										}
 
 										// Count the number of path segments.  This count
 										// includes the initial SEG_MOVETO.  So, for example, a
