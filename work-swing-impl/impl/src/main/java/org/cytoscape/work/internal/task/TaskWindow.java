@@ -170,7 +170,11 @@ class TaskUIImpl implements TaskUI {
 			return;
 		}
 
-		progressBar.setValue(progress);
+		if (0.0f <= progress && progress <= 1.0f) {
+			progressBar.setProgress(progress);
+		} else {
+			progressBar.setIndeterminate();
+		}
 	}
 
 	public void addMessage(final Icon icon, final String msg) {

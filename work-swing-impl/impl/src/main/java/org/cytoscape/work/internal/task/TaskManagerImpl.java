@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Future;
 
 import java.net.URL;
 
@@ -108,7 +109,6 @@ class TaskRunner implements Runnable {
 	final TaskMonitorImpl monitor;
 
 	boolean cancelled = false;
-	boolean finished = false;
 	Task currentTask = null;
 
 	public TaskRunner(final TaskManagerImpl manager, ExecutorService cancelExecutor, ScheduledExecutorService scheduledExecutor, TaskIterator iterator, TaskWindow window) {
@@ -128,10 +128,9 @@ class TaskRunner implements Runnable {
 			currentTask = iterator.next();
 			if (!manager.showTunables(currentTask))
 				return;
-			scheduledExecutor.schedule(new Runnable() {
+			final Future<?> showUILater = scheduledExecutor.schedule(new Runnable() {
 				public void run() {
-					if (!finished)
-						monitor.showUI();
+					monitor.showUI();
 				}
 			}, 1000L, TimeUnit.MILLISECONDS);
 			currentTask.run(monitor);
@@ -148,13 +147,13 @@ class TaskRunner implements Runnable {
 			} else {
 				monitor.setAsFinished();
 			}
+			showUILater.cancel(false);
 		} catch (Exception e) {
 			monitor.setAsExceptionOccurred(e);
 			e.printStackTrace();
 		} finally {
 			manager.clearParent();
 		}
-		finished = true;
 	}
 
 	class CancelListener implements ActionListener {
