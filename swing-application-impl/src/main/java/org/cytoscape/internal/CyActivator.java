@@ -117,6 +117,7 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.TaskStatusPanelFactory;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -155,6 +156,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
+		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
 
 		RenderingEngineFactory dingNavigationPresentationFactoryServiceRef = getService(bc,
 		                                                                                RenderingEngineFactory.class,
@@ -218,7 +220,8 @@ public class CyActivator extends AbstractCyActivator {
 		                                                         cytoscapeShutdownServiceRef,
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
-		                                                         dialogTaskManagerServiceRef);
+		                                                         dialogTaskManagerServiceRef,
+		                                                         taskStatusPanelFactoryRef);
 
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
 

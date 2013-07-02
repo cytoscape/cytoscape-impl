@@ -64,6 +64,7 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.TaskStatusPanelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,7 +125,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 * Creates a new CytoscapeDesktop object.
 	 */
 	public CytoscapeDesktop(CytoscapeMenus cyMenus, NetworkViewManager networkViewManager, NetworkPanel networkPanel,
-			CyShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, DialogTaskManager taskManager) {
+			CyShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, DialogTaskManager taskManager, TaskStatusPanelFactory taskStatusPanelFactory) {
 		super(TITLE_PREFIX_STRING + NEW_SESSION_NAME);
 
 		this.cyMenus = cyMenus;
@@ -147,7 +148,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		main_panel.add(masterPane, BorderLayout.CENTER);
 		main_panel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
 
-		statusToolBar = setupStatusPanel();
+		statusToolBar = setupStatusPanel(taskStatusPanelFactory);
 
 		setJMenuBar(cyMenus.getJMenuBar());
 
@@ -181,17 +182,24 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		// visible by the StartupMostlyFinished class, found elsewhere.
 	}
 
-	private JToolBar setupStatusPanel() {
+	private JToolBar setupStatusPanel(TaskStatusPanelFactory taskStatusPanelFactory) {
 		final JPanel statusPanel = new JPanel(new GridBagLayout());
 		final GridBagConstraints c = new GridBagConstraints();
 		final JToolBar statusToolBar = new JToolBar();
 
+		final JPanel taskStatusPanel = taskStatusPanelFactory.createTaskStatusPanel();
+
 		c.gridx = 0;		c.gridy = 0;
 		c.gridwidth = 1;	c.gridheight = 1;
-		c.weightx = 1.0;	c.weighty = 0.0;
-		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0.0;	c.weighty = 0.0;
+		c.fill = GridBagConstraints.NONE;
 		c.anchor = GridBagConstraints.WEST;
 		statusPanel.add(statusToolBar, c);
+
+		c.gridx++;
+		c.weightx = 1.0;	c.weighty = 0.0;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		statusPanel.add(taskStatusPanel, c);
 
 		c.gridx++;
 		c.weightx = 0.0;	c.weighty = 0.0;
