@@ -17,6 +17,7 @@ import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import java.awt.Window;
@@ -32,8 +33,9 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.TaskStatusPanelFactory;
 
-public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> implements DialogTaskManager {
+public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> implements DialogTaskManager, TaskStatusPanelFactory {
 	final TaskWindow taskWindow = new TaskWindow();
 	final ExecutorService executor = Executors.newCachedThreadPool();
 	final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -49,7 +51,6 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 		this.property = property;
 		parentWindow = null;
 		addShutdownHookForService(executor);
-		taskWindow.show();
 	}
 
 	private static void addShutdownHookForService(final ExecutorService service) {
@@ -98,6 +99,10 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	public void clearParent() {
 		setExecutionContext(null);
 		dialogTunableMutator.setConfigurationContext(null);
+	}
+
+	public JPanel createTaskStatusPanel() {
+		return new TaskStatusBar(taskWindow);
 	}
 }
 
@@ -284,6 +289,7 @@ class TaskMonitorImpl implements TaskMonitor {
 			showUI();
 		ui.addMessage(ICONS.get("error"), "Could not be completed: " + exception.getMessage());
 		ui.setTaskAsCompleted();
+		window.show();
 	}
 
 	public void setCancelListener(ActionListener listener) {
