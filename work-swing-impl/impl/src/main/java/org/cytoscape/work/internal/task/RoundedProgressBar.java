@@ -89,8 +89,9 @@ public class RoundedProgressBar extends JComponent {
 		g2d.fill(bkRect);
 
 		if (indet) {
-			final float nx = (float) (x + (w - INDET_BAR_WIDTH) * indetPositionFunc(indetPosition));
-			fgRect.setRoundRect(nx, y, INDET_BAR_WIDTH, h, CORNER_RADIUS, CORNER_RADIUS);
+			final float nw = (INDET_BAR_WIDTH > w) ? (w * 0.2f) : INDET_BAR_WIDTH;
+			final float nx = (float) (x + (w - nw) * indetPositionFunc(indetPosition));
+			fgRect.setRoundRect(nx, y, nw, h, CORNER_RADIUS, CORNER_RADIUS);
 			g2d.setColor(INDET_FG_COLOR);
 		} else {
 			fgRect.setRoundRect(x, y, w * progress, h, CORNER_RADIUS, CORNER_RADIUS);

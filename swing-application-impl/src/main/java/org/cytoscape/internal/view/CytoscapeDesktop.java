@@ -184,26 +184,26 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	private JToolBar setupStatusPanel(TaskStatusPanelFactory taskStatusPanelFactory) {
 		final JPanel statusPanel = new JPanel(new GridBagLayout());
+		statusPanel.setOpaque(false);
 		final GridBagConstraints c = new GridBagConstraints();
 		final JToolBar statusToolBar = new JToolBar();
+		statusToolBar.setOpaque(false);
 
 		final JPanel taskStatusPanel = taskStatusPanelFactory.createTaskStatusPanel();
 
 		c.gridx = 0;		c.gridy = 0;
 		c.gridwidth = 1;	c.gridheight = 1;
-		c.weightx = 0.0;	c.weighty = 0.0;
-		c.fill = GridBagConstraints.NONE;
-		c.anchor = GridBagConstraints.WEST;
-		statusPanel.add(statusToolBar, c);
-
-		c.gridx++;
 		c.weightx = 1.0;	c.weighty = 0.0;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.anchor = GridBagConstraints.WEST;
 		statusPanel.add(taskStatusPanel, c);
 
 		c.gridx++;
 		c.weightx = 0.0;	c.weighty = 0.0;
 		c.fill = GridBagConstraints.NONE;
+		statusPanel.add(statusToolBar, c);
+
+		c.gridx++;
 		c.anchor = GridBagConstraints.EAST;
 		statusPanel.add(new MemStatusPanel(), c);
 

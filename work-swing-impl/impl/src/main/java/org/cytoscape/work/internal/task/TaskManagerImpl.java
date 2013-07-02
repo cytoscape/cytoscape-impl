@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.lang.ref.WeakReference;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -37,6 +38,7 @@ import org.cytoscape.work.swing.TaskStatusPanelFactory;
 
 public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> implements DialogTaskManager, TaskStatusPanelFactory {
 	final TaskWindow taskWindow = new TaskWindow();
+	final TaskStatusBar statusBar = new TaskStatusBar(taskWindow);
 	final ExecutorService executor = Executors.newCachedThreadPool();
 	final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
@@ -44,6 +46,7 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	final CyProperty<Properties> property;
 
 	Window parentWindow;
+	WeakReference<TaskMonitorImpl> latestMonitor = null;
 
 	public TaskManagerImpl(final JDialogTunableMutator dialogTunableMutator, final CyProperty<Properties> property) {
 		super(dialogTunableMutator);
@@ -102,7 +105,24 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	}
 
 	public JPanel createTaskStatusPanel() {
-		return new TaskStatusBar(taskWindow);
+		return statusBar;
+	}
+
+	public void setLatestMonitor(TaskMonitorImpl monitor) {
+		if (latestMonitor != null) {
+			statusBar.resetStatusBar();
+			latestMonitor.clear();
+			latestMonitor = null;
+		}
+		latestMonitor = new WeakReference<TaskMonitorImpl>(monitor);
+	}
+
+	public boolean isLatestMonitor(TaskMonitorImpl monitor) {
+		return latestMonitor.get() == monitor;
+	}
+
+	public TaskStatusBar getStatusBar() {
+		return statusBar;
 	}
 }
 
@@ -121,16 +141,16 @@ class TaskRunner implements Runnable {
 		this.cancelExecutor = cancelExecutor;
 		this.scheduledExecutor = scheduledExecutor;
 		this.iterator = iterator;
-		monitor = new TaskMonitorImpl(window);
+		monitor = new TaskMonitorImpl(manager, window);
 		monitor.setCancelListener(new CancelListener());
 	}
 
 	public void run() {
 		try {
-			manager.updateParent();
 			if (!iterator.hasNext())
 				return;
 			currentTask = iterator.next();
+			manager.updateParent();
 			if (!manager.showTunables(currentTask))
 				return;
 			final Future<?> showUILater = scheduledExecutor.schedule(new Runnable() {
@@ -195,6 +215,7 @@ class TaskMonitorImpl implements TaskMonitor {
 
 	private static int NUM_LEVELS = TaskMonitor.Level.values().length;
 
+	final TaskManagerImpl manager;
 	final TaskWindow window;
 	TaskUI ui = null;
 	final int[] levelCounts = new int[NUM_LEVELS];
@@ -206,7 +227,8 @@ class TaskMonitorImpl implements TaskMonitor {
 	List<String> messages = new ArrayList<String>();
 	ActionListener cancelListener = null;
 
-	public TaskMonitorImpl(TaskWindow window) {
+	public TaskMonitorImpl(final TaskManagerImpl manager, final TaskWindow window) {
+		this.manager = manager;
 		this.window = window;
 	}
 
@@ -217,10 +239,14 @@ class TaskMonitorImpl implements TaskMonitor {
 			secondaryTitle = newTitle;
 
 		if (ui != null) {
-			if (secondaryTitle == null)
-				ui.setTitle(title);
-			else
-				ui.setTitle(String.format("<html>%s&nbsp;&nbsp;&nbsp;&nbsp;<font size=\"-1\">%s</font></html>", title, secondaryTitle));
+			String titleString = title;
+			if (secondaryTitle != null)
+				titleString = String.format("<html>%s&nbsp;&nbsp;&nbsp;&nbsp;<font size=\"-1\">%s</font></html>", title, secondaryTitle);
+
+			ui.setTitle(titleString);
+			if (manager.isLatestMonitor(this)) {
+				manager.getStatusBar().setTitle(titleString);
+			}
 		}
 	}
 
@@ -229,6 +255,9 @@ class TaskMonitorImpl implements TaskMonitor {
 			this.progress = progress;
 		} else {
 			ui.setProgress((float) progress);
+			if (manager.isLatestMonitor(this)) {
+				manager.getStatusBar().setProgress((float) progress);
+			}
 		}
 	}
 
@@ -246,12 +275,17 @@ class TaskMonitorImpl implements TaskMonitor {
 		}
 	}
 
+	private boolean warningsOrErrors() {
+		return levelCounts[TaskMonitor.Level.WARN.ordinal()] + levelCounts[TaskMonitor.Level.ERROR.ordinal()] > 0;
+	}
+
 	public void setAsFinished() {
 		if (ui == null) {
-			if (levelCounts[TaskMonitor.Level.WARN.ordinal()] + levelCounts[TaskMonitor.Level.ERROR.ordinal()] > 0)
+			if (warningsOrErrors()) {
 				showUI();
-			else
+			} else {
 				return;
+			}
 		}
 
 		final StringBuffer buffer = new StringBuffer();
@@ -270,6 +304,15 @@ class TaskMonitorImpl implements TaskMonitor {
 		buffer.append("</html>");
 		ui.addMessage(ICONS.get("finished"), buffer.toString());
 		ui.setTaskAsCompleted();
+
+		if (warningsOrErrors()) {
+			window.show();
+		}
+
+		if (manager.isLatestMonitor(this)) {
+			manager.getStatusBar().setTitleIcon(ICONS.get("finished"));
+			manager.getStatusBar().hideProgress();
+		}
 	}
 
 	public void setAsCancelling() {
@@ -282,6 +325,11 @@ class TaskMonitorImpl implements TaskMonitor {
 			showUI();
 		ui.addMessage(ICONS.get("cancelled"), "Cancelled.");
 		ui.setTaskAsCompleted();
+
+		if (manager.isLatestMonitor(this)) {
+			manager.getStatusBar().setTitleIcon(ICONS.get("cancelled"));
+			manager.getStatusBar().hideProgress();
+		}
 	}
 
 	public void setAsExceptionOccurred(final Exception exception) {
@@ -290,6 +338,11 @@ class TaskMonitorImpl implements TaskMonitor {
 		ui.addMessage(ICONS.get("error"), "Could not be completed: " + exception.getMessage());
 		ui.setTaskAsCompleted();
 		window.show();
+
+		if (manager.isLatestMonitor(this)) {
+			manager.getStatusBar().setTitleIcon(ICONS.get("error"));
+			manager.getStatusBar().hideProgress();
+		}
 	}
 
 	public void setCancelListener(ActionListener listener) {
@@ -305,6 +358,7 @@ class TaskMonitorImpl implements TaskMonitor {
 			return;
 
 		ui = window.createTaskUI();
+		manager.setLatestMonitor(this);
 
 		if (title != null) {
 			setTitle(title);
@@ -328,5 +382,6 @@ class TaskMonitorImpl implements TaskMonitor {
 			setCancelListener(cancelListener);
 			cancelListener = null;
 		}
+
 	}
 }
