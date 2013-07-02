@@ -25,6 +25,8 @@ package org.cytoscape.internal.view;
  */
 
 import java.awt.BorderLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -145,8 +147,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		main_panel.add(masterPane, BorderLayout.CENTER);
 		main_panel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
 
-		statusToolBar = new JToolBar();
-		main_panel.add(statusToolBar, BorderLayout.SOUTH);
+		statusToolBar = setupStatusPanel();
 
 		setJMenuBar(cyMenus.getJMenuBar());
 
@@ -178,6 +179,28 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		// ...but don't actually show it!!!!
 		// Once the system has fully started the JFrame will be set to 
 		// visible by the StartupMostlyFinished class, found elsewhere.
+	}
+
+	private JToolBar setupStatusPanel() {
+		final JPanel statusPanel = new JPanel(new GridBagLayout());
+		final GridBagConstraints c = new GridBagConstraints();
+		final JToolBar statusToolBar = new JToolBar();
+
+		c.gridx = 0;		c.gridy = 0;
+		c.gridwidth = 1;	c.gridheight = 1;
+		c.weightx = 1.0;	c.weighty = 0.0;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.anchor = GridBagConstraints.WEST;
+		statusPanel.add(statusToolBar, c);
+
+		c.gridx++;
+		c.weightx = 0.0;	c.weighty = 0.0;
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.EAST;
+		statusPanel.add(new MemStatusPanel(), c);
+
+		main_panel.add(statusPanel, BorderLayout.SOUTH);
+		return statusToolBar;
 	}
 
 	/**
