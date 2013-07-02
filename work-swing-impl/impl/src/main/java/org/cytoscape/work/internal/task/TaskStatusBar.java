@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * Manages the task's status bar's UI at the bottom of the Cytoscape desktop.
+ */
 class TaskStatusBar extends JPanel {
 	final JLabel titleLabel = new JLabel();
 	final RoundedProgressBar progressBar = new RoundedProgressBar();
@@ -11,12 +14,14 @@ class TaskStatusBar extends JPanel {
 	public TaskStatusBar(final TaskWindow window) {
 		super.setOpaque(false);
 		titleLabel.setOpaque(false);
-		final JButton showBtn = new JButton("Show Tasks");
+		final JButton showBtn = new JButton(new ImageIcon(getClass().getResource("/images/tasks-icon.png")));
 		showBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				window.show();
 			}
 		});
+		showBtn.setToolTipText("Show tasks");
+		showBtn.setPreferredSize(new Dimension(20, 20));
 
 		progressBar.setProgress(-1.0f);
 		progressBar.setPreferredSize(new Dimension(250, 7));

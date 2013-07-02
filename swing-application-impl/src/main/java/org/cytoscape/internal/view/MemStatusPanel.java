@@ -121,7 +121,7 @@ class MemStatusPanel extends JPanel {
 				});
 			}
 		});
-		gcBtn.setToolTipText("<html>Try to free unused memory.<br><br><i>Warning:</i> freeing memory may freeze Cytoscape for several seconds.</html>");
+		gcBtn.setToolTipText("<html>Try to free memory&mdash;may temporarily freeze Cytoscape</html>");
 		setFontSize(gcBtn, 9);
 		gcBtn.setVisible(false);
 

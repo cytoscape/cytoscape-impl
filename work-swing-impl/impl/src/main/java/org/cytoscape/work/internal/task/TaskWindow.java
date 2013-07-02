@@ -38,7 +38,7 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * Handles the task window's user interface and
- * the user interface for individual tasks.
+ * individual tasks.
  */
 class TaskWindow {
 
@@ -50,13 +50,14 @@ class TaskWindow {
 
 	public TaskWindow() {
 		dialog = new JDialog(null, "Cytoscape Tasks", ModalityType.MODELESS);
+		dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 		dialog.setPreferredSize(new Dimension(500, 400));
 
 		dialog.setLayout(new GridBagLayout());
 		final EasyGBC c = new EasyGBC();
 
 		final JButton cleanButton = new JButton("Clean");
-		cleanButton.setToolTipText("Clean list of tasks by removing all finished, cancelled, and failed tasks.");
+		cleanButton.setToolTipText("Cleans list by removing finished, cancelled, and failed tasks");
 		cleanButton.addActionListener(new CleanAction());
 
 		tasksPanel = new JPanel();
