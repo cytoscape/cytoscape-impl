@@ -181,9 +181,6 @@ public class BioPaxDetailsPanel extends JPanel {
         if (stringRef != null) {
             buf.append("<h3>" + stringRef + "</h3>");
         }
-
-        //  Add (optional) cPath Link
-        addCPathLink(network, node, buf);
         
 		// cellular location
 		stringRef = null;
@@ -218,21 +215,6 @@ public class BioPaxDetailsPanel extends JPanel {
 		textPane.setCaretPosition(0);
     }
 
-	//TODO test; remove or upgrade to PC2 api (URI based)
-	@Deprecated
-    private void addCPathLink(CyNetwork cyNetwork, CyNode node, StringBuffer buf) {
-    	CyRow networkRow = cyNetwork.getRow(cyNetwork);
-        String serverName = networkRow.get("CPATH_SERVER_NAME", String.class);
-        String serverDetailsUrl = networkRow.get("CPATH_SERVER_DETAILS_URL", String.class);
-        if (serverName != null && serverDetailsUrl != null) {
-        	CyRow nodeRow = cyNetwork.getRow(node);
-            String type = nodeRow.get(BIOPAX_ENTITY_TYPE, String.class);
-            if (BioPaxUtil.getSubclassNames(PhysicalEntity.class).contains(type)) {
-                String url = serverDetailsUrl + node;
-                buf.append ("<h3><A href='" + url + "'>" + serverName + ": " + node + "</A>");
-            }
-        }
-    }
 
     private void addLinks(CyNetwork network, CyNode node, StringBuffer buf) {
     	CyRow row = network.getRow(node);

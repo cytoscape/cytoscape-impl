@@ -42,7 +42,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.controller.ModelUtils;
 import org.biopax.paxtools.controller.SimpleEditorMap;
-import org.biopax.paxtools.converter.OneTwoThree;
+import org.biopax.paxtools.converter.LevelUpgrader;
 import org.biopax.paxtools.io.SimpleIOHandler;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.BioPAXLevel;
@@ -138,7 +138,7 @@ public final class BioPaxUtil {
 		Model model = convertFromOwl(in);
 		// immediately convert to BioPAX Level3 model
 		if(model != null && BioPAXLevel.L2.equals(model.getLevel())) {
-			model = new OneTwoThree().filter(model);
+			model = new LevelUpgrader().filter(model);
 		}
 		return model;
 	}
