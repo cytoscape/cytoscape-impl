@@ -63,7 +63,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 
 	private List<String> attrNames;
 	
-	private Collection<CyRow> selectedRows = null;
+	private List<CyRow> selectedRows = null;
 
 	private Object[] rowIndexToPrimaryKey;
 	private int maxRowIndex;
@@ -161,19 +161,8 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	public CyRow getCyRow(final int rowIndex) {
 		if (regularViewMode) {
 			if (selectedRows == null)
-				selectedRows = dataTable.getMatchingRows(CyNetwork.SELECTED, true);
-
-			int count = 0;
-			CyRow cyRow = null;
-			for (final CyRow selectedRow : selectedRows) {
-				if (count == rowIndex) {
-					cyRow = selectedRow;
-					break;
-				}
-				++count;
-			}
-
-			return cyRow;
+				selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+			return selectedRows.get(rowIndex);
 		} else {
 			return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 		}
