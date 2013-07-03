@@ -49,6 +49,7 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 
+// TODO Make it a Proxy?
 public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener,ColumnNameChangedListener,
 											NetworkAddedListener, NetworkAboutToBeDestroyedListener {
 

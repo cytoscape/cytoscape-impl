@@ -59,7 +59,6 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -85,7 +84,6 @@ import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
-import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 
 /**
  * VizMapper UI main panel.
@@ -104,7 +102,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	protected DefaultComboBoxModel stylesCmbModel;
 
 	protected IconManager iconMgr;
-	protected VizMapperUtil vizMapperUtil;
 	
 	/** Menu items under the options button */
 	private JPopupMenu mainMenu;
@@ -347,18 +344,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	JMenu getEditSubMenu() {
 		if (editSubMenu == null) {
 			editSubMenu = new JMenu("Edit");
-			
-			final JMenuItem removeVpMi = new JMenuItem("Remove Selected Visual Properties");
-			removeVpMi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					final VisualPropertySheet vpSheet = getSelectedVisualPropertySheet();
-					
-					for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
-						vpSheet.setVisible(item, false);
-				}
-			});
-			editSubMenu.add(removeVpMi);
 		}
 		
 		return editSubMenu;

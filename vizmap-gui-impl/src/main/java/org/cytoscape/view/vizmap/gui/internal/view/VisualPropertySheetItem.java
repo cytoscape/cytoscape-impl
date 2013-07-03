@@ -44,6 +44,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
@@ -158,56 +159,59 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		updateDefaultButton();
 		updateBypassButton();
 		updateMapping();
-		
-		if (model.getVisualMappingFunction() != null)
-			updateMappingIcon();
-		
-		if (mappingPnl != null && mappingPnl.isVisible())
-			updateMappingPanelHeight();
 	}
 	
 	public void updateDefaultButton() {
-		getDefaultBtn().setIcon(getIcon(model.getDefaultValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
+		if (defaultBtn != null) {
+			defaultBtn.setIcon(getIcon(model.getDefaultValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
+			defaultBtn.setToolTipText(model.getDefaultValue() == null ?
+					null : "Default Value: " + model.getDefaultValue().toString());
+		}
 	}
 	
 	public void updateBypassButton() {
-		final LockedValueState state = model.getLockedValueState();
-		final JButton btn = getBypassBtn();
-		
-		btn.setEnabled(state != LockedValueState.DISABLED);
-		btn.setBorder(btn.isEnabled() ? BTN_BORDER : BTN_BORDER_DISABLED);
-		
-		// TODO: create better icons
-		btn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
-		
-		if (state == LockedValueState.ENABLED_UNIQUE_VALUE) {
-			btn.setText(null);
-		} else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES) {
-			btn.setText("?");
-		} else {
-			btn.setText("");
+		if (bypassBtn != null) {
+			final LockedValueState state = model.getLockedValueState();
+			
+			bypassBtn.setEnabled(state != LockedValueState.DISABLED);
+			bypassBtn.setBorder(bypassBtn.isEnabled() ? BTN_BORDER : BTN_BORDER_DISABLED);
+			
+			// TODO: create better icons
+			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
+			
+			if (state == LockedValueState.ENABLED_UNIQUE_VALUE)
+				bypassBtn.setText(null);
+			else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES)
+				bypassBtn.setText("?");
+			else
+				bypassBtn.setText("");
+			
+			final String elementsStr = model.getTargetDataType() == CyNode.class ? "nodes" : "edges";
+			String toolTipText = "No bypass";
+			
+			if (state == LockedValueState.DISABLED)
+				toolTipText = "To bypass the visual property, first select one or more " + elementsStr;
+			else if (state == LockedValueState.ENABLED_UNIQUE_VALUE)
+				toolTipText = "Bypass: " + model.getLockedValue();
+			else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES)
+				toolTipText = "The selected " + elementsStr + " have different bypass values";
+			
+			bypassBtn.setToolTipText(toolTipText);
 		}
-		
-		final String elementsStr = model.getTargetDataType() == CyNode.class ? "nodes" : "edges";
-		
-		String toolTipText = "No bypass";
-		
-		if (state == LockedValueState.DISABLED)
-			toolTipText = "To bypass the visual property, first select one or more " + elementsStr;
-		else if (state == LockedValueState.ENABLED_UNIQUE_VALUE)
-			toolTipText = "Bypass: " + model.getLockedValue();
-		else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES)
-			toolTipText = "The selected " + elementsStr + " have different bypass values";
-		
-		btn.setToolTipText(toolTipText);
 	}
 	
 	public void updateMapping() {
-		// TODO
-//		getMappingPnl().remove(getPropSheetPnl());
-//		propSheetPnl = null;
-//		propSheetTbl = null;
-//		getMappingPnl().add(getPropSheetPnl(), BorderLayout.CENTER);
+		if (mappingPnl != null && propSheetPnl != null) {
+			mappingPnl.remove(propSheetPnl);
+			propSheetPnl = null;
+			propSheetTbl = null;
+			getMappingPnl().add(getPropSheetPnl(), BorderLayout.CENTER);
+		}
+		
+		updateMappingIcon();
+		
+		if (mappingPnl != null && mappingPnl.isVisible())
+			updateMappingPanelHeight();
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
@@ -220,6 +224,12 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		add(getTopPnl(), BorderLayout.NORTH);
 		add(getMappingPnl(), BorderLayout.CENTER);
 		
+		model.addPropertyChangeListener("defaultValue", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(final PropertyChangeEvent e) {
+				updateDefaultButton();
+			}
+		});
 		model.addPropertyChangeListener("lockedValue", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(final PropertyChangeEvent e) {
@@ -237,6 +247,26 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			public void propertyChange(final PropertyChangeEvent e) {
 				updateDefaultButton();
 				updateBypassButton();
+			}
+		});
+//		model.addPropertyChangeListener("mappingColumnName", new PropertyChangeListener() {
+//			@Override
+//			public void propertyChange(final PropertyChangeEvent e) {System.out.println("mappingColumnName: " + e.getNewValue());
+//				final Object newValue = e.getNewValue();
+//				final Item item = (Item) getPropSheetTbl().getValueAt(0, 0);
+//				final VizMapperProperty<?, ?, ?> columnProp = (VizMapperProperty<?, ?, ?>) item.getProperty();
+//				
+//				if ((newValue == null && columnProp.getValue() != null) || !newValue.equals(columnProp.getValue())) {
+//					columnProp.setValue(newValue);System.out.println("\t..New value set");
+////					columnProp.setInternalValue(factory); // TODO ???
+//					getPropSheetPnl().repaint();
+//				}
+//			}
+//		});
+		model.addPropertyChangeListener("visualMappingFunction", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(final PropertyChangeEvent e) {
+				updateMapping();
 			}
 		});
 	}
@@ -440,12 +470,8 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	protected JButton getDefaultBtn() {
 		if (defaultBtn == null) {
 			defaultBtn = new VizMapperButton();
-			defaultBtn.setIcon(getIcon(model.getDefaultValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			defaultBtn.setUI(new VPButtonUI());
-			final Object value = model.getDefaultValue();
-			
-			if (value != null)
-				defaultBtn.setToolTipText("Default Value: " + value.toString());
+			updateDefaultButton();
 		}
 		
 		return defaultBtn;

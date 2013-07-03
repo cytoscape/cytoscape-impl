@@ -19,7 +19,9 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	private RenderingEngine<?> engine;
 	private final VisualLexicon lexicon;
 	private String mappingColumnName;
+	private T defaultValue;
 	private T lockedValue;
+	private VisualMappingFunction<?, T> visualMappingFunction;
 	private LockedValueState lockedValueState = LockedValueState.DISABLED;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -40,6 +42,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 		this.engine = engine;
 		this.lexicon = lexicon;
 		
+		defaultValue = style.getDefaultValue(visualProperty);
 		setVisualMappingFunction(style.getVisualMappingFunction(visualProperty));
 		
 		title = createTitle(visualProperty);
@@ -88,7 +91,12 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 	
 	public T getDefaultValue() {
-		return style.getDefaultValue(visualProperty);
+		return defaultValue;
+	}
+	
+	public void setDefaultValue(final T value) {
+		if ((value == null && defaultValue != null) || (value != null && !value.equals(defaultValue)))
+			propChangeSupport.firePropertyChange("defaultValue", defaultValue, defaultValue = value);
 	}
 	
 	public T getLockedValue() {
@@ -96,7 +104,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 	
 	public void setLockedValue(final T value) {
-		if (value != lockedValue)
+		if ((value == null && lockedValue != null) || (value != null && !value.equals(lockedValue)))
 			propChangeSupport.firePropertyChange("lockedValue", lockedValue, lockedValue = value);
 	}
 	
@@ -131,24 +139,17 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 	
 	public VisualMappingFunction<?, T> getVisualMappingFunction() {
-		return getVisualStyle().getVisualMappingFunction(getVisualProperty());
+		return visualMappingFunction;
 	}
 	
 	public void setVisualMappingFunction(final VisualMappingFunction<?, T> mapping) {
-		if (isVisualMappingAllowed() && (mapping == null || mapping.getVisualProperty() == getVisualProperty())) {
-			final VisualMappingFunction<?, T> oldMapping = getVisualMappingFunction();
-			
-			if (mapping != oldMapping) {
-				if (mapping == null) {
-					getVisualStyle().removeVisualMappingFunction(getVisualProperty());
-				} else {
-					setMappingColumnName(mapping.getMappingColumnName(), false);
-					getVisualStyle().addVisualMappingFunction(mapping);
-				}
-				
-				propChangeSupport.firePropertyChange("visualMappingFunction", oldMapping, mapping);
-			}
+		if (isVisualMappingAllowed() && (mapping == null || mapping.getVisualProperty() == visualProperty)) {
+			if (mapping != visualMappingFunction)
+				propChangeSupport.firePropertyChange("visualMappingFunction", visualMappingFunction,
+						visualMappingFunction = mapping);
 		}
+		
+		setMappingColumnName(mapping == null ? null : mapping.getMappingColumnName(), false);
 	}
 
 	public String getMappingColumnName() {
@@ -175,10 +176,12 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 
 	private void setMappingColumnName(final String name, boolean updateRelatedProperties) {
 		if ((name == null && mappingColumnName != null) || (name != null && !name.equals(mappingColumnName))) {
+			mappingColumnName = name;
+			
 			if (updateRelatedProperties)
 				setVisualMappingFunction(null);
 			
-			propChangeSupport.firePropertyChange("mappingColumnName", mappingColumnName, mappingColumnName = name);
+			propChangeSupport.firePropertyChange("mappingColumnName", mappingColumnName, name);
 		}
 	}
 }

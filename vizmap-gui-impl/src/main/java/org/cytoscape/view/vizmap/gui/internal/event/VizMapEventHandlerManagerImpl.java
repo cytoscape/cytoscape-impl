@@ -38,7 +38,6 @@ import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandlerManager;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.slf4j.Logger;
@@ -54,18 +53,15 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 	private final Map<String, VizMapEventHandler> eventHandlers;
 	private final EditorManager editorManager;
 	private final AttributeSetManager attrManager;
-	private final VizMapperUtil util;
 	private final ServicesUtil servicesUtil;
 
 	public VizMapEventHandlerManagerImpl(final EditorManager editorManager,
 										 final AttributeSetManager attrManager,
-										 final VizMapperUtil util,
 										 final ServicesUtil servicesUtil,
 										 final VizMapPropertyBuilder vizMapPropertyBuilder,
 										 final VizMapperMediator vizMapperMediator) {
 		this.editorManager = editorManager;
 		this.attrManager = attrManager;
-		this.util = util;
 		this.servicesUtil = servicesUtil;
 
 		registerCellEditorListeners();
@@ -119,7 +115,7 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 	private void createHandlers(final VizMapPropertyBuilder vizMapPropertyBuilder,
 			final VizMapperMediator vizMapperMediator) {
 		// Create handler for local property editor event.
-		eventHandlers.put(VALUE, new CellEditorEventHandler(attrManager, util, servicesUtil, vizMapPropertyBuilder,
+		eventHandlers.put(VALUE, new CellEditorEventHandler(attrManager, servicesUtil, vizMapPropertyBuilder,
 				vizMapperMediator));
 	}
 
@@ -130,9 +126,7 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 		// FIXME
 		for (final PropertyEditor p : editorManager.getCellEditors())
 			p.addPropertyChangeListener(this);
-
-		logger.debug("New Cell Editor registered: " + editorManager.getCellEditors().size());
-
+		
 		for (final PropertyEditor p : editorManager.getAttributeSelectors())
 			p.addPropertyChangeListener(this);
 

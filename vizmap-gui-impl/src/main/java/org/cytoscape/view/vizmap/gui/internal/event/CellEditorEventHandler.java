@@ -45,7 +45,6 @@ import org.cytoscape.view.vizmap.gui.internal.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.AttributeComboBoxPropertyEditor;
@@ -68,7 +67,6 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(CellEditorEventHandler.class);
 
 	private final AttributeSetManager attrManager;
-	private final VizMapperUtil util;
 	private final ServicesUtil servicesUtil;
 	private final VizMapperMediator vizMapperMediator;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
@@ -77,12 +75,10 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	 * Creates a new CellEditorEventHandler object.
 	 */
 	public CellEditorEventHandler(final AttributeSetManager attrManager,
-								  final VizMapperUtil util,
 								  final ServicesUtil servicesUtil,
 								  final VizMapPropertyBuilder vizMapPropertyBuilder,
-								  final VizMapperMediator vizMapperMediator/*TODO refactor and remove ref to Mediator*/) {
+								  final VizMapperMediator vizMapperMediator) {
 		this.attrManager = attrManager;
-		this.util = util;
 		this.servicesUtil = servicesUtil;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
 		this.vizMapperMediator = vizMapperMediator;
@@ -116,10 +112,13 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		if (newVal != null && newVal.equals(oldVal))
 			return;
 
-		final PropertySheetPanel propertySheetPanel = vizMapperMediator.getCurrentPropertySheetPanel();
+		final PropertySheetPanel propSheetPnl = vizMapperMediator.getCurrentPropertySheetPanel();
+		
+		if (propSheetPnl == null)
+			return;
 		
 		// find selected cell
-		final PropertySheetTable table = propertySheetPanel.getTable();
+		final PropertySheetTable table = propSheetPnl.getTable();
 		final int selected = table.getSelectedRow();
 
 		// If nothing selected, ignore.
@@ -127,7 +126,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			return;
 
 		// Extract selected Property object in the table.
-		final Item selectedItem = (Item) propertySheetPanel.getTable().getValueAt(selected, 0);
+		final Item selectedItem = (Item) propSheetPnl.getTable().getValueAt(selected, 0);
 		final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();
 
 		if (prop == null)
@@ -138,33 +137,25 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			if (newVal != null && e.getSource() instanceof AttributeComboBoxPropertyEditor) {
 				final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
 				final VisualMappingFunctionFactory factory = 
-						(VisualMappingFunctionFactory) propertySheetPanel.getTable().getValueAt(1, 1);
+						(VisualMappingFunctionFactory) propSheetPnl.getTable().getValueAt(1, 1);
 				
 				if (factory != null)
-					switchColumn(factory, editor, prop, newVal.toString(), propertySheetPanel);
+					switchColumn(factory, editor, prop, newVal.toString(), propSheetPnl);
 			}
 		} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
 			// Case 2. Switch mapping type
 			// Parent is always root.
 			final VisualProperty<?> vp = vizMapperMediator.getCurrentVisualProperty();
 			// TODO: refactor--this class should not have to know the row/column where the value is
-			Object controllingAttrName = propertySheetPanel.getTable().getValueAt(0, 1);
+			Object controllingAttrName = propSheetPnl.getTable().getValueAt(0, 1);
 
 			if (vp == null || controllingAttrName == null)
 				return;
 
-			logger.debug("New Type = " + vp.getDisplayName());
-			logger.debug("New Attr Name = " + controllingAttrName);
-
 			switchMappingType(prop, vp, (VisualMappingFunctionFactory) e.getNewValue(),
-					controllingAttrName.toString(), propertySheetPanel);
+					controllingAttrName.toString(), propSheetPnl);
 		} else if (prop.getParentProperty() != null) {
 			// Case 3: Discrete Cell editor event. Create new map entry and register it.
-			logger.debug("Cell edit event: name = " + prop.getName());
-			logger.debug("Cell edit event: old val = " + prop.getValue());
-			logger.debug("Cell edit event: new val = " + newVal);
-			logger.debug("Cell edit event: associated mapping = " + prop.getInternalValue());
-
 			final VisualMappingFunction<?, ?> mapping = (VisualMappingFunction<?, ?>) prop.getInternalValue();
 
 			if (mapping == null)
@@ -177,8 +168,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		}
 		
 		// TODO: DELETE this workaround!!!
-		if (vizMapperMediator.getCurrentVisualPropertySheetItem() != null)
-			vizMapperMediator.getCurrentVisualPropertySheetItem().update();
+//		if (vizMapperMediator.getCurrentVisualPropertySheetItem() != null)
+//			vizMapperMediator.getCurrentVisualPropertySheetItem().update();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -257,7 +248,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			}
 
 			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
-			style.addVisualMappingFunction(newMapping); // TODO
+			style.addVisualMappingFunction(newMapping);
 		} else {
 			newMapping = currentMapping;
 		}
@@ -268,11 +259,6 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		
 		for (final TableModelListener tm : modelListeners)
 			model.removeTableModelListener(tm);
-
-		logger.debug("New VisualMappingFunction Created: Mapping Type = "
-				+ style.getVisualMappingFunction(vp).toString());
-		logger.debug("New VisualMappingFunction Created: Controlling attr = "
-				+ style.getVisualMappingFunction(vp).getMappingColumnName());
 
 		vizMapPropertyBuilder.createMappingProperties(newMapping, propertySheetPanel, factory);
 

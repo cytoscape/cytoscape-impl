@@ -60,7 +60,6 @@ import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
@@ -138,8 +137,6 @@ public class CyActivator extends AbstractCyActivator {
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
 		BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, continuousMappingCellRendererFactory);
 
-		VizMapperUtil vizMapperUtil = new VizMapperUtil(visualMappingManagerServiceRef);
-		
 		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,visualMappingManagerServiceRef);
 		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(visualMappingManagerServiceRef);
 		
@@ -314,7 +311,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, vizMapperMenuMediator, "onRenderingEngineFactoryRegistered", "onRenderingEngineFactoryUnregistered", RenderingEngineFactory.class);
 		
 		final VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager,
-				attributeSetManager, vizMapperUtil, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
+				attributeSetManager, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
 		registerServiceListener(bc, vizMapEventHandlerManager, "registerPCL", "unregisterPCL", RenderingEngineFactory.class);
 		
 		new ApplicationFacade(startupCommand).startup();

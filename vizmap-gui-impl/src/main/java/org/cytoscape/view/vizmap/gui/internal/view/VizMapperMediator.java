@@ -30,6 +30,7 @@ import java.util.SortedSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -56,6 +57,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -482,112 +484,98 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void updateVisualPropertySheets(final VisualStyle vs) {
+		if (vs == null)
+			return;
+		
 		final VisualPropertySheet curNetSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
 		final VisualPropertySheetModel curModel = curNetSheet != null ? curNetSheet.getModel() : null;
 		final VisualStyle curStyle = curModel != null ? curModel.getVisualStyle() : null;
-		final Set<String> visibleProps = new HashSet<String>();
-		
-		if (vs != null && !vs.equals(curStyle)) {
+
+		if (!vs.equals(curStyle)) {
+			// If a different style, rebuild all property sheets
+			final VisualPropertySheet selVpSheet = vizMapperMainPanel.getSelectedVisualPropertySheet();
+			final Class<? extends CyIdentifiable> curTargetDataType = selVpSheet != null ?
+					selVpSheet.getModel().getTargetDataType() : null;
+			
+			invokeOnEDT(new Runnable() {
+				@Override
+				public void run() {
+					createVisualPropertySheets();
+					
+					// Select the same sheet that was selected before
+					final VisualPropertySheet vpSheet = vizMapperMainPanel.getVisualPropertySheet(curTargetDataType);
+					vizMapperMainPanel.setSelectedVisualPropertySheet(vpSheet);
+				}
+			});
+		} else {
 			// TODO group by target data type, because the VP id is not guaranteed to be unique among different types
 			final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 			
-			if (vpSheets.isEmpty()) {
-				// First time
-				// TODO: load default visual properties from app file
-				// #######################
-				visibleProps.add("NODE_BORDER_PAINT");
-				visibleProps.add("NODE_BORDER_WIDTH");
-				visibleProps.add("NODE_FILL_COLOR");
-				visibleProps.add("NODE_LABEL");
-				visibleProps.add("NODE_LABEL_COLOR");
-				visibleProps.add("NODE_LABEL_FONT_SIZE");
-				visibleProps.add("NODE_SHAPE");
-				visibleProps.add("NODE_SIZE");
-				visibleProps.add("NODE_WIDTH");
-				visibleProps.add("NODE_HEIGHT");
-				visibleProps.add("NODE_TRANSPARENCY");
-				visibleProps.add("nodeSizeLocked");
-				visibleProps.add("EDGE_LABEL");
-				visibleProps.add("EDGE_LABEL_COLOR");
-				visibleProps.add("EDGE_LABEL_FONT_SIZE");
-				visibleProps.add("EDGE_LINE_TYPE");
-				visibleProps.add("EDGE_PAINT");
-				visibleProps.add("EDGE_SOURCE_ARROW_SHAPE");
-				visibleProps.add("EDGE_SOURCE_ARROW_UNSELECTED_PAINT");
-				visibleProps.add("EDGE_TARGET_ARROW_UNSELECTED_PAINT");
-				visibleProps.add("EDGE_TARGET_ARROW_SHAPE");
-				visibleProps.add("EDGE_STROKE_UNSELECTED_PAINT");
-				visibleProps.add("EDGE_TRANSPARENCY");
-				visibleProps.add("EDGE_WIDTH");
-				visibleProps.add("arrowColorMatchesEdge");
-				visibleProps.add("NETWORK_BACKGROUND_PAINT");
-				visibleProps.add("NETWORK_TITLE");
-				visibleProps.add("NETWORK_NODE_SELECTION");
-				visibleProps.add("NETWORK_EDGE_SELECTION");
-				// #######################
-			} else {
-				// Keep the same items visible after updating the sheets
-				for (final VisualPropertySheet sheet : vpSheets) {
-					for (VisualPropertySheetItem<?> item : sheet.getItems()) {
-						if (item.isVisible())
-							visibleProps.add(item.getModel().getId());
-					}
+			for (final VisualPropertySheet sheet : vpSheets) {
+				// If same style, just update the current Visual Property sheets
+				for (VisualPropertySheetItem<?> item : sheet.getItems()) {
+					// Update values
+					final VisualPropertySheetItemModel model = item.getModel();
+					final VisualProperty<?> vp = model.getVisualProperty();
+					final RenderingEngine<CyNetwork> engine = vizMapperMainPanel.getRenderingEngine();
+					model.setDefaultValue(vs.getDefaultValue(vp));
+					model.setVisualMappingFunction(vs.getVisualMappingFunction(vp));
+					model.setRenderingEngine(engine);
 				}
 			}
 		}
-		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				if (vs != null && vs.equals(curStyle)) {
-					// If same style, just update the current Visual Property sheets
-					final RenderingEngine<CyNetwork> engine = vizMapperMainPanel.getRenderingEngine();
-					
-					for (final VisualPropertySheet vpSheet : vizMapperMainPanel.getVisualPropertySheets()) {
-						for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
-							item.getModel().setRenderingEngine(engine);
-							item.update();
-						}
-					}
-				} else {
-					final VisualPropertySheet selVpSheet = vizMapperMainPanel.getSelectedVisualPropertySheet();
-					final Class<? extends CyIdentifiable> curTargetDataType = selVpSheet != null ?
-							selVpSheet.getModel().getTargetDataType() : null;
-					
-					// If a different style, rebuild all property sheets
-					createVisualPropertySheets();
-					
-					
-					for (final VisualPropertySheet vpSheet : vizMapperMainPanel.getVisualPropertySheets()) {
-						// Create new Visual Property Sheet Items
-						final Set<VisualPropertySheetItem<?>> vpSheetItems = 
-								createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType());
-						
-						for (final VisualPropertySheetItem<?> item : vpSheetItems)
-							item.setVisible(visibleProps.contains(item.getModel().getId()));
-						
-						vpSheet.setItems(vpSheetItems);
-						
-						// Add event listeners to the new components
-						addViewListeners(vpSheet);
-					}
-					
-					invokeOnEDT(new Runnable() {
-						@Override
-						public void run() {
-							// Select the same sheet that was selected before
-							final VisualPropertySheet vpSheet = vizMapperMainPanel.getVisualPropertySheet(curTargetDataType);
-							vizMapperMainPanel.setSelectedVisualPropertySheet(vpSheet);
-						}
-					});
-				}
-			}
-		});
 	}
 	
 	private void createVisualPropertySheets() {
 		final VisualStyle style = proxy.getCurrentVisualStyle();
 		final VisualLexicon lexicon = proxy.getCurrentVisualLexicon();
+		// TODO group by target data type, because the VP id is not guaranteed to be unique among different types
+		final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
+		final Set<String> visibleProps = new HashSet<String>();
+		
+		if (vpSheets.isEmpty()) {
+			// First time
+			// TODO: load default visual properties from app file
+			// #######################
+			visibleProps.add("NODE_BORDER_PAINT");
+			visibleProps.add("NODE_BORDER_WIDTH");
+			visibleProps.add("NODE_FILL_COLOR");
+			visibleProps.add("NODE_LABEL");
+			visibleProps.add("NODE_LABEL_COLOR");
+			visibleProps.add("NODE_LABEL_FONT_SIZE");
+			visibleProps.add("NODE_SHAPE");
+			visibleProps.add("NODE_SIZE");
+			visibleProps.add("NODE_WIDTH");
+			visibleProps.add("NODE_HEIGHT");
+			visibleProps.add("NODE_TRANSPARENCY");
+			visibleProps.add("nodeSizeLocked");
+			visibleProps.add("EDGE_LABEL");
+			visibleProps.add("EDGE_LABEL_COLOR");
+			visibleProps.add("EDGE_LABEL_FONT_SIZE");
+			visibleProps.add("EDGE_LINE_TYPE");
+			visibleProps.add("EDGE_PAINT");
+			visibleProps.add("EDGE_SOURCE_ARROW_SHAPE");
+			visibleProps.add("EDGE_SOURCE_ARROW_UNSELECTED_PAINT");
+			visibleProps.add("EDGE_TARGET_ARROW_UNSELECTED_PAINT");
+			visibleProps.add("EDGE_TARGET_ARROW_SHAPE");
+			visibleProps.add("EDGE_STROKE_UNSELECTED_PAINT");
+			visibleProps.add("EDGE_TRANSPARENCY");
+			visibleProps.add("EDGE_WIDTH");
+			visibleProps.add("arrowColorMatchesEdge");
+			visibleProps.add("NETWORK_BACKGROUND_PAINT");
+			visibleProps.add("NETWORK_TITLE");
+			visibleProps.add("NETWORK_NODE_SELECTION");
+			visibleProps.add("NETWORK_EDGE_SELECTION");
+			// #######################
+		} else {
+			for (final VisualPropertySheet sheet : vpSheets) {
+				for (VisualPropertySheetItem<?> item : sheet.getItems()) {
+					// Keep the same items visible after updating the sheets
+					if (item.isVisible())
+						visibleProps.add(item.getModel().getId());
+				}
+			}
+		}
 		
 		invokeOnEDT(new Runnable() {
 			@Override
@@ -596,6 +584,20 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					final VisualPropertySheetModel model = new VisualPropertySheetModel(type, style, lexicon);
 					final VisualPropertySheet vpSheet = new VisualPropertySheet(model);
 					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
+				}
+				
+				for (final VisualPropertySheet vpSheet : vizMapperMainPanel.getVisualPropertySheets()) {
+					// Create new Visual Property Sheet Items
+					final Set<VisualPropertySheetItem<?>> vpSheetItems = 
+							createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType());
+					
+					for (final VisualPropertySheetItem<?> item : vpSheetItems)
+						item.setVisible(visibleProps.contains(item.getModel().getId()));
+					
+					vpSheet.setItems(vpSheetItems);
+					
+					// Add event listeners to the new components
+					addViewListeners(vpSheet);
 				}
 			}
 		});
@@ -645,6 +647,26 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, editorManager,
 						vizMapPropertyBuilder);
 				items.add(sheetItem);
+				
+				// Add listeners to model--set the updated values to the visual style
+				model.addPropertyChangeListener("defaultValue", new PropertyChangeListener() {
+					@Override
+					public void propertyChange(final PropertyChangeEvent e) {
+						final VisualStyle vs = model.getVisualStyle();
+						vs.setDefaultValue((VisualProperty)vp, e.getNewValue());
+					}
+				});
+				model.addPropertyChangeListener("visualMappingFunction", new PropertyChangeListener() {
+					@Override
+					public void propertyChange(final PropertyChangeEvent e) {
+						final VisualStyle vs = model.getVisualStyle();
+						
+						if (e.getNewValue() == null && vs.getVisualMappingFunction(vp) != null)
+							vs.removeVisualMappingFunction(vp);
+						else if (e.getNewValue() != null && !e.getNewValue().equals(vs.getVisualMappingFunction(vp)))
+							vs.addVisualMappingFunction((VisualMappingFunction<?, ?>)e.getNewValue());
+					}
+				});
 			}
 		}
 		
@@ -752,10 +774,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 //			logger.error("Error opening Visual Property values editor for: " + vp, ex);
 		}
 
-		if (newValue != null && !newValue.equals(defaultVal)) {
-			curStyle.setDefaultValue(vp, newValue);
-			vpSheetItem.repaint();
-		}
+		if (newValue != null && !newValue.equals(defaultVal))
+			vpSheetItem.getModel().setDefaultValue(newValue);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -864,10 +884,50 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			vpSheet.setSelectedItems((Set) (Collections.singleton(vpSheetItem)));
 		
 		final JPopupMenu contextMenu = vizMapperMainPanel.getContextMenu();
+		final JMenu editSubMenu = vizMapperMainPanel.getEditSubMenu();
 		
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
+				// Add menu items
+				editSubMenu.removeAll();
+				final VisualPropertySheet vpSheet = vizMapperMainPanel.getSelectedVisualPropertySheet();
+				
+				if (vpSheet.getModel().getTargetDataType() != CyNetwork.class) {
+					final JMenuItem mi = new JMenuItem("Remove Mappings from Selected Visual Properties");
+					mi.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(final ActionEvent e) {
+							for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
+								if (item.getModel().getVisualMappingFunction() != null)
+									item.getModel().setVisualMappingFunction(null);
+							}
+						}
+					});
+					editSubMenu.add(mi);
+					mi.setEnabled(false);
+					
+					for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
+						if (item.getModel().getVisualMappingFunction() != null) {
+							mi.setEnabled(true);
+							break;
+						}
+					}
+				}
+				
+				{
+					final JMenuItem mi = new JMenuItem("Remove Selected Visual Properties");
+					mi.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(final ActionEvent e) {
+							for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
+								vpSheet.setVisible(item, false);
+						}
+					});
+					editSubMenu.add(mi);
+				}
+				
+				// Show context menu
 				final Component parent = (Component) e.getSource();
 				contextMenu.show(parent, e.getX(), e.getY());
 			}
