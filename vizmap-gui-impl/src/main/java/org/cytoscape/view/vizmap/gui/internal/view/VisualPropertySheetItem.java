@@ -201,14 +201,12 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	}
 	
 	public void updateMapping() {
-		if (mappingPnl != null && propSheetPnl != null) {
-			mappingPnl.remove(propSheetPnl);
-			propSheetPnl = null;
-			propSheetTbl = null;
-			getMappingPnl().add(getPropSheetPnl(), BorderLayout.CENTER);
-		}
-		
 		updateMappingIcon();
+		
+		if (model.getVisualMappingFunction() instanceof ContinuousMapping && getPropSheetTbl().getRowCount() > 2)
+			getPropSheetTbl().setRowHeight(2, MAPPING_IMG_ROW_HEIGHT);
+		else
+			getPropSheetTbl().setRowHeight(PROP_SHEET_ROW_HEIGHT);
 		
 		if (mappingPnl != null && mappingPnl.isVisible())
 			updateMappingPanelHeight();
@@ -249,23 +247,24 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				updateBypassButton();
 			}
 		});
-//		model.addPropertyChangeListener("mappingColumnName", new PropertyChangeListener() {
-//			@Override
-//			public void propertyChange(final PropertyChangeEvent e) {System.out.println("mappingColumnName: " + e.getNewValue());
-//				final Object newValue = e.getNewValue();
-//				final Item item = (Item) getPropSheetTbl().getValueAt(0, 0);
-//				final VizMapperProperty<?, ?, ?> columnProp = (VizMapperProperty<?, ?, ?>) item.getProperty();
-//				
-//				if ((newValue == null && columnProp.getValue() != null) || !newValue.equals(columnProp.getValue())) {
-//					columnProp.setValue(newValue);System.out.println("\t..New value set");
-////					columnProp.setInternalValue(factory); // TODO ???
-//					getPropSheetPnl().repaint();
-//				}
-//			}
-//		});
 		model.addPropertyChangeListener("visualMappingFunction", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(final PropertyChangeEvent e) {
+				final VisualMappingFunction<?, T> mapping = (VisualMappingFunction<?, T>) e.getNewValue();
+				
+				final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp = 
+						vizMapPropertyBuilder.getColumnProperty(propSheetPnl);
+				columnProp.setValue(mapping == null ? null : mapping.getMappingColumnName());
+				columnProp.setInternalValue(mapping == null ? null : getMappingFactory(mapping));
+				
+				final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> mappingProp =
+						vizMapPropertyBuilder.getMappingTypeProperty(propSheetPnl);
+				mappingProp.setValue(mapping == null ? null : getMappingFactory(mapping));
+				mappingProp.setInternalValue(mapping);
+				
+				if (mapping == null)
+					vizMapPropertyBuilder.removeMappingProperties(getPropSheetPnl());
+				
 				updateMapping();
 			}
 		});
@@ -389,21 +388,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl);
 			} else {
 				// There is already a visual mapping for this style's property
-				final CyComboBoxPropertyEditor mappingSelector = (CyComboBoxPropertyEditor) editorManager
-						.getDefaultComboBoxEditor("mappingTypeEditor");
-				final Set<Object> factories = mappingSelector.getAvailableValues();
-				VisualMappingFunctionFactory mappingFactory = null;
-				
-				for (final Object f : factories) {
-					final VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) f;
-					final Class<?> type = factory.getMappingFunctionType();
-					
-					if (type.isAssignableFrom(mapping.getClass())) {
-						mappingFactory = factory;
-						break;
-					}
-				}
-				
+				final VisualMappingFunctionFactory mappingFactory = getMappingFactory(mapping);
 				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory);
 			}
 		}
@@ -552,6 +537,24 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			icon = new EmptyIcon(width, height);
 		
 		return icon;
+	}
+	
+	private VisualMappingFunctionFactory getMappingFactory(final VisualMappingFunction<?, T> mapping) {
+		if (mapping != null) {
+			final CyComboBoxPropertyEditor mappingSelector = (CyComboBoxPropertyEditor) editorManager
+					.getDefaultComboBoxEditor("mappingTypeEditor");
+			final Set<Object> factories = mappingSelector.getAvailableValues();
+			
+			for (final Object f : factories) {
+				final VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) f;
+				final Class<?> type = factory.getMappingFunctionType();
+				
+				if (type.isAssignableFrom(mapping.getClass()))
+					return factory;
+			}
+		}
+		
+		return null;
 	}
 	
 	private void updateMappingPanelHeight() {

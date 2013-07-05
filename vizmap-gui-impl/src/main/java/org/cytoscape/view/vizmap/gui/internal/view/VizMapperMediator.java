@@ -74,8 +74,8 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.puremvc.java.multicore.interfaces.INotification;
 import org.puremvc.java.multicore.patterns.mediator.Mediator;
-
-import com.l2fprod.common.propertysheet.PropertySheetPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 public class VizMapperMediator extends Mediator implements LexiconStateChangedListener, RowsSetListener, 
@@ -101,6 +101,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private final VizMapperMainPanel vizMapperMainPanel;
 	private final EditorManager editorManager;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
+	
+	private static final Logger logger = LoggerFactory.getLogger(VizMapperMediator.class);
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -210,16 +212,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			updateLockedValues(view);
 	}
 	
-	public VisualProperty<?> getCurrentVisualProperty() {// TODO delete?
-		return curVpSheetItem != null ? curVpSheetItem.getModel().getVisualProperty() : null;
-	}
-	
-	public VisualPropertySheetItem<?> getCurrentVisualPropertySheetItem() {// TODO delete?
+	public VisualPropertySheetItem<?> getCurrentVisualPropertySheetItem() {
 		return curVpSheetItem;
-	}
-	
-	public PropertySheetPanel getCurrentPropertySheetPanel() {// TODO delete?
-		return curVpSheetItem != null ? curVpSheetItem.getPropSheetPnl() : null;
 	}
 	
 	/**
@@ -771,7 +765,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			final EditorManager editorMgr = servicesUtil.get(EditorManager.class);
 			newValue = editorMgr.showVisualPropertyValueEditor(vizMapperMainPanel, vp, defaultVal);
 		} catch (Exception ex) {
-//			logger.error("Error opening Visual Property values editor for: " + vp, ex);
+			logger.error("Error opening Visual Property values editor for: " + vp, ex);
 		}
 
 		if (newValue != null && !newValue.equals(defaultVal))
@@ -898,10 +892,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					mi.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(final ActionEvent e) {
-							for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
-								if (item.getModel().getVisualMappingFunction() != null)
-									item.getModel().setVisualMappingFunction(null);
-							}
+							removeMappings(vpSheet.getSelectedItems());
 						}
 					});
 					editSubMenu.add(mi);
@@ -920,8 +911,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					mi.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(final ActionEvent e) {
-							for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
-								vpSheet.setVisible(item, false);
+							hideSelectedItems(vpSheet);
 						}
 					});
 					editSubMenu.add(mi);
@@ -932,6 +922,18 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				contextMenu.show(parent, e.getX(), e.getY());
 			}
 		});
+	}
+	
+	private void hideSelectedItems(final VisualPropertySheet vpSheet) {
+		for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
+			vpSheet.setVisible(item, false);
+	}
+	
+	private void removeMappings(final Set<VisualPropertySheetItem<?>> items) {
+		for (final VisualPropertySheetItem<?> item : items) {
+			if (item.getModel().getVisualMappingFunction() != null)
+				item.getModel().setVisualMappingFunction(null);
+		}
 	}
 	
 	/**

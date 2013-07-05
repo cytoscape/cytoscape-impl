@@ -245,10 +245,7 @@ public class VizMapPropertyBuilder {
 				}
 			}
 
-			// FIXME
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, propertySheetPanel);
-			propertySheetPanel.getTable().setRowHeight(propertySheetPanel.getTable().getRowHeight()); // TODO remove this line
-
 		} else if (visualMapping instanceof ContinuousMapping) {
 			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
 					new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
@@ -264,7 +261,6 @@ public class VizMapPropertyBuilder {
 			propertySheetPanel.addProperty(2, graphicalView);
 			
 			final PropertySheetTable table = propertySheetPanel.getTable();
-			table.setRowHeight(2, 90); // TODO remove this line
 			final PropertyRendererRegistry rendReg = (PropertyRendererRegistry) table.getRendererFactory();
 			final PropertyEditorRegistry cellEditorFactory = (PropertyEditorRegistry) table.getEditorFactory();
 			final PropertyEditor continuousCellEditor = editorManager.getContinuousEditor(vp);
@@ -289,7 +285,37 @@ public class VizMapPropertyBuilder {
 		propertySheetPanel.repaint();
 	}
 	
-	private void removeMappingProperties(final PropertySheetPanel propertySheetPanel) {
+	public VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> getColumnProperty(
+			final PropertySheetPanel propSheetPnl) {
+		final Property[] properties = propSheetPnl != null ? propSheetPnl.getProperties() : null;
+		
+		if (properties != null) {
+			for (final Property p : properties) {
+				if (p instanceof VizMapperProperty && 
+						((VizMapperProperty)p).getCellType() == CellType.VISUAL_PROPERTY_TYPE)
+					return (VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory>) p;
+			}
+		}
+		
+		return null;
+	}
+	
+	public VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> getMappingTypeProperty(
+			final PropertySheetPanel propSheetPnl) {
+		final Property[] properties = propSheetPnl != null ? propSheetPnl.getProperties() : null;
+		
+		if (properties != null) {
+			for (final Property p : properties) {
+				if (p instanceof VizMapperProperty && 
+						((VizMapperProperty)p).getCellType() == CellType.MAPPING_TYPE)
+					return (VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>>) p;
+			}
+		}
+		
+		return null;
+	}
+	
+	protected void removeMappingProperties(final PropertySheetPanel propertySheetPanel) {
 		final Property[] properties = propertySheetPanel.getProperties();
 		
 		if (properties != null) {

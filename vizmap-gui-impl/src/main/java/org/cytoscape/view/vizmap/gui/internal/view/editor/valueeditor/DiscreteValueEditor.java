@@ -276,8 +276,8 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		final Class<? extends Object> valueClass = value.getClass();
 		
 		try {
-			final Method displayMethod = valueClass.getMethod("getDisplayName", null);
-			final Object returnVal = displayMethod.invoke(value, null);
+			final Method displayMethod = valueClass.getMethod("getDisplayName", (Class<?>)null);
+			final Object returnVal = displayMethod.invoke(value, (Class<?>)null);
 			
 			if (returnVal != null)
 				text = returnVal.toString();

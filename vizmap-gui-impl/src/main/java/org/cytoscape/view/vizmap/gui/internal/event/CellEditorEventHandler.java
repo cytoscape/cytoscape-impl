@@ -45,6 +45,7 @@ import org.cytoscape.view.vizmap.gui.internal.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.AttributeComboBoxPropertyEditor;
@@ -112,7 +113,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		if (newVal != null && newVal.equals(oldVal))
 			return;
 
-		final PropertySheetPanel propSheetPnl = vizMapperMediator.getCurrentPropertySheetPanel();
+		final VisualPropertySheetItem<?> propSheetItem = vizMapperMediator.getCurrentVisualPropertySheetItem();
+		final PropertySheetPanel propSheetPnl = propSheetItem != null ? propSheetItem.getPropSheetPnl() : null;
 		
 		if (propSheetPnl == null)
 			return;
@@ -139,48 +141,43 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				final VisualMappingFunctionFactory factory = 
 						(VisualMappingFunctionFactory) propSheetPnl.getTable().getValueAt(1, 1);
 				
-				if (factory != null)
-					switchColumn(factory, editor, prop, newVal.toString(), propSheetPnl);
+				if (factory != null) {
+					VisualMappingFunction newMapping = switchColumn(factory, editor, prop, newVal.toString(), propSheetPnl);
+					propSheetItem.getModel().setVisualMappingFunction(newMapping);
+				}
 			}
 		} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
 			// Case 2. Switch mapping type
 			// Parent is always root.
-			final VisualProperty<?> vp = vizMapperMediator.getCurrentVisualProperty();
+			final VisualProperty<?> vp = propSheetItem.getModel().getVisualProperty();
 			// TODO: refactor--this class should not have to know the row/column where the value is
 			Object controllingAttrName = propSheetPnl.getTable().getValueAt(0, 1);
 
-			if (vp == null || controllingAttrName == null)
-				return;
-
-			switchMappingType(prop, vp, (VisualMappingFunctionFactory) e.getNewValue(),
-					controllingAttrName.toString(), propSheetPnl);
-		} else if (prop.getParentProperty() != null) {
+			if (vp != null && controllingAttrName != null) {
+				VisualMappingFunction newMapping  = switchMappingType(prop, vp,
+						(VisualMappingFunctionFactory) e.getNewValue(), controllingAttrName.toString(), propSheetPnl);
+				propSheetItem.getModel().setVisualMappingFunction(newMapping);
+			}
+		} else if (prop.getCellType() == CellType.DISCRETE) {
 			// Case 3: Discrete Cell editor event. Create new map entry and register it.
 			final VisualMappingFunction<?, ?> mapping = (VisualMappingFunction<?, ?>) prop.getInternalValue();
-
-			if (mapping == null)
-				return;
 
 			if (mapping instanceof DiscreteMapping) {
 				DiscreteMapping<Object, Object> discMap = (DiscreteMapping<Object, Object>) mapping;
 				discMap.putMapValue(prop.getKey(), newVal);
 			}
 		}
-		
-		// TODO: DELETE this workaround!!!
-//		if (vizMapperMediator.getCurrentVisualPropertySheetItem() != null)
-//			vizMapperMediator.getCurrentVisualPropertySheetItem().update();
 	}
 
 	@SuppressWarnings("unchecked")
-	private <K, V> void switchColumn(final VisualMappingFunctionFactory factory,
-									 final AttributeComboBoxPropertyEditor editor,
-									 final VizMapperProperty<K, V, ?> prop,
-									 final String columnName,
-									 final PropertySheetPanel propertySheetPanel) {
+	private VisualMappingFunction<?, ?> switchColumn(final VisualMappingFunctionFactory factory,
+													 final AttributeComboBoxPropertyEditor editor,
+													 final VizMapperProperty<?, ?, ?> prop,
+													 final String columnName,
+													 final PropertySheetPanel propertySheetPanel) {
 		final VisualStyle currentStyle = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
-		final VisualProperty<V> vp = (VisualProperty<V>) prop.getKey();
-		VisualMappingFunction<K, V> mapping = (VisualMappingFunction<K, V>) currentStyle.getVisualMappingFunction(vp);
+		final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
+		VisualMappingFunction<?, ?> mapping = currentStyle.getVisualMappingFunction(vp);
 
 		// Ignore if not compatible.
 		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
@@ -191,9 +188,9 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		final CyColumn column = attrForTest.getColumn(columnName);
 		
 		if (column == null)
-			return;
+			return mapping;
 
-		final Class<K> dataType = (Class<K>) column.getType();
+		final Class<?> dataType = column.getType();
 
 		if (factory != null && (mapping == null || !columnName.equals(mapping.getMappingColumnName()))) {
 			// Need to create new mapping function
@@ -202,30 +199,32 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				JOptionPane.showMessageDialog(null,
 						"Continuous Mapper can be used with numbers only.\nPlease select a numerical column type.",
 						"Incompatible Mapping Type.", JOptionPane.INFORMATION_MESSAGE);
-				return;
+				return mapping;
 			}
 			
-			switchMappingType(prop, vp, factory, columnName, propertySheetPanel);
+			return switchMappingType(prop, vp, factory, columnName, propertySheetPanel);
 		}
+		
+		return mapping;
 	}
 
-	private void switchMappingType(final VizMapperProperty<?, ?, ?> prop,
-								   final VisualProperty<?> vp,
-								   final VisualMappingFunctionFactory factory,
-								   final String controllingAttrName,
-								   final PropertySheetPanel propertySheetPanel) {
+	private VisualMappingFunction<?, ?> switchMappingType(final VizMapperProperty<?, ?, ?> prop,
+														  final VisualProperty<?> vp,
+														  final VisualMappingFunctionFactory factory,
+														  final String controllingAttrName,
+														  final PropertySheetPanel propertySheetPanel) {
 		// This is the currently selected Visual Style.
 		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
-		final VisualMappingFunction<?, ?> currentMapping = style.getVisualMappingFunction(vp);
-		final VisualMappingFunction<?, ?> newMapping;
+		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
+		VisualMappingFunction<?, ?> newMapping = mapping;
 
-		if (currentMapping == null || currentMapping.getClass() != factory.getMappingFunctionType() 
-				|| !currentMapping.getMappingColumnName().equals(controllingAttrName)) {
+		if (mapping == null || mapping.getClass() != factory.getMappingFunctionType() 
+				|| !mapping.getMappingColumnName().equals(controllingAttrName)) {
 			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 			final CyNetwork currentNet = appMgr.getCurrentNetwork();
 			
 			if (currentNet == null)
-				return;
+				return newMapping;
 				
 			// Mapping does not exist. Need to create new one.
 			final AttributeSet attrSet = attrManager.getAttributeSet(currentNet, vp.getTargetDataType());
@@ -236,21 +235,18 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 					JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
 							+ controllingAttrName + "\").\nPlease select another column.", "Invalid Column.",
 							JOptionPane.WARNING_MESSAGE);
-					return;
+					return newMapping;
 				}
 
 				if (!Number.class.isAssignableFrom(attributeDataType)) {
 					JOptionPane.showMessageDialog(null,
 							"Selected column data type is not Number.\nPlease select a numerical column type.",
 							"Incompatible Column Type.", JOptionPane.WARNING_MESSAGE);
-					return;
+					return newMapping;
 				}
 			}
 
 			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
-			style.addVisualMappingFunction(newMapping);
-		} else {
-			newMapping = currentMapping;
 		}
 
 		// Disable listeners to avoid unnecessary updates
@@ -265,5 +261,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		// Restore listeners
 		for (final TableModelListener tm : modelListeners)
 			model.addTableModelListener(tm);
+		
+		return newMapping;
 	}
 }
