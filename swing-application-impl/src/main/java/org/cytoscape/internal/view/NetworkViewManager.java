@@ -606,8 +606,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	public void handleEvent(final VisualStyleSetEvent e) {
 		final CyNetworkView view = e.getNetworkView();
 		
-		if (view != null)
+		if (view == appMgr.getCurrentNetworkView()) {
+			e.getVisualStyle().apply(view);
 			view.updateView();
+		} else {
+			this.viewUpdateRequired.add(view);
+		}
 	}
 	
 	@Override

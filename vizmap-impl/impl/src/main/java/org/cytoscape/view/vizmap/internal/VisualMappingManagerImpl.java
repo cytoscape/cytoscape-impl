@@ -145,10 +145,8 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		if (this.visualStyles.contains(vs) == false)
 			this.visualStyles.add(vs);
 
-		if (changed) {
-			vs.apply(nv);
+		if (changed)
 			cyEventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
-		}
 	}
 
 	/**
