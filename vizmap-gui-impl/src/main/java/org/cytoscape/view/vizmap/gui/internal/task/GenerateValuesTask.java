@@ -36,6 +36,8 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheet;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItemModel;
@@ -75,14 +77,6 @@ public class GenerateValuesTask extends AbstractTask {
 		
 		for (final VisualPropertySheetItem<?> vpsItem : vpSheetItems) {
 			final VisualPropertySheetItemModel<?> model = vpsItem.getModel();
-//			final VisualMappingFunction<?, ?> mappingFunction = model.getVisualMappingFunction();
-//			
-//			if (mappingFunction instanceof DiscreteMapping) {
-//				final Map<?, ?> map = ((DiscreteMapping<?, ?>)mappingFunction).getAll();
-//				final Map newMap = generator.generateMap(map.keySet());
-//				((DiscreteMapping<?, ?>)mappingFunction).putAll(newMap);
-//				vpsItem.updateMapping();
-//			}
 	
 			final VisualProperty<?> vp = (VisualProperty<?>) model.getVisualProperty();
 			final Class<?> vpValueType = vp.getRange().getType();
@@ -94,35 +88,13 @@ public class GenerateValuesTask extends AbstractTask {
 			if (value.isProperty()) {
 				final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) value.getProperty();
 			
-				// TODO: is this safe?
-				if (generatorType.isAssignableFrom(vpValueType) || vpValueType.isAssignableFrom(generatorType))
+				if ( vpValueType.isAssignableFrom(generatorType)
+						|| ((generator instanceof NumberSeriesMappingGenerator 
+								|| generator instanceof RandomNumberMappingGenerator)
+								&& Number.class.isAssignableFrom(vpValueType)) )
 					generateMapping(vpsItem, prop.getValue().toString(), vp);
 			}
 		}
-	
-//		int selectedRow = table.getTable().getSelectedRow();
-//
-//		// If not selected, do nothing.
-//		if (selectedRow < 0)
-//			return;
-//
-//		final Item value = (Item) table.getTable().getValueAt(selectedRow, 0);
-//
-//		if (value.isProperty()) {
-//			final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) value.getProperty();
-//
-//			if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
-//				final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
-//				final Class<?> vpValueType = vp.getRange().getType();
-//				final Class<?> generatorType = generator.getDataType();
-//
-//				// TODO: is this safe?
-//				if (generatorType.isAssignableFrom(vpValueType) || vpValueType.isAssignableFrom(generatorType))
-//					generateMapping(prop, prop.getValue().toString(), vp);
-//			}
-//		}
-//
-//		value.toggle();
 	}
 
 	private void generateMapping(final VisualPropertySheetItem<?> vpsItem, final String attrName,
@@ -148,9 +120,6 @@ public class GenerateValuesTask extends AbstractTask {
 
 		discMapping.putAll(map);
 
-//		propSheetPnl.getTable().removeProperty(prop);
-//		prop.clearSubProperties();
-
 		for (final Property p : propSheetPnl.getProperties()) {
 			final VizMapperProperty<?, ?, ?> vmp = (VizMapperProperty<?, ?, ?>) p;
 			
@@ -158,8 +127,6 @@ public class GenerateValuesTask extends AbstractTask {
 				vmp.setValue(discMapping.getMapValue(vmp.getKey()));
 		}
 
-//		prop.addSubProperties(subProps);
-//		table.addProperty(prop);
 		propSheetPnl.getTable().repaint();
 	}
 }

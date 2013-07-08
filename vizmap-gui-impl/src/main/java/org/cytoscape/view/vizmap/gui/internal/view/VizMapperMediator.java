@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -70,6 +72,7 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel.VisualStyleDropDownButton;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.puremvc.java.multicore.interfaces.INotification;
@@ -102,6 +105,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private final EditorManager editorManager;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
 	
+	private final Map<DiscreteMappingGenerator<?>, JMenuItem> mappingGenerators;
+	
 	private static final Logger logger = LoggerFactory.getLogger(VizMapperMediator.class);
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -125,6 +130,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		this.servicesUtil = servicesUtil;
 		this.editorManager = editorManager;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
+		
+		mappingGenerators = new HashMap<DiscreteMappingGenerator<?>, JMenuItem>();
 		
 		setViewComponent(vizMapperMainPanel);
 	}
@@ -216,6 +223,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		return curVpSheetItem;
 	}
 	
+	public VisualPropertySheet getSelectedVisualPropertySheet() {
+		return vizMapperMainPanel.getSelectedVisualPropertySheet();
+	}
+	
 	/**
 	 * Custom listener for adding registered VizMapper CyActions to the main menu.
 	 */
@@ -266,12 +277,17 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		// This is a menu item for Main Command Button.
 		final Object title = properties.get(METADATA_TITLE_KEY);
 		
-		if (title == null)
-			throw new NullPointerException("Title metadata is missing.");
+		if (title == null) {
+			logger.error("Cannot create VizMapper context menu item for: " + taskFactory + 
+					"; \"" + METADATA_TITLE_KEY +  "\" metadata is missing from properties: " + properties);
+			return;
+		}
 
 		// Add new menu to the pull-down
-		final JMenuItem menuItem = new JMenuItem(title.toString());
-		menuItem.addActionListener(new ActionListener() {
+		final HashMap<String, String> config = new HashMap<String, String>();
+		config.put(ServiceProperties.TITLE, title.toString());
+		
+		final JMenuItem menuItem = new JMenuItem(new AbstractCyAction(config, taskFactory) {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				servicesUtil.get(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
@@ -291,23 +307,29 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	public void onMappingGeneratorRegistered(final DiscreteMappingGenerator<?> generator, final Map<?, ?> properties) {
 		final Object serviceType = properties.get(METADATA_MENU_KEY);
 		
-		if (serviceType == null)
-			throw new NullPointerException("Service Type metadata is null.  This value is required.");
+		if (serviceType == null) {
+			logger.error("Cannot create VizMapper context menu item for: " + generator + 
+					"; \"" + METADATA_MENU_KEY +  "\" metadata is missing from properties: " + properties);
+			return;
+		}
 
 		// This is a menu item for Main Command Button.
 		final Object title = properties.get(METADATA_TITLE_KEY);
 		
-		if (title == null)
-			throw new NullPointerException("Title metadata is missing.");
+		if (title == null) {
+			logger.error("Cannot create VizMapper context menu item for: " + generator + 
+					"; \"" + METADATA_TITLE_KEY +  "\" metadata is missing from properties: " + properties);
+			return;
+		}
 		
 		// Create mapping generator task factory
 		final GenerateValuesTaskFactory taskFactory = new GenerateValuesTaskFactory(generator, vizMapperMainPanel, 
 				servicesUtil);
+		final HashMap<String, String> config = new HashMap<String, String>();
+		config.put(ServiceProperties.TITLE, title.toString());
 
 		// Add new menu to the pull-down
-		final JMenuItem menuItem = new JMenuItem(title.toString());
-		// menuItem.setIcon(iconManager.getIcon(iconId));
-		menuItem.addActionListener(new ActionListener() {
+		final JMenuItem menuItem = new JMenuItem(new AbstractCyAction(config, taskFactory) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				servicesUtil.get(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
@@ -315,10 +337,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 
 		vizMapperMainPanel.getMapValueGeneratorsSubMenu().add(menuItem);
+		mappingGenerators.put(generator, menuItem);
 	}
 
 	public void onMappingGeneratorUnregistered(final DiscreteMappingGenerator<?> generator, final Map<?, ?> properties) {
-		// TODO
+		final JMenuItem menuItem = mappingGenerators.remove(generator);
+		
+		if (menuItem != null)
+			vizMapperMainPanel.getMapValueGeneratorsSubMenu().remove(menuItem);
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
@@ -487,7 +513,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 
 		if (!vs.equals(curStyle)) {
 			// If a different style, rebuild all property sheets
-			final VisualPropertySheet selVpSheet = vizMapperMainPanel.getSelectedVisualPropertySheet();
+			final VisualPropertySheet selVpSheet = getSelectedVisualPropertySheet();
 			final Class<? extends CyIdentifiable> curTargetDataType = selVpSheet != null ?
 					selVpSheet.getModel().getTargetDataType() : null;
 			
@@ -874,47 +900,37 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private void handleContextMenuEvent(final MouseEvent e, final VisualPropertySheet vpSheet, 
 			final VisualPropertySheetItem<?> vpSheetItem) {
+		// Select the right-clicked sheet item, if not selected yet
 		if (!vpSheetItem.isSelected())
 			vpSheet.setSelectedItems((Set) (Collections.singleton(vpSheetItem)));
 		
 		final JPopupMenu contextMenu = vizMapperMainPanel.getContextMenu();
-		final JMenu editSubMenu = vizMapperMainPanel.getEditSubMenu();
 		
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				// Add menu items
-				editSubMenu.removeAll();
-				final VisualPropertySheet vpSheet = vizMapperMainPanel.getSelectedVisualPropertySheet();
+				// Network properties don't have visual mappings
+				final JMenu mapValueGeneratorsMenu = vizMapperMainPanel.getMapValueGeneratorsSubMenu();
+				final Class<? extends CyIdentifiable> targetDataType = vpSheet.getModel().getTargetDataType();
+				mapValueGeneratorsMenu.setVisible(targetDataType != CyNetwork.class);
 				
-				if (vpSheet.getModel().getTargetDataType() != CyNetwork.class) {
-					final JMenuItem mi = new JMenuItem("Remove Mappings from Selected Visual Properties");
-					mi.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(final ActionEvent e) {
-							removeMappings(vpSheet.getSelectedItems());
-						}
-					});
-					editSubMenu.add(mi);
-					mi.setEnabled(false);
-					
-					for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
-						if (item.getModel().getVisualMappingFunction() != null) {
-							mi.setEnabled(true);
-							break;
-						}
+				// Enable/disable menu items
+				if (mapValueGeneratorsMenu.isVisible()) {
+					for (int i = 0; i < mapValueGeneratorsMenu.getItemCount(); i++) {
+						final JMenuItem mi = mapValueGeneratorsMenu.getItem(i);
+						
+						if (mi.getAction() instanceof CyAction)
+							((CyAction) mi.getAction()).updateEnableState();
 					}
 				}
 				
-				{
-					final JMenuItem mi = new JMenuItem("Remove Selected Visual Properties");
-					mi.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(final ActionEvent e) {
-							hideSelectedItems(vpSheet);
-						}
-					});
-					editSubMenu.add(mi);
+				final JMenu editMenu = vizMapperMainPanel.getEditSubMenu();
+				
+				for (int i = 0; i < editMenu.getItemCount(); i++) {
+					final JMenuItem mi = editMenu.getItem(i);
+					
+					if (mi.getAction() instanceof CyAction)
+						((CyAction) mi.getAction()).updateEnableState();
 				}
 				
 				// Show context menu
@@ -922,18 +938,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				contextMenu.show(parent, e.getX(), e.getY());
 			}
 		});
-	}
-	
-	private void hideSelectedItems(final VisualPropertySheet vpSheet) {
-		for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
-			vpSheet.setVisible(item, false);
-	}
-	
-	private void removeMappings(final Set<VisualPropertySheetItem<?>> items) {
-		for (final VisualPropertySheetItem<?> item : items) {
-			if (item.getModel().getVisualMappingFunction() != null)
-				item.getModel().setVisualMappingFunction(null);
-		}
 	}
 	
 	/**

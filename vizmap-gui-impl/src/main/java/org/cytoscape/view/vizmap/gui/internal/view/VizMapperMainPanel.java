@@ -59,9 +59,11 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
@@ -336,6 +338,18 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			contextPopupMenu = new JPopupMenu();
 			contextPopupMenu.add(getEditSubMenu());
 			contextPopupMenu.add(getMapValueGeneratorsSubMenu());
+			contextPopupMenu.add(new JSeparator());
+			
+			{
+				final JMenuItem mi = new JMenuItem("Remove Selected Visual Properties");
+				mi.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(final ActionEvent e) {
+						hideSelectedItems();
+					}
+				});
+				contextPopupMenu.add(mi);
+			}
 		}
 		
 		return contextPopupMenu;
@@ -355,6 +369,15 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 		
 		return mapValueGeneratorsSubMenu;
+	}
+	
+	private void hideSelectedItems() {
+		final VisualPropertySheet vpSheet = getSelectedVisualPropertySheet();
+		
+		if (vpSheet != null) {
+			for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
+				vpSheet.setVisible(item, false);
+		}
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

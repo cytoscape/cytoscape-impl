@@ -31,14 +31,11 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -56,6 +53,7 @@ import org.cytoscape.view.vizmap.gui.internal.task.ClearBendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.DeleteMappingFunctionTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
@@ -99,9 +97,6 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
-		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
-		CyNetworkViewFactory graphViewFactoryServiceRef = getService(bc,CyNetworkViewFactory.class);
-		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
 		
@@ -125,7 +120,7 @@ public class CyActivator extends AbstractCyActivator {
 		NumericValueEditor<Float> floatValueEditor = new NumericValueEditor<Float>(Float.class);
 		StringValueEditor stringValueEditor = new StringValueEditor();
 		BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
-// TODO		
+		
 		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,visualMappingManagerServiceRef,cyColorPropertyEditor,continuousMappingCellRendererFactory);
 		NumberVisualPropertyEditor<?> doublePropertyEditor = new NumberVisualPropertyEditor(Double.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,visualMappingManagerServiceRef, continuousMappingCellRendererFactory);
 		NumberVisualPropertyEditor<?> integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,visualMappingManagerServiceRef, continuousMappingCellRendererFactory);
@@ -145,15 +140,6 @@ public class CyActivator extends AbstractCyActivator {
 		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(visualMappingManagerServiceRef);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(visualMappingManagerServiceRef,visualStyleFactoryServiceRef);
 		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(cyApplicationManagerServiceRef, visualMappingManagerServiceRef, continousMappingFactory);
-// TODO
-//		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(propertySheetPanel,visualMappingManagerServiceRef);
-		
-		RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
-		RainbowOscColorMappingGenerator rainbowOscGenerator = new RainbowOscColorMappingGenerator(Color.class);
-		RandomColorMappingGenerator randomColorGenerator = new RandomColorMappingGenerator(Color.class);
-		NumberSeriesMappingGenerator<Number> seriesGenerator = new NumberSeriesMappingGenerator<Number>(Number.class);
-		RandomNumberMappingGenerator randomNumberGenerator = new RandomNumberMappingGenerator();
-		FitLabelMappingGenerator<Number> fitLabelMappingGenerator = new FitLabelMappingGenerator<Number>(Number.class, cyApplicationManagerServiceRef, visualMappingManagerServiceRef);
 		
 		// Context menu for edge bend
 		BendFactory bf = getService(bc, BendFactory.class);
@@ -167,7 +153,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, clearBendTaskFactory, EdgeViewTaskFactory.class, clearBendProp);
 		
 		registerAllServices(bc, attributeSetManager, new Properties());
-//		registerAllServices(bc, defViewEditor, new Properties());
 		registerAllServices(bc, editorManager.getNodeEditor(), new Properties());
 		registerAllServices(bc, editorManager.getEdgeEditor(), new Properties());
 		registerAllServices(bc, editorManager.getNetworkEditor(), new Properties());
@@ -220,67 +205,76 @@ public class CyActivator extends AbstractCyActivator {
 		createLegendTaskFactoryProps.setProperty("menu","main");
 		registerAllServices(bc,createLegendTaskFactory, createLegendTaskFactoryProps);
 
-// TODO
-//		Properties deleteMappingFunctionTaskFactoryProps = new Properties();
-//		deleteMappingFunctionTaskFactoryProps.setProperty("service.type","vizmapUI.taskFactory");
-//		deleteMappingFunctionTaskFactoryProps.setProperty("title","Delete Selected Mapping");
-//		deleteMappingFunctionTaskFactoryProps.setProperty("menu","context");
-//		registerAllServices(bc,deleteMappingFunctionTaskFactory, deleteMappingFunctionTaskFactoryProps);
-
-		Properties rainbowGeneratorProps = new Properties();
-		rainbowGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
-		rainbowGeneratorProps.setProperty("title","Rainbow");
-		rainbowGeneratorProps.setProperty("menu","context");
-		registerService(bc,rainbowGenerator, DiscreteMappingGenerator.class, rainbowGeneratorProps);
-
-		Properties rainbowOscGeneratorProps = new Properties();
-		rainbowOscGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
-		rainbowOscGeneratorProps.setProperty("title","Rainbow OSC");
-		rainbowOscGeneratorProps.setProperty("menu","context");
-		registerService(bc,rainbowOscGenerator, DiscreteMappingGenerator.class, rainbowOscGeneratorProps);
-
-		Properties randomColorGeneratorProps = new Properties();
-		randomColorGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
-		randomColorGeneratorProps.setProperty("title","Random Color");
-		randomColorGeneratorProps.setProperty("menu","context");
-		registerService(bc,randomColorGenerator, DiscreteMappingGenerator.class, randomColorGeneratorProps);
+		// Visual Styles Panel Context Menu
+		// -------------------------------------------------------------------------------------------------------------
 		
-		Properties numberSeriesGeneratorProps = new Properties();
-		numberSeriesGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
-		numberSeriesGeneratorProps.setProperty("title","Number Series");
-		numberSeriesGeneratorProps.setProperty("menu","context");
-		registerService(bc,seriesGenerator, DiscreteMappingGenerator.class, numberSeriesGeneratorProps);
+		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(servicesUtil);
+		Properties deleteMappingFunctionTaskFactoryProps = new Properties();
+		deleteMappingFunctionTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
+		deleteMappingFunctionTaskFactoryProps.setProperty("title", "Remove Mappings from Selected Visual Properties");
+		deleteMappingFunctionTaskFactoryProps.setProperty("menu", "context");
+		registerAllServices(bc, deleteMappingFunctionTaskFactory, deleteMappingFunctionTaskFactoryProps);
 		
-		Properties randomNumberGeneratorProps = new Properties();
-		randomNumberGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
-		randomNumberGeneratorProps.setProperty("title","Random Numbers");
-		randomNumberGeneratorProps.setProperty("menu","context");
-		registerService(bc, randomNumberGenerator, DiscreteMappingGenerator.class, randomNumberGeneratorProps);
-		
-		Properties fitLabelGeneratorProps = new Properties();
-		fitLabelGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
-		fitLabelGeneratorProps.setProperty("title","Fit label width (Only works with NAME column to width)");
-		fitLabelGeneratorProps.setProperty("menu","context");
-		registerService(bc, fitLabelMappingGenerator, DiscreteMappingGenerator.class, fitLabelGeneratorProps);
-// TODO				
+		// TODO				
 //		EditSelectedCellAction editAction = new EditSelectedCellAction(editorManager, cyApplicationManagerServiceRef, propertySheetPanel, visualMappingManagerServiceRef);
 //		Properties editSelectedProps = new Properties();
 //		editSelectedProps.setProperty("service.type","vizmapUI.contextMenu");
 //		editSelectedProps.setProperty("title","Edit Selected");
 //		editSelectedProps.setProperty("menu","context");
 //		registerService(bc, editAction, CyAction.class, editSelectedProps);
+		
+		// Discrete value generators:
+		
+		RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
+		Properties rainbowGeneratorProps = new Properties();
+		rainbowGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		rainbowGeneratorProps.setProperty("title","Rainbow");
+		rainbowGeneratorProps.setProperty("menu","context");
+		registerService(bc, rainbowGenerator, DiscreteMappingGenerator.class, rainbowGeneratorProps);
 
-//		BypassManager bypassManager = new BypassManager(cyServiceRegistrarServiceRef,editorManager, visualMappingManagerServiceRef);
-//		registerServiceListener(bc, bypassManager,"addBypass","removeBypass", RenderingEngineFactory.class);
+		RainbowOscColorMappingGenerator rainbowOscGenerator = new RainbowOscColorMappingGenerator(Color.class);
+		Properties rainbowOscGeneratorProps = new Properties();
+		rainbowOscGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		rainbowOscGeneratorProps.setProperty("title","Rainbow OSC");
+		rainbowOscGeneratorProps.setProperty("menu","context");
+		registerService(bc, rainbowOscGenerator, DiscreteMappingGenerator.class, rainbowOscGeneratorProps);
+
+		RandomColorMappingGenerator randomColorGenerator = new RandomColorMappingGenerator(Color.class);
+		Properties randomColorGeneratorProps = new Properties();
+		randomColorGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		randomColorGeneratorProps.setProperty("title","Random Color");
+		randomColorGeneratorProps.setProperty("menu","context");
+		registerService(bc, randomColorGenerator, DiscreteMappingGenerator.class, randomColorGeneratorProps);
+		
+		NumberSeriesMappingGenerator<Number> seriesGenerator = new NumberSeriesMappingGenerator<Number>(Number.class);
+		Properties numberSeriesGeneratorProps = new Properties();
+		numberSeriesGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		numberSeriesGeneratorProps.setProperty("title","Number Series");
+		numberSeriesGeneratorProps.setProperty("menu","context");
+		registerService(bc, seriesGenerator, DiscreteMappingGenerator.class, numberSeriesGeneratorProps);
+		
+		RandomNumberMappingGenerator randomNumberGenerator = new RandomNumberMappingGenerator();
+		Properties randomNumberGeneratorProps = new Properties();
+		randomNumberGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		randomNumberGeneratorProps.setProperty("title","Random Numbers");
+		randomNumberGeneratorProps.setProperty("menu","context");
+		registerService(bc, randomNumberGenerator, DiscreteMappingGenerator.class, randomNumberGeneratorProps);
+		
+		FitLabelMappingGenerator<Number> fitLabelMappingGenerator = new FitLabelMappingGenerator<Number>(Number.class, cyApplicationManagerServiceRef, visualMappingManagerServiceRef);
+		Properties fitLabelGeneratorProps = new Properties();
+		fitLabelGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");
+		fitLabelGeneratorProps.setProperty("title","Fit label width (Only works with NAME column to width)");
+		fitLabelGeneratorProps.setProperty("menu","context");
+		registerService(bc, fitLabelMappingGenerator, DiscreteMappingGenerator.class, fitLabelGeneratorProps);
 		
 		// Create the main GUI component
+		// -------------------------------------------------------------------------------------------------------------
 		final IconManager iconManager = new IconManager();
 		final VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(iconManager);
 		
 		registerServiceListener(bc, mappingFunctionFactoryManager, "addFactory", "removeFactory", VisualMappingFunctionFactory.class);
 		registerServiceListener(bc, editorManager, "addValueEditor", "removeValueEditor", ValueEditor.class);
 		registerServiceListener(bc, editorManager, "addVisualPropertyEditor", "removeVisualPropertyEditor", VisualPropertyEditor.class);
-
 		registerServiceListener(bc, editorManager, "addRenderingEngineFactory", "removeRenderingEngineFactory", RenderingEngineFactory.class);
 		
 		// Start the PureMVC components
@@ -314,6 +308,7 @@ public class CyActivator extends AbstractCyActivator {
 				attributeSetManager, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
 		registerServiceListener(bc, vizMapEventHandlerManager, "registerPCL", "unregisterPCL", RenderingEngineFactory.class);
 		
+		// Startup the framework
 		new ApplicationFacade(startupCommand).startup();
 	}
 }

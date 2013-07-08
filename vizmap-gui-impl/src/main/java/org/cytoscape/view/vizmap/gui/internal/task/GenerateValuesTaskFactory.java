@@ -24,9 +24,16 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheet;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -51,7 +58,26 @@ public class GenerateValuesTaskFactory extends AbstractTaskFactory {
 	
 	@Override
 	public boolean isReady() {
-		// TODO check selected VP Editors with DISCRETE mappings
-		return super.isReady();
+		final VisualPropertySheet vpSheet = vizMapperPanel.getSelectedVisualPropertySheet();
+		
+		if (vpSheet != null) {
+			for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
+				final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
+				
+				if (mapping != null && mapping instanceof DiscreteMapping) {
+					final VisualProperty<?> vp = item.getModel().getVisualProperty();
+					final Class<?> vpValueType = vp.getRange().getType();
+					final Class<?> generatorType = generator.getDataType();
+					
+					if ( vpValueType.isAssignableFrom(generatorType)
+							|| ((generator instanceof NumberSeriesMappingGenerator 
+									|| generator instanceof RandomNumberMappingGenerator)
+									&& Number.class.isAssignableFrom(vpValueType)) )
+						return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 }

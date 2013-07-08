@@ -24,27 +24,20 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
+import java.util.Set;
+
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
-import org.cytoscape.view.vizmap.gui.internal.event.CellType;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-import com.l2fprod.common.propertysheet.PropertySheetTable;
-import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
-
 public class DeleteMappingFunctionTask extends AbstractTask {
 
-	private final PropertySheetTable table;
-	private final VisualMappingManager vmm;
+	private final Set<VisualPropertySheetItem<?>> items;
 
-	public DeleteMappingFunctionTask(final PropertySheetTable table, final VisualMappingManager vmm) {
-		this.table = table;
-		this.vmm = vmm;
+	public DeleteMappingFunctionTask(final Set<VisualPropertySheetItem<?>> items) {
+		this.items = items;
 	}
 
 
@@ -54,31 +47,14 @@ public class DeleteMappingFunctionTask extends AbstractTask {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final int selectedRow = table.getSelectedRow();
-
-				// If not selected, do nothing.
-				if (selectedRow < 0)
-					return;
-
-				final Item value = (Item) table.getValueAt(selectedRow, 0);
-
-				if (value.isProperty()) {
-					final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) value.getProperty();
-
-					if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
-						final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
-						removeMapping(vmm.getCurrentVisualStyle(), vp);
-//						updatePropertySheet(prop, vp);
+				if (items != null) {
+					for (final VisualPropertySheetItem<?> item : items) {
+						if (item.getModel().getVisualMappingFunction() != null)
+							item.getModel().setVisualMappingFunction(null);
 					}
 				}
-
 			}
 		});
 
 	}
-
-	private final void removeMapping(final VisualStyle style, final VisualProperty<?> vp) {
-		style.removeVisualMappingFunction(vp);
-	}
-
 }

@@ -24,24 +24,53 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
-import org.cytoscape.view.vizmap.VisualMappingManager;
+import java.util.Set;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.vizmap.gui.VizMapGUI;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheet;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-import com.l2fprod.common.propertysheet.PropertySheetPanel;
-
 public class DeleteMappingFunctionTaskFactory extends AbstractTaskFactory {
 
-	private final PropertySheetPanel panel;
-	private final VisualMappingManager vmm;
+	private final ServicesUtil servicesUtil;
 
-	public DeleteMappingFunctionTaskFactory(final PropertySheetPanel panel, final VisualMappingManager vmm) {
-		this.panel = panel;
-		this.vmm = vmm;
+	public DeleteMappingFunctionTaskFactory(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new DeleteMappingFunctionTask(panel.getTable(), vmm));
+		Set<VisualPropertySheetItem<?>> selectedItems = null;
+		final VizMapGUI gui = servicesUtil.get(VizMapGUI.class);
+		
+		if (gui instanceof VizMapperMainPanel) {
+			final VisualPropertySheet vpSheet = ((VizMapperMainPanel)gui).getSelectedVisualPropertySheet();
+			selectedItems = vpSheet.getSelectedItems();
+		}
+		
+		return new TaskIterator(new DeleteMappingFunctionTask(selectedItems));
+	}
+	
+	@Override
+	public boolean isReady() {
+		final VizMapGUI gui = servicesUtil.get(VizMapGUI.class);
+		
+		if (gui instanceof VizMapperMainPanel) {
+			final VisualPropertySheet vpSheet = ((VizMapperMainPanel)gui).getSelectedVisualPropertySheet();
+			
+			if (vpSheet.getModel().getTargetDataType() != CyNetwork.class) {
+				for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
+					if (item.getModel().getVisualMappingFunction() != null)
+						return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 }
