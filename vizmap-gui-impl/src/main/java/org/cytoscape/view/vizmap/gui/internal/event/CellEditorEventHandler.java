@@ -154,8 +154,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			Object controllingAttrName = propSheetPnl.getTable().getValueAt(0, 1);
 
 			if (vp != null && controllingAttrName != null) {
-				VisualMappingFunction newMapping  = switchMappingType(prop, vp,
-						(VisualMappingFunctionFactory) e.getNewValue(), controllingAttrName.toString(), propSheetPnl);
+				VisualMappingFunction newMapping  = switchMappingType(prop, vp, (VisualMappingFunctionFactory) oldVal, 
+						(VisualMappingFunctionFactory) newVal, controllingAttrName.toString(), propSheetPnl);
 				propSheetItem.getModel().setVisualMappingFunction(newMapping);
 			}
 		} else if (prop.getCellType() == CellType.DISCRETE) {
@@ -199,10 +199,12 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				JOptionPane.showMessageDialog(null,
 						"Continuous Mapper can be used with numbers only.\nPlease select a numerical column type.",
 						"Incompatible Mapping Type.", JOptionPane.INFORMATION_MESSAGE);
+				prop.setValue(mapping != null ? mapping.getMappingColumnName() : null);
+				
 				return mapping;
 			}
 			
-			return switchMappingType(prop, vp, factory, columnName, propertySheetPanel);
+			return switchMappingType(prop, vp, factory, factory, columnName, propertySheetPanel);
 		}
 		
 		return mapping;
@@ -210,7 +212,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 
 	private VisualMappingFunction<?, ?> switchMappingType(final VizMapperProperty<?, ?, ?> prop,
 														  final VisualProperty<?> vp,
-														  final VisualMappingFunctionFactory factory,
+														  final VisualMappingFunctionFactory oldFactory,
+														  final VisualMappingFunctionFactory newFactory,
 														  final String controllingAttrName,
 														  final PropertySheetPanel propertySheetPanel) {
 		// This is the currently selected Visual Style.
@@ -218,7 +221,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 		VisualMappingFunction<?, ?> newMapping = mapping;
 
-		if (mapping == null || mapping.getClass() != factory.getMappingFunctionType() 
+		if (mapping == null || mapping.getClass() != newFactory.getMappingFunctionType() 
 				|| !mapping.getMappingColumnName().equals(controllingAttrName)) {
 			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 			final CyNetwork currentNet = appMgr.getCurrentNetwork();
@@ -230,11 +233,13 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			final AttributeSet attrSet = attrManager.getAttributeSet(currentNet, vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
-			if (factory.getMappingFunctionType() == ContinuousMapping.class) {
+			if (newFactory.getMappingFunctionType() == ContinuousMapping.class) {
 				if (attributeDataType == null) {
 					JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
 							+ controllingAttrName + "\").\nPlease select another column.", "Invalid Column.",
 							JOptionPane.WARNING_MESSAGE);
+					prop.setValue(oldFactory);
+					
 					return newMapping;
 				}
 
@@ -242,11 +247,13 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 					JOptionPane.showMessageDialog(null,
 							"Selected column data type is not Number.\nPlease select a numerical column type.",
 							"Incompatible Column Type.", JOptionPane.WARNING_MESSAGE);
+					prop.setValue(oldFactory);
+					
 					return newMapping;
 				}
 			}
 
-			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
+			newMapping = newFactory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
 		}
 
 		// Disable listeners to avoid unnecessary updates
@@ -256,7 +263,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		for (final TableModelListener tm : modelListeners)
 			model.removeTableModelListener(tm);
 
-		vizMapPropertyBuilder.createMappingProperties(newMapping, propertySheetPanel, factory);
+		vizMapPropertyBuilder.createMappingProperties(newMapping, propertySheetPanel, newFactory);
 
 		// Restore listeners
 		for (final TableModelListener tm : modelListeners)

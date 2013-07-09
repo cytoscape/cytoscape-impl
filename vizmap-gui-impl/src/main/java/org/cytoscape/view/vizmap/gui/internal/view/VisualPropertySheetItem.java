@@ -2,6 +2,8 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
@@ -16,6 +18,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -32,6 +36,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -391,6 +397,13 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				final VisualMappingFunctionFactory mappingFactory = getMappingFactory(mapping);
 				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory);
 			}
+			
+			// This is necessary because the Property Sheet Table steals the mouse wheel event
+			// which prevents the parent scroll pane from receiving it when the mouse is over the property sheet panel.
+			final Container c = propSheetPnl.getTable().getParent().getParent();
+			
+			if (c instanceof JScrollPane)
+				c.addMouseWheelListener(new CustomMouseWheelListener((JScrollPane)c));
 		}
 		
 		return propSheetPnl;
@@ -869,6 +882,66 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		
 		static int getPreferredWidth() {
 			return VALUE_ICON_WIDTH + 2*BTN_H_MARGIN + 2*BTN_BORDER_WIDTH + 2*BUTTON_H_PAD;
+		}
+	}
+	
+	private class CustomMouseWheelListener implements MouseWheelListener {
+
+		private JScrollBar bar;
+		private int previousValue;
+		private JScrollPane parentScrollPane;
+		private JScrollPane customScrollPane;
+
+		CustomMouseWheelListener(final JScrollPane scrollPane) {
+			this.customScrollPane = scrollPane;
+			this.bar = this.customScrollPane.getVerticalScrollBar();
+		}
+
+		@Override
+		public void mouseWheelMoved(final MouseWheelEvent e) {
+			JScrollPane parent = getParentScrollPane();
+			
+			if (parent != null) {
+				if (e.getWheelRotation() < 0) {
+					if (this.bar.getValue() == 0 && this.previousValue == 0)
+						parent.dispatchEvent(cloneEvent(e));
+				} else {
+					if (this.bar.getValue() == getMax() && this.previousValue == getMax())
+						parent.dispatchEvent(cloneEvent(e));
+				}
+				
+				this.previousValue = this.bar.getValue();
+			} else {
+				this.customScrollPane.removeMouseWheelListener(this);
+			}
+		}
+
+		/**
+		 * @return The maximum value of the scrollbar.
+		 */
+		private int getMax() {
+			return this.bar.getMaximum() - this.bar.getVisibleAmount();
+		}
+		
+		/** @return The parent scroll pane, or null if there is no parent. */
+		private JScrollPane getParentScrollPane() {
+			if (this.parentScrollPane == null) {
+				Component parent = this.customScrollPane.getParent();
+				
+				while (!(parent instanceof JScrollPane) && parent != null)
+					parent = parent.getParent();
+				
+				this.parentScrollPane = (JScrollPane) parent;
+			}
+			
+			return this.parentScrollPane;
+		}
+
+		private MouseWheelEvent cloneEvent(final MouseWheelEvent e) {
+			return new MouseWheelEvent(getParentScrollPane(), e.getID(),
+					e.getWhen(), e.getModifiers(), 1, 1,
+					e.getClickCount(), false, e.getScrollType(),
+					e.getScrollAmount(), e.getWheelRotation());
 		}
 	}
 }

@@ -44,6 +44,7 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedCellAction;
 import org.cytoscape.view.vizmap.gui.internal.controller.ImportDefaultVisualStylesCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.LoadVisualStylesCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
@@ -215,16 +216,14 @@ public class CyActivator extends AbstractCyActivator {
 		deleteMappingFunctionTaskFactoryProps.setProperty("menu", "context");
 		registerAllServices(bc, deleteMappingFunctionTaskFactory, deleteMappingFunctionTaskFactoryProps);
 		
-		// TODO				
-//		EditSelectedCellAction editAction = new EditSelectedCellAction(editorManager, cyApplicationManagerServiceRef, propertySheetPanel, visualMappingManagerServiceRef);
-//		Properties editSelectedProps = new Properties();
-//		editSelectedProps.setProperty("service.type","vizmapUI.contextMenu");
-//		editSelectedProps.setProperty("title","Edit Selected");
-//		editSelectedProps.setProperty("menu","context");
-//		registerService(bc, editAction, CyAction.class, editSelectedProps);
+		EditSelectedCellAction editAction = new EditSelectedCellAction(servicesUtil, editorManager);
+		Properties editSelectedProps = new Properties();
+		editSelectedProps.setProperty("service.type","vizmapUI.contextMenu");
+		editSelectedProps.setProperty("title","Edit Selected Discrete Mapping Entries");
+		editSelectedProps.setProperty("menu","context");
+		registerService(bc, editAction, CyAction.class, editSelectedProps);
 		
 		// Discrete value generators:
-		
 		RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
 		Properties rainbowGeneratorProps = new Properties();
 		rainbowGeneratorProps.setProperty("service.type","vizmapUI.contextMenu");

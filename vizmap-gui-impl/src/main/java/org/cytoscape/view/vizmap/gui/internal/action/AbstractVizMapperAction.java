@@ -24,32 +24,33 @@ package org.cytoscape.view.vizmap.gui.internal.action;
  * #L%
  */
 
+import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.PopupMenuEvent;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
+import org.cytoscape.view.vizmap.gui.VizMapGUI;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
-
-import com.l2fprod.common.propertysheet.PropertySheetPanel;
 
 /**
  * Action class to process commands.
  */
-public abstract class AbstractVizMapperAction extends AbstractCyAction {
+public abstract class AbstractVizMapperAction extends AbstractAction implements CyAction {
 
-	private static final long serialVersionUID = 1499424630636172107L;
-
+	private static final long serialVersionUID = 2123044076909272338L;
+	
 	protected DefaultViewEditor defViewEditor;
 	protected VisualMappingManager vmm;
-	protected VizMapperMainPanel vizMapperMainPanel;
 	protected IconManager iconManager;
-
-	protected final PropertySheetPanel propertySheetPanel;
 
 	protected Properties vizmapUIResource;
 
@@ -57,27 +58,19 @@ public abstract class AbstractVizMapperAction extends AbstractCyAction {
 	protected String iconId;
 	protected JMenuItem menuItem;
 
-	protected final CyApplicationManager applicationManager;
-
-	public AbstractVizMapperAction(final String name, final CyApplicationManager applicationManager,
-			final PropertySheetPanel propertySheetPanel) {
+	private final String name;
+	protected final ServicesUtil servicesUtil;
+	
+	public AbstractVizMapperAction(final String name, final ServicesUtil servicesUtil) {
 		super(name);
-		this.propertySheetPanel = propertySheetPanel;
-		this.applicationManager = applicationManager;
+		this.name = name;
+		this.servicesUtil = servicesUtil;
 	}
 
-	public void setDefaultAppearenceBuilder(DefaultViewEditor defViewEditor) {
+	public void setDefaultAppearenceBuilder(final DefaultViewEditor defViewEditor) {
 		this.defViewEditor = defViewEditor;
 	}
 
-	public void setVmm(VisualMappingManager vmm) {
-		this.vmm = vmm;
-	}
-	
-	public void setVizMapperMainPanel(VizMapperMainPanel vizMapperMainPanel) {
-		this.vizMapperMainPanel = vizMapperMainPanel;
-	}
-	
 	public void setMenuLabel(final String menuLabel) {
 		this.menuLabel = menuLabel;
 	}
@@ -88,5 +81,99 @@ public abstract class AbstractVizMapperAction extends AbstractCyAction {
 	
 	public void setIconManager(IconManager iconManager) {
 		this.iconManager = iconManager;
+	}
+	
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public boolean isInMenuBar() {
+		return false;
+	}
+
+	@Override
+	public boolean isInToolBar() {
+		return false;
+	}
+
+	@Override
+	public boolean insertSeparatorBefore() {
+		return false;
+	}
+
+	@Override
+	public boolean insertSeparatorAfter() {
+		return false;
+	}
+
+	@Override
+	public float getMenuGravity() {
+		return 0;
+	}
+
+	@Override
+	public float getToolbarGravity() {
+		return 0;
+	}
+
+	@Override
+	public KeyStroke getAcceleratorKeyStroke() {
+		return null;
+	}
+
+	@Override
+	public String getPreferredMenu() {
+		return null;
+	}
+
+	@Override
+	public boolean useCheckBoxMenuItem() {
+		return false;
+	}
+
+	@Override
+	public Map<String, String> getProperties() {
+		return null;
+	}
+	
+	@Override
+	public void menuCanceled(MenuEvent e) {
+		updateEnableState();
+	}
+
+	@Override
+	public void menuDeselected(MenuEvent e) {
+		updateEnableState();
+	}
+
+	@Override
+	public void menuSelected(MenuEvent e) {
+		updateEnableState();
+	}
+
+	@Override
+	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+		updateEnableState();
+	}
+	
+	@Override
+	public void popupMenuCanceled(PopupMenuEvent e) {
+		// Nothing to do here
+	}
+
+	@Override
+	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+		// Nothing to do here
+	}
+	
+	protected VizMapperMainPanel getVizMapperMainPanel() {
+		final VizMapGUI gui = servicesUtil.get(VizMapGUI.class);
+		
+		if (gui instanceof VizMapperMainPanel)
+			return (VizMapperMainPanel) gui;
+			
+		return null;
 	}
 }
