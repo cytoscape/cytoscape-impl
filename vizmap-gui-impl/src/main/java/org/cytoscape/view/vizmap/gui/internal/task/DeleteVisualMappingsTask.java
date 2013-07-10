@@ -32,11 +32,11 @@ import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class DeleteMappingFunctionTask extends AbstractTask {
+public class DeleteVisualMappingsTask extends AbstractTask {
 
 	private final Set<VisualPropertySheetItem<?>> items;
 
-	public DeleteMappingFunctionTask(final Set<VisualPropertySheetItem<?>> items) {
+	public DeleteVisualMappingsTask(final Set<VisualPropertySheetItem<?>> items) {
 		this.items = items;
 	}
 

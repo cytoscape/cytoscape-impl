@@ -69,6 +69,7 @@ import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.GenerateValuesTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel.VisualStyleDropDownButton;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
@@ -105,6 +106,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private final VizMapperMainPanel vizMapperMainPanel;
 	private final EditorManager editorManager;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
+	private final IconManager iconMgr;
 	
 	private final Map<DiscreteMappingGenerator<?>, JMenuItem> mappingGenerators;
 	private final Map<TaskFactory, JMenuItem> taskFactories;
@@ -116,7 +118,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	public VizMapperMediator(final VizMapperMainPanel vizMapperMainPanel,
 							 final ServicesUtil servicesUtil,
 							 final EditorManager editorManager,
-							 final VizMapPropertyBuilder vizMapPropertyBuilder) {
+							 final VizMapPropertyBuilder vizMapPropertyBuilder,
+							 final IconManager iconMgr) {
 		super(NAME, vizMapperMainPanel);
 		
 		if (vizMapperMainPanel == null)
@@ -127,11 +130,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			throw new IllegalArgumentException("'editorManager' must not be null");
 		if (vizMapPropertyBuilder == null)
 			throw new IllegalArgumentException("'vizMapPropertyBuilder' must not be null");
+		if (iconMgr == null)
+			throw new IllegalArgumentException("'iconMgr' must not be null");
 		
 		this.vizMapperMainPanel = vizMapperMainPanel;
 		this.servicesUtil = servicesUtil;
 		this.editorManager = editorManager;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
+		this.iconMgr = iconMgr;
 		
 		mappingGenerators = new HashMap<DiscreteMappingGenerator<?>, JMenuItem>();
 		taskFactories = new HashMap<TaskFactory, JMenuItem>();
@@ -427,59 +433,78 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	@SuppressWarnings("serial")
 	private void addViewListeners(final VisualPropertySheet vpSheet) {
-		for (final VisualPropertySheetItem<?> vpSheetItem : vpSheet.getItems()) {
-			if (vpSheetItem.getModel().getVisualPropertyDependency() == null) {
-				// It's a regular VisualProperty Editor...
-				// Default value button clicked
-				vpSheetItem.getDefaultBtn().addActionListener(new ActionListener() {
+		vpSheet.getExpandAllBtn().addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				expandAllMappings(vpSheet);
+			}
+		});
+		vpSheet.getCollapseAllBtn().addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				collapseAllMappings(vpSheet);
+			}
+		});
+		
+		for (final VisualPropertySheetItem<?> vpSheetItem : vpSheet.getItems())
+			addViewListeners(vpSheet, vpSheetItem);
+	}
+
+	private void addViewListeners(final VisualPropertySheet vpSheet, final VisualPropertySheetItem<?> vpSheetItem) {
+		if (vpSheetItem.getModel().getVisualPropertyDependency() == null) {
+			// It's a regular VisualProperty Editor...
+			// Default value button clicked
+			vpSheetItem.getDefaultBtn().addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					openDefaultValueEditor(e, vpSheetItem);
+				}
+			});
+			
+			// Bypass popup menu items
+			if (vpSheetItem.getModel().isLockedValueAllowed()) {
+				final JPopupMenu bypassMenu = new JPopupMenu();
+				
+				bypassMenu.add(new JMenuItem(new AbstractAction("Set Bypass...") {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						openDefaultValueEditor(e, vpSheetItem);
+						openLockedValueEditor(e, vpSheetItem);
 					}
-				});
-				
-				// Bypass popup menu items
-				if (vpSheetItem.getModel().isLockedValueAllowed()) {
-					final JPopupMenu bypassMenu = new JPopupMenu();
-					
-					bypassMenu.add(new JMenuItem(new AbstractAction("Set Bypass...") {
-						@Override
-						public void actionPerformed(final ActionEvent e) {
-							openLockedValueEditor(e, vpSheetItem);
-						}
-					}));
-					bypassMenu.add(new JMenuItem(new AbstractAction("Remove Bypass") {
-						@Override
-						public void actionPerformed(final ActionEvent e) {
-							removeLockedValue(e, vpSheetItem);
-						}
-					}));
-					
-					vpSheetItem.getBypassBtn().addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(final ActionEvent e) {
-							final LockedValueState state = vpSheetItem.getModel().getLockedValueState();
-							final JButton btn = vpSheetItem.getBypassBtn();
-							
-							if (state == LockedValueState.ENABLED_NOT_SET) {
-								// There is only one option to execute, so do it now, rather than showing the popup menu
-								openLockedValueEditor(e, vpSheetItem);
-							} else {
-								bypassMenu.show(btn, 0, btn.getHeight());
-								bypassMenu.requestFocusInWindow();
-							}
-						}
-					});
-				}
-				
-				// Right-click
-				vpSheetItem.addMouseListener(new MouseAdapter() {
+				}));
+				bypassMenu.add(new JMenuItem(new AbstractAction("Remove Bypass") {
 					@Override
-					public void mouseClicked(final MouseEvent e) {
-						if (SwingUtilities.isRightMouseButton(e))
-							handleContextMenuEvent(e, vpSheet, vpSheetItem);
+					public void actionPerformed(final ActionEvent e) {
+						removeLockedValue(e, vpSheetItem);
+					}
+				}));
+				
+				vpSheetItem.getBypassBtn().addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(final ActionEvent e) {
+						final LockedValueState state = vpSheetItem.getModel().getLockedValueState();
+						final JButton btn = vpSheetItem.getBypassBtn();
+						
+						if (state == LockedValueState.ENABLED_NOT_SET) {
+							// There is only one option to execute, so do it now, rather than showing the popup menu
+							openLockedValueEditor(e, vpSheetItem);
+						} else {
+							bypassMenu.show(btn, 0, btn.getHeight());
+							bypassMenu.requestFocusInWindow();
+						}
 					}
 				});
+			}
+			
+			// Right-click
+			vpSheetItem.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(final MouseEvent e) {
+					if (SwingUtilities.isRightMouseButton(e))
+						handleContextMenuEvent(e, vpSheet, vpSheetItem);
+				}
+			});
+			
+			if (vpSheetItem.getModel().isVisualMappingAllowed()) {
 				vpSheetItem.getPropSheetPnl().getTable().addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(final MouseEvent e) {
@@ -495,15 +520,40 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						curVpSheetItem = vpSheetItem;
 					}
 				});
-			} else {
-				// It's a Dependency Editor...
-				vpSheetItem.getDependencyCkb().addItemListener(new ItemListener() {
+				
+				vpSheetItem.getRemoveMappingBtn().addActionListener(new ActionListener() {
 					@Override
-					public void itemStateChanged(final ItemEvent e) {
-						onDependencySelectionChanged(e, vpSheetItem);
+					public void actionPerformed(final ActionEvent e) {
+						removeVisualMapping(vpSheetItem);
 					}
 				});
 			}
+		} else {
+			// It's a Dependency Editor...
+			vpSheetItem.getDependencyCkb().addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(final ItemEvent e) {
+					onDependencySelectionChanged(e, vpSheetItem);
+				}
+			});
+		}
+	}
+
+	protected void removeVisualMapping(final VisualPropertySheetItem<?> vpSheetItem) {
+		if (vpSheetItem.getModel().getVisualMappingFunction() != null)
+			vpSheetItem.getModel().setVisualMappingFunction(null);
+	}
+
+	private void collapseAllMappings(final VisualPropertySheet vpSheet) {
+		for (final VisualPropertySheetItem<?> item : vpSheet.getItems())
+			item.collapse();
+	}
+
+	private void expandAllMappings(final VisualPropertySheet vpSheet) {
+		for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
+			// Expand only the ones that have a mapping
+			if (item.getModel().getVisualMappingFunction() != null)
+				item.expand();
 		}
 	}
 
@@ -636,7 +686,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			public void run() {
 				for (final Class<? extends CyIdentifiable> type : SHEET_TYPES) {
 					final VisualPropertySheetModel model = new VisualPropertySheetModel(type, style, lexicon);
-					final VisualPropertySheet vpSheet = new VisualPropertySheet(model);
+					final VisualPropertySheet vpSheet = new VisualPropertySheet(model, iconMgr);
 					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
 				}
 				

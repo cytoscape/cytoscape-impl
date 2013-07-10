@@ -86,21 +86,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	static final int BTN_H_MARGIN = 1;
 	static final int BTN_BORDER_WIDTH = 1;
 	
-	private static final Border BTN_BORDER;
-	private static final Border BTN_BORDER_DISABLED;
-	
-	static {
-		Border padBorder = BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD + 1,
-				BUTTON_H_PAD);
-		Border border = BorderFactory.createMatteBorder(BTN_BORDER_WIDTH, BTN_BORDER_WIDTH, 0,
-				BTN_BORDER_WIDTH, BTN_BORDER_COLOR);
-		BTN_BORDER =  BorderFactory.createCompoundBorder(border, padBorder);
-		
-		Border disBorder = BorderFactory.createMatteBorder(BTN_BORDER_WIDTH, BTN_BORDER_WIDTH, 0,
-				BTN_BORDER_WIDTH, BTN_BORDER_DISABLED_COLOR);
-		BTN_BORDER_DISABLED =  BorderFactory.createCompoundBorder(disBorder, padBorder);
-	}
-	
 	private JPanel topPnl;
 	private JPanel mappingPnl;
 	private PropertySheetPanel propSheetPnl;
@@ -111,6 +96,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private JCheckBox dependencyCkb;
 	private JLabel titleLbl;
 	private PropertySheetTable propSheetTbl;
+	private JButton removeMappingBtn;
 	
 	private boolean selected;
 	
@@ -178,9 +164,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	public void updateBypassButton() {
 		if (bypassBtn != null) {
 			final LockedValueState state = model.getLockedValueState();
-			
 			bypassBtn.setEnabled(state != LockedValueState.DISABLED);
-			bypassBtn.setBorder(bypassBtn.isEnabled() ? BTN_BORDER : BTN_BORDER_DISABLED);
 			
 			// TODO: create better icons
 			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
@@ -208,16 +192,13 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	public void updateMapping() {
 		updateMappingIcon();
-		
-		if (model.getVisualMappingFunction() instanceof ContinuousMapping && getPropSheetTbl().getRowCount() > 2)
-			getPropSheetTbl().setRowHeight(2, MAPPING_IMG_ROW_HEIGHT);
-		else
-			getPropSheetTbl().setRowHeight(PROP_SHEET_ROW_HEIGHT);
+		updateRemoveMappingBtn();
+		updateMappingRowHeight();
 		
 		if (mappingPnl != null && mappingPnl.isVisible())
 			updateMappingPanelHeight();
 	}
-	
+
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
@@ -326,7 +307,20 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			mappingPnl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(125, 125, 125)));
 			mappingPnl.setLayout(new BorderLayout());
 			mappingPnl.setVisible(false);
+			
 			mappingPnl.add(getPropSheetPnl(), BorderLayout.CENTER);
+			
+			final JPanel bottomPnl = new JPanel();
+			bottomPnl.setLayout(new BoxLayout(bottomPnl, BoxLayout.X_AXIS));
+			bottomPnl.add(Box.createHorizontalGlue());
+			bottomPnl.add(Box.createHorizontalGlue());
+			bottomPnl.add(getRemoveMappingBtn());
+			bottomPnl.add(Box.createHorizontalGlue());
+			bottomPnl.add(Box.createVerticalStrut(PROP_SHEET_ROW_HEIGHT));
+			bottomPnl.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+			
+			mappingPnl.add(bottomPnl, BorderLayout.SOUTH);
+			
 			mappingPnl.addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentShown(final ComponentEvent e) {
@@ -346,45 +340,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			propSheetPnl.setTable(getPropSheetTbl());
 			propSheetPnl.getTable().setEditorFactory(new PropertyEditorRegistry());
 			propSheetPnl.getTable().setRendererFactory(new PropertyRendererRegistry());
-// TODO			
-//			propSheetPnl.addPropertySheetChangeListener(new PropertyChangeListener() {
-//				@Override
-//				public void propertyChange(final PropertyChangeEvent e) {System.out.println("\n--> propertyChange...");
-//					updateMappingPanelHeight(); // FIXME
-//				}
-//			});
-			
-//			propSheetPnl.getTable().addPropertyChangeListener(new PropertyChangeListener() {
-//				@Override
-//				public void propertyChange(PropertyChangeEvent e) {
-//					System.out.println("\n[ TABLE change ] - " + e.getPropertyName()+": " + e.getNewValue() +"|"+ e.getNewValue());
-//					updateMappingPanelHeight();
-//				}
-//			});
-			
-//			propSheetPnl.getTable().getModel().addTableModelListener(new TableModelListener() {
-//				@Override
-//				public void tableChanged(final TableModelEvent e) {
-////					if (e.getType() == TableModelEvent.INSERT) {
-//						System.out.println("\n@**** [ tableChanged ] ****@\n");
-//						for (int row = e.getFirstRow(); row <= e.getLastRow(); row++) {
-//							if (propSheetTbl.getRowCount() <= row) break;
-//							
-//							final Object val = propSheetTbl.getValueAt(row, 0);
-//							
-//							if (val instanceof Item) {
-//								final VizMapperProperty<?, ?, ?> prop =
-//										(VizMapperProperty<?, ?, ?>) ((Item) val).getProperty();
-//								
-//								if (prop != null && prop.getCellType() == CellType.CONTINUOUS)
-//									propSheetTbl.setRowHeight(row, MAPPING_IMG_ROW_HEIGHT); // FIXME
-//							}
-//						}
-//						
-//						updateMappingPanelHeight(); // FIXME
-////					}
-//				}
-//			});
 			
 			final VisualMappingFunction<?, T> mapping = model.getVisualMappingFunction();
 
@@ -396,6 +351,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				// There is already a visual mapping for this style's property
 				final VisualMappingFunctionFactory mappingFactory = getMappingFactory(mapping);
 				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory);
+				updateMappingRowHeight();
 			}
 			
 			// This is necessary because the Property Sheet Table steals the mouse wheel event
@@ -468,7 +424,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	protected JButton getDefaultBtn() {
 		if (defaultBtn == null) {
 			defaultBtn = new VizMapperButton();
-			defaultBtn.setUI(new VPButtonUI());
+			defaultBtn.setUI(new VPButtonUI(VPButtonUI.SOUTH));
 			updateDefaultButton();
 		}
 		
@@ -488,7 +444,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		if (mappingBtn == null) {
 			mappingBtn = new VizMapperToggleButton();
 			mappingBtn.setIcon(getIcon(null, VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
-			mappingBtn.setUI(new VPButtonUI());
+			mappingBtn.setUI(new VPButtonUI(VPButtonUI.SOUTH));
 			mappingBtn.setHorizontalAlignment(JLabel.CENTER);
 			updateMappingIcon();
 			
@@ -522,11 +478,21 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		if (bypassBtn == null) {
 			bypassBtn = new VizMapperButton();
 			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
-			bypassBtn.setUI(new VPButtonUI());
+			bypassBtn.setUI(new VPButtonUI(VPButtonUI.SOUTH));
 			updateBypassButton();
 		}
 		
 		return bypassBtn;
+	}
+	
+	protected JButton getRemoveMappingBtn() {
+		if (removeMappingBtn == null) {
+			removeMappingBtn = new JButton("Remove Visual Mapping");
+			removeMappingBtn.setUI(new VPButtonUI(VPButtonUI.CENTER));
+			updateRemoveMappingBtn();
+		}
+		
+		return removeMappingBtn;
 	}
 	
 	private JLabel getTitleLbl() {
@@ -614,6 +580,18 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			btn.setText("Pm");
 			btn.setToolTipText("Passthrough Mapping for column \"" + colName + "\"");
 		}
+	}
+	
+	private void updateRemoveMappingBtn() {
+		if (removeMappingBtn != null)
+			removeMappingBtn.setEnabled(model.getVisualMappingFunction() != null);
+	}
+	
+	private void updateMappingRowHeight() {
+		if (model.getVisualMappingFunction() instanceof ContinuousMapping && getPropSheetTbl().getRowCount() > 2)
+			getPropSheetTbl().setRowHeight(2, MAPPING_IMG_ROW_HEIGHT);
+		else
+			getPropSheetTbl().setRowHeight(PROP_SHEET_ROW_HEIGHT);
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
@@ -820,13 +798,27 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	static class VPButtonUI extends BasicButtonUI {
 
+		public static final int NORTH = 1;
+		public static final int CENTER = 2;
+		public static final int SOUTH = 3;
+		
 		static final Color BG_OVER_COLOR = new Color(224, 232, 246);
 		static final Color BORDER_OVER_COLOR = new Color(152, 180, 226);
 		static final Color BG_SELECTED_COLOR = new Color(193, 210, 238);
 		static final Color BORDER_SELECTED_COLOR = new Color(125, 125, 125);
 		
+		private final int anchor;
+		
+		private Border borderEnabled;
+		private Border borderDisabled;
+		
 		public VPButtonUI() {
+			this(CENTER);
+		}
+		
+		public VPButtonUI(final int anchor) {
 			super();
+			this.anchor = anchor;
 		}
 
 		@Override
@@ -844,7 +836,36 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			btn.setForeground(Color.DARK_GRAY);
 			btn.setFocusable(false);
 			btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-			btn.setBorder(btn.isEnabled() ? BTN_BORDER : BTN_BORDER_DISABLED);
+			
+			Border padBorder = BorderFactory.createEmptyBorder(BUTTON_V_PAD + (anchor == NORTH ? 1 : 0),
+															   BUTTON_H_PAD,
+															   BUTTON_V_PAD + (anchor == SOUTH ? 1 : 0),
+															   BUTTON_H_PAD);
+			{
+				Border border = BorderFactory.createMatteBorder(anchor == NORTH ? 0 : BTN_BORDER_WIDTH,
+																BTN_BORDER_WIDTH,
+																anchor == SOUTH ? 0: BTN_BORDER_WIDTH,
+																BTN_BORDER_WIDTH,
+																BTN_BORDER_COLOR);
+				borderEnabled =  BorderFactory.createCompoundBorder(border, padBorder);
+			}
+			{
+				Border border = BorderFactory.createMatteBorder(anchor == NORTH ? 0 : BTN_BORDER_WIDTH,
+																BTN_BORDER_WIDTH,
+																anchor == SOUTH ? 0: BTN_BORDER_WIDTH,
+																BTN_BORDER_WIDTH,
+																BTN_BORDER_DISABLED_COLOR);
+				borderDisabled =  BorderFactory.createCompoundBorder(border, padBorder);
+			}
+			
+			btn.setBorder(btn.isEnabled() ? borderEnabled : borderDisabled);
+			
+			btn.addPropertyChangeListener("enabled", new PropertyChangeListener() {
+				@Override
+				public void propertyChange(final PropertyChangeEvent evt) {
+					btn.setBorder(evt.getNewValue() == Boolean.TRUE ? borderEnabled : borderDisabled);
+				}
+			});
 		}
 
 		@Override

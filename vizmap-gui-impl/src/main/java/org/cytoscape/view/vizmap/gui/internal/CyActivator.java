@@ -54,7 +54,7 @@ import org.cytoscape.view.vizmap.gui.internal.task.ClearBendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.DeleteMappingFunctionTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualMappingsTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
@@ -209,12 +209,12 @@ public class CyActivator extends AbstractCyActivator {
 		// Visual Styles Panel Context Menu
 		// -------------------------------------------------------------------------------------------------------------
 		
-		DeleteMappingFunctionTaskFactory deleteMappingFunctionTaskFactory = new DeleteMappingFunctionTaskFactory(servicesUtil);
+		DeleteVisualMappingsTaskFactory deleteVisualMappingsTaskFactory = new DeleteVisualMappingsTaskFactory(servicesUtil);
 		Properties deleteMappingFunctionTaskFactoryProps = new Properties();
 		deleteMappingFunctionTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
 		deleteMappingFunctionTaskFactoryProps.setProperty("title", "Remove Mappings from Selected Visual Properties");
 		deleteMappingFunctionTaskFactoryProps.setProperty("menu", "context");
-		registerAllServices(bc, deleteMappingFunctionTaskFactory, deleteMappingFunctionTaskFactoryProps);
+		registerAllServices(bc, deleteVisualMappingsTaskFactory, deleteMappingFunctionTaskFactoryProps);
 		
 		EditSelectedCellAction editAction = new EditSelectedCellAction(servicesUtil, editorManager);
 		Properties editSelectedProps = new Properties();
@@ -283,7 +283,8 @@ public class CyActivator extends AbstractCyActivator {
 		final VizMapperMediator vizMapperMediator = new VizMapperMediator(vizMapperMainPanel,
 																		  servicesUtil,
 																		  editorManager,
-																		  vizMapPropertyBuilder);
+																		  vizMapPropertyBuilder,
+																		  iconManager);
 		final VizMapperMenuMediator vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
 		
 		final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand = new ImportDefaultVisualStylesCommand(servicesUtil);

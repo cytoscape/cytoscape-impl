@@ -28,6 +28,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -48,6 +49,7 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 
 @SuppressWarnings("serial")
@@ -58,8 +60,12 @@ public class VisualPropertySheet extends JPanel{
 	private JScrollPane vpListScr;
 	private DropDownMenuButton addVpsBtn;
 	private JPopupMenu addVpsMenu;
+	private JButton expandAllBtn;
+	private JButton collapseAllBtn;
 	
 	private final VisualPropertySheetModel model;
+	
+	private final IconManager iconMgr;
 	
 	private final TreeSet<VisualPropertySheetItem<?>> items;
 	private final Map<VisualProperty<?>, VisualPropertySheetItem<?>> vpItemMap;
@@ -68,11 +74,14 @@ public class VisualPropertySheet extends JPanel{
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public VisualPropertySheet(final VisualPropertySheetModel model) {
+	public VisualPropertySheet(final VisualPropertySheetModel model, final IconManager iconMgr) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
+		if (iconMgr == null)
+			throw new IllegalArgumentException("'iconMgr' must not be null");
 		
 		this.model = model;
+		this.iconMgr = iconMgr;
 		
 		items = new TreeSet<VisualPropertySheetItem<?>>(
 				new Comparator<VisualPropertySheetItem<?>>() {
@@ -243,6 +252,11 @@ public class VisualPropertySheet extends JPanel{
 			toolBarPnl.setLayout(new BoxLayout(toolBarPnl, BoxLayout.X_AXIS));
 			toolBarPnl.add(getAddVpsBtn());
 			toolBarPnl.add(Box.createHorizontalGlue());
+			
+			if (model.getTargetDataType() != CyNetwork.class) {
+				toolBarPnl.add(getExpandAllBtn());
+				toolBarPnl.add(getCollapseAllBtn());
+			}
 		}
 		
 		return toolBarPnl;
@@ -319,6 +333,26 @@ public class VisualPropertySheet extends JPanel{
 		return addVpsMenu;
 	}
 
+	protected JButton getExpandAllBtn() {
+		if (expandAllBtn == null) {
+			expandAllBtn = new JButton(iconMgr.getIcon(IconManager.EXPAND_ALL_ICON));
+			expandAllBtn.setToolTipText("Expand all visual mapping panels");
+			expandAllBtn.setBorder(BorderFactory.createEmptyBorder());
+		}
+		
+		return expandAllBtn;
+	}
+	
+	protected JButton getCollapseAllBtn() {
+		if (collapseAllBtn == null) {
+			collapseAllBtn = new JButton(iconMgr.getIcon(IconManager.COLLAPSE_ALL_ICON));
+			collapseAllBtn.setToolTipText("Collapse all visual mapping panels");
+			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder());
+		}
+		
+		return collapseAllBtn;
+	}
+	
 	private void createMenuItems() {
 		final JPopupMenu rootMenu = getAddVpsMenu();
 		

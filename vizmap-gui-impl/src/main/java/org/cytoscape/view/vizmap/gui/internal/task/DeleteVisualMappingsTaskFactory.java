@@ -35,11 +35,11 @@ import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class DeleteMappingFunctionTaskFactory extends AbstractTaskFactory {
+public class DeleteVisualMappingsTaskFactory extends AbstractTaskFactory {
 
 	private final ServicesUtil servicesUtil;
 
-	public DeleteMappingFunctionTaskFactory(final ServicesUtil servicesUtil) {
+	public DeleteVisualMappingsTaskFactory(final ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 
@@ -53,7 +53,7 @@ public class DeleteMappingFunctionTaskFactory extends AbstractTaskFactory {
 			selectedItems = vpSheet.getSelectedItems();
 		}
 		
-		return new TaskIterator(new DeleteMappingFunctionTask(selectedItems));
+		return new TaskIterator(new DeleteVisualMappingsTask(selectedItems));
 	}
 	
 	@Override

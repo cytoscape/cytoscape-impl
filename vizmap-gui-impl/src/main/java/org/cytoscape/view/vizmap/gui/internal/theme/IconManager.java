@@ -32,6 +32,17 @@ import javax.swing.ImageIcon;
 
 public class IconManager {
 	
+	public static final String EDIT_ICON = "editIcon";
+	public static final String LEGEND_ICON = "legendIcon";
+	public static final String COPY_ICON = "copyIcon";
+	public static final String RENAME_ICON = "renameIcon";
+	public static final String RND_ICON = "rndIcon";
+	public static final String ADD_ICON = "addIcon";
+	public static final String DEL_ICON = "delIcon";
+	public static final String OPTION_ICON = "optionIcon";
+	public static final String COLLAPSE_ALL_ICON = "collapseAllIcon";
+	public static final String EXPAND_ALL_ICON = "expandAllIcon";
+	
 	private Map<String, Icon> iconMap;
 	
 	public IconManager() {
@@ -40,11 +51,11 @@ public class IconManager {
 		loadIcon();
 	}
 	
-	public Icon getIcon(String name) {
+	public Icon getIcon(final String name) {
 		final Icon icon = iconMap.get(name);
 		
 		if (icon == null) {
-			// This should return default icon.
+			// TODO This should return default icon.
 			return null;
 		} else {
 			return icon;
@@ -52,13 +63,15 @@ public class IconManager {
 	}
 
 	private void loadIcon() {
-		iconMap.put("optionIcon", new ImageIcon(getClass().getResource("/images/icons/stock_form-properties.png")));
-		iconMap.put("delIcon", new ImageIcon(getClass().getResource("/images/icons/stock_delete-16.png")));
-		iconMap.put("addIcon", new ImageIcon(getClass().getResource("/images/icons/stock_data-new-table-16.png")));
-		iconMap.put("rndIcon", new ImageIcon(getClass().getResource("/images/icons/stock_filters-16.png")));
-		iconMap.put("renameIcon", new ImageIcon(getClass().getResource("/images/icons/stock_redo-16.png")));
-		iconMap.put("copyIcon", new ImageIcon(getClass().getResource("/images/icons/stock_slide-duplicate.png")));
-		iconMap.put("legendIcon", new ImageIcon(getClass().getResource("/images/icons/stock_graphic-styles-16.png")));
-		iconMap.put("editIcon", new ImageIcon(getClass().getResource("/images/icons/stock_edit-16.png")));
+		iconMap.put(OPTION_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_form-properties.png")));
+		iconMap.put(DEL_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_delete-16.png")));
+		iconMap.put(ADD_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_data-new-table-16.png")));
+		iconMap.put(RND_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_filters-16.png")));
+		iconMap.put(RENAME_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_redo-16.png")));
+		iconMap.put(COPY_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_slide-duplicate.png")));
+		iconMap.put(LEGEND_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_graphic-styles-16.png")));
+		iconMap.put(EDIT_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_edit-16.png")));
+		iconMap.put(EXPAND_ALL_ICON, new ImageIcon(getClass().getResource("/images/icons/expand_all-16.gif")));
+		iconMap.put(COLLAPSE_ALL_ICON, new ImageIcon(getClass().getResource("/images/icons/collapse_all-16.gif")));
 	}
 }

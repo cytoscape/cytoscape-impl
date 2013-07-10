@@ -103,7 +103,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	protected VisualStyleDropDownButton stylesBtn;
 	protected DefaultComboBoxModel stylesCmbModel;
 
-	protected IconManager iconMgr;
+	private final IconManager iconMgr;
 	
 	/** Menu items under the options button */
 	private JPopupMenu mainMenu;
@@ -318,7 +318,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		if (optionsBtn == null) {
 			optionsBtn = new DropDownMenuButton(getMainMenu());
 			optionsBtn.setToolTipText("Options...");
-			optionsBtn.setIcon(iconMgr.getIcon("optionIcon"));
+			optionsBtn.setIcon(iconMgr.getIcon(IconManager.OPTION_ICON));
 			optionsBtn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		}
 		
