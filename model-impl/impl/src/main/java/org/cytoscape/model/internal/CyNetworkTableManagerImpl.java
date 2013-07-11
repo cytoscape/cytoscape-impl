@@ -189,6 +189,17 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 	}
 
 	@Override
+	public CyNetwork getNetworkForTable(CyTable table) {
+		for (CyNetwork network: tables.keySet()) {
+			for (Map<String, CyTable> typeMap: tables.get(network).values()) {
+				if (typeMap.values().contains(table))
+					return network;
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public void reset() {
 		tables.clear();
 	}
