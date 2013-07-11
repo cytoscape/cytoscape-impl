@@ -117,7 +117,7 @@ public class PsiMiTabParser {
 				logger.warn("Could not parse this line: " + line, ex);
 				continue;
 			}
-			if (++interactionCount % 100 == 0)
+			if (++interactionCount % 1000 == 0)
 				taskMonitor.setStatusMessage("parsed " + interactionCount + " interactions");
 		}
 
