@@ -374,14 +374,17 @@ class TaskMonitorImpl implements TaskMonitor {
 		else
 			secondaryTitle = newTitle;
 
+        if (title != null && secondaryTitle != null && title.equals(secondaryTitle))
+            secondaryTitle = null; // don't show a 2ary title if the main title's the same
+
 		if (ui != null) {
 			String titleString = title;
 			if (secondaryTitle != null)
-				titleString = String.format("%s (%s)", title, secondaryTitle); // don't use HTML in the title, otherwise the JLabel will not truncate with ellipses
-
+				titleString = String.format("<html>%s<br><br><font size=\"-2\">%s</font></html>", title, secondaryTitle);
 			ui.setTitle(titleString);
+
 			if (manager.isLatestMonitor(this)) {
-				manager.getStatusBar().setTitle(titleString);
+				manager.getStatusBar().setTitle(title);
 			}
 		}
 	}
