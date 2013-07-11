@@ -506,9 +506,7 @@ class TaskMonitorImpl implements TaskMonitor {
 			setTitle(title);
 		}
 
-		if (progress >= 0.0) {
-			setProgress(progress);
-		}
+        setProgress(progress);
 
 		for (int i = 0; i < messages.size(); i++) {
 			final TaskMonitor.Level level = messageLevels.get(i);
