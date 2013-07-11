@@ -22,15 +22,32 @@ class TaskStatusBar extends JPanel {
 		});
 		showBtn.setToolTipText("Show tasks");
 		showBtn.setPreferredSize(new Dimension(20, 20));
+		showBtn.setMaximumSize(new Dimension(20, 20));
+
 
 		progressBar.setProgress(-1.0f);
-		progressBar.setPreferredSize(new Dimension(250, 7));
+		progressBar.setPreferredSize(new Dimension(150, 7));
 		progressBar.setVisible(false);
 
-		super.setLayout(new FlowLayout(FlowLayout.LEFT));
+        final SpringLayout layout = new SpringLayout();
+		super.setLayout(layout);
+
 		super.add(showBtn);
 		super.add(titleLabel);
 		super.add(progressBar);
+
+		progressBar.setMaximumSize(progressBar.getPreferredSize()); // don't make the progress bar stretchable
+
+        layout.putConstraint(SpringLayout.WEST, showBtn, 10, SpringLayout.WEST, this);
+        layout.putConstraint(SpringLayout.WEST, titleLabel, 10, SpringLayout.EAST, showBtn);
+        layout.putConstraint(SpringLayout.WEST, progressBar, 10, SpringLayout.EAST, titleLabel);
+        layout.putConstraint(SpringLayout.EAST, this, 10, SpringLayout.EAST, progressBar);
+
+        layout.putConstraint(SpringLayout.NORTH, showBtn, 10, SpringLayout.NORTH, this);
+        layout.putConstraint(SpringLayout.NORTH, titleLabel, 12, SpringLayout.NORTH, this);
+        layout.putConstraint(SpringLayout.NORTH, progressBar, 16, SpringLayout.NORTH, this);
+
+        super.setPreferredSize(new Dimension(100, 40));
 	}
 
 	public void setTitleIcon(final Icon icon) {

@@ -377,7 +377,7 @@ class TaskMonitorImpl implements TaskMonitor {
 		if (ui != null) {
 			String titleString = title;
 			if (secondaryTitle != null)
-				titleString = String.format("<html>%s&nbsp;&nbsp;&nbsp;&nbsp;<font size=\"-1\">%s</font></html>", title, secondaryTitle);
+				titleString = String.format("%s (%s)", title, secondaryTitle); // don't use HTML in the title, otherwise the JLabel will not truncate with ellipses
 
 			ui.setTitle(titleString);
 			if (manager.isLatestMonitor(this)) {
