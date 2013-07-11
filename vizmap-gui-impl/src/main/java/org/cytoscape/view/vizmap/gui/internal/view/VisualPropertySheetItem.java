@@ -146,6 +146,21 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		getMappingPnl().setVisible(false);
 	}
 	
+	public void fitToWidth(final int width) {
+		if (getModel().isVisualMappingAllowed()) {
+			updateMappingPanelSize();	
+			final Dimension prefSize = getPropSheetPnl().getPreferredSize();
+			// Set new preferred width to the mapping panel
+			getPropSheetPnl().setPreferredSize(new Dimension(width, prefSize.height));
+			
+			if (getMappingPnl().isVisible()) {
+				getPropSheetPnl().repaint();
+				getPropSheetPnl().revalidate();
+				revalidate();
+			}
+		}
+	}
+	
 	public void update() {
 		updateSelection();
 		updateDefaultButton();
@@ -196,7 +211,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		updateMappingRowHeight();
 		
 		if (mappingPnl != null && mappingPnl.isVisible())
-			updateMappingPanelHeight();
+			updateMappingPanelSize();
 	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================
@@ -324,7 +339,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			mappingPnl.addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentShown(final ComponentEvent e) {
-					updateMappingPanelHeight();
+					updateMappingPanelSize();
 				}
 			});
 		}
@@ -374,7 +389,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			propSheetTbl.addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(final ComponentEvent e) {
-					updateMappingPanelHeight();
+					updateMappingPanelSize();
 				}
 			});
 		}
@@ -536,7 +551,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		return null;
 	}
 	
-	private void updateMappingPanelHeight() {
+	private void updateMappingPanelSize() {
 		final PropertySheetTable tbl = getPropSheetPnl().getTable();
 		tbl.repaint();
 		int h = 0;

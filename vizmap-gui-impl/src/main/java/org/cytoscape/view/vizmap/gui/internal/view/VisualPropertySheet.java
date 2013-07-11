@@ -40,6 +40,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -297,6 +299,14 @@ public class VisualPropertySheet extends JPanel{
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// Make redrawing the icons less expensive when scrolling
 			vpListScr.getVerticalScrollBar().setUnitIncrement(8);
+			// Try to fit sheet items to viewport's width when the scroll bar becomes visible
+			vpListScr.getViewport().addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(final ChangeEvent e) {
+					for (final VisualPropertySheetItem<?> item : getItems())
+						item.fitToWidth(vpListScr.getViewport().getWidth());
+				}
+			});
 		}
 		
 		return vpListScr;
