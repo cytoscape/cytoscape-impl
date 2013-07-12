@@ -49,7 +49,9 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 
-public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener,ColumnNameChangedListener, NetworkAddedListener, NetworkAboutToBeDestroyedListener {
+// TODO Make it a Proxy?
+public class AttributeSetManager implements ColumnDeletedListener, ColumnCreatedListener,ColumnNameChangedListener,
+											NetworkAddedListener, NetworkAboutToBeDestroyedListener {
 
 	private static final Set<Class<? extends CyIdentifiable>> GRAPH_OBJECTS;
 
@@ -77,6 +79,7 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 			throw new NullPointerException("Both parameters should not be null.");
 
 		final Map<Class<? extends CyIdentifiable>, AttributeSet> attrSetMap = this.attrSets.get(network);
+		
 		if (attrSetMap == null)
 			throw new NullPointerException("No such network registered in this mamager: " + network);
 
@@ -97,6 +100,7 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 			object2tableMap.put(objectType, new HashSet<CyTable>(tables));
 
 			final AttributeSet attrSet = new AttributeSet(objectType);
+			
 			for (CyTable table : tables) {
 				final Collection<CyColumn> columns = table.getColumns();
 				for (final CyColumn column : columns) {
@@ -104,9 +108,10 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 					attrSet.getAttrMap().put(column.getName(), type);
 				}
 			}
+			
 			attrSetMap.put(objectType, attrSet);
-
 		}
+		
 		this.attrSets.put(network, attrSetMap);
 		this.tableSets.put(network, object2tableMap);
 	}
@@ -126,8 +131,10 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 
 		for (CyNetwork network : tableSets.keySet()) {
 			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = tableSets.get(network);
+			
 			for (final Class<? extends CyIdentifiable> objectType : GRAPH_OBJECTS) {
 				final Set<CyTable> targetTables = tMap.get(objectType);
+				
 				if (!targetTables.contains(table))
 					continue;
 
@@ -144,8 +151,10 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 
 		for (CyNetwork network : tableSets.keySet()) {
 			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = tableSets.get(network);
+			
 			for (final Class<? extends CyIdentifiable> objectType : GRAPH_OBJECTS) {
 				final Set<CyTable> targetTables = tMap.get(objectType);
+				
 				if (!targetTables.contains(table))
 					continue;
 
@@ -161,8 +170,10 @@ public class AttributeSetManager implements ColumnDeletedListener, ColumnCreated
 
 		for (CyNetwork network : tableSets.keySet()) {
 			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = tableSets.get(network);
+			
 			for (final Class<? extends CyIdentifiable> objectType : GRAPH_OBJECTS) {
 				final Set<CyTable> targetTables = tMap.get(objectType);
+				
 				if (!targetTables.contains(table))
 					continue;
 

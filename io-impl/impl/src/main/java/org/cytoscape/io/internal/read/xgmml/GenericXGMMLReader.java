@@ -164,8 +164,6 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		if (!readDataMgr.isSessionFormat())
 			readDataMgr.updateGroupNodes(netView);
 		
-		netView.updateView();
-
 		return netView;
 	}
 	

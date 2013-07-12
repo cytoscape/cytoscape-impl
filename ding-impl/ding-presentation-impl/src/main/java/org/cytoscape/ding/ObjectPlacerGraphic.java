@@ -146,27 +146,22 @@ public class ObjectPlacerGraphic extends JPanel implements
 	 */
 	public ObjectPlacerGraphic(final Integer windowSize, boolean fullDetail, final String objectName) {
 		super();
-		
 		this.p = new ObjectPositionImpl();
-		
 		this.objectLabel = objectName;
-
-
 		renderDetail = fullDetail;
 
-		if(windowSize == null)
+		if (windowSize == null)
 			initSize(DEFAULT_WINDOW_SIZE);
 		else
 			initSize(windowSize);
 
 		setPreferredSize(new Dimension(xy, xy));
-		setBackground(Color.white);
+		setBackground(Color.WHITE);
 
 		addMouseListener(new MouseClickHandler());
 		addMouseMotionListener(new MouseDragHandler());
 
 		applyPosition();
-
 		repaint();
 	}
 	
@@ -209,9 +204,9 @@ public class ObjectPlacerGraphic extends JPanel implements
 	/**
 	 * The method that handles the rendering of placement gui.
 	 */
+	@Override
 	public void paint(Graphics gin) {
 		final Graphics2D g = (Graphics2D) gin;
-
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		// calculate the font
@@ -223,7 +218,7 @@ public class ObjectPlacerGraphic extends JPanel implements
 		}
 
 		// clear the screen
-		g.setColor(Color.white);
+		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, xy, xy);
 
 		// draw the node box
@@ -282,7 +277,6 @@ public class ObjectPlacerGraphic extends JPanel implements
 				g.drawString(click, xOffset + xPos + detailStrokeWidth, yOffset + yPos + (2 * (vspace + ascent)));
 			} else if (justify == JUSTIFY_RIGHT) {
 				g.drawString(objectLabel, xOffset + xPos + (lx - labelLen), yOffset + yPos + vspace + ascent);
-				;
 				g.drawString(click, xOffset + xPos + (lx - clickLen), yOffset + yPos + (2 * (vspace + ascent)));
 			} else { // center
 				g.drawString(objectLabel, (xOffset + xPos + ((lx - labelLen) / 2)) - detailStrokeWidth, yOffset + yPos

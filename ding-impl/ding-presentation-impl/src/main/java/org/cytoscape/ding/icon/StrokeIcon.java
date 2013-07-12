@@ -33,32 +33,26 @@ import java.awt.geom.Line2D;
 
 /**
  * Icon generator for Stroke objects.
- *
  */
 public class StrokeIcon extends VisualPropertyIcon<Stroke> {
 	
 	private final static long serialVersionUID = 1202339875918391L;
 	
-	/**
-	 * 
-	 * @param stroke
-	 * @param width
-	 * @param height
-	 * @param name
-	 */
 	public StrokeIcon(final Stroke stroke, int width, int height, String name) {
 		super(stroke, width, height, name);
 	}
 
-	
-	@Override public void paintIcon(Component c, Graphics g, int x, int y) {
+	@Override
+	public void paintIcon(Component c, Graphics g, int x, int y) {
 		final Graphics2D g2d = (Graphics2D) g;
-		g2d.setColor(color);
-		// AA on
+		g2d.setColor(c.getForeground());
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
 		g2d.setStroke(value);
-		final int yPosition = (height + 20) / 2;
-		g2d.draw(new Line2D.Double(leftPad, yPosition, width*1.5, yPosition));
+		
+		double x1 = x;
+		double y1 = c.getHeight()/2.0;
+		double x2 = x + width;
+		double y2 = y1;
+		g2d.draw(new Line2D.Double(x1, y1, x2, y2));
 	}
 }

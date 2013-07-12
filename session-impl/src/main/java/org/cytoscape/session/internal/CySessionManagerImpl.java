@@ -446,7 +446,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				if (vs != null) {
 					vmMgr.setVisualStyle(vs, netView);
 					vs.apply(netView);
-					netView.updateView();
 				}
 			}
 		}

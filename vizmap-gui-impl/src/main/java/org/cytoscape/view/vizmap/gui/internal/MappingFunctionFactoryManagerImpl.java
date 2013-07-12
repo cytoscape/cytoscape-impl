@@ -31,17 +31,11 @@ import java.util.Map;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.MappingFunctionFactoryManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
-import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.CyComboBoxPropertyEditor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
 
-public class MappingFunctionFactoryManagerImpl implements
-		MappingFunctionFactoryManager {
-	
-	private static final Logger logger = LoggerFactory.getLogger(MappingFunctionFactoryManagerImpl.class);
+public class MappingFunctionFactoryManagerImpl implements MappingFunctionFactoryManager {
 	
 	private final Map<Class<?>, VisualMappingFunctionFactory> factories;
-	
 	private final EditorManager editorManager;
 	
 	public MappingFunctionFactoryManagerImpl(final EditorManager editorManager) {
@@ -54,33 +48,28 @@ public class MappingFunctionFactoryManagerImpl implements
 		return factories.values();
 	}
 	
+	@Override
+	public VisualMappingFunctionFactory getFactory(Class<?> mappingType) {
+		return factories.get(mappingType);
+	}
 	
-	public void addFactory(VisualMappingFunctionFactory factory, @SuppressWarnings("rawtypes") Map properties) {
-		logger.debug("Got Mapping Factory: " + factory.toString());
+	@SuppressWarnings("rawtypes")
+	public void addFactory(VisualMappingFunctionFactory factory, Map properties) {
 		factories.put(factory.getMappingFunctionType(), factory);
-		
 		updateSelectorGUI();
 	}
-
 	
-	public void removeFactory(VisualMappingFunctionFactory factory, @SuppressWarnings("rawtypes") Map properties) {
-		logger.debug("************* Removing VM Function Factory ****************");
+	@SuppressWarnings("rawtypes")
+	public void removeFactory(VisualMappingFunctionFactory factory, Map properties) {
 		factories.remove(factory.getMappingFunctionType());
-		
 		updateSelectorGUI();
 	}
 	
 	private void updateSelectorGUI() {
 //		final SortedSet<String> mappingNames = new TreeSet<String>();
-//		for(final VisualMappingFunctionFactory factory: factories)
+//		for (final VisualMappingFunctionFactory factory: factories)
 //			mappingNames.add(factory.toString());
 		
 		((CyComboBoxPropertyEditor)editorManager.getMappingFunctionSelector()).setAvailableValues(factories.values().toArray());
 	}
-
-	@Override
-	public VisualMappingFunctionFactory getFactory(Class<?> mappingType) {
-		return factories.get(mappingType);
-	}
-
 }

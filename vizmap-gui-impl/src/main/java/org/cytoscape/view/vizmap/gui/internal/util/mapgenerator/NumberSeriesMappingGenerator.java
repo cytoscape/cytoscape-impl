@@ -53,22 +53,26 @@ public class NumberSeriesMappingGenerator<V extends Number> extends AbstractDisc
 		final String start = JOptionPane.showInputDialog(null, "Enter start value (1st number of the series)", "0");
 		final String increment = JOptionPane.showInputDialog(null, "Enter increment", "1");
 
-		if ((increment == null) || (start == null))
+		if (start == null)
 			return valueMap;
-
+		
 		Double inc;
 		Double st;
+		
 		try {
 			inc = Double.valueOf(increment);
 			st = Double.valueOf(start);
 		} catch (Exception ex) {
-			logger.error("Invalid value.", ex);
+			logger.warn("Invalid numeric value.", ex);
 			inc = null;
 			st = null;
 		}
 
-		if ((inc == null) || (inc.doubleValue() < 0) || (st == null))
-			return null;
+		if (inc == null)
+			inc = 0d;
+		
+		if (inc.doubleValue() < 0 || st == null)
+			return valueMap;
 
 		for (T key : attributeSet) {
 			valueMap.put(key, (V) st);
@@ -77,5 +81,4 @@ public class NumberSeriesMappingGenerator<V extends Number> extends AbstractDisc
 
 		return valueMap;
 	}
-
 }
