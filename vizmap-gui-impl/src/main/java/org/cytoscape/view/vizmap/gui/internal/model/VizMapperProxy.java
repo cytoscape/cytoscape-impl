@@ -119,24 +119,16 @@ public class VizMapperProxy extends Proxy
 		return servicesUtil.get(VisualMappingManager.class).getDefaultVisualStyle();
 	}
 	
-	public synchronized VisualStyle getCurrentVisualStyle() {
+	public VisualStyle getCurrentVisualStyle() {
 		return servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
 	}
 
 	public void setCurrentVisualStyle(final VisualStyle vs) {
 		final VisualStyle curVs = getCurrentVisualStyle();
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		boolean changed = false;
 		
-		synchronized (this) {
-			if (vs != null && !vs.equals(curVs)) {
-				changed = true;
-				vmMgr.setCurrentVisualStyle(vs);
-			}
-		}
-		
-		if (changed)
-			sendNotification(CURRENT_VISUAL_STYLE_CHANGED, vs);
+		if (vs != null && !vs.equals(curVs))
+			vmMgr.setCurrentVisualStyle(vs);
 	}
 
 	public CyNetwork getCurrentNetwork() {
@@ -260,7 +252,7 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final SetCurrentVisualStyleEvent e) {
-		setCurrentVisualStyle(e.getVisualStyle());
+		sendNotification(CURRENT_VISUAL_STYLE_CHANGED, e.getVisualStyle());
 	}
 	
 	@Override
