@@ -25,19 +25,29 @@ package org.cytoscape.biopax.internal;
  */
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.biopax.paxtools.model.Model;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,36 +61,82 @@ import org.slf4j.LoggerFactory;
 public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	
 	public static final Logger log = LoggerFactory.getLogger(BioPaxReaderTask.class);
+	public static final String CREATE_NEW_COLLECTION_STRING ="Create new network collection";
 
 	private final CyNetworkFactory networkFactory;
 	private final CyNetworkViewFactory viewFactory;
 	private final CyNetworkNaming naming;
-	private final CyGroupFactory cyGroupFactory;
+	
 
 	private InputStream stream;
-
 	private String inputName;
-
 	private CyNetwork network;
+	private CyRootNetwork rootNetwork;
+	private final HashMap<String, CyRootNetwork> nameToRootNetworkMap;
 
-
+	
 	/**
 	 * Constructor
-	 * @param cyGroupFactory 
+	 * @param applicationManager 
+	 * @param rootNetworkManager 
+	 * @param networkManager 
 	 * @param model PaxTools BioPAX Model
 	 */
 	public BioPaxReaderTask(InputStream stream, String inputName, 
 			CyNetworkFactory networkFactory, CyNetworkViewFactory viewFactory, 
-			CyNetworkNaming naming, CyGroupFactory cyGroupFactory) 
+			CyNetworkNaming naming, CyNetworkManager networkManager, 
+			CyRootNetworkManager rootNetworkManager, CyApplicationManager applicationManager) 
 	{
 		this.stream = stream;
 		this.inputName = inputName;
 		this.networkFactory = networkFactory;
 		this.viewFactory = viewFactory;
 		this.naming = naming;
-		this.cyGroupFactory = cyGroupFactory;
+		
+		// initialize the network Collection
+		nameToRootNetworkMap = new HashMap<String, CyRootNetwork>();
+		for (CyNetwork net : networkManager.getNetworkSet()) {
+			final CyRootNetwork rootNet = rootNetworkManager.getRootNetwork(net);
+			if (!nameToRootNetworkMap.containsValue(rootNet ) )
+				nameToRootNetworkMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
+		}		
+		List<String> rootNames = new ArrayList<String>();
+		rootNames.add(CREATE_NEW_COLLECTION_STRING);
+		rootNames.addAll(nameToRootNetworkMap.keySet());
+		rootNetworkList = new ListSingleSelection<String>(rootNames);
+		rootNetworkList.setSelectedValue(rootNames.get(0));		
+		// set the default selection
+		final List<CyNetwork> selectedNetworks = applicationManager.getSelectedNetworks();
+		if (selectedNetworks != null && selectedNetworks.size() > 0){
+			CyNetwork selectedNetwork = applicationManager.getSelectedNetworks().get(0);
+			String rootName = "";
+			if (selectedNetwork instanceof CySubNetwork){
+				CySubNetwork subnet = (CySubNetwork) selectedNetwork;
+				CyRootNetwork rootNet = subnet.getRootNetwork();
+				rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
+			} else {
+				rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
+			}				
+			rootNetworkList.setSelectedValue(rootName);
+		}
 	}
 
+	
+	public ListSingleSelection<String> rootNetworkList;
+	
+	@Tunable(description = "Network Collection" ,groups=" ")
+	public ListSingleSelection<String> getRootNetworkList(){
+		return rootNetworkList;
+	}
+	public void setRootNetworkList (ListSingleSelection<String> roots){
+		rootNetworkList = roots;
+	}
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Create Network from BioPAX";
+	}
+	
 	
 	@Override
 	public void cancel() {
@@ -100,7 +156,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		
 // giving up this expensive normalization...
 //		//normalize/infer properties: displayName, cellularLocation, organism, dartaSource
-//		// a hack to skip running property reasoner for already normalized data... TODO generalize
+//		// a hack to skip running property reasoner for already normalized data...
 //		if(model.getXmlBase() == null || !model.getXmlBase().contains("pathwaycommons")) {
 //			BioPaxUtil.fixDisplayName(model);
 //			ModelUtils.inferPropertiesFromParent(model, 
@@ -108,9 +164,9 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 //		}
 		
 		// Map BioPAX Data to Cytoscape Nodes/Edges (run as task)
-		BioPaxMapper mapper = new BioPaxMapper(model, networkFactory, taskMonitor, cyGroupFactory);
+		BioPaxMapper mapper = new BioPaxMapper(model, networkFactory, taskMonitor);
 		String networkName = getNetworkName(model);
-		network = mapper.createCyNetwork(networkName);
+		network = mapper.createCyNetwork(networkName, rootNetwork);
 		
 		if (network.getNodeCount() == 0) {
 			log.error("Pathway is empty. Please check the BioPAX source file.");

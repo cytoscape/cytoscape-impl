@@ -253,7 +253,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 		taskMonitor.setProgress(0.3);
 		
 		String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
-		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+		if (networkCollectionName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
 			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
 			CyNetwork rootNetwork = cyNetworkFactory.createNetwork();
 			network = this.cyRootNetworkManager.getRootNetwork(rootNetwork).addSubNetwork();
@@ -334,7 +334,7 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			if (nodeNameSet.add(label)) {
 				final CyNode node;
 				
-				if (this.rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+				if (this.rootNetworkList.getSelectedValue().equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
 					node = network.addNode();
 				} else {
 					// add to existing network collection

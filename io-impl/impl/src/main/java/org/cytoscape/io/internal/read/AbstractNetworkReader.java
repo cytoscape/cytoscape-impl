@@ -60,7 +60,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	/**
 	 * If this option is selected, reader should create new CyRootNetwork.
 	 */
-	public static final String CRERATE_NEW_COLLECTION_STRING ="Create new network collection";
+	public static final String CREATE_NEW_COLLECTION_STRING ="Create new network collection";
 
 	protected CyNetwork[] cyNetworks;
 
@@ -81,7 +81,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		return rootNetworkList;
 	}
 	public void setRootNetworkList (ListSingleSelection<String> roots){
-		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
 			// set default
 			List<String> colNames = new ArrayList<String>();
 			colNames.add("shared name");
@@ -177,7 +177,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		this.name2RootMap = ReadUtils.getRootNetworkMap(this.cyNetworkManager, this.cyRootNetworkManager);
 		
 		List<String> rootNames = new ArrayList<String>();
-		rootNames.add(CRERATE_NEW_COLLECTION_STRING);
+		rootNames.add(CREATE_NEW_COLLECTION_STRING);
 		rootNames.addAll(name2RootMap.keySet());
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
@@ -223,7 +223,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
 		CyRootNetwork rootNetwork = this.name2RootMap.get(networkCollectionName);
 
-		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+		if (networkCollectionName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
 			CyNetwork newNet = this.cyNetworkFactory.createNetwork();
 			return this.cyRootNetworkManager.getRootNetwork(newNet);
 		}
@@ -238,7 +238,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
 		CyRootNetwork rootNetwork = this.name2RootMap.get(networkCollectionName);
 		
-		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+		if (networkCollectionName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
 			return;
 		}
 

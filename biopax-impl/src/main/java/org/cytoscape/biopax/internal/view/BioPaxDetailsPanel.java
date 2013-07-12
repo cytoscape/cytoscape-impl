@@ -47,13 +47,11 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.ParagraphView;
 import javax.swing.text.html.StyleSheet;
 
-import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.cytoscape.application.CyApplicationManager;
 
 import static org.cytoscape.biopax.internal.BioPaxMapper.*;
 
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
-import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -64,7 +62,7 @@ import org.slf4j.LoggerFactory;
 /**
  * BioPAX Details Panel.
  *
- * @author Ethan Cerami.
+ * @author Ethan Cerami, rodche
  */
 public class BioPaxDetailsPanel extends JPanel {
 

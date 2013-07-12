@@ -195,6 +195,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 				return;
 
 			try {
+				//TODO handle multiple nodes selection (east panel to display info about several sel. nodes)
 				CyNode selected = null;
 				for (CyNode node : network.getNodeList()) {
 					if (network.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {

@@ -48,12 +48,12 @@ import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
 import org.cytoscape.biopax.internal.util.ExternalLink;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
 import org.cytoscape.biopax.internal.util.NodeAttributesWrapper;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +172,6 @@ public class BioPaxMapper {
 	private final Model model;
 	private final CyNetworkFactory networkFactory;
 	private final TaskMonitor taskMonitor;
-//	private final CyGroupFactory cyGroupFactory;
 	
 	// BioPAX ID (URI) to CyNode map
 	// remark: nodes's CyTable will also have 'URI' (RDF Id) column
@@ -187,18 +186,22 @@ public class BioPaxMapper {
 	 * @param model
 	 * @param cyNetworkFactory
 	 * @param taskMonitor
-	 * @param cyGroupFactory 
 	 */
-	public BioPaxMapper(Model model, CyNetworkFactory cyNetworkFactory, TaskMonitor taskMonitor, CyGroupFactory cyGroupFactory) {
+	public BioPaxMapper(Model model, CyNetworkFactory cyNetworkFactory, TaskMonitor taskMonitor) {
 		this.model = model;
 		this.networkFactory = cyNetworkFactory;
 		this.taskMonitor = taskMonitor;
-//		this.cyGroupFactory = cyGroupFactory;
 	}
 	
 
-	public CyNetwork createCyNetwork(String networkName)  {		
-		CyNetwork network = networkFactory.createNetwork();
+	public CyNetwork createCyNetwork(String networkName) {
+		return createCyNetwork(networkName, null);
+	}
+	
+	public CyNetwork createCyNetwork(String networkName, CyRootNetwork rootNetwork)  {		
+		CyNetwork network = (rootNetwork == null) 
+				? networkFactory.createNetwork() 
+					: rootNetwork.addSubNetwork();
 	
 		// First, create nodes for all Entity class objects
 		createEntityNodes(network);
@@ -251,10 +254,7 @@ public class BioPaxMapper {
 			Set<PhysicalEntity> members = par.getMemberPhysicalEntity();
 			if(members.isEmpty()) 
 				continue;
-			
-//			List<CyNode> nodeList = new ArrayList<CyNode>();
-//			List<CyEdge> edgeList = new ArrayList<CyEdge>();
-			
+					
 			CyNode cyParentNode = bpeToCyNodeMap.get(par);
 			assert cyParentNode != null : "cyParentNode is NULL.";
 			// for each its member PE, add the directed edge
@@ -263,12 +263,7 @@ public class BioPaxMapper {
 				CyNode cyMemberNode = bpeToCyNodeMap.get(member);
 				CyEdge edge = network.addEdge(cyParentNode, cyMemberNode, true);
 				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "member", String.class);
-				
-//				nodeList.add(cyMemberNode);
-//				edgeList.add(edge);
 			}
-			
-//			cyGroupFactory.createGroup(network, cyParentNode, nodeList, edgeList, true);
 		}
 	}
 
@@ -338,7 +333,7 @@ public class BioPaxMapper {
 
 
 	private void createComplexEdges(CyNetwork network) {
-		// interate through all pe's
+		// iterate through all pe's
 		for (Complex complexElement : model.getObjects(Complex.class)) {
 			Set<PhysicalEntity> members = complexElement.getComponent();
 			if(members.isEmpty()) 
@@ -347,22 +342,14 @@ public class BioPaxMapper {
 			// get node
 			CyNode complexCyNode = bpeToCyNodeMap.get(complexElement);
 			
-//			List<CyNode> nodeList = new ArrayList<CyNode>();
-//			List<CyEdge> edgeList = new ArrayList<CyEdge>();
-			
 			// get all components. There can be 0 or more
 			for (PhysicalEntity member : members) 
 			{
 				CyNode complexMemberCyNode = bpeToCyNodeMap.get(member);
 				// create edge, set attributes
 				CyEdge edge = network.addEdge(complexCyNode, complexMemberCyNode, true);
-				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "contains", String.class);
-				
-//				nodeList.add(complexMemberCyNode);
-//				edgeList.add(edge);
+				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "contains", String.class);	
 			}
-			
-//			cyGroupFactory.createGroup(network, complexCyNode, nodeList, edgeList, true);
 		}
 	}
 

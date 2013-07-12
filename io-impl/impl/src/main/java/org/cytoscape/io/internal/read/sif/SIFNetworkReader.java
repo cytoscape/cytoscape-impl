@@ -101,7 +101,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
 
 		CySubNetwork subNetwork;
-		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+		if (networkCollectionName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
 			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
 			CyNetwork rootNetwork = cyNetworkFactory.createNetwork();
 			subNetwork = this.cyRootNetworkManager.getRootNetwork(rootNetwork).addSubNetwork();
@@ -113,7 +113,7 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		
 		// Build a Map based on the key attribute for the entire collection, 
 		// For SIF network, the 'shared name' attribute is the primary key
-		this.initNodeMap(subNetwork.getRootNetwork(), "shared "+CyNetwork.NAME);
+		this.initNodeMap(subNetwork.getRootNetwork(), "shared " + CyNetwork.NAME);
 				
 		tm.setProgress(0.1);
 		

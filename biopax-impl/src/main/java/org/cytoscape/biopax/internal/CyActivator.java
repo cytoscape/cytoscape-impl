@@ -30,7 +30,6 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
@@ -40,6 +39,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
@@ -57,6 +57,7 @@ import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 
 
@@ -80,6 +81,7 @@ public class CyActivator extends AbstractCyActivator {
 		OpenBrowser openBrowserRef = getService(bc,OpenBrowser.class);
 		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
 		CyNetworkViewManager cyNetworkViewManagerRef = getService(bc,CyNetworkViewManager.class);
+		CyNetworkManager cyNetworkManagerRef = getService(bc,CyNetworkManager.class);
 		CyNetworkNaming cyNetworkNamingRef = getService(bc,CyNetworkNaming.class);
 		CyNetworkFactory cyNetworkFactoryRef = getService(bc,CyNetworkFactory.class);
 		CyNetworkViewFactory cyNetworkViewFactoryRef = getService(bc,CyNetworkViewFactory.class);
@@ -91,7 +93,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyLayoutAlgorithmManager cyLayoutsRef = getService(bc,CyLayoutAlgorithmManager.class);	
 		TaskManager taskManagerRef = getService(bc, DialogTaskManager.class);
 		CyProperty<Properties> cytoscapePropertiesServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		CyGroupFactory cyGroupFactory = getService(bc, CyGroupFactory.class);
+		CyRootNetworkManager cyRootNetworkManagerRef = getService(bc,CyRootNetworkManager.class);
 		
 		BioPaxFilter bioPaxFilter = new BioPaxFilter(streamUtilRef);
 		LaunchExternalBrowser launchExternalBrowser = new LaunchExternalBrowser(openBrowserRef);	
@@ -100,7 +102,10 @@ public class CyActivator extends AbstractCyActivator {
 		BioPaxVisualStyleUtil bioPaxVisualStyleUtil = new BioPaxVisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFunctionFactoryRef,passthroughMappingFunctionFactoryRef);
 		BioPaxViewTracker bioPaxViewTracker = new BioPaxViewTracker(bioPaxDetailsPanel,bioPaxContainer, cyApplicationManagerRef, 
 				visualMappingManagerRef, bioPaxVisualStyleUtil, cyLayoutsRef, taskManagerRef, cytoscapePropertiesServiceRef, cySwingApplicationRef);
-		InputStreamTaskFactory inputStreamTaskFactory = new BioPaxReaderTaskFactory(bioPaxFilter,cyNetworkFactoryRef,cyNetworkViewFactoryRef,cyNetworkNamingRef, cyGroupFactory);
+		InputStreamTaskFactory inputStreamTaskFactory = new BioPaxReaderTaskFactory(
+				bioPaxFilter,cyNetworkFactoryRef, cyNetworkViewFactoryRef, cyNetworkNamingRef, 
+				cyNetworkManagerRef, cyRootNetworkManagerRef, cyApplicationManagerRef
+			);
 		CytoPanelComponent cytoPanelComponent = new BioPaxCytoPanelComponent(bioPaxContainer);
 		
 		// register/export osgi services
@@ -121,9 +126,6 @@ public class CyActivator extends AbstractCyActivator {
 //			System.out.println("Failed test biopax-impl.");
 //			t.printStackTrace();
 //		}
-		
-		// TODO set paxtools logging level to ERROR
-		
 	}
 }
 
