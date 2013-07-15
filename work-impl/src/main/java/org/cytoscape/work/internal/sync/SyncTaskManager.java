@@ -73,6 +73,7 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 
 	@Override
 	public void execute(final TaskIterator taskIterator) {
+		// System.out.println("SyncTaskManager.execute");
 		final LoggingTaskMonitor taskMonitor = new LoggingTaskMonitor();
 		
 		try {

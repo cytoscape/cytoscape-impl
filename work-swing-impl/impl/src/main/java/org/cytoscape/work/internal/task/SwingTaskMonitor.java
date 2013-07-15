@@ -34,9 +34,13 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 class SwingTaskMonitor implements TaskMonitor {
 	
 	private static final String ERROR_MESSAGE = "The task could not be completed because an error has occurred.";
+	private static final String LOG_PREFIX = "TaskMonitor";
 	
 	final private ExecutorService cancelExecutorService;
 	final private Window parent;
@@ -61,9 +65,16 @@ class SwingTaskMonitor implements TaskMonitor {
 	 */
 	private double fractionOfOverall = 1.0;
 
+	/**
+ 	 * We log all messages to our log channel.  This allows interested listeners
+ 	 * to "hear" them.
+ 	 */
+	Logger thisLog = null;
+
 	public SwingTaskMonitor(final ExecutorService cancelExecutorService, final Window parent) {
 		this.cancelExecutorService = cancelExecutorService;
 		this.parent = parent;
+		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX);
 	}
 
 	public void setExpectedNumTasks(final int expectedNumTasks) {
@@ -74,6 +85,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	public void setTask(final Task newTask) {
 		this.currentTaskNum++;	
 		this.task = newTask;
+		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX+"."+newTask.getClass().getName());
 	}
 
 	public void setFuture(final Future<?> future) {
@@ -182,23 +194,23 @@ class SwingTaskMonitor implements TaskMonitor {
 	}
 
 	public void setStatusMessage(final String statusMessage) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setStatusMessage(statusMessage);
-				}
-			});
-			return;
-		}
-		this.statusMessage = statusMessage;
-		if (dialog != null)
-			dialog.setStatus(statusMessage);
+		showMessage(TaskMonitor.Level.INFO, statusMessage);
 	}
 
-    public void showMessage(TaskMonitor.Level level, String message) {
-        setStatusMessage(message);
-    }
+	public void showMessage(TaskMonitor.Level level, String message) {
+		switch (level) {
+		case ERROR:
+			thisLog.error(message);
+			break;
+		case WARN:
+			thisLog.warn(message);
+			break;
+		case INFO:
+			thisLog.info(message);
+			break;
+		}
+		showStatusMessage(message);
+	}
 
 	public void setProgress(final double progress) {
 		if (!SwingUtilities.isEventDispatchThread()) {
@@ -257,5 +269,20 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	public synchronized boolean isClosed() {
 		return task == null;
+	}
+
+	private void showStatusMessage(final String statusMessage) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					showStatusMessage(statusMessage);
+				}
+			});
+			return;
+		}
+		this.statusMessage = statusMessage;
+		if (dialog != null)
+			dialog.setStatus(statusMessage);
 	}
 }

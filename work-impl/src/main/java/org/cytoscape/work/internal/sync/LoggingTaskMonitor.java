@@ -35,14 +35,21 @@ import org.slf4j.LoggerFactory;
 class LoggingTaskMonitor implements TaskMonitor {
 	
 	private static final Logger logger = LoggerFactory.getLogger(LoggingTaskMonitor.class);
+	private static final String LOG_PREFIX = "TaskMonitor";
+	private Logger messageLogger = null;
 
 	private Task task;
 
 	public LoggingTaskMonitor() {
+		// System.out.println("LoggingTaskMonitor initialized");
+		this.messageLogger = LoggerFactory.getLogger(LOG_PREFIX);
 	}
 
 	public void setTask(final Task newTask) {
 		this.task = newTask;
+		this.messageLogger = LoggerFactory.getLogger(LOG_PREFIX+"."+newTask.getClass().getName());
+		// System.out.println("LoggingTaskMonitor setting task to "+newTask.getClass().getName());
+		// System.out.println("LoggingTaskMonitor: logging to "+ LOG_PREFIX+"."+newTask.getClass().getName());
 	}
 
 	public void setTitle(String title) {
@@ -50,22 +57,27 @@ class LoggingTaskMonitor implements TaskMonitor {
 	}
 
 	public void setStatusMessage(String statusMessage) {
+		// System.out.println("LoggingTaskMonitor setting status to "+statusMessage);
 		showMessage(TaskMonitor.Level.INFO, statusMessage);
 	}
 
-    public void showMessage(TaskMonitor.Level level, String message) {
-        switch(level) {
-            case INFO:
-                logger.info("Task (" + task.toString() + ") status: " + message);
-                break;
-            case WARN:
-                logger.warn("Task (" + task.toString() + ") status: " + message);
-                break;
-            case ERROR:
-                logger.error("Task (" + task.toString() + ") status: " + message);
-                break;
-        }
-    }
+	public void showMessage(TaskMonitor.Level level, String message) {
+		// System.out.println("LoggingTaskMonitor logging: "+message);
+		switch(level) {
+		case INFO:
+			logger.info("Task (" + task.toString() + ") status: " + message);
+			messageLogger.info(message);
+			break;
+		case WARN:
+			logger.warn("Task (" + task.toString() + ") status: " + message);
+			messageLogger.warn(message);
+			break;
+		case ERROR:
+			logger.error("Task (" + task.toString() + ") status: " + message);
+			messageLogger.error(message);
+			break;
+		}
+	}
 
 	public void setProgress(double progress) {
 		int prog = (int) Math.floor(progress * 100);
@@ -74,5 +86,6 @@ class LoggingTaskMonitor implements TaskMonitor {
 
 	public void showException(Exception exception) {
 		logger.error("Exception executing task.", exception);
+		messageLogger.error("Exception executing task.", exception);
 	}
 }

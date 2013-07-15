@@ -25,6 +25,9 @@ import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.Task;
@@ -241,6 +244,9 @@ class TaskRunner implements Runnable {
 				}
 			}, TASK_UI_SHOW_DELAY_MS, TimeUnit.MILLISECONDS);
 
+			// Record the task in the montor (for logging purposes)
+			monitor.setTask(currentTask);
+
 			// Run the first task
 			currentTask.run(monitor);
 
@@ -248,6 +254,8 @@ class TaskRunner implements Runnable {
 			while (iterator.hasNext() && !cancelled) {
 				currentTask = iterator.next();
 				if (manager.showTunables(currentTask)) {
+					// Record the task in the montor (for logging purposes)
+					monitor.setTask(currentTask);
 					currentTask.run(monitor);
 				} else {
 					// if the user clicked "cancel" for the tunable dialog,
@@ -318,6 +326,7 @@ class TaskMonitorImpl implements TaskMonitor {
 
 	final TaskManagerImpl manager;
 	final TaskWindow window;
+	Task thisTask;
 
 	/**
 	 * This becomes a valid TaskUI after {@code showUI} is invoked.
@@ -363,9 +372,26 @@ class TaskMonitorImpl implements TaskMonitor {
 	 */
 	ActionListener cancelListener = null;
 
+	/**
+ 	 * We log all messages to our log channel.  This allows interested listeners
+ 	 * to "hear" them.
+ 	 */
+	Logger thisLog = null;
+
+	/**
+ 	 * This is the root of the log we log to
+ 	 */
+	private static final String LOG_PREFIX = "TaskMonitor";
+
 	public TaskMonitorImpl(final TaskManagerImpl manager, final TaskWindow window) {
 		this.manager = manager;
 		this.window = window;
+		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX);
+	}
+
+	public void setTask(final Task newTask) {
+		this.thisTask = newTask;
+		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX+"."+newTask.getClass().getName());
 	}
 
 	public void setTitle(final String newTitle) {
@@ -406,6 +432,20 @@ class TaskMonitorImpl implements TaskMonitor {
 
 	public void showMessage(TaskMonitor.Level level, String message) {
 		levelCounts[level.ordinal()]++;
+
+		// Log the message
+		switch (level) {
+		case ERROR:
+			thisLog.error(message);
+			break;
+		case WARN:
+			thisLog.warn(message);
+			break;
+		case INFO:
+			thisLog.info(message);
+			break;
+		}
+
 		if (ui == null) {
 			messageLevels.add(level);
 			messages.add(message);

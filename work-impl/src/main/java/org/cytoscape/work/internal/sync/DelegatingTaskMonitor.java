@@ -61,9 +61,9 @@ class DelegatingTaskMonitor implements TaskMonitor {
 		actualTaskMonitor.setStatusMessage(statusMessage);
 	}
 
-    public void showMessage(TaskMonitor.Level level, String message) {
+	public void showMessage(TaskMonitor.Level level, String message) {
 		actualTaskMonitor.showMessage(level, message);
-    }
+	}
 
 	public void setProgress(double progress) {
 		if ( progress < 0 ) {
