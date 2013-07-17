@@ -64,7 +64,7 @@ public class StartupConfig {
 
 	public void start() {
 		if ( commandFile != null )
-			taskManager.execute( commandFactory.createTaskIterator( commandFile ) );
+			taskManager.execute( commandFactory.createTaskIterator( commandFile , null ) );
 	}
 }
 

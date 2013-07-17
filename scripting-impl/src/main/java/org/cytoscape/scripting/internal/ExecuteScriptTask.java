@@ -102,7 +102,7 @@ public class ExecuteScriptTask extends AbstractExecuteScriptTask {
 	}
 	
 	private void executeCyCommandFile() throws Exception {
-		final TaskIterator cyCommandTasks = commandExecutorTaskFactoryService.createTaskIterator(file);
+		final TaskIterator cyCommandTasks = commandExecutorTaskFactoryService.createTaskIterator(file, null);
 		this.insertTasksAfterCurrentTask(cyCommandTasks);
 	}
 }
