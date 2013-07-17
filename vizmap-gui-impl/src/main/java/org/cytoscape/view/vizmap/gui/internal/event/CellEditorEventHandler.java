@@ -113,8 +113,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		if (newVal != null && newVal.equals(oldVal))
 			return;
 
-		final VisualPropertySheetItem<?> propSheetItem = vizMapperMediator.getCurrentVisualPropertySheetItem();
-		final PropertySheetPanel propSheetPnl = propSheetItem != null ? propSheetItem.getPropSheetPnl() : null;
+		final VisualPropertySheetItem<?> vpSheetItem = vizMapperMediator.getCurrentVisualPropertySheetItem();
+		final PropertySheetPanel propSheetPnl = vpSheetItem != null ? vpSheetItem.getPropSheetPnl() : null;
 		
 		if (propSheetPnl == null)
 			return;
@@ -141,22 +141,24 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				final VisualMappingFunctionFactory factory = 
 						(VisualMappingFunctionFactory) propSheetPnl.getTable().getValueAt(1, 1);
 				
-				if (factory != null) {
-					VisualMappingFunction newMapping = switchColumn(factory, editor, prop, newVal.toString(), propSheetPnl);
-					propSheetItem.getModel().setVisualMappingFunction(newMapping);
-				}
+				VisualMappingFunction newMapping = switchColumn(factory, editor, prop, newVal.toString(), propSheetPnl);
+				vpSheetItem.getModel().setVisualMappingFunction(newMapping);
+				
+				if (newMapping == null)
+					vpSheetItem.getModel().setMappingColumnName(
+							prop.getValue() != null ? prop.getValue().toString() : null);
 			}
 		} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
 			// Case 2. Switch mapping type
 			// Parent is always root.
-			final VisualProperty<?> vp = propSheetItem.getModel().getVisualProperty();
+			final VisualProperty<?> vp = vpSheetItem.getModel().getVisualProperty();
 			// TODO: refactor--this class should not have to know the row/column where the value is
 			Object controllingAttrName = propSheetPnl.getTable().getValueAt(0, 1);
 
 			if (vp != null && controllingAttrName != null) {
 				VisualMappingFunction newMapping  = switchMappingType(prop, vp, (VisualMappingFunctionFactory) oldVal, 
 						(VisualMappingFunctionFactory) newVal, controllingAttrName.toString(), propSheetPnl);
-				propSheetItem.getModel().setVisualMappingFunction(newMapping);
+				vpSheetItem.getModel().setVisualMappingFunction(newMapping);
 			}
 		} else if (prop.getCellType() == CellType.DISCRETE) {
 			// Case 3: Discrete Cell editor event. Create new map entry and register it.
@@ -183,12 +185,18 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
 		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) editor.getTargetObjectType();
-		final CyTable attrForTest = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
+		final CyTable table = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 
-		final CyColumn column = attrForTest.getColumn(columnName);
+		final CyColumn column = table.getColumn(columnName);
 		
-		if (column == null)
+		if (column == null) {
+			JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
+					+ columnName + "\").\nPlease select another column.", "Invalid Column.",
+					JOptionPane.WARNING_MESSAGE);
+			prop.setValue(mapping != null ? mapping.getMappingColumnName() : null);
+			
 			return mapping;
+		}
 
 		final Class<?> dataType = column.getType();
 
@@ -233,16 +241,16 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			final AttributeSet attrSet = attrManager.getAttributeSet(currentNet, vp.getTargetDataType());
 			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
+			if (attributeDataType == null) {
+				JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
+						+ controllingAttrName + "\").\nPlease select another column.", "Invalid Column.",
+						JOptionPane.WARNING_MESSAGE);
+				prop.setValue(oldFactory);
+				
+				return newMapping;
+			}
+			
 			if (newFactory.getMappingFunctionType() == ContinuousMapping.class) {
-				if (attributeDataType == null) {
-					JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
-							+ controllingAttrName + "\").\nPlease select another column.", "Invalid Column.",
-							JOptionPane.WARNING_MESSAGE);
-					prop.setValue(oldFactory);
-					
-					return newMapping;
-				}
-
 				if (!Number.class.isAssignableFrom(attributeDataType)) {
 					JOptionPane.showMessageDialog(null,
 							"Selected column data type is not Number.\nPlease select a numerical column type.",

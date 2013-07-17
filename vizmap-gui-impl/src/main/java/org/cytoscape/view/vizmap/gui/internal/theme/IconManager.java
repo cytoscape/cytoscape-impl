@@ -42,27 +42,23 @@ public class IconManager {
 	public static final String OPTION_ICON = "optionIcon";
 	public static final String COLLAPSE_ALL_ICON = "collapseAllIcon";
 	public static final String EXPAND_ALL_ICON = "expandAllIcon";
+	public static final String INFO_ICON = "infoIcon";
+	public static final String WARN_ICON = "warnIcon";
+	public static final String ERROR_ICON = "errorIcon";
 	
 	private Map<String, Icon> iconMap;
 	
 	public IconManager() {
 		// for setter injection
 		iconMap = new HashMap<String, Icon>();
-		loadIcon();
+		loadIcons();
 	}
 	
 	public Icon getIcon(final String name) {
-		final Icon icon = iconMap.get(name);
-		
-		if (icon == null) {
-			// TODO This should return default icon.
-			return null;
-		} else {
-			return icon;
-		}
+		return iconMap.get(name);
 	}
 
-	private void loadIcon() {
+	private void loadIcons() {
 		iconMap.put(OPTION_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_form-properties.png")));
 		iconMap.put(DEL_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_delete-16.png")));
 		iconMap.put(ADD_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_data-new-table-16.png")));
@@ -73,5 +69,8 @@ public class IconManager {
 		iconMap.put(EDIT_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_edit-16.png")));
 		iconMap.put(EXPAND_ALL_ICON, new ImageIcon(getClass().getResource("/images/icons/expand_all-16.gif")));
 		iconMap.put(COLLAPSE_ALL_ICON, new ImageIcon(getClass().getResource("/images/icons/collapse_all-16.gif")));
+		iconMap.put(INFO_ICON, new ImageIcon(getClass().getResource("/images/icons/info-icon.png")));
+		iconMap.put(WARN_ICON, new ImageIcon(getClass().getResource("/images/icons/warn-icon.png")));
+		iconMap.put(ERROR_ICON, new ImageIcon(getClass().getResource("/images/icons/error-icon.png")));
 	}
 }

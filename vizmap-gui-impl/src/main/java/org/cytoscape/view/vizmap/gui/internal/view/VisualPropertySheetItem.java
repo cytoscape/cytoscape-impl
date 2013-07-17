@@ -41,17 +41,20 @@ import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
+import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -68,6 +71,8 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 @SuppressWarnings("serial")
 public class VisualPropertySheetItem<T> extends JPanel {
 
+	public enum MessageType { INFO, WARNING, ERROR	}
+
 	private static final int HEIGHT = 32;
 	private static final int PROP_SHEET_ROW_HEIGHT = 24;
 	private static final int MAPPING_IMG_ROW_HEIGHT = 90;
@@ -76,6 +81,9 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private static final int VALUE_ICON_HEIGHT = 24;
 	private static final int BUTTON_V_PAD = 2;
 	private static final int BUTTON_H_PAD = 4;
+	
+	private static final int MSG_ICON_WIDTH = 18;
+	private static final int MSG_ICON_HEIGHT = 15;
 	
 	static final Color FG_COLOR = new Color(115, 115, 115);
 	static final Color BG_COLOR = Color.WHITE;
@@ -95,30 +103,39 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private JButton bypassBtn;
 	private JCheckBox dependencyCkb;
 	private JLabel titleLbl;
+	private JLabel msgIconLbl;
 	private PropertySheetTable propSheetTbl;
 	private JButton removeMappingBtn;
+	
+	private final Icon disabledBtnIcon;
 	
 	private boolean selected;
 	
 	private final VisualPropertySheetItemModel<T> model;
 	private final EditorManager editorManager;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
+	private final IconManager iconMgr;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public VisualPropertySheetItem(final VisualPropertySheetItemModel<T> model,
 								   final EditorManager editorManager,
-								   final VizMapPropertyBuilder vizMapPropertyBuilder) {
+								   final VizMapPropertyBuilder vizMapPropertyBuilder,
+								   final IconManager iconMgr) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
 		if (editorManager == null)
 			throw new IllegalArgumentException("'editorManager' must not be null");
 		if (vizMapPropertyBuilder == null)
 			throw new IllegalArgumentException("'vizMapPropertyBuilder' must not be null");
+		if (iconMgr == null)
+			throw new IllegalArgumentException("'iconMgr' must not be null");
 		
 		this.model = model;
 		this.editorManager = editorManager;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
+		this.iconMgr = iconMgr;
+		disabledBtnIcon = getIcon(null, VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
 		
 		init();
 	}
@@ -179,7 +196,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	public void updateBypassButton() {
 		if (bypassBtn != null) {
 			final LockedValueState state = model.getLockedValueState();
-			bypassBtn.setEnabled(state != LockedValueState.DISABLED);
+			bypassBtn.setEnabled(isEnabled() && state != LockedValueState.DISABLED);
 			
 			// TODO: create better icons
 			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
@@ -212,6 +229,44 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		
 		if (mappingPnl != null && mappingPnl.isVisible())
 			updateMappingPanelSize();
+	}
+	
+	public void setMessage(final String text, final MessageType type) {
+		if (type == null) {
+			// If no message icon, just set the tooltip to the item itself
+			setToolTipText(text);
+			getMsgIconLbl().setToolTipText(null);
+		} else {
+			// If the message icon will be displayed, set the tooltip to the icon
+			setToolTipText(null);
+			getMsgIconLbl().setToolTipText(text);
+		}
+		
+		updateMessageIcon(type);
+	}
+	
+	@Override
+	public void setEnabled(final boolean enabled) {
+		if (enabled == isEnabled())
+			return;
+		
+		if (model.getVisualPropertyDependency() != null) {
+			getDependencyCkb().setEnabled(enabled);
+		} else {
+			getDefaultBtn().setEnabled(enabled);
+			getBypassBtn().setEnabled(enabled && model.getLockedValueState() != LockedValueState.DISABLED);
+			
+			if (model.isVisualMappingAllowed()) {
+				if (!enabled && getMappingPnl().isVisible())
+					getMappingBtn().doClick();
+				
+				getMappingBtn().setEnabled(enabled);
+				getShowMappingBtn().setEnabled(enabled);
+			}
+		}
+		
+		getTitleLbl().setForeground(UIManager.getColor(enabled ? "Label.foreground" : "Label.disabledForeground"));
+		super.setEnabled(enabled);
 	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================
@@ -302,7 +357,8 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			topPnl.add(Box.createHorizontalStrut(4));
 			topPnl.add(getTitleLbl());
 			topPnl.add(Box.createHorizontalGlue());
-			topPnl.add(Box.createHorizontalStrut(4));
+			topPnl.add(Box.createHorizontalStrut(2));
+			topPnl.add(getMsgIconLbl());
 			
 			if (model.isVisualMappingAllowed())
 				topPnl.add(getShowMappingBtn()); // Network view properties don't have visual mappings
@@ -440,6 +496,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		if (defaultBtn == null) {
 			defaultBtn = new VizMapperButton();
 			defaultBtn.setUI(new VPButtonUI(VPButtonUI.SOUTH));
+			defaultBtn.setDisabledIcon(disabledBtnIcon);
 			updateDefaultButton();
 		}
 		
@@ -461,6 +518,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			mappingBtn.setIcon(getIcon(null, VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			mappingBtn.setUI(new VPButtonUI(VPButtonUI.SOUTH));
 			mappingBtn.setHorizontalAlignment(JLabel.CENTER);
+			mappingBtn.setDisabledIcon(disabledBtnIcon);
 			updateMappingIcon();
 			
 			mappingBtn.addActionListener(new ActionListener() {
@@ -494,6 +552,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			bypassBtn = new VizMapperButton();
 			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			bypassBtn.setUI(new VPButtonUI(VPButtonUI.SOUTH));
+			bypassBtn.setDisabledIcon(disabledBtnIcon);
 			updateBypassButton();
 		}
 		
@@ -517,6 +576,16 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		}
 		
 		return titleLbl;
+	}
+	
+	public JLabel getMsgIconLbl() {
+		if (msgIconLbl == null) {
+			msgIconLbl = new JLabel(" ");
+			msgIconLbl.setHorizontalTextPosition(SwingConstants.CENTER);
+			msgIconLbl.setPreferredSize(new Dimension(MSG_ICON_WIDTH, MSG_ICON_HEIGHT));
+		}
+		
+		return msgIconLbl;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -575,6 +644,19 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			getShowMappingBtn().setBackground(selected ? SELECTED_BG_COLOR : BG_COLOR);
 			getShowMappingBtn().repaint();
 		}
+	}
+	
+	private void updateMessageIcon(final MessageType type) {
+		String iconName = null;
+		
+		if (type == MessageType.INFO)
+			iconName = IconManager.INFO_ICON;
+		else if (type == MessageType.WARNING)
+			iconName = IconManager.WARN_ICON;
+		else if (type == MessageType.ERROR)
+			iconName = IconManager.ERROR_ICON;
+		
+		getMsgIconLbl().setIcon(iconName != null ? iconMgr.getIcon(iconName) : null);
 	}
 	
 	private void updateMappingIcon() {
@@ -671,7 +753,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	private static class ExpandCollapseButton extends JButton {
 		
-	    BufferedImage openImg, closedImg;
+	    BufferedImage openImg, closedImg, disabledClosedImg;
 	    final int PAD = 8;
 	    
 	    public ExpandCollapseButton(final ActionListener al) {
@@ -692,7 +774,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	        if (isSelected())
 	            g2.drawImage(openImg, 0, 0, this);
 	        else
-	            g2.drawImage(closedImg, 0, 0, this);
+	            g2.drawImage(isEnabled() ? closedImg : disabledClosedImg, 0, 0, this);
 	    }
 	    
 	    @Override
@@ -726,6 +808,18 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	        y = new int[] { h/2, PAD,   h-PAD };
 	        p = new Polygon(x, y, 3);
 	        g2.setPaint(getForeground());
+	        g2.fill(p);
+	        g2.dispose();
+	        
+	        disabledClosedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+	        g2 = disabledClosedImg.createGraphics();
+	        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	        g2.setPaint(getBackground());
+	        g2.fillRect(0, 0, w, h);
+	        x = new int[] { PAD, w-PAD, w-PAD };
+	        y = new int[] { h/2, PAD,   h-PAD };
+	        p = new Polygon(x, y, 3);
+	        g2.setPaint(getForeground().brighter().brighter());
 	        g2.fill(p);
 	        g2.dispose();
 	    }
@@ -772,42 +866,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		protected void paintComponent(final Graphics g) {
 			VizMapperButton.paintBackground(g, this);
 			super.paintComponent(g);
-//	        paintArrow(g);
-		}
-
-		/**
-		 * Paint expand/collapse arrow.
-		 */
-		private void paintArrow(final Graphics g) {
-	        final Graphics2D g2 = (Graphics2D) g;
-	        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	        
-	        final int lp = 2; // left padding
-//	        final int rp = 3 * getHeight() / 4; // right padding
-//	        final int tp = 3 * getHeight() / 4; // top padding
-	        final int rp = (3 * getHeight() / 4) + 1; // right padding
-	        final int tp = (3 * getHeight() / 4) + 1; // top padding
-	        final int bp = 1; // bottom padding
-	        final int w = getWidth() - lp - rp; // arrow width
-	        final int h = getHeight() - tp - bp; // arrow height
-	        
-	        if (w > 0 && h > 0) {
-		        final int[] xx;
-		        final int[] yy;
-		        
-		        if (isSelected()) {
-		        	xx = new int[]{ lp, lp+w/2, lp+w };
-			        yy = new int[]{ tp, tp+h,   tp };
-		        } else {
-//		        	xx = new int[]{ lp,   lp+w/2, lp+w };
-//			        yy = new int[]{ tp+h, tp,     tp+h };
-		        	xx = new int[]{ lp, lp+w,   lp };
-			        yy = new int[]{ tp, tp+h/2, tp+h };
-		        }
-		        
-		        g2.setPaint(Color.GRAY);
-		        g2.fill(new Polygon(xx, yy, 3));
-	        }
 		}
 	}
 	
