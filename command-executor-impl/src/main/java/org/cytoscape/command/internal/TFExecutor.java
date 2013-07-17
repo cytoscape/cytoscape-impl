@@ -60,7 +60,6 @@ class TFExecutor implements Executor {
 			tm.setTask(t);
 			t.run(tm);
 			if (observer != null && t instanceof ObservableTask) {
-				System.out.println("  notifying observer");
 				observer.taskFinished((ObservableTask)t);
 			}
 		}
@@ -75,7 +74,6 @@ class TFExecutor implements Executor {
 			tm.setTask(t);
 			t.run(tm);
 			if (observer != null && t instanceof ObservableTask) {
-				System.out.println("  notifying observer");
 				observer.taskFinished((ObservableTask)t);
 			}
 		}
