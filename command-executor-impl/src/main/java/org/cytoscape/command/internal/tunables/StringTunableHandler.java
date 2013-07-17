@@ -28,4 +28,5 @@ import org.cytoscape.work.TunableHandler;
 
 public interface StringTunableHandler extends TunableHandler {
 	void processArgString(String s);
+	Object processArg(String s) throws Exception;
 }

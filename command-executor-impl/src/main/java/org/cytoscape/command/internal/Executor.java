@@ -24,6 +24,11 @@ package org.cytoscape.command.internal;
  * #L%
  */
 
+import java.util.Map;
+import org.cytoscape.work.TaskObserver;
+
 interface Executor {
-	void execute(String args) throws Exception;
+	void execute(String args, TaskObserver observer) throws Exception;
+
+	void execute(Map<String, Object> args, TaskObserver observer) throws Exception;
 }

@@ -110,6 +110,7 @@ public abstract class AbstractStringTunableHandler extends AbstractTunableHandle
 	/**
 	 * Each specific handler really only needs to implement this method and all it
 	 * does is convert the String input into a value of the appropriate type.
+	 *
 	 * @param arg A String representing a value that will be parsed into an object
 	 * of a specific type.
 	 * @return An object of a particular type based on the input string.

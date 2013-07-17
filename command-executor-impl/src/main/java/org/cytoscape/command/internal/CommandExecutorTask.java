@@ -29,24 +29,28 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 
 
-public class CommandStringsExecutorTask extends AbstractTask {
+public class CommandExecutorTask extends AbstractTask {
 
 	private final CommandExecutorImpl cei;
-	private final List<String> commands;
+	private final String namespace;
+	private final String command;
+	private final Map<String, Object> args;
 	private final TaskObserver observer;
 
-	public CommandStringsExecutorTask(List<String> commands, CommandExecutorImpl cei, TaskObserver observer) {
+	public CommandExecutorTask(String namespace, String command, Map<String, Object> args, 
+	                           CommandExecutorImpl cei, TaskObserver observer) {
 		super();
-		this.commands = commands;
+		this.namespace = namespace;
+		this.command = command;
+		this.args = args;
 		this.cei = cei;
 		this.observer = observer;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
-		cei.executeList(commands,tm,observer);
+		cei.executeCommand(namespace, command, args, tm, observer);
 	}
 }

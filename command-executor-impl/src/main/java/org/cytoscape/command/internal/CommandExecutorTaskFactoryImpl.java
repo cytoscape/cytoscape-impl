@@ -26,6 +26,7 @@ package org.cytoscape.command.internal;
 
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import java.io.File;
@@ -46,20 +47,29 @@ public class CommandExecutorTaskFactoryImpl extends AbstractTaskFactory implemen
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CommandFileExecutorTask(cei));
+		return this.createTaskIterator(null);
+	}
+
+	public TaskIterator createTaskIterator(TaskObserver observer) {
+		return new TaskIterator(new CommandFileExecutorTask(cei, observer));
 	} 
 
-	public TaskIterator createTaskIterator(File file) {
+	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
         final Map<String, Object> m = new HashMap<String, Object>();
         m.put("file", file);
-        return tunableSetter.createTaskIterator(this.createTaskIterator(), m);
+        return tunableSetter.createTaskIterator(this.createTaskIterator(observer), m, observer);
 	} 
 
-	public TaskIterator createTaskIterator(String ... commands) {
-		return createTaskIterator(Arrays.asList(commands));
+	public TaskIterator createTaskIterator(TaskObserver observer, String ... commands) {
+		return createTaskIterator(Arrays.asList(commands), observer);
 	} 
 
-	public TaskIterator createTaskIterator(List<String> commands) {
-		return new TaskIterator(new CommandStringsExecutorTask(commands,cei));
+	public TaskIterator createTaskIterator(List<String> commands, TaskObserver observer) {
+		return new TaskIterator(new CommandStringsExecutorTask(commands,cei,observer));
+	} 
+
+	public TaskIterator createTaskIterator(String namespace, String command, 
+	                                       Map<String,Object> args, TaskObserver observer) {
+		return new TaskIterator(new CommandExecutorTask(namespace, command, args, cei, observer));
 	} 
 }

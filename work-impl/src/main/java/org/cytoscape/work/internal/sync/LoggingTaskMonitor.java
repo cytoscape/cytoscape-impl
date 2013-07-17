@@ -85,7 +85,7 @@ class LoggingTaskMonitor implements TaskMonitor {
 	}
 
 	public void showException(Exception exception) {
-		logger.error("Exception executing task.", exception);
-		messageLogger.error("Exception executing task.", exception);
+		logger.error("Exception executing task: "+exception.getMessage(), exception);
+		messageLogger.error("Error executing task: "+exception.getMessage(), exception);
 	}
 }

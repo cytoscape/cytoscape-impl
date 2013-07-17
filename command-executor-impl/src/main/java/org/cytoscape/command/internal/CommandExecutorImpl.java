@@ -43,6 +43,7 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 
 public class CommandExecutorImpl {
 
@@ -132,7 +133,7 @@ public class CommandExecutorImpl {
 		}
 	}
 
-	public void executeList(List<String> commandLines, TaskMonitor tm) throws Exception {
+	public void executeList(List<String> commandLines, TaskMonitor tm, TaskObserver observer) throws Exception {
 
 		double size = (double)commandLines.size();
 		double count = 1.0;
@@ -162,10 +163,24 @@ public class CommandExecutorImpl {
 
 			if ( ex == null )
 				throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
-			ex.execute(args);
+			ex.execute(args, observer);
 
 			tm.setProgress(count/size);
 			count += 1.0;
 		}
+	}
+
+	public void executeCommand(String namespace, String command, Map<String, Object> args, 
+	                           TaskMonitor tm, TaskObserver observer) throws Exception {
+			Map<String,Executor> commandMap = commandExecutorMap.get(namespace);
+
+			if ( commandMap == null )
+				throw new RuntimeException("Failed to find command namespace: '" + namespace +"'");	
+
+			Executor ex = commandMap.get(command);
+
+			if ( ex == null )
+				throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
+			ex.execute(args, observer);
 	}
 }
