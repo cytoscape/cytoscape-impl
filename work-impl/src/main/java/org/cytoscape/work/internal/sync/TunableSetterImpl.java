@@ -28,6 +28,7 @@ package org.cytoscape.work.internal.sync;
 import java.util.Map;
 
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableSetter;
 
 
@@ -44,7 +45,11 @@ public class TunableSetterImpl implements TunableSetter {
 	}
 
 	public TaskIterator createTaskIterator(TaskIterator ti, Map<String,Object> tunableValues) {
-		return new TaskIterator(ti.getNumTasks(), new DelegateTask(mutatorFactory.createMutator(),trm,ti,tunableValues) );
+		return new TaskIterator(ti.getNumTasks(), new DelegateTask(mutatorFactory.createMutator(),trm,ti,tunableValues, null) );
+	}
+
+	public TaskIterator createTaskIterator(TaskIterator ti, Map<String,Object> tunableValues, TaskObserver observer) {
+		return new TaskIterator(ti.getNumTasks(), new DelegateTask(mutatorFactory.createMutator(),trm,ti,tunableValues, observer) );
 	}
 	
 	@Override

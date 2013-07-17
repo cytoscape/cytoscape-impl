@@ -11,13 +11,14 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.create.CloneNetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.internal.NullCyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
@@ -43,17 +44,20 @@ public class CloneNetworkTaskFactoryTest {
 		CyGroupFactory groupFactory = Mockito.mock(CyGroupFactory.class);
 		RenderingEngineManager renderingEngineMgr = Mockito.mock(RenderingEngineManager.class);
 		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
-		CloneNetworkTaskFactory factory = new CloneNetworkTaskFactoryImpl(networkMgr, networkViewMgr, vmm, netFactory, netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory);
+		CloneNetworkTaskFactoryImpl factory = new CloneNetworkTaskFactoryImpl(networkMgr, networkViewMgr, vmm, netFactory, netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory);
 		
 		CyNetwork network = netFactory.createNetwork();
-		TaskObserver<CyNetworkView> observer = Mockito.mock(TaskObserver.class);
-		TaskIterator iterator = factory.createTaskIterator(network, observer);
+		TaskObserver observer = Mockito.mock(TaskObserver.class);
+		TaskIterator iterator = factory.createTaskIterator(network);
 
 		TaskMonitor taskMonitor = Mockito.mock(TaskMonitor.class);
 		while (iterator.hasNext()) {
-			iterator.next().run(taskMonitor);
+			Task t = iterator.next();
+			t.run(taskMonitor);
+			if (t instanceof ObservableTask)
+				observer.taskFinished((ObservableTask)t);
 		}
 		
-		Mockito.verify(observer, Mockito.times(1)).taskFinished(Mockito.any(CyNetworkView.class));
+		Mockito.verify(observer, Mockito.times(1)).taskFinished(Mockito.any(ObservableTask.class));
 	}
 }

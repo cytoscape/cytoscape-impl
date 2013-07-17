@@ -57,12 +57,12 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CloneNetworkTask extends AbstractCreationTask {
+public class CloneNetworkTask extends AbstractCreationTask implements ObservableTask {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CloneNetworkTask.class);
 
@@ -82,6 +82,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private final CyGroupFactory groupFactory;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private CyNetworkView result = null;
 
 	public CloneNetworkTask(final CyNetwork net,
 							final CyNetworkManager netmgr,
@@ -131,18 +132,23 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	        final CyNetworkView newView = netViewFactory.createNetworkView(newNet);
 			networkViewManager.addNetworkView(newView);
 			CopyExistingViewTask task = new CopyExistingViewTask(vmm, renderingEngineMgr, newView, origView, new2OrigNodeMap, new2OrigEdgeMap, false);
-			task.addObserver(new TaskObserver<CyNetworkView>() {
-				@Override
-				public void taskFinished(CyNetworkView result) {
-					finish(result);
-				}
-			});
 			insertTasksAfterCurrentTask(task);
+			// Let the CopyExistingViewTask respond to the Observer (if any)
 		} else {
-			finish(nullNetworkViewFactory.createNetworkView(newNet));
+			result = nullNetworkViewFactory.createNetworkView(newNet);
 		}
 
 		tm.setProgress(1.0);
+	}
+
+	@Override
+	public Object getResults(Class type) {
+		if (result == null) return null;
+		if (type.equals(String.class))
+			return result.toString();
+		if (type.equals(CyNetwork.class))
+			return result.getModel();
+		return result;
 	}
 
 	private CyNetwork cloneNetwork(final CyNetwork origNet) {

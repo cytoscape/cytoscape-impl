@@ -91,14 +91,4 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
     			netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory));
     }
     
-    @Override
-    public TaskIterator createTaskIterator(CyNetwork network, TaskObserver<CyNetworkView> observer) {
-    	CloneNetworkTask task = new CloneNetworkTask(network, networkMgr, networkViewMgr, vmm, netFactory, 
-    			netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory);
-    	if (observer == null) {
-    		throw new IllegalArgumentException("observer cannot be null");
-    	}
-    	task.addObserver(observer);
-    	return new TaskIterator(2, task);
-    }
 }

@@ -30,10 +30,12 @@ import org.slf4j.LoggerFactory;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -110,12 +112,17 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	}
 
 	public void execute(TaskIterator iterator) {
-		execute(iterator, null);
+		execute(iterator, null, null);
 	}	
 
-	public void execute(final TaskIterator iterator, Object tunableContext) {
+	public void execute(TaskIterator iterator, TaskObserver observer) {
+		execute(iterator, null, observer);
+	}
+
+	public void execute(final TaskIterator iterator, Object tunableContext, TaskObserver observer) {
 		dialogTunableMutator.setConfigurationContext(parentWindow);
-		final TaskRunner taskRunner = new TaskRunner(this, executor, scheduledExecutor, iterator, taskWindow);
+		final TaskRunner taskRunner = new TaskRunner(this, executor, scheduledExecutor, iterator, 
+		                                             observer, taskWindow);
 		executor.submit(taskRunner);
 	}
 
@@ -213,15 +220,18 @@ class TaskRunner implements Runnable {
 	final ScheduledExecutorService scheduledExecutor;
 	final TaskIterator iterator;
 	final TaskMonitorImpl monitor;
+	final TaskObserver observer;
 
 	boolean cancelled = false;
 	Task currentTask = null;
 
-	public TaskRunner(final TaskManagerImpl manager, ExecutorService cancelExecutor, ScheduledExecutorService scheduledExecutor, TaskIterator iterator, TaskWindow window) {
+	public TaskRunner(final TaskManagerImpl manager, ExecutorService cancelExecutor, ScheduledExecutorService scheduledExecutor, 
+	                  TaskIterator iterator, TaskObserver observer, TaskWindow window) {
 		this.manager = manager;
 		this.cancelExecutor = cancelExecutor;
 		this.scheduledExecutor = scheduledExecutor;
 		this.iterator = iterator;
+		this.observer = observer;
 		monitor = new TaskMonitorImpl(manager, window);
 		monitor.setCancelListener(new CancelListener());
 	}
@@ -249,6 +259,7 @@ class TaskRunner implements Runnable {
 
 			// Run the first task
 			currentTask.run(monitor);
+			handleObserver(currentTask);
 
 			// run all subsequent tasks in the iterator
 			while (iterator.hasNext() && !cancelled) {
@@ -257,6 +268,7 @@ class TaskRunner implements Runnable {
 					// Record the task in the montor (for logging purposes)
 					monitor.setTask(currentTask);
 					currentTask.run(monitor);
+					handleObserver(currentTask);
 				} else {
 					// if the user clicked "cancel" for the tunable dialog,
 					// tell the task's UI that the task has been cancelled.
@@ -278,6 +290,14 @@ class TaskRunner implements Runnable {
 			e.printStackTrace();
 		} finally {
 			manager.clearParent();
+			if (observer != null) 
+				observer.allFinished();
+		}
+	}
+
+	private void handleObserver(Task task) {
+		if (task instanceof ObservableTask && observer != null) {
+			observer.taskFinished((ObservableTask)task);
 		}
 	}
 

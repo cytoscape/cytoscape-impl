@@ -82,8 +82,8 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.task.create.CloneNetworkTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.task.create.CloneNetworkTaskFactory;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
@@ -285,9 +285,9 @@ public class CyActivator extends AbstractCyActivator {
 		UnHideAllNodesTaskFactoryImpl unHideAllNodesTaskFactory = new UnHideAllNodesTaskFactoryImpl(undoSupportServiceRef,cyEventHelperRef,visualMappingManagerServiceRef);
 		UnHideAllEdgesTaskFactoryImpl unHideAllEdgesTaskFactory = new UnHideAllEdgesTaskFactoryImpl(undoSupportServiceRef,cyEventHelperRef,visualMappingManagerServiceRef);
 		NewEmptyNetworkTaskFactoryImpl newEmptyNetworkTaskFactory = new NewEmptyNetworkTaskFactoryImpl(cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,synchronousTaskManagerServiceRef,visualMappingManagerServiceRef, cyRootNetworkFactoryServiceRef, cyApplicationManagerServiceRef);
-		CloneNetworkTaskFactoryImpl cloneNetworkTaskFactory = new CloneNetworkTaskFactoryImpl(cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,visualMappingManagerServiceRef,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkNamingServiceRef,cyApplicationManagerServiceRef,cyNetworkTableManagerServiceRef,rootNetworkManagerServiceRef,cyGroupManager,cyGroupFactory,renderingEngineManagerServiceRef, nullNetworkViewFactory );
-		NewNetworkSelectedNodesEdgesTaskFactoryImpl newNetworkSelectedNodesEdgesTaskFactory = new NewNetworkSelectedNodesEdgesTaskFactoryImpl(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef,cyGroupManager,renderingEngineManagerServiceRef);
-		NewNetworkSelectedNodesOnlyTaskFactoryImpl newNetworkSelectedNodesOnlyTaskFactory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef,cyGroupManager,renderingEngineManagerServiceRef);
+		CloneNetworkTaskFactory cloneNetworkTaskFactory = new CloneNetworkTaskFactoryImpl(cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,visualMappingManagerServiceRef,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkNamingServiceRef,cyApplicationManagerServiceRef,cyNetworkTableManagerServiceRef,rootNetworkManagerServiceRef,cyGroupManager,cyGroupFactory,renderingEngineManagerServiceRef, nullNetworkViewFactory );
+		NewNetworkSelectedNodesAndEdgesTaskFactory newNetworkSelectedNodesEdgesTaskFactory = new NewNetworkSelectedNodesEdgesTaskFactoryImpl(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef,cyGroupManager,renderingEngineManagerServiceRef);
+		NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef,cyGroupManager,renderingEngineManagerServiceRef);
 		DestroyNetworkTaskFactoryImpl destroyNetworkTaskFactory = new DestroyNetworkTaskFactoryImpl(cyNetworkManagerServiceRef);
 		DestroyNetworkViewTaskFactoryImpl destroyNetworkViewTaskFactory = new DestroyNetworkViewTaskFactoryImpl(cyNetworkViewManagerServiceRef);
 		ZoomInTaskFactory zoomInTaskFactory = new ZoomInTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
@@ -367,7 +367,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkFileTaskFactoryProps.setProperty(ACCELERATOR,"cmd l");
 		loadNetworkFileTaskFactoryProps.setProperty(TITLE,"File...");
 		loadNetworkFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		loadNetworkFileTaskFactoryProps.setProperty(COMMAND,"load-file");
+		loadNetworkFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		loadNetworkFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		loadNetworkFileTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.0");
 		loadNetworkFileTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/net_file_import.png").toString());
@@ -386,7 +386,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/net_url_import.png").toString());
 		loadNetworkURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		loadNetworkURLTaskFactoryProps.setProperty(TOOLTIP,"Import Network From URL");
-		loadNetworkURLTaskFactoryProps.setProperty(COMMAND,"load-url");
+		loadNetworkURLTaskFactoryProps.setProperty(COMMAND,"load url");
 		loadNetworkURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc, loadNetworkURLTaskFactory, TaskFactory.class, loadNetworkURLTaskFactoryProps);
 		registerService(bc, loadNetworkURLTaskFactory, LoadNetworkURLTaskFactory.class, loadNetworkURLTaskFactoryProps);
@@ -395,7 +395,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadVizmapFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import");
 		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Vizmap File...");
-		loadVizmapFileTaskFactoryProps.setProperty(COMMAND,"load-file");
+		loadVizmapFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		registerService(bc,loadVizmapFileTaskFactory,TaskFactory.class, loadVizmapFileTaskFactoryProps);
 		registerService(bc,loadVizmapFileTaskFactory,LoadVizmapFileTaskFactory.class, new Properties());
@@ -408,7 +408,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsFileTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_file_import.png").toString());
 		loadAttrsFileTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		loadAttrsFileTaskFactoryProps.setProperty(TOOLTIP,"Import Table From File");
-		loadAttrsFileTaskFactoryProps.setProperty(COMMAND,"load-file");
+		loadAttrsFileTaskFactoryProps.setProperty(COMMAND,"load- ile");
 		loadAttrsFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		loadAttrsFileTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,loadAttrsFileTaskFactory,TaskFactory.class, loadAttrsFileTaskFactoryProps);
@@ -423,7 +423,7 @@ public class CyActivator extends AbstractCyActivator {
 		loadAttrsURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_url_import.png").toString());
 		loadAttrsURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		loadAttrsURLTaskFactoryProps.setProperty(TOOLTIP,"Import Table From URL");
-		loadAttrsURLTaskFactoryProps.setProperty(COMMAND,"load-url");
+		loadAttrsURLTaskFactoryProps.setProperty(COMMAND,"load url");
 		loadAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		loadAttrsURLTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,loadAttrsURLTaskFactory,TaskFactory.class, loadAttrsURLTaskFactoryProps);
@@ -441,7 +441,7 @@ public class CyActivator extends AbstractCyActivator {
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(TITLE,"Delete Selected Nodes and Edges...");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"5.0");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(ACCELERATOR,"DELETE");
-		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(COMMAND,"delete-selected-nodes-and-edges");
+		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(COMMAND,"delete selected");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,deleteSelectedNodesAndEdgesTaskFactory,NetworkTaskFactory.class, deleteSelectedNodesAndEdgesTaskFactoryProps);
 		registerService(bc,deleteSelectedNodesAndEdgesTaskFactory,DeleteSelectedNodesAndEdgesTaskFactory.class, deleteSelectedNodesAndEdgesTaskFactoryProps);
@@ -453,7 +453,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectAllTaskFactoryProps.setProperty(TITLE,"Select all nodes and edges");
 		selectAllTaskFactoryProps.setProperty(MENU_GRAVITY,"5.0");
 		selectAllTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		selectAllTaskFactoryProps.setProperty(COMMAND,"select-all-nodes-and-edges");
+		selectAllTaskFactoryProps.setProperty(COMMAND,"select all");
 		selectAllTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,selectAllTaskFactory,NetworkTaskFactory.class, selectAllTaskFactoryProps);
 		registerService(bc,selectAllTaskFactory,SelectAllTaskFactory.class, selectAllTaskFactoryProps);
@@ -473,8 +473,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectAllEdgesTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		selectAllEdgesTaskFactoryProps.setProperty(TITLE,"Select all edges");
 		selectAllEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"4.0");
-		selectAllEdgesTaskFactoryProps.setProperty(COMMAND,"select-all-edges");
-		selectAllEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		selectAllEdgesTaskFactoryProps.setProperty(COMMAND,"select all");
+		selectAllEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edges");
 		registerService(bc,selectAllEdgesTaskFactory,NetworkTaskFactory.class, selectAllEdgesTaskFactoryProps);
 		registerService(bc,selectAllEdgesTaskFactory,SelectAllEdgesTaskFactory.class, selectAllEdgesTaskFactoryProps);
 
@@ -484,8 +484,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectAllNodesTaskFactoryProps.setProperty(MENU_GRAVITY,"4.0");
 		selectAllNodesTaskFactoryProps.setProperty(ACCELERATOR,"cmd a");
 		selectAllNodesTaskFactoryProps.setProperty(TITLE,"Select all nodes");
-		selectAllNodesTaskFactoryProps.setProperty(COMMAND,"select-all-nodes");
-		selectAllNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		selectAllNodesTaskFactoryProps.setProperty(COMMAND,"select all");
+		selectAllNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,selectAllNodesTaskFactory,NetworkTaskFactory.class, selectAllNodesTaskFactoryProps);
 		registerService(bc,selectAllNodesTaskFactory,SelectAllNodesTaskFactory.class, selectAllNodesTaskFactoryProps);
 
@@ -495,8 +495,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectAdjacentEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"6.0");
 		selectAdjacentEdgesTaskFactoryProps.setProperty(ACCELERATOR,"alt e");
 		selectAdjacentEdgesTaskFactoryProps.setProperty(TITLE,"Select adjacent edges");
-		selectAdjacentEdgesTaskFactoryProps.setProperty(COMMAND,"select-adjacent-edges");
-		selectAdjacentEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		selectAdjacentEdgesTaskFactoryProps.setProperty(COMMAND,"select adjacent");
+		selectAdjacentEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edges");
 		registerService(bc,selectAdjacentEdgesTaskFactory,NetworkTaskFactory.class, selectAdjacentEdgesTaskFactoryProps);
 		registerService(bc,selectAdjacentEdgesTaskFactory,SelectAdjacentEdgesTaskFactory.class, selectAdjacentEdgesTaskFactoryProps);
 
@@ -506,8 +506,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectConnectedNodesTaskFactoryProps.setProperty(MENU_GRAVITY,"7.0");
 		selectConnectedNodesTaskFactoryProps.setProperty(ACCELERATOR,"cmd 7");
 		selectConnectedNodesTaskFactoryProps.setProperty(TITLE,"Nodes connected by selected edges");
-		selectConnectedNodesTaskFactoryProps.setProperty(COMMAND,"select-nodes-connected-by-selected-edges");
-		selectConnectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		selectConnectedNodesTaskFactoryProps.setProperty(COMMAND,"select by-selected-edges");
+		selectConnectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,selectConnectedNodesTaskFactory,NetworkTaskFactory.class, selectConnectedNodesTaskFactoryProps);
 		registerService(bc,selectConnectedNodesTaskFactory,SelectConnectedNodesTaskFactory.class, selectConnectedNodesTaskFactoryProps);
 
@@ -521,8 +521,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/select_firstneighbors.png").toString());
 		selectFirstNeighborsTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		selectFirstNeighborsTaskFactoryProps.setProperty(TOOLTIP,"First Neighbors of Selected Nodes (Undirected)");
-		selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND,"select-first-neighbors-of-selected-nodes-undirected");
-		selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND,"select neighbors-undirected");
+		selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,selectFirstNeighborsTaskFactory,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryProps);
 		registerService(bc,selectFirstNeighborsTaskFactory,SelectFirstNeighborsTaskFactory.class, selectFirstNeighborsTaskFactoryProps);
 
@@ -532,8 +532,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(MENU_GRAVITY,"6.1");
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(TITLE,"Directed: Incoming");
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(TOOLTIP,"First Neighbors of Selected Nodes (Directed: Incoming)");
-		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND,"select-first-neighbors-of-selected-nodes-incoming");
-		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND_NAMESPACE,"network");
+		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND,"select neighbors-incoming");
+		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,selectFirstNeighborsTaskFactoryInEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryInEdgeProps);
 		registerService(bc,selectFirstNeighborsTaskFactoryInEdge,SelectFirstNeighborsTaskFactory.class, selectFirstNeighborsTaskFactoryInEdgeProps);
 
@@ -543,8 +543,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(MENU_GRAVITY,"6.2");
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(TITLE,"Directed: Outgoing");
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(TOOLTIP,"First Neighbors of Selected Nodes (Directed: Outgoing)");
-		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(COMMAND,"select-first-neighbors-of-selected-nodes-outgoing");
-		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(COMMAND_NAMESPACE,"network");
+		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(COMMAND,"select neighbors-outgoing");
+		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,selectFirstNeighborsTaskFactoryOutEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryOutEdgeProps);
 		registerService(bc,selectFirstNeighborsTaskFactoryOutEdge,SelectFirstNeighborsTaskFactory.class, selectFirstNeighborsTaskFactoryOutEdgeProps);		
 
@@ -554,7 +554,7 @@ public class CyActivator extends AbstractCyActivator {
 		deselectAllTaskFactoryProps.setProperty(MENU_GRAVITY,"5.1");
 		deselectAllTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift alt a");
 		deselectAllTaskFactoryProps.setProperty(TITLE,"Deselect all nodes and edges");
-		deselectAllTaskFactoryProps.setProperty(COMMAND,"deselect-all");
+		deselectAllTaskFactoryProps.setProperty(COMMAND,"deselect all");
 		deselectAllTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,deselectAllTaskFactory,NetworkTaskFactory.class, deselectAllTaskFactoryProps);
 		registerService(bc,deselectAllTaskFactory,DeselectAllTaskFactory.class, deselectAllTaskFactoryProps);
@@ -565,8 +565,8 @@ public class CyActivator extends AbstractCyActivator {
 		deselectAllEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"5.0");
 		deselectAllEdgesTaskFactoryProps.setProperty(ACCELERATOR,"alt shift a");
 		deselectAllEdgesTaskFactoryProps.setProperty(TITLE,"Deselect all edges");
-		deselectAllEdgesTaskFactoryProps.setProperty(COMMAND,"deselect-all-edges");
-		deselectAllEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		deselectAllEdgesTaskFactoryProps.setProperty(COMMAND,"deselect all");
+		deselectAllEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edges");
 		registerService(bc,deselectAllEdgesTaskFactory,NetworkTaskFactory.class, deselectAllEdgesTaskFactoryProps);
 		registerService(bc,deselectAllEdgesTaskFactory,DeselectAllEdgesTaskFactory.class, deselectAllEdgesTaskFactoryProps);
 
@@ -576,8 +576,8 @@ public class CyActivator extends AbstractCyActivator {
 		deselectAllNodesTaskFactoryProps.setProperty(MENU_GRAVITY,"5.0");
 		deselectAllNodesTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift a");
 		deselectAllNodesTaskFactoryProps.setProperty(TITLE,"Deselect all nodes");
-		deselectAllNodesTaskFactoryProps.setProperty(COMMAND,"deselect-all-nodes");
-		deselectAllNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		deselectAllNodesTaskFactoryProps.setProperty(COMMAND,"deselect nodes");
+		deselectAllNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,deselectAllNodesTaskFactory,NetworkTaskFactory.class, deselectAllNodesTaskFactoryProps);
 		registerService(bc,deselectAllNodesTaskFactory,DeselectAllNodesTaskFactory.class, deselectAllNodesTaskFactoryProps);
 
@@ -587,8 +587,8 @@ public class CyActivator extends AbstractCyActivator {
 		invertSelectedEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		invertSelectedEdgesTaskFactoryProps.setProperty(ACCELERATOR,"alt i");
 		invertSelectedEdgesTaskFactoryProps.setProperty(TITLE,"Invert edge selection");
-		invertSelectedEdgesTaskFactoryProps.setProperty(COMMAND,"invert-selected-edges");
-		invertSelectedEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		invertSelectedEdgesTaskFactoryProps.setProperty(COMMAND,"invert selection");
+		invertSelectedEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edges");
 		registerService(bc,invertSelectedEdgesTaskFactory,NetworkTaskFactory.class, invertSelectedEdgesTaskFactoryProps);
 		registerService(bc,invertSelectedEdgesTaskFactory,InvertSelectedEdgesTaskFactory.class, invertSelectedEdgesTaskFactoryProps);
 
@@ -602,8 +602,8 @@ public class CyActivator extends AbstractCyActivator {
 		invertSelectedNodesTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/invert_selection.png").toString());
 		invertSelectedNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		invertSelectedNodesTaskFactoryProps.setProperty(TOOLTIP,"Invert Node Selection");
-		invertSelectedNodesTaskFactoryProps.setProperty(COMMAND,"invert-selected-nodes");
-		invertSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		invertSelectedNodesTaskFactoryProps.setProperty(COMMAND,"invert selection");
+		invertSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,invertSelectedNodesTaskFactory,NetworkTaskFactory.class, invertSelectedNodesTaskFactoryProps);
 		registerService(bc,invertSelectedNodesTaskFactory,InvertSelectedNodesTaskFactory.class, invertSelectedNodesTaskFactoryProps);
 
@@ -613,8 +613,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectFromFileListTaskFactoryProps.setProperty(MENU_GRAVITY,"8.0");
 		selectFromFileListTaskFactoryProps.setProperty(ACCELERATOR,"cmd i");
 		selectFromFileListTaskFactoryProps.setProperty(TITLE,"From ID List file...");
-		selectFromFileListTaskFactoryProps.setProperty(COMMAND,"select-nodes-for-id-list");
-		selectFromFileListTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		selectFromFileListTaskFactoryProps.setProperty(COMMAND,"select id-list");
+		selectFromFileListTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,selectFromFileListTaskFactory,NetworkTaskFactory.class, selectFromFileListTaskFactoryProps);
 		registerService(bc,selectFromFileListTaskFactory,SelectFromFileListTaskFactory.class, selectFromFileListTaskFactoryProps);
 
@@ -634,7 +634,7 @@ public class CyActivator extends AbstractCyActivator {
 		hideSelectedTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/hide_selected.png").toString());
 		hideSelectedTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		hideSelectedTaskFactoryProps.setProperty(TOOLTIP,"Hide Selected Nodes and Edges");
-		hideSelectedTaskFactoryProps.setProperty(COMMAND,"hide-selected-nodes-and-edges");
+		hideSelectedTaskFactoryProps.setProperty(COMMAND,"hide selected");
 		hideSelectedTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		registerService(bc,hideSelectedTaskFactory,NetworkViewTaskFactory.class, hideSelectedTaskFactoryProps);
 		registerService(bc,hideSelectedTaskFactory,HideSelectedTaskFactory.class, hideSelectedTaskFactoryProps);
@@ -644,8 +644,8 @@ public class CyActivator extends AbstractCyActivator {
 		hideSelectedNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Select.Nodes");
 		hideSelectedNodesTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
 		hideSelectedNodesTaskFactoryProps.setProperty(TITLE,"Hide selected nodes");
-		hideSelectedNodesTaskFactoryProps.setProperty(COMMAND,"hide-selected-nodes");
-		hideSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
+		hideSelectedNodesTaskFactoryProps.setProperty(COMMAND,"hide selected");
+		hideSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,hideSelectedNodesTaskFactory,NetworkViewTaskFactory.class, hideSelectedNodesTaskFactoryProps);
 		registerService(bc,hideSelectedNodesTaskFactory,HideSelectedNodesTaskFactory.class, hideSelectedNodesTaskFactoryProps);
 
@@ -654,8 +654,8 @@ public class CyActivator extends AbstractCyActivator {
 		hideSelectedEdgesTaskFactoryProps.setProperty(PREFERRED_MENU,"Select.Edges");
 		hideSelectedEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
 		hideSelectedEdgesTaskFactoryProps.setProperty(TITLE,"Hide selected edges");
-		hideSelectedEdgesTaskFactoryProps.setProperty(COMMAND,"hide-selected-edges");
-		hideSelectedEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
+		hideSelectedEdgesTaskFactoryProps.setProperty(COMMAND,"hide selected");
+		hideSelectedEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edges");
 		registerService(bc,hideSelectedEdgesTaskFactory,NetworkViewTaskFactory.class, hideSelectedEdgesTaskFactoryProps);
 		registerService(bc,hideSelectedEdgesTaskFactory,HideSelectedEdgesTaskFactory.class, hideSelectedEdgesTaskFactoryProps);
 
@@ -665,7 +665,7 @@ public class CyActivator extends AbstractCyActivator {
 		unHideAllTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		unHideAllTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"9.6");
 		unHideAllTaskFactoryProps.setProperty(TITLE,"Show all nodes and edges");
-		unHideAllTaskFactoryProps.setProperty(COMMAND,"show-all-nodes-and-edges");
+		unHideAllTaskFactoryProps.setProperty(COMMAND,"show all");
 		unHideAllTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		unHideAllTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/unhide_all.png").toString());
 		unHideAllTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
@@ -678,8 +678,8 @@ public class CyActivator extends AbstractCyActivator {
 		unHideAllNodesTaskFactoryProps.setProperty(PREFERRED_MENU,"Select.Nodes");
 		unHideAllNodesTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		unHideAllNodesTaskFactoryProps.setProperty(TITLE,"Show all nodes");
-		unHideAllNodesTaskFactoryProps.setProperty(COMMAND,"show-all-nodes");
-		unHideAllNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
+		unHideAllNodesTaskFactoryProps.setProperty(COMMAND,"show all");
+		unHideAllNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"nodes");
 		registerService(bc,unHideAllNodesTaskFactory,NetworkViewTaskFactory.class, unHideAllNodesTaskFactoryProps);
 		registerService(bc,unHideAllNodesTaskFactory,UnHideAllNodesTaskFactory.class, unHideAllNodesTaskFactoryProps);
 
@@ -688,8 +688,8 @@ public class CyActivator extends AbstractCyActivator {
 		unHideAllEdgesTaskFactoryProps.setProperty(PREFERRED_MENU,"Select.Edges");
 		unHideAllEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		unHideAllEdgesTaskFactoryProps.setProperty(TITLE,"Show all edges");
-		unHideAllEdgesTaskFactoryProps.setProperty(COMMAND,"show-all-edges");
-		unHideAllEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
+		unHideAllEdgesTaskFactoryProps.setProperty(COMMAND,"show all");
+		unHideAllEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edges");
 		registerService(bc,unHideAllEdgesTaskFactory,NetworkViewTaskFactory.class, unHideAllEdgesTaskFactoryProps);
 		registerService(bc,unHideAllEdgesTaskFactory,UnHideAllEdgesTaskFactory.class, unHideAllEdgesTaskFactoryProps);
 
@@ -698,7 +698,7 @@ public class CyActivator extends AbstractCyActivator {
 		newEmptyNetworkTaskFactoryProps.setProperty(PREFERRED_MENU,"File.New.Network");
 		newEmptyNetworkTaskFactoryProps.setProperty(MENU_GRAVITY,"4.0");
 		newEmptyNetworkTaskFactoryProps.setProperty(TITLE,"Empty Network");
-		newEmptyNetworkTaskFactoryProps.setProperty(COMMAND,"new-empty-network");
+		newEmptyNetworkTaskFactoryProps.setProperty(COMMAND,"new empty");
 		newEmptyNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,newEmptyNetworkTaskFactory,TaskFactory.class, newEmptyNetworkTaskFactoryProps);
 		registerService(bc,newEmptyNetworkTaskFactory,NewEmptyNetworkViewFactory.class, newEmptyNetworkTaskFactoryProps);
@@ -709,7 +709,7 @@ public class CyActivator extends AbstractCyActivator {
 		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
 		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift n");
 		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(TITLE,"From selected nodes, selected edges");
-		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(COMMAND,"new-network-from-selected-nodes-and-selected-edges");
+		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(COMMAND,"new from-selected");
 		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,newNetworkSelectedNodesEdgesTaskFactory,NetworkTaskFactory.class, newNetworkSelectedNodesEdgesTaskFactoryProps);
 		registerService(bc,newNetworkSelectedNodesEdgesTaskFactory,NewNetworkSelectedNodesAndEdgesTaskFactory.class, newNetworkSelectedNodesEdgesTaskFactoryProps);
@@ -724,7 +724,7 @@ public class CyActivator extends AbstractCyActivator {
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(TOOLTIP,"New Network From Selection");
-		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(COMMAND,"new-network-selected-nodes-and-all-edges");
+		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(COMMAND,"new selected-nodes-and-all-edges");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,newNetworkSelectedNodesOnlyTaskFactory,NetworkTaskFactory.class, newNetworkSelectedNodesOnlyTaskFactoryProps);
 		registerService(bc,newNetworkSelectedNodesOnlyTaskFactory,NewNetworkSelectedNodesOnlyTaskFactory.class, newNetworkSelectedNodesOnlyTaskFactoryProps);
@@ -734,7 +734,7 @@ public class CyActivator extends AbstractCyActivator {
 		cloneNetworkTaskFactoryProps.setProperty(PREFERRED_MENU,"File.New.Network");
 		cloneNetworkTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		cloneNetworkTaskFactoryProps.setProperty(TITLE,"Clone Current Network");
-		cloneNetworkTaskFactoryProps.setProperty(COMMAND,"clone-current-network");
+		cloneNetworkTaskFactoryProps.setProperty(COMMAND,"clone current");
 		cloneNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,cloneNetworkTaskFactory,NetworkTaskFactory.class, cloneNetworkTaskFactoryProps);
 		registerService(bc,cloneNetworkTaskFactory,CloneNetworkTaskFactory.class, cloneNetworkTaskFactoryProps);
@@ -746,7 +746,7 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkTaskFactoryProps.setProperty(TITLE,"Destroy Network");
 		destroyNetworkTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkTaskFactoryProps.setProperty(MENU_GRAVITY,"3.2");
-		destroyNetworkTaskFactoryProps.setProperty(COMMAND,"destroy-network");
+		destroyNetworkTaskFactoryProps.setProperty(COMMAND,"destroy");
 		destroyNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,destroyNetworkTaskFactory,NetworkCollectionTaskFactory.class, destroyNetworkTaskFactoryProps);
 		registerService(bc,destroyNetworkTaskFactory,DestroyNetworkTaskFactory.class, destroyNetworkTaskFactoryProps);
@@ -759,7 +759,7 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkViewTaskFactoryProps.setProperty(TITLE,"Destroy View");
 		destroyNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
-		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND,"destroy-view");
+		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND,"destroy");
 		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		registerService(bc,destroyNetworkViewTaskFactory,NetworkViewCollectionTaskFactory.class, destroyNetworkViewTaskFactoryProps);
 		registerService(bc,destroyNetworkViewTaskFactory,DestroyNetworkViewTaskFactory.class, destroyNetworkViewTaskFactoryProps);
@@ -772,7 +772,7 @@ public class CyActivator extends AbstractCyActivator {
 		zoomInTaskFactoryProps.setProperty(TOOLTIP,"Zoom In");
 		zoomInTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"5.1");
 		zoomInTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		zoomInTaskFactoryProps.setProperty(COMMAND,"zoom-in");
+		zoomInTaskFactoryProps.setProperty(COMMAND,"zoom in");
 		zoomInTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		registerService(bc,zoomInTaskFactory,NetworkTaskFactory.class, zoomInTaskFactoryProps);
 
@@ -784,7 +784,7 @@ public class CyActivator extends AbstractCyActivator {
 		zoomOutTaskFactoryProps.setProperty(TOOLTIP,"Zoom Out");
 		zoomOutTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"5.2");
 		zoomOutTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		zoomOutTaskFactoryProps.setProperty(COMMAND,"zoom-out");
+		zoomOutTaskFactoryProps.setProperty(COMMAND,"zoom out");
 		zoomOutTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		registerService(bc,zoomOutTaskFactory,NetworkTaskFactory.class, zoomOutTaskFactoryProps);
 
@@ -796,7 +796,7 @@ public class CyActivator extends AbstractCyActivator {
 		fitSelectedTaskFactoryProps.setProperty(TOOLTIP,"Zoom selected region");
 		fitSelectedTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"5.4");
 		fitSelectedTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		fitSelectedTaskFactoryProps.setProperty(COMMAND,"fit-selected");
+		fitSelectedTaskFactoryProps.setProperty(COMMAND,"fit selected");
 		fitSelectedTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		registerService(bc,fitSelectedTaskFactory,NetworkTaskFactory.class, fitSelectedTaskFactoryProps);
 
@@ -808,7 +808,7 @@ public class CyActivator extends AbstractCyActivator {
 		fitContentTaskFactoryProps.setProperty(TOOLTIP,"Zoom out to display all of current Network");
 		fitContentTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"5.3");
 		fitContentTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		fitContentTaskFactoryProps.setProperty(COMMAND,"fit-content");
+		fitContentTaskFactoryProps.setProperty(COMMAND,"fit content");
 		fitContentTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		registerService(bc,fitContentTaskFactory,NetworkTaskFactory.class, fitContentTaskFactoryProps);
 
@@ -831,7 +831,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		createNetworkViewTaskFactoryProps.setProperty(TITLE,"Create View");
 		createNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
-		createNetworkViewTaskFactoryProps.setProperty(COMMAND,"create-view");
+		createNetworkViewTaskFactoryProps.setProperty(COMMAND,"create view");
 		createNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,createNetworkViewTaskFactory,NetworkCollectionTaskFactory.class, createNetworkViewTaskFactoryProps);
 		registerService(bc,createNetworkViewTaskFactory,CreateNetworkViewTaskFactory.class, createNetworkViewTaskFactoryProps);
@@ -846,7 +846,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkImageTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		exportNetworkImageTaskFactoryProps.setProperty(IN_CONTEXT_MENU,"false");
 		exportNetworkImageTaskFactoryProps.setProperty(TOOLTIP,"Export Network Image to File");
-		exportNetworkImageTaskFactoryProps.setProperty(COMMAND,"export-network-image");
+		exportNetworkImageTaskFactoryProps.setProperty(COMMAND,"export image");
 		exportNetworkImageTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		registerService(bc,exportNetworkImageTaskFactory,NetworkViewTaskFactory.class, exportNetworkImageTaskFactoryProps);
 		registerService(bc,exportNetworkImageTaskFactory,ExportNetworkImageTaskFactory.class, exportNetworkImageTaskFactoryProps);
@@ -862,7 +862,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportNetworkViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		exportNetworkViewTaskFactoryProps.setProperty(IN_CONTEXT_MENU,"false");
 		exportNetworkViewTaskFactoryProps.setProperty(TOOLTIP,"Export Network to File");
-		exportNetworkViewTaskFactoryProps.setProperty(COMMAND,"export-network");
+		exportNetworkViewTaskFactoryProps.setProperty(COMMAND,"export");
 		exportNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,exportNetworkViewTaskFactory,NetworkViewTaskFactory.class, exportNetworkViewTaskFactoryProps);
 		registerService(bc,exportNetworkViewTaskFactory,ExportNetworkViewTaskFactory.class, exportNetworkViewTaskFactoryProps);
@@ -876,7 +876,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportCurrentTableTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_file_export.png").toString());
 		exportCurrentTableTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		exportCurrentTableTaskFactoryProps.setProperty(TOOLTIP,"Export Table to File");
-		exportCurrentTableTaskFactoryProps.setProperty(COMMAND,"export-table");
+		exportCurrentTableTaskFactoryProps.setProperty(COMMAND,"export");
 		exportCurrentTableTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		registerService(bc,exportCurrentTableTaskFactory, TaskFactory.class, exportCurrentTableTaskFactoryProps);
 		registerService(bc,exportCurrentTableTaskFactory,ExportSelectedTableTaskFactory.class, exportCurrentTableTaskFactoryProps);
@@ -886,7 +886,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportVizmapTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
 		exportVizmapTaskFactoryProps.setProperty(MENU_GRAVITY,"1.4");
 		exportVizmapTaskFactoryProps.setProperty(TITLE,"Vizmap...");
-		exportVizmapTaskFactoryProps.setProperty(COMMAND,"export-vizmap");
+		exportVizmapTaskFactoryProps.setProperty(COMMAND,"export");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		registerService(bc,exportVizmapTaskFactory,TaskFactory.class, exportVizmapTaskFactoryProps);
 		registerService(bc,exportVizmapTaskFactory,ExportVizmapTaskFactory.class, exportVizmapTaskFactoryProps);
@@ -896,8 +896,8 @@ public class CyActivator extends AbstractCyActivator {
 		newSessionTaskFactoryProps.setProperty(PREFERRED_MENU,"File.New");
 		newSessionTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
 		newSessionTaskFactoryProps.setProperty(TITLE,"Session");
-		newSessionTaskFactoryProps.setProperty(COMMAND,"new-session");
-		newSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"cytoscape");
+		newSessionTaskFactoryProps.setProperty(COMMAND,"new");
+		newSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
 		registerService(bc,newSessionTaskFactory,TaskFactory.class, newSessionTaskFactoryProps);
 		registerService(bc,newSessionTaskFactory,NewSessionTaskFactory.class, newSessionTaskFactoryProps);
 
@@ -911,8 +911,8 @@ public class CyActivator extends AbstractCyActivator {
 		openSessionTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		openSessionTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		openSessionTaskFactoryProps.setProperty(TOOLTIP,"Open Session");
-		openSessionTaskFactoryProps.setProperty(COMMAND,"open-session");
-		openSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"cytoscape");
+		openSessionTaskFactoryProps.setProperty(COMMAND,"open");
+		openSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
 		registerService(bc,openSessionTaskFactory,TaskFactory.class, openSessionTaskFactoryProps);
 		registerService(bc,openSessionTaskFactory,OpenSessionTaskFactory.class, openSessionTaskFactoryProps);
 
@@ -925,8 +925,8 @@ public class CyActivator extends AbstractCyActivator {
 		saveSessionTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		saveSessionTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		saveSessionTaskFactoryProps.setProperty(TOOLTIP,"Save Session");
-		saveSessionTaskFactoryProps.setProperty(COMMAND,"save-session");
-		saveSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"cytoscape");
+		saveSessionTaskFactoryProps.setProperty(COMMAND,"save");
+		saveSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
 		registerService(bc,saveSessionTaskFactory,TaskFactory.class, saveSessionTaskFactoryProps);
 
 		Properties saveSessionAsTaskFactoryProps = new Properties();
@@ -934,8 +934,8 @@ public class CyActivator extends AbstractCyActivator {
 		saveSessionAsTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift s");
 		saveSessionAsTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
 		saveSessionAsTaskFactoryProps.setProperty(TITLE,"Save As...");
-		saveSessionAsTaskFactoryProps.setProperty(COMMAND,"save-session-as");
-		saveSessionAsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"cytoscape");
+		saveSessionAsTaskFactoryProps.setProperty(COMMAND,"save as");
+		saveSessionAsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
 		registerService(bc,saveSessionAsTaskFactory,TaskFactory.class, saveSessionAsTaskFactoryProps);
 		registerService(bc,saveSessionAsTaskFactory,SaveSessionAsTaskFactory.class, saveSessionAsTaskFactoryProps);
 
@@ -950,21 +950,21 @@ public class CyActivator extends AbstractCyActivator {
 		applyPreferredLayoutTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		applyPreferredLayoutTaskFactoryProps.setProperty(MENU_GRAVITY,"5.0");
 		applyPreferredLayoutTaskFactoryProps.setProperty(TOOLTIP,"Apply Preferred Layout");
-		applyPreferredLayoutTaskFactoryProps.setProperty(COMMAND,"apply-preferred-layout");
+		applyPreferredLayoutTaskFactoryProps.setProperty(COMMAND,"layout preferred");
 		applyPreferredLayoutTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network-view");
 		registerService(bc,applyPreferredLayoutTaskFactory,NetworkViewCollectionTaskFactory.class, applyPreferredLayoutTaskFactoryProps);
 		registerService(bc,applyPreferredLayoutTaskFactory,ApplyPreferredLayoutTaskFactory.class, applyPreferredLayoutTaskFactoryProps);
 
 		Properties deleteColumnTaskFactoryProps = new Properties();
 		deleteColumnTaskFactoryProps.setProperty(TITLE,"Delete column");
-		deleteColumnTaskFactoryProps.setProperty(COMMAND,"delete-column");
+		deleteColumnTaskFactoryProps.setProperty(COMMAND,"delete column");
 		deleteColumnTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		registerService(bc,deleteColumnTaskFactory,TableColumnTaskFactory.class, deleteColumnTaskFactoryProps);
 		registerService(bc,deleteColumnTaskFactory,DeleteColumnTaskFactory.class, deleteColumnTaskFactoryProps);
 
 		Properties renameColumnTaskFactoryProps = new Properties();
 		renameColumnTaskFactoryProps.setProperty(TITLE,"Rename column");
-		renameColumnTaskFactoryProps.setProperty(COMMAND,"rename-column");
+		renameColumnTaskFactoryProps.setProperty(COMMAND,"rename column");
 		renameColumnTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		registerService(bc,renameColumnTaskFactory,TableColumnTaskFactory.class, renameColumnTaskFactoryProps);
 		registerService(bc,renameColumnTaskFactory,RenameColumnTaskFactory.class, renameColumnTaskFactoryProps);
@@ -996,8 +996,8 @@ public class CyActivator extends AbstractCyActivator {
 		connectSelectedNodesTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
 		connectSelectedNodesTaskFactoryProps.setProperty(MENU_GRAVITY, "0.9");
 		connectSelectedNodesTaskFactoryProps.setProperty(TITLE, "Connect Selected Nodes with Undirected Edges");
-		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND, "connect-selected-nodes");
-		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND, "connect selected");
+		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "nodes");
 //		registerService(bc, connectSelectedNodesTaskFactory, NetworkTaskFactory.class,
 //				connectSelectedNodesTaskFactoryProps);
 		registerService(bc, connectSelectedNodesTaskFactory, NodeViewTaskFactory.class,
@@ -1014,8 +1014,8 @@ public class CyActivator extends AbstractCyActivator {
 		groupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		groupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		groupNodesTaskFactoryProps.setProperty(COMMAND, "group-selected-nodes");
-		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
+		groupNodesTaskFactoryProps.setProperty(COMMAND, "group selected");
+		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "nodes");
 		registerService(bc,groupNodesTaskFactory,NetworkViewTaskFactory.class, groupNodesTaskFactoryProps);
 		registerService(bc,groupNodesTaskFactory,GroupNodesTaskFactory.class, groupNodesTaskFactoryProps);
 
@@ -1028,8 +1028,6 @@ public class CyActivator extends AbstractCyActivator {
 		groupNodeViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		groupNodeViewTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		groupNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		groupNodeViewTaskFactoryProps.setProperty(COMMAND, "group-selected-nodes");
-		groupNodeViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
 		registerService(bc,groupNodesTaskFactory,NodeViewTaskFactory.class, groupNodeViewTaskFactoryProps);
 
 		UnGroupNodesTaskFactoryImpl unGroupTaskFactory = 
@@ -1041,8 +1039,8 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		unGroupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup-selected-nodes");
-		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
+		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup selected");
+		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "nodes");
 		registerService(bc,unGroupTaskFactory,NetworkViewTaskFactory.class, unGroupNodesTaskFactoryProps);
 		registerService(bc,unGroupTaskFactory,UnGroupTaskFactory.class, unGroupNodesTaskFactoryProps);
 
@@ -1056,8 +1054,6 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupNodeViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		unGroupNodeViewTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		unGroupNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		unGroupNodeViewTaskFactoryProps.setProperty(COMMAND, "ungroup-selected-nodes");
-		unGroupNodeViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view");
 		registerService(bc,unGroupTaskFactory,NodeViewTaskFactory.class, unGroupNodeViewTaskFactoryProps);
 		registerService(bc,unGroupTaskFactory,UnGroupNodesTaskFactory.class, unGroupNodeViewTaskFactoryProps);
 
@@ -1069,8 +1065,8 @@ public class CyActivator extends AbstractCyActivator {
 		collapseGroupTaskFactoryProps.setProperty(TOOLTIP,"Collapse Grouped Nodes");
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		collapseGroupTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
-		collapseGroupTaskFactoryProps.setProperty(COMMAND, "collapse-grouped-nodes");
-		collapseGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace?
+		collapseGroupTaskFactoryProps.setProperty(COMMAND, "collapse");
+		collapseGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "nodes"); // TODO right namespace?
 		registerService(bc,collapseGroupTaskFactory,NodeViewTaskFactory.class, collapseGroupTaskFactoryProps);
 		registerService(bc,collapseGroupTaskFactory,CollapseGroupTaskFactory.class, collapseGroupTaskFactoryProps);
 
@@ -1082,8 +1078,8 @@ public class CyActivator extends AbstractCyActivator {
 		expandGroupTaskFactoryProps.setProperty(TOOLTIP,"Expand Group");
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		expandGroupTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");
-		expandGroupTaskFactoryProps.setProperty(COMMAND, "expand-group");
-		expandGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network-view"); // TODO right namespace
+		expandGroupTaskFactoryProps.setProperty(COMMAND, "expand");
+		expandGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "nodes"); // TODO right namespace
 		registerService(bc,expandGroupTaskFactory,NodeViewTaskFactory.class, expandGroupTaskFactoryProps);
 		registerService(bc,expandGroupTaskFactory,ExpandGroupTaskFactory.class, expandGroupTaskFactoryProps);
 

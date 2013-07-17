@@ -92,6 +92,17 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		// Usually we need to create view, so expected number is 2.
 		return new TaskIterator(2, new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil, vmm, nullNetworkViewFactory));
 	}
+
+	public TaskIterator createTaskIterator(final URL url) {
+		return loadCyNetworks(url);
+	}
+
+	public TaskIterator createTaskIterator(final URL url, TaskObserver observer) {
+		final Map<String,Object> m = new HashMap<String,Object>();
+		m.put("url", url);
+	
+		return tunableSetter.createTaskIterator( this.createTaskIterator(), m, observer);
+	}
 	
 	@Override
 	public TaskIterator loadCyNetworks(final URL url) {
@@ -100,16 +111,5 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		m.put("url", url);
 	
 		return tunableSetter.createTaskIterator( this.createTaskIterator(), m);
-	}
-	
-	@Override
-	public TaskIterator createTaskIterator(URL url, TaskObserver<Collection<CyNetworkView>> observer) {
-		final Map<String,Object> m = new HashMap<String,Object>();
-		m.put("url", url);
-	
-		LoadNetworkURLTask task = new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil, vmm, nullNetworkViewFactory);
-		task.addObserver(observer);
-		TaskIterator iterator = new TaskIterator(2, task);
-		return tunableSetter.createTaskIterator(iterator, m);
 	}
 }

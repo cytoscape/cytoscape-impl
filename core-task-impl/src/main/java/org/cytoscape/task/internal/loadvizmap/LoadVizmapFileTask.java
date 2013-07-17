@@ -25,20 +25,21 @@ package org.cytoscape.task.internal.loadvizmap;
  */
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractObservableTask;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 
-public class LoadVizmapFileTask extends AbstractObservableTask<Set<VisualStyle>> {
+public class LoadVizmapFileTask extends AbstractTask {
 
 	@ProvidesTitle
 	public String getTitle() {
@@ -70,12 +71,6 @@ public class LoadVizmapFileTask extends AbstractObservableTask<Set<VisualStyle>>
 			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
 
 		addVSTask = new AddVisualStylesTask(reader, vmMgr);
-		addVSTask.addObserver(new TaskObserver<Set<VisualStyle>>() {
-			@Override
-			public void taskFinished(Set<VisualStyle> result) {
-				finish(result);
-			}
-		});
 
 		insertTasksAfterCurrentTask(reader, addVSTask);
 		taskMonitor.setProgress(1.0);
@@ -86,7 +81,7 @@ public class LoadVizmapFileTask extends AbstractObservableTask<Set<VisualStyle>>
 	}
 }
 
-class AddVisualStylesTask extends AbstractObservableTask<Set<VisualStyle>> {
+class AddVisualStylesTask extends AbstractTask implements ObservableTask {
 
 	private final VizmapReader reader;
 	private final VisualMappingManager vmMgr;
@@ -124,7 +119,20 @@ class AddVisualStylesTask extends AbstractObservableTask<Set<VisualStyle>> {
 			}
 		}
 		taskMonitor.setProgress(1.0);
-		finish(styles);
+	}
+
+	@Override
+	public Object getResults(Class expectedResult) {
+		if (expectedResult.equals(List.class))
+			return new ArrayList<VisualStyle>(styles);
+		else if (expectedResult.equals(String.class)) {
+			String strRes = "";
+			for (VisualStyle style: styles) {
+				strRes = style.toString()+"\n";
+			}
+			return strRes.substring(0, strRes.length()-1);
+		} else
+			return styles;
 	}
 
 	public Set<VisualStyle> getStyles() {

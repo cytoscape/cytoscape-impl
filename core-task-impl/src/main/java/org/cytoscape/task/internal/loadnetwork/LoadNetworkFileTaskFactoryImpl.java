@@ -88,15 +88,12 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
-	
-	@Override
-	public TaskIterator createTaskIterator(File file, TaskObserver<Collection<CyNetworkView>> observer) {
-		final Map<String, Object> tunables = new HashMap<String, Object>();
-		tunables.put("file", file);
 
-		LoadNetworkFileTask task = new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory);
-		task.addObserver(observer);
-		TaskIterator iterator = new TaskIterator(3, task);
-		return tunableSetter.createTaskIterator(iterator, tunables); 
+	@Override
+	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
+		final Map<String, Object> m = new HashMap<String, Object>();
+		m.put("file", file);
+
+		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer); 
 	}
 }

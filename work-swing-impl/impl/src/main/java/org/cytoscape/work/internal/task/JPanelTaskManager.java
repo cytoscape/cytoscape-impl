@@ -28,8 +28,10 @@ package org.cytoscape.work.internal.task;
 import javax.swing.JPanel;
 
 import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.internal.tunables.JPanelTunableMutator;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.slf4j.Logger;
@@ -78,7 +80,12 @@ public class JPanelTaskManager extends AbstractTaskManager<JPanel,JPanel> implem
 
 	@Override
 	public void execute(final TaskIterator iterator) {
-		dtm.execute(iterator, null);	
+		dtm.execute(iterator, null, null);	
+	}
+
+	@Override
+	public void execute(final TaskIterator iterator, final TaskObserver observer) {
+		dtm.execute(iterator, null, observer);	
 	}
 }
 

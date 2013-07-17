@@ -36,15 +36,14 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.AbstractObservableTask;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
 
 /**
  * Task to load a new network.
  */
-abstract public class AbstractLoadNetworkTask extends AbstractObservableTask<Collection<CyNetworkView>> {
+abstract public class AbstractLoadNetworkTask extends AbstractTask {
 	
 	@ProvidesTitle
 	public String getTitle() {
@@ -94,12 +93,6 @@ abstract public class AbstractLoadNetworkTask extends AbstractObservableTask<Col
 		
 		GenerateNetworkViewsTask generateViewsTask = new GenerateNetworkViewsTask(name, viewReader, networkManager,
 				networkViewManager, namingUtil, viewThreshold, vmm, nullNetworkViewFactory);
-		generateViewsTask.addObserver(new TaskObserver<Collection<CyNetworkView>>() {
-			@Override
-			public void taskFinished(Collection<CyNetworkView> result) {
-				finish(result);
-			}
-		});
 		insertTasksAfterCurrentTask(viewReader, generateViewsTask);
 		
 		if (taskMonitor != null)

@@ -109,23 +109,18 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
+		return createTaskIterator(file, null);
+	}
+
+	@Override
+	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
 
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("file", file);
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m);
+		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer);
 	}
 
-	@Override
-	public TaskIterator createTaskIterator(File file, TaskObserver<Set<VisualStyle>> observer) {
-		final Map<String, Object> tunables = new HashMap<String, Object>();
-		tunables.put("file", file);
-
-		LoadVizmapFileTask task = new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
-		task.addObserver(observer);
-		return tunableSetter.createTaskIterator(new TaskIterator(2, task), tunables);
-	}
-	
 	// Read the inputStream and save the content in a tmp file
 	private File getFileFromStream(final InputStream is) throws IOException {
 

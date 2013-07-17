@@ -44,7 +44,8 @@ import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetworkTaskFactory implements NewNetworkSelectedNodesAndEdgesTaskFactory{
+public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetworkTaskFactory 
+                                                         implements NewNetworkSelectedNodesAndEdgesTaskFactory {
 	private final UndoSupport undoSupport;
 	private final CyNetworkManager netmgr;
 	private final CyNetworkViewManager networkViewManager;
@@ -89,12 +90,4 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 			                                     appManager, eventHelper, groupMgr, renderingEngineMgr));
 	}
 	
-	@Override
-	public TaskIterator createTaskIterator(CyNetwork network, TaskObserver<CyNetworkView> observer) {
-		NewNetworkSelectedNodesEdgesTask task = new NewNetworkSelectedNodesEdgesTask(undoSupport, network, crnf, cnvf,
-                netmgr, networkViewManager, naming, vmm,
-                appManager, eventHelper, groupMgr, renderingEngineMgr);
-		task.addObserver(observer);
-		return new TaskIterator(3, task);
-	}
 }

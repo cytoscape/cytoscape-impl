@@ -39,9 +39,11 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -175,13 +177,19 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 
 	@Override
 	public void execute(final TaskIterator iterator) {
-		execute(iterator, null);
+		execute(iterator, null, null);
+	}
+
+	@Override
+	public void execute(final TaskIterator iterator, final TaskObserver observer) {
+		execute(iterator, null, observer);
 	}
 
 	/**
 	 * For users of this class.
 	 */
-	public void execute(final TaskIterator taskIterator, Object tunableContext) {
+	public void execute(final TaskIterator taskIterator, Object tunableContext, 
+	                    final TaskObserver observer) {
 		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent);
 		
 		final Task first; 
@@ -212,7 +220,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		}
 
 		// create the task thread
-		final Runnable tasks = new TaskRunnable(first, taskMonitor, taskIterator); 
+		final Runnable tasks = new TaskRunnable(first, taskMonitor, taskIterator, observer); 
 
 		// submit the task thread for execution
 		final Future<?> executorFuture = taskExecutorService.submit(tasks);
@@ -264,11 +272,14 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		private final SwingTaskMonitor taskMonitor;
 		private final TaskIterator taskIterator;
 		private final Task first;
+		private final TaskObserver observer;
 
-		TaskRunnable(final Task first, final SwingTaskMonitor tm, final TaskIterator ti) {
+		TaskRunnable(final Task first, final SwingTaskMonitor tm, final TaskIterator ti, 
+		             final TaskObserver observer) {
 			this.first = first;
 			this.taskMonitor = tm;
 			this.taskIterator = ti;
+			this.observer = observer;
 		}
 		
 		public void run() {
@@ -277,9 +288,12 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				// don't dispaly the tunables here - they were handled above. 
 				taskMonitor.setTask(first);
 				first.run(taskMonitor);
+				handleObserver(first);
 
-				if (taskMonitor.cancelled())
+				if (taskMonitor.cancelled()) {
+					if (observer != null) observer.allFinished();
 					return;
+				}
 
 				// now execute all subsequent tasks
 				while (taskIterator.hasNext()) {
@@ -298,6 +312,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 					taskMonitor.showDialog(true);
 
 					task.run(taskMonitor);
+					handleObserver(first);
 
 					if (taskMonitor.cancelled())
 						break;
@@ -308,6 +323,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			} finally {
 				parent = null;
 				dialogTunableMutator.setConfigurationContext(null);
+				if (observer != null) observer.allFinished();
 			}
 
 			// clean up the task monitor
@@ -318,6 +334,12 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 						taskMonitor.close();
 				}
 			});
+		}
+
+		private void handleObserver(Task t) {
+			if (t instanceof ObservableTask && observer != null) {
+				observer.taskFinished((ObservableTask)t);
+			}
 		}
 	}
 

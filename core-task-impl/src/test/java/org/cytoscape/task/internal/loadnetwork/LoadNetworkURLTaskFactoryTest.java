@@ -1,6 +1,7 @@
 package org.cytoscape.task.internal.loadnetwork;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,6 +15,8 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.internal.NullCyNetworkViewFactory;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
@@ -47,12 +50,16 @@ public class LoadNetworkURLTaskFactoryTest extends AbstractLoadNetworkTaskTester
 		LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil, streamUtil, synchronousTaskManager, tunableSetter, vmm, nullNetworkViewFactory);
 
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
-		TaskObserver<Collection<CyNetworkView>> observer = mock(TaskObserver.class);
+		TaskObserver observer = mock(TaskObserver.class);
 		TaskIterator iterator = factory.createTaskIterator(url, observer);
 		while (iterator.hasNext()) {
-			iterator.next().run(taskMonitor);
+			Task t = iterator.next();
+			t.run(taskMonitor);
+			if (t instanceof ObservableTask)
+				observer.taskFinished((ObservableTask)t);
 		}
 		
-		verify(observer, times(1)).taskFinished(any(Collection.class));
+		// This is sort of a stupid verification.  We should actually be testing the results, here....
+		verify(observer, times(1)).taskFinished(any(ObservableTask.class));
 	}
 }

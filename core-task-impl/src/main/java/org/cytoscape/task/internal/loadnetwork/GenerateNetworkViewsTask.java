@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.loadnetwork;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
@@ -39,10 +40,11 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractObservableTask;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
-class GenerateNetworkViewsTask extends AbstractObservableTask<Collection<CyNetworkView>> {
+class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 	private final String name;
 	private final CyNetworkReader viewReader;
 	private final CyNetworkManager networkManager;
@@ -51,6 +53,7 @@ class GenerateNetworkViewsTask extends AbstractObservableTask<Collection<CyNetwo
 	private final int viewThreshold;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private	Collection<CyNetworkView> results;
 
 	public GenerateNetworkViewsTask(final String name, final CyNetworkReader viewReader,
 				final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager,
@@ -74,7 +77,7 @@ class GenerateNetworkViewsTask extends AbstractObservableTask<Collection<CyNetwo
 		double numNets = (double)(networks.length);
 		int i = 0;
 
-		Collection<CyNetworkView> result = new ArrayList<CyNetworkView>();
+		results = new ArrayList<CyNetworkView>();
 		for (CyNetwork network : networks) {
 			// Use original name if exists
 			String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
@@ -98,9 +101,9 @@ class GenerateNetworkViewsTask extends AbstractObservableTask<Collection<CyNetwo
 						&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)
 						&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION))
 					view.fitContent();
-				result.add(view);
+				results.add(view);
 			} else {
-				result.add(nullNetworkViewFactory.createNetworkView(network));
+				results.add(nullNetworkViewFactory.createNetworkView(network));
 			}
 			taskMonitor.setProgress((double)(++i)/numNets);
 		}
@@ -137,6 +140,19 @@ class GenerateNetworkViewsTask extends AbstractObservableTask<Collection<CyNetwo
 				}
 			}			
 		}
-		finish(result);
+	}
+
+	@Override
+	public Object getResults(Class expectedType) {
+		if (expectedType.equals(List.class))
+			return results;
+		if (expectedType.equals(String.class)) {
+			String strRes = "";
+			for (CyNetworkView view: results) {
+				strRes = view.toString()+"\n";
+			}
+			return strRes.substring(0, strRes.length()-1);
+		}
+		return results;
 	}
 }

@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
-import org.cytoscape.task.internal.ObservableDelegate;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -52,7 +51,7 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CreateNetworkViewTask extends AbstractNetworkCollectionTask implements ObservableTask<Collection<CyNetworkView>> {
+public class CreateNetworkViewTask extends AbstractNetworkCollectionTask implements ObservableTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(CreateNetworkViewTask.class);
 
@@ -64,7 +63,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask impleme
 	private final VisualMappingManager vmm;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyNetworkView sourceView;
-	private final ObservableDelegate<Collection<CyNetworkView>> observableDelegate;
+	private	Collection<CyNetworkView> result;
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
 			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager netViewMgr,
@@ -87,7 +86,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask impleme
 		this.vmm = vmm;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.sourceView = sourceView;
-		observableDelegate = new ObservableDelegate<Collection<CyNetworkView>>();
+		this.result = new ArrayList<CyNetworkView>();
 	}
 
 	@Override
@@ -98,7 +97,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask impleme
 
 		final VisualStyle style = vmm.getCurrentVisualStyle();
 		
-		Collection<CyNetworkView> result = new ArrayList<CyNetworkView>();
 		int i = 0;
 		int viewCount = networks.size();
 		for (final CyNetwork n : networks) {
@@ -112,7 +110,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask impleme
 		}
 
 		taskMonitor.setProgress(1.0);
-		observableDelegate.finish(result);
 	}
 
 	private final CyNetworkView createView(final CyNetwork network, final VisualStyle style, TaskMonitor tMonitor) throws Exception {
@@ -178,13 +175,16 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask impleme
 	}
 	
 	@Override
-	public void addObserver(TaskObserver<Collection<CyNetworkView>> observer) {
-		observableDelegate.addObserver(observer);
-	}
-	
-	@Override
-	public void removeObserver(TaskObserver<Collection<CyNetworkView>> observer) {
-		observableDelegate.removeObserver(observer);
+	public Object getResults(Class requestedType) {
+		// Support Collection<CyNetwork> or String
+		if (requestedType.equals(String.class)) {
+			String strRes = "";
+			for (CyNetworkView nv: result) {
+				strRes += nv.toString()+"\n";
+			}
+			return strRes.substring(0, strRes.length()-1); // This strips the trailing tab
+		} else
+			return result;
 	}
 
 	private static final class ApplyVisualStyleTask implements Runnable {

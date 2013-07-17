@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -39,15 +40,15 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractObservableTask;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
 /**
  * A utility task that copies the node positions and visual style to a new
  * network view from an existing network view.
  */
-class CopyExistingViewTask extends AbstractObservableTask<CyNetworkView> {
+class CopyExistingViewTask extends AbstractTask implements ObservableTask {
 
 	private final CyNetworkView newView;
 	private final CyNetworkView sourceView;
@@ -158,7 +159,14 @@ class CopyExistingViewTask extends AbstractObservableTask<CyNetworkView> {
 			newView.fitContent();
 		
 		tm.setProgress(1.0);
-		finish(newView);
+	}
+
+	@Override
+	public Object getResults(Class expectedType) {
+		if (expectedType.equals(String.class)) {
+			return newView.toString();
+		}
+		return newView;
 	}
 
 	// may return null if nodes don't somehow line up!

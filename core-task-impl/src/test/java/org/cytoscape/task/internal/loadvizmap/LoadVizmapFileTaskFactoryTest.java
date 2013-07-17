@@ -11,6 +11,8 @@ import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
@@ -39,12 +41,16 @@ public class LoadVizmapFileTaskFactoryTest {
 		
 		LoadVizmapFileTaskFactory factory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderMgr, vmMgr, syncTaskManager, tunableSetter);
 		File file = new File("");
-		TaskObserver<Set<VisualStyle>> observer = mock(TaskObserver.class);
+		TaskObserver observer = mock(TaskObserver.class);
 		TaskIterator iterator = factory.createTaskIterator(file, observer);
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		while (iterator.hasNext()) {
-			iterator.next().run(taskMonitor);
+			Task t = iterator.next();
+			t.run(taskMonitor);
+			if (t instanceof ObservableTask) {
+				observer.taskFinished((ObservableTask)t);
+			}
 		}
-		verify(observer, times(1)).taskFinished(any(Set.class));
+		verify(observer, times(1)).taskFinished(any(ObservableTask.class));
 	}
 }
