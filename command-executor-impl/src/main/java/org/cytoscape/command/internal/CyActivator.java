@@ -86,6 +86,7 @@ public class CyActivator extends AbstractCyActivator {
 		StringTunableHandlerFactory<FloatTunableHandler> floatTHF = new SimpleStringTunableHandlerFactory<FloatTunableHandler>(FloatTunableHandler.class, Float.class, float.class);
 		StringTunableHandlerFactory<LongTunableHandler> longTHF = new SimpleStringTunableHandlerFactory<LongTunableHandler>(LongTunableHandler.class, Long.class, long.class);
 		StringTunableHandlerFactory<BooleanTunableHandler> booleanTHF = new SimpleStringTunableHandlerFactory<BooleanTunableHandler>(BooleanTunableHandler.class, Boolean.class, boolean.class);
+		StringTunableHandlerFactory<StringTunableHandlerImpl> stringTHF = new SimpleStringTunableHandlerFactory<StringTunableHandlerImpl>(StringTunableHandlerImpl.class, String.class);
 		StringTunableHandlerFactory<BoundedIntTunableHandler> boundedIntTHF = new SimpleStringTunableHandlerFactory<BoundedIntTunableHandler>(BoundedIntTunableHandler.class, BoundedInteger.class);
 		StringTunableHandlerFactory<BoundedDoubleTunableHandler> boundedDoubleTHF = new SimpleStringTunableHandlerFactory<BoundedDoubleTunableHandler>(BoundedDoubleTunableHandler.class, BoundedDouble.class);
 		StringTunableHandlerFactory<BoundedFloatTunableHandler> boundedFloatTHF = new SimpleStringTunableHandlerFactory<BoundedFloatTunableHandler>(BoundedFloatTunableHandler.class, BoundedFloat.class);
@@ -100,6 +101,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,floatTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,longTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,booleanTHF,StringTunableHandlerFactory.class,new Properties());
+		registerService(bc,stringTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,boundedIntTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,boundedDoubleTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,boundedFloatTHF,StringTunableHandlerFactory.class,new Properties());
