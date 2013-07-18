@@ -32,6 +32,7 @@
 		<module>equations-impl</module>
 		<module>event-impl</module>
 		<module>filter-impl</module>
+		<module>filter2-impl</module>
 		<module>graphml-impl</module>
 		<module>group-impl</module>
 		<module>group-data-impl</module>
