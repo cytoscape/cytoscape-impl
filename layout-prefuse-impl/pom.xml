@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.cytoscape</groupId>
     <artifactId>impl-parent</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
   </parent>
 
   <properties>
@@ -15,7 +15,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cytoscape</groupId>
   <artifactId>layout-prefuse-impl</artifactId>
-  <version>3.0.0</version>
 
   <name>Cytoscape Prefuse Layout Impl (${project.artifactId})</name>
 

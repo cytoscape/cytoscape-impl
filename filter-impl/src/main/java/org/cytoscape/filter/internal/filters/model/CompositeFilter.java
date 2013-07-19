@@ -135,7 +135,12 @@ public class CompositeFilter implements CyFilter {
 		if (children.get(0).getNodeBits() == null) {
 			nodeBits = new BitSet(network.getNodeCount());	
 		} else {
-			nodeBits = (BitSet) children.get(0).getNodeBits().clone();						
+			CyFilter n = children.get(0);
+			BitSet tmpBitSet = (BitSet) n.getNodeBits().clone();					
+			if ((n instanceof CompositeFilter)&&(compositeNotTab.get(n).booleanValue()==true)) {
+				tmpBitSet.flip(0, network.getNodeCount());
+			}
+			nodeBits = tmpBitSet;
 		}
 
 		// now perform the requested relation with each subsequent child

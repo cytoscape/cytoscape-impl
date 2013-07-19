@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>model-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.1</version>
+		<version>3.0.2</version>
 	</parent>
 
 	<properties>
@@ -17,6 +17,14 @@
 
 	<name>Cytoscape Model Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-impl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>

@@ -646,6 +646,19 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		for (int i = 0; i < av.size(); i++) {
 			cbm.addElement(av.get(i));
 		}
+		
+		cbm.addElement(filtersSeparator);
+		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
+		if (allFilters != null) {
+			for (int i = 0; i < allFilters.size(); i++) {
+                Object fi;
+
+                fi = allFilters.elementAt(i);
+                if (fi != selectedFilter) {
+                    cbm.addElement(fi);
+                }
+			}
+		}
 	}
 	
 	/**
@@ -982,14 +995,17 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					}
 				}
 				
-				String attributeType = cmbAttributes.getSelectedItem().toString().substring(0,4);// "node" or "edge"
-				String attributeName = cmbAttributes.getSelectedItem().toString().substring(5);
-
-				if (CyAttributesUtil.isNullAttribute(applicationManager.getCurrentNetwork(), attributeType, attributeName)){
-					JOptionPane.showMessageDialog(this, "All the values for this column are NULL.", "Can not create filter", JOptionPane.ERROR_MESSAGE); 
-				} else {
-					theSettingPanel.addNewWidget(cmbAttributes.getSelectedItem());					
+				if (cmbAttributes.getSelectedItem().toString().startsWith("node.")||
+						cmbAttributes.getSelectedItem().toString().startsWith("edge.")){
+					String attributeType = cmbAttributes.getSelectedItem().toString().substring(0,4);// "node" or "edge"
+					String attributeName = cmbAttributes.getSelectedItem().toString().substring(5);
+	
+					if (CyAttributesUtil.isNullAttribute(applicationManager.getCurrentNetwork(), attributeType, attributeName)){
+						JOptionPane.showMessageDialog(this, "All the values for this column are NULL.", "Can not create filter", JOptionPane.ERROR_MESSAGE);
+						return;
+					} 
 				}
+				theSettingPanel.addNewWidget(cmbAttributes.getSelectedItem());					
 			}
 			if (_btn == btnSelectAll){
 				CyNetwork cyNetwork = applicationManager.getCurrentNetwork();

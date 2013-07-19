@@ -3,13 +3,12 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.2</version>
 	</parent>
 
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>datasource-impl</artifactId>
-  <version>3.0.0</version>
 	<name>Cytoscape Datasource Impl (${project.artifactId})</name>
 
 	<properties>

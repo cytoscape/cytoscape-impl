@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>ding-impl</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.2</version>
 	</parent>
 
 	<properties>
@@ -135,24 +135,23 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- TODO: Need to update the version number manually. -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
 			<type>test-jar</type>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>equations-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

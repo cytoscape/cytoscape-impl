@@ -729,13 +729,13 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     }
     
     protected void writeAttributes(final CyRow row) throws IOException {
-        // If it is a Cy Session XGMML, writing the CyRows would be redundant,
-        // because they are already serialized in .cytable files.
-        final CyTable table = row.getTable();
-
-        for (final CyColumn column : table.getColumns()) {
-            if (!CyIdentifiable.SUID.equals(column.getName()))
-                writeAttribute(row, column.getName());
+        if (row != null) {
+	        final CyTable table = row.getTable();
+	
+	        for (final CyColumn column : table.getColumns()) {
+	            if (!CyIdentifiable.SUID.equals(column.getName()))
+	                writeAttribute(row, column.getName());
+	        }
         }
     }
     
@@ -896,8 +896,8 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         return null;
     }
 
-    protected String getLabel(CyNetwork network, CyIdentifiable entry) {
-        String label = encode(getRowFromNetOrRoot(network,entry,null).get(CyNetwork.NAME, String.class));
+    protected String getLabel(final CyNetwork network, final CyIdentifiable entry) {
+        String label = encode(getRowFromNetOrRoot(network, entry, null).get(CyNetwork.NAME, String.class));
         
         if (label == null || label.isEmpty())
             label = Long.toString(entry.getSUID());
@@ -905,7 +905,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         return label;
     }
     
-    protected String getLabel(CyNetworkView view) {
+    protected String getLabel(final CyNetworkView view) {
         String label = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
         
         if (label == null || label.isEmpty())
@@ -914,21 +914,24 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         return label;
     }
 
-    protected CyRow getRowFromNetOrRoot(CyNetwork network, CyIdentifiable entry, String namespace) {
+    protected CyRow getRowFromNetOrRoot(final CyNetwork network, final CyIdentifiable entry, String namespace) {
         CyRow row = null;
+        
         try {
-            if (namespace == null)
-                row = network.getRow(entry);
-            else
-                row = network.getRow(entry, namespace);
-        } catch (IllegalArgumentException e) {
-            // Doesn't exist in network.  Try to get it from the root
-            CyRootNetwork root = ((CySubNetwork)network).getRootNetwork();
-            if (namespace == null)
-                row = root.getRow(entry);
-            else
-                row = root.getRow(entry, namespace);
+            row = namespace == null ? network.getRow(entry) : network.getRow(entry, namespace);
+        } catch (final IllegalArgumentException e) {
+        	// Ignore this exception
+        } catch (final RuntimeException e) {
+        	logger.error("Cannot get \"" + namespace +"\" row for entry \"" + entry + "\" in network \"" + network + 
+        			"\".", e);
         }
+        
+        if (row == null && network instanceof CySubNetwork) {
+        	// Doesn't exist in subnetwork? Try to get it from the root network.
+            final CyRootNetwork root = ((CySubNetwork)network).getRootNetwork();
+            row = namespace == null ? root.getRow(entry) : root.getRow(entry, namespace);
+        }
+        
         return row;
     }
 
@@ -1021,7 +1024,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         return net.getSavePolicy() != SavePolicy.DO_NOT_SAVE;
     }
     
-    protected boolean isRegistered(final CyNetwork net) {
+	protected boolean isRegistered(final CyNetwork net) {
         return networkMgr.networkExists(net.getSUID());
     }
 }

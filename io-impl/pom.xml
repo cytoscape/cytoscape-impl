@@ -3,11 +3,10 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.2</version>
 	</parent>
 
 	<artifactId>io-impl-parent</artifactId>
-  <version>3.0.1</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape IO Impl Parent (${project.artifactId})</name>
 
@@ -127,26 +126,26 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -159,33 +158,33 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>equations-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
-			<version>[3.0.0,${cytoscape.api.version}]</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-impl</artifactId>
-			<version>[3.0.0,)</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-impl</artifactId>
-			<version>[3.0.0,)</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

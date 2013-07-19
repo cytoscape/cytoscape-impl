@@ -3,11 +3,10 @@
   <parent>
     <groupId>org.cytoscape</groupId>
     <artifactId>impl-parent</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
   </parent>
 
   <artifactId>network-merge-impl</artifactId>
-  <version>3.0.1</version>
   <packaging>bundle</packaging>
 
   <name>Cytoscape Merge Impl (${project.artifactId})</name>
