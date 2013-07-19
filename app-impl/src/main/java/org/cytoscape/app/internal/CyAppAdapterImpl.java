@@ -36,6 +36,10 @@ import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.model.Transformer;
+import org.cytoscape.filter.predicates.StringPredicate;
+import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.CyGroupAggregationManager;
@@ -256,6 +260,10 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private ContinuousMapping<?, ?> continuousMapping;
 	private SwingUndoSupport swingUndoSupport;
 	private Annotation annotation;
+	private Transformer transformer;
+	private TransformerManager transformerManager;
+	private StringPredicate stringPredicate;
+	private Transformers transformers;
 
 /// from core-task api
 	private LoadVizmapFileTaskFactory loadVizmapFileTaskFactory;
