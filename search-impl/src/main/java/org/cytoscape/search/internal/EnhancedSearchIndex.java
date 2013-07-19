@@ -65,8 +65,9 @@ public class EnhancedSearchIndex {
 
 		try {
 			// Make a writer to create the index
-			IndexWriter writer = new IndexWriter(idx, new StandardAnalyzer(Version.LUCENE_30), 
-					IndexWriter.MaxFieldLength.UNLIMITED);
+			StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+			analyzer.setMaxTokenLength(1024*10);
+			IndexWriter writer = new IndexWriter(idx, analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
 
 			// Add a document for each graph object - node and edge
 			List<CyNode> nodeList = network.getNodeList();
@@ -74,6 +75,7 @@ public class EnhancedSearchIndex {
 			this.taskMonitor.setProgress(0.1);
 			for (CyNode cyNode : nodeList) {
 				writer.addDocument(createDocument(network, cyNode, EnhancedSearch.NODE_TYPE, cyNode.getSUID()));
+				
 			}
 			this.taskMonitor.setProgress(0.6);
 		
