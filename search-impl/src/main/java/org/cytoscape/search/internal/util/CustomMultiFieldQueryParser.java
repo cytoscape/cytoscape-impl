@@ -53,6 +53,7 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 		super(Version.LUCENE_30,attrFields.getFields(), analyzer);
 		analyzer.setMaxTokenLength(1024*10);  // Increase for sequences
 		this.attrFields = attrFields;
+		setAllowLeadingWildcard(true);
 	}
 
 	protected Query getFieldQuery(String field, String queryText)
@@ -84,6 +85,12 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 			}
 		}
 		
+		// Look to see if the leading character of our query is "?" or "*".  If so, issue
+		// a warning, but do it anyways
+		if (queryText.charAt(0) == '?' || queryText.charAt(0) == '*') {
+			System.out.println("Returning the wildcard query");
+			return super.getWildcardQuery(field, queryText);
+		}
 		return super.getFieldQuery(field, queryText);
 	}
 
