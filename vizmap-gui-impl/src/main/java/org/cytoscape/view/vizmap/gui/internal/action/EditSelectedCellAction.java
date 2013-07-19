@@ -30,6 +30,8 @@ import java.util.Map;
 
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
+import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheet;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
@@ -47,14 +49,15 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
  */
 public class EditSelectedCellAction extends AbstractVizMapperAction {
 
-	private static final long serialVersionUID = 7640977428847967990L;
+	public static final String NAME = "Edit Selected Discrete Mapping Values";
 
+	private static final long serialVersionUID = 7640977428847967990L;
 	private static final Logger logger = LoggerFactory.getLogger(EditSelectedCellAction.class);
 
 	private final EditorManager editorManager;
 
 	public EditSelectedCellAction(final ServicesUtil servicesUtil, final EditorManager editorManager) {
-		super("Edit all selected cells", servicesUtil);
+		super(NAME, servicesUtil);
 		this.editorManager = editorManager;
 	}
 
@@ -103,29 +106,35 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 			for (int i = 0; i < selected.length; i++) {
 				final Item item = ((Item) table.getValueAt(selected[i], 0));
 				
-				// First, update property sheet
-				item.getProperty().setValue(newValue);
-				// Then update .
-				Object key = item.getProperty().getDisplayName();
-	
-				// If not String, need to parse actual value
-				try {
-					if (keyClass == Integer.class)
-						key = Integer.valueOf((String) key);
-					if (keyClass == Long.class)
-						key = Long.valueOf((String) key);
-					else if (keyClass == Double.class)
-						key = Double.valueOf((String) key);
-					else if (keyClass == Boolean.class)
-						key = Boolean.valueOf((String) key);
-					else if (keyClass == Float.class)
-						key = Float.valueOf((String) key);
-				} catch (Exception ex) {
-					logger.warn("Could not parse discrete mapping key value.  Ignored: " + key, e);
-					continue;
+				if (item != null && item.getProperty() instanceof VizMapperProperty) {
+					final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) item.getProperty();
+					
+					if (prop.getCellType() == CellType.DISCRETE) {
+						// First, update property sheet
+						prop.setValue(newValue);
+						// Then update .
+						Object key = item.getProperty().getDisplayName();
+			
+						// If not String, need to parse actual value
+						try {
+							if (keyClass == Integer.class)
+								key = Integer.valueOf((String) key);
+							if (keyClass == Long.class)
+								key = Long.valueOf((String) key);
+							else if (keyClass == Double.class)
+								key = Double.valueOf((String) key);
+							else if (keyClass == Boolean.class)
+								key = Boolean.valueOf((String) key);
+							else if (keyClass == Float.class)
+								key = Float.valueOf((String) key);
+						} catch (Exception ex) {
+							logger.warn("Could not parse discrete mapping key value.  Ignored: " + key, e);
+							continue;
+						}
+			
+						changes.put(key, newValue);
+					}
 				}
-	
-				changes.put(key, newValue);
 			}
 			
 			dm.putAll(changes);
@@ -148,10 +157,20 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 				final PropertySheetTable table = vpSheetItem.getPropSheetPnl().getTable();
 				final int[] selected = table.getSelectedRows();
 				
-				if (selected != null && selected.length > 0
-						&& model.getVisualMappingFunction() instanceof DiscreteMapping) {
-					enabled = true;
-					break;
+				if (selected != null && model.getVisualMappingFunction() instanceof DiscreteMapping) {
+					// Make sure the selected rows have at least one Discrete Mapping entry
+					for (int i = 0; i < selected.length; i++) {
+						final Item item = (Item) table.getValueAt(i, 0);
+						
+						if (item != null && item.getProperty() instanceof VizMapperProperty) {
+							final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) item.getProperty();
+							
+							if (prop.getCellType() == CellType.DISCRETE) {
+								enabled = true;
+								break;
+							}
+						}
+					}
 				}
 			}
 		}

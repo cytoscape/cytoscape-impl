@@ -218,9 +218,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		EditSelectedCellAction editAction = new EditSelectedCellAction(servicesUtil, editorManager);
 		Properties editSelectedProps = new Properties();
-		editSelectedProps.setProperty("service.type","vizmapUI.contextMenu");
-		editSelectedProps.setProperty("title","Edit Selected Discrete Mapping Entries");
-		editSelectedProps.setProperty("menu","context");
+		editSelectedProps.setProperty("service.type", "vizmapUI.contextMenu");
+		editSelectedProps.setProperty("title", EditSelectedCellAction.NAME);
+		editSelectedProps.setProperty("menu", "context");
 		registerService(bc, editAction, CyAction.class, editSelectedProps);
 		
 		// Discrete value generators:

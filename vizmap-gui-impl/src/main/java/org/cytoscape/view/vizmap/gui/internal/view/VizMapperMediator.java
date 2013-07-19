@@ -252,16 +252,19 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final Object serviceType = properties.get("service.type");
 		
 		if (serviceType != null && serviceType.toString().equals("vizmapUI.contextMenu")) {
-			final Object title = properties.get(METADATA_TITLE_KEY);
+			Object title = properties.get(METADATA_TITLE_KEY);
 			
+			if (title == null)
+				title = action.getName();
+				
 			if (title == null) {
 				logger.error("Cannot create VizMapper context menu item for: " + action + 
 						"; \"" + METADATA_TITLE_KEY +  "\" metadata is missing from properties: " + properties);
 				return;
 			}
 
-			final JMenuItem menuItem = new JMenuItem(title.toString());
-			menuItem.addActionListener(action);
+			final JMenuItem menuItem = new JMenuItem(action);
+			menuItem.setText(title.toString());
 			vizMapperMainPanel.getEditSubMenu().add(menuItem);
 			vizMapperMainPanel.getContextMenu().addPopupMenuListener(action);
 		}
