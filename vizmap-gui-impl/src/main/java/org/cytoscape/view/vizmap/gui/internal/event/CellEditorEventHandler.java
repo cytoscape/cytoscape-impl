@@ -25,6 +25,7 @@ package org.cytoscape.view.vizmap.gui.internal.event;
  */
 
 import java.beans.PropertyChangeEvent;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelListener;
@@ -239,7 +240,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				
 			// Mapping does not exist. Need to create new one.
 			final AttributeSet attrSet = attrManager.getAttributeSet(currentNet, vp.getTargetDataType());
-			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
+			Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
 			if (attributeDataType == null) {
 				JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
@@ -259,6 +260,9 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 					
 					return newMapping;
 				}
+			} else if (newFactory.getMappingFunctionType() == DiscreteMapping.class) {
+				if (attributeDataType == List.class)
+					attributeDataType = String.class;
 			}
 
 			newMapping = newFactory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);

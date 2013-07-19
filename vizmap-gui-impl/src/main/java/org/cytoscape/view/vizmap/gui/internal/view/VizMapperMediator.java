@@ -883,12 +883,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				
 				if (colName != null) {
 					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
-					final Class<?> mapColType = mapping != null ? mapping.getMappingColumnType() : null;
+					Class<?> mapColType = mapping != null ? mapping.getMappingColumnType() : null;
 					final CyColumn column = netTable.getColumn(colName);
 					Class<?> colType = column != null ? column.getType() : null;
 					
+					// Ignore "List" type
+					if (mapColType == List.class)
+						mapColType = String.class;
 					if (colType == List.class)
-						colType = column.getListElementType();
+						colType = String.class;
 					
 					if (column == null || (mapColType != null && !mapColType.isAssignableFrom(colType))) {
 						String tableName = netTable != null ? targetDataType.getSimpleName().replace("Cy", "") : null;

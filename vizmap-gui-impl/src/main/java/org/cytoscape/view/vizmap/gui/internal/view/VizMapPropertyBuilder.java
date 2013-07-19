@@ -349,7 +349,7 @@ public class VizMapPropertyBuilder {
 			if (list != null) {
 				for (final Object item : list) {
 					if (item != null)
-						attrSet.add(item);
+						attrSet.add(item != null ? item.toString() : null);
 				}
 			}
 		} else {
