@@ -880,14 +880,18 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				
 				if (colName != null) {
 					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
-					final Class<?> colType = mapping != null ? mapping.getMappingColumnType() : null;
+					final Class<?> mapColType = mapping != null ? mapping.getMappingColumnType() : null;
 					final CyColumn column = netTable.getColumn(colName);
+					Class<?> colType = column != null ? column.getType() : null;
 					
-					if (column == null || (colType != null && !colType.isAssignableFrom(column.getType()))) {
+					if (colType == List.class)
+						colType = column.getListElementType();
+					
+					if (column == null || (mapColType != null && !mapColType.isAssignableFrom(colType))) {
 						String tableName = netTable != null ? targetDataType.getSimpleName().replace("Cy", "") : null;
 						msg = "<html>Visual Mapping cannot be applied to current network:<br>" + tableName +
 								" table does not have column <b>\"" + colName + "\"</b>" +
-								(colType != null ? "(" + colType.getSimpleName() + ")" : "") + "</html>";
+								(mapColType != null ? " (" + mapColType.getSimpleName() + ")" : "") + "</html>";
 						msgType = MessageType.WARNING;
 					}
 				}
