@@ -101,6 +101,8 @@ import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
+import org.cytoscape.task.edit.ImportDataTableTaskFactory;
+import org.cytoscape.task.edit.MergeDataTableTaskFactory;
 import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
 import org.cytoscape.task.edit.UnGroupTaskFactory;
 import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
@@ -168,7 +170,8 @@ import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
-import org.cytoscape.task.internal.table.JoinGlobalTablesTaskFactoryImpl;
+import org.cytoscape.task.internal.table.ImportDataTableTaskFactoryImpl;
+import org.cytoscape.task.internal.table.MergeDataTableTaskFactoryImpl;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
 import org.cytoscape.task.internal.vizmap.ApplyVisualStyleTaskFactoryimpl;
 import org.cytoscape.task.internal.vizmap.ClearEdgeBendTaskFactory;
@@ -332,7 +335,7 @@ public class CyActivator extends AbstractCyActivator {
 		LoadAttributesURLTaskFactoryImpl loadAttrsURLTaskFactory = new LoadAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef);
 		ImportAttributesFileTaskFactoryImpl importAttrsFileTaskFactory = new ImportAttributesFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef,cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef );
 		ImportAttributesURLTaskFactoryImpl importAttrsURLTaskFactory = new ImportAttributesURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef);
-		JoinGlobalTablesTaskFactoryImpl joinGlobalTableTaskFactory = new JoinGlobalTablesTaskFactoryImpl(tunableSetterServiceRef,cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef );
+		MergeDataTableTaskFactoryImpl mergeTableTaskFactory = new MergeDataTableTaskFactoryImpl( cyTableManagerServiceRef,cyNetworkManagerServiceRef,tunableSetterServiceRef, rootNetworkManagerServiceRef );
 		// Apply Visual Style Task
 		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
 		Properties applyVisualStyleProps = new Properties();
@@ -924,14 +927,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,loadAttrsURLTaskFactory,LoadTableURLTaskFactory.class, loadDataURLTaskFactoryProps);
 		
 		Properties MergeGlobalTaskFactoryProps = new Properties();
-		MergeGlobalTaskFactoryProps.setProperty(ENABLE_FOR,"globalTable");
+		MergeGlobalTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		MergeGlobalTaskFactoryProps.setProperty(PREFERRED_MENU,"File");
 		MergeGlobalTaskFactoryProps.setProperty(TITLE,"Merge Data Table...");
 		//MergeGlobalTaskFactoryProps.setProperty(ServiceProperties.INSERT_SEPARATOR_AFTER, "true");
 		//MergeGlobalTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"1.1");
 		MergeGlobalTaskFactoryProps.setProperty(MENU_GRAVITY,"5.4");
-		MergeGlobalTaskFactoryProps.setProperty(TOOLTIP,"Merge Table Data");
-		registerService(bc,joinGlobalTableTaskFactory,TaskFactory.class, MergeGlobalTaskFactoryProps);
+		MergeGlobalTaskFactoryProps.setProperty(TOOLTIP,"Merge Data Table");
+		registerService(bc,mergeTableTaskFactory,TaskFactory.class, MergeGlobalTaskFactoryProps);
+		registerService(bc,mergeTableTaskFactory,MergeDataTableTaskFactory.class, MergeGlobalTaskFactoryProps);
 
 
 		Properties newSessionTaskFactoryProps = new Properties();
@@ -1136,6 +1140,10 @@ public class CyActivator extends AbstractCyActivator {
 		MapTableToNetworkTablesTaskFactoryImpl mapNetworkToTables = new MapTableToNetworkTablesTaskFactoryImpl(cyNetworkManagerServiceRef, tunableSetterServiceRef, rootNetworkManagerServiceRef);
 		Properties mapNetworkToTablesProps = new Properties();
 		registerService(bc, mapNetworkToTables, MapTableToNetworkTablesTaskFactory.class, mapNetworkToTablesProps);
+		
+		ImportDataTableTaskFactoryImpl importTableTaskFactory = new ImportDataTableTaskFactoryImpl(cyNetworkManagerServiceRef,tunableSetterServiceRef,rootNetworkManagerServiceRef);
+		Properties importTablesProps = new Properties();
+		registerService(bc, importTableTaskFactory, ImportDataTableTaskFactory.class, importTablesProps);
 		
 		
 		ExportTableTaskFactoryImpl exportTableTaskFactory = new ExportTableTaskFactoryImpl(cyTableWriterManagerRef,tunableSetterServiceRef);

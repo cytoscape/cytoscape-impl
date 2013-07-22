@@ -29,7 +29,7 @@ import static org.cytoscape.work.TunableValidator.ValidationState.OK;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.internal.table.JoinTablesTask;
+import org.cytoscape.task.internal.table.ImportDataTableTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
@@ -51,7 +51,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	
 
 	@ContainsTunables
-	public JoinTablesTask mergeTablesTask;
+	public ImportDataTableTask importTablesTask;
 	
 	@ContainsTunables
 	public CyTableReader readerTask;
@@ -59,7 +59,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	
 	public CombineReaderAndMappingTask(CyTableReader readerTask , CyNetworkManager networkManager, final CyRootNetworkManager rootNetMgr){
 		this.readerTask = readerTask;
-		this.mergeTablesTask = new JoinTablesTask(readerTask, rootNetMgr, networkManager);
+		this.importTablesTask = new ImportDataTableTask(readerTask, rootNetMgr, networkManager);
 	//	this.mappingTask = new MapTableToNetworkTablesTask(networkManager, readerTask, updateAddedNetworkAttributes, rootNetMgr);
 	}
 
@@ -82,7 +82,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		readerTask.run(taskMonitor);
-		this.mergeTablesTask.run(taskMonitor);
+		this.importTablesTask.run(taskMonitor);
 	//	mappingTask.run(taskMonitor);
 	}
 
