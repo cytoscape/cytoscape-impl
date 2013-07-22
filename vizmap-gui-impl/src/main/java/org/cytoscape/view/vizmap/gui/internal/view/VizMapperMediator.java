@@ -63,6 +63,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -486,7 +487,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				bypassMenu.add(new JMenuItem(new AbstractAction("Remove Bypass") {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						removeLockedValue(e, vpSheetItem);
+						final Thread t = new Thread() {
+							@Override
+							public void run() {
+								removeLockedValue(e, vpSheetItem);
+							};
+						};
+						t.start();
 					}
 				}));
 				
@@ -1048,26 +1055,31 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void removeLockedValue(final ActionEvent e, final VisualPropertySheetItem<?> vpSheetItem) {
 		// TODO: move to an asynchronous task
 		final CyNetworkView curNetView = proxy.getCurrentNetworkView();
-		final VisualPropertySheetItemModel<?> model = vpSheetItem.getModel();
-		final Class<? extends CyIdentifiable> targetDataType = model.getVisualProperty().getTargetDataType();
-		final Set<View<?>> selectedViews = new HashSet<View<?>>();
 		
-		if (targetDataType == CyNode.class)
-			selectedViews.addAll(proxy.getSelectedNodeViews(curNetView));
-		else if (targetDataType == CyEdge.class)
-			selectedViews.addAll(proxy.getSelectedEdgeViews(curNetView));
-		else
-			selectedViews.add(curNetView);
-		
-		// Clear or set the new locked value to all selected elements
-		for (final View<?> view : selectedViews) {
-			view.clearValueLock(model.getVisualProperty());
+		if (curNetView != null) {
+			final VisualPropertySheetItemModel<?> model = vpSheetItem.getModel();
+			final Class<? extends CyIdentifiable> targetDataType = model.getVisualProperty().getTargetDataType();
+			final Set<View<?>> selectedViews = new HashSet<View<?>>();
+			
+			if (targetDataType == CyNode.class)
+				selectedViews.addAll(proxy.getSelectedNodeViews(curNetView));
+			else if (targetDataType == CyEdge.class)
+				selectedViews.addAll(proxy.getSelectedEdgeViews(curNetView));
+			else
+				selectedViews.add(curNetView);
+			
+			// Clear or set the new locked value to all selected elements
+			for (final View<?> view : selectedViews) {
+				view.clearValueLock(model.getVisualProperty());
+			}
+			
+			model.setLockedValue(null);
+			model.setLockedValueState(LockedValueState.ENABLED_NOT_SET);
+			
+			final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getVisualStyle(curNetView);
+			style.apply(curNetView);
+			curNetView.updateView();
 		}
-		
-		model.setLockedValue(null);
-		model.setLockedValueState(LockedValueState.ENABLED_NOT_SET);
-		
-		curNetView.updateView();
 	}
 
 	private void onSelectedVisualStyleChanged(final PropertyChangeEvent e) {
