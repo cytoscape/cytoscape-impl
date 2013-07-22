@@ -434,9 +434,9 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		public void setSelectedItem(final VisualStyle vs) {
 			if (vs == null || (styles != null && styles.contains(vs) && !vs.equals(selectedItem))) {
-				setText(vs != null ? vs.getTitle() : "");
 				final VisualStyle oldStyle = selectedItem;
 				selectedItem = vs;
+				repaint();
 				firePropertyChange("selectedItem", oldStyle, vs);
 			}
 		}
@@ -447,6 +447,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		public RenderingEngine<CyNetwork> getRenderingEngine(final VisualStyle vs) {
 			return vs != null ? engineMap.get(vs.getTitle()) : null;
+		}
+		
+		@Override
+		public void repaint() {
+			setText(selectedItem != null ? selectedItem.getTitle() : "");
+			super.repaint();
 		}
 		
 		private void createPreviewRenderingEngines() {

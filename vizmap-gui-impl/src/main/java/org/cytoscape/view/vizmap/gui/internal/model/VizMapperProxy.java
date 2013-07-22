@@ -1,10 +1,10 @@
 package org.cytoscape.view.vizmap.gui.internal.model;
 
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.CURRENT_NETWORK_VIEW_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.CURRENT_VISUAL_STYLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.LOAD_DEFAULT_VISUAL_STYLES;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.VISUAL_STYLE_SET_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.VISUAL_STYLE_UPDATED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
 
 import java.text.Collator;
 import java.util.Comparator;

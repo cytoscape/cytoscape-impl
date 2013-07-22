@@ -26,6 +26,8 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -41,19 +43,20 @@ public class RenameVisualStyleTask extends AbstractTask {
 	@Tunable(description = "Enter new Visual Style name:")
 	public String vsName;
 
-	private final VisualMappingManager vmm;
+	private final ServicesUtil servicesUtil;
 
-	public RenameVisualStyleTask(final VisualMappingManager vmm) {
-		this.vmm = vmm;
-		this.vsName = vmm.getCurrentVisualStyle().getTitle();
+	public RenameVisualStyleTask(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
+		final VisualMappingManager vmm = servicesUtil.get(VisualMappingManager.class);
+		vsName = vmm.getCurrentVisualStyle().getTitle();
 	}
 
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-
+		final VisualMappingManager vmm = servicesUtil.get(VisualMappingManager.class);
 		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
 
-		if (currentStyle.equals(this.vmm.getDefaultVisualStyle()))
+		if (currentStyle.equals(vmm.getDefaultVisualStyle()))
 			throw new IllegalArgumentException("You cannot rename the default style.");
 
 		// Ignore if user does not enter new name.
@@ -61,6 +64,6 @@ public class RenameVisualStyleTask extends AbstractTask {
 			return;
 
 		currentStyle.setTitle(vsName);
+		servicesUtil.sendNotification(NotificationNames.VISUAL_STYLE_NAME_CHANGED, currentStyle);
 	}
-
 }

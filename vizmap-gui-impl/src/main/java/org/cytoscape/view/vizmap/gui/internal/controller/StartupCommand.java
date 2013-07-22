@@ -1,9 +1,9 @@
 package org.cytoscape.view.vizmap.gui.internal.controller;
 
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.LOAD_DEFAULT_VISUAL_STYLES;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.LOAD_VISUAL_STYLES;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_VISUAL_STYLES;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.STARTUP;
 
-import org.cytoscape.view.vizmap.gui.internal.ApplicationFacade;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
@@ -45,9 +45,9 @@ public class StartupCommand extends SimpleCommand {
 		getFacade().registerCommand(LOAD_VISUAL_STYLES, loadVisualStylesCommand);
 
 		// Initialization of the visual styles list
-		getFacade().sendNotification(ApplicationFacade.LOAD_DEFAULT_VISUAL_STYLES);
+		getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
 		
 		// Remove the STARTUP command because it is not called more than once
-		getFacade().removeCommand(ApplicationFacade.STARTUP);
+		getFacade().removeCommand(STARTUP);
 	}
 }

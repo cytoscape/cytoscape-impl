@@ -2,10 +2,11 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.CURRENT_NETWORK_VIEW_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.CURRENT_VISUAL_STYLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.VISUAL_STYLE_SET_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.ApplicationFacade.VISUAL_STYLE_UPDATED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_NAME_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -164,7 +165,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		return new String[]{ VISUAL_STYLE_SET_CHANGED,
 							 CURRENT_VISUAL_STYLE_CHANGED,
 							 VISUAL_STYLE_UPDATED,
-							 CURRENT_NETWORK_VIEW_CHANGED };
+							 CURRENT_NETWORK_VIEW_CHANGED,
+							 VISUAL_STYLE_NAME_CHANGED };
 	}
 	
 	@Override
@@ -182,6 +184,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		} else if (id.equals(CURRENT_NETWORK_VIEW_CHANGED)) {
 			updateLockedValues((CyNetworkView) body);
 			updateVisualPropertyItemsStatus();
+		} else if (id.equals(VISUAL_STYLE_NAME_CHANGED)) {
+			vizMapperMainPanel.getStylesBtn().repaint();
 		}
 	}
 
@@ -327,13 +331,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					servicesUtil.get(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
 				}
 			};
-			vizMapperMainPanel.getContextMenu().addPopupMenuListener(action);
 			final JMenuItem menuItem = new JMenuItem(action);
 			
-			if (menuKey.equals(MAIN_MENU))
+			if (menuKey.equals(MAIN_MENU)) {
 				vizMapperMainPanel.getMainMenu().add(menuItem);
-			else if (menuKey.equals(CONTEXT_MENU))
+				vizMapperMainPanel.getMainMenu().addPopupMenuListener(action);
+			} else if (menuKey.equals(CONTEXT_MENU)) {
 				vizMapperMainPanel.getEditSubMenu().add(menuItem);
+				vizMapperMainPanel.getContextMenu().addPopupMenuListener(action);
+			}
 			
 			taskFactories.put(taskFactory, menuItem);
 		}
@@ -346,8 +352,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			vizMapperMainPanel.getMainMenu().remove(menuItem);
 			vizMapperMainPanel.getEditSubMenu().remove(menuItem);
 			
-			if (menuItem.getAction() instanceof PopupMenuListener)
+			if (menuItem.getAction() instanceof PopupMenuListener) {
+				vizMapperMainPanel.getMainMenu().removePopupMenuListener((PopupMenuListener)menuItem.getAction());
 				vizMapperMainPanel.getContextMenu().removePopupMenuListener((PopupMenuListener)menuItem.getAction());
+			}
 		}
 	}
 

@@ -101,7 +101,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
 		
-		final ServicesUtil servicesUtil = new ServicesUtil(cyServiceRegistrarServiceRef);
+		final ServicesUtil servicesUtil = new ServicesUtil(cyServiceRegistrarServiceRef, ApplicationFacade.NAME);
 		
 		VisualMappingFunctionFactory continousMappingFactory = getService(bc, VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
 		
@@ -134,11 +134,11 @@ public class CyActivator extends AbstractCyActivator {
 		BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, continuousMappingCellRendererFactory);
 
 		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,visualMappingManagerServiceRef);
-		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(visualMappingManagerServiceRef);
+		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(servicesUtil);
 		
 		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyApplicationManagerServiceRef, editorManager);
 		
-		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(visualMappingManagerServiceRef);
+		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(visualMappingManagerServiceRef,visualStyleFactoryServiceRef);
 		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(cyApplicationManagerServiceRef, visualMappingManagerServiceRef, continousMappingFactory);
 		
