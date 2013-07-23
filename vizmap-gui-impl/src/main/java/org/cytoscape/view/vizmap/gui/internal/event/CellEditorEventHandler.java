@@ -25,7 +25,10 @@ package org.cytoscape.view.vizmap.gui.internal.event;
  */
 
 import java.beans.PropertyChangeEvent;
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelListener;
@@ -45,12 +48,14 @@ import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
+import org.cytoscape.view.vizmap.gui.internal.util.MathUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.AttributeComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -265,7 +270,12 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 					attributeDataType = String.class;
 			}
 
+			// Create new mapping
 			newMapping = newFactory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
+			
+			// Keep old mapping values if the new mapping has the same type
+			if (oldFactory != null && oldFactory.getMappingFunctionType() == newFactory.getMappingFunctionType())
+				copyMappingValues(mapping, newMapping);
 		}
 
 		// Disable listeners to avoid unnecessary updates
@@ -276,11 +286,106 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			model.removeTableModelListener(tm);
 
 		vizMapPropertyBuilder.createMappingProperties(newMapping, propertySheetPanel, newFactory);
-
+		
 		// Restore listeners
 		for (final TableModelListener tm : modelListeners)
 			model.addTableModelListener(tm);
 		
 		return newMapping;
+	}
+
+	private void copyMappingValues(final VisualMappingFunction<?, ?> source, final VisualMappingFunction<?, ?> target) {
+		if (source instanceof ContinuousMapping && target instanceof ContinuousMapping) {
+			final CyNetwork curNet = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
+			
+			if (curNet != null) {
+				final VisualProperty<?> vp = source.getVisualProperty();
+				final CyTable dataTable = curNet.getTable(vp.getTargetDataType(), CyNetwork.DEFAULT_ATTRS);
+				final CyColumn col = dataTable.getColumn(target.getMappingColumnName());
+
+				if (col == null)
+					return;
+				
+				// Get new column's min/max values
+				double minTgtVal = Double.POSITIVE_INFINITY;
+				double maxTgtVal = Double.NEGATIVE_INFINITY;
+				final List<?> valueList = col.getValues(col.getType());
+
+				for (final Object o : valueList) {
+					if (o instanceof Number) {
+						double val = ((Number) o).doubleValue();
+						maxTgtVal = Math.max(maxTgtVal, val);
+						minTgtVal = Math.min(minTgtVal, val);
+					}
+				}
+				
+				final ContinuousMapping cm1 = (ContinuousMapping<?, ?>) source;
+				final ContinuousMapping cm2 = (ContinuousMapping<?, ?>) target;
+				final List<ContinuousMappingPoint<?, ?>> points1 = cm1.getAllPoints();
+				
+				if (points1 == null || points1.isEmpty())
+					return;
+				
+				// Make sure the source points are sorted by their values
+				final TreeSet<ContinuousMappingPoint<?, ?>> srcPoints = new TreeSet<ContinuousMappingPoint<?, ?>>(
+						new Comparator<ContinuousMappingPoint<?, ?>>() {
+							@Override
+							public int compare(
+									final ContinuousMappingPoint<?, ?> o1,
+									final ContinuousMappingPoint<?, ?> o2) {
+								final BigDecimal v1 = new BigDecimal(((Number)o1.getValue()).doubleValue());
+								final BigDecimal v2 = new BigDecimal(((Number)o2.getValue()).doubleValue());
+								return v1.compareTo(v2);
+							}
+						});
+				srcPoints.addAll(points1);
+				
+				// Now that the source points are sorted, we can get the min/max source values
+				final double minSrcVal = ((Number)srcPoints.first().getValue()).doubleValue();
+				final double maxSrcVal = ((Number)srcPoints.last().getValue()).doubleValue();
+				
+				// Make sure the target mapping has no points, so delete any existing one
+				int tgtPointsSize = cm2.getPointCount();
+				
+				for (int i = 0; i < tgtPointsSize; i++)
+					cm2.removePoint(i);
+				
+				// Convert the source points and copy them to the target mapping
+				int srcPointsSize = srcPoints.size();
+				
+				for (int i = 0; i < srcPointsSize; i++) {
+					final ContinuousMappingPoint<?, ?> mp = cm1.getPoint(i);
+					final double srcVal = ((Number)cm1.getPoint(i).getValue()).doubleValue();
+					
+					// Linearly interpolate the new value
+					final double f = MathUtil.invLinearInterp(srcVal, minSrcVal, maxSrcVal);
+					final double tgtVal = MathUtil.linearInterp(f, minTgtVal, maxTgtVal);
+					
+					cm2.addPoint(tgtVal, mp.getRange());
+				}
+			}
+		} else if (source instanceof DiscreteMapping && target instanceof DiscreteMapping) {
+			// TODO The problem here is that the new mapping entries haven't been created yet
+//			final DiscreteMapping dm1 = (DiscreteMapping<?, ?>) source;
+//			final DiscreteMapping dm2 = (DiscreteMapping<?, ?>) target;
+//			final Map map1 = dm1.getAll();
+//			final Map map2 = dm2.getAll();
+//			System.out.println("MAP 1: " + map1.size());
+//			System.out.println("MAP 2: " + map2.size());
+//			
+//			if (map1 == null || map1.isEmpty() || map2 == null || map2.isEmpty())
+//				return;
+//			
+//			final Iterator<?> tgtKeyIter = map2.keySet().iterator();
+//			
+//			for (final Object srcVal : map1.values()) {
+//				if (tgtKeyIter.hasNext()) {
+//					final Object tgtKey = tgtKeyIter.next();
+//					dm2.putMapValue(tgtKey, srcVal);
+//				} else {
+//					break;
+//				}
+//			}
+		}
 	}
 }
