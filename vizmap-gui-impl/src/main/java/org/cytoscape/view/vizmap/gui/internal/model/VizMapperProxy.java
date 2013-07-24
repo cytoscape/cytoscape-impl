@@ -41,8 +41,6 @@ import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleAddedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
-import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
-import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.puremvc.java.multicore.patterns.proxy.Proxy;
 
@@ -50,7 +48,7 @@ import org.puremvc.java.multicore.patterns.proxy.Proxy;
 public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
-							  		   VisualStyleSetListener, SessionLoadedListener, SetCurrentNetworkViewListener {
+							  		   SessionLoadedListener, SetCurrentNetworkViewListener {
 
 	public static final String NAME = "VisualStyleProxy";
 	
@@ -256,29 +254,9 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	@Override
-	public void handleEvent(final VisualStyleSetEvent e) {
-		final CyNetworkView view = e.getNetworkView();
-		
-		if (view.equals(getCurrentNetworkView())) {
-			// Only update the current style if the network view is the current one
-			setCurrentVisualStyle(e.getVisualStyle());
-		}
-	}
-	
-	@Override
 	public void handleEvent(final SetCurrentNetworkViewEvent e) {
-		final CyNetworkView view = e.getNetworkView();
-		
-		if (view != null) {
-			final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getVisualStyle(view);
-			
-			if (style != getCurrentVisualStyle())
-				setCurrentVisualStyle(style);
-		}
-		
-		sendNotification(CURRENT_NETWORK_VIEW_CHANGED, view);
+		sendNotification(CURRENT_NETWORK_VIEW_CHANGED, e.getNetworkView());
 	}
-	
 	
 	@Override
 	public void handleEvent(final SessionLoadedEvent e) {

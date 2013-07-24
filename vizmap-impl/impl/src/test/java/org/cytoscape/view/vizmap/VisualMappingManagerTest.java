@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualMappingManagerImpl;
 import org.junit.After;
@@ -41,16 +42,14 @@ public class VisualMappingManagerTest extends AbstractVisualMappingManagerTest {
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
 		final VisualStyleFactory factory = mock(VisualStyleFactory.class);
 		final VisualStyle dummyDefaultStyle = mock(VisualStyle.class);
-		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
 		when(factory.createVisualStyle(VisualMappingManagerImpl.DEFAULT_STYLE_NAME)).thenReturn(dummyDefaultStyle);
+		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		
-		vmm = new VisualMappingManagerImpl(eventHelper, factory, lexManager);
+		vmm = new VisualMappingManagerImpl(eventHelper, factory, lexManager, serviceRegistrar);
 	}
 
 	@After
 	public void tearDown() throws Exception {
 	}
-	
-	
-
 }

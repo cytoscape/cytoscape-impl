@@ -177,8 +177,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		if (id.equals(VISUAL_STYLE_SET_CHANGED)) {
 			updateVisualStyleList((SortedSet<VisualStyle>) body);
 		} else if (id.equals(CURRENT_VISUAL_STYLE_CHANGED)) {
-			selectCurrentVisualStyle((VisualStyle) body);
-			updateVisualPropertySheets((VisualStyle) body);
+			invokeOnEDT(new Runnable() { // It's important to run the following actions in the same thread!
+				@Override
+				public void run() {
+					ignoreVisualStyleSelectedEvents = true;
+					selectCurrentVisualStyle((VisualStyle) body);
+					ignoreVisualStyleSelectedEvents = false;
+					updateVisualPropertySheets((VisualStyle) body);
+				}
+			});
 		} else if (id.equals(VISUAL_STYLE_UPDATED) && body == proxy.getCurrentVisualStyle()) {
 			updateVisualPropertySheets((VisualStyle) body);
 		} else if (id.equals(CURRENT_NETWORK_VIEW_CHANGED)) {
@@ -1095,13 +1102,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		if (!ignoreVisualStyleSelectedEvents && vs != null && !vs.equals(proxy.getCurrentVisualStyle())) {
 			// Update proxy
-			final Thread t = new Thread() {
-				@Override
-				public void run() {
-					proxy.setCurrentVisualStyle(vs);
-				};
-			};
-			t.start();
+			proxy.setCurrentVisualStyle(vs);
 		}
 	}
 	

@@ -31,9 +31,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -75,14 +77,18 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 	private final CyEventHelper cyEventHelper;
 	private final VisualLexiconManager lexManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public VisualMappingManagerImpl(final CyEventHelper eventHelper, final VisualStyleFactory factory,
-			final VisualLexiconManager lexManager) {
+			final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar) {
 		if (eventHelper == null)
-			throw new NullPointerException("CyEventHelper cannot be null");
+			throw new NullPointerException("'eventHelper' cannot be null");
+		if (serviceRegistrar == null)
+			throw new NullPointerException("'serviceRegistrar' cannot be null");
 
 		this.cyEventHelper = eventHelper;
 		this.lexManager = lexManager;
+		this.serviceRegistrar = serviceRegistrar;
 
 		visualStyles = new HashSet<VisualStyle>();
 		network2VisualStyleMap = new WeakHashMap<CyNetworkView, VisualStyle>();
@@ -145,8 +151,13 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		if (this.visualStyles.contains(vs) == false)
 			this.visualStyles.add(vs);
 
-		if (changed)
+		if (changed) {
 			cyEventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
+			final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
+		
+			if (appManager != null && nv.equals(appManager.getCurrentNetworkView()))
+				setCurrentVisualStyle(vs);
+		}
 	}
 
 	/**
