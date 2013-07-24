@@ -89,6 +89,10 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>command-executor-api</artifactId>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>

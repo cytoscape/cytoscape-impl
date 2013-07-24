@@ -142,6 +142,8 @@ import org.cytoscape.task.internal.proxysettings.ProxySettingsTaskFactoryImpl;
 import org.cytoscape.task.internal.select.DeselectAllEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.DeselectAllNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.DeselectAllTaskFactoryImpl;
+import org.cytoscape.task.internal.select.DeselectEdgesTaskFactoryImpl;
+import org.cytoscape.task.internal.select.DeselectNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.InvertSelectedEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.InvertSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectAdjacentEdgesTaskFactoryImpl;
@@ -149,9 +151,11 @@ import org.cytoscape.task.internal.select.SelectAllEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectAllNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectAllTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectConnectedNodesTaskFactoryImpl;
+import org.cytoscape.task.internal.select.SelectEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFirstNeighborsNodeViewTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFirstNeighborsTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFromFileListTaskFactoryImpl;
+import org.cytoscape.task.internal.select.SelectNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.session.NewSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.OpenSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionAsTaskFactoryImpl;
@@ -1096,6 +1100,31 @@ public class CyActivator extends AbstractCyActivator {
 		Properties exportTableTaskFactoryProps = new Properties();
 		registerService(bc,exportTableTaskFactory,ExportTableTaskFactory.class,exportTableTaskFactoryProps);
 		
+
+		// These are task factories that are only available to the command line
+		SelectNodesTaskFactoryImpl nodeSelect = new SelectNodesTaskFactoryImpl(cyNetworkViewManagerServiceRef, cyEventHelperRef);
+		Properties nodeSelectTaskFactoryProps = new Properties();
+		nodeSelectTaskFactoryProps.setProperty(COMMAND, "select");
+		nodeSelectTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "nodes");
+		registerService(bc,nodeSelect,TaskFactory.class,nodeSelectTaskFactoryProps);
+
+		DeselectNodesTaskFactoryImpl nodeDeselect = new DeselectNodesTaskFactoryImpl(cyNetworkViewManagerServiceRef, cyEventHelperRef);
+		Properties nodeDeselectTaskFactoryProps = new Properties();
+		nodeDeselectTaskFactoryProps.setProperty(COMMAND, "deselect");
+		nodeDeselectTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "nodes");
+		registerService(bc,nodeDeselect,TaskFactory.class,nodeDeselectTaskFactoryProps);
+
+		SelectEdgesTaskFactoryImpl edgeSelect = new SelectEdgesTaskFactoryImpl(cyNetworkViewManagerServiceRef, cyEventHelperRef);
+		Properties edgeSelectTaskFactoryProps = new Properties();
+		edgeSelectTaskFactoryProps.setProperty(COMMAND, "select");
+		edgeSelectTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edges");
+		registerService(bc,edgeSelect,TaskFactory.class,edgeSelectTaskFactoryProps);
+
+		DeselectEdgesTaskFactoryImpl edgeDeselect = new DeselectEdgesTaskFactoryImpl(cyNetworkViewManagerServiceRef, cyEventHelperRef);
+		Properties edgeDeselectTaskFactoryProps = new Properties();
+		edgeDeselectTaskFactoryProps.setProperty(COMMAND, "deselect");
+		edgeDeselectTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edges");
+		registerService(bc,edgeDeselect,TaskFactory.class,edgeDeselectTaskFactoryProps);
 
 
 	}

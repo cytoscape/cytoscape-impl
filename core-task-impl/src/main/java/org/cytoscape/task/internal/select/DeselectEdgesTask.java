@@ -23,43 +23,56 @@ package org.cytoscape.task.internal.select;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
- 
 
 
 import java.util.Collection;
 
+import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.AbstractNetworkTask;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.undo.UndoSupport;
 
 
-public abstract class AbstractSelectTask extends AbstractTask {
-	protected final CyNetworkViewManager networkViewManager;
-	protected final SelectUtils selectUtils;
-	protected final CyEventHelper eventHelper;
-	protected CyNetwork network;
+public class DeselectEdgesTask extends AbstractSelectTask {
+	@Tunable(description="Network to deselect edges in",gravity=1.0,context="nogui")
+	public CyNetwork network;
 
-	public AbstractSelectTask(final CyNetwork net, final CyNetworkViewManager networkViewManager, final CyEventHelper eventHelper) {
-		// super(net);
-		this.network = net;
-		this.networkViewManager = networkViewManager;
-		this.selectUtils = new SelectUtils();
-		this.eventHelper = eventHelper;
+	public EdgeList edgeList = new EdgeList(null);
+
+	@Tunable(description="Edges to deselect",gravity=2.0,context="nogui")
+	public EdgeList getedgeList() {
+		super.network = network;
+		edgeList.setNetwork(network);
+		return edgeList;
 	}
 
-	protected final void updateView() {
-		// This is necessary, otherwise, this does not update presentation!
-		eventHelper.flushPayloadEvents();
-		
+	public void setedgeList(EdgeList setValue) {}
+
+	public DeselectEdgesTask(final CyNetworkViewManager networkViewManager,
+	                       final CyEventHelper eventHelper)
+	{
+		super(null, networkViewManager, eventHelper);
+	}
+
+	
+	@Override
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
 		if(views.size() != 0)
 			view = views.iterator().next();
 		
-		if (view != null)
-			view.updateView();
+		tm.setProgress(0.2);
+		tm.showMessage(TaskMonitor.Level.INFO, "Deselecting "+edgeList.getValue().size()+" edges");
+		selectUtils.setSelectedEdges(network,edgeList.getValue(), true);
+		tm.setProgress(0.6);
+		updateView();
+		tm.setProgress(1.0);
 	}
 }

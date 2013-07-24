@@ -28,20 +28,26 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.command.util.NodeList;
 import org.cytoscape.command.internal.tunables.*;
 import org.cytoscape.command.internal.available.*;
 
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.work.util.*;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableSetter;
+import org.cytoscape.work.util.*;
 
 import org.osgi.framework.BundleContext;
 
@@ -58,6 +64,8 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
+		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
+		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,CyNetworkViewManager.class);
 		TunableSetter tunableSetterServiceRef = getService(bc,TunableSetter.class);
 		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, DynamicTaskFactoryProvisioner.class);
 		
@@ -110,18 +118,33 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,listSingleTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,listMultipleTHF,StringTunableHandlerFactory.class,new Properties());
 
-        BasicArgHandlerFactory argHandlerFactory = new BasicArgHandlerFactory();
+
+		StringToModel stm = new StringToModelImpl(cyApplicationManagerServiceRef, 
+		                                          cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef);
+		registerService(bc,stm,StringToModel.class,new Properties());
+
+		CyIdentifiableStringTunableHandlerFactory<CyNetworkTunableHandler> networkTHF = 
+			new CyIdentifiableStringTunableHandlerFactory<CyNetworkTunableHandler>(stm, CyNetworkTunableHandler.class, CyNetwork.class);
+		CyIdentifiableStringTunableHandlerFactory<NodeListTunableHandler> nodeListTHF = 
+			new CyIdentifiableStringTunableHandlerFactory<NodeListTunableHandler>(stm, NodeListTunableHandler.class, NodeList.class);
+		CyIdentifiableStringTunableHandlerFactory<EdgeListTunableHandler> edgeListTHF = 
+			new CyIdentifiableStringTunableHandlerFactory<EdgeListTunableHandler>(stm, EdgeListTunableHandler.class, EdgeList.class);
+		registerService(bc,networkTHF,StringTunableHandlerFactory.class,new Properties());
+		registerService(bc,nodeListTHF,StringTunableHandlerFactory.class,new Properties());
+		registerService(bc,edgeListTHF,StringTunableHandlerFactory.class,new Properties());
+
+		BasicArgHandlerFactory argHandlerFactory = new BasicArgHandlerFactory();
 		registerService(bc,argHandlerFactory,ArgHandlerFactory.class,new Properties());
 
-        ArgRecorder argRec = new ArgRecorder();
-        registerServiceListener(bc,argRec,"addTunableHandlerFactory","removeTunableHandlerFactory",ArgHandlerFactory.class);
-        AvailableCommandsImpl cla = new AvailableCommandsImpl(argRec);
-        registerService(bc,cla,AvailableCommands.class,new Properties());
-        registerServiceListener(bc,cla,"addTaskFactory","removeTaskFactory",TaskFactory.class);
-        registerServiceListener(bc,cla,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
-        registerServiceListener(bc,cla,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
-        registerServiceListener(bc,cla,"addNetworkViewCollectionTaskFactory","removeNetworkViewCollectionTaskFactory",NetworkViewCollectionTaskFactory.class);
-        registerServiceListener(bc,cla,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
+		ArgRecorder argRec = new ArgRecorder();
+		registerServiceListener(bc,argRec,"addTunableHandlerFactory","removeTunableHandlerFactory",ArgHandlerFactory.class);
+		AvailableCommandsImpl cla = new AvailableCommandsImpl(argRec, cyApplicationManagerServiceRef);
+		registerService(bc,cla,AvailableCommands.class,new Properties());
+		registerServiceListener(bc,cla,"addTaskFactory","removeTaskFactory",TaskFactory.class);
+		registerServiceListener(bc,cla,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
+		registerServiceListener(bc,cla,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
+		registerServiceListener(bc,cla,"addNetworkViewCollectionTaskFactory","removeNetworkViewCollectionTaskFactory",NetworkViewCollectionTaskFactory.class);
+		registerServiceListener(bc,cla,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
 	}
 }
 
