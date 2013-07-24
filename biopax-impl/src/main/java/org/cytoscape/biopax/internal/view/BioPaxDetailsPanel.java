@@ -150,6 +150,8 @@ public class BioPaxDetailsPanel extends JPanel {
 	/**
 	 * Shows details about the BioPAX Entity with the specified RDF ID.
 	 *
+	 * TODO modify to accept a set of nodes
+	 * 
 	 * @param nodeID RDF ID String.
 	 */
 	public void showDetails(CyNetwork network, CyNode node) {

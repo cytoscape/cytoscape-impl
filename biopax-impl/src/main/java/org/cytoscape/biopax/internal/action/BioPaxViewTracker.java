@@ -85,7 +85,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	 *
 	 * @param bpPanel BioPaxDetails Panel Object.
 	 * @param taskManagerRef 
-	 * @param cySwingApplication TODO
+	 * @param cySwingApplication
 	 * @param cytoscapePropertiesServiceRef 
 	 */
 	public BioPaxViewTracker(BioPaxDetailsPanel bpPanel, 
