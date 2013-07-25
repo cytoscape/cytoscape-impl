@@ -24,6 +24,7 @@
 
 	<modules>
 		<module>biopax-impl</module>
+		<module>command-dialog-impl</module>
 		<module>command-executor-impl</module>
 		<module>cpath2-impl</module>
 		<module>ding-impl</module>

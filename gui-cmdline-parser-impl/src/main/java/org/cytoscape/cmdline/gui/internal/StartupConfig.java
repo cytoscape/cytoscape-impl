@@ -155,6 +155,18 @@ public class StartupConfig {
 		taskStart = true;
 	}
 
+	public void setCommandScript(String args) {
+		try{
+			File scriptName = new File(args);
+		}catch(Exception e){
+			System.err.println("Can't file script file: "+args+": "+e.toString());
+			logger.error(e.toString());
+			return;
+		}
+		localProps.setProperty("scriptFile", args);
+		taskStart = true;
+	}
+
 	public void setNetworks(String[] args){
 		
 		networkFiles = new ArrayList<File>();

@@ -42,7 +42,7 @@ public class NodeListTunableHandler extends AbstractStringTunableHandler impleme
 	public Object processArg(String arg) throws Exception {
 		NodeList bi = (NodeList)getValue();
 		CyNetwork network = bi.getNetwork();
-		System.out.println("Processing argument "+arg);
+		// System.out.println("Processing argument "+arg);
 		List<CyNode>value = stringHandler.getNodeList(network, arg);
 		bi.setValue(value);
 		return bi;

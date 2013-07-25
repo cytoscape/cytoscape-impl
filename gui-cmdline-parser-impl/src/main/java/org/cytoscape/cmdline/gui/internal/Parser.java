@@ -119,6 +119,12 @@ public class Parser {
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("V"));
 
+		opt.addOption(OptionBuilder
+		              .withLongOpt("command")
+		              .withDescription("Execute commands from script file")
+		              .withValueSeparator('\0').withArgName("file").hasArgs()
+		              .create("S"));
+
 		return opt;
 	}
 
@@ -187,6 +193,10 @@ public class Parser {
 			if (line.hasOption("T"))
 				startupConfig.setTables(line.getOptionValues("T"));
 		}
+
+		// Do we have any command scripts requested?
+		if (line.hasOption("S"))
+			startupConfig.setCommandScript(line.getOptionValue("S"));
 	}
 
 	private void printHelp() {
