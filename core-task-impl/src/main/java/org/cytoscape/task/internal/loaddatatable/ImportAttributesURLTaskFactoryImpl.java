@@ -37,13 +37,13 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.read.LoadTableURLTaskFactory;
+import org.cytoscape.task.read.ImportTableURLTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implements LoadTableURLTaskFactory {
+public class ImportAttributesURLTaskFactoryImpl extends AbstractTaskFactory implements ImportTableURLTaskFactory {
 	
 	private CyTableReaderManager mgr;
 	
@@ -52,7 +52,7 @@ public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implem
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	
-	public LoadAttributesURLTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr,
+	public ImportAttributesURLTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr,
 			final CyTableManager tabelMgr, final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
@@ -62,15 +62,14 @@ public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implem
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new LoadAttributesURLTask(mgr, netMgr, tableMgr, rootNetMgr));
+		return new TaskIterator(2, new ImportAttributesURLTask(mgr, netMgr, tableMgr, rootNetMgr));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(URL url) {
 		//final Map<String, Object> m = new HashMap<String, Object>();
 		//m.put("url", url);
-		
-		URI uri = null;
+	    URI uri = null;
 		try {
 			uri = url.toURI();
 		} catch (URISyntaxException e) {
@@ -79,7 +78,7 @@ public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implem
 		
 		CyTableReader reader = mgr.getReader(uri, uri.toString());
 		
-		return new TaskIterator(2,new ReaderTableTask( reader, netMgr, rootNetMgr) , new AddImportedTableTask(tableMgr, reader));
+		return new TaskIterator(new CombineReaderAndMappingTask( reader, netMgr, rootNetMgr));
 
 		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}

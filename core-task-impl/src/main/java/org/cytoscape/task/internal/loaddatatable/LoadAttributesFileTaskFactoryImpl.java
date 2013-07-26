@@ -30,6 +30,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
@@ -63,9 +64,13 @@ public class LoadAttributesFileTaskFactoryImpl extends AbstractTaskFactory imple
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("file", file);
+		//final Map<String, Object> m = new HashMap<String, Object>();
+		//m.put("file", file);
+		
+		CyTableReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
+		
+		return new TaskIterator(2,new ReaderTableTask( reader, netMgr, rootNetMgr) , new AddImportedTableTask(tableMgr, reader));
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }

@@ -35,7 +35,7 @@ import org.cytoscape.io.webservice.biomart.ui.BiomartAttrMappingPanel;
 import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
+import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.ServiceException;
 
@@ -50,7 +50,7 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 	private final BiomartRestClient restClient;
 	private ImportTableTask importTask;
 	private final CyTableManager tableManager;
-	private final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF;
+	private final ImportDataTableTaskFactory importNetworkAttrTF;
 
 	/**
 	 * Creates a new Biomart Client object.
@@ -62,14 +62,14 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 	                     final BiomartRestClient restClient, final CyTableFactory tableFactory,
 	                     final CyTableManager tableManager,
 						 final BiomartAttrMappingPanel gui,
-						 final MapTableToNetworkTablesTaskFactory mapNetworkAttrTF)
+						 final ImportDataTableTaskFactory importNetworkAttrTF)
 	{
 		super(restClient.getBaseURL(), displayName, description);
 
 		this.tableFactory         = tableFactory;
 		this.restClient           = restClient;
 		this.tableManager         = tableManager;
-		this.mapNetworkAttrTF     = mapNetworkAttrTF;
+		this.importNetworkAttrTF     = importNetworkAttrTF;
 		
 		this.gui = gui;
 
@@ -88,7 +88,7 @@ public class BiomartClient extends AbstractWebServiceGUIClient implements TableI
 					"Could not build query because Query Builder GUI is null.");
 
 		importTask = new ImportTableTask(restClient, (BiomartQuery) query, tableFactory,
-		                                  tableManager,mapNetworkAttrTF);
+		                                  tableManager,importNetworkAttrTF);
 
 		return new TaskIterator(importTask);
 	}

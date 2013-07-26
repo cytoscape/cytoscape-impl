@@ -52,7 +52,7 @@ abstract class AbstractLoadAttributesTask extends AbstractTask {
 		this.rootNetMgr = rootNetMgr;
 	}
 
-	void loadTable(final String name, final URI uri, final TaskMonitor taskMonitor) throws Exception {
+	void loadTable(final String name, final URI uri, boolean combine, final TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setStatusMessage("Finding Table Data Reader...");
 
 		CyTableReader reader = mgr.getReader(uri,uri.toString());
@@ -60,11 +60,20 @@ abstract class AbstractLoadAttributesTask extends AbstractTask {
 		
 		if (reader == null)
 			throw new NullPointerException("Failed to find reader for specified file.");
+		if(combine)
+		{
 
-		taskMonitor.setStatusMessage("Importing Data Table...");
-		
-		insertTasksAfterCurrentTask(new CombineReaderAndMappingTask( reader, netMgr, rootNetMgr));
-		//, new AddImportedTableTask(tableMgr, reader)); //imported tables are not getting registered anymore
+			taskMonitor.setStatusMessage("Importing Data Table...");
+			
+			insertTasksAfterCurrentTask(new CombineReaderAndMappingTask( reader, netMgr, rootNetMgr));
+			//, new AddImportedTableTask(tableMgr, reader)); //imported tables are not getting registered anymore
+		}
+		else
+		{
+			taskMonitor.setStatusMessage("Loading Data Table...");
+			
+			insertTasksAfterCurrentTask(new ReaderTableTask( reader, netMgr, rootNetMgr) , new AddImportedTableTask(tableMgr, reader));
+		}
 		
 	}
 }

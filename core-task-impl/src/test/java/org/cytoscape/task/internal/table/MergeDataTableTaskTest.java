@@ -79,7 +79,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 
-public class MappingIntegrationTest {
+public class MergeDataTableTaskTest {
 
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
@@ -89,6 +89,7 @@ public class MappingIntegrationTest {
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
+	private final CyTableManagerImpl tableMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(),netMgr);
 	
 	private SyncTunableMutator stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
@@ -116,18 +117,31 @@ public class MappingIntegrationTest {
 
 		String node1Name = "node1";
 		String node2Name = "node2";
+		
+		String row1Name = "node1";
+		String row2Name = "node2";
 
 		CyTableImpl table1;
 		CyTableImpl table2;
+		CyTableImpl table3;
+		CyTableImpl table4;
 		
 		String table1sCol = "col1";
 		String table2sCol = "col2";
+		String table3sCol = "col3";
+		String table4sCol = "col4";
 		
 		String table1sRow1 = "col1 row1";
 		String table1sRow2 = "col1 row2";
 
-		String table2sRow1 = "col2 row2";
+		String table2sRow1 = "col2 row1";
 		String table2sRow2 = "col2 row2";
+		
+		String table3sRow1 = "col3 row1";
+		String table3sRow2 = "col3 row2";
+		
+		String table4sRow1 = "col4 row1";
+		String table4sRow2 = "col4 row2";
 		
 		
 		
@@ -158,7 +172,9 @@ public class MappingIntegrationTest {
 		row2.set(table1sCol, table1sRow2);
 		
 		root = rootNetMgr.getRootNetwork(net1);
-		mapping(table1, net1, root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME),false);
+		List<String> listCols = new ArrayList<String>();
+		listCols.add(table1sCol);
+		mapping(table1,listCols,"ID", true, net1, root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME),false);
 		//check the mapping by task
 		assertNotNull(net1.getDefaultNodeTable().getColumn(table1sCol));
 		assertEquals(table1sRow1, net1.getDefaultNodeTable().getRow(node1.getSUID()).get(table1sCol, String.class) );
@@ -203,7 +219,9 @@ public class MappingIntegrationTest {
 		row4.set(table2sCol,table2sRow2);
 		
 		root = rootNetMgr.getRootNetwork(net1);
-		mapping(table2, net1,root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME), true);
+		listCols = new ArrayList<String>();
+		listCols.add(table2sCol);
+		mapping(table2,listCols,"ID", true, net1,root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME), true);
 		//check the mapping by task
 		assertNotNull(net1.getDefaultNodeTable().getColumn(table2sCol));
 		assertEquals(table2sRow1, net1.getDefaultNodeTable().getRow(node1.getSUID()).get(table2sCol, String.class) );
@@ -240,16 +258,72 @@ public class MappingIntegrationTest {
 		//hence the nodes are there but the related rows in the table are empty
 		assertEquals(table1sRow1, subnet2.getRow(node1).get(table1sCol, String.class) );
 		assertEquals(table2sRow1, subnet2.getRow(node1).get(table2sCol, String.class) );
+		
+		//creating another table to map to the net1 only
+		table3 = new CyTableImpl("dummy table 3", "ID", String.class, true, true, 
+				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+		table3.createColumn(table2sCol, String.class, false);
+		table3.createColumn(table3sCol, String.class, false);
+		CyRow rowTemp;
+		rowTemp = table3.getRow(row1Name);
+		rowTemp.set(table2sCol, table2sRow1);
+		rowTemp.set(table3sCol, table3sRow1);
+		rowTemp = table3.getRow(row2Name);
+		rowTemp.set(table2sCol, table2sRow2);
+		rowTemp.set(table3sCol, table3sRow2);
+		
+		
+		table4 = new CyTableImpl("dummy table 4", "ID", String.class, true, true, 
+				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+		table4.createColumn(table2sCol, String.class, false);
+		table4.createColumn(table4sCol, String.class, false);
+		
+		rowTemp = table4.getRow(row1Name);
+		rowTemp.set(table2sCol, table2sRow1);
+		rowTemp.set(table4sCol, table4sRow1);
+		rowTemp = table4.getRow(row2Name);
+		rowTemp.set(table2sCol, table2sRow2);
+		rowTemp.set(table4sCol, table4sRow2);
+		
+		tableMgr.addTable(table3);
+		
+		tableMgr.addTable(table4);
+		
+		List<String> listCols2 = new ArrayList<String>();
+		listCols2.add(table3sCol);
+		
+		mappingGlobalTable(table3,table4,listCols2,table2sCol,false,null,null,table4.getColumn(table2sCol),false);
+		
+		assertEquals(table3sRow1, table4.getRow(row1Name).get(table3sCol, String.class) );
+		
+		assertEquals(table3sRow2, table4.getRow(row2Name).get(table3sCol, String.class) );
 	
 	}
 	
-	public void mapping(CyTable table, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
+	public void mapping(CyTable sourceTable,List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
-		ImportDataTableTaskFactoryImpl mappingTF = new ImportDataTableTaskFactoryImpl(netMgr, ts, rootNetMgr);
+		MergeDataTableTaskFactoryImpl mappingTF = new MergeDataTableTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		
-		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, nets ,rootNet,col, CyNode.class);
+		TaskIterator ti = mappingTF.createTaskIterator(sourceTable,null,sourceColumnsList,sourceKeyColumn,mergeColumnVirtual, true,selectedOnly, nets ,rootNet,col, CyNode.class);
+		assertNotNull("task iterator is null", ti);
+		
+		assertTrue(ti.hasNext());
+		Task t = ti.next();
+		assertNotNull("task is null", t);
+		t.run(mock(TaskMonitor.class));
+	
+	}
+	
+    public void mappingGlobalTable(CyTable sourceTable,CyTable targetTable,List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
+		
+		MergeDataTableTaskFactoryImpl mappingTF = new MergeDataTableTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
+		List<CyNetwork> nets = new ArrayList<CyNetwork>();
+		if(net != null)
+			nets.add(net);
+		
+		TaskIterator ti = mappingTF.createTaskIterator(sourceTable,targetTable,sourceColumnsList,sourceKeyColumn,mergeColumnVirtual, false,selectedOnly, nets ,rootNet,col, CyNode.class);
 		assertNotNull("task iterator is null", ti);
 		
 		assertTrue(ti.hasNext());

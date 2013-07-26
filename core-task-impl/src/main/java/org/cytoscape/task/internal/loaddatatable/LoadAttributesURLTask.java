@@ -51,7 +51,7 @@ public class LoadAttributesURLTask extends AbstractLoadAttributesTask {
 	 * Executes Task.
 	 */
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		loadTable(url.toString(), url.toURI(), taskMonitor);
+		loadTable(url.toString(), url.toURI(),false, taskMonitor);
 	}
 	
 	@ProvidesTitle
