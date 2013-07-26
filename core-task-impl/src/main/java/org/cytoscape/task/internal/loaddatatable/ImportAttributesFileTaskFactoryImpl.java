@@ -30,17 +30,18 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.read.LoadTableFileTaskFactory;
+import org.cytoscape.task.read.ImportTableFileTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class ImportAttributesFileTaskFactoryImpl extends AbstractTaskFactory implements LoadTableFileTaskFactory{
+public class ImportAttributesFileTaskFactoryImpl extends AbstractTaskFactory implements ImportTableFileTaskFactory{
 	private CyTableReaderManager mgr;
 	
 	private final TunableSetter tunableSetter; 
@@ -63,9 +64,13 @@ public class ImportAttributesFileTaskFactoryImpl extends AbstractTaskFactory imp
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("file", file);
+		//final Map<String, Object> m = new HashMap<String, Object>();
+		//m.put("file", file);
+		
+		CyTableReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
+		
+		return new TaskIterator(new CombineReaderAndMappingTask( reader, netMgr, rootNetMgr));
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }

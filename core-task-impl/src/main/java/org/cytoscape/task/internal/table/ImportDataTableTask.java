@@ -88,7 +88,7 @@ public class ImportDataTableTask extends AbstractTask {
 	
 	
 	public ListSingleSelection<String> importTypeChooser ;
-	@Tunable(description="Where to import Table Data",gravity=1.0, groups={"Target Table Data"}, xorChildren=true)
+	@Tunable(description="Where to import Table Data",gravity=1.0, groups={"Target Network Data"}, xorChildren=true)
 	
 	public ListSingleSelection<String> getImportTypeChooser() {
 		return importTypeChooser;
@@ -99,7 +99,7 @@ public class ImportDataTableTask extends AbstractTask {
 	}
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection", groups = {"Target Table Data","Select a Network Collection"},gravity=2.0,  xorKey="To a Network Collection")
+	@Tunable(description = "Network Collection", groups = {"Target Network Data","Select a Network Collection"},gravity=2.0,  xorKey="To a Network Collection")
 	public ListSingleSelection<String> getRootNetworkList() {
 		return rootNetworkList;
 	}
@@ -113,7 +113,7 @@ public class ImportDataTableTask extends AbstractTask {
 	}
 
 	public ListSingleSelection<String> columnList;
-	@Tunable(description = "Key Column for Network:", groups = {"Target Table Data","Select a Network Collection"},gravity=3.0, xorKey="To a Network Collection", listenForChange = {
+	@Tunable(description = "Key Column for Network:", groups = {"Target Network Data","Select a Network Collection"},gravity=3.0, xorKey="To a Network Collection", listenForChange = {
 			"DataTypeOptions", "RootNetworkList" })
 	public ListSingleSelection<String> getColumnList() {
 		return columnList;
@@ -124,7 +124,7 @@ public class ImportDataTableTask extends AbstractTask {
 	}
 
 	public ListMultipleSelection<String> networkList;
-	@Tunable(description = "Network List", groups = {"Target Table Data","Select Networks"},gravity=4.0, xorKey="To selected networks only", params = "displayState=collapsed")
+	@Tunable(description = "Network List", groups = {"Target Network Data","Select Networks"},gravity=4.0, xorKey="To selected networks only", params = "displayState=collapsed")
 	public ListMultipleSelection<String> getNetworkList() {
 		return networkList;
 	}
@@ -212,10 +212,13 @@ public class ImportDataTableTask extends AbstractTask {
 		List<String> rootNames = new ArrayList<String>();
 		rootNames.addAll(name2RootMap.keySet());
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
-		rootNetworkList.setSelectedValue(rootNames.get(0));
-
-		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
-				dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+		if(!rootNames.isEmpty())
+		{
+			rootNetworkList.setSelectedValue(rootNames.get(0));
+	
+			columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+					dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+		}
 	}
 
 	public ListSingleSelection<String> getColumns(CyNetwork network, TableType tableType, String namespace) {
@@ -234,6 +237,9 @@ public class ImportDataTableTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 
 		TableType tableType = dataTypeOptions.getSelectedValue();
+		
+		if(name2RootMap.isEmpty())
+			return;
 
 		if (!checkKeys()) {
 			throw new IllegalArgumentException("Types of keys selected for tables are not matching.");
@@ -333,6 +339,9 @@ public class ImportDataTableTask extends AbstractTask {
 					continue;
 
 				String targetColName = source2targetColumnMap.get(col.getName());
+				
+				if (targetColName == null)
+					continue;  // skip this column
 
 				if (col.getType() == List.class)
 					targetRow.set(targetColName, sourceRow.getList(col.getName(), col.getListElementType()));
@@ -379,21 +388,6 @@ public class ImportDataTableTask extends AbstractTask {
 
 			source2targetColumnMap.put(col.getName(), targetColName);
 		}
-	}
-
-	private String getUniqueColumnName(CyTable table, final String preferredName) {
-
-		if (table.getColumn(preferredName) == null)
-			return preferredName;
-		
-		String newUniqueName;
-		int i = 0;
-		do {
-			++i;
-			newUniqueName = preferredName + "-" + i;
-		} while (table.getColumn(newUniqueName) != null);
-
-		return newUniqueName;
 	}
 
 	public boolean checkKeys() {

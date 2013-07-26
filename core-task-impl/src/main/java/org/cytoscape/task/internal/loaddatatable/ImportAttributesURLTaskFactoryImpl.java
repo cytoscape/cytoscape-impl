@@ -26,21 +26,24 @@ package org.cytoscape.task.internal.loaddatatable;
 
 
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.read.LoadTableURLTaskFactory;
+import org.cytoscape.task.read.ImportTableURLTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class ImportAttributesURLTaskFactoryImpl extends AbstractTaskFactory implements LoadTableURLTaskFactory {
+public class ImportAttributesURLTaskFactoryImpl extends AbstractTaskFactory implements ImportTableURLTaskFactory {
 	
 	private CyTableReaderManager mgr;
 	
@@ -64,9 +67,19 @@ public class ImportAttributesURLTaskFactoryImpl extends AbstractTaskFactory impl
 
 	@Override
 	public TaskIterator createTaskIterator(URL url) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("url", url);
+		//final Map<String, Object> m = new HashMap<String, Object>();
+		//m.put("url", url);
+	    URI uri = null;
+		try {
+			uri = url.toURI();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		
+		CyTableReader reader = mgr.getReader(uri, uri.toString());
+		
+		return new TaskIterator(new CombineReaderAndMappingTask( reader, netMgr, rootNetMgr));
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }

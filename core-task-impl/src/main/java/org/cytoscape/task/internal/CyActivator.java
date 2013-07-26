@@ -182,6 +182,8 @@ import org.cytoscape.task.internal.zoom.ZoomOutTaskFactory;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
+import org.cytoscape.task.read.ImportTableURLTaskFactory;
+import org.cytoscape.task.read.ImportTableFileTaskFactory;
 import org.cytoscape.task.read.LoadTableURLTaskFactory;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
@@ -425,7 +427,7 @@ public class CyActivator extends AbstractCyActivator {
 		importAttrsFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		importAttrsFileTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,importAttrsFileTaskFactory,TaskFactory.class, importAttrsFileTaskFactoryProps);
-		registerService(bc,importAttrsFileTaskFactory,LoadTableFileTaskFactory.class, importAttrsFileTaskFactoryProps);
+		registerService(bc,importAttrsFileTaskFactory,ImportTableFileTaskFactory.class, importAttrsFileTaskFactoryProps);
 
 
 		Properties importAttrsURLTaskFactoryProps = new Properties();
@@ -440,7 +442,7 @@ public class CyActivator extends AbstractCyActivator {
 		importAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		importAttrsURLTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,importAttrsURLTaskFactory,TaskFactory.class, importAttrsURLTaskFactoryProps);
-		registerService(bc,importAttrsURLTaskFactory,LoadTableURLTaskFactory.class, importAttrsURLTaskFactoryProps);
+		registerService(bc,importAttrsURLTaskFactory,ImportTableURLTaskFactory.class, importAttrsURLTaskFactoryProps);
 
 		Properties proxySettingsTaskFactoryProps = new Properties();
 		proxySettingsTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit.Preferences");

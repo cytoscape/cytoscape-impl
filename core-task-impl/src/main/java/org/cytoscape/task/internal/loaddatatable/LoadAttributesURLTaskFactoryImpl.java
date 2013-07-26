@@ -26,10 +26,13 @@ package org.cytoscape.task.internal.loaddatatable;
 
 
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
@@ -64,9 +67,20 @@ public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implem
 
 	@Override
 	public TaskIterator createTaskIterator(URL url) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("url", url);
+		//final Map<String, Object> m = new HashMap<String, Object>();
+		//m.put("url", url);
+		
+		URI uri = null;
+		try {
+			uri = url.toURI();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		
+		CyTableReader reader = mgr.getReader(uri, uri.toString());
+		
+		return new TaskIterator(2,new ReaderTableTask( reader, netMgr, rootNetMgr) , new AddImportedTableTask(tableMgr, reader));
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }

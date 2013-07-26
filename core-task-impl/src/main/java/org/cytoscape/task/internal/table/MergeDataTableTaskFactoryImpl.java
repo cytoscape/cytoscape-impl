@@ -68,8 +68,8 @@ public class MergeDataTableTaskFactoryImpl extends AbstractTaskFactory implement
 	
 
 	@Override
-	public TaskIterator createTaskIterator(final CyTable sourceTable,
-			List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual,
+	public TaskIterator createTaskIterator(final CyTable sourceTable,final CyTable targetTable,
+			List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, boolean mapToNetworks,
 			 boolean selectedNetworksOnly,  List<CyNetwork> networkList, 
 			CyRootNetwork rootNetwork, CyColumn targetJoinColumn, Class<? extends CyIdentifiable> type) {
 		
@@ -81,8 +81,11 @@ public class MergeDataTableTaskFactoryImpl extends AbstractTaskFactory implement
 		tableTypes.setSelectedValue(tableType);
 		
 		List<String> networkNames = new ArrayList<String>();
-		for(CyNetwork net: networkList){
-			networkNames.add(net.getRow(net).get(CyNetwork.NAME, String.class));
+		if(networkList != null)
+		{
+			for(CyNetwork net: networkList){
+				networkNames.add(net.getRow(net).get(CyNetwork.NAME, String.class));
+			}
 		}
 	
 		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<String>(networkNames);
@@ -106,28 +109,47 @@ public class MergeDataTableTaskFactoryImpl extends AbstractTaskFactory implement
 		
 		final Map<String, Object> m = new HashMap<String, Object>();
 		
-	    ListSingleSelection<String> chooser = new ListSingleSelection<String>("To a Network Collection","To selected networks only");
+	    ListSingleSelection<String> chooser = new ListSingleSelection<String>(MergeDataTableTask.NETWORK_COLLECTION,MergeDataTableTask.NETWORK_SELECTION,MergeDataTableTask.UNASSIGNED_TABLE);
 		
-		if(selectedNetworksOnly)
-			chooser.setSelectedValue("To selected networks only");
-		else
-			chooser.setSelectedValue("To a Network Collection");
+	    if(mapToNetworks)
+	    {
+			if(selectedNetworksOnly)
+				chooser.setSelectedValue(MergeDataTableTask.NETWORK_SELECTION);
+			else
+				chooser.setSelectedValue(MergeDataTableTask.NETWORK_COLLECTION);
+	    }
+	    else
+	    	chooser.setSelectedValue(MergeDataTableTask.UNASSIGNED_TABLE);
+	    
 		ListSingleSelection<CyTable> sourceTableList = new ListSingleSelection<CyTable> (sourceTable);
 		sourceTableList.setSelectedValue(sourceTable);
+		ListSingleSelection<Object> targetTableList;
+		if(targetTable != null)
+		{
+			targetTableList = new ListSingleSelection<Object> (targetTable);
+			targetTableList.setSelectedValue(targetTable);
+		}
+		else
+		{
+			targetTableList = new ListSingleSelection<Object> (MergeDataTableTask.NO_TABLES);
+			targetTableList.setSelectedValue(MergeDataTableTask.NO_TABLES);
+		}
 		ListMultipleSelection<String> sourceColNames = new ListMultipleSelection<String>(sourceColumnsList);
 		sourceColNames.setSelectedValues(sourceColumnsList);
 		ListSingleSelection<String> sourceColumn = new ListSingleSelection<String>(sourceKeyColumn);
 		sourceColumn.setSelectedValue(sourceKeyColumn);
-		ListSingleSelection<String> mapOption = new ListSingleSelection<String>("New Column","New Virtual Column");
+		/*ListSingleSelection<String> mapOption = new ListSingleSelection<String>("New Column","New Virtual Column");
 		
 		if(mergeColumnVirtual)
 			mapOption.setSelectedValue("New Virtual Column");
 		else
-			mapOption.setSelectedValue("New Column");
+			mapOption.setSelectedValue("New Column");*/
 		
-		m.put("MergeDataType", mapOption);
+		m.put("MergeDataType", mergeColumnVirtual);
 		m.put("MergeKey", sourceColumn);
+		m.put("TargetMergeKey", columnNamesList);
 		m.put("GlobalTable", sourceTableList);
+		m.put("UnassignedTables", targetTableList);
 		m.put("MergeColumns", sourceColNames);
 		m.put("ImportTypeChooser", chooser);
 		m.put("NetworkList", networksListTunable);

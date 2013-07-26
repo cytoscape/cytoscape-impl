@@ -24,10 +24,13 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
+import static org.cytoscape.work.TunableValidator.ValidationState.OK;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.IOException;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -44,12 +47,14 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MergeDataTableTask extends AbstractTask {
+public class MergeDataTableTask extends AbstractTask implements TunableValidator {
 	
 	enum TableType {
 		NODE_ATTR("Node Table Columns", CyNode.class),
@@ -73,10 +78,15 @@ public class MergeDataTableTask extends AbstractTask {
 			return name;
 		}
 	};
+	
 
 	private static final Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
 	private static final String NO_NETWORKS = "No Networks Found";
-	private static final String NO_TABLES = "No Tables Found";
+	public static final String NO_TABLES = "No Tables Found";
+	
+	public static final String NETWORK_COLLECTION = "To a Network Collection";
+	public static final String NETWORK_SELECTION = "To selected networks only";
+	public static final String UNASSIGNED_TABLE = "To an unassigned table";
 	
 	private CyRootNetworkManager rootNetworkManager;
 	private CyNetworkManager networkManager;
@@ -139,7 +149,7 @@ public class MergeDataTableTask extends AbstractTask {
 	}
 	
 	public ListSingleSelection<String> mergeKey;
-	@Tunable(description = "Key Column To Merge:", groups={"Source Data Table"},gravity=0.4, listenForChange={"GlobalTable"})
+	@Tunable(description = "Key column to merge", groups={"Source Data Table"},gravity=0.4, listenForChange={"GlobalTable"})
 	public ListSingleSelection<String> getMergeKey() {
 		return mergeKey;
 	}
@@ -148,8 +158,8 @@ public class MergeDataTableTask extends AbstractTask {
 		this.mergeKey = key;
 	}
 	
-	@Tunable(description="Merge Data as",gravity=0.5, groups={"Source Data Table"})
-	public ListSingleSelection<String> mergeDataType = new ListSingleSelection<String>("New Column","New Virtual Column");
+	@Tunable(description="Apply a soft merge",gravity=0.5, groups={"Source Data Table"})
+	public boolean mergeDataType = false;
 
 	
 	public ListSingleSelection<String> importTypeChooser ;
@@ -164,7 +174,7 @@ public class MergeDataTableTask extends AbstractTask {
 	}
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection", groups = {"Target Data Table","Select a Network Collection"},gravity=2.0,  xorKey="To a Network Collection")
+	@Tunable(description = "Network Collection", groups = {"Target Data Table","Select a Network Collection"},gravity=2.0,  xorKey=NETWORK_COLLECTION)
 	public ListSingleSelection<String> getRootNetworkList() {
 		return rootNetworkList;
 	}
@@ -178,8 +188,8 @@ public class MergeDataTableTask extends AbstractTask {
 	}
 
 	public ListSingleSelection<String> columnList;
-	@Tunable(description = "Key Column for Network:", groups = {"Target Data Table","Select a Network Collection"},gravity=3.0, xorKey="To a Network Collection", listenForChange = {
-			"DataTypeOptions", "RootNetworkList" })
+	@Tunable(description = "Key Column for Network", groups = {"Target Data Table","Select a Network Collection"},gravity=3.0, xorKey=NETWORK_COLLECTION, listenForChange = {
+			"DataTypeOptions1", "RootNetworkList" })
 	public ListSingleSelection<String> getColumnList() {
 		return columnList;
 	}
@@ -190,7 +200,7 @@ public class MergeDataTableTask extends AbstractTask {
 	
 	public ListSingleSelection<TableType> dataTypeOptions1;
 
-	@Tunable(description = "Merge Data in:", gravity=4.0, groups={"Target Data Table","Select a Network Collection"}, xorKey="To a Network Collection")
+	@Tunable(description = "Merge Data in", gravity=4.0, groups={"Target Data Table","Select a Network Collection"}, xorKey=NETWORK_COLLECTION)
 	public ListSingleSelection<TableType> getDataTypeOptions1() {
 		return dataTypeOptions1;
 	}
@@ -204,7 +214,7 @@ public class MergeDataTableTask extends AbstractTask {
 	}
 
 	public ListMultipleSelection<String> networkList;
-	@Tunable(description = "Network List", groups = {"Target Data Table","Select Networks"},gravity=5.0, xorKey="To selected networks only", params = "displayState=uncollapsed")
+	@Tunable(description = "Network List", groups = {"Target Data Table","Select Networks"},gravity=5.0, xorKey=NETWORK_SELECTION, params = "displayState=uncollapsed")
 	public ListMultipleSelection<String> getNetworkList() {
 		return networkList;
 	}
@@ -212,30 +222,40 @@ public class MergeDataTableTask extends AbstractTask {
 	public void setNetworkList(ListMultipleSelection<String> list) {
 		this.networkList = list;
 	}
-	
+
+	@Tunable(description = "Merge Data in", gravity=6.0, groups={"Target Data Table","Select Networks"}, xorKey=NETWORK_SELECTION)
 	public ListSingleSelection<TableType> dataTypeOptions2;
-
-	@Tunable(description = "Merge Data in:", gravity=6.0, groups={"Target Data Table","Select Networks"}, xorKey="To selected networks only")
-	public ListSingleSelection<TableType> getDataTypeOptions2() {
-		return dataTypeOptions1;
-	}
-
-	public void setDataTypeOptions2(ListSingleSelection<TableType> options) {
-		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
-				dataTypeOptions2.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
-		if(!columnList.getPossibleValues().containsAll(tempList.getPossibleValues()) 
-				|| columnList.getPossibleValues().size() != tempList.getPossibleValues().size())
-			columnList = tempList;
-	}
+	
 	
 	public ListSingleSelection<Object> unassignedTables;
-	@Tunable(description = "Unassigned Tables:", groups = {"Target Data Table","Select the Unassigned Table"},gravity=7.0, xorKey="To an unassigned table")
+	@Tunable(description = "Unassigned Tables", groups = {"Target Data Table","Select the Unassigned Table"},gravity=7.0, xorKey=UNASSIGNED_TABLE)
 	public ListSingleSelection<Object> getUnassignedTables() {
 		return unassignedTables;
 	}
 
 	public void setUnassignedTables(ListSingleSelection<Object> tables) {
+		if(tables.getSelectedValue() instanceof CyTable)
+		{
+			ListSingleSelection<String> tempList = getColumnsWithNames((CyTable)tables.getSelectedValue());
+			if(!targetMergeKey.getPossibleValues().containsAll(tempList.getPossibleValues())
+					|| targetMergeKey.getPossibleValues().size() != tempList.getPossibleValues().size())
+			{
+				targetMergeKey = tempList;
+				targetMergeKey = getColumnsWithNames((CyTable)tables.getSelectedValue());
+				
+			}
+		}
 		this.unassignedTables = tables;
+	}
+	
+	public ListSingleSelection<String> targetMergeKey;
+	@Tunable(description = "Key Column To Merge", groups={"Target Data Table","Select the Unassigned Table"},gravity=8.0, listenForChange={"UnassignedTables"})
+	public ListSingleSelection<String> getTargetMergeKey() {
+		return targetMergeKey;
+	}
+
+	public void setTargetMergeKey(ListSingleSelection<String> key) {
+		this.targetMergeKey = key;
 	}
 
 	@ProvidesTitle
@@ -263,11 +283,9 @@ public class MergeDataTableTask extends AbstractTask {
 	}
 
 	private final void initTunable(CyTableManager tabelMgr,CyNetworkManager networkManager) {
-
-		//selectedNetworksOnly = false;
 		
-		importTypeChooser = new ListSingleSelection<String>("To a Network Collection","To selected networks only", "To an unassigned table");
-		importTypeChooser.setSelectedValue("To a Network Collection");
+		importTypeChooser = new ListSingleSelection<String>(NETWORK_COLLECTION,NETWORK_SELECTION, UNASSIGNED_TABLE);
+		importTypeChooser.setSelectedValue(NETWORK_COLLECTION);
 
 		final List<TableType> options = new ArrayList<TableType>();
 		for (TableType type : TableType.values())
@@ -296,10 +314,13 @@ public class MergeDataTableTask extends AbstractTask {
 		List<String> rootNames = new ArrayList<String>();
 		rootNames.addAll(name2RootMap.keySet());
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
-		rootNetworkList.setSelectedValue(rootNames.get(0));
+		if(!rootNames.isEmpty())
+		{
+			rootNetworkList.setSelectedValue(rootNames.get(0));
 
-		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
-				dataTypeOptions1.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+			columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+					dataTypeOptions1.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+		}
 		
 		List<CyTable> listOfTables = new ArrayList<CyTable>();
 		List<Object> listOfUTables = new ArrayList<Object>();
@@ -318,7 +339,10 @@ public class MergeDataTableTask extends AbstractTask {
 			listOfTables.add(network.getDefaultEdgeTable());
 		}
 		if(listOfUTables.size()>0)
+		{
 			unassignedTables = new ListSingleSelection<Object>(listOfUTables);
+			targetMergeKey = getColumnsWithNames((CyTable)unassignedTables.getSelectedValue());
+		}
 		else
 		{
 			listOfUTables.add(NO_TABLES);
@@ -346,16 +370,24 @@ public class MergeDataTableTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 
 		TableType tableType = getDataTypeOptions();
+		
+		//If we are here and there no networks loaded, we could only continue if the merge is on 
+		// an unassigned table
+		if(!importTypeChooser.getSelectedValue().matches(UNASSIGNED_TABLE))
+		{
+			if(name2RootMap.isEmpty())
+				return;
+		}
 
 		if (!checkKeys()) {
 			throw new IllegalArgumentException("Types of keys selected for tables are not matching.");
 		}
-		//if (!selectedNetworksOnly)
-		if(importTypeChooser.getSelectedValue().matches("To a Network Collection"))
+
+		if(importTypeChooser.getSelectedValue().matches(NETWORK_COLLECTION))
 			mapTableToDefaultAttrs(tableType);
-		if(importTypeChooser.getSelectedValue().matches("To selected networks only"))
+		if(importTypeChooser.getSelectedValue().matches(NETWORK_SELECTION))
 			mapTableToLocalAttrs(tableType);
-		if(importTypeChooser.getSelectedValue().matches("To an unassigned table"))
+		if(importTypeChooser.getSelectedValue().matches(UNASSIGNED_TABLE))
 			mapTableToUnassignedTable();
 
 	}
@@ -365,11 +397,7 @@ public class MergeDataTableTask extends AbstractTask {
 		if(!unassignedTables.getSelectedValue().toString().matches(NO_TABLES))
 		{
 			CyTable tableChosen = (CyTable)unassignedTables.getSelectedValue();
-			if(tableChosen.equals(globalTable))
-			{
-				
-			}
-			else
+			if(!tableChosen.equals(globalTable))
 			{
 				applyMapping(tableChosen);
 			}
@@ -418,9 +446,14 @@ public class MergeDataTableTask extends AbstractTask {
 
 	private void applyMapping(CyTable targetTable) {
 		ArrayList<CyColumn> columns = new ArrayList<CyColumn>();
+		CyColumn tempCol;
 		
 		for(String colName :mergeColumns.getSelectedValues())
-			columns.add(globalTable.getSelectedValue().getColumn(colName));
+		{
+		    tempCol = globalTable.getSelectedValue().getColumn(colName);
+			if(tempCol != null)
+				columns.add(tempCol);
+		}
 		copyColumns(globalTable.getSelectedValue(),columns, targetTable,isNewColumnVirtual());
 		if(!isNewColumnVirtual())
 			copyRows(globalTable.getSelectedValue(),columns, targetTable);
@@ -430,23 +463,34 @@ public class MergeDataTableTask extends AbstractTask {
 
 	private CyColumn getJoinTargetColumn(CyTable targetTable) {
 		String joinKeyName = CyNetwork.NAME;
-		if(importTypeChooser.getSelectedValue().matches("To a Network Collection"))
+		if(importTypeChooser.getSelectedValue().matches(NETWORK_COLLECTION))
 			joinKeyName = columnList.getSelectedValue();
-		if(importTypeChooser.getSelectedValue().matches("To an unassigned table"))
-			joinKeyName = targetTable.getPrimaryKey().getName();
+		if(importTypeChooser.getSelectedValue().matches(UNASSIGNED_TABLE))
+			joinKeyName = targetMergeKey.getSelectedValue();//targetTable.getPrimaryKey().getName();
 		return targetTable.getColumn(joinKeyName);
 	}
 
 	private void copyRows(CyTable sourceTable, List<CyColumn> sourceColumns, CyTable targetTable) {
+		CyRow sourceRow;
 		CyColumn targetKeyColumn = getJoinTargetColumn(targetTable);
 
 		for (CyRow targetRow : targetTable.getAllRows()) {
 			Object key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
 
-			if (!sourceTable.rowExists(key))
-				continue;
-
-			CyRow sourceRow = sourceTable.getRow(key);
+			if(isMergeColumnKeyColumn())
+			{
+				if(!sourceTable.rowExists(key))
+					continue;
+				
+				sourceRow = sourceTable.getRow(key);
+			}
+			else
+			{
+				if (sourceTable.getMatchingRows(getMergeKeyColumn().getName(), key).isEmpty())
+					continue;
+	
+				sourceRow = sourceTable.getMatchingRows(getMergeKeyColumn().getName(), key).iterator().next();
+			}
 
 			if (sourceRow == null)
 				continue;
@@ -458,7 +502,10 @@ public class MergeDataTableTask extends AbstractTask {
 				
 
 				String targetColName = source2targetColumnMap.get(col.getName());
-
+				
+				if (targetColName == null)
+					continue;  // skip this column
+				
 				if (col.getType() == List.class)
 					targetRow.set(targetColName, sourceRow.getList(col.getName(), col.getListElementType()));
 				else
@@ -480,7 +527,10 @@ public class MergeDataTableTask extends AbstractTask {
 			// columns, which is a common case
 			// String targetColName = getUniqueColumnName(targetTable, col.getName());
 			String targetColName = col.getName();
-
+			
+			if ( !isMergeColumnKeyColumn())
+				addVirtual = false;
+			
 			if (targetTable.getColumn(targetColName) == null) {
 				if(!addVirtual)
 				{
@@ -506,29 +556,21 @@ public class MergeDataTableTask extends AbstractTask {
 		}
 	}
 
-	private String getUniqueColumnName(CyTable table, final String preferredName) {
-
-		if (table.getColumn(preferredName) == null)
-			return preferredName;
-		
-		String newUniqueName;
-		int i = 0;
-		do {
-			++i;
-			newUniqueName = preferredName + "-" + i;
-		} while (table.getColumn(newUniqueName) != null);
-
-		return newUniqueName;
-	}
-
 	public boolean checkKeys() {
 
 		Class<?> joinTargetColumnType = String.class;
-		if(importTypeChooser.getSelectedValue().matches("To a Network Collection"))
+		if(importTypeChooser.getSelectedValue().matches(NETWORK_COLLECTION))
+		{
 			joinTargetColumnType = getJoinTargetColumn(
 					getTable(name2RootMap.get(rootNetworkList.getSelectedValue()), getDataTypeOptions(),
 							CyNetwork.DEFAULT_ATTRS)).getType();
-		
+		}
+		if(importTypeChooser.getSelectedValue().matches(UNASSIGNED_TABLE))
+		{
+			if(!unassignedTables.getSelectedValue().toString().matches(NO_TABLES))
+				joinTargetColumnType = getJoinTargetColumn((CyTable)unassignedTables.getSelectedValue()).getType();
+		}
+			
 		if (getMergeKeyColumn().getType() != joinTargetColumnType)
 			return false;
 			
@@ -574,7 +616,12 @@ public class MergeDataTableTask extends AbstractTask {
 	
 	private boolean isNewColumnVirtual ()
 	{
-		return mergeDataType.getSelectedValue().matches("New Virtual Column");
+		return mergeDataType;
+	}
+	
+	private boolean isMergeColumnKeyColumn ()
+	{
+		return globalTable.getSelectedValue().getPrimaryKey() == getMergeKeyColumn();
 	}
 	
 	private CyColumn getMergeKeyColumn ()
@@ -584,10 +631,26 @@ public class MergeDataTableTask extends AbstractTask {
 
 	private TableType getDataTypeOptions()
 	{
-		if(importTypeChooser.getSelectedValue().matches("To a Network Collection"))
+		if(importTypeChooser.getSelectedValue().matches(NETWORK_COLLECTION))
 			return dataTypeOptions1.getSelectedValue();
 		else
 			return dataTypeOptions2.getSelectedValue();
 		
+	}
+	@Override
+	public ValidationState getValidationState(Appendable errMsg) {
+		if ( !isMergeColumnKeyColumn() && isNewColumnVirtual()) {
+			try{
+				mergeDataType = false;
+				errMsg.append("Source Key column needs to be the key column of source table to apply a soft merge.\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+				return ValidationState.INVALID;
+			}
+			return ValidationState.INVALID;
+		}
+		
+		
+		return OK;
 	}
 }
