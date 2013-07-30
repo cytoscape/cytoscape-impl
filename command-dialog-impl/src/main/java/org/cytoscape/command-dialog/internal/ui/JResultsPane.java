@@ -90,7 +90,14 @@ public class JResultsPane extends JTextPane implements MessageHandler {
 	}
 
 	public void appendResult(String s) {
-		updateString(resultAttributes, "--> "+s+"\n");
+		// Be a little careful.  We want to space newlines to they all
+		// appear in column order
+		String[] splitString = s.split("\n");
+		if (splitString.length > 1) {
+			for (String splitS: splitString)
+				updateString(resultAttributes, "\u2192  "+splitS+"\n");
+		} else 
+			updateString(resultAttributes, "\u2192  "+s+"\n");
 	}
 
 	public void appendWarning(String s) {
