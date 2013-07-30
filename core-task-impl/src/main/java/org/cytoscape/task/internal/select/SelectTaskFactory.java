@@ -31,18 +31,18 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class SelectEdgesTaskFactoryImpl extends AbstractTaskFactory {
+public class SelectTaskFactory extends AbstractTaskFactory {
 	private CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
 
-	public SelectEdgesTaskFactoryImpl(final CyNetworkViewManager networkViewManager,
-	                                  final CyEventHelper eventHelper)
+	public SelectTaskFactory(final CyNetworkViewManager networkViewManager,
+	                         final CyEventHelper eventHelper)
 	{
 		this.networkViewManager = networkViewManager;
 		this.eventHelper        = eventHelper;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SelectEdgesTask(networkViewManager, eventHelper));
+		return new TaskIterator(new SelectTask(networkViewManager, eventHelper));
 	}
 }

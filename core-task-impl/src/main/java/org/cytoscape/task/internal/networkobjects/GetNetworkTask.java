@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.select;
+package org.cytoscape.task.internal.networkobjects;
 
 /*
  * #%L
@@ -24,25 +24,34 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
+public class GetNetworkTask extends AbstractTask implements ObservableTask{
+	@Tunable(description="Network to return", context="nogui")
+	public CyNetwork network;
 
-public class SelectNodesTaskFactoryImpl extends AbstractTaskFactory {
-	private CyNetworkViewManager networkViewManager;
-	private final CyEventHelper eventHelper;
-
-	public SelectNodesTaskFactoryImpl(final CyNetworkViewManager networkViewManager,
-	                                  final CyEventHelper eventHelper)
-	{
-		this.networkViewManager = networkViewManager;
-		this.eventHelper        = eventHelper;
+	public GetNetworkTask() {
 	}
 
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SelectNodesTask(networkViewManager, eventHelper));
+	@Override
+	public void run(final TaskMonitor taskMonitor) {
+		// Nothing to do -- it's all in the Tunable
+	}
+
+	public Object getResults(Class type) {
+		if (type.equals(CyNetwork.class)) {
+			return network;
+		} else if (type.equals(String.class)){
+			return network.toString();
+		}
+		return network;
 	}
 }

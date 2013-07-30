@@ -25,36 +25,52 @@ package org.cytoscape.task.internal.select;
  */
 
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.command.util.NodeList;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.util.ListSingleSelection;
 
 
-public class SelectEdgesTask extends AbstractSelectTask {
-	@Tunable(description="Network to select edges in",gravity=1.0,context="nogui")
+public class DeselectTask extends AbstractSelectTask {
+	@Tunable(description="Network to deselect nodes and edges in",context="nogui")
 	public CyNetwork network;
 
-	public EdgeList edgeList = new EdgeList(null);
+	// Nodes
+	public NodeList nodeList = new NodeList(null);
+	@Tunable(description="Nodes to deselect",context="nogui")
+	public NodeList getnodeList() {
+		super.network = network;
+		nodeList.setNetwork(network);
+		return nodeList;
+	}
+	public void setnodeList(NodeList setValue) {}
 
-	@Tunable(description="Edges to select",gravity=2.0,context="nogui")
+	// Edges
+	public EdgeList edgeList = new EdgeList(null);
+	@Tunable(description="Edges to deselect",context="nogui")
 	public EdgeList getedgeList() {
 		super.network = network;
 		edgeList.setNetwork(network);
 		return edgeList;
 	}
-
 	public void setedgeList(EdgeList setValue) {}
 
-	public SelectEdgesTask(final CyNetworkViewManager networkViewManager,
-	                       final CyEventHelper eventHelper)
+	public DeselectTask(final CyNetworkViewManager networkViewManager,
+	                    final CyEventHelper eventHelper)
 	{
 		super(null, networkViewManager, eventHelper);
 	}
@@ -71,11 +87,22 @@ public class SelectEdgesTask extends AbstractSelectTask {
 		CyNetworkView view = null;
 		if(views.size() != 0)
 			view = views.iterator().next();
-		
-		tm.setProgress(0.2);
-		tm.showMessage(TaskMonitor.Level.INFO, "Selecting "+edgeList.getValue().size()+" edges");
-		selectUtils.setSelectedEdges(network,edgeList.getValue(), true);
+
+		int edgeCount = 0;
+		int nodeCount = 0;
+
+		if (edgeList.getValue() != null && edgeList.getValue().size() > 0) {
+			selectUtils.setSelectedEdges(network, edgeList.getValue(), false);
+			edgeCount = edgeList.getValue().size();
+		}
+
+		if (nodeList.getValue() != null && nodeList.getValue().size() > 0) {
+			selectUtils.setSelectedNodes(network, nodeList.getValue(), false);
+			nodeCount = nodeList.getValue().size();
+		}
+
 		tm.setProgress(0.6);
+		tm.showMessage(TaskMonitor.Level.INFO, "Deselected "+nodeCount+" nodes and "+edgeCount+" edges.");
 		updateView();
 		tm.setProgress(1.0);
 	}
