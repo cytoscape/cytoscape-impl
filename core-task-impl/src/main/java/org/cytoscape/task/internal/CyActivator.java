@@ -143,6 +143,7 @@ import org.cytoscape.task.internal.loadnetwork.LoadNetworkFileTaskFactoryImpl;
 import org.cytoscape.task.internal.loadnetwork.LoadNetworkURLTaskFactoryImpl;
 import org.cytoscape.task.internal.loadvizmap.LoadVizmapFileTaskFactoryImpl;
 import org.cytoscape.task.internal.networkobjects.DeleteSelectedNodesAndEdgesTaskFactoryImpl;
+import org.cytoscape.task.internal.networkobjects.ListNetworksTaskFactory;
 import org.cytoscape.task.internal.proxysettings.ProxySettingsTaskFactoryImpl;
 import org.cytoscape.task.internal.select.DeselectAllEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.DeselectAllNodesTaskFactoryImpl;
@@ -1171,6 +1172,12 @@ public class CyActivator extends AbstractCyActivator {
 		edgeDeselectTaskFactoryProps.setProperty(COMMAND, "deselect");
 		edgeDeselectTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
 		registerService(bc,edgeDeselect,TaskFactory.class,edgeDeselectTaskFactoryProps);
+
+		ListNetworksTaskFactory listNetworks = new ListNetworksTaskFactory(cyNetworkManagerServiceRef);
+		Properties listNetworksTaskFactoryProps = new Properties();
+		listNetworksTaskFactoryProps.setProperty(COMMAND, "list");
+		listNetworksTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+		registerService(bc,listNetworks,TaskFactory.class,listNetworksTaskFactoryProps);
 
 	}
 }
