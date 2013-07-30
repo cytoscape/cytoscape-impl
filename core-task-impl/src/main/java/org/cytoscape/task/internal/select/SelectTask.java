@@ -79,6 +79,9 @@ public class SelectTask extends AbstractSelectTask {
 	@Tunable(description="Extend edge selection", context="nogui")
 	public boolean extendEdges = false;
 
+	@Tunable(description="Select adjacent edges", context="nogui")
+	public boolean adjacentEdges = false;
+
 	public SelectTask(final CyNetworkViewManager networkViewManager,
 	                       final CyEventHelper eventHelper)
 	{
@@ -153,6 +156,12 @@ public class SelectTask extends AbstractSelectTask {
 			}
 			tm.showMessage(TaskMonitor.Level.INFO, "Added "+(nodes.size()-nodeCount)+" nodes from selected edges");
 			nodeCount = nodes.size();
+		}
+
+		if (adjacentEdges) {
+			for (CyNode node: nodes) {
+				edges.addAll(network.getAdjacentEdgeList(node, CyEdge.Type.ANY));
+			}
 		}
 
 		tm.setProgress(0.2);

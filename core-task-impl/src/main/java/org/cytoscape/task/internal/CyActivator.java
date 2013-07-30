@@ -147,7 +147,9 @@ import org.cytoscape.task.internal.networkobjects.AddEdgeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.AddNodeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.DeleteSelectedNodesAndEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.networkobjects.GetNetworkTaskFactory;
+import org.cytoscape.task.internal.networkobjects.ListEdgesTaskFactory;
 import org.cytoscape.task.internal.networkobjects.ListNetworksTaskFactory;
+import org.cytoscape.task.internal.networkobjects.ListNodesTaskFactory;
 import org.cytoscape.task.internal.networkobjects.SetCurrentNetworkTaskFactory;
 import org.cytoscape.task.internal.proxysettings.ProxySettingsTaskFactoryImpl;
 import org.cytoscape.task.internal.select.DeselectAllEdgesTaskFactoryImpl;
@@ -512,8 +514,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectAdjacentEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"6.0");
 		selectAdjacentEdgesTaskFactoryProps.setProperty(ACCELERATOR,"alt e");
 		selectAdjacentEdgesTaskFactoryProps.setProperty(TITLE,"Select adjacent edges");
-		selectAdjacentEdgesTaskFactoryProps.setProperty(COMMAND,"select adjacent");
-		selectAdjacentEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edge");
+		// selectAdjacentEdgesTaskFactoryProps.setProperty(COMMAND,"select adjacent");
+		// selectAdjacentEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edge");
 		registerService(bc,selectAdjacentEdgesTaskFactory,NetworkTaskFactory.class, selectAdjacentEdgesTaskFactoryProps);
 		registerService(bc,selectAdjacentEdgesTaskFactory,SelectAdjacentEdgesTaskFactory.class, selectAdjacentEdgesTaskFactoryProps);
 
@@ -523,8 +525,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectConnectedNodesTaskFactoryProps.setProperty(MENU_GRAVITY,"7.0");
 		selectConnectedNodesTaskFactoryProps.setProperty(ACCELERATOR,"cmd 7");
 		selectConnectedNodesTaskFactoryProps.setProperty(TITLE,"Nodes connected by selected edges");
-		selectConnectedNodesTaskFactoryProps.setProperty(COMMAND,"select by connected edges");
-		selectConnectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"node");
+		// selectConnectedNodesTaskFactoryProps.setProperty(COMMAND,"select by connected edges");
+		// selectConnectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"node");
 		registerService(bc,selectConnectedNodesTaskFactory,NetworkTaskFactory.class, selectConnectedNodesTaskFactoryProps);
 		registerService(bc,selectConnectedNodesTaskFactory,SelectConnectedNodesTaskFactory.class, selectConnectedNodesTaskFactoryProps);
 
@@ -538,8 +540,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/select_firstneighbors.png").toString());
 		selectFirstNeighborsTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		selectFirstNeighborsTaskFactoryProps.setProperty(TOOLTIP,"First Neighbors of Selected Nodes (Undirected)");
-		selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND,"select first neighbors undirected");
-		selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"node");
+		// selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND,"select first neighbors undirected");
+		// selectFirstNeighborsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"node");
 		registerService(bc,selectFirstNeighborsTaskFactory,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryProps);
 		registerService(bc,selectFirstNeighborsTaskFactory,SelectFirstNeighborsTaskFactory.class, selectFirstNeighborsTaskFactoryProps);
 
@@ -549,8 +551,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(MENU_GRAVITY,"6.1");
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(TITLE,"Directed: Incoming");
 		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(TOOLTIP,"First Neighbors of Selected Nodes (Directed: Incoming)");
-		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND,"select first neighbors incoming");
-		selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND_NAMESPACE,"node");
+		// selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND,"select first neighbors incoming");
+		// selectFirstNeighborsTaskFactoryInEdgeProps.setProperty(COMMAND_NAMESPACE,"node");
 		registerService(bc,selectFirstNeighborsTaskFactoryInEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryInEdgeProps);
 		registerService(bc,selectFirstNeighborsTaskFactoryInEdge,SelectFirstNeighborsTaskFactory.class, selectFirstNeighborsTaskFactoryInEdgeProps);
 
@@ -560,8 +562,8 @@ public class CyActivator extends AbstractCyActivator {
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(MENU_GRAVITY,"6.2");
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(TITLE,"Directed: Outgoing");
 		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(TOOLTIP,"First Neighbors of Selected Nodes (Directed: Outgoing)");
-		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(COMMAND,"select first neighbors outgoing");
-		selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(COMMAND_NAMESPACE,"node");
+		// selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(COMMAND,"select first neighbors outgoing");
+		// selectFirstNeighborsTaskFactoryOutEdgeProps.setProperty(COMMAND_NAMESPACE,"node");
 		registerService(bc,selectFirstNeighborsTaskFactoryOutEdge,NetworkTaskFactory.class, selectFirstNeighborsTaskFactoryOutEdgeProps);
 		registerService(bc,selectFirstNeighborsTaskFactoryOutEdge,SelectFirstNeighborsTaskFactory.class, selectFirstNeighborsTaskFactoryOutEdgeProps);		
 
@@ -600,8 +602,6 @@ public class CyActivator extends AbstractCyActivator {
 		invertSelectedEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		invertSelectedEdgesTaskFactoryProps.setProperty(ACCELERATOR,"alt i");
 		invertSelectedEdgesTaskFactoryProps.setProperty(TITLE,"Invert edge selection");
-		invertSelectedEdgesTaskFactoryProps.setProperty(COMMAND,"invert selection");
-		invertSelectedEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"edge");
 		registerService(bc,invertSelectedEdgesTaskFactory,NetworkTaskFactory.class, invertSelectedEdgesTaskFactoryProps);
 		registerService(bc,invertSelectedEdgesTaskFactory,InvertSelectedEdgesTaskFactory.class, invertSelectedEdgesTaskFactoryProps);
 
@@ -615,8 +615,6 @@ public class CyActivator extends AbstractCyActivator {
 		invertSelectedNodesTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/invert_selection.png").toString());
 		invertSelectedNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		invertSelectedNodesTaskFactoryProps.setProperty(TOOLTIP,"Invert Node Selection");
-		invertSelectedNodesTaskFactoryProps.setProperty(COMMAND,"invert selection");
-		invertSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"node");
 		registerService(bc,invertSelectedNodesTaskFactory,NetworkTaskFactory.class, invertSelectedNodesTaskFactoryProps);
 		registerService(bc,invertSelectedNodesTaskFactory,InvertSelectedNodesTaskFactory.class, invertSelectedNodesTaskFactoryProps);
 
@@ -1153,6 +1151,12 @@ public class CyActivator extends AbstractCyActivator {
 		
 
 		// These are task factories that are only available to the command line
+		ListEdgesTaskFactory listEdges = new ListEdgesTaskFactory();
+		Properties listEdgesTaskFactoryProps = new Properties();
+		listEdgesTaskFactoryProps.setProperty(COMMAND, "list");
+		listEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
+		registerService(bc,listEdges,TaskFactory.class,listEdgesTaskFactoryProps);
+
 		AddTaskFactory addTaskFactory = new AddTaskFactory();
 		Properties addTaskFactoryProps = new Properties();
 		addTaskFactoryProps.setProperty(COMMAND, "add");
@@ -1200,6 +1204,12 @@ public class CyActivator extends AbstractCyActivator {
 		setCurrentNetworkTaskFactoryProps.setProperty(COMMAND, "set current");
 		setCurrentNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		registerService(bc,setCurrentNetwork,TaskFactory.class,setCurrentNetworkTaskFactoryProps);
+
+		ListNodesTaskFactory listNodes = new ListNodesTaskFactory();
+		Properties listNodesTaskFactoryProps = new Properties();
+		listNodesTaskFactoryProps.setProperty(COMMAND, "list");
+		listNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
+		registerService(bc,listNodes,TaskFactory.class,listNodesTaskFactoryProps);
 
 	}
 }
