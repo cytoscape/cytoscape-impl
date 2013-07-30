@@ -142,6 +142,9 @@ import org.cytoscape.task.internal.loaddatatable.ImportAttributesURLTaskFactoryI
 import org.cytoscape.task.internal.loadnetwork.LoadNetworkFileTaskFactoryImpl;
 import org.cytoscape.task.internal.loadnetwork.LoadNetworkURLTaskFactoryImpl;
 import org.cytoscape.task.internal.loadvizmap.LoadVizmapFileTaskFactoryImpl;
+import org.cytoscape.task.internal.networkobjects.AddTaskFactory;
+import org.cytoscape.task.internal.networkobjects.AddEdgeTaskFactory;
+import org.cytoscape.task.internal.networkobjects.AddNodeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.DeleteSelectedNodesAndEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.networkobjects.GetNetworkTaskFactory;
 import org.cytoscape.task.internal.networkobjects.ListNetworksTaskFactory;
@@ -765,6 +768,7 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,destroyNetworkTaskFactory,NetworkCollectionTaskFactory.class, destroyNetworkTaskFactoryProps);
 		registerService(bc,destroyNetworkTaskFactory,DestroyNetworkTaskFactory.class, destroyNetworkTaskFactoryProps);
+		registerService(bc,destroyNetworkTaskFactory,TaskFactory.class, destroyNetworkTaskFactoryProps);
 
 
 		Properties destroyNetworkViewTaskFactoryProps = new Properties();
@@ -1149,6 +1153,24 @@ public class CyActivator extends AbstractCyActivator {
 		
 
 		// These are task factories that are only available to the command line
+		AddTaskFactory addTaskFactory = new AddTaskFactory();
+		Properties addTaskFactoryProps = new Properties();
+		addTaskFactoryProps.setProperty(COMMAND, "add");
+		addTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+		registerService(bc,addTaskFactory,TaskFactory.class,addTaskFactoryProps);
+
+		AddEdgeTaskFactory addEdgeTaskFactory = new AddEdgeTaskFactory();
+		Properties addEdgeTaskFactoryProps = new Properties();
+		addEdgeTaskFactoryProps.setProperty(COMMAND, "add edge");
+		addEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+		registerService(bc,addEdgeTaskFactory,TaskFactory.class,addEdgeTaskFactoryProps);
+
+		AddNodeTaskFactory addNodeTaskFactory = new AddNodeTaskFactory();
+		Properties addNodeTaskFactoryProps = new Properties();
+		addNodeTaskFactoryProps.setProperty(COMMAND, "add node");
+		addNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+		registerService(bc,addNodeTaskFactory,TaskFactory.class,addNodeTaskFactoryProps);
+
 		DeselectTaskFactory deselectTaskFactory = new DeselectTaskFactory(cyNetworkViewManagerServiceRef, cyEventHelperRef);
 		Properties deselectTaskFactoryProps = new Properties();
 		deselectTaskFactoryProps.setProperty(COMMAND, "deselect");

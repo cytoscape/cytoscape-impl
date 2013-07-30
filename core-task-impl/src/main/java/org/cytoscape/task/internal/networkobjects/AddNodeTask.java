@@ -29,31 +29,47 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-public class GetNetworkTask extends AbstractTask implements ObservableTask{
-	@Tunable(description="Network to return", context="nogui")
-	public CyNetwork network;
+public class AddNodeTask extends AbstractTask implements ObservableTask {
+	CyNode newNode;
 
-	public GetNetworkTask() {
+	@Tunable(description="Network to add a node to", context="nogui")
+	public CyNetwork network = null;
+
+	@Tunable(description="Name of the node to add", context="nogui")
+	public String name = null;
+
+	public AddNodeTask() {
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		// Nothing to do -- it's all in the Tunable
+		if (network == null) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified for add command");
+			return;
+		}			
+
+		newNode = network.addNode();
+		if (name != null) {
+			network.getRow(newNode).set(CyNetwork.NAME, name);
+		}
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Added node "+newNode.toString()+" to network");
+
 	}
 
 	public Object getResults(Class type) {
-		if (type.equals(CyNetwork.class)) {
-			return network;
+		if (type.equals(CyNode.class)) {
+			return newNode;
 		} else if (type.equals(String.class)){
-			if (network == null)
+			if (newNode == null)
 				return "<none>";
-			return network.toString();
+			return newNode.toString();
 		}
-		return network;
+		return newNode;
 	}
 }

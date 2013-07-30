@@ -24,36 +24,18 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
-public class GetNetworkTask extends AbstractTask implements ObservableTask{
-	@Tunable(description="Network to return", context="nogui")
-	public CyNetwork network;
 
-	public GetNetworkTask() {
+public class AddTaskFactory extends AbstractTaskFactory {
+	public AddTaskFactory() {
 	}
 
-	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		// Nothing to do -- it's all in the Tunable
-	}
-
-	public Object getResults(Class type) {
-		if (type.equals(CyNetwork.class)) {
-			return network;
-		} else if (type.equals(String.class)){
-			if (network == null)
-				return "<none>";
-			return network.toString();
-		}
-		return network;
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new AddTask());
 	}
 }
