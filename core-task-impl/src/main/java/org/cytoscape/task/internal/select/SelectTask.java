@@ -162,6 +162,7 @@ public class SelectTask extends AbstractSelectTask {
 			for (CyNode node: nodes) {
 				edges.addAll(network.getAdjacentEdgeList(node, CyEdge.Type.ANY));
 			}
+			edgeCount = edges.size();
 		}
 
 		tm.setProgress(0.2);
