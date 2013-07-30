@@ -62,6 +62,10 @@ public class SelectEdgesTask extends AbstractSelectTask {
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		if (network == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			return;
+		}
 		tm.setProgress(0.0);
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;

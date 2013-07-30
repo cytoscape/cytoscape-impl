@@ -15,8 +15,10 @@ import java.util.concurrent.BlockingQueue;
 
 import org.cytoscape.commandDialog.internal.handlers.CommandHandler;
 import org.cytoscape.commandDialog.internal.tasks.CommandDialogTaskFactory;
+import org.cytoscape.commandDialog.internal.tasks.PauseCommandTaskFactory;
 import org.cytoscape.commandDialog.internal.tasks.RunCommandsTaskFactory;
 import org.cytoscape.commandDialog.internal.tasks.QuitTaskFactory;
+import org.cytoscape.commandDialog.internal.tasks.SleepCommandTaskFactory;
 import org.cytoscape.commandDialog.internal.ui.CommandToolDialog;
 
 import org.cytoscape.application.swing.CySwingApplication;
@@ -93,6 +95,12 @@ public class CyActivator extends AbstractCyActivator {
 			commandDialogProps.setProperty(COMMAND_NAMESPACE, "command");
 			commandDialogProps.setProperty(IN_MENU_BAR, "true");
 			registerService(bc, commandDialog, TaskFactory.class, commandDialogProps);
+
+			TaskFactory pauseCommand = new PauseCommandTaskFactory(swingApp.getJFrame());
+			Properties pauseProperties = new Properties();
+			pauseProperties.setProperty(COMMAND_NAMESPACE, "command");
+			pauseProperties.setProperty(COMMAND, "pause");
+			registerService(bc, pauseCommand, TaskFactory.class, pauseProperties);
 		} else {
 			dialog = null;
 		}
@@ -112,6 +120,12 @@ public class CyActivator extends AbstractCyActivator {
 		quitCommandProps.setProperty(COMMAND, "quit");
 		quitCommandProps.setProperty(COMMAND_NAMESPACE, "command");
 		registerService(bc, quitCommand, TaskFactory.class, quitCommandProps);
+
+		TaskFactory sleepCommand = new SleepCommandTaskFactory();
+		Properties sleepProperties = new Properties();
+		sleepProperties.setProperty(COMMAND_NAMESPACE, "command");
+		sleepProperties.setProperty(COMMAND, "sleep");
+		registerService(bc, sleepCommand, TaskFactory.class, sleepProperties);
 
 		// If the user specified a script file, execute it now.
 		if (dialog != null && scriptFile != null) {

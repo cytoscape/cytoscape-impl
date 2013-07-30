@@ -85,6 +85,7 @@ import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.task.create.CloneNetworkTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
+import org.cytoscape.task.internal.creation.NewNetworkCommandTaskFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
 import org.cytoscape.task.create.NewSessionTaskFactory;
@@ -300,6 +301,7 @@ public class CyActivator extends AbstractCyActivator {
 		NewEmptyNetworkTaskFactoryImpl newEmptyNetworkTaskFactory = new NewEmptyNetworkTaskFactoryImpl(cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,synchronousTaskManagerServiceRef,visualMappingManagerServiceRef, cyRootNetworkFactoryServiceRef, cyApplicationManagerServiceRef);
 		CloneNetworkTaskFactoryImpl cloneNetworkTaskFactory = new CloneNetworkTaskFactoryImpl(cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,visualMappingManagerServiceRef,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkNamingServiceRef,cyApplicationManagerServiceRef,cyNetworkTableManagerServiceRef,rootNetworkManagerServiceRef,cyGroupManager,cyGroupFactory,renderingEngineManagerServiceRef, nullNetworkViewFactory );
 		NewNetworkSelectedNodesEdgesTaskFactoryImpl newNetworkSelectedNodesEdgesTaskFactory = new NewNetworkSelectedNodesEdgesTaskFactoryImpl(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef,cyGroupManager,renderingEngineManagerServiceRef);
+		NewNetworkCommandTaskFactory newNetworkCommandTaskFactory = new NewNetworkCommandTaskFactory(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef,cyGroupManager,renderingEngineManagerServiceRef);
 		NewNetworkSelectedNodesOnlyTaskFactoryImpl newNetworkSelectedNodesOnlyTaskFactory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef,cyGroupManager,renderingEngineManagerServiceRef);
 		DestroyNetworkTaskFactoryImpl destroyNetworkTaskFactory = new DestroyNetworkTaskFactoryImpl(cyNetworkManagerServiceRef);
 		DestroyNetworkViewTaskFactoryImpl destroyNetworkViewTaskFactory = new DestroyNetworkViewTaskFactoryImpl(cyNetworkViewManagerServiceRef);
@@ -456,7 +458,7 @@ public class CyActivator extends AbstractCyActivator {
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(TITLE,"Delete Selected Nodes and Edges...");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"5.0");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(ACCELERATOR,"DELETE");
-		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(COMMAND,"delete selected");
+		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(COMMAND,"delete");
 		deleteSelectedNodesAndEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,deleteSelectedNodesAndEdgesTaskFactory,NetworkTaskFactory.class, deleteSelectedNodesAndEdgesTaskFactoryProps);
 		registerService(bc,deleteSelectedNodesAndEdgesTaskFactory,DeleteSelectedNodesAndEdgesTaskFactory.class, deleteSelectedNodesAndEdgesTaskFactoryProps);
@@ -716,8 +718,8 @@ public class CyActivator extends AbstractCyActivator {
 		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
 		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift n");
 		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(TITLE,"From selected nodes, selected edges");
-		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(COMMAND,"create from selected nodes and edges");
-		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		// newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(COMMAND,"create from selected nodes and edges");
+		// newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,newNetworkSelectedNodesEdgesTaskFactory,NetworkTaskFactory.class, newNetworkSelectedNodesEdgesTaskFactoryProps);
 		registerService(bc,newNetworkSelectedNodesEdgesTaskFactory,NewNetworkSelectedNodesAndEdgesTaskFactory.class, newNetworkSelectedNodesEdgesTaskFactoryProps);
 
@@ -731,10 +733,15 @@ public class CyActivator extends AbstractCyActivator {
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(TOOLTIP,"New Network From Selection");
-		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(COMMAND,"create from selected nodes and all edges");
-		newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		// newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(COMMAND,"create from selected nodes and all edges");
+		// newNetworkSelectedNodesOnlyTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,newNetworkSelectedNodesOnlyTaskFactory,NetworkTaskFactory.class, newNetworkSelectedNodesOnlyTaskFactoryProps);
 		registerService(bc,newNetworkSelectedNodesOnlyTaskFactory,NewNetworkSelectedNodesOnlyTaskFactory.class, newNetworkSelectedNodesOnlyTaskFactoryProps);
+
+		Properties newNetworkCommandTaskFactoryProps = new Properties();
+		newNetworkCommandTaskFactoryProps.setProperty(COMMAND,"create");
+		newNetworkCommandTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		registerService(bc,newNetworkCommandTaskFactory,NetworkTaskFactory.class, newNetworkCommandTaskFactoryProps);
 
 		Properties cloneNetworkTaskFactoryProps = new Properties();
 		cloneNetworkTaskFactoryProps.setProperty(ENABLE_FOR,"network");

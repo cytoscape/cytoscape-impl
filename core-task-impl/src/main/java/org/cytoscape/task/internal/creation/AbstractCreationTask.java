@@ -39,7 +39,7 @@ public abstract class AbstractCreationTask extends AbstractTask {
 
 	protected final CyNetworkManager networkManager;
 	protected final CyNetworkViewManager networkViewManager;
-	protected final CyNetwork parentNetwork;
+	protected CyNetwork parentNetwork;
 
 	public AbstractCreationTask(final CyNetwork parentNetwork, final CyNetworkManager networkManager,
 	                            final CyNetworkViewManager networkViewManager) {

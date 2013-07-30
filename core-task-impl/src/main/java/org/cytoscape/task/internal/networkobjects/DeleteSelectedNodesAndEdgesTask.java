@@ -24,11 +24,14 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.command.util.NodeList;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -40,6 +43,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 
 public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
@@ -47,7 +51,27 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager visualMappingManager;
-	private final CyNetwork network;
+
+	@Tunable(description="Network to delete from", context="nogui")
+	public CyNetwork network = null;
+
+	NodeList nodeList = null;
+	@Tunable(description="Nodes to delete", context="nogui")
+	public NodeList getnodeList() {
+		nodeList = new NodeList();
+		nodeList.setNetwork(network);
+		return nodeList;
+	}
+  public void setnodeList(NodeList setValue) {}
+
+	EdgeList edgeList = null;
+	@Tunable(description="Edges to delete", context="nogui")
+	public EdgeList getedgeList() {
+		edgeList = new EdgeList();
+		edgeList.setNetwork(network);
+		return edgeList;
+	}
+  public void setedgeList(EdgeList setValue) {}
 
 	public DeleteSelectedNodesAndEdgesTask(final CyNetwork network,
 	                                       final UndoSupport undoSupport, 
@@ -63,15 +87,33 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		if (network == null)
+		if (network == null) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
 			return;
+		}
 
 		taskMonitor.setProgress(0.0);
+
+		List<CyNode> selectedNodes;
+		Set<CyEdge> selectedEdges;
 		
 		// Delete from the base network so that our changes can be undone:
-		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, "selected", true);
-		taskMonitor.setProgress(0.1);
-		final Set<CyEdge> selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
+		if (nodeList == null && edgeList == null) {
+			selectedNodes = CyTableUtil.getNodesInState(network, "selected", true);
+			taskMonitor.setProgress(0.1);
+			selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
+		} else {
+			if (nodeList != null && nodeList.getValue() != null)
+				selectedNodes = nodeList.getValue();
+			else
+				selectedNodes = new ArrayList<CyNode>();
+
+			if (edgeList != null && edgeList.getValue() != null)
+				selectedEdges = new HashSet<CyEdge>(edgeList.getValue());
+			else
+				selectedEdges = new HashSet<CyEdge>();
+		}
+
 		taskMonitor.setProgress(0.2);
 		
 		// Make sure we're not loosing any edges for a possible undo!

@@ -96,10 +96,16 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	
 	abstract Set<CyEdge> getEdges(CyNetwork net);
 
+	String getNetworkName() {
+		return cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork);
+	}
+
 	@Override
 	public void run(TaskMonitor tm) {
-		if (parentNetwork == null)
-			throw new NullPointerException("Source network is null.");
+		if (parentNetwork == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Source network must be specified.");
+			return;
+		}
 		
 		tm.setProgress(0.0);
 		
@@ -151,7 +157,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		
 		tm.setProgress(0.5);
 		
-		newNet.getRow(newNet).set(CyNetwork.NAME, cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork));
+		newNet.getRow(newNet).set(CyNetwork.NAME, getNetworkName());
 
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
