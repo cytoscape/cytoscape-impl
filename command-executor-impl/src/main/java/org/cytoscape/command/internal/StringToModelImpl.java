@@ -53,7 +53,9 @@ public class StringToModelImpl implements StringToModel {
 
 	private final static String ALL = "all";
 	private final static String CURRENT = "current";
+	private final static String NAME = "name";
 	private final static String SELECTED = "selected";
+	private final static String SUID = "suid";
 	private final static String UNSELECTED = "unselected";
 	
 	public StringToModelImpl(CyApplicationManager appMgr, CyNetworkManager netMgr, 
@@ -67,6 +69,19 @@ public class StringToModelImpl implements StringToModel {
 	public CyNetwork getNetwork(String strNet) {
 		if (strNet == null || strNet.length() == 0 || strNet.equalsIgnoreCase(CURRENT))
 			return appMgr.getCurrentNetwork();
+
+		// Look for any special prefix
+		String column = CyNetwork.NAME;
+		String[] splitString = strNet.split(":");
+		if (splitString.length > 1) {
+			if (SUID.equalsIgnoreCase(splitString[0])) {
+				Long suid = getLong(splitString[1]);
+				if (suid == null) return null;
+				return netMgr.getNetwork(suid);
+			}
+			if (NAME.equalsIgnoreCase(splitString[0]))
+				strNet = splitString[1];
+		}
 
 		for (CyNetwork net: netMgr.getNetworkSet()) {
 			if (strNet.equalsIgnoreCase(net.getRow(net).get(CyNetwork.NAME, String.class)))
@@ -139,11 +154,21 @@ public class StringToModelImpl implements StringToModel {
 		for (String token: list.split(",")) {
 			String[] t = token.trim().split(":");
 			if (t.length == 2) {
-				updateMap(columnMap, t[0], t[1]);
+				// Special case SUID: don't add it to the map
+				if (SUID.equalsIgnoreCase(t[0])) {
+					Long suid = getLong(t[1]);
+					if (suid != null && table.rowExists(suid))
+						suids.add(suid);
+				} else
+					updateMap(columnMap, t[0], t[1]);
 			} else {
 				updateMap(columnMap, CyNetwork.NAME, t[0]);
 			}
 		}
+
+		// Our map might be empty if we used all SUIDs
+		if (columnMap.size() == 0)
+			return suids;
 
 		for (CyRow row: table.getAllRows()) {
 			for (String key: columnMap.keySet()) {
@@ -167,5 +192,13 @@ public class StringToModelImpl implements StringToModel {
 			map.put(key, new ArrayList<String>());
 
 		map.get(key).add(value);
+	}
+
+	private Long getLong(String value) {
+		try {
+			return Long.valueOf(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
 	}
 }

@@ -146,7 +146,9 @@ import org.cytoscape.task.internal.networkobjects.AddTaskFactory;
 import org.cytoscape.task.internal.networkobjects.AddEdgeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.AddNodeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.DeleteSelectedNodesAndEdgesTaskFactoryImpl;
+import org.cytoscape.task.internal.networkobjects.GetEdgeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.GetNetworkTaskFactory;
+import org.cytoscape.task.internal.networkobjects.GetNodeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.ListEdgesTaskFactory;
 import org.cytoscape.task.internal.networkobjects.ListNetworksTaskFactory;
 import org.cytoscape.task.internal.networkobjects.ListNodesTaskFactory;
@@ -1151,6 +1153,12 @@ public class CyActivator extends AbstractCyActivator {
 		
 
 		// These are task factories that are only available to the command line
+		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory();
+		Properties getEdgeTaskFactoryProps = new Properties();
+		getEdgeTaskFactoryProps.setProperty(COMMAND, "get");
+		getEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
+		registerService(bc,getEdgeTaskFactory,TaskFactory.class,getEdgeTaskFactoryProps);
+
 		ListEdgesTaskFactory listEdges = new ListEdgesTaskFactory();
 		Properties listEdgesTaskFactoryProps = new Properties();
 		listEdgesTaskFactoryProps.setProperty(COMMAND, "list");
@@ -1204,6 +1212,12 @@ public class CyActivator extends AbstractCyActivator {
 		setCurrentNetworkTaskFactoryProps.setProperty(COMMAND, "set current");
 		setCurrentNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		registerService(bc,setCurrentNetwork,TaskFactory.class,setCurrentNetworkTaskFactoryProps);
+
+		GetNodeTaskFactory getNodeTaskFactory = new GetNodeTaskFactory();
+		Properties getNodeTaskFactoryProps = new Properties();
+		getNodeTaskFactoryProps.setProperty(COMMAND, "get");
+		getNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
+		registerService(bc,getNodeTaskFactory,TaskFactory.class,getNodeTaskFactoryProps);
 
 		ListNodesTaskFactory listNodes = new ListNodesTaskFactory();
 		Properties listNodesTaskFactoryProps = new Properties();
