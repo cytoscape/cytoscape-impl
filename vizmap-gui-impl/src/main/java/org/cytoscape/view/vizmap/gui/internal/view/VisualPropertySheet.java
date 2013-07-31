@@ -164,20 +164,18 @@ public class VisualPropertySheet extends JPanel{
 				i.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(final MouseEvent e) {
-						if (!SwingUtilities.isRightMouseButton(e)) {
-							if (e.isShiftDown()) {
-								// TODO Select range
-								i.setSelected(!i.isSelected());
-							} else if (e.isControlDown()) {
-								// Add to selection
-								i.setSelected(!i.isSelected());
-							} else {
-								// Select only this one
-								setSelectedItems((Set) (Collections.singleton(i)));
-							}
-						}
+						onMouseClickedItem(e, i);
 					}
 				});
+				
+				if (i.getModel().isVisualMappingAllowed()) {
+					i.getPropSheetPnl().getTable().addMouseListener(new MouseAdapter() {
+						@Override
+						public void mouseClicked(final MouseEvent e) {
+							onMouseClickedItem(e, i);
+						}
+					});
+				}
 			}
 			
 			// Add an empty panel to fill the vertical gap
@@ -554,6 +552,21 @@ public class VisualPropertySheet extends JPanel{
 		// Update the selected state of each menu item
 		for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
 			entry.getValue().setSelected(entry.getKey().isVisible());
+		}
+	}
+	
+	private void onMouseClickedItem(final MouseEvent e, final VisualPropertySheetItem<?> item) {
+		if (!SwingUtilities.isRightMouseButton(e) && !item.isSelected()) {
+			if (e.isShiftDown()) {
+				// TODO Select range
+				item.setSelected(true);
+			} else if (e.isControlDown()) {
+				// Add to selection
+				item.setSelected(true);
+			} else {
+				// Select only this one
+				setSelectedItems((Set) (Collections.singleton(item)));
+			}
 		}
 	}
 	

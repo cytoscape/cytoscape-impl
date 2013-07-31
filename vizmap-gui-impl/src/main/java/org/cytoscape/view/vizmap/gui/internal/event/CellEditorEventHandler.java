@@ -125,16 +125,13 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		if (propSheetPnl == null)
 			return;
 		
-		// find selected cell
-		final PropertySheetTable table = propSheetPnl.getTable();
-		final int selected = table.getSelectedRow();
+		final int mappingRow = vizMapperMediator.getLastEditedMappingRow();
 
-		// If nothing selected, ignore.
-		if (selected < 0)
+		if (mappingRow < 0)
 			return;
 
-		// Extract selected Property object in the table.
-		final Item selectedItem = (Item) propSheetPnl.getTable().getValueAt(selected, 0);
+		// Extract Property object from visual mapping table.
+		final Item selectedItem = (Item) propSheetPnl.getTable().getValueAt(mappingRow, 0);
 		final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();
 
 		if (prop == null)

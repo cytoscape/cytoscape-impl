@@ -11,8 +11,6 @@ import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISU
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -106,6 +104,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private VizMapperProxy proxy;
 	private boolean ignoreVisualStyleSelectedEvents;
 	private VisualPropertySheetItem<?> curVpSheetItem;
+	private int lastEditedMappingRow;
 	private CyNetworkView previewNetView;
 	
 	private final ServicesUtil servicesUtil;
@@ -255,6 +254,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	public VisualPropertySheet getSelectedVisualPropertySheet() {
 		return vizMapperMainPanel.getSelectedVisualPropertySheet();
+	}
+	
+	public int getLastEditedMappingRow() {
+		return lastEditedMappingRow;
 	}
 	
 	/**
@@ -547,18 +550,18 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					}
 				});
 				
-				// Save the current editor (the one the user is interacting with)
-				vpSheetItem.getPropSheetTbl().addFocusListener(new FocusAdapter() {
-					@Override
-					public void focusGained(final FocusEvent e) {
-						curVpSheetItem = vpSheetItem;
-					}
-				});
-				
 				vpSheetItem.getRemoveMappingBtn().addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
 						removeVisualMapping(vpSheetItem);
+					}
+				});
+				
+				vpSheetItem.getPropSheetTbl().addPropertyChangeListener("lastEditedMappingRow", new PropertyChangeListener() {
+					@Override
+					public void propertyChange(final PropertyChangeEvent e) {
+						curVpSheetItem = vpSheetItem; // Save the current editor (the one the user is interacting with)
+						lastEditedMappingRow = (Integer) e.getNewValue();
 					}
 				});
 			}

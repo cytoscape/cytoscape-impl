@@ -26,13 +26,10 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import javax.swing.JTextField;
 
 import com.l2fprod.common.beans.editor.StringPropertyEditor;
-import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 import com.l2fprod.common.swing.LookAndFeelTweaks;
 
 public class CyStringPropertyEditor extends StringPropertyEditor {
@@ -50,64 +47,25 @@ public class CyStringPropertyEditor extends StringPropertyEditor {
 			
 			@Override
 			public void focusGained(FocusEvent e) {
-				Method getM = null;
-				Object val = null;
-				
-				try {
-					if (e.getOppositeComponent() != null)
-						getM = e.getOppositeComponent().getClass().getMethod("getSelectedRow", new Class[] {});
-				} catch (SecurityException e1) {
-					e1.printStackTrace();
-				} catch (NoSuchMethodException e1) {
-					e1.printStackTrace();
-				}
-
-				try {
-					if (getM != null)
-						val = getM.invoke(e.getOppositeComponent(), new Object[] {});
-				} catch (IllegalArgumentException e1) {
-					e1.printStackTrace();
-				} catch (IllegalAccessException e1) {
-					e1.printStackTrace();
-				} catch (InvocationTargetException e1) {
-					e1.printStackTrace();
-				}
-
-				try {
-					if (e.getOppositeComponent() != null)
-						getM = e.getOppositeComponent().getClass().getMethod(
-								"getValueAt", new Class[] { int.class, int.class });
-				} catch (SecurityException e1) {
-					e1.printStackTrace();
-				} catch (NoSuchMethodException e1) {
-					e1.printStackTrace();
-				}
-
-				Object val2 = null;
-
-				try {
-					if (getM != null && e.getOppositeComponent() != null)
-						val2 = getM.invoke(e.getOppositeComponent(), new Object[] { (Integer) val, Integer.valueOf(0) });
-				} catch (IllegalArgumentException e1) {
-					e1.printStackTrace();
-				} catch (IllegalAccessException e1) {
-					e1.printStackTrace();
-				} catch (InvocationTargetException e1) {
-					e1.printStackTrace();
-				}
-
-				if (val2 instanceof Item)
-					currentValue = ((Item) val2).getProperty().getDisplayName();
+				setCurrentValue();
 			}
 
 			@Override
 			public void focusLost(final FocusEvent e) {
-				final String newValue = ((JTextField) editor).getText();
-				
-				if ((currentValue == null && newValue != null) || 
-						(currentValue != null && !currentValue.equals(newValue)))
-					firePropertyChange(currentValue, newValue);
+				checkChange();
 			}
 		});
+	}
+	
+	private void setCurrentValue() {
+		this.currentValue = super.getValue();
+	}
+	
+	private void checkChange() {
+		final Object newValue = super.getValue();
+		
+		if ((currentValue == null && newValue != null) || 
+				(currentValue != null && !currentValue.equals(newValue)))
+			firePropertyChange(currentValue, newValue);
 	}
 }

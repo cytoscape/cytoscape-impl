@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -25,12 +26,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -39,16 +43,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.table.TableCellEditor;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -152,6 +157,11 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	public void setSelected(final boolean selected) {
 		this.selected = selected;
+		requestFocus();
+		
+		if (!selected && getModel().isVisualMappingAllowed())
+			getPropSheetTbl().clearSelection(); // This prevents some bugs when editing discrete mappings!
+		
 		updateSelection();
 	}
 	
@@ -693,8 +703,25 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	// ==[ CLASSES ]====================================================================================================
 	
-	private static class VizMapPropertySheetTable extends PropertySheetTable {
+	private class VizMapPropertySheetTable extends PropertySheetTable {
 
+		private int lastEditedMappingRow = -1;
+
+		VizMapPropertySheetTable() {
+			setKeyBindings();
+		}
+		
+		@Override
+		public Component prepareEditor(final TableCellEditor editor, final  int row, final int column) {
+			firePropertyChange("lastEditedMappingRow", lastEditedMappingRow, lastEditedMappingRow = row);
+			return super.prepareEditor(editor, row, column);
+		}
+		
+		@Override
+		public boolean isCellEditable(final int row, final int column) {
+			return isRowSelected(row) && super.isCellEditable(row, column);
+		}
+		
 		@Override
 		public String getToolTipText(MouseEvent me) {
 			final Point pt = me.getPoint();
@@ -732,23 +759,40 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				return null;
 			}
 		}
-// TODO
-//		@Override
-//		public int getRowHeight(int row) {
-//			if (getColumnCount() < 1)
-//				super.getRowHeight(row);
-//			
-//			final Object val = getValueAt(row, 0);
-//			
-//			if (val instanceof Item) {
-//				final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) ((Item) val).getProperty();
-//				
-//				if (prop != null && prop.getCellType() == CellType.CONTINUOUS)
-//					return MAPPING_IMG_ROW_HEIGHT;
-//			}
-//			
-//			return PROP_SHEET_ROW_HEIGHT;
-//		}
+		
+		private void setKeyBindings() {
+			final ActionMap actionMap = getActionMap();
+			final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
+			actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
+		}
+
+		private class KeyAction extends AbstractAction {
+
+			final static String VK_SPACE = "VK_SPACE";
+			
+			KeyAction(final String actionCommand) {
+				putValue(ACTION_COMMAND_KEY, actionCommand);
+			}
+
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final int[] selectedRows = getSelectedRows();
+				
+				if (selectedRows == null || selectedRows.length == 0 || isEditing())
+					return;
+				
+				final String cmd = e.getActionCommand();
+				
+				if (cmd.equals(VK_SPACE)) {
+					// The default SPACE key action only works when the editable cell has focus,
+					// but it is nicer to make it work whenever the row is selected.
+					if (selectedRows.length == 1)
+						editCellAt(selectedRows[0], 1);
+				}
+			}
+		}
 	}
 	
 	private static class ExpandCollapseButton extends JButton {
