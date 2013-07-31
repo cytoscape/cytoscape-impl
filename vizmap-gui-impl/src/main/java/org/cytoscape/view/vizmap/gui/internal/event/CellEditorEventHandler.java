@@ -140,6 +140,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		if (prop == null)
 			return;
 		
+		final VisualProperty<?> vp = vpSheetItem.getModel().getVisualProperty();
+		
 		if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
 			// Case 1: Attribute type changed.
 			if (newVal != null && e.getSource() instanceof AttributeComboBoxPropertyEditor) {
@@ -157,12 +159,12 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
 			// Case 2. Switch mapping type
 			// Parent is always root.
-			final VisualProperty<?> vp = vpSheetItem.getModel().getVisualProperty();
 			// TODO: refactor--this class should not have to know the row/column where the value is
 			Object controllingAttrName = propSheetPnl.getTable().getValueAt(0, 1);
 
-			if (vp != null && controllingAttrName != null) {
-				VisualMappingFunction newMapping  = switchMappingType(prop, vp, (VisualMappingFunctionFactory) oldVal, 
+			if (vp != null && controllingAttrName != null 
+					&& (newVal == null || newVal instanceof VisualMappingFunctionFactory)) {
+				VisualMappingFunction newMapping = switchMappingType(prop, vp, (VisualMappingFunctionFactory) oldVal, 
 						(VisualMappingFunctionFactory) newVal, controllingAttrName.toString(), propSheetPnl);
 				vpSheetItem.getModel().setVisualMappingFunction(newMapping);
 			}
@@ -172,7 +174,9 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 
 			if (mapping instanceof DiscreteMapping) {
 				DiscreteMapping<Object, Object> discMap = (DiscreteMapping<Object, Object>) mapping;
-				discMap.putMapValue(prop.getKey(), newVal);
+				
+				if (newVal == null || vp.getRange().getType().isAssignableFrom(newVal.getClass()))
+					discMap.putMapValue(prop.getKey(), newVal);
 			}
 		}
 	}
