@@ -24,9 +24,11 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
  * #L%
  */
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
 import javax.swing.JTextField;
 
-import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,31 +41,26 @@ public class CyNumberPropertyEditor<T extends Number> extends NumberPropertyEdit
 
 	private static final Logger logger = LoggerFactory.getLogger(CyNumberPropertyEditor.class);
 
-	private final VizMapperMainPanel panel;
-
 	private Object currentValue;
-	private Object selected;
 
 	/**
 	 * Creates a new CyStringPropertyEditor object.
 	 */
-	public CyNumberPropertyEditor(Class<T> type, final VizMapperMainPanel vmp) {
+	public CyNumberPropertyEditor(final Class<T> type) {
 		super(type);
-		panel = vmp;
 
-//		((JTextField) editor).addFocusListener(new FocusListener() {
-//			public void focusGained(FocusEvent e) {
-//				if (panel != null) {
-//					final Item item = (Item) panel.getSelectedItem(); // TODO
-//					selected = item.getProperty().getDisplayName();
-//				}
-//				setCurrentValue();
-//			}
-//
-//			public void focusLost(FocusEvent arg0) {
-//				checkChange();
-//			}
-//		});
+		((JTextField) editor).addFocusListener(new FocusListener() {
+			
+			@Override
+			public void focusGained(final FocusEvent e) {
+				setCurrentValue();
+			}
+			
+			@Override
+			public void focusLost(final FocusEvent e) {
+				checkChange();
+			}
+		});
 	}
 
 	private void setCurrentValue() {
@@ -80,6 +77,8 @@ public class CyNumberPropertyEditor<T extends Number> extends NumberPropertyEdit
 			editor.repaint();
 		}
 
-		firePropertyChange(selected, newValue);
+		if ((currentValue == null && newValue != null) || 
+				(currentValue != null && !currentValue.equals(newValue)))
+			firePropertyChange(currentValue, newValue);
 	}
 }

@@ -123,9 +123,9 @@ public class CyActivator extends AbstractCyActivator {
 		BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
 		
 		ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,visualMappingManagerServiceRef,cyColorPropertyEditor,continuousMappingCellRendererFactory);
-		NumberVisualPropertyEditor<?> doublePropertyEditor = new NumberVisualPropertyEditor(Double.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,visualMappingManagerServiceRef, continuousMappingCellRendererFactory);
-		NumberVisualPropertyEditor<?> integerPropertyEditor = new NumberVisualPropertyEditor(Integer.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,visualMappingManagerServiceRef, continuousMappingCellRendererFactory);
-		NumberVisualPropertyEditor<?> floatPropertyEditor = new NumberVisualPropertyEditor(Float.class,cyNetworkTableManagerServiceRef,cyApplicationManagerServiceRef,editorManager,visualMappingManagerServiceRef, continuousMappingCellRendererFactory);
+		NumberVisualPropertyEditor<Double> doublePropertyEditor = new NumberVisualPropertyEditor<Double>(Double.class, continuousMappingCellRendererFactory);
+		NumberVisualPropertyEditor<Integer> integerPropertyEditor = new NumberVisualPropertyEditor<Integer>(Integer.class, continuousMappingCellRendererFactory);
+		NumberVisualPropertyEditor<Float> floatPropertyEditor = new NumberVisualPropertyEditor<Float>(Float.class, continuousMappingCellRendererFactory);
 		
 		FontVisualPropertyEditor fontVisualPropertyEditor = new FontVisualPropertyEditor(Font.class, fontPropertyEditor, continuousMappingCellRendererFactory);
 		StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor(continuousMappingCellRendererFactory);

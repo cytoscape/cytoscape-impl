@@ -26,13 +26,9 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor;
 
 import javax.swing.table.TableCellRenderer;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
-import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.NumberContinuousCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyNumberPropertyEditor;
 
@@ -43,12 +39,8 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 	 * @param cellRendererFactory 
 	 */
 	public NumberVisualPropertyEditor(final Class<T> type,
-									  final CyNetworkTableManager manager,
-									  final CyApplicationManager appManager,
-									  final EditorManager editorManager,
-									  final VisualMappingManager vmm,
 									  final ContinuousMappingCellRendererFactory cellRendererFactory) {
-		super(type, new CyNumberPropertyEditor<T>(type, null), ContinuousEditorType.CONTINUOUS, cellRendererFactory);
+		super(type, new CyNumberPropertyEditor<T>(type), ContinuousEditorType.CONTINUOUS, cellRendererFactory);
 		discreteTableCellRenderer = REG.getRenderer(type);
 	}
 
