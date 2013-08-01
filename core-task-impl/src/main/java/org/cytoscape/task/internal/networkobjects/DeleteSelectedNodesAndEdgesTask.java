@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.event.CyEventHelper;
@@ -42,38 +43,27 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
+
 public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
+	private final CyApplicationManager appMgr;
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager visualMappingManager;
+	private CyNetwork network;
 
-	@Tunable(description="Network to delete from", context="nogui")
-	public CyNetwork network = null;
+	@ContainsTunables
+	public NodeAndEdgeTunable tunables = null;
 
-	NodeList nodeList = null;
-	@Tunable(description="Nodes to delete", context="nogui")
-	public NodeList getnodeList() {
-		nodeList = new NodeList();
-		nodeList.setNetwork(network);
-		return nodeList;
-	}
-  public void setnodeList(NodeList setValue) {}
-
-	EdgeList edgeList = null;
-	@Tunable(description="Edges to delete", context="nogui")
-	public EdgeList getedgeList() {
-		edgeList = new EdgeList();
-		edgeList.setNetwork(network);
-		return edgeList;
-	}
-  public void setedgeList(EdgeList setValue) {}
 
 	public DeleteSelectedNodesAndEdgesTask(final CyNetwork network,
+	                                       final CyApplicationManager appManager,
 	                                       final UndoSupport undoSupport, 
 	                                       final CyNetworkViewManager networkViewManager,
 	                                       final VisualMappingManager visualMappingManager, 
@@ -83,19 +73,22 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 		this.networkViewManager   = networkViewManager;
 		this.visualMappingManager = visualMappingManager;
 		this.eventHelper          = eventHelper;
+		this.appMgr               = appManager;
+		tunables                  = new NodeAndEdgeTunable(appMgr);
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		if (network == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-			return;
-		}
 
 		taskMonitor.setProgress(0.0);
 
 		List<CyNode> selectedNodes;
 		Set<CyEdge> selectedEdges;
+
+		List<CyNode> nodeList = tunables.getNodeList();
+		List<CyEdge> edgeList = tunables.getEdgeList();
+		if (tunables.getNetwork() != null)
+			network = tunables.getNetwork();
 		
 		// Delete from the base network so that our changes can be undone:
 		if (nodeList == null && edgeList == null) {
@@ -103,13 +96,13 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 			taskMonitor.setProgress(0.1);
 			selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
 		} else {
-			if (nodeList != null && nodeList.getValue() != null)
-				selectedNodes = nodeList.getValue();
+			if (nodeList != null && nodeList.size() > 0)
+				selectedNodes = nodeList;
 			else
 				selectedNodes = new ArrayList<CyNode>();
 
-			if (edgeList != null && edgeList.getValue() != null)
-				selectedEdges = new HashSet<CyEdge>(edgeList.getValue());
+			if (edgeList != null && edgeList.size() > 0)
+				selectedEdges = new HashSet<CyEdge>(edgeList);
 			else
 				selectedEdges = new HashSet<CyEdge>();
 		}

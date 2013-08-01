@@ -74,7 +74,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
   public void setnodeList(NodeList setValue) {}
 
 	public EdgeList edgeList = new EdgeList(null);
-	@Tunable(description="List of nodes for new network", gravity=4.0, context="nogui")
+	@Tunable(description="List of edges for new network", gravity=4.0, context="nogui")
 	public EdgeList getedgeList() {
 		edgeList.setNetwork(parentNetwork);
 		return edgeList;

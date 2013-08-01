@@ -37,25 +37,28 @@ import org.cytoscape.work.undo.UndoSupport;
 
 
 public class DeleteSelectedNodesAndEdgesTaskFactoryImpl extends AbstractNetworkTaskFactory implements DeleteSelectedNodesAndEdgesTaskFactory {
+	private final CyApplicationManager appMgr;
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final VisualMappingManager visualMappingManager;
 	private final CyEventHelper eventHelper;
 
-	public DeleteSelectedNodesAndEdgesTaskFactoryImpl(final UndoSupport undoSupport,
-						      final CyNetworkViewManager networkViewManager,
-						      final VisualMappingManager visualMappingManager,
-						      final CyEventHelper eventHelper)
+	public DeleteSelectedNodesAndEdgesTaskFactoryImpl(final CyApplicationManager appMgr,
+	                                                  final UndoSupport undoSupport,
+	                                                  final CyNetworkViewManager networkViewManager,
+	                                                  final VisualMappingManager visualMappingManager,
+	                                                  final CyEventHelper eventHelper)
 	{
 		this.undoSupport          = undoSupport;
 		this.networkViewManager   = networkViewManager;
 		this.visualMappingManager = visualMappingManager;
 		this.eventHelper          = eventHelper;
+		this.appMgr               = appMgr;
 	}
 
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(
-			new DeleteSelectedNodesAndEdgesTask(network, undoSupport, 
+			new DeleteSelectedNodesAndEdgesTask(network, appMgr, undoSupport, 
 							    networkViewManager,
 							    visualMappingManager, eventHelper));
 	}

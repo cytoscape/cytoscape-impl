@@ -28,57 +28,46 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-import org.cytoscape.task.internal.utils.EdgeTunable;
+public class RenameEdgeTask extends AbstractGetTask {
+	@Tunable(description="Network edge is in", context="nogui")
+	public CyNetwork network = null;
 
-public class ListEdgesTask extends AbstractTask implements ObservableTask {
-	private final CyApplicationManager appMgr;
-	List<CyEdge> edges = null;
-	CyNetwork network = null;
+	@Tunable(description="Edge to be renamed", context="nogui")
+	public String edge = null;
 
-	@ContainsTunables
-	public EdgeTunable edgeTunable;
+	@Tunable(description="New edge name", context="nogui")
+	public String newName = null;
 
-	public ListEdgesTask(CyApplicationManager appMgr) {
-		this.appMgr = appMgr;
-		edgeTunable = new EdgeTunable(appMgr);
+	public RenameEdgeTask() {
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		network = edgeTunable.getNetwork();
-		edges = edgeTunable.getEdgeList();
-
-		if (edges == null || edges.size() == 0) {
-			taskMonitor.showMessage(TaskMonitor.Level.WARN, "No edges found");
+		if (network == null) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
 			return;
 		}
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Found "+edges.size()+" edges");
-	}
-
-	public Object getResults(Class type) {
-		if (type.equals(List.class)) {
-			return edges;
-		} else if (type.equals(String.class)){
-			String res = "";
-			for (CyEdge edge: edges) {
-				res += edge.toString()+" ["+getName(network, edge)+"]\n";
-			}
-			return res.substring(0, res.length()-1);
+		if (edge == null) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Edge name or suid must be specified");
+			return;
 		}
-		return edges;
-	}
 
-	String getName(CyNetwork network, CyEdge edge) {
-		return network.getRow(edge).get(CyNetwork.NAME, String.class);
+		if (newName == null) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "New name must be specified");
+			return;
+		}
+
+		CyEdge renamedEdge = getEdge(network, edge);
+		network.getRow(renamedEdge).set(CyNetwork.NAME, newName);
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Edge "+renamedEdge+" renamed to "+newName);
 	}
 }

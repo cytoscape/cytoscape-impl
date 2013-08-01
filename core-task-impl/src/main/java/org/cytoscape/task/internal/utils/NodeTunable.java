@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.networkobjects;
+package org.cytoscape.task.internal.utils;
 
 /*
  * #%L
@@ -24,19 +24,37 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
+import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.command.util.NodeList;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.work.Tunable;
 
+public class NodeTunable {
+	CyApplicationManager appMgr;
+	
+	@Tunable(description="Network", context="nogui")
+	public CyNetwork network = null;
 
-public class ListNodesTaskFactory extends AbstractTaskFactory {
-	private final CyApplicationManager appMgr;
-	public ListNodesTaskFactory(CyApplicationManager appMgr) {
+	public NodeList nodeList = new NodeList(null);
+	@Tunable(description="List of nodes", context="nogui")
+	public NodeList getnodeList() {
+		if (network == null)
+			network = appMgr.getCurrentNetwork();
+		nodeList.setNetwork(network);
+		return nodeList;
+	}
+  public void setnodeList(NodeList setValue) {}
+
+	public NodeTunable(CyApplicationManager appMgr) {
 		this.appMgr = appMgr;
 	}
 
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ListNodesTask(appMgr));
+	public CyNetwork getNetwork() { return network; }
+	public List<CyNode> getNodeList() {
+		if (nodeList == null) return null;
+		return nodeList.getValue();
 	}
 }

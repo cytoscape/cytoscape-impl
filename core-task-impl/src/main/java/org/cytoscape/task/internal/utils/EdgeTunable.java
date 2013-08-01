@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.networkobjects;
+package org.cytoscape.task.internal.utils;
 
 /*
  * #%L
@@ -24,19 +24,37 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
+import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.Tunable;
 
+public class EdgeTunable {
+	CyApplicationManager appMgr;
+	
+	@Tunable(description="Network", context="nogui")
+	public CyNetwork network = null;
 
-public class ListNodesTaskFactory extends AbstractTaskFactory {
-	private final CyApplicationManager appMgr;
-	public ListNodesTaskFactory(CyApplicationManager appMgr) {
+	public EdgeList edgeList = new EdgeList(null);
+	@Tunable(description="List of edges", context="nogui")
+	public EdgeList getedgeList() {
+		if (network == null)
+			network = appMgr.getCurrentNetwork();
+		edgeList.setNetwork(network);
+		return edgeList;
+	}
+  public void setedgeList(EdgeList setValue) {}
+
+	public EdgeTunable(CyApplicationManager appMgr) {
 		this.appMgr = appMgr;
 	}
 
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ListNodesTask(appMgr));
+	public CyNetwork getNetwork() { return network; }
+	public List<CyEdge> getEdgeList() {
+		if (edgeList == null) return null;
+		return edgeList.getValue();
 	}
 }

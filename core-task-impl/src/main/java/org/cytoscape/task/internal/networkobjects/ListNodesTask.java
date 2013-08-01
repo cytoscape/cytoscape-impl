@@ -28,44 +28,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.command.util.NodeList;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+import org.cytoscape.task.internal.utils.NodeTunable;
+
 public class ListNodesTask extends AbstractTask implements ObservableTask {
-	@Tunable(description="Network to list nodes for", context="nogui")
-	public CyNetwork network = null;
-
-	public NodeList nodeList = new NodeList(null);
-	@Tunable(description="Node specification to list", context="nogui")
-	public NodeList getnodeList() {
-		nodeList.setNetwork(network);
-		return nodeList;
-	}
-	public void setnodeList(NodeList setValue) {}
-
+	private final CyApplicationManager appMgr;
 	List<CyNode> nodes = null;
+	CyNetwork network = null;
 
-	public ListNodesTask() {
+	@ContainsTunables
+	public NodeTunable nodeTunable;
+
+	public ListNodesTask(CyApplicationManager appMgr) {
+		this.appMgr = appMgr;
+		nodeTunable = new NodeTunable(appMgr);
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		if (network == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-			return;
-		}
+		network = nodeTunable.getNetwork();
 
-		if (nodeList.getValue() == null || nodeList.getValue().size() == 0) {
+		nodes = nodeTunable.getNodeList();
+
+		if (nodes == null || nodes.size() == 0) {
 			taskMonitor.showMessage(TaskMonitor.Level.WARN, "No nodes found");
 			return;
 		}
 
-		nodes = nodeList.getValue();
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Found "+nodes.size()+" nodes");
 	}
 
