@@ -166,11 +166,21 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	}
 	
 	public void expand() {
-		getMappingPnl().setVisible(true);
+		if (!isExpanded() && model.isVisualMappingAllowed()) {
+			getMappingPnl().setVisible(true);
+			firePropertyChange("expanded", false, true);
+		}
 	}
 	
 	public void collapse() {
-		getMappingPnl().setVisible(false);
+		if (isExpanded() && model.isVisualMappingAllowed()) {
+			getMappingPnl().setVisible(false);
+			firePropertyChange("expanded", true, false);
+		}
+	}
+	
+	public boolean isExpanded() {
+		return model.isVisualMappingAllowed() && getMappingPnl().isVisible();
 	}
 	
 	public void fitToWidth(final int width) {
@@ -272,6 +282,9 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				
 				getMappingBtn().setEnabled(enabled);
 				getShowMappingBtn().setEnabled(enabled);
+				getRemoveMappingBtn().setEnabled(enabled);
+				getPropSheetPnl().setEnabled(enabled);
+				getPropSheetTbl().setEnabled(enabled);
 			}
 		}
 		

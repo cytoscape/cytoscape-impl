@@ -464,19 +464,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	@SuppressWarnings("serial")
 	private void addViewListeners(final VisualPropertySheet vpSheet) {
-		vpSheet.getExpandAllBtn().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				expandAllMappings(vpSheet);
-			}
-		});
-		vpSheet.getCollapseAllBtn().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				collapseAllMappings(vpSheet);
-			}
-		});
-		
 		for (final VisualPropertySheetItem<?> vpSheetItem : vpSheet.getItems())
 			addViewListeners(vpSheet, vpSheetItem);
 	}
@@ -579,19 +566,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	protected void removeVisualMapping(final VisualPropertySheetItem<?> vpSheetItem) {
 		if (vpSheetItem.getModel().getVisualMappingFunction() != null)
 			vpSheetItem.getModel().setVisualMappingFunction(null);
-	}
-
-	private void collapseAllMappings(final VisualPropertySheet vpSheet) {
-		for (final VisualPropertySheetItem<?> item : vpSheet.getItems())
-			item.collapse();
-	}
-
-	private void expandAllMappings(final VisualPropertySheet vpSheet) {
-		for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
-			// Expand only the ones that have a mapping
-			if (item.getModel().getVisualMappingFunction() != null)
-				item.expand();
-		}
 	}
 
 	private void updateVisualStyleList(final SortedSet<VisualStyle> styles) {

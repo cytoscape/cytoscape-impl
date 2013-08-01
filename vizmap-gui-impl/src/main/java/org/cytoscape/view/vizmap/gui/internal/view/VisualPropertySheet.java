@@ -7,8 +7,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,6 +78,8 @@ public class VisualPropertySheet extends JPanel{
 	private final Map<VisualProperty<?>, VisualPropertySheetItem<?>> vpItemMap;
 	private final Map<VisualPropertyDependency<?>, VisualPropertySheetItem<?>> depItemMap;
 	private final Map<VisualPropertySheetItem<?>, JCheckBoxMenuItem> menuItemMap;
+	
+	private boolean doNotUpdateCollapseExpandButtons;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -169,6 +176,28 @@ public class VisualPropertySheet extends JPanel{
 				});
 				
 				if (i.getModel().isVisualMappingAllowed()) {
+					i.addComponentListener(new ComponentAdapter() {
+						@Override
+						public void componentShown(final ComponentEvent e) {
+							updateCollapseExpandButtons();
+						}
+						@Override
+						public void componentHidden(final ComponentEvent e) {
+							updateCollapseExpandButtons();
+						}
+					});
+					i.addPropertyChangeListener("enabled", new PropertyChangeListener() {
+						@Override
+						public void propertyChange(final PropertyChangeEvent e) {
+							updateCollapseExpandButtons();
+						}
+					});
+					i.addPropertyChangeListener("expanded", new PropertyChangeListener() {
+						@Override
+						public void propertyChange(final PropertyChangeEvent e) {
+							updateCollapseExpandButtons();
+						}
+					});
 					i.getPropSheetPnl().getTable().addMouseListener(new MouseAdapter() {
 						@Override
 						public void mouseClicked(final MouseEvent e) {
@@ -189,6 +218,7 @@ public class VisualPropertySheet extends JPanel{
 			getVpListScr().repaint();
 		}
 		
+		updateCollapseExpandButtons();
 		createMenuItems();
 	}
 	
@@ -346,6 +376,13 @@ public class VisualPropertySheet extends JPanel{
 			expandAllBtn = new JButton(iconMgr.getIcon(IconManager.EXPAND_ALL_ICON));
 			expandAllBtn.setToolTipText("Expand all visual mapping panels");
 			expandAllBtn.setBorder(BorderFactory.createEmptyBorder());
+			
+			expandAllBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					expandAllMappings();
+				}
+			});
 		}
 		
 		return expandAllBtn;
@@ -356,6 +393,13 @@ public class VisualPropertySheet extends JPanel{
 			collapseAllBtn = new JButton(iconMgr.getIcon(IconManager.COLLAPSE_ALL_ICON));
 			collapseAllBtn.setToolTipText("Collapse all visual mapping panels");
 			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder());
+			
+			collapseAllBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					collapseAllMappings();
+				}
+			});
 		}
 		
 		return collapseAllBtn;
@@ -530,17 +574,17 @@ public class VisualPropertySheet extends JPanel{
 			});
 			rootMenu.add(removeAllMi);
 			
-			rootMenu.add(new JSeparator());
-			
-			final JMenuItem makeDefMi = new JMenuItem("Make Default");
-			makeDefMi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					// TODO
-					JOptionPane.showMessageDialog(VisualPropertySheet.this, "Feature not implemented yet...");
-				}
-			});
-			rootMenu.add(makeDefMi);
+//			rootMenu.add(new JSeparator());
+//			
+//			final JMenuItem makeDefMi = new JMenuItem("Make Default");
+//			makeDefMi.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(final ActionEvent e) {
+//					// TODO
+//					JOptionPane.showMessageDialog(VisualPropertySheet.this, "Feature not implemented yet...");
+//				}
+//			});
+//			rootMenu.add(makeDefMi);
 			
 			getAddVpsBtn().setEnabled(true);
 		} else {
@@ -553,6 +597,52 @@ public class VisualPropertySheet extends JPanel{
 		for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
 			entry.getValue().setSelected(entry.getKey().isVisible());
 		}
+	}
+	
+	private void updateCollapseExpandButtons() {
+		if (doNotUpdateCollapseExpandButtons || model.getTargetDataType() == CyNetwork.class)
+			return;
+		
+		boolean enableCollapse = false;
+		boolean enableExpand = false;
+		
+		for (final VisualPropertySheetItem<?> item : items) {
+			if (item.isVisible() && item.isEnabled()) {
+				if (item.isExpanded())
+					enableCollapse = true;
+				else if (!enableExpand && !item.isExpanded() && item.getModel().getVisualMappingFunction() != null)
+					enableExpand = true;
+			}
+			
+			if (enableExpand && enableCollapse)
+				break;
+		}
+		
+		getCollapseAllBtn().setEnabled(enableCollapse);
+		getExpandAllBtn().setEnabled(enableExpand);
+	}
+	
+	private void collapseAllMappings() {
+		doNotUpdateCollapseExpandButtons = true;
+		
+		for (final VisualPropertySheetItem<?> item : items)
+			item.collapse();
+		
+		doNotUpdateCollapseExpandButtons = false;
+		updateCollapseExpandButtons();
+	}
+
+	private void expandAllMappings() {
+		doNotUpdateCollapseExpandButtons = true;
+		
+		for (final VisualPropertySheetItem<?> item : items) {
+			// Expand only the ones that have a mapping
+			if (item.isEnabled() && item.getModel().getVisualMappingFunction() != null)
+				item.expand();
+		}
+		
+		doNotUpdateCollapseExpandButtons = false;
+		updateCollapseExpandButtons();
 	}
 	
 	private void onMouseClickedItem(final MouseEvent e, final VisualPropertySheetItem<?> item) {
