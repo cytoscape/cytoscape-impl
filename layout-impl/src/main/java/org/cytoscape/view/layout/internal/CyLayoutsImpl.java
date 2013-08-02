@@ -70,8 +70,10 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 		// the service, but that means we'll need to get the service every time
 		// we do a layout.  Probably not what we want.  Not clear what the
 		// right trade-off is here....
-		appManager = serviceRegistrar.getService(CyApplicationManager.class);
-		viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		if (serviceRegistrar != null) {
+			appManager = serviceRegistrar.getService(CyApplicationManager.class);
+			viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		}
 
 		addLayout(defaultLayout, new HashMap());
 	}
@@ -90,13 +92,15 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 		if ( layout != null ) {
 			layoutMap.put(layout.getName(),layout);
 
-			Properties layoutProps = new Properties();
-			layoutProps.setProperty(COMMAND, layout.getName());
-			layoutProps.setProperty(COMMAND_NAMESPACE, "layout");
-			TaskFactory service = new LayoutTaskFactoryWrapper(appManager, viewManager, layout);
-			// Register the service as a TaskFactory for commands
-			serviceRegistrar.registerService(service, TaskFactory.class, layoutProps);
-			serviceMap.put(layout.getName(), service);
+			if (serviceRegistrar != null) {
+				Properties layoutProps = new Properties();
+				layoutProps.setProperty(COMMAND, layout.getName());
+				layoutProps.setProperty(COMMAND_NAMESPACE, "layout");
+				TaskFactory service = new LayoutTaskFactoryWrapper(appManager, viewManager, layout);
+				// Register the service as a TaskFactory for commands
+				serviceRegistrar.registerService(service, TaskFactory.class, layoutProps);
+				serviceMap.put(layout.getName(), service);
+			}
 		}
 	}
 
@@ -108,7 +112,7 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	public void removeLayout(CyLayoutAlgorithm layout, Map props) {
 		if ( layout != null ) {
 			layoutMap.remove(layout.getName());
-			if (serviceMap.containsKey(layout.getName())) {
+			if (serviceRegistrar != null && serviceMap.containsKey(layout.getName())) {
 				TaskFactory service = serviceMap.get(layout.getName());
 				serviceRegistrar.unregisterService(service,TaskFactory.class);
 				serviceMap.remove(layout.getName());

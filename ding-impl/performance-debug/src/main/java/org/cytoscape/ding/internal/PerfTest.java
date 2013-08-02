@@ -178,7 +178,7 @@ public class PerfTest {
 		Properties p = new Properties();
 		CyProperty<Properties> props = new SimpleCyProperty<Properties>("Test",p,Properties.class,DO_NOT_SAVE);
 		CyLayoutAlgorithm gridNodeLayout = new GridNodeLayout(null);
-		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(props, gridNodeLayout);
+		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(null, props, gridNodeLayout);
 		return cyLayouts;
 	}
 }
