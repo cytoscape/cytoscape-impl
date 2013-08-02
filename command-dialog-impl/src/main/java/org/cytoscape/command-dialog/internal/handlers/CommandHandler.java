@@ -214,8 +214,17 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 			}
 			return;
 		} else if (tokens.length == 2) {
+			if (tokens[1].equals("all")) {
+				helpAll();
+				return;
+			}
+
 			// Get all of the commands for the given namespace
 			List<String> commands = availableCommands.getCommands(tokens[1]);
+			if(commands.size() == 0) {
+				resultsText.appendError("Can't find "+tokens[1]+" namespace");
+				return;
+			}
 			resultsText.appendMessage("Available commands:");
 			// TODO: Need to get the description for this command
 			for (String command: commands) {
@@ -226,6 +235,20 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 			String command = "";
 			for (int i = 2; i < tokens.length; i++) command += tokens[i]+" ";
 			command = command.trim();
+			// First, do a little sanity checking
+			boolean found = false;
+			List<String> commands = availableCommands.getCommands(tokens[1]);
+			for (String c: commands) {
+				if (c.equalsIgnoreCase(command)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				resultsText.appendError("Can't find command "+tokens[1]+" "+command);
+				return;
+			}
+
 			List<String> argList = availableCommands.getArguments(tokens[1], command);
 			String commandArgs = "    "+tokens[1]+" "+command+" ";
 			for (String arg: argList) {
@@ -234,6 +257,21 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 			resultsText.appendMessage(commandArgs);
 		}
 
+	}
+
+	private void helpAll() {
+		for (String namespace: availableCommands.getNamespaces()) {
+			resultsText.appendMessage(namespace);
+			for (String command: availableCommands.getCommands(namespace)) {
+				command = command.trim();
+				List<String> argList = availableCommands.getArguments(namespace, command);
+				String commandArgs = "    "+namespace+" "+command+" ";
+				for (String arg: argList) {
+					commandArgs += arg+" ";
+				}
+				resultsText.appendMessage(commandArgs);
+			}
+		}
 	}
 
 	public void doAppend(PaxLoggingEvent event) {
