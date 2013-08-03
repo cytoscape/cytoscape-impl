@@ -52,9 +52,15 @@ public class EdgeTunable {
 		this.appMgr = appMgr;
 	}
 
-	public CyNetwork getNetwork() { return network; }
+	public CyNetwork getNetwork() { 
+		if (network == null)
+			network = appMgr.getCurrentNetwork();
+		return network; 
+	}
+
 	public List<CyEdge> getEdgeList() {
-		if (edgeList == null) return null;
+		if (edgeList == null || edgeList.getValue() == null) 
+			getNetwork().getEdgeList();
 		return edgeList.getValue();
 	}
 }

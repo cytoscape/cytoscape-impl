@@ -52,9 +52,14 @@ public class NodeTunable {
 		this.appMgr = appMgr;
 	}
 
-	public CyNetwork getNetwork() { return network; }
+	public CyNetwork getNetwork() { 
+		if (network == null)
+			network = appMgr.getCurrentNetwork();
+		return network; 
+	}
 	public List<CyNode> getNodeList() {
-		if (nodeList == null) return null;
+		if (nodeList == null || nodeList.getValue() == null) 
+			return getNetwork().getNodeList();
 		return nodeList.getValue();
 	}
 }
