@@ -30,29 +30,21 @@ import java.util.List;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 
-public class ColumnTunable {
+public class ColumnTypeTunable {
 	
-	@Tunable (description="Namespace for table", context="nogui")
-	public String namespace = "default";
+	@Tunable (description="Type of column", context="nogui")
+	public ListSingleSelection<String> type = 
+		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean", "list");
 
-	@Tunable (description="Name of column", context="nogui")
-	public String column = null;
+	@Tunable (description="Type of list elements", context="nogui")
+	public ListSingleSelection<String> listType = 
+		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean");
 
-	public ColumnTunable() {
+	public ColumnTypeTunable() {
 	}
 
-	public String getNamespace() { return namespace; }
-
-	public CyColumn getColumn(CyTable table) {
-		if (table == null || column == null) return null;
-
-		return table.getColumn(column);
-	}
-
-	public String getColumnName() {
-		if (column == null) return null;
-
-		return column;
-	}
+	public String getColumnType() { return type.getSelectedValue(); }
+	public String getListElementType() { return listType.getSelectedValue(); }
 }

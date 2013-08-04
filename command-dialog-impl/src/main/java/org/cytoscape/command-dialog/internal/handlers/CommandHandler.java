@@ -123,6 +123,7 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		if (sub == null && (comm != null && comm.length() > 0))
 			throw new IllegalArgumentException("Unknown command: "+comm);
 		
+		Map<String, Object> modifiedSettings = new HashMap<String, Object>();
 		// Now check the arguments
 		List<String> argList = availableCommands.getArguments(ns,  comm);
 		for (String inputArg: settings.keySet()) {
@@ -131,6 +132,7 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 				String[] bareArg = arg.split("=");
 				if (bareArg[0].equalsIgnoreCase(inputArg)) {
 					found = true;
+					modifiedSettings.put(bareArg[0], settings.get(inputArg));
 					break;
 				}
 			}
@@ -146,7 +148,9 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		}
 		*/
 		// CyCommandManager.execute(ns, sub, settings);
-		taskManager.execute(commandExecutor.createTaskIterator(ns, comm, settings, this), this);
+		taskManager.execute(
+			commandExecutor.createTaskIterator(ns, comm, modifiedSettings, this), 
+		  this);
 	}
 
 	private String parseInput(String input, Map<String,Object> settings) {

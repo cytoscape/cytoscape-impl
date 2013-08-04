@@ -35,12 +35,12 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.internal.utils.EdgeTunable;
-import org.cytoscape.task.internal.utils.ColumnTunable;
+import org.cytoscape.task.internal.utils.ColumnListTunable;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.ContainsTunables;
 
-public class GetEdgeAttributeTask extends AbstractGetTableDataTask implements ObservableTask {
+public class GetEdgeAttributeTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> edgeDataMap;
 
@@ -48,13 +48,13 @@ public class GetEdgeAttributeTask extends AbstractGetTableDataTask implements Ob
 	public EdgeTunable edgeTunable;
 
 	@ContainsTunables
-	public ColumnTunable columnTunable;
+	public ColumnListTunable columnTunable;
 
 	public GetEdgeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
 		super(mgr);
 		this.appMgr = appMgr;
 		edgeTunable = new EdgeTunable(appMgr);
-		columnTunable = new ColumnTunable();
+		columnTunable = new ColumnListTunable();
 	}
 
 	@Override

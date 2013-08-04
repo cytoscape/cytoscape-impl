@@ -33,42 +33,52 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.internal.utils.EdgeTunable;
-import org.cytoscape.task.internal.utils.ColumnValueTunable;
+import org.cytoscape.task.internal.utils.ColumnTunable;
+import org.cytoscape.task.internal.utils.ColumnTypeTunable;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.Tunable;
 
-public class SetEdgeAttributeTask extends AbstractTableDataTask {
+public class CreateEdgeAttributeTask extends AbstractTableDataTask {
 	final CyApplicationManager appMgr;
-	Map<CyIdentifiable, Map<String, Object>> edgeData;
+	Map<CyIdentifiable, Map<String, Object>> networkData;
+
+	@Tunable(description="Network", context="nogui")
+	public CyNetwork network = null;
 
 	@ContainsTunables
-	public EdgeTunable edgeTunable;
+	public ColumnTunable columnTunable;
 
 	@ContainsTunables
-	public ColumnValueTunable columnTunable;
+	public ColumnTypeTunable columnTypeTunable;
 
-	public SetEdgeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
+	public CreateEdgeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
 		super(mgr);
 		this.appMgr = appMgr;
-		edgeTunable = new EdgeTunable(appMgr);
-		columnTunable = new ColumnValueTunable();
+		columnTunable = new ColumnTunable();
+		columnTypeTunable = new ColumnTypeTunable();
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyNetwork network = edgeTunable.getNetwork();
+		if (network == null) network = appMgr.getCurrentNetwork();
 
 		CyTable edgeTable = getNetworkTable(network, CyEdge.class, columnTunable.getNamespace());
 
-		for (CyEdge edge: edgeTunable.getEdgeList()) {
-			int count = setCyIdentifierData(edgeTable, 
-		 	                                edge,
-		 	                                columnTunable.getValueMap(edgeTable));
+		try {
+			createColumn(edgeTable, columnTunable.getColumnName(), 
+		               columnTypeTunable.getColumnType(), 
+		               columnTypeTunable.getListElementType());
 
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" edge attribute values for edge "+getEdgeName(edgeTable, edge));
+			if (columnTypeTunable.getColumnType() == "list")
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created new "+columnTypeTunable.getListElementType()+" list column: "+columnTunable.getColumnName());
+			else
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created new "+columnTypeTunable.getColumnType()+" column: "+columnTunable.getColumnName());
+		} catch (Exception e) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to create new column: "+e.getMessage());
 		}
+
 	}
 
 }

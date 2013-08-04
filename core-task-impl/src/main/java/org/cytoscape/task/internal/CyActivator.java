@@ -180,9 +180,11 @@ import org.cytoscape.task.internal.session.OpenSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionAsTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.table.CopyValueToColumnTaskFactoryImpl;
+import org.cytoscape.task.internal.table.CreateNetworkAttributeTaskFactory;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.GetNetworkAttributeTaskFactory;
+import org.cytoscape.task.internal.table.ListNetworkAttributesTaskFactory;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
 import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
@@ -1163,6 +1165,14 @@ public class CyActivator extends AbstractCyActivator {
 		// These are task factories that are only available to the command line
 
 		// NAMESPACE: edge
+		CreateNetworkAttributeTaskFactory createEdgeAttributeTaskFactory = 
+			new CreateNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, 
+		                                        cyTableManagerServiceRef, CyEdge.class);
+		Properties createEdgeAttributeTaskFactoryProps = new Properties();
+		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
+		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
+		registerService(bc,createEdgeAttributeTaskFactory,TaskFactory.class,createEdgeAttributeTaskFactoryProps);
+
 		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory();
 		Properties getEdgeTaskFactoryProps = new Properties();
 		getEdgeTaskFactoryProps.setProperty(COMMAND, "get");
@@ -1181,6 +1191,14 @@ public class CyActivator extends AbstractCyActivator {
 		listEdgesTaskFactoryProps.setProperty(COMMAND, "list");
 		listEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
 		registerService(bc,listEdges,TaskFactory.class,listEdgesTaskFactoryProps);
+
+		ListNetworkAttributesTaskFactory listEdgeAttributesTaskFactory = 
+			new ListNetworkAttributesTaskFactory(cyApplicationManagerServiceRef, 
+		                                cyTableManagerServiceRef, CyEdge.class);
+		Properties listEdgeAttributesTaskFactoryProps = new Properties();
+		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
+		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
+		registerService(bc,listEdgeAttributesTaskFactory,TaskFactory.class,listEdgeAttributesTaskFactoryProps);
 
 		RenameEdgeTaskFactory renameEdge = new RenameEdgeTaskFactory();
 		Properties renameEdgeTaskFactoryProps = new Properties();
@@ -1214,6 +1232,14 @@ public class CyActivator extends AbstractCyActivator {
 		addNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		registerService(bc,addNodeTaskFactory,TaskFactory.class,addNodeTaskFactoryProps);
 
+		CreateNetworkAttributeTaskFactory createNetworkAttributeTaskFactory = 
+			new CreateNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, 
+		                                        cyTableManagerServiceRef, CyNetwork.class);
+		Properties createNetworkAttributeTaskFactoryProps = new Properties();
+		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
+		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+		registerService(bc,createEdgeAttributeTaskFactory,TaskFactory.class,createEdgeAttributeTaskFactoryProps);
+
 		DeselectTaskFactory deselectTaskFactory = new DeselectTaskFactory(cyNetworkViewManagerServiceRef, cyEventHelperRef);
 		Properties deselectTaskFactoryProps = new Properties();
 		deselectTaskFactoryProps.setProperty(COMMAND, "deselect");
@@ -1246,6 +1272,14 @@ public class CyActivator extends AbstractCyActivator {
 		listNetworksTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		registerService(bc,listNetworks,TaskFactory.class,listNetworksTaskFactoryProps);
 
+		ListNetworkAttributesTaskFactory listNetworkAttributesTaskFactory = 
+			new ListNetworkAttributesTaskFactory(cyApplicationManagerServiceRef, 
+		                                cyTableManagerServiceRef, CyNetwork.class);
+		Properties listNetworkAttributesTaskFactoryProps = new Properties();
+		listNetworkAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
+		listNetworkAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+		registerService(bc,listNetworkAttributesTaskFactory,TaskFactory.class,listNetworkAttributesTaskFactoryProps);
+
 		SelectTaskFactory selectTaskFactory = new SelectTaskFactory(cyNetworkViewManagerServiceRef, cyEventHelperRef);
 		Properties selectTaskFactoryProps = new Properties();
 		selectTaskFactoryProps.setProperty(COMMAND, "select");
@@ -1273,6 +1307,14 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,unHideTaskFactory,TaskFactory.class,unHideTaskFactoryProps);
 
 		// NAMESPACE: node
+		CreateNetworkAttributeTaskFactory createNodeAttributeTaskFactory = 
+			new CreateNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, 
+		                                        cyTableManagerServiceRef, CyNode.class);
+		Properties createNodeAttributeTaskFactoryProps = new Properties();
+		createNodeAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
+		createNodeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
+		registerService(bc,createNodeAttributeTaskFactory,TaskFactory.class,createNodeAttributeTaskFactoryProps);
+
 		GetNodeTaskFactory getNodeTaskFactory = new GetNodeTaskFactory();
 		Properties getNodeTaskFactoryProps = new Properties();
 		getNodeTaskFactoryProps.setProperty(COMMAND, "get");
@@ -1291,6 +1333,14 @@ public class CyActivator extends AbstractCyActivator {
 		listNodesTaskFactoryProps.setProperty(COMMAND, "list");
 		listNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
 		registerService(bc,listNodes,TaskFactory.class,listNodesTaskFactoryProps);
+
+		ListNetworkAttributesTaskFactory listNodeAttributesTaskFactory = 
+			new ListNetworkAttributesTaskFactory(cyApplicationManagerServiceRef, 
+		                                cyTableManagerServiceRef, CyNode.class);
+		Properties listNodeAttributesTaskFactoryProps = new Properties();
+		listNodeAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
+		listNodeAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
+		registerService(bc,listNodeAttributesTaskFactory,TaskFactory.class,listNodeAttributesTaskFactoryProps);
 
 		RenameNodeTaskFactory renameNode = new RenameNodeTaskFactory();
 		Properties renameNodeTaskFactoryProps = new Properties();

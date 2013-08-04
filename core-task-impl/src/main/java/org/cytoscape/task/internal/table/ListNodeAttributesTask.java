@@ -24,12 +24,14 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.ObservableTask;
@@ -37,46 +39,48 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-import org.cytoscape.task.internal.utils.EdgeTunable;
-import org.cytoscape.task.internal.utils.ColumnListTunable;
-
-public class GetNetworkAttributeTask extends AbstractTableDataTask implements ObservableTask {
+public class ListNodeAttributesTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
-	Map<String, Object> networkData;
+	Collection<CyColumn> columnList = null;
 
 	@Tunable(description="Network", context="nogui")
 	public CyNetwork network = null;
 
-	@ContainsTunables
-	public ColumnListTunable columnTunable;
+	@Tunable (description="Namespace for table", context="nogui")
+	public String namespace = "default";
 
-	public GetNetworkAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
+	public ListNodeAttributesTask(CyTableManager mgr, CyApplicationManager appMgr) {
 		super(mgr);
 		this.appMgr = appMgr;
-		columnTunable = new ColumnListTunable();
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		if (network == null) network = appMgr.getCurrentNetwork();
 
-		CyTable networkTable = getNetworkTable(network, CyNetwork.class, columnTunable.getNamespace());
+		CyTable networkTable = getNetworkTable(network, CyNode.class, namespace);
 
-		networkData = getCyIdentifierData(networkTable, 
-		                                  network,
-		                                  columnTunable.getColumnNames(networkTable));
+		columnList = networkTable.getColumns();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Attribute values for network "+getNetworkTitle(network)+":");
-		for (String column: networkData.keySet()) {
-			if (networkData.get(column) != null)
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+convertData(networkData.get(column)));
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Node attributes for network "+getNetworkTitle(network)+":");
+		for (CyColumn column: columnList) {
+			if (column.getType().equals(List.class))
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
+				            "        "+column.getName()+": "+getType(column.getListElementType())+" list");
+			else
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
+				            "        "+column.getName()+": "+getType(column.getType()));
 		}
 	}
 
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
-			return convertMapToString(networkData);
+			String returnString = "[";
+			for (CyColumn col: columnList) {
+				returnString += col.getName()+",";
+			}
+			return returnString.substring(0, returnString.length()-1)+"]";
 		}
-		return networkData;
+		return new ArrayList<CyColumn>(columnList);
 	}
 }

@@ -31,28 +31,39 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 
-public class ColumnTunable {
+public class ColumnListTunable {
 	
 	@Tunable (description="Namespace for table", context="nogui")
 	public String namespace = "default";
 
-	@Tunable (description="Name of column", context="nogui")
-	public String column = null;
+	@Tunable (description="Column list", context="nogui")
+	public String columnList = "all";
 
-	public ColumnTunable() {
+	public ColumnListTunable() {
 	}
 
 	public String getNamespace() { return namespace; }
+	public List<CyColumn> getColumnList(CyTable table) {
+		if (table == null) return null;
 
-	public CyColumn getColumn(CyTable table) {
-		if (table == null || column == null) return null;
+		if (columnList == null || columnList.equalsIgnoreCase("all"))
+			return new ArrayList<CyColumn>(table.getColumns());
 
-		return table.getColumn(column);
+		String[] columns = columnList.split(",");
+		List<CyColumn> returnValue = new ArrayList<CyColumn>();
+		for (String column: columns) {
+			CyColumn c = table.getColumn(column);
+			if (c != null) returnValue.add(c);
+		}
+		return returnValue;
 	}
 
-	public String getColumnName() {
-		if (column == null) return null;
+	public List<String> getColumnNames(CyTable table) {
+		if (table == null) return null;
 
-		return column;
+		List<String> resultString = new ArrayList<String>();
+		for (CyColumn column: getColumnList(table))
+			resultString.add(column.getName());
+		return resultString;
 	}
 }

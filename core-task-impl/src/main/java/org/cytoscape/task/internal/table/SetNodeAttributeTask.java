@@ -39,7 +39,7 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.ContainsTunables;
 
-public class SetNodeAttributeTask extends AbstractGetTableDataTask {
+public class SetNodeAttributeTask extends AbstractTableDataTask {
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> nodeData;
 

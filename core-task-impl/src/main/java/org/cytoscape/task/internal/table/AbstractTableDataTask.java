@@ -41,10 +41,10 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.work.AbstractTask;
 
-public abstract class AbstractGetTableDataTask extends AbstractTask {
+public abstract class AbstractTableDataTask extends AbstractTask {
 	CyTableManager cyTableManager;
 
-	AbstractGetTableDataTask(CyTableManager cyTableManager) {
+	AbstractTableDataTask(CyTableManager cyTableManager) {
 		this.cyTableManager = cyTableManager;
 	}
 
@@ -86,6 +86,19 @@ public abstract class AbstractGetTableDataTask extends AbstractTask {
 			}
 		}
 		return count;
+	}
+
+	public void createColumn(CyTable table, String name, String typeName, String elementTypeName) {
+		Class type = getType(typeName);
+		Class elementType = getType(elementTypeName);
+
+		if (table.getColumn(name) != null)
+			throw new IllegalArgumentException("A column named "+name+" already exists");
+		if (type.equals(List.class))
+			table.createListColumn(name, elementType, false);
+		else
+			table.createColumn(name, type, false);
+		return;
 	}
 
 	public CyTable getUnattachedTable(String tableName) {
@@ -155,6 +168,40 @@ public abstract class AbstractGetTableDataTask extends AbstractTask {
 
 	public String getNetworkTitle(CyNetwork network) {
 		return network.getRow(network).get(CyNetwork.NAME, String.class);
+	}
+
+	Class getType(String type) {
+		if ("double".equalsIgnoreCase(type))
+			return Double.class;
+		else if ("integer".equalsIgnoreCase(type))
+			return Integer.class;
+		else if ("long".equalsIgnoreCase(type))
+			return Long.class;
+		else if ("boolean".equalsIgnoreCase(type))
+			return Boolean.class;
+		else if ("string".equalsIgnoreCase(type))
+			return String.class;
+		else if ("list".equalsIgnoreCase(type))
+			return List.class;
+
+		return String.class;
+	}
+
+	String getType(Class type) {
+		if (type.equals(Double.class))
+			return "double";
+		else if (type.equals(Integer.class))
+			return "integer";
+		else if (type.equals(Long.class))
+			return "long";
+		else if (type.equals(Boolean.class))
+			return "boolean";
+		else if (type.equals(String.class))
+			return "string";
+		else if (type.equals(List.class))
+			return "list";
+		else 
+			return type.getName();
 	}
 
 }

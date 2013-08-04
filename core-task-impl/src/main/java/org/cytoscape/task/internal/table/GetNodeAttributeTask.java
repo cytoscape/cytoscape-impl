@@ -35,12 +35,12 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.internal.utils.NodeTunable;
-import org.cytoscape.task.internal.utils.ColumnTunable;
+import org.cytoscape.task.internal.utils.ColumnListTunable;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.ContainsTunables;
 
-public class GetNodeAttributeTask extends AbstractGetTableDataTask implements ObservableTask {
+public class GetNodeAttributeTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> nodeDataMap;
 
@@ -48,13 +48,13 @@ public class GetNodeAttributeTask extends AbstractGetTableDataTask implements Ob
 	public NodeTunable nodeTunable;
 
 	@ContainsTunables
-	public ColumnTunable columnTunable;
+	public ColumnListTunable columnTunable;
 
 	public GetNodeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
 		super(mgr);
 		this.appMgr = appMgr;
 		nodeTunable = new NodeTunable(appMgr);
-		columnTunable = new ColumnTunable();
+		columnTunable = new ColumnListTunable();
 	}
 
 	@Override
