@@ -48,21 +48,15 @@ public abstract class AbstractGetTableDataTask extends AbstractTask {
 		this.cyTableManager = cyTableManager;
 	}
 
-	public Map<CyIdentifiable, Map<String, Object>> getCyIdentifierData(CyTable table,
-	                                                                    List<? extends CyIdentifiable> ids, 
-	                                                                    List<String> columnList) {
-		if (ids == null || ids.size() == 0) return null;
+	public Map<String, Object> getCyIdentifierData(CyTable table,
+	                                               CyIdentifiable id, 
+	                                               List<String> columnList) {
+		if (id == null) return null;
 	
 		if (columnList == null)
 			columnList = new ArrayList<String>(CyTableUtil.getColumnNames(table));
 		
-		Map<CyIdentifiable, Map<String, Object>> result = new HashMap<CyIdentifiable, Map<String, Object>>();
-		for (CyIdentifiable id: ids) {
-			Map<String, Object> columnData = getDataFromTable(table, id.getSUID(), columnList);
-			if (columnData.size() > 0)
-				result.put(id, columnData);
-		}
-		return result;
+		return getDataFromTable(table, id.getSUID(), columnList);
 	}
 
 	public CyTable getNetworkTable(CyNetwork network, Class<? extends CyIdentifiable> type, String namespace) {

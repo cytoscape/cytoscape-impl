@@ -24,6 +24,7 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -41,7 +42,7 @@ import org.cytoscape.work.ContainsTunables;
 
 public class GetEdgeAttributeTask extends AbstractGetTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
-	Map<CyIdentifiable, Map<String, Object>> edgeData;
+	Map<CyIdentifiable, Map<String, Object>> edgeDataMap;
 
 	@ContainsTunables
 	public EdgeTunable edgeTunable;
@@ -62,27 +63,31 @@ public class GetEdgeAttributeTask extends AbstractGetTableDataTask implements Ob
 
 		CyTable edgeTable = getNetworkTable(network, CyEdge.class, columnTunable.getNamespace());
 
-		edgeData = getCyIdentifierData(edgeTable, 
-		                               edgeTunable.getEdgeList(),
-		                               columnTunable.getColumnNames(edgeTable));
+		edgeDataMap = new HashMap<CyIdentifiable, Map<String, Object>>();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Edge attribute Data for network "+getNetworkTitle(network)+":");
-		for (CyIdentifiable id: edgeData.keySet()) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-				"   Edge: "+edgeTable.getRow(id.getSUID()).get(CyNetwork.NAME, String.class)+" suid: "+id.getSUID());
-			Map<String, Object> dataMap = edgeData.get(id);
-			for (String column: dataMap.keySet()) {
-				if (dataMap.get(column) != null)
-					taskMonitor.showMessage(TaskMonitor.Level.INFO, "     "+column+"="+convertData(dataMap.get(column)));
+		for (CyEdge edge: edgeTunable.getEdgeList()) {
+		  Map<String, Object> edgeData = getCyIdentifierData(edgeTable, 
+			                                                   edge,
+			                                                   columnTunable.getColumnNames(edgeTable));
+
+			if (edgeData == null || edgeData.size() == 0)
+				continue;
+
+			edgeDataMap.put(edge, edgeData);
+
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge attribute values for edge "+getEdgeName(edgeTable, edge)+":");
+			for (String column: edgeData.keySet()) {
+				if (edgeData.get(column) != null)
+					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+convertData(edgeData.get(column)));
 			}
 		}
 	}
 
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
-			return convertMapToString(edgeData);
+			return convertMapToString(edgeDataMap);
 		}
-		return edgeData;
+		return edgeDataMap;
 	}
 	
 }

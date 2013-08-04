@@ -42,7 +42,7 @@ import org.cytoscape.task.internal.utils.ColumnTunable;
 
 public class GetNetworkAttributeTask extends AbstractGetTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
-	Map<CyIdentifiable, Map<String, Object>> networkData;
+	Map<String, Object> networkData;
 
 	@Tunable(description="Network", context="nogui")
 	public CyNetwork network = null;
@@ -63,22 +63,20 @@ public class GetNetworkAttributeTask extends AbstractGetTableDataTask implements
 		CyTable networkTable = getNetworkTable(network, CyNetwork.class, columnTunable.getNamespace());
 
 		networkData = getCyIdentifierData(networkTable, 
-		                                  Collections.singletonList(network),
+		                                  network,
 		                                  columnTunable.getColumnNames(networkTable));
 
-		// Output a more user-friendly result
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Attribute Data for network "+getNetworkTitle(network)+":");
-		Map<String, Object> data = networkData.get(network);
-		for (String column: data.keySet()) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "     "+column+"="+convertData(data));
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Attribute values for network "+getNetworkTitle(network)+":");
+		for (String column: networkData.keySet()) {
+			if (networkData.get(column) != null)
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+convertData(networkData.get(column)));
 		}
 	}
 
 	public Object getResults(Class requestedType) {
-		Map<String, Object> data = networkData.get(network);
 		if (requestedType.equals(String.class)) {
-			return convertMapToString(data);
+			return convertMapToString(networkData);
 		}
-		return data;
+		return networkData;
 	}
 }

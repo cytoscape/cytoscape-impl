@@ -24,6 +24,7 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -41,7 +42,7 @@ import org.cytoscape.work.ContainsTunables;
 
 public class GetNodeAttributeTask extends AbstractGetTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
-	Map<CyIdentifiable, Map<String, Object>> nodeData;
+	Map<CyIdentifiable, Map<String, Object>> nodeDataMap;
 
 	@ContainsTunables
 	public NodeTunable nodeTunable;
@@ -62,27 +63,30 @@ public class GetNodeAttributeTask extends AbstractGetTableDataTask implements Ob
 
 		CyTable nodeTable = getNetworkTable(network, CyNode.class, columnTunable.getNamespace());
 
-		nodeData = getCyIdentifierData(nodeTable, 
-		                               nodeTunable.getNodeList(),
-		                               columnTunable.getColumnNames(nodeTable));
+		nodeDataMap = new HashMap<CyIdentifiable, Map<String, Object>>();
+		
+		for (CyNode node: nodeTunable.getNodeList()) {
+			Map<String, Object> nodeData = getCyIdentifierData(nodeTable, 
+			                                                   node, 
+			                                                   columnTunable.getColumnNames(nodeTable));
+			if (nodeData == null || nodeData.size() == 0)
+				continue;
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Node attribute Data for network "+getNetworkTitle(network)+":");
-		for (CyIdentifiable id: nodeData.keySet()) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-				"   Node: "+nodeTable.getRow(id.getSUID()).get(CyNetwork.NAME, String.class)+" suid: "+id.getSUID());
-			Map<String, Object> dataMap = nodeData.get(id);
-			for (String column: dataMap.keySet()) {
-				if (dataMap.get(column) != null)
-					taskMonitor.showMessage(TaskMonitor.Level.INFO, "     "+column+"="+convertData(dataMap.get(column)));
+			nodeDataMap.put(node, nodeData);
+
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Node attribute values for node "+getNodeName(nodeTable, node)+":");
+			for (String column: nodeData.keySet()) {
+				if (nodeData.get(column) != null)
+					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+convertData(nodeData.get(column)));
 			}
 		}
 	}
 
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
-			return convertMapToString(nodeData);
+			return convertMapToString(nodeDataMap);
 		}
-		return nodeData;
+		return nodeDataMap;
 	}
 	
 }
