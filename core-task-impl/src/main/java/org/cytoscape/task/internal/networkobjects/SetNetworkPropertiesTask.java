@@ -25,13 +25,16 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -39,18 +42,19 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 
-public class ListPropertiesTask extends AbstractPropertyTask implements ObservableTask {
-	Class <? extends CyIdentifiable> type;
-	List<String> resultList;
-
+public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 	@Tunable(description="Network to get properties for", context="nogui")
 	public CyNetwork network = null;
 
-	public ListPropertiesTask(CyApplicationManager appMgr, Class<? extends CyIdentifiable> type,
- 	                          CyNetworkViewManager viewManager,
-	                          RenderingEngineManager reManager) {
+	@Tunable(description="Properties to get the value for", context="nogui")
+	public String propertyList = null;
+
+	@Tunable(description="Values to set for the properties", context="nogui")
+	public String valueList = null;
+
+	public SetNetworkPropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
+	                                RenderingEngineManager reManager) {
 		super(appMgr, viewManager, reManager);
-		this.type = type;
 	}
 
 	@Override
@@ -58,16 +62,36 @@ public class ListPropertiesTask extends AbstractPropertyTask implements Observab
 		if (network == null) {
 			network = appManager.getCurrentNetwork();
 		}
-	
-		resultList = listProperties(type, network);
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Properties for "+DataUtils.getIdentifiableType(type)+"s:");
-		for (String prop: resultList) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "     "+prop);
+		if (propertyList == null || propertyList.length() == 0) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Property list must be specified");
+			return;
 		}
-	}
 
-	public Object getResults(Class type) {
-		return resultList;
+		if (valueList == null || valueList.length() == 0) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Value list must be specified");
+			return;
+		}
+
+		String[] props = propertyList.split(",");
+		String[] values = DataUtils.getCSV(valueList);
+		if (props.length != values.length) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Property list and value list are not the same length");
+			return;
+		}
+
+		int valueIndex = 0;
+		for (String property: props) {
+			String value = values[valueIndex];
+			try {
+				VisualProperty vp = getProperty(network, network, property.trim());
+				setPropertyValue(network, network, vp, value);
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, DataUtils.getNetworkTitle(network)+" "+vp.getDisplayName()+" set to "+value.toString());
+			} catch (Exception e) {
+				taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
+				return;
+			}
+		}
+	
 	}
 }

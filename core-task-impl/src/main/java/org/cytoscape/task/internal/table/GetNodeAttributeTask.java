@@ -40,6 +40,8 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.ContainsTunables;
 
+import org.cytoscape.task.internal.utils.DataUtils;
+
 public class GetNodeAttributeTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> nodeDataMap;
@@ -74,17 +76,17 @@ public class GetNodeAttributeTask extends AbstractTableDataTask implements Obser
 
 			nodeDataMap.put(node, nodeData);
 
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Node attribute values for node "+getNodeName(nodeTable, node)+":");
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Node attribute values for node "+DataUtils.getNodeName(nodeTable, node)+":");
 			for (String column: nodeData.keySet()) {
 				if (nodeData.get(column) != null)
-					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+convertData(nodeData.get(column)));
+					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+DataUtils.convertData(nodeData.get(column)));
 			}
 		}
 	}
 
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
-			return convertMapToString(nodeDataMap);
+			return DataUtils.convertMapToString(nodeDataMap);
 		}
 		return nodeDataMap;
 	}

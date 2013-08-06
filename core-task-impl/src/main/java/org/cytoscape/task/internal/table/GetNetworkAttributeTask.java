@@ -39,6 +39,7 @@ import org.cytoscape.work.Tunable;
 
 import org.cytoscape.task.internal.utils.EdgeTunable;
 import org.cytoscape.task.internal.utils.ColumnListTunable;
+import org.cytoscape.task.internal.utils.DataUtils;
 
 public class GetNetworkAttributeTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
@@ -66,16 +67,16 @@ public class GetNetworkAttributeTask extends AbstractTableDataTask implements Ob
 		                                  network,
 		                                  columnTunable.getColumnNames(networkTable));
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Attribute values for network "+getNetworkTitle(network)+":");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Attribute values for network "+DataUtils.getNetworkTitle(network)+":");
 		for (String column: networkData.keySet()) {
 			if (networkData.get(column) != null)
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+convertData(networkData.get(column)));
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+DataUtils.convertData(networkData.get(column)));
 		}
 	}
 
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
-			return convertMapToString(networkData);
+			return DataUtils.convertMapToString(networkData);
 		}
 		return networkData;
 	}

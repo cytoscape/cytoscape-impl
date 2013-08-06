@@ -38,6 +38,7 @@ import org.cytoscape.task.internal.utils.ColumnValueTunable;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.task.internal.utils.DataUtils;
 
 public class SetNodeAttributeTask extends AbstractTableDataTask {
 	final CyApplicationManager appMgr;
@@ -67,7 +68,7 @@ public class SetNodeAttributeTask extends AbstractTableDataTask {
 		 	                                node,
 		 	                                columnTunable.getValueMap(nodeTable));
 
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" node attribute values for node "+getNodeName(nodeTable, node));
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" node attribute values for node "+DataUtils.getNodeName(nodeTable, node));
 		}
 	}
 

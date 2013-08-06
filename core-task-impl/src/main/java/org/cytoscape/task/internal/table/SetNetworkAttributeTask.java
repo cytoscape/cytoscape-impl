@@ -37,6 +37,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.task.internal.utils.DataUtils;
 
 public class SetNetworkAttributeTask extends AbstractTableDataTask {
 	final CyApplicationManager appMgr;
@@ -64,7 +65,7 @@ public class SetNetworkAttributeTask extends AbstractTableDataTask {
 		                                network,
 		                                columnTunable.getValueMap(networkTable));
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Set "+count+" network attribute values for network "+getNetworkTitle(network));
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Set "+count+" network attribute values for network "+DataUtils.getNetworkTitle(network));
 	}
 
 }

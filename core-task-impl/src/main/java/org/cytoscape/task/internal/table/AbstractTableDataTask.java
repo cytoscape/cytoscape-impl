@@ -41,6 +41,8 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.work.AbstractTask;
 
+import org.cytoscape.task.internal.utils.DataUtils;
+
 public abstract class AbstractTableDataTask extends AbstractTask {
 	CyTableManager cyTableManager;
 
@@ -89,8 +91,8 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 	}
 
 	public void createColumn(CyTable table, String name, String typeName, String elementTypeName) {
-		Class type = getType(typeName);
-		Class elementType = getType(elementTypeName);
+		Class type = DataUtils.getType(typeName);
+		Class elementType = DataUtils.getType(elementTypeName);
 
 		if (table.getColumn(name) != null)
 			throw new IllegalArgumentException("A column named "+name+" already exists");
@@ -119,89 +121,6 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 			}
 		}
 		return result;
-	}
-
-	public String getNodeName(CyTable table, CyNode node) {
-		String name = table.getRow(node.getSUID()).get(CyNetwork.NAME, String.class);
-		name += " (SUID: "+node.getSUID()+")";
-		return name;
-	}
-
-	public String getEdgeName(CyTable table, CyEdge edge) {
-		String name = table.getRow(edge.getSUID()).get(CyNetwork.NAME, String.class);
-		name += " (SUID: "+edge.getSUID()+")";
-		return name;
-	}
-
-	public String convertData(Object data) {
-		if (data instanceof List)
-			return convertListToString((List)data);
-		else if (data instanceof Map)
-			return convertMapToString((Map)data);
-		else
-			return data.toString();
-	}
-
-	public String convertMapToString(Map data) {
-		String result = "{";
-		for (Object key: data.keySet()) {
-			Object v = data.get(key);
-			if (v == null) continue;
-			result += key.toString()+":";
-			if (v instanceof List)
-				result += convertListToString((List)v)+",";
-			else if (v instanceof Map)
-				result += convertMapToString((Map)v)+",";
-			else
-				result += v.toString()+",";
-		}
-		return result.substring(0, result.length()-1)+"}";
-	}
-
-	public String convertListToString(List<Object> data) {
-		String result = "[";
-		for (Object v: data) {
-			result += v.toString()+",";
-		}
-		return result.substring(0, result.length()-1)+"]";
-	}
-
-	public String getNetworkTitle(CyNetwork network) {
-		return network.getRow(network).get(CyNetwork.NAME, String.class);
-	}
-
-	Class getType(String type) {
-		if ("double".equalsIgnoreCase(type))
-			return Double.class;
-		else if ("integer".equalsIgnoreCase(type))
-			return Integer.class;
-		else if ("long".equalsIgnoreCase(type))
-			return Long.class;
-		else if ("boolean".equalsIgnoreCase(type))
-			return Boolean.class;
-		else if ("string".equalsIgnoreCase(type))
-			return String.class;
-		else if ("list".equalsIgnoreCase(type))
-			return List.class;
-
-		return String.class;
-	}
-
-	String getType(Class type) {
-		if (type.equals(Double.class))
-			return "double";
-		else if (type.equals(Integer.class))
-			return "integer";
-		else if (type.equals(Long.class))
-			return "long";
-		else if (type.equals(Boolean.class))
-			return "boolean";
-		else if (type.equals(String.class))
-			return "string";
-		else if (type.equals(List.class))
-			return "list";
-		else 
-			return type.getName();
 	}
 
 }

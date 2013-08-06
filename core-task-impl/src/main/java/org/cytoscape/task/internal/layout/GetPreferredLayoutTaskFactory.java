@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.networkobjects;
+package org.cytoscape.task.internal.layout;
 
 /*
  * #%L
@@ -24,31 +24,28 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Properties;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
-public class SetCurrentNetworkTask extends AbstractTask {
-	CyApplicationManager appManager;
+public class GetPreferredLayoutTaskFactory extends AbstractTaskFactory {
 
-	@Tunable(description="Network to make current", context="nogui")
-	public CyNetwork network;
+	private final CyLayoutAlgorithmManager layouts;
+	private final Properties props;
 
-	public SetCurrentNetworkTask(CyApplicationManager appManager) {
-		this.appManager = appManager;
+	public GetPreferredLayoutTaskFactory(final CyLayoutAlgorithmManager layouts, CyProperty<Properties> p) {
+		this.layouts = layouts;
+		this.props = p.getProperties();
 	}
+
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		appManager.setCurrentNetwork(network);
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Set current network to "+network.toString());
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new GetPreferredLayoutTask(layouts, props));
 	}
-
 }

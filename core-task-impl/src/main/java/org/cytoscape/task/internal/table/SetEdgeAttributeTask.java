@@ -38,6 +38,7 @@ import org.cytoscape.task.internal.utils.ColumnValueTunable;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.task.internal.utils.DataUtils;
 
 public class SetEdgeAttributeTask extends AbstractTableDataTask {
 	final CyApplicationManager appMgr;
@@ -67,7 +68,7 @@ public class SetEdgeAttributeTask extends AbstractTableDataTask {
 		 	                                edge,
 		 	                                columnTunable.getValueMap(edgeTable));
 
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" edge attribute values for edge "+getEdgeName(edgeTable, edge));
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" edge attribute values for edge "+DataUtils.getEdgeName(edgeTable, edge));
 		}
 	}
 

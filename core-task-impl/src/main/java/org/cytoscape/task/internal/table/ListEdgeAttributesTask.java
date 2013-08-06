@@ -38,6 +38,7 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.task.internal.utils.DataUtils;
 
 public class ListEdgeAttributesTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
@@ -62,14 +63,14 @@ public class ListEdgeAttributesTask extends AbstractTableDataTask implements Obs
 
 		columnList = networkTable.getColumns();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge attributes for network "+getNetworkTitle(network)+":");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge attributes for network "+DataUtils.getNetworkTitle(network)+":");
 		for (CyColumn column: columnList) {
 			if (column.getType().equals(List.class))
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-				            "        "+column.getName()+": "+getType(column.getListElementType())+" list");
+				            "        "+column.getName()+": "+DataUtils.getType(column.getListElementType())+" list");
 			else
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-				            "        "+column.getName()+": "+getType(column.getType()));
+				            "        "+column.getName()+": "+DataUtils.getType(column.getType()));
 		}
 	}
 

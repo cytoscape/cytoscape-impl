@@ -40,6 +40,8 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.ContainsTunables;
 
+import org.cytoscape.task.internal.utils.DataUtils;
+
 public class GetEdgeAttributeTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> edgeDataMap;
@@ -75,17 +77,17 @@ public class GetEdgeAttributeTask extends AbstractTableDataTask implements Obser
 
 			edgeDataMap.put(edge, edgeData);
 
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge attribute values for edge "+getEdgeName(edgeTable, edge)+":");
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge attribute values for edge "+DataUtils.getEdgeName(edgeTable, edge)+":");
 			for (String column: edgeData.keySet()) {
 				if (edgeData.get(column) != null)
-					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+convertData(edgeData.get(column)));
+					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+DataUtils.convertData(edgeData.get(column)));
 			}
 		}
 	}
 
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
-			return convertMapToString(edgeDataMap);
+			return DataUtils.convertMapToString(edgeDataMap);
 		}
 		return edgeDataMap;
 	}

@@ -43,10 +43,11 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.AbstractTask;
 
+import org.cytoscape.task.internal.utils.DataUtils;
 public abstract class AbstractPropertyTask extends AbstractTask {
-	CyApplicationManager appManager;
-	CyNetworkViewManager viewManager;
-	RenderingEngineManager reManager;
+	protected CyApplicationManager appManager;
+	protected CyNetworkViewManager viewManager;
+	protected RenderingEngineManager reManager;
 	
 	protected AbstractPropertyTask(CyApplicationManager appManager,
 	                               CyNetworkViewManager viewManager,
@@ -56,7 +57,11 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 		this.reManager = reManager;
 	}
 
-	public VisualProperty<?> getProperty(CyNetwork network, String propertyName) {
+	public VisualProperty<?> getProperty(CyNetwork network, CyIdentifiable target, String propertyName) {
+		Class<? extends CyIdentifiable> type = DataUtils.getIdentifiableClass(target);
+		if (!propertyName.startsWith(DataUtils.getIdentifiableType(type))) {
+			propertyName = DataUtils.getIdentifiableType(type)+" "+propertyName;
+		}
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
 		for (CyNetworkView view: views) {
 			for (RenderingEngine<?> rEngine: reManager.getRenderingEngines(view)) {
@@ -71,53 +76,50 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 		throw new RuntimeException("Property "+propertyName+" doesn't exist");
 	}
 
-	public Object getPropertyValue(CyNetwork network, CyIdentifiable target, String propertyName) {
-		VisualProperty<?> vp = getProperty(network, propertyName);
+	public Object getPropertyValue(CyNetwork network, CyIdentifiable target, VisualProperty vp) {
 		CyNetworkView networkView = getViewForNetwork(network);
 		Class<? extends CyIdentifiable> vpTargetType = vp.getTargetDataType();
 		if (target instanceof CyNetwork) {
 			if (vpTargetType != CyNetwork.class)
-				throw new RuntimeException("Property "+propertyName+" not available for networks");
+				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for networks");
 			return networkView.getVisualProperty(vp);
 		} else if (target instanceof CyNode) {
 			if (vpTargetType != CyNode.class)
-				throw new RuntimeException("Property "+propertyName+" not available for nodes");
+				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for nodes");
 			View<CyNode> nodeView = networkView.getNodeView((CyNode)target);
 			return nodeView.getVisualProperty(vp);
 		} else if (target instanceof CyEdge) {
 			if (vpTargetType != CyEdge.class)
-				throw new RuntimeException("Property "+propertyName+" not available for edges");
+				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for edges");
 			View<CyEdge> edgeView = networkView.getEdgeView((CyEdge)target);
 			return edgeView.getVisualProperty(vp);
 		} 
 		return null;
 	}
 
-	public Object getStringPropertyValue(CyNetwork network, CyIdentifiable target, String propertyName) {
-		VisualProperty vp = getProperty(network, propertyName);
-		Object v = getPropertyValue(network, target, propertyName);
+	public Object getStringPropertyValue(CyNetwork network, CyIdentifiable target, VisualProperty vp) {
+		Object v = getPropertyValue(network, target, vp);
 		return vp.toSerializableString(v);
 	}
 
-	public void setPropertyValue(CyNetwork network, CyIdentifiable target, String propertyName, String value) {
-		VisualProperty<?> vp = getProperty(network, propertyName);
+	public void setPropertyValue(CyNetwork network, CyIdentifiable target, VisualProperty vp, String value) {
 		CyNetworkView networkView = getViewForNetwork(network);
 		Class<? extends CyIdentifiable> vpTargetType = vp.getTargetDataType();
 
 		if (target instanceof CyNetwork) {
 			if (vpTargetType != CyNetwork.class)
-				throw new RuntimeException("Property "+propertyName+" not available for networks");
+				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for networks");
 			Object t =  vp.parseSerializableString(value);
 			networkView.setVisualProperty(vp, t);
 		} else if (target instanceof CyNode) {
 			if (vpTargetType != CyNode.class)
-				throw new RuntimeException("Property "+propertyName+" not available for nodes");
+				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for nodes");
 			View<CyNode> nodeView = networkView.getNodeView((CyNode)target);
 			Object t =  vp.parseSerializableString(value);
 			nodeView.setVisualProperty(vp, t);
 		} else if (target instanceof CyEdge) {
 			if (vpTargetType != CyEdge.class)
-				throw new RuntimeException("Property "+propertyName+" not available for edges");
+				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for edges");
 			View<CyEdge> edgeView = networkView.getEdgeView((CyEdge)target);
 			Object t =  vp.parseSerializableString(value);
 			edgeView.setVisualProperty(vp, t);
@@ -132,20 +134,17 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 			for (RenderingEngine<?> rEngine: reManager.getRenderingEngines(view)) {
 				VisualLexicon lex = rEngine.getVisualLexicon();
 				for (VisualProperty vp: lex.getAllVisualProperties()) {
-					if (vp.getTargetDataType().equals(type))
-						propertyList.add(vp.getIdString());
+					if (vp.getTargetDataType().equals(type)) {
+						// Get rid of the redundant leading string
+						String s = vp.getDisplayName();
+						int x = s.indexOf(' ');
+						propertyList.add(s.substring(x+1));
+					}
 				}
 				return propertyList;
 			}
 		}
 		return null;
-	}
-
-	public String getIdentifiableType(Class <? extends CyIdentifiable> type) {
-		if (type.equals(CyNetwork.class)) return "network";
-		if (type.equals(CyNode.class)) return "node";
-		if (type.equals(CyEdge.class)) return "edge";
-		return "unknown";
 	}
 
 	private CyNetworkView getViewForNetwork(CyNetwork network) {
