@@ -109,7 +109,6 @@ final class DEdgeDetails extends EdgeDetails {
 	Paint m_targetArrowPaintDefault = EDGE_TARGET_ARROW_UNSELECTED_PAINT.getDefault();
 	Double m_segmentThicknessDefault = EDGE_WIDTH.getDefault();
 	Stroke m_segmentStrokeDefault = new BasicStroke(m_segmentThicknessDefault.floatValue());
-	Integer m_labelCountDefault;
 	String m_labelTextDefault;
 	Font m_labelFontDefault = EDGE_LABEL_FONT_FACE.getDefault();
 	Paint m_labelPaintDefault = EDGE_LABEL_COLOR.getDefault();
@@ -616,22 +615,22 @@ final class DEdgeDetails extends EdgeDetails {
 	public int getLabelCount(final CyEdge edge) {
 		// Check related bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
+		
 		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL) && !dev.getVisualProperty(DVisualLexicon.EDGE_LABEL).isEmpty())
 			return 1;
 		
-		final Integer i = m_labelCounts.get(edge);
-		if (i == null) {
-			if (m_labelCountDefault == null)
-				return super.getLabelCount(edge);
-			else
-				m_labelCountDefault.intValue();
+		Integer count = m_labelCounts.get(edge);
+		
+		if (count == null) {
+			try {
+				String defLabel = (String) defaultValues.get(DVisualLexicon.EDGE_LABEL);
+				count = (defLabel == null || defLabel.isEmpty()) ? super.getLabelCount(edge) : 1;
+			} catch (ClassCastException e) {
+				count = 0;
+			}
 		}
-
-		return i;
-	}
-
-	void setLabelCountDefault(int count) {
-		m_labelCountDefault = Integer.valueOf(count);
+		
+		return count;
 	}
 
 	/*

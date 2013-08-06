@@ -100,7 +100,6 @@ class DNodeDetails extends NodeDetails {
 	Double m_borderWidthDefault = DVisualLexicon.NODE_BORDER_WIDTH.getDefault();
 	LineType m_borderStrokeDefault = DVisualLexicon.NODE_BORDER_LINE_TYPE.getDefault();
 	Paint m_borderPaintDefault = DVisualLexicon.NODE_BORDER_PAINT.getDefault();
-	Integer m_labelCountDefault;  // TODO: remove?
 	String m_labelTextDefault = DVisualLexicon.NODE_LABEL.getDefault();;
 	String m_tooltipTextDefault = DVisualLexicon.NODE_TOOLTIP.getDefault();
 	Font m_labelFontDefault = DVisualLexicon.NODE_LABEL_FONT_FACE.getDefault();
@@ -501,22 +500,22 @@ class DNodeDetails extends NodeDetails {
 	public int getLabelCount(final CyNode node) {
 		// Check related bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
 		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL) && !dnv.getVisualProperty(DVisualLexicon.NODE_LABEL).isEmpty())
 			return 1;
 		
-		final Integer o = m_labelCounts.get(node);
+		Integer count = m_labelCounts.get(node);
+		
+		if (count == null) {
+			try {
+				String defLabel = (String) defaultValues.get(DVisualLexicon.NODE_LABEL);
+				count = (defLabel == null || defLabel.isEmpty()) ? super.getLabelCount(node) : 1;
+			} catch (ClassCastException e) {
+				count = 0;
+			}
+		}
 
-		if (o == null)
-			if (m_labelCountDefault == null)
-				return super.getLabelCount(node);
-			else
-				return m_labelCountDefault.intValue();
-
-		return o;
-	}
-
-	void setLabelCountDefault(int lc) {
-		m_labelCountDefault = Integer.valueOf(lc);
+		return count;
 	}
 
 	/**
