@@ -221,12 +221,14 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		}
 	}
 
-	private void setFont(Font newFont, int newSize) {
+	private void setFont(Font newFont, float newSize) {
 		synchronized (lock) {
-			Font font = edgeDetails.m_labelFontDefault;
-			int fontSize = font.getSize();
 			if (newFont == null)
 				return;
+			
+			Font font = edgeDetails.m_labelFontDefault;
+			float fontSize = font.getSize();
+			
 			if (font != null && font.equals(newFont) && fontSize == newSize)
 				return;
 

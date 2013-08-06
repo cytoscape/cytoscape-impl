@@ -57,8 +57,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	private final DGraphView graphView;
 	private final HandleFactory handleFacgtory;
 
-	// Since Fonts are created from size and font face, we need this local value.
-	private Integer fontSize;
 	private LineType lineType;
 	private boolean selected;
 	
@@ -71,7 +69,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		this.handleFacgtory = handleFactory;
 		this.graphView = graphView;
 		this.selected = false;
-		this.fontSize = DVisualLexicon.EDGE_LABEL_FONT_SIZE.getDefault();
 	}
 
 	@Override
@@ -674,10 +671,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		} else if (vp == DVisualLexicon.EDGE_TOOLTIP) {
 			setToolTip(value.toString());
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {
-			final Font newFont = ((Font) value).deriveFont(fontSize);
+			Font newFont = (Font) value;
+			final Font f = getFont();
+			if (f != null)
+				newFont = f.deriveFont((float)f.getSize());
 			setFont(newFont);
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_SIZE) {
-			fontSize = ((Number) value).intValue();
+			float fontSize = ((Number) value).floatValue();
 			final Font f = getFont();
 			if (f != null)
 				setFont(f.deriveFont(fontSize));
