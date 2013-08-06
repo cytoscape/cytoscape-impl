@@ -320,8 +320,11 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	@Override
 	public void setTextPaint(Paint textPaint) {
 		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.overrideLabelPaint(model, 0, textPaint);
-			graphView.m_contentChanged = true;
+			if (textPaint != null) {
+				final Paint transparentColor = getTransparentColor(textPaint, graphView.m_edgeDetails.getLabelTransparency(model));
+				graphView.m_edgeDetails.overrideLabelPaint(model, 0, transparentColor);
+				graphView.m_contentChanged = true;
+			}
 		}
 	}
 
@@ -577,7 +580,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			
 			graphView.m_edgeDetails.overrideLabelTransparency(model, transparency);
 			setTextPaint(graphView.m_edgeDetails.getLabelPaint(model, 0));
-			
 			graphView.m_contentChanged = true;
 		}
 	}
