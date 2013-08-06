@@ -156,6 +156,7 @@ import org.cytoscape.task.internal.networkobjects.GetNodeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.ListEdgesTaskFactory;
 import org.cytoscape.task.internal.networkobjects.ListNetworksTaskFactory;
 import org.cytoscape.task.internal.networkobjects.ListNodesTaskFactory;
+import org.cytoscape.task.internal.networkobjects.ListPropertiesTaskFactory;
 import org.cytoscape.task.internal.networkobjects.RenameEdgeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.RenameNodeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.SetCurrentNetworkTaskFactory;
@@ -1173,7 +1174,7 @@ public class CyActivator extends AbstractCyActivator {
 		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
 		registerService(bc,createEdgeAttributeTaskFactory,TaskFactory.class,createEdgeAttributeTaskFactoryProps);
 
-		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory();
+		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory(cyApplicationManagerServiceRef);
 		Properties getEdgeTaskFactoryProps = new Properties();
 		getEdgeTaskFactoryProps.setProperty(COMMAND, "get");
 		getEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1199,6 +1200,15 @@ public class CyActivator extends AbstractCyActivator {
 		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
 		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
 		registerService(bc,listEdgeAttributesTaskFactory,TaskFactory.class,listEdgeAttributesTaskFactoryProps);
+
+		ListPropertiesTaskFactory listEdgeProperties = 
+			new ListPropertiesTaskFactory(cyApplicationManagerServiceRef,
+		                                CyEdge.class, cyNetworkViewManagerServiceRef,
+		                                renderingEngineManagerServiceRef);
+		Properties listEdgePropertiesTaskFactoryProps = new Properties();
+		listEdgePropertiesTaskFactoryProps.setProperty(COMMAND, "list properties");
+		listEdgePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
+		registerService(bc,listEdgeProperties,TaskFactory.class,listEdgePropertiesTaskFactoryProps);
 
 		RenameEdgeTaskFactory renameEdge = new RenameEdgeTaskFactory();
 		Properties renameEdgeTaskFactoryProps = new Properties();
@@ -1246,7 +1256,7 @@ public class CyActivator extends AbstractCyActivator {
 		deselectTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		registerService(bc,deselectTaskFactory,TaskFactory.class,deselectTaskFactoryProps);
 
-		GetNetworkTaskFactory getNetwork = new GetNetworkTaskFactory();
+		GetNetworkTaskFactory getNetwork = new GetNetworkTaskFactory(cyApplicationManagerServiceRef);
 		Properties getNetworkTaskFactoryProps = new Properties();
 		getNetworkTaskFactoryProps.setProperty(COMMAND, "get");
 		getNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
@@ -1279,6 +1289,15 @@ public class CyActivator extends AbstractCyActivator {
 		listNetworkAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
 		listNetworkAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		registerService(bc,listNetworkAttributesTaskFactory,TaskFactory.class,listNetworkAttributesTaskFactoryProps);
+
+		ListPropertiesTaskFactory listNetworkProperties = 
+			new ListPropertiesTaskFactory(cyApplicationManagerServiceRef,
+		                                CyNetwork.class, cyNetworkViewManagerServiceRef,
+		                                renderingEngineManagerServiceRef);
+		Properties listNetworkPropertiesTaskFactoryProps = new Properties();
+		listNetworkPropertiesTaskFactoryProps.setProperty(COMMAND, "list properties");
+		listNetworkPropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
+		registerService(bc,listNetworkProperties,TaskFactory.class,listNetworkPropertiesTaskFactoryProps);
 
 		SelectTaskFactory selectTaskFactory = new SelectTaskFactory(cyNetworkViewManagerServiceRef, cyEventHelperRef);
 		Properties selectTaskFactoryProps = new Properties();
@@ -1315,7 +1334,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNodeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
 		registerService(bc,createNodeAttributeTaskFactory,TaskFactory.class,createNodeAttributeTaskFactoryProps);
 
-		GetNodeTaskFactory getNodeTaskFactory = new GetNodeTaskFactory();
+		GetNodeTaskFactory getNodeTaskFactory = new GetNodeTaskFactory(cyApplicationManagerServiceRef);
 		Properties getNodeTaskFactoryProps = new Properties();
 		getNodeTaskFactoryProps.setProperty(COMMAND, "get");
 		getNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
@@ -1341,6 +1360,15 @@ public class CyActivator extends AbstractCyActivator {
 		listNodeAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
 		listNodeAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
 		registerService(bc,listNodeAttributesTaskFactory,TaskFactory.class,listNodeAttributesTaskFactoryProps);
+
+		ListPropertiesTaskFactory listNodeProperties = 
+			new ListPropertiesTaskFactory(cyApplicationManagerServiceRef,
+		                                CyNode.class, cyNetworkViewManagerServiceRef,
+		                                renderingEngineManagerServiceRef);
+		Properties listNodePropertiesTaskFactoryProps = new Properties();
+		listNodePropertiesTaskFactoryProps.setProperty(COMMAND, "list properties");
+		listNodePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
+		registerService(bc,listNodeProperties,TaskFactory.class,listNodePropertiesTaskFactoryProps);
 
 		RenameNodeTaskFactory renameNode = new RenameNodeTaskFactory();
 		Properties renameNodeTaskFactoryProps = new Properties();

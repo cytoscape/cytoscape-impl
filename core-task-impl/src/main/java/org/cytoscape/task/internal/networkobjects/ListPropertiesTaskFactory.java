@@ -26,19 +26,31 @@ package org.cytoscape.task.internal.networkobjects;
 
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public class GetNodeTaskFactory extends AbstractTaskFactory {
+public class ListPropertiesTaskFactory extends AbstractTaskFactory {
+	Class <? extends CyIdentifiable> type;
 	CyApplicationManager appMgr;
+	CyNetworkViewManager viewManager;
+	RenderingEngineManager reManager;
 
-	public GetNodeTaskFactory(CyApplicationManager appMgr) {
+	public ListPropertiesTaskFactory(CyApplicationManager appMgr, 
+	                                 Class <? extends CyIdentifiable> type,
+ 	                                 CyNetworkViewManager viewManager,
+	                                 RenderingEngineManager reManager) {
+		this.type = type;
 		this.appMgr = appMgr;
+		this.viewManager = viewManager;
+		this.reManager = reManager;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new GetNodeTask(appMgr));
+		return new TaskIterator(
+			new ListPropertiesTask(appMgr, type, viewManager, reManager));
 	}
 }

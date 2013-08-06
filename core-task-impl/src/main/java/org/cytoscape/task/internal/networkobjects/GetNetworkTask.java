@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -35,15 +36,18 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 public class GetNetworkTask extends AbstractTask implements ObservableTask{
+	CyApplicationManager appMgr;
+
 	@Tunable(description="Network to return", context="nogui")
 	public CyNetwork network;
 
-	public GetNetworkTask() {
+	public GetNetworkTask(CyApplicationManager appMgr) {
+		this.appMgr = appMgr;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		// Nothing to do -- it's all in the Tunable
+		if (network == null) network = appMgr.getCurrentNetwork();
 	}
 
 	public Object getResults(Class type) {

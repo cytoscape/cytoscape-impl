@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
@@ -39,6 +40,8 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
+	CyApplicationManager appMgr;
+
 	@Tunable(description="Network to get edge from", context="nogui")
 	public CyNetwork network = null;
 
@@ -56,14 +59,14 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 
 	private CyEdge returnedEdge = null;
 
-	public GetEdgeTask() {
+	public GetEdgeTask(CyApplicationManager appMgr) {
+		this.appMgr = appMgr;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		if (network == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-			return;
+			network = appMgr.getCurrentNetwork();
 		}
 
 		if (edge == null && (sourceNode == null || targetNode == null)) {

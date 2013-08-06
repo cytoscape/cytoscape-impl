@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -32,10 +33,13 @@ import org.cytoscape.work.TaskIterator;
 
 
 public class GetEdgeTaskFactory extends AbstractTaskFactory {
-	public GetEdgeTaskFactory() {
+	CyApplicationManager appMgr;
+
+	public GetEdgeTaskFactory(CyApplicationManager appMgr) {
+		this.appMgr = appMgr;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new GetEdgeTask());
+		return new TaskIterator(new GetEdgeTask(appMgr));
 	}
 }

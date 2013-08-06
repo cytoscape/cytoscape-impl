@@ -39,6 +39,7 @@ import javax.swing.SwingUtilities;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -54,6 +55,9 @@ public class JResultsPane extends JTextPane implements MessageHandler {
 	private SimpleAttributeSet warningAttributes;
 	public JResultsPane() {
 		super();
+
+		DefaultCaret caret = (DefaultCaret)getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 		commandAttributes = new SimpleAttributeSet();
 		commandAttributes.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.BLUE);

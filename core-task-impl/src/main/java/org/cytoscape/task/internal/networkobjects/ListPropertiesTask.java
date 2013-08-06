@@ -29,26 +29,29 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-public class GetNodeTask extends AbstractGetTask implements ObservableTask {
+public class ListPropertiesTask extends AbstractPropertyTask implements ObservableTask {
 	CyApplicationManager appMgr;
+	Class <? extends CyIdentifiable> type;
+	List<String> resultList;
 
-	@Tunable(description="Network to get node from", context="nogui")
+	@Tunable(description="Network to get properties for", context="nogui")
 	public CyNetwork network = null;
 
-	@Tunable(description="Node to get", context="nogui")
-	public String node = null;
-
-	private CyNode returnedNode = null;
-
-	public GetNodeTask(CyApplicationManager appMgr) {
+	public ListPropertiesTask(CyApplicationManager appMgr, Class<? extends CyIdentifiable> type,
+ 	                          CyNetworkViewManager viewManager,
+	                          RenderingEngineManager reManager) {
+		super(appMgr, viewManager, reManager);
 		this.appMgr = appMgr;
+		this.type = type;
 	}
 
 	@Override
@@ -56,23 +59,16 @@ public class GetNodeTask extends AbstractGetTask implements ObservableTask {
 		if (network == null) {
 			network = appMgr.getCurrentNetwork();
 		}
+	
+		resultList = listProperties(type, network);
 
-		if (node == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Node name or suid must be specified");
-			return;
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Properties for "+getIdentifiableType(type)+"s:");
+		for (String prop: resultList) {
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "     "+prop);
 		}
-
-		returnedNode = getNode(network, node);
 	}
 
 	public Object getResults(Class type) {
-		if (type.equals(CyNode.class)) {
-			return returnedNode;
-		} else if (type.equals(String.class)){
-			if (returnedNode == null)
-				return "<none>";
-			return returnedNode.toString();
-		}
-		return returnedNode;
+		return resultList;
 	}
 }
