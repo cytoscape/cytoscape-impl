@@ -24,10 +24,8 @@ package org.cytoscape.linkout.internal;
  * #L%
  */
 
-import static org.cytoscape.work.ServiceProperties.EDGE_DYNAMIC_LINKOUTS_MENU;
 import static org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NODE_DYNAMIC_LINKOUTS_MENU;
 import static org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 
@@ -42,8 +40,6 @@ import java.util.Properties;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
-import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.PropertyUpdatedEvent;
 import org.cytoscape.property.PropertyUpdatedListener;
@@ -195,24 +191,6 @@ public class LinkOut implements PropertyUpdatedListener{
 		return dict;
 	}
 
-	private void addDynamicLinks() {
-
-		Properties ndict = new Properties();
-		ndict.setProperty("preferredTaskManager","menu");
-		ndict.setProperty(PREFERRED_MENU, NODE_DYNAMIC_LINKOUTS_MENU);
-		// menu titles are generated dynamically
-		CyNodeViewContextMenuFactory dynamicNodeUrls = new DynamicNodeLinkoutMenuFactory(browser, synTaskManager);
-		registrar.registerService(dynamicNodeUrls, CyNodeViewContextMenuFactory.class, ndict);
-
-		Properties edict = new Properties();
-		edict.setProperty("preferredTaskManager","menu");
-		ndict.setProperty(PREFERRED_MENU, EDGE_DYNAMIC_LINKOUTS_MENU);
-		// menu titles are generated dynamically
-		CyEdgeViewContextMenuFactory dynamicEdgeUrls = new DynamicEdgeLinkoutMenuFactory(browser, synTaskManager);
-		registrar.registerService(dynamicEdgeUrls, CyEdgeViewContextMenuFactory.class, edict);
-	}
-	
-	
 	public void addCommanLineLinkOut (CyProperty<Properties> commandline, Map p ){
 		if (!p.get("cyPropertyName").equals("commandline.props"))
 			return;
