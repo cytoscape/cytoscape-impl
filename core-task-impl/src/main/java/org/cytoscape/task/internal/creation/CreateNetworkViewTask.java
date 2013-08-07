@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.creation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -47,11 +48,13 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CreateNetworkViewTask extends AbstractNetworkCollectionTask implements ObservableTask {
+public class CreateNetworkViewTask extends AbstractNetworkCollectionTask 
+                                   implements ObservableTask  {
 
 	private static final Logger logger = LoggerFactory.getLogger(CreateNetworkViewTask.class);
 
@@ -65,16 +68,25 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask impleme
 	private final CyNetworkView sourceView;
 	private	Collection<CyNetworkView> result;
 
+	@Tunable(description="Network to create a view for", context="nogui")
+	public CyNetwork network = null;
+
+	@Tunable(description="Layout the resulting view?", context="nogui")
+	public boolean layout = true;
+
 	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
 			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager netViewMgr,
-			final CyLayoutAlgorithmManager layoutMgr, final CyEventHelper eventHelper, final VisualMappingManager vmm,
+			final CyLayoutAlgorithmManager layoutMgr, final CyEventHelper eventHelper, 
+			final VisualMappingManager vmm,
 			final RenderingEngineManager renderingEngineMgr) {
-		this(undoSupport, networks, viewFactory, netViewMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, null);
+		this(undoSupport, networks, viewFactory, netViewMgr, 
+		     layoutMgr, eventHelper, vmm, renderingEngineMgr, null);
 	}
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
 			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager netViewMgr,
-			final CyLayoutAlgorithmManager layoutMgr, final CyEventHelper eventHelper, final VisualMappingManager vmm,
+			final CyLayoutAlgorithmManager layoutMgr, final CyEventHelper eventHelper, 
+			final VisualMappingManager vmm,
 			final RenderingEngineManager renderingEngineMgr, final CyNetworkView sourceView) {
 		super(networks);
 
@@ -96,10 +108,15 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask impleme
 		taskMonitor.setStatusMessage("Creating network view...");
 
 		final VisualStyle style = vmm.getCurrentVisualStyle();
+
+		Collection<CyNetwork> graphs = networks;
+
+		if (network != null)
+			graphs = Collections.singletonList(network);
 		
 		int i = 0;
-		int viewCount = networks.size();
-		for (final CyNetwork n : networks) {
+		int viewCount = graphs.size();
+		for (final CyNetwork n : graphs) {
 			if (netViewMgr.getNetworkViews(n).isEmpty()) {
 				result.add(createView(n, style, taskMonitor));
 				taskMonitor.setStatusMessage("Network view successfully created for:  "
@@ -133,7 +150,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask impleme
 			if (sourceView != null) {
 				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, renderingEngineMgr, view, sourceView, null,
 						null, true));
-			} else if (layoutMgr != null) {
+			} else if (layoutMgr != null && layout == true) {
 				final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
 				views.add(view);
 				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layoutMgr));

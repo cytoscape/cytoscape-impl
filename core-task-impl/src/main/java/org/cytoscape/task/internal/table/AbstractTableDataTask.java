@@ -39,6 +39,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.work.AbstractTask;
 
 import org.cytoscape.task.internal.utils.DataUtils;
@@ -61,15 +62,9 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 		return getDataFromTable(table, id.getSUID(), columnList);
 	}
 
-	public CyTable getNetworkTable(CyNetwork network, Class<? extends CyIdentifiable> type, String namespace) {
-		if (namespace == null || namespace.equalsIgnoreCase(CyNetwork.DEFAULT_ATTRS) || namespace.equalsIgnoreCase("default"))
-			return network.getTable(type, CyNetwork.DEFAULT_ATTRS);
-		else if (namespace.equalsIgnoreCase(CyNetwork.HIDDEN_ATTRS))
-			return network.getTable(type, CyNetwork.HIDDEN_ATTRS);
-		else if (namespace.equalsIgnoreCase(CyNetwork.LOCAL_ATTRS))
-			return network.getTable(type, CyNetwork.LOCAL_ATTRS);
-		else
-			return network.getTable(type, namespace);
+	public CyTable getNetworkTable(CyNetwork network, Class<? extends CyIdentifiable> type, 
+	                               String namespace) {
+		return network.getTable(type, getNamespace(namespace));
 	}
 
 
@@ -121,6 +116,24 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 			}
 		}
 		return result;
+	}
+
+	public String getNamespace(String namespace) {
+		if (namespace == null || 
+		    namespace.equalsIgnoreCase(CyNetwork.DEFAULT_ATTRS) || 
+		    namespace.equalsIgnoreCase("default"))
+			return CyNetwork.DEFAULT_ATTRS;
+		else if (namespace.equalsIgnoreCase("hidden") ||
+		         namespace.equalsIgnoreCase(CyNetwork.HIDDEN_ATTRS))
+			return CyNetwork.HIDDEN_ATTRS;
+		else if (namespace.equalsIgnoreCase("local") ||
+		         namespace.equalsIgnoreCase(CyNetwork.LOCAL_ATTRS))
+			return CyNetwork.LOCAL_ATTRS;
+		else if (namespace.equalsIgnoreCase("shared") ||
+		         namespace.equalsIgnoreCase(CyRootNetwork.SHARED_ATTRS))
+			return CyRootNetwork.SHARED_ATTRS;
+		else
+			return namespace;
 	}
 
 }

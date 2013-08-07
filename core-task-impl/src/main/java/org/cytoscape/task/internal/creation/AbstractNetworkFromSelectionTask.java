@@ -165,8 +165,9 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		// create the view in a separate task
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		networks.add(newNet);
-		final CreateNetworkViewTask createViewTask = new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
-				null, eventHelper, vmm, renderingEngineMgr, sourceView);
+		final CreateNetworkViewTask createViewTask = 
+			new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
+				                        null, eventHelper, vmm, renderingEngineMgr, sourceView);
 		insertTasksAfterCurrentTask(createViewTask);
 		
 		tm.setProgress(1.0);

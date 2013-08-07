@@ -57,6 +57,9 @@ public class DataUtils {
 	}
 
 	public static String convertMapToString(Map data) {
+		if (data.size() == 0)
+			return "{}";
+
 		String result = "{";
 		for (Object key: data.keySet()) {
 			Object v = data.get(key);
@@ -73,6 +76,9 @@ public class DataUtils {
 	}
 
 	public static String convertListToString(List<Object> data) {
+		if (data.size() == 0)
+			return "[]";
+
 		String result = "[";
 		for (Object v: data) {
 			result += v.toString()+",";
