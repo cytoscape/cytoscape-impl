@@ -30,16 +30,12 @@ import java.util.Map;
 
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.MappingFunctionFactoryManager;
-import org.cytoscape.view.vizmap.gui.editor.EditorManager;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
 
 public class MappingFunctionFactoryManagerImpl implements MappingFunctionFactoryManager {
 	
 	private final Map<Class<?>, VisualMappingFunctionFactory> factories;
-	private final EditorManager editorManager;
 	
-	public MappingFunctionFactoryManagerImpl(final EditorManager editorManager) {
-		this.editorManager = editorManager;
+	public MappingFunctionFactoryManagerImpl() {
 		factories = new HashMap<Class<?>, VisualMappingFunctionFactory>();
 	}
 
@@ -56,20 +52,10 @@ public class MappingFunctionFactoryManagerImpl implements MappingFunctionFactory
 	@SuppressWarnings("rawtypes")
 	public void addFactory(VisualMappingFunctionFactory factory, Map properties) {
 		factories.put(factory.getMappingFunctionType(), factory);
-		updateSelectorGUI();
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public void removeFactory(VisualMappingFunctionFactory factory, Map properties) {
 		factories.remove(factory.getMappingFunctionType());
-		updateSelectorGUI();
-	}
-	
-	private void updateSelectorGUI() {
-//		final SortedSet<String> mappingNames = new TreeSet<String>();
-//		for (final VisualMappingFunctionFactory factory: factories)
-//			mappingNames.add(factory.toString());
-		
-		((CyComboBoxPropertyEditor)editorManager.getMappingFunctionSelector()).setAvailableValues(factories.values().toArray());
 	}
 }

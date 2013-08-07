@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -24,7 +26,6 @@ import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -56,11 +57,9 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
@@ -117,27 +116,22 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private boolean selected;
 	
 	private final VisualPropertySheetItemModel<T> model;
-	private final EditorManager editorManager;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
 	private final IconManager iconMgr;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public VisualPropertySheetItem(final VisualPropertySheetItemModel<T> model,
-								   final EditorManager editorManager,
 								   final VizMapPropertyBuilder vizMapPropertyBuilder,
 								   final IconManager iconMgr) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
-		if (editorManager == null)
-			throw new IllegalArgumentException("'editorManager' must not be null");
 		if (vizMapPropertyBuilder == null)
 			throw new IllegalArgumentException("'vizMapPropertyBuilder' must not be null");
 		if (iconMgr == null)
 			throw new IllegalArgumentException("'iconMgr' must not be null");
 		
 		this.model = model;
-		this.editorManager = editorManager;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
 		this.iconMgr = iconMgr;
 		disabledBtnIcon = getIcon(null, VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
@@ -331,15 +325,16 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			@Override
 			public void propertyChange(final PropertyChangeEvent e) {
 				final VisualMappingFunction<?, T> mapping = (VisualMappingFunction<?, T>) e.getNewValue();
+				final VisualMappingFunctionFactory mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
 				
 				final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp = 
 						vizMapPropertyBuilder.getColumnProperty(propSheetPnl);
 				columnProp.setValue(mapping == null ? null : mapping.getMappingColumnName());
-				columnProp.setInternalValue(mapping == null ? null : getMappingFactory(mapping));
+				columnProp.setInternalValue(mappingFactory);
 				
 				final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> mappingProp =
 						vizMapPropertyBuilder.getMappingTypeProperty(propSheetPnl);
-				mappingProp.setValue(mapping == null ? null : getMappingFactory(mapping));
+				mappingProp.setValue(mappingFactory);
 				mappingProp.setInternalValue(mapping);
 				
 				if (mapping == null)
@@ -443,7 +438,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl);
 			} else {
 				// There is already a visual mapping for this style's property
-				final VisualMappingFunctionFactory mappingFactory = getMappingFactory(mapping);
+				final VisualMappingFunctionFactory mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
 				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory);
 				updateMappingRowHeight();
 			}
@@ -625,24 +620,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		return icon;
 	}
 	
-	private VisualMappingFunctionFactory getMappingFactory(final VisualMappingFunction<?, T> mapping) {
-		if (mapping != null) {
-			final CyComboBoxPropertyEditor mappingSelector = (CyComboBoxPropertyEditor) editorManager
-					.getDefaultComboBoxEditor("mappingTypeEditor");
-			final Set<Object> factories = mappingSelector.getAvailableValues();
-			
-			for (final Object f : factories) {
-				final VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) f;
-				final Class<?> type = factory.getMappingFunctionType();
-				
-				if (type.isAssignableFrom(mapping.getClass()))
-					return factory;
-			}
-		}
-		
-		return null;
-	}
-	
 	private void updateMappingPanelSize() {
 		final PropertySheetTable tbl = getPropSheetPnl().getTable();
 		tbl.repaint();
@@ -718,15 +695,29 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	private class VizMapPropertySheetTable extends PropertySheetTable {
 
-		private int lastEditedMappingRow = -1;
+		private VizMapperProperty<?, ?, ?> editingVizMapperProperty;
 
 		VizMapPropertySheetTable() {
 			setKeyBindings();
+			
+			addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(final FocusEvent e) {
+					if (!isEditing() && editingVizMapperProperty != null)
+						firePropertyChange("editingVizMapperProperty", editingVizMapperProperty, 
+								editingVizMapperProperty = null);
+				}
+			});
 		}
 		
 		@Override
 		public Component prepareEditor(final TableCellEditor editor, final  int row, final int column) {
-			firePropertyChange("lastEditedMappingRow", lastEditedMappingRow, lastEditedMappingRow = row);
+			final Item selectedItem = (Item) getValueAt(row, 0);
+			final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();	
+			
+			if (prop != editingVizMapperProperty)
+				firePropertyChange("editingVizMapperProperty", editingVizMapperProperty, editingVizMapperProperty = prop);
+			
 			return super.prepareEditor(editor, row, column);
 		}
 		

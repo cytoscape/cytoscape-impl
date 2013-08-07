@@ -107,4 +107,9 @@ public class VizMapperProperty<K, V, T> extends DefaultProperty {
 	public K getKey() {
 		return key;
 	}
+
+	@Override
+	public String toString() {
+		return "VizMapperProperty [key=" + key + ", value=" + getValue() + "]";
+	}
 }

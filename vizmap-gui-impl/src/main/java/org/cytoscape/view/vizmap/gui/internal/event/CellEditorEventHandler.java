@@ -45,9 +45,9 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSet;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.MathUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
@@ -61,9 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
-import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
-import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 
 // TODO: Should be refactored for readability!!
 /**
@@ -73,7 +71,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(CellEditorEventHandler.class);
 
-	private final AttributeSetManager attrManager;
+	private final AttributeSetProxy attrProxy;
 	private final ServicesUtil servicesUtil;
 	private final VizMapperMediator vizMapperMediator;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
@@ -81,11 +79,11 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	/**
 	 * Creates a new CellEditorEventHandler object.
 	 */
-	public CellEditorEventHandler(final AttributeSetManager attrManager,
+	public CellEditorEventHandler(final AttributeSetProxy attrProxy,
 								  final ServicesUtil servicesUtil,
 								  final VizMapPropertyBuilder vizMapPropertyBuilder,
 								  final VizMapperMediator vizMapperMediator) {
-		this.attrManager = attrManager;
+		this.attrProxy = attrProxy;
 		this.servicesUtil = servicesUtil;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
 		this.vizMapperMediator = vizMapperMediator;
@@ -125,14 +123,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		if (propSheetPnl == null)
 			return;
 		
-		final int mappingRow = vizMapperMediator.getLastEditedMappingRow();
-
-		if (mappingRow < 0)
-			return;
-
-		// Extract Property object from visual mapping table.
-		final Item selectedItem = (Item) propSheetPnl.getTable().getValueAt(mappingRow, 0);
-		final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();
+		final VizMapperProperty<?, ?, ?> prop = vizMapperMediator.getCurrentVizMapperProperty();
 
 		if (prop == null)
 			return;
@@ -235,8 +226,9 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
 		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 		VisualMappingFunction<?, ?> newMapping = mapping;
-
-		if (mapping == null || mapping.getClass() != newFactory.getMappingFunctionType() 
+		final Class<?> newMappingType = newFactory.getMappingFunctionType();
+		
+		if (mapping == null || mapping.getClass() != newMappingType 
 				|| !mapping.getMappingColumnName().equals(controllingAttrName)) {
 			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 			final CyNetwork currentNet = appMgr.getCurrentNetwork();
@@ -245,7 +237,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				return newMapping;
 				
 			// Mapping does not exist. Need to create new one.
-			final AttributeSet attrSet = attrManager.getAttributeSet(currentNet, vp.getTargetDataType());
+			final AttributeSet attrSet = attrProxy.getAttributeSet(currentNet, vp.getTargetDataType());
 			Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
 			if (attributeDataType == null) {
@@ -257,7 +249,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				return newMapping;
 			}
 			
-			if (newFactory.getMappingFunctionType() == ContinuousMapping.class) {
+			if (newMappingType == ContinuousMapping.class) {
 				if (!Number.class.isAssignableFrom(attributeDataType)) {
 					JOptionPane.showMessageDialog(null,
 							"Selected column data type is not Number.\nPlease select a numerical column type.",
@@ -266,7 +258,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 					
 					return newMapping;
 				}
-			} else if (newFactory.getMappingFunctionType() == DiscreteMapping.class) {
+			} else if (newMappingType == DiscreteMapping.class) {
 				if (attributeDataType == List.class)
 					attributeDataType = String.class;
 			}
@@ -275,7 +267,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			newMapping = newFactory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
 			
 			// Keep old mapping values if the new mapping has the same type
-			if (oldFactory != null && oldFactory.getMappingFunctionType() == newFactory.getMappingFunctionType())
+			if (oldFactory != null && oldFactory.getMappingFunctionType() == newMappingType)
 				copyMappingValues(mapping, newMapping);
 		}
 

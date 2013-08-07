@@ -4,6 +4,8 @@ import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_VISUAL_STYLES;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.STARTUP;
 
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
+import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
@@ -16,17 +18,23 @@ import org.puremvc.java.multicore.patterns.command.SimpleCommand;
 public class StartupCommand extends SimpleCommand {
 
 	private final VizMapperProxy vizMapperProxy;
+	private final AttributeSetProxy attributeSetProxy;
+	private final MappingFunctionFactoryProxy mappingFactoryProxy;
 	private final VizMapperMediator vizMapperMediator;
 	private final  VizMapperMenuMediator vizMapperMenuMediator;
 	private final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand;
 	private final LoadVisualStylesCommand loadVisualStylesCommand;
 	
 	public StartupCommand(final VizMapperProxy vizMapperProxy,
+						  final AttributeSetProxy attributeSetProxy,
+						  final MappingFunctionFactoryProxy mappingFactoryProxy,
 						  final VizMapperMediator vizMapperMediator,
 						  final VizMapperMenuMediator vizMapperMenuMediator,
 						  final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand,
 						  final LoadVisualStylesCommand loadVisualStylesCommand) {
 		this.vizMapperProxy = vizMapperProxy;
+		this.attributeSetProxy = attributeSetProxy;
+		this.mappingFactoryProxy = mappingFactoryProxy;
 		this.vizMapperMediator = vizMapperMediator;
 		this.vizMapperMenuMediator = vizMapperMenuMediator;
 		this.importDefaultVisualStylesCommand = importDefaultVisualStylesCommand;
@@ -37,6 +45,8 @@ public class StartupCommand extends SimpleCommand {
 	public final void execute(final INotification notification) {
 		// Register proxies
 		getFacade().registerProxy(vizMapperProxy);
+		getFacade().registerProxy(attributeSetProxy);
+		getFacade().registerProxy(mappingFactoryProxy);
 		// Register mediators
 		getFacade().registerMediator(vizMapperMediator);
 		getFacade().registerMediator(vizMapperMenuMediator);

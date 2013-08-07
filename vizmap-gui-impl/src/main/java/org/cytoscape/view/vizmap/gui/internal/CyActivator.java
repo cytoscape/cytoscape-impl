@@ -49,6 +49,8 @@ import org.cytoscape.view.vizmap.gui.internal.controller.ImportDefaultVisualStyl
 import org.cytoscape.view.vizmap.gui.internal.controller.LoadVisualStylesCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
 import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
+import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.ClearBendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
@@ -90,25 +92,26 @@ import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
-	
 
+	@Override
 	public void start(final BundleContext bc) {
-
 		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
 		VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
-		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
+		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		
 		final ServicesUtil servicesUtil = new ServicesUtil(cyServiceRegistrarServiceRef, ApplicationFacade.NAME);
 		
 		VisualMappingFunctionFactory continousMappingFactory = getService(bc, VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
 		
-		AttributeSetManager attributeSetManager = new AttributeSetManager(cyNetworkTableManagerServiceRef);
+		final AttributeSetProxy attributeSetProxy = new AttributeSetProxy(servicesUtil);
+		final MappingFunctionFactoryProxy mappingFactoryProxy = new MappingFunctionFactoryProxy(servicesUtil);
+		
 		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc,ContinuousMappingCellRendererFactory.class);
-		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetManager,visualMappingManagerServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef, continousMappingFactory, continuousMappingCellRendererFactory, cyServiceRegistrarServiceRef);
-		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl(editorManager);
+		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetProxy,mappingFactoryProxy,visualMappingManagerServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef, continousMappingFactory, continuousMappingCellRendererFactory, cyServiceRegistrarServiceRef);
+		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl();
 		
 		CyColorChooser colorEditor = new CyColorChooser();
 		CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorEditor);
@@ -136,7 +139,7 @@ public class CyActivator extends AbstractCyActivator {
 		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,visualMappingManagerServiceRef);
 		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(servicesUtil);
 		
-		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyApplicationManagerServiceRef, editorManager);
+		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyApplicationManagerServiceRef, editorManager, mappingFunctionFactoryManager);
 		
 		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(visualMappingManagerServiceRef,visualStyleFactoryServiceRef);
@@ -153,7 +156,7 @@ public class CyActivator extends AbstractCyActivator {
 		final ClearBendTaskFactory clearBendTaskFactory = new ClearBendTaskFactory(visualMappingManagerServiceRef, bf);
 		registerService(bc, clearBendTaskFactory, EdgeViewTaskFactory.class, clearBendProp);
 		
-		registerAllServices(bc, attributeSetManager, new Properties());
+		registerAllServices(bc, attributeSetProxy, new Properties());
 		registerAllServices(bc, editorManager.getNodeEditor(), new Properties());
 		registerAllServices(bc, editorManager.getEdgeEditor(), new Properties());
 		registerAllServices(bc, editorManager.getNetworkEditor(), new Properties());
@@ -174,7 +177,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, stringPropertyEditor, new Properties());
 		registerAllServices(bc, booleanVisualPropertyEditor, new Properties());
 		
-		registerAllServices(bc,editorManager, new Properties());
+		registerAllServices(bc, editorManager, new Properties());
+		registerAllServices(bc, mappingFunctionFactoryManager, new Properties());
 
 		Properties createNewVisualStyleTaskFactoryProps = new Properties();
 		createNewVisualStyleTaskFactoryProps.setProperty("service.type","vizmapUI.taskFactory");
@@ -282,7 +286,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		final VizMapperMediator vizMapperMediator = new VizMapperMediator(vizMapperMainPanel,
 																		  servicesUtil,
-																		  editorManager,
 																		  vizMapPropertyBuilder,
 																		  iconManager);
 		final VizMapperMenuMediator vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
@@ -290,12 +293,15 @@ public class CyActivator extends AbstractCyActivator {
 		final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand = new ImportDefaultVisualStylesCommand(servicesUtil);
 		final LoadVisualStylesCommand loadVisualStylesCommand = new LoadVisualStylesCommand(servicesUtil);
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,
+																 attributeSetProxy,
+																 mappingFactoryProxy,
 																 vizMapperMediator,
 																 vizMapperMenuMediator,
 																 importDefaultVisualStylesCommand,
 																 loadVisualStylesCommand);
 		
 		registerAllServices(bc, vizMapperProxy, new Properties());
+		registerAllServices(bc, mappingFactoryProxy, new Properties());
 		registerAllServices(bc, vizMapperMediator, new Properties());
 		
 		registerServiceListener(bc, vizMapperMediator, "onCyActionRegistered", "onCyActionUnregistered", CyAction.class);
@@ -305,7 +311,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, vizMapperMenuMediator, "onRenderingEngineFactoryRegistered", "onRenderingEngineFactoryUnregistered", RenderingEngineFactory.class);
 		
 		final VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager,
-				attributeSetManager, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
+				attributeSetProxy, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
 		registerServiceListener(bc, vizMapEventHandlerManager, "registerPCL", "unregisterPCL", RenderingEngineFactory.class);
 		
 		// Startup the framework

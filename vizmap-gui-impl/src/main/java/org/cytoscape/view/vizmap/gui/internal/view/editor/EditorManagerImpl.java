@@ -62,13 +62,15 @@ import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
+import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.C2CEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.C2DEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.GradientEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.AttributeComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyDiscreteValuePropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.MappingTypeComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.DiscreteValueEditor;
 
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
@@ -91,34 +93,32 @@ public class EditorManagerImpl implements EditorManager {
 	}
 
 	private final Map<Class<?>, VisualPropertyEditor<?>> editors;
-
 	private final Map<String, PropertyEditor> comboBoxEditors;
-
 	private final Map<Class<?>, ListEditor> attrComboBoxEditors;
-
 	private final Map<Class<?>, ValueEditor<?>> valueEditors;
 
 	private final PropertyEditor mappingTypeEditor;
 
 	private final CyApplicationManager appManager;
-
 	private final CyNetworkTableManager tableManager;
 	private final VisualMappingManager vmm;
 	private final VisualMappingFunctionFactory continuousMappingFactory;
-
 	private ContinuousMappingCellRendererFactory cellRendererFactory;
-	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Creates a new EditorFactory object.
 	 * @param cellRendererFactory 
 	 */
-	public EditorManagerImpl(final CyApplicationManager appManager, final AttributeSetManager attrManager,
-			final VisualMappingManager vmm, final CyNetworkTableManager tableManager,
-			final CyNetworkManager networkManager, VisualMappingFunctionFactory continuousMappingFactory,
-			ContinuousMappingCellRendererFactory cellRendererFactory, final CyServiceRegistrar serviceRegistrar) {
-
+	public EditorManagerImpl(final CyApplicationManager appManager,
+							 final AttributeSetProxy attrProxy,
+							 final MappingFunctionFactoryProxy mappingFactoryProxy,
+							 final VisualMappingManager vmm,
+							 final CyNetworkTableManager tableManager,
+							 final CyNetworkManager networkManager,
+							 final VisualMappingFunctionFactory continuousMappingFactory,
+							 final ContinuousMappingCellRendererFactory cellRendererFactory,
+							 final CyServiceRegistrar serviceRegistrar) {
 		this.appManager = appManager;
 		this.tableManager = tableManager;
 		this.vmm = vmm;
@@ -127,24 +127,24 @@ public class EditorManagerImpl implements EditorManager {
 		this.serviceRegistrar = serviceRegistrar;
 
 		editors = new HashMap<Class<?>, VisualPropertyEditor<?>>();
-
 		comboBoxEditors = new HashMap<String, PropertyEditor>();
-		attrComboBoxEditors = new HashMap<Class<?>, ListEditor>();
-
+		valueEditors = new HashMap<Class<?>, ValueEditor<?>>();
+		
+		// Create attribute (Column Name) editors
 		final AttributeComboBoxPropertyEditor nodeAttrEditor = new AttributeComboBoxPropertyEditor(CyNode.class,
-				attrManager, appManager, networkManager);
+				attrProxy, appManager, networkManager);
 		final AttributeComboBoxPropertyEditor edgeAttrEditor = new AttributeComboBoxPropertyEditor(CyEdge.class,
-				attrManager, appManager, networkManager);
+				attrProxy, appManager, networkManager);
 		final AttributeComboBoxPropertyEditor networkAttrEditor = new AttributeComboBoxPropertyEditor(CyNetwork.class,
-				attrManager, appManager, networkManager);
+				attrProxy, appManager, networkManager);
+		attrComboBoxEditors = new HashMap<Class<?>, ListEditor>();
 		attrComboBoxEditors.put(nodeAttrEditor.getTargetObjectType(), nodeAttrEditor);
 		attrComboBoxEditors.put(edgeAttrEditor.getTargetObjectType(), edgeAttrEditor);
 		attrComboBoxEditors.put(networkAttrEditor.getTargetObjectType(), networkAttrEditor);
 
-		valueEditors = new HashMap<Class<?>, ValueEditor<?>>();
-
-		// Create mapping type editor
-		this.mappingTypeEditor = getDefaultComboBoxEditor("mappingTypeEditor");
+		// Create Mapping Type editor
+		mappingTypeEditor = new MappingTypeComboBoxPropertyEditor(mappingFactoryProxy);
+		comboBoxEditors.put("mappingTypeEditor", mappingTypeEditor);
 
 		Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
 
@@ -234,10 +234,12 @@ public class EditorManagerImpl implements EditorManager {
 	@Override
 	public PropertyEditor getDefaultComboBoxEditor(String editorName) {
 		PropertyEditor editor = comboBoxEditors.get(editorName);
+		
 		if (editor == null) {
 			editor = new CyComboBoxPropertyEditor();
 			comboBoxEditors.put(editorName, editor);
 		}
+		
 		return editor;
 	}
 

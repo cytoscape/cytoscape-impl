@@ -47,8 +47,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSet;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,16 +63,16 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 	private static final Logger logger = LoggerFactory.getLogger(AttributeComboBoxPropertyEditor.class);
 
 	private final Class<? extends CyIdentifiable> graphObjectType;
-	private final AttributeSetManager attrManager;
+	private final AttributeSetProxy attrProxy;
 	private final CyNetworkManager networkManager;
 
 	private Map<String, Class<?>> currentColumnMap;
 
 	public AttributeComboBoxPropertyEditor(final Class<? extends CyIdentifiable> type,
-										   final AttributeSetManager attrManager,
+										   final AttributeSetProxy attrProxy,
 										   final CyApplicationManager appManager,
 										   final CyNetworkManager networkManager) {
-		this.attrManager = attrManager;
+		this.attrProxy = attrProxy;
 		this.graphObjectType = type;
 		this.networkManager = networkManager;
 		currentColumnMap = new HashMap<String, Class<?>>();
@@ -81,7 +81,7 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		comboBox.setRenderer(new AttributeComboBoxCellRenderer());
 		comboBox.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(ActionEvent e) {
 				updateComboBox(appManager.getCurrentNetwork());
 			}
 		});
@@ -100,9 +100,9 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		if (currentNetwork == null)
 			return;
 		
-		final AttributeSet compatibleColumns = attrManager.getAttributeSet(currentNetwork, graphObjectType);
+		final AttributeSet compatibleColumns = attrProxy.getAttributeSet(currentNetwork, graphObjectType);
 		currentColumnMap = compatibleColumns.getAttrMap();
-		final AttributeSet targetSet = attrManager.getAttributeSet(currentNetwork, graphObjectType);
+		final AttributeSet targetSet = attrProxy.getAttributeSet(currentNetwork, graphObjectType);
 
 		if (targetSet == null)
 			return;
@@ -113,7 +113,7 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		final Set<CyNetwork> networks = networkManager.getNetworkSet();
 
 		for (final CyNetwork net : networks) {
-			final AttributeSet currentSet = this.attrManager.getAttributeSet(net, graphObjectType);
+			final AttributeSet currentSet = attrProxy.getAttributeSet(net, graphObjectType);
 			
 			for (Entry<String, Class<?>> entry: currentSet.getAttrMap().entrySet()) {
 				if (columnIsAllowed(entry.getKey(), entry.getValue()))
@@ -126,8 +126,6 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 
 		// Add new name if not in the list.
 		box.setSelectedItem(selected);
-
-		logger.debug(graphObjectType + " Column Name Combobox Updated: New Names = " + targetSet.getAttrMap().keySet());
 	}
 
 	private boolean columnIsAllowed(String name, Class<?> type) {

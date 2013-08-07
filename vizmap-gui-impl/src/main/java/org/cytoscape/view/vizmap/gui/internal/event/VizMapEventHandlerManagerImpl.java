@@ -36,7 +36,7 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandlerManager;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
@@ -52,11 +52,11 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 
 	private final Map<String, VizMapEventHandler> eventHandlers;
 	private final EditorManager editorManager;
-	private final AttributeSetManager attrManager;
+	private final AttributeSetProxy attrManager;
 	private final ServicesUtil servicesUtil;
 
 	public VizMapEventHandlerManagerImpl(final EditorManager editorManager,
-										 final AttributeSetManager attrManager,
+										 final AttributeSetProxy attrManager,
 										 final ServicesUtil servicesUtil,
 										 final VizMapPropertyBuilder vizMapPropertyBuilder,
 										 final VizMapperMediator vizMapperMediator) {

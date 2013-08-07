@@ -49,6 +49,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.gui.MappingFunctionFactoryManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
@@ -82,10 +83,13 @@ public class VizMapPropertyBuilder {
 
 	private final EditorManager editorManager;
 	private final CyApplicationManager appManager;
+	private final MappingFunctionFactoryManager mappingFactoryManager;
 
-	public VizMapPropertyBuilder(final CyApplicationManager appManager, final EditorManager editorManager) {
+	public VizMapPropertyBuilder(final CyApplicationManager appManager, final EditorManager editorManager,
+			final MappingFunctionFactoryManager mappingFactoryManager) {
 		this.appManager = appManager;
 		this.editorManager = editorManager;
+		this.mappingFactoryManager = mappingFactoryManager;
 		this.defaultTableCellRenderer = new DefaultVizMapTableCellRenderer();
 	}
 
@@ -309,6 +313,19 @@ public class VizMapPropertyBuilder {
 				if (p instanceof VizMapperProperty && 
 						((VizMapperProperty)p).getCellType() == CellType.MAPPING_TYPE)
 					return (VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>>) p;
+			}
+		}
+		
+		return null;
+	}
+	
+	public VisualMappingFunctionFactory getMappingFactory(final VisualMappingFunction<?, ?> mapping) {
+		if (mapping != null) {
+			for (final VisualMappingFunctionFactory f : mappingFactoryManager.getFactories()) {
+				final Class<?> type = f.getMappingFunctionType();
+				
+				if (type.isAssignableFrom(mapping.getClass()))
+					return f;
 			}
 		}
 		

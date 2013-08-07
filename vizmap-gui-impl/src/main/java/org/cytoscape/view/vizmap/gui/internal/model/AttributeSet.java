@@ -1,4 +1,4 @@
-package org.cytoscape.view.vizmap.gui.internal;
+package org.cytoscape.view.vizmap.gui.internal.model;
 
 /*
  * #%L
@@ -38,17 +38,22 @@ public final class AttributeSet {
 		this.attrNameTypeMap = new HashMap<String, Class<?>>();
 	}
 	
+	public AttributeSet(final AttributeSet clone) {
+		this(clone.getObjectType());
+		attrNameTypeMap.putAll(clone.getAttrMap());
+	}
+	
 	/**
 	 * Graph object type
 	 */
 	public Class<?> getObjectType() {
-		return this.targetObjectType;
+		return targetObjectType;
 	}
 	
 	/**
 	 * Map from column name to column data type
 	 */
 	public Map<String, Class<?>> getAttrMap() {
-		return this.attrNameTypeMap;
+		return attrNameTypeMap;
 	}
 }
