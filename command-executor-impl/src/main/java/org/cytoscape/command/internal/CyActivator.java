@@ -33,6 +33,7 @@ import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
+import org.cytoscape.command.util.RowList;
 import org.cytoscape.command.internal.tunables.*;
 import org.cytoscape.command.internal.available.*;
 
@@ -132,6 +133,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,networkTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,nodeListTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,edgeListTHF,StringTunableHandlerFactory.class,new Properties());
+
+		CyIdentifiableStringTunableHandlerFactory<RowListTunableHandler> rowListTHF = 
+			new CyIdentifiableStringTunableHandlerFactory<RowListTunableHandler>(stm, RowListTunableHandler.class, RowList.class);
+		registerService(bc,rowListTHF,StringTunableHandlerFactory.class,new Properties());
 
 		BasicArgHandlerFactory argHandlerFactory = new BasicArgHandlerFactory();
 		registerService(bc,argHandlerFactory,ArgHandlerFactory.class,new Properties());

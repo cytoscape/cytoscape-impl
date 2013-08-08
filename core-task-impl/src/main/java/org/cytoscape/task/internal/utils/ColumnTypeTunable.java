@@ -35,16 +35,18 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class ColumnTypeTunable {
 	
 	@Tunable (description="Type of column", context="nogui")
-	public ListSingleSelection<String> type = 
+	public ListSingleSelection<String> type =  
 		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean", "list");
 
 	@Tunable (description="Type of list elements", context="nogui")
 	public ListSingleSelection<String> listType = 
 		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean");
 
-	public ColumnTypeTunable() {
-	}
+	public ColumnTypeTunable() { }
 
 	public String getColumnType() { return type.getSelectedValue(); }
-	public String getListElementType() { return listType.getSelectedValue(); }
+	public String getListElementType() { 
+		if (listType == null) return null;
+		return listType.getSelectedValue(); 
+	}
 }

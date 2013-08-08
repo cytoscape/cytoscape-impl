@@ -70,6 +70,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
@@ -184,13 +185,23 @@ import org.cytoscape.task.internal.session.NewSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.OpenSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionAsTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionTaskFactoryImpl;
+import org.cytoscape.task.internal.table.AddRowTaskFactory;
 import org.cytoscape.task.internal.table.CopyValueToColumnTaskFactoryImpl;
+import org.cytoscape.task.internal.table.CreateColumnTaskFactory;
 import org.cytoscape.task.internal.table.CreateNetworkAttributeTaskFactory;
+import org.cytoscape.task.internal.table.CreateTableTaskFactory;
 import org.cytoscape.task.internal.table.DeleteColumnTaskFactoryImpl;
+import org.cytoscape.task.internal.table.DeleteColumnCommandTaskFactory;
+import org.cytoscape.task.internal.table.DeleteRowTaskFactory;
 import org.cytoscape.task.internal.table.DeleteTableTaskFactoryImpl;
+import org.cytoscape.task.internal.table.DestroyTableTaskFactory;
+import org.cytoscape.task.internal.table.GetColumnTaskFactory;
 import org.cytoscape.task.internal.table.GetNetworkAttributeTaskFactory;
+import org.cytoscape.task.internal.table.GetRowTaskFactory;
+import org.cytoscape.task.internal.table.GetValueTaskFactory;
 import org.cytoscape.task.internal.table.ListNetworkAttributesTaskFactory;
 import org.cytoscape.task.internal.table.ListColumnsTaskFactory;
+import org.cytoscape.task.internal.table.ListRowsTaskFactory;
 import org.cytoscape.task.internal.table.ListTablesTaskFactory;
 import org.cytoscape.task.internal.table.MapGlobalToLocalTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTaskFactoryImpl;
@@ -198,6 +209,8 @@ import org.cytoscape.task.internal.table.RenameColumnTaskFactoryImpl;
 import org.cytoscape.task.internal.table.ImportDataTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.MergeDataTableTaskFactoryImpl;
 import org.cytoscape.task.internal.table.SetNetworkAttributeTaskFactory;
+import org.cytoscape.task.internal.table.SetTableTitleTaskFactory;
+import org.cytoscape.task.internal.table.SetValuesTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
 import org.cytoscape.task.internal.view.GetCurrentNetworkViewTaskFactory;
 import org.cytoscape.task.internal.view.ListNetworkViewsTaskFactory;
@@ -282,6 +295,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CySessionManager cySessionManagerServiceRef = getService(bc,CySessionManager.class);
 		CyProperty cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
+		CyTableFactory cyTableFactoryServiceRef = getService(bc,CyTableFactory.class);
 		CyTableManager cyTableManagerServiceRef = getService(bc,CyTableManager.class);
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc,CyLayoutAlgorithmManager.class);
 		CyTableWriterManager cyTableWriterManagerRef = getService(bc,CyTableWriterManager.class);
@@ -1465,6 +1479,70 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,setNodePropertiesTaskFactory,TaskFactory.class,setNodePropertiesTaskFactoryProps);
 
 		// NAMESPACE: table
+		AddRowTaskFactory addRowTaskFactory = 
+			new AddRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		Properties addRowTaskFactoryProps = new Properties();
+		addRowTaskFactoryProps.setProperty(COMMAND, "add row");
+		addRowTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,addRowTaskFactory,TaskFactory.class,addRowTaskFactoryProps);
+
+		CreateColumnTaskFactory createColumnTaskFactory = 
+			new CreateColumnTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		Properties createColumnTaskFactoryProps = new Properties();
+		createColumnTaskFactoryProps.setProperty(COMMAND, "create column");
+		createColumnTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,createColumnTaskFactory,TaskFactory.class,createColumnTaskFactoryProps);
+
+		CreateTableTaskFactory createTableTaskFactory = 
+			new CreateTableTaskFactory(cyApplicationManagerServiceRef, 
+			                           cyTableFactoryServiceRef, cyTableManagerServiceRef); 
+		Properties createTableTaskFactoryProps = new Properties();
+		createTableTaskFactoryProps.setProperty(COMMAND, "create table");
+		createTableTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,createTableTaskFactory,TaskFactory.class,createTableTaskFactoryProps);
+
+		DeleteColumnCommandTaskFactory deleteColumnCommandTaskFactory = 
+			new DeleteColumnCommandTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		Properties deleteColumnCommandTaskFactoryProps = new Properties();
+		deleteColumnCommandTaskFactoryProps.setProperty(COMMAND, "delete column");
+		deleteColumnCommandTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,deleteColumnCommandTaskFactory,TaskFactory.class,deleteColumnCommandTaskFactoryProps);
+
+		DeleteRowTaskFactory deleteRowTaskFactory = 
+			new DeleteRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		Properties deleteRowTaskFactoryProps = new Properties();
+		deleteRowTaskFactoryProps.setProperty(COMMAND, "delete row");
+		deleteRowTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,deleteRowTaskFactory,TaskFactory.class,deleteRowTaskFactoryProps);
+
+		DestroyTableTaskFactory destroyTableTaskFactory = 
+			new DestroyTableTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		Properties destroyTableTaskFactoryProps = new Properties();
+		destroyTableTaskFactoryProps.setProperty(COMMAND, "destroy");
+		destroyTableTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,destroyTableTaskFactory,TaskFactory.class,destroyTableTaskFactoryProps);
+
+		GetColumnTaskFactory getColumnTaskFactory = 
+			new GetColumnTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		Properties getColumnTaskFactoryProps = new Properties();
+		getColumnTaskFactoryProps.setProperty(COMMAND, "get column");
+		getColumnTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,getColumnTaskFactory,TaskFactory.class,getColumnTaskFactoryProps);
+
+		GetRowTaskFactory getRowTaskFactory = 
+			new GetRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		Properties getRowTaskFactoryProps = new Properties();
+		getRowTaskFactoryProps.setProperty(COMMAND, "get row");
+		getRowTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,getRowTaskFactory,TaskFactory.class,getRowTaskFactoryProps);
+
+		GetValueTaskFactory getValueTaskFactory = 
+			new GetValueTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		Properties getValueTaskFactoryProps = new Properties();
+		getValueTaskFactoryProps.setProperty(COMMAND, "get value");
+		getValueTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,getValueTaskFactory,TaskFactory.class,getValueTaskFactoryProps);
+
 		ListColumnsTaskFactory listColumnsTaskFactory = 
 			new ListColumnsTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, 
 			                          cyNetworkTableManagerServiceRef);
@@ -1472,6 +1550,13 @@ public class CyActivator extends AbstractCyActivator {
 		listColumnsTaskFactoryProps.setProperty(COMMAND, "list columns");
 		listColumnsTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
 		registerService(bc,listColumnsTaskFactory,TaskFactory.class,listColumnsTaskFactoryProps);
+
+		ListRowsTaskFactory listRowsTaskFactory = 
+			new ListRowsTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef);
+		Properties listRowsTaskFactoryProps = new Properties();
+		listRowsTaskFactoryProps.setProperty(COMMAND, "list rows");
+		listRowsTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,listRowsTaskFactory,TaskFactory.class,listRowsTaskFactoryProps);
 
 		ListTablesTaskFactory listTablesTaskFactory = 
 			new ListTablesTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, 
@@ -1481,6 +1566,19 @@ public class CyActivator extends AbstractCyActivator {
 		listTablesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
 		registerService(bc,listTablesTaskFactory,TaskFactory.class,listTablesTaskFactoryProps);
 
+		SetTableTitleTaskFactory setTableTitleTaskFactory = 
+			new SetTableTitleTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef);
+		Properties setTableTitleTaskFactoryProps = new Properties();
+		setTableTitleTaskFactoryProps.setProperty(COMMAND, "set title");
+		setTableTitleTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,setTableTitleTaskFactory,TaskFactory.class,setTableTitleTaskFactoryProps);
+
+		SetValuesTaskFactory setValuesTaskFactory = 
+			new SetValuesTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef);
+		Properties setValuesTaskFactoryProps = new Properties();
+		setValuesTaskFactoryProps.setProperty(COMMAND, "set values");
+		setValuesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
+		registerService(bc,setValuesTaskFactory,TaskFactory.class,setValuesTaskFactoryProps);
 		// NAMESPACE: view
 
 		GetCurrentNetworkViewTaskFactory getCurrentView = 

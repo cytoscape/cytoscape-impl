@@ -24,6 +24,7 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,34 @@ public class DataUtils {
 		String name = table.getRow(edge.getSUID()).get(CyNetwork.NAME, String.class);
 		name += " (SUID: "+edge.getSUID()+")";
 		return name;
+	}
+
+	public static <T> T convertString(String value, Class<T> type) {
+		if (type.equals(Long.class))
+			return (T)Long.valueOf(value);
+		if (type.equals(Double.class))
+			return (T)Double.valueOf(value);
+		if (type.equals(Integer.class))
+			return (T)Integer.valueOf(value);
+		if (type.equals(Boolean.class))
+			return (T)Boolean.valueOf(value);
+		if (type.equals(String.class))
+			return (T)value;
+		return null;
+	}
+
+	public static <T> List<T> convertStringList(String value, Class<T> listElementType) {
+		String[] splitString = getCSV(value);
+		List<T> list = new ArrayList<T>();
+		for (String s: splitString) {
+			T val = convertString(s, listElementType);
+			if (val != null)
+				list.add(val);
+		}
+		if (list.size() > 0)
+			return list;
+
+		return null;
 	}
 
 	public static String convertData(Object data) {

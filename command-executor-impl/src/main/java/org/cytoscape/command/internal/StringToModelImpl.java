@@ -107,11 +107,12 @@ public class StringToModelImpl implements StringToModel {
 			return CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, false);
 		}
 
-		Set<Long> suids = parseList(net, nodeList, net.getDefaultNodeTable());
-		if (suids == null) return null;
+		Set<CyRow> rows = parseList(nodeList, net.getDefaultNodeTable());
+		if (rows == null) return null;
 
 		List<CyNode> nodes = new ArrayList<CyNode>();
-		for (Long suid: suids) {
+		for (CyRow row: rows) {
+			Long suid = row.get(CyNetwork.SUID, Long.class);
 			nodes.add(net.getNode(suid));
 		}
 		return nodes;
@@ -134,19 +135,33 @@ public class StringToModelImpl implements StringToModel {
 			return CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, false);
 		}
 
-		Set<Long> suids =  parseList(net, edgeList, net.getDefaultEdgeTable());
-		if (suids == null) return null;
+		Set<CyRow> rows =  parseList(edgeList, net.getDefaultEdgeTable());
+		if (rows == null) return null;
 
 		List<CyEdge> edges = new ArrayList<CyEdge>();
-		for (Long suid: suids) {
+		for (CyRow row: rows) {
+			Long suid = row.get(CyNetwork.SUID, Long.class);
 			edges.add(net.getEdge(suid));
 		}
 		return edges;
 	}
 
-	private Set<Long> parseList(CyNetwork net, String list, CyTable table) {
+	@Override
+	public List<CyRow> getRowList(CyTable table, String rowList) {
+		if (table == null) return null;
+
+		if (rowList.equalsIgnoreCase(ALL)) {
+			return table.getAllRows();
+		}
+
+		Set<CyRow> rows =  parseList(rowList, table);
+		if (rows == null) return null;
+		return new ArrayList<CyRow>(rows);
+	}
+
+	private Set<CyRow> parseList(String list, CyTable table) {
 		// Use a HashSet to we only get one of each CyIdentifiable
-		Set<Long> suids = new HashSet<Long>();
+		Set<CyRow> rows = new HashSet<CyRow>();
 
 		// Create a map so we only have to traverse the table once!
 		Map<String, List<String>> columnMap = new HashMap<String,List<String>>();
@@ -158,7 +173,7 @@ public class StringToModelImpl implements StringToModel {
 				if (SUID.equalsIgnoreCase(t[0])) {
 					Long suid = getLong(t[1]);
 					if (suid != null && table.rowExists(suid))
-						suids.add(suid);
+						rows.add(table.getRow(suid));
 				} else
 					updateMap(columnMap, t[0], t[1]);
 			} else {
@@ -168,7 +183,7 @@ public class StringToModelImpl implements StringToModel {
 
 		// Our map might be empty if we used all SUIDs
 		if (columnMap.size() == 0)
-			return suids;
+			return rows;
 
 		for (CyRow row: table.getAllRows()) {
 			for (String key: columnMap.keySet()) {
@@ -178,13 +193,13 @@ public class StringToModelImpl implements StringToModel {
 					String rowValue = rawValue.toString();
 					for (String value: columnMap.get(key)) {
 						if (rowValue.equalsIgnoreCase(value))
-							suids.add(row.get(CyNetwork.SUID, Long.class));
+							rows.add(row);
 					}
 				}
 			}
 		}
 
-		return suids;
+		return rows;
 	}
 
 	private void updateMap(Map<String, List<String>>map, String key, String value) {
