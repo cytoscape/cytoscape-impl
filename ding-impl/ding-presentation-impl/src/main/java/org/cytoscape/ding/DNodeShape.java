@@ -60,7 +60,7 @@ public class DNodeShape implements NodeShape {
 			NodeShapeVisualProperty.OCTAGON.getDisplayName(), NodeShapeVisualProperty.OCTAGON.getSerializableString());
 
 	// Ding specific node shapes.
-	private static final DNodeShape VEE = new DNodeShape(GraphGraphics.SHAPE_VEE, "V", "VEE");
+	public static final DNodeShape VEE = new DNodeShape(GraphGraphics.SHAPE_VEE, "V", "VEE");
 
 	private static final Map<NodeShape, DNodeShape> DEF_SHAPE_MAP;
 
@@ -74,9 +74,6 @@ public class DNodeShape implements NodeShape {
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.PARALLELOGRAM, PARALLELOGRAM);
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.ROUND_RECTANGLE, ROUND_RECTANGLE);
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.TRIANGLE, TRIANGLE);
-
-		// Register special shape to range
-		((DiscreteRange<NodeShape>) DVisualLexicon.NODE_SHAPE.getRange()).addRangeValue(VEE);
 		DEF_SHAPE_MAP.put(VEE, VEE);
 	}
 

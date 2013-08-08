@@ -78,12 +78,11 @@ public class IconCellRenderer<T> extends DefaultCellRenderer {
 	
 	/**
 	 * Adjust icon location.
-	 * 
 	 * TODO: Optimize Icon Renderers and unify look.
 	 */
 	@Override
 	public void paint(Graphics g) {
-		g.translate(10, 4);
+		g.translate(10, 0);
 		super.paint(g);
 	}
 }
