@@ -464,7 +464,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 	}
 	
-	@SuppressWarnings("serial")
 	private void addViewListeners(final VisualPropertySheet vpSheet) {
 		for (final VisualPropertySheetItem<?> vpSheetItem : vpSheet.getItems())
 			addViewListeners(vpSheet, vpSheetItem);
@@ -582,6 +581,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 
 	private void updateVisualStyleList(final SortedSet<VisualStyle> styles) {
+		attrProxy.setCurrentMappingType(null);
+		mappingFactoryProxy.setCurrentColumnName(null);
 		final RenderingEngineFactory<CyNetwork> engineFactory = vmProxy.getCurrentRenderingEngineFactory();
 		
 		invokeOnEDT(new Runnable() {
