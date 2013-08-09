@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.group;
 
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
@@ -36,17 +37,21 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory 
-                                       implements NodeViewTaskFactory, GroupNodesTaskFactory {
+                                       implements NodeViewTaskFactory, GroupNodesTaskFactory, TaskFactory {
+	private CyApplicationManager appMgr;
 	private CyGroupManager mgr;
 	private CyGroupFactory groupFactory;
 	private UndoSupport undoSupport;
 
-	public GroupNodesTaskFactoryImpl(CyGroupManager mgr, CyGroupFactory groupFactory, UndoSupport undoSupport) {
+	public GroupNodesTaskFactoryImpl(CyApplicationManager appMgr,
+	                                 CyGroupManager mgr, CyGroupFactory groupFactory, UndoSupport undoSupport) {
 		super();
+		this.appMgr = appMgr;
 		this.mgr = mgr;
 		this.groupFactory = groupFactory;
 		this.undoSupport = undoSupport;
@@ -58,6 +63,10 @@ public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView view) {
 		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory));
+	}
+
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new GroupNodesTask(undoSupport, appMgr, mgr, groupFactory));
 	}
 
 	public boolean isReady(CyNetworkView netView) {
@@ -84,4 +93,6 @@ public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory
 			return true;
 		return false; 
 	}
+
+	public boolean isReady() { return true; }
 }

@@ -70,14 +70,30 @@ public class NodeAndEdgeTunable {
 	}
 
 	public List<CyNode> getNodeList() {
-		if (nodeList == null || nodeList.getValue() == null) 
-			return getNetwork().getNodeList();
+		return getNodeList(true);
+	}
+
+	public List<CyNode> getNodeList(boolean useAllForDefault) {
+		if (nodeList == null || nodeList.getValue() == null) {
+			if (useAllForDefault)
+				return getNetwork().getNodeList();
+			else
+				return null;
+		}
 		return nodeList.getValue();
 	}
 
 	public List<CyEdge> getEdgeList() {
-		if (edgeList == null || edgeList.getValue() == null) 
-			return getNetwork().getEdgeList();
+		return getEdgeList(true);
+	}
+
+	public List<CyEdge> getEdgeList(boolean useAllForDefault) {
+		if (edgeList == null || edgeList.getValue() == null) {
+			if (useAllForDefault)
+				return getNetwork().getEdgeList();
+			else
+				return null;
+		}
 		return edgeList.getValue();
 	}
 }

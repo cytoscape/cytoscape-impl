@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.utils;
+package org.cytoscape.task.internal.group;
 
 /*
  * #%L
@@ -6,7 +6,7 @@ package org.cytoscape.task.internal.utils;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2012 - 2013 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -27,40 +27,30 @@ package org.cytoscape.task.internal.utils;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.util.NodeList;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.work.Tunable;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
 
-public class NodeTunable {
-	CyApplicationManager appMgr;
-	
-	@Tunable(description="Network", context="nogui")
-	public CyNetwork network = null;
+public class AddToGroupTaskFactory extends AbstractTaskFactory {
+	private CyApplicationManager appMgr;
+	private CyGroupManager mgr;
 
-	public NodeList nodeList = new NodeList(null);
-	@Tunable(description="List of nodes", context="nogui")
-	public NodeList getnodeList() {
-		if (network == null)
-			network = appMgr.getCurrentNetwork();
-		nodeList.setNetwork(network);
-		return nodeList;
-	}
-  public void setnodeList(NodeList setValue) {}
-
-	public NodeTunable(CyApplicationManager appMgr) {
+	public AddToGroupTaskFactory(CyApplicationManager appMgr, CyGroupManager mgr) {
 		this.appMgr = appMgr;
+		this.mgr = mgr;
 	}
 
-	public CyNetwork getNetwork() { 
-		if (network == null)
-			network = appMgr.getCurrentNetwork();
-		return network; 
-	}
-
-	public List<CyNode> getNodeList() {
-		if (nodeList == null || nodeList.getValue() == null) 
-			return getNetwork().getNodeList();
-		return nodeList.getValue();
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new AddToGroupTask(appMgr, mgr));
 	}
 }

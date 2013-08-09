@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -41,20 +42,24 @@ import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
 import org.cytoscape.task.edit.UnGroupTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory, 
-                                                    UnGroupTaskFactory, UnGroupNodesTaskFactory {
+                                                    UnGroupTaskFactory, UnGroupNodesTaskFactory, TaskFactory {
 	
+	private CyApplicationManager appMgr;
 	private CyGroupFactory factory;
 	private CyGroupManager mgr;
 	private UndoSupport undoSupport;
 
-	public UnGroupNodesTaskFactoryImpl(CyGroupManager mgr, CyGroupFactory factory, UndoSupport undoSupport) {
+	public UnGroupNodesTaskFactoryImpl(CyApplicationManager appMgr, CyGroupManager mgr, 
+	                                   CyGroupFactory factory, UndoSupport undoSupport) {
 		this.mgr = mgr;
-		this.undoSupport = undoSupport;
 		this.factory = factory;
+		this.appMgr = appMgr;
+		this.undoSupport = undoSupport;
 	}
 
 	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
@@ -83,6 +88,8 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 			return true;
 		return false; 
 	}
+
+	public boolean isReady() { return true; }
 		
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, 
@@ -102,6 +109,10 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
 		Set<CyGroup> groups = getGroups(net, selNodes);
 		return new TaskIterator(new UnGroupNodesTask(undoSupport, netView.getModel(), factory, groups, mgr));
+	}
+
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new UnGroupNodesTask(appMgr, mgr));
 	}
 
 	private Set<CyGroup>getGroups(CyNetwork net, List<CyNode>nodeList) {

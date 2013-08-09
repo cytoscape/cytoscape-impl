@@ -128,6 +128,10 @@ import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactoryIm
 import org.cytoscape.task.internal.export.table.ExportSelectedTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.table.ExportTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.vizmap.ExportVizmapTaskFactoryImpl;
+import org.cytoscape.task.internal.group.AddToGroupTaskFactory;
+import org.cytoscape.task.internal.group.ListGroupsTaskFactory;
+import org.cytoscape.task.internal.group.RemoveFromGroupTaskFactory;
+import org.cytoscape.task.internal.group.RenameGroupTaskFactory;
 import org.cytoscape.task.internal.group.GroupNodeContextTaskFactoryImpl;
 import org.cytoscape.task.internal.group.GroupNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.group.UnGroupNodesTaskFactoryImpl;
@@ -1097,7 +1101,8 @@ public class CyActivator extends AbstractCyActivator {
 				connectSelectedNodesTaskFactoryProps);
 
 		GroupNodesTaskFactoryImpl groupNodesTaskFactory = 
-			new GroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory, undoSupportServiceRef);
+			new GroupNodesTaskFactoryImpl(cyApplicationManagerServiceRef, cyGroupManager, 
+			                              cyGroupFactory, undoSupportServiceRef);
 		Properties groupNodesTaskFactoryProps = new Properties();
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,NETWORK_GROUP_MENU);
 		groupNodesTaskFactoryProps.setProperty(TITLE,"Group Selected Nodes");
@@ -1105,10 +1110,12 @@ public class CyActivator extends AbstractCyActivator {
 		groupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		groupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		groupNodesTaskFactoryProps.setProperty(COMMAND, "create selected");
+		groupNodesTaskFactoryProps.setProperty(COMMAND, "create");
 		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group");
 		registerService(bc,groupNodesTaskFactory,NetworkViewTaskFactory.class, groupNodesTaskFactoryProps);
 		registerService(bc,groupNodesTaskFactory,GroupNodesTaskFactory.class, groupNodesTaskFactoryProps);
+		// For commands
+		registerService(bc,groupNodesTaskFactory,TaskFactory.class, groupNodesTaskFactoryProps);
 
 		// Add Group Selected Nodes to the nodes context also
 		Properties groupNodeViewTaskFactoryProps = new Properties();
@@ -1122,7 +1129,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,groupNodesTaskFactory,NodeViewTaskFactory.class, groupNodeViewTaskFactoryProps);
 
 		UnGroupNodesTaskFactoryImpl unGroupTaskFactory = 
-			new UnGroupNodesTaskFactoryImpl(cyGroupManager, cyGroupFactory, undoSupportServiceRef);
+			new UnGroupNodesTaskFactoryImpl(cyApplicationManagerServiceRef, cyGroupManager, 
+			                                cyGroupFactory, undoSupportServiceRef);
 		Properties unGroupNodesTaskFactoryProps = new Properties();
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_MENU,NETWORK_GROUP_MENU);
 		unGroupNodesTaskFactoryProps.setProperty(TITLE,"Ungroup Selected Nodes");
@@ -1130,10 +1138,11 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		unGroupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup selected");
+		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup");
 		unGroupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group");
 		registerService(bc,unGroupTaskFactory,NetworkViewTaskFactory.class, unGroupNodesTaskFactoryProps);
 		registerService(bc,unGroupTaskFactory,UnGroupTaskFactory.class, unGroupNodesTaskFactoryProps);
+		registerService(bc,unGroupTaskFactory,TaskFactory.class, unGroupNodesTaskFactoryProps);
 
 		// Add Ungroup Selected Nodes to the nodes context also
 		Properties unGroupNodeViewTaskFactoryProps = new Properties();
@@ -1149,7 +1158,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,unGroupTaskFactory,UnGroupNodesTaskFactory.class, unGroupNodeViewTaskFactoryProps);
 
 		GroupNodeContextTaskFactoryImpl collapseGroupTaskFactory = 
-			new GroupNodeContextTaskFactoryImpl(cyGroupManager, true);
+			new GroupNodeContextTaskFactoryImpl(cyApplicationManagerServiceRef, 
+			                                    cyNetworkViewManagerServiceRef, cyGroupManager, true);
 		Properties collapseGroupTaskFactoryProps = new Properties();
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
 		collapseGroupTaskFactoryProps.setProperty(TITLE,"Collapse Group(s)");
@@ -1160,9 +1170,11 @@ public class CyActivator extends AbstractCyActivator {
 		collapseGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group"); // TODO right namespace?
 		registerService(bc,collapseGroupTaskFactory,NodeViewTaskFactory.class, collapseGroupTaskFactoryProps);
 		registerService(bc,collapseGroupTaskFactory,CollapseGroupTaskFactory.class, collapseGroupTaskFactoryProps);
+		registerService(bc,collapseGroupTaskFactory,TaskFactory.class, collapseGroupTaskFactoryProps);
 
 		GroupNodeContextTaskFactoryImpl expandGroupTaskFactory = 
-			new GroupNodeContextTaskFactoryImpl(cyGroupManager, false);
+			new GroupNodeContextTaskFactoryImpl(cyApplicationManagerServiceRef, 
+			                                    cyNetworkViewManagerServiceRef, cyGroupManager, false);
 		Properties expandGroupTaskFactoryProps = new Properties();
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
 		expandGroupTaskFactoryProps.setProperty(TITLE,"Expand Group(s)");
@@ -1173,6 +1185,7 @@ public class CyActivator extends AbstractCyActivator {
 		expandGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group"); // TODO right namespace
 		registerService(bc,expandGroupTaskFactory,NodeViewTaskFactory.class, expandGroupTaskFactoryProps);
 		registerService(bc,expandGroupTaskFactory,ExpandGroupTaskFactory.class, expandGroupTaskFactoryProps);
+		registerService(bc,expandGroupTaskFactory,TaskFactory.class, expandGroupTaskFactoryProps);
 
 		// TODO: add to group...
 
@@ -1266,6 +1279,35 @@ public class CyActivator extends AbstractCyActivator {
 		setEdgePropertiesTaskFactoryProps.setProperty(COMMAND, "set properties");
 		setEdgePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
 		registerService(bc,setEdgePropertiesTaskFactory,TaskFactory.class,setEdgePropertiesTaskFactoryProps);
+
+		// NAMESPACE: group
+		AddToGroupTaskFactory addToGroupTaskFactory = 
+			new AddToGroupTaskFactory(cyApplicationManagerServiceRef, cyGroupManager);
+		Properties addToGroupTFProps = new Properties();
+		addToGroupTFProps.setProperty(COMMAND, "add");
+		addToGroupTFProps.setProperty(COMMAND_NAMESPACE, "group");
+		registerService(bc,addToGroupTaskFactory,TaskFactory.class,addToGroupTFProps);
+
+		ListGroupsTaskFactory listGroupsTaskFactory = 
+			new ListGroupsTaskFactory(cyApplicationManagerServiceRef, cyGroupManager);
+		Properties listGroupsTFProps = new Properties();
+		listGroupsTFProps.setProperty(COMMAND, "list");
+		listGroupsTFProps.setProperty(COMMAND_NAMESPACE, "group");
+		registerService(bc,listGroupsTaskFactory,TaskFactory.class,listGroupsTFProps);
+
+		RemoveFromGroupTaskFactory removeFromGroupTaskFactory = 
+			new RemoveFromGroupTaskFactory(cyApplicationManagerServiceRef, cyGroupManager);
+		Properties removeFromGroupTFProps = new Properties();
+		removeFromGroupTFProps.setProperty(COMMAND, "remove");
+		removeFromGroupTFProps.setProperty(COMMAND_NAMESPACE, "group");
+		registerService(bc,removeFromGroupTaskFactory,TaskFactory.class,removeFromGroupTFProps);
+
+		RenameGroupTaskFactory renameGroupTaskFactory = 
+			new RenameGroupTaskFactory(cyApplicationManagerServiceRef, cyGroupManager);
+		Properties renameGroupTFProps = new Properties();
+		renameGroupTFProps.setProperty(COMMAND, "rename");
+		renameGroupTFProps.setProperty(COMMAND_NAMESPACE, "group");
+		registerService(bc,renameGroupTaskFactory,TaskFactory.class,renameGroupTFProps);
 
 		// NAMESPACE: layout
 		GetPreferredLayoutTaskFactory getPreferredLayoutTaskFactory = 
@@ -1579,8 +1621,8 @@ public class CyActivator extends AbstractCyActivator {
 		setValuesTaskFactoryProps.setProperty(COMMAND, "set values");
 		setValuesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
 		registerService(bc,setValuesTaskFactory,TaskFactory.class,setValuesTaskFactoryProps);
-		// NAMESPACE: view
 
+		// NAMESPACE: view
 		GetCurrentNetworkViewTaskFactory getCurrentView = 
 			new GetCurrentNetworkViewTaskFactory(cyApplicationManagerServiceRef);
 		Properties getCurrentViewTaskFactoryProps = new Properties();
