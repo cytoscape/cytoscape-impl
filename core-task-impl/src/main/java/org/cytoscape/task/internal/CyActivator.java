@@ -1110,11 +1110,12 @@ public class CyActivator extends AbstractCyActivator {
 		groupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		groupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		groupNodesTaskFactoryProps.setProperty(COMMAND, "create");
-		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group");
 		registerService(bc,groupNodesTaskFactory,NetworkViewTaskFactory.class, groupNodesTaskFactoryProps);
 		registerService(bc,groupNodesTaskFactory,GroupNodesTaskFactory.class, groupNodesTaskFactoryProps);
 		// For commands
+		groupNodesTaskFactoryProps = new Properties();
+		groupNodesTaskFactoryProps.setProperty(COMMAND, "create");
+		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group");
 		registerService(bc,groupNodesTaskFactory,TaskFactory.class, groupNodesTaskFactoryProps);
 
 		// Add Group Selected Nodes to the nodes context also
@@ -1138,10 +1139,12 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		unGroupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup");
-		unGroupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group");
 		registerService(bc,unGroupTaskFactory,NetworkViewTaskFactory.class, unGroupNodesTaskFactoryProps);
 		registerService(bc,unGroupTaskFactory,UnGroupTaskFactory.class, unGroupNodesTaskFactoryProps);
+
+		unGroupNodesTaskFactoryProps = new Properties();
+		unGroupNodesTaskFactoryProps.setProperty(COMMAND, "ungroup");
+		groupNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group");
 		registerService(bc,unGroupTaskFactory,TaskFactory.class, unGroupNodesTaskFactoryProps);
 
 		// Add Ungroup Selected Nodes to the nodes context also
@@ -1166,10 +1169,11 @@ public class CyActivator extends AbstractCyActivator {
 		collapseGroupTaskFactoryProps.setProperty(TOOLTIP,"Collapse Grouped Nodes");
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		collapseGroupTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
-		collapseGroupTaskFactoryProps.setProperty(COMMAND, "collapse");
-		collapseGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group"); // TODO right namespace?
 		registerService(bc,collapseGroupTaskFactory,NodeViewTaskFactory.class, collapseGroupTaskFactoryProps);
 		registerService(bc,collapseGroupTaskFactory,CollapseGroupTaskFactory.class, collapseGroupTaskFactoryProps);
+		collapseGroupTaskFactoryProps = new Properties();
+		collapseGroupTaskFactoryProps.setProperty(COMMAND, "collapse");
+		collapseGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group"); // TODO right namespace?
 		registerService(bc,collapseGroupTaskFactory,TaskFactory.class, collapseGroupTaskFactoryProps);
 
 		GroupNodeContextTaskFactoryImpl expandGroupTaskFactory = 
@@ -1181,10 +1185,12 @@ public class CyActivator extends AbstractCyActivator {
 		expandGroupTaskFactoryProps.setProperty(TOOLTIP,"Expand Group");
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		expandGroupTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");
-		expandGroupTaskFactoryProps.setProperty(COMMAND, "expand");
-		expandGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group"); // TODO right namespace
 		registerService(bc,expandGroupTaskFactory,NodeViewTaskFactory.class, expandGroupTaskFactoryProps);
 		registerService(bc,expandGroupTaskFactory,ExpandGroupTaskFactory.class, expandGroupTaskFactoryProps);
+		expandGroupTaskFactoryProps = new Properties();
+		expandGroupTaskFactoryProps.setProperty(COMMAND, "expand");
+		expandGroupTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "group"); // TODO right namespace
+
 		registerService(bc,expandGroupTaskFactory,TaskFactory.class, expandGroupTaskFactoryProps);
 
 		// TODO: add to group...
