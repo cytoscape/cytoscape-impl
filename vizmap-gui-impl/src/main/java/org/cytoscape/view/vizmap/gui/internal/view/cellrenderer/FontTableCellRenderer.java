@@ -37,23 +37,20 @@ public class FontTableCellRenderer extends DefaultCellRenderer {
 
 	@Override
 	protected String convertToString(Object value) {
-
 		if (value == null)
 			return null;
-
 
 		if (value instanceof Font) {
 			final Font font = (Font) value;
 			return font.getFontName();
-		} else
-			return "Unknown Font";
+		} else {
+			return "-- Unknown Font --";
+		}
 	}
-
 	
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int row, int column) {
-				
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
 			setForeground(table.getSelectionForeground());
@@ -74,5 +71,4 @@ public class FontTableCellRenderer extends DefaultCellRenderer {
 
 		return this;
 	}
-
 }

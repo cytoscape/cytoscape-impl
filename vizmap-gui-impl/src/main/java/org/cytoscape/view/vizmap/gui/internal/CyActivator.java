@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -82,7 +81,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyCombo
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyFontPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.BooleanValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorChooser;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.FontEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.StringValueEditor;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
@@ -95,14 +93,13 @@ public class CyActivator extends AbstractCyActivator {
 
 	@Override
 	public void start(final BundleContext bc) {
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		final ServicesUtil servicesUtil = new ServicesUtil(serviceRegistrar, ApplicationFacade.NAME);
+		
 		VisualStyleFactory visualStyleFactoryServiceRef = getService(bc,VisualStyleFactory.class);
 		VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc,CyNetworkTableManager.class);
-		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
-		
-		final ServicesUtil servicesUtil = new ServicesUtil(cyServiceRegistrarServiceRef, ApplicationFacade.NAME);
 		
 		VisualMappingFunctionFactory continousMappingFactory = getService(bc, VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
 		
@@ -111,20 +108,21 @@ public class CyActivator extends AbstractCyActivator {
 		
 		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc,ContinuousMappingCellRendererFactory.class);
 		
-		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetProxy,mappingFactoryProxy,visualMappingManagerServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef, continousMappingFactory, continuousMappingCellRendererFactory, cyServiceRegistrarServiceRef);
+		EditorManagerImpl editorManager = new EditorManagerImpl(attributeSetProxy, mappingFactoryProxy, continousMappingFactory, continuousMappingCellRendererFactory, servicesUtil);
 		// These listeners must be registered before the ValueEditors and VisualPropertyEditors:
 		registerServiceListener(bc, editorManager, "addValueEditor", "removeValueEditor", ValueEditor.class);
 		registerServiceListener(bc, editorManager, "addVisualPropertyEditor", "removeVisualPropertyEditor", VisualPropertyEditor.class);
 		registerServiceListener(bc, editorManager, "addRenderingEngineFactory", "removeRenderingEngineFactory", RenderingEngineFactory.class);
+		registerAllServices(bc, editorManager, new Properties());
 		
 		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl();
 		registerServiceListener(bc, mappingFunctionFactoryManager, "addFactory", "removeFactory", VisualMappingFunctionFactory.class);
+		registerAllServices(bc, mappingFunctionFactoryManager, new Properties());
 		
 		CyColorChooser colorEditor = new CyColorChooser();
 		CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorEditor);
 		
-		FontEditor fontEditor = new FontEditor();
-		CyFontPropertyEditor fontPropertyEditor = new CyFontPropertyEditor(fontEditor);
+		CyFontPropertyEditor fontPropertyEditor = new CyFontPropertyEditor();
 		
 		NumericValueEditor<Double> doubleValueEditor = new NumericValueEditor<Double>(Double.class);
 		NumericValueEditor<Integer> integerValueEditor = new NumericValueEditor<Integer>(Integer.class);
@@ -143,11 +141,6 @@ public class CyActivator extends AbstractCyActivator {
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
 		BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, continuousMappingCellRendererFactory);
 
-		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,visualMappingManagerServiceRef);
-		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(servicesUtil);
-		
-		VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyApplicationManagerServiceRef, editorManager, mappingFunctionFactoryManager);
-		
 		RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
 		CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(visualMappingManagerServiceRef,visualStyleFactoryServiceRef);
 		CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(cyApplicationManagerServiceRef, visualMappingManagerServiceRef, continousMappingFactory);
@@ -171,7 +164,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, editorManager.getEdgeEditor(), new Properties());
 		registerAllServices(bc, editorManager.getNetworkEditor(), new Properties());
 		registerAllServices(bc, colorEditor, new Properties());
-		registerAllServices(bc, fontEditor, new Properties());
 		registerAllServices(bc, doubleValueEditor, new Properties());
 		registerAllServices(bc, integerValueEditor, new Properties());
 		registerAllServices(bc, floatValueEditor, new Properties());
@@ -187,11 +179,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, stringPropertyEditor, new Properties());
 		registerAllServices(bc, booleanVisualPropertyEditor, new Properties());
 		
-		registerAllServices(bc, editorManager, new Properties());
-		registerAllServices(bc, mappingFunctionFactoryManager, new Properties());
-
 		// Tasks
 		// -------------------------------------------------------------------------------------------------------------
+		
+		CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(visualStyleFactoryServiceRef,visualMappingManagerServiceRef);
+		DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(servicesUtil);
 		
 		Properties createNewVisualStyleTaskFactoryProps = new Properties();
 		createNewVisualStyleTaskFactoryProps.setProperty("service.type","vizmapUI.taskFactory");
@@ -291,6 +283,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Start the PureMVC components
 		// -------------------------------------------------------------------------------------------------------------
 		final VizMapperProxy vizMapperProxy = new VizMapperProxy(servicesUtil);
+		final VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(cyApplicationManagerServiceRef, editorManager, mappingFunctionFactoryManager);
 		
 		final VizMapperMediator vizMapperMediator = new VizMapperMediator(vizMapperMainPanel,
 																		  servicesUtil,
@@ -326,4 +319,3 @@ public class CyActivator extends AbstractCyActivator {
 		new ApplicationFacade(startupCommand).startup();
 	}
 }
-

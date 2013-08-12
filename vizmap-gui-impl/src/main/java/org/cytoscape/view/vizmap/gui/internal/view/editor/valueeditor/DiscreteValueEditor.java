@@ -30,8 +30,13 @@ import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Method;
+import java.text.Collator;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,18 +55,21 @@ import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SortOrder;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.LineType;
+import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-import org.jdesktop.swingx.JXTitledPanel;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.jdesktop.swingx.JXList;
 
 /**
  * Value chooser for any discrete values. This includes
@@ -82,38 +90,43 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	private int iconHeight = -1; // not initialized!
 
 	// Value data type for this chooser.
-	private final Class<T> type;
+	protected final Class<T> type;
 	
 	// Range object.  Actual values will be provided from 
-	private final DiscreteRange<T> range;
-	private final VisualProperty<T> vp;
+	protected final Set<T> values;
+	protected final VisualProperty<T> vp;
 	
-	private final CyApplicationManager appManager;
+	protected final ServicesUtil servicesUtil;
 	
-	private Map<T, Icon> iconMap;
-	private boolean canceled;
+	protected Map<T, Icon> iconMap;
+	protected boolean canceled;
 	
-	private JButton applyButton;
-	private JButton cancelButton;
-	private JList iconList;
-	private JScrollPane iconListScrollPane;
-	private JXTitledPanel mainPanel;
-	private DefaultListModel model;
+	protected JButton applyButton;
+	protected JButton cancelButton;
+	protected JXList iconList;
+	protected JScrollPane iconListScrollPane;
+	protected JPanel mainPanel;
+	protected DefaultListModel model;
+	
+	private final Collator collator = Collator.getInstance(Locale.getDefault());
 
-	public DiscreteValueEditor(final CyApplicationManager appManager, final Class<T> type,
-			final DiscreteRange<T> dRange, final VisualProperty<T> vp) {
-		super();
-		
-		if (dRange == null)
-			throw new NullPointerException("Range object is null.");
 
-		this.range = dRange;
+	public DiscreteValueEditor(final Class<T> type, Set<T> values, final VisualProperty<T> vp,
+			final ServicesUtil servicesUtil) {
+		if (type == null)
+			throw new NullPointerException("'type' must not be null.");
+		if (values == null)
+			throw new NullPointerException("'values' must not be null.");
+		if (servicesUtil == null)
+			throw new NullPointerException("'servicesUtil' must not be null.");
+
+		this.values = values;
 		this.type = type;
-		this.appManager = appManager;
 		this.vp = vp;
+		this.servicesUtil = servicesUtil;
 		this.iconMap = new HashMap<T, Icon>();
 
-		initComponents();
+		init();
 		setListItems();
 	}
 	
@@ -123,18 +136,19 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	}
 	
 	@Override
-	public <S extends T> T showEditor(Component parent, S initialValue) {
+	@SuppressWarnings("unchecked")
+	public <S extends T> T showEditor(final Component parent, final S initialValue) {
 		setListItems();
 		setLocationRelativeTo(parent);
 		setVisible(true);
 		
-		final T newValue = getValue();
+		T newValue = getValue();
 		canceled = false;
 		
 		if (newValue == null)
-			return initialValue;
-		else
-			return newValue;
+			newValue = initialValue;
+		
+		return newValue instanceof Font ? (T) ((Font)newValue).deriveFont(12F) : newValue;
 	}
 
 	@Override
@@ -144,8 +158,7 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	
 	protected int getIconWidth() {
 		if (iconWidth == -1) {
-			if (vp == BasicVisualLexicon.NODE_BORDER_LINE_TYPE || vp == BasicVisualLexicon.EDGE_LINE_TYPE ||
-				vp == BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE || vp == BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE)
+			if (type == LineType.class || type == ArrowShape.class)
 				iconWidth = 64;
 			else
 				iconWidth = 32;
@@ -162,24 +175,42 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		return iconHeight;
 	}
 	
-	private void initComponents() {
+	protected void init() {
 		setModal(true);
-		
-		mainPanel = new JXTitledPanel(vp.getDisplayName());
-		iconListScrollPane = new JScrollPane();
-		iconList = new JList();
-		applyButton = new JButton();
-		cancelButton = new JButton();
-
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("Select New Value");
-
-		mainPanel.setTitleFont(new Font("SansSerif", 1, 14));
-
+		
+		iconList = new JXList();
+		iconList.setModel(model = new DefaultListModel());
+		iconList.setCellRenderer(new IconCellRenderer());
+		iconList.setAutoCreateRowSorter(true);
+		iconList.setSortOrder(SortOrder.ASCENDING);
 		iconList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		iconList.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		iconList.setComparator(new Comparator<T>() {
+			@Override
+			public int compare(T o1, T o2) {
+				if (o1 instanceof VisualPropertyValue)
+					return collator.compare(((VisualPropertyValue)o1).getDisplayName(),
+							((VisualPropertyValue)o2).getDisplayName());
+				if (o1 instanceof Font)
+					return collator.compare(((Font)o1).getFontName(), ((Font)o2).getFontName());
+				return collator.compare(o1.toString(), o2.toString());
+			}
+		});
+		iconList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(final MouseEvent evt) {
+				if (evt.getClickCount() == 2) {
+					applyButton.doClick();
+				}
+			}
+		});
+		
+		iconListScrollPane = new JScrollPane();
 		iconListScrollPane.setViewportView(iconList);
 
+		applyButton = new JButton();
 		applyButton.setText("Apply");
 		applyButton.addActionListener(new ActionListener() {
 			@Override
@@ -188,6 +219,7 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 			}
 		});
 
+		cancelButton = new JButton();
 		cancelButton.setText("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
 			@Override
@@ -195,11 +227,11 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 				cancelButtonActionPerformed(evt);
 			}
 		});
-		
 		cancelButton.setVisible(true);
 
-		GroupLayout mainPanelLayout = new GroupLayout(mainPanel.getContentContainer());
-		mainPanel.getContentContainer().setLayout(mainPanelLayout);
+		mainPanel = new JPanel();
+		GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
+		mainPanel.setLayout(mainPanelLayout);
 		
 		mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addGroup(GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
@@ -234,16 +266,23 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	 * @param values
 	 */
 	private void renderIcons(final Set<T> values) {
-		final RenderingEngine<CyNetwork> engine = appManager.getCurrentRenderingEngine();
-		
-		// Current engine is not ready yet.
-		if (engine == null)
+		if (vp == null || type == Font.class)
 			return;
 		
 		iconMap.clear();
 		
-		for (T value: values)
-			iconMap.put(value, engine.createIcon(vp, value, getIconWidth(), getIconHeight()));
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		final RenderingEngine<CyNetwork> engine = appMgr.getCurrentRenderingEngine();
+		
+		// Current engine is not ready yet.
+		if (engine != null) {
+			for (T value: values)
+				iconMap.put(value, engine.createIcon(vp, value, getIconWidth(), getIconHeight()));
+		}
+	}
+	
+	protected void applyButtonActionPerformed(ActionEvent evt) {
+		dispose();
 	}
 	
 	private void cancelButtonActionPerformed(ActionEvent evt) {
@@ -251,39 +290,35 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		canceled = true;
 	}
 
-	private void applyButtonActionPerformed(ActionEvent evt) {
-		dispose();
-	}
-
 	private void setListItems() {
-		final Set<T> values = range.values();
 		renderIcons(values);
+		model.removeAllElements();
 		
-		model = new DefaultListModel();
-		iconList.setModel(model);
-
 		for (final T key : values)
 			model.addElement(key);
 
-		iconList.setCellRenderer(new IconCellRenderer());
 		iconList.repaint();
 	}
 
-	private String getLabel(final Object value) {
+	protected String getLabel(final T value) {
 		String text = null;
 		
 		// Use reflection to check existence of "getDisplayName" method
 		final Class<? extends Object> valueClass = value.getClass();
 		
-		try {
-			final Method displayMethod = valueClass.getMethod("getDisplayName", (Class<?>)null);
-			final Object returnVal = displayMethod.invoke(value, (Class<?>)null);
-			
-			if (returnVal != null)
-				text = returnVal.toString();
-		} catch (Exception e) {
-			// Use toString is failed.
-			text = value.toString();
+		if (value instanceof Font) {
+			text  = ((Font)value).getFontName();
+		} else {
+			try {
+				final Method displayMethod = valueClass.getMethod("getDisplayName", (Class<?>)null);
+				final Object returnVal = displayMethod.invoke(value, (Class<?>)null);
+				
+				if (returnVal != null)
+					text = returnVal.toString();
+			} catch (Exception e) {
+				// Use toString is failed.
+				text = value.toString();
+			}
 		}
 		
 		return text;
@@ -302,6 +337,7 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		}
 
 		@Override
+		@SuppressWarnings("unchecked")
 		public Component getListCellRendererComponent(final JList list,
 													  final Object value,
 													  final int index,
@@ -315,21 +351,24 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 			final Border paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
 			setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
 			
-			final JLabel iconLbl = new JLabel(iconMap.get(value));
-			iconLbl.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-			
-			final JLabel textLbl = new JLabel(getLabel(value));
-			textLbl.setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
-
-//			if (icon != null)
-//				setPreferredSize(new Dimension(icon.getIconWidth() + 230, icon.getIconHeight() + 24));
-//			else
-//				setPreferredSize(new Dimension(230, 60));
-			
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			
-			add(iconLbl);
-			add(Box.createHorizontalStrut(20));
+			final Icon icon = iconMap.get(value);
+			
+			if (icon != null) {
+				final JLabel iconLbl = new JLabel(iconMap.get(value));
+				iconLbl.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+				add(iconLbl);
+				add(Box.createHorizontalStrut(20));
+			}
+			
+			final JLabel textLbl = new JLabel(getLabel((T)value));
+			
+			if (value instanceof Font)
+				textLbl.setFont(((Font) value).deriveFont(14.0f));
+			else
+				textLbl.setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
+
 			add(textLbl);
 			add(Box.createHorizontalGlue());
 			

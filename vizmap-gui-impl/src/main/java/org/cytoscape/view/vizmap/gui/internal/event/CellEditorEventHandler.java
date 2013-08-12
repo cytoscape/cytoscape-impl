@@ -57,8 +57,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.Attribu
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
@@ -68,8 +66,6 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel;
  *
  */
 public final class CellEditorEventHandler implements VizMapEventHandler {
-
-	private static final Logger logger = LoggerFactory.getLogger(CellEditorEventHandler.class);
 
 	private final AttributeSetProxy attrProxy;
 	private final ServicesUtil servicesUtil;

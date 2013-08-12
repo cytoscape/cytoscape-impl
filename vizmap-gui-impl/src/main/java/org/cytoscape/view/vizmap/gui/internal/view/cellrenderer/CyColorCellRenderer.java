@@ -42,29 +42,11 @@ public class CyColorCellRenderer extends DefaultCellRenderer {
 	
 	private final static long serialVersionUID = 1202339868706383L;
 	
-	public static String toHex(Color color) {
-		String red = Integer.toHexString(color.getRed());
-		String green = Integer.toHexString(color.getGreen());
-		String blue = Integer.toHexString(color.getBlue());
-
-		if (red.length() == 1)
-			red = "0" + red;
-
-		if (green.length() == 1)
-			green = "0" + green;
-
-		if (blue.length() == 1)
-			blue = "0" + blue;
-
-		return ("#" + red + green + blue).toUpperCase();
-	}
-
 	@Override
 	protected String convertToString(Object value) {
 		// Do not return color as string.
 		return null;
 	}
-
 	
 	@Override
 	protected Icon convertToIcon(Object value) {
@@ -78,6 +60,7 @@ public class CyColorCellRenderer extends DefaultCellRenderer {
 	}
 
 	public static class PaintIcon implements Icon {
+		
 		private final Paint color;
 		private int width;
 		private int height;

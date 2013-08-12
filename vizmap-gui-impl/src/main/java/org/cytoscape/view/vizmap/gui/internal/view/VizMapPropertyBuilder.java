@@ -390,7 +390,7 @@ public class VizMapPropertyBuilder {
 	 * list should be created against all available attribute values.
 	 */
 	private <K, V> void setDiscreteProps(VisualProperty<V> vp, VisualMappingFunction<K, V> mapping,
-			SortedSet<Object> attrSet, VisualPropertyEditor<V> visualPropertyEditor,
+			SortedSet<Object> attrSet, VisualPropertyEditor<V> vpEditor,
 			PropertySheetPanel propertySheetPanel) {
 		if (attrSet == null)
 			return;
@@ -434,15 +434,13 @@ public class VizMapPropertyBuilder {
 
 			propertySheetPanel.addProperty(valProp);
 			
-			final VisualPropertyEditor<V> editor = editorManager.getVisualPropertyEditor(vp);
-						
-			if (editor != null) {
-				final TableCellRenderer renderer = editor.getDiscreteTableCellRenderer();
+			if (vpEditor != null) {
+				final TableCellRenderer renderer = vpEditor.getDiscreteTableCellRenderer();
 				
 				if (renderer != null)
 					cellRendererFactory.registerRenderer(valProp, renderer);
 				
-				final PropertyEditor cellEditor = editor.getPropertyEditor();
+				final PropertyEditor cellEditor = vpEditor.getPropertyEditor();
 
 				if (cellEditor != null)
 					cellEditorFactory.registerEditor(valProp, cellEditor);

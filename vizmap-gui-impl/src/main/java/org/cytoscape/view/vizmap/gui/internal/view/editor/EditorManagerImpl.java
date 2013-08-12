@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
@@ -44,7 +43,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.Range;
@@ -64,6 +62,7 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.C2CEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.C2DEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.GradientEditor;
@@ -99,44 +98,37 @@ public class EditorManagerImpl implements EditorManager {
 
 	private final PropertyEditor mappingTypeEditor;
 
-	private final CyApplicationManager appManager;
-	private final CyNetworkTableManager tableManager;
-	private final VisualMappingManager vmm;
 	private final VisualMappingFunctionFactory continuousMappingFactory;
 	private ContinuousMappingCellRendererFactory cellRendererFactory;
-	private final CyServiceRegistrar serviceRegistrar;
+	private final ServicesUtil servicesUtil;
 
 	/**
 	 * Creates a new EditorFactory object.
 	 * @param cellRendererFactory 
 	 */
-	public EditorManagerImpl(final CyApplicationManager appManager,
-							 final AttributeSetProxy attrProxy,
+	public EditorManagerImpl(final AttributeSetProxy attrProxy,
 							 final MappingFunctionFactoryProxy mappingFactoryProxy,
-							 final VisualMappingManager vmm,
-							 final CyNetworkTableManager tableManager,
-							 final CyNetworkManager networkManager,
 							 final VisualMappingFunctionFactory continuousMappingFactory,
 							 final ContinuousMappingCellRendererFactory cellRendererFactory,
-							 final CyServiceRegistrar serviceRegistrar) {
-		this.appManager = appManager;
-		this.tableManager = tableManager;
-		this.vmm = vmm;
+							 final ServicesUtil servicesUtil) {
 		this.continuousMappingFactory = continuousMappingFactory;
 		this.cellRendererFactory = cellRendererFactory; 
-		this.serviceRegistrar = serviceRegistrar;
+		this.servicesUtil = servicesUtil;
 
 		editors = new HashMap<Class<?>, VisualPropertyEditor<?>>();
 		comboBoxEditors = new HashMap<String, PropertyEditor>();
 		valueEditors = new HashMap<Class<?>, ValueEditor<?>>();
 		
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		final CyNetworkManager netMgr = servicesUtil.get(CyNetworkManager.class);
+		
 		// Create attribute (Column Name) editors
 		final AttributeComboBoxPropertyEditor nodeAttrEditor = new AttributeComboBoxPropertyEditor(CyNode.class,
-				attrProxy, appManager, networkManager);
+				attrProxy, appMgr, netMgr);
 		final AttributeComboBoxPropertyEditor edgeAttrEditor = new AttributeComboBoxPropertyEditor(CyEdge.class,
-				attrProxy, appManager, networkManager);
+				attrProxy, appMgr, netMgr);
 		final AttributeComboBoxPropertyEditor networkAttrEditor = new AttributeComboBoxPropertyEditor(CyNetwork.class,
-				attrProxy, appManager, networkManager);
+				attrProxy, appMgr, netMgr);
 		attrComboBoxEditors = new HashMap<Class<?>, ListEditor>();
 		attrComboBoxEditors.put(nodeAttrEditor.getTargetObjectType(), nodeAttrEditor);
 		attrComboBoxEditors.put(edgeAttrEditor.getTargetObjectType(), edgeAttrEditor);
@@ -146,7 +138,8 @@ public class EditorManagerImpl implements EditorManager {
 		mappingTypeEditor = new MappingTypeComboBoxPropertyEditor(mappingFactoryProxy);
 		comboBoxEditors.put("mappingTypeEditor", mappingTypeEditor);
 
-		Set<VisualLexicon> lexSet = vmm.getAllVisualLexicon();
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		Set<VisualLexicon> lexSet = vmMgr.getAllVisualLexicon();
 
 		for (final VisualLexicon lex : lexSet) {
 			this.buildDiscreteEditors(lex);
@@ -179,7 +172,7 @@ public class EditorManagerImpl implements EditorManager {
 
 	@SuppressWarnings("rawtypes")
 	public void addVisualPropertyEditor(final VisualPropertyEditor<?> vpEditor, final Map properties) {
-		this.editors.put(vpEditor.getType(), vpEditor);
+		editors.put(vpEditor.getType(), vpEditor);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -188,10 +181,9 @@ public class EditorManagerImpl implements EditorManager {
 	}
 
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <V> V showVisualPropertyValueEditor(final Component parentComponent, final VisualProperty<V> type,
 			V initialValue) throws Exception {
-
-		@SuppressWarnings("unchecked")
 		final ValueEditor<V> editor = (ValueEditor<V>) valueEditors.get(type.getRange().getType());
 
 		if (editor == null)
@@ -294,8 +286,8 @@ public class EditorManagerImpl implements EditorManager {
 
 			if (range instanceof DiscreteRange<?>) {
 				if (this.getValueEditor(range.getType()) == null) {
-					final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(appManager, range.getType(),
-							(DiscreteRange) range, vp);
+					final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(range.getType(),
+							((DiscreteRange) range).values(), vp, servicesUtil);
 					this.addValueEditor(valEditor, null);
 				}
 
@@ -312,7 +304,7 @@ public class EditorManagerImpl implements EditorManager {
 				final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
 						discretePropEditor, cellRendererFactory, values, width, ICON_H);
 				
-				serviceRegistrar.registerAllServices(vpEditor, new Properties());
+				servicesUtil.registerAllServices(vpEditor);
 				this.addVisualPropertyEditor(vpEditor, null);
 			}
 		}
@@ -330,13 +322,16 @@ public class EditorManagerImpl implements EditorManager {
 	@Override
 	public PropertyEditor getContinuousEditor(final VisualProperty<?> vp) {
 		final ContinuousEditorType editorType = this.getVisualPropertyEditor(vp).getContinuousEditorType();
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		final CyNetworkTableManager tblMgr = servicesUtil.get(CyNetworkTableManager.class);
 
 		if (editorType == ContinuousEditorType.COLOR)
-			return new GradientEditor(tableManager, appManager, this, vmm, continuousMappingFactory);
+			return new GradientEditor(tblMgr, appMgr, this, vmMgr, continuousMappingFactory);
 		else if (editorType == ContinuousEditorType.CONTINUOUS)
-			return new C2CEditor(tableManager, appManager, this, vmm, continuousMappingFactory);
+			return new C2CEditor(tblMgr, appMgr, this, vmMgr, continuousMappingFactory);
 		else if (editorType == ContinuousEditorType.DISCRETE)
-			return new C2DEditor(tableManager, appManager, this, vmm, continuousMappingFactory);
+			return new C2DEditor(tblMgr, appMgr, this, vmMgr, continuousMappingFactory);
 
 		return null;
 	}

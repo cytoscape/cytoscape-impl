@@ -38,10 +38,8 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorCho
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 import com.l2fprod.common.beans.editor.ColorPropertyEditor;
-import com.l2fprod.common.beans.editor.FilePropertyEditor;
 import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.PercentLayout;
-import com.l2fprod.common.util.ResourceManager;
 
 /**
  * ColorPropertyEditor. <br>
@@ -101,8 +99,6 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 	}
 
 	private void selectColor() {
-		ResourceManager rm = ResourceManager.all(FilePropertyEditor.class);
-		String title = rm.getString("ColorPropertyEditor.title");
 		Paint selectedColor = chooser.showEditor(editor, color);
 
 		if (selectedColor instanceof Color == false)

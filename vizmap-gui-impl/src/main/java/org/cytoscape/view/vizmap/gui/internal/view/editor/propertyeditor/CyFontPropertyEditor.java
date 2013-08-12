@@ -24,64 +24,92 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
  * #L%
  */
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.JPanel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 
-import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.FontEditor;
 
-import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
-import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor.Value;
+public class CyFontPropertyEditor extends CyComboBoxPropertyEditor {
 
-public class CyFontPropertyEditor extends AbstractPropertyEditor {
-
-	private Component parent;
-	private FontEditor fontEditor;
-
-	private Font currentValue;
-
-	public CyFontPropertyEditor(final FontEditor fontEditor) {
-		this.fontEditor = fontEditor;
-		this.editor = new JPanel();
-		editor.addMouseListener(new MouseAdapter() {
+	protected static final float FONT_SIZE = 12.0f;
+	
+	private final List<Font> fonts;
+	
+	public CyFontPropertyEditor() {
+		fonts = scaleFonts(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts());
+		
+		final JComboBox comboBox = (JComboBox) editor;
+		comboBox.setRenderer(new FontCellRenderer());
+		comboBox.addActionListener(new ActionListener() {
 			@Override
-			public void mouseReleased(MouseEvent event) {
-				selectFont();
+			public void actionPerformed(ActionEvent e) {
+				updateComboBox();
 			}
 		});
 	}
+	
+	private void updateComboBox() {
+		final JComboBox box = (JComboBox) editor;
+		final Object selected = box.getSelectedItem();
+		box.removeAllItems();
+		
+		for (final Font f : fonts)
+			box.addItem(f);
 
-	public void setParent(Component parent) {
-		this.parent = parent;
+		box.setSelectedItem(selected);
 	}
+	
+	private List<Font> scaleFonts(final Font[] inFonts) {
+		final List<Font> outFonts = new ArrayList<Font>(inFonts.length);
+		
+		for (final Font f : inFonts)
+			outFonts.add(f.deriveFont(FONT_SIZE));
 
-	@Override
-	public void setValue(Object value) {
-		if (value == null)
-			this.currentValue = null;
-		else if (value instanceof Value)
-			this.currentValue = (Font) value;
+		return outFonts;
 	}
+	
+	private static class FontCellRenderer extends JLabel implements ListCellRenderer {
+		
+		private final static long serialVersionUID = 120233986931967L;
+		
+		private static final int DISPLAY_FONT_SIZE = 14;
+		private static final Dimension SIZE = new Dimension(280, 32);
 
-	@Override
-	public Object getValue() {
-		return currentValue;
-	}
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
+			this.setPreferredSize(SIZE);
+			this.setMinimumSize(SIZE);
+			
+			if (isSelected) {
+				setBackground(list.getSelectionBackground());
+				setForeground(Color.DARK_GRAY);
+			} else {
+				setBackground(list.getBackground());
+				setForeground(Color.DARK_GRAY);
+			}
 
-	protected void selectFont() {
-		final Font font = (Font) super.getValue();
-		final Font selectedFont = fontEditor.showEditor(parent, font);
+			if (value != null && value instanceof Font) {
+				final Font font = (Font) value;
+				final Font modFont = new Font(font.getFontName(), font.getStyle(), DISPLAY_FONT_SIZE);
+				this.setFont(modFont);
+				this.setText(modFont.getName());
+			} else {
+				this.setText("");
+			}
 
-		if (selectedFont != null) {
-			Font oldFont = font;
-			Font newFont = selectedFont;
-
-			super.setValue(newFont);
-			this.currentValue = newFont;
-			firePropertyChange(oldFont, newFont);
+			return this;
 		}
 	}
 }

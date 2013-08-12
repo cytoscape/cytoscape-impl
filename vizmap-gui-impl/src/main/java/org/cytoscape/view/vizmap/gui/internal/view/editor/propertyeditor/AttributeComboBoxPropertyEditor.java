@@ -49,8 +49,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tracking the list of columns. By default, three instances of this should be
@@ -59,8 +57,6 @@ import org.slf4j.LoggerFactory;
  * Export this as an OSGi service!
  */
 public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor implements ListEditor {
-
-	private static final Logger logger = LoggerFactory.getLogger(AttributeComboBoxPropertyEditor.class);
 
 	private final Class<? extends CyIdentifiable> graphObjectType;
 	private final AttributeSetProxy attrProxy;

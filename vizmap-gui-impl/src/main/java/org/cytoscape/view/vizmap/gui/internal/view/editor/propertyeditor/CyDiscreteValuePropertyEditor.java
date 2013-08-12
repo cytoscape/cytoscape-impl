@@ -36,14 +36,14 @@ import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 
 public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 
-	private final DiscreteValueEditor<T> valEditor;
-	private T currentValue;
-	private Component parent;
+	protected final DiscreteValueEditor<T> valEditor;
+	protected T currentValue;
+	protected Component parent;
 	
 	public CyDiscreteValuePropertyEditor(final DiscreteValueEditor<T> valEditor) {
-		
 		this.valEditor = valEditor;
 		this.editor = new JPanel();
+		
 		editor.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent event) {
@@ -57,6 +57,7 @@ public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void setValue(Object value) {
 		if (value == null)
 			this.currentValue = null;
@@ -69,6 +70,7 @@ public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 		return currentValue;
 	}
 
+	@SuppressWarnings("unchecked")
 	private final void selectValue() {
 		final T val = (T) super.getValue();
 		final T selectedVal = valEditor.showEditor(parent, val);
