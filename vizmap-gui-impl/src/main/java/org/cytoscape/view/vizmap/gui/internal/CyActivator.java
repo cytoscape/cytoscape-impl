@@ -110,8 +110,15 @@ public class CyActivator extends AbstractCyActivator {
 		final MappingFunctionFactoryProxy mappingFactoryProxy = new MappingFunctionFactoryProxy(servicesUtil);
 		
 		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc,ContinuousMappingCellRendererFactory.class);
+		
 		EditorManagerImpl editorManager = new EditorManagerImpl(cyApplicationManagerServiceRef,attributeSetProxy,mappingFactoryProxy,visualMappingManagerServiceRef,cyNetworkTableManagerServiceRef, cyNetworkManagerServiceRef, continousMappingFactory, continuousMappingCellRendererFactory, cyServiceRegistrarServiceRef);
+		// These listeners must be registered before the ValueEditors and VisualPropertyEditors:
+		registerServiceListener(bc, editorManager, "addValueEditor", "removeValueEditor", ValueEditor.class);
+		registerServiceListener(bc, editorManager, "addVisualPropertyEditor", "removeVisualPropertyEditor", VisualPropertyEditor.class);
+		registerServiceListener(bc, editorManager, "addRenderingEngineFactory", "removeRenderingEngineFactory", RenderingEngineFactory.class);
+		
 		MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl();
+		registerServiceListener(bc, mappingFunctionFactoryManager, "addFactory", "removeFactory", VisualMappingFunctionFactory.class);
 		
 		CyColorChooser colorEditor = new CyColorChooser();
 		CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorEditor);
@@ -156,6 +163,9 @@ public class CyActivator extends AbstractCyActivator {
 		final ClearBendTaskFactory clearBendTaskFactory = new ClearBendTaskFactory(visualMappingManagerServiceRef, bf);
 		registerService(bc, clearBendTaskFactory, EdgeViewTaskFactory.class, clearBendProp);
 		
+		// Register ValueEditors and VisualPropertyEditors
+		// -------------------------------------------------------------------------------------------------------------
+		
 		registerAllServices(bc, attributeSetProxy, new Properties());
 		registerAllServices(bc, editorManager.getNodeEditor(), new Properties());
 		registerAllServices(bc, editorManager.getEdgeEditor(), new Properties());
@@ -180,6 +190,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, editorManager, new Properties());
 		registerAllServices(bc, mappingFunctionFactoryManager, new Properties());
 
+		// Tasks
+		// -------------------------------------------------------------------------------------------------------------
+		
 		Properties createNewVisualStyleTaskFactoryProps = new Properties();
 		createNewVisualStyleTaskFactoryProps.setProperty("service.type","vizmapUI.taskFactory");
 		createNewVisualStyleTaskFactoryProps.setProperty("title","Create New Visual Style");
@@ -274,11 +287,6 @@ public class CyActivator extends AbstractCyActivator {
 		// -------------------------------------------------------------------------------------------------------------
 		final IconManager iconManager = new IconManager();
 		final VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(iconManager);
-		
-		registerServiceListener(bc, mappingFunctionFactoryManager, "addFactory", "removeFactory", VisualMappingFunctionFactory.class);
-		registerServiceListener(bc, editorManager, "addValueEditor", "removeValueEditor", ValueEditor.class);
-		registerServiceListener(bc, editorManager, "addVisualPropertyEditor", "removeVisualPropertyEditor", VisualPropertyEditor.class);
-		registerServiceListener(bc, editorManager, "addRenderingEngineFactory", "removeRenderingEngineFactory", RenderingEngineFactory.class);
 		
 		// Start the PureMVC components
 		// -------------------------------------------------------------------------------------------------------------
