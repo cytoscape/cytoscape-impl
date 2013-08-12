@@ -34,6 +34,8 @@ import org.cytoscape.app.internal.CyAppAdapterImpl;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CyNetworkReaderManager;
@@ -222,7 +224,9 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(UnGroupTaskFactory.class),
 			mock(CollapseGroupTaskFactory.class),
 			mock(ExpandGroupTaskFactory.class),
-			mock(UnGroupNodesTaskFactory.class)			
+			mock(UnGroupNodesTaskFactory.class),
+			mock(CommandExecutorTaskFactory.class),
+			mock(AvailableCommands.class)
 		    );
 	}	
 }

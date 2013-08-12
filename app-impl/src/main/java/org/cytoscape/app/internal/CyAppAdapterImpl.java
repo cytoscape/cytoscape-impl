@@ -33,6 +33,11 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
+import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.command.util.NodeList;
+import org.cytoscape.command.util.RowList;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.event.CyEventHelper;
@@ -331,6 +336,13 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private ExpandGroupTaskFactory expandGroupTaskFactory;
 	private UnGroupNodesTaskFactory unGroupNodesTaskFactory;
 
+	// From command-executor-api
+	private EdgeList edgeList;
+	private NodeList nodeList;
+	private RowList rowList;
+	private CommandExecutorTaskFactory commandExecutorTaskFactory;
+	private AvailableCommands availableCommands;
+
 	private LoadTableFileTaskFactory loadAttributesFileTaskFactory;
 	private LoadTableURLTaskFactory loadAttributesURLTaskFactory;
 	
@@ -444,7 +456,9 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	                	final UnGroupTaskFactory unGroupTaskFactory,
 	                	final CollapseGroupTaskFactory collapseGroupTaskFactory,
 	                	final ExpandGroupTaskFactory expandGroupTaskFactory,	
-	                	final UnGroupNodesTaskFactory unGroupNodesTaskFactory
+	                	final UnGroupNodesTaskFactory unGroupNodesTaskFactory,
+	                	final CommandExecutorTaskFactory commandExecutorTaskFactory,
+	                	final AvailableCommands availableCommands
 					    )
 	{		
 		this.cyApplicationManager = cyApplicationManager;
@@ -542,12 +556,16 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 		this.collapseGroupTaskFactory = collapseGroupTaskFactory;
 		this.expandGroupTaskFactory = expandGroupTaskFactory;
 		this.unGroupNodesTaskFactory = unGroupNodesTaskFactory;
+		this.commandExecutorTaskFactory = commandExecutorTaskFactory;
+		this.availableCommands = availableCommands;
 
 	}
 
 	//
 	// May as well keep the methods alphabetical too!
 	// 
+	public AvailableCommands getAvailableCommands() { return availableCommands; }
+	public CommandExecutorTaskFactory getCommandExecutorTaskFactory() { return commandExecutorTaskFactory; }
 	public CyApplicationManager getCyApplicationManager() { return cyApplicationManager; }
 	public CyEventHelper getCyEventHelper() { return cyEventHelper; } 
 	@Override public CyGroupAggregationManager getCyGroupAggregationManager() { return cyGroupAggregationManager; } 

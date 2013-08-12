@@ -48,6 +48,8 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -260,6 +262,11 @@ public class CyActivator extends AbstractCyActivator {
     	 UnGroupNodesTaskFactory unGroupNodesTaskFactory= getService(bc,UnGroupNodesTaskFactory.class);
 
 		// End of core-task services
+
+
+		// Command execution services
+		CommandExecutorTaskFactory cyCommandExecutorTaskFactory = getService(bc,CommandExecutorTaskFactory.class);
+		AvailableCommands availableCommands = getService(bc,AvailableCommands.class);
 		 
     	 StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
     	 FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
@@ -356,7 +363,9 @@ public class CyActivator extends AbstractCyActivator {
                  unGroupTaskFactory,
                  collapseGroupTaskFactory,
                  expandGroupTaskFactory,	
-                 unGroupNodesTaskFactory
+                 unGroupNodesTaskFactory,
+                 cyCommandExecutorTaskFactory,
+                 availableCommands
                  );
 		
 		registerService(bc,cyAppAdapter,CyAppAdapter.class, new Properties());
