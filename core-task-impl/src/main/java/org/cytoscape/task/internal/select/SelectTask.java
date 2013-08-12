@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.event.CyEventHelper;
@@ -46,6 +47,8 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 
 public class SelectTask extends AbstractSelectTask {
+	private final CyApplicationManager appMgr;
+
 	@Tunable(description="Network to select nodes and edges in",context="nogui")
 	public CyNetwork network;
 
@@ -53,6 +56,8 @@ public class SelectTask extends AbstractSelectTask {
 	public NodeList nodeList = new NodeList(null);
 	@Tunable(description="Nodes to select",context="nogui")
 	public NodeList getnodeList() {
+		if (network == null)
+			network = appMgr.getCurrentNetwork();
 		super.network = network;
 		nodeList.setNetwork(network);
 		return nodeList;
@@ -63,6 +68,8 @@ public class SelectTask extends AbstractSelectTask {
 	public EdgeList edgeList = new EdgeList(null);
 	@Tunable(description="Edges to select",context="nogui")
 	public EdgeList getedgeList() {
+		if (network == null)
+			network = appMgr.getCurrentNetwork();
 		super.network = network;
 		edgeList.setNetwork(network);
 		return edgeList;
@@ -82,19 +89,16 @@ public class SelectTask extends AbstractSelectTask {
 	@Tunable(description="Select adjacent edges", context="nogui")
 	public boolean adjacentEdges = false;
 
-	public SelectTask(final CyNetworkViewManager networkViewManager,
-	                       final CyEventHelper eventHelper)
+	public SelectTask(final CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager,
+	                  final CyEventHelper eventHelper)
 	{
 		super(null, networkViewManager, eventHelper);
+		this.appMgr = appMgr;
 	}
 
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if (network == null) {
-			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-			return;
-		}
 		tm.setProgress(0.0);
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;

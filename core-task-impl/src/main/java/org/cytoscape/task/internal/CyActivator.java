@@ -1415,8 +1415,8 @@ public class CyActivator extends AbstractCyActivator {
 		listNetworkPropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		registerService(bc,listNetworkProperties,TaskFactory.class,listNetworkPropertiesTaskFactoryProps);
 
-		SelectTaskFactory selectTaskFactory = new SelectTaskFactory(cyNetworkViewManagerServiceRef, cyEventHelperRef);
-		Properties selectTaskFactoryProps = new Properties();
+		SelectTaskFactory selectTaskFactory = new SelectTaskFactory(cyApplicationManagerServiceRef,
+		                                                            cyNetworkViewManagerServiceRef, cyEventHelperRef); Properties selectTaskFactoryProps = new Properties();
 		selectTaskFactoryProps.setProperty(COMMAND, "select");
 		selectTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		registerService(bc,selectTaskFactory,TaskFactory.class,selectTaskFactoryProps);

@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.select;
  */
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -34,15 +35,18 @@ import org.cytoscape.work.TaskIterator;
 public class SelectTaskFactory extends AbstractTaskFactory {
 	private CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
+	private final CyApplicationManager appMgr;
 
-	public SelectTaskFactory(final CyNetworkViewManager networkViewManager,
+	public SelectTaskFactory(final CyApplicationManager appManager,
+	                         final CyNetworkViewManager networkViewManager,
 	                         final CyEventHelper eventHelper)
 	{
 		this.networkViewManager = networkViewManager;
 		this.eventHelper        = eventHelper;
+		this.appMgr             = appManager;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SelectTask(networkViewManager, eventHelper));
+		return new TaskIterator(new SelectTask(appMgr, networkViewManager, eventHelper));
 	}
 }
