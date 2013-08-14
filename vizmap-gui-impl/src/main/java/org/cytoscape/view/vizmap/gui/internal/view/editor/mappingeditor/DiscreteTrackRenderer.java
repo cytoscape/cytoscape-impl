@@ -212,7 +212,6 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		g.setColor(BACKGROUND_COLOR);
 		g.fillRect(0, 5, trackWidth, trackHeight);
 
-		int newX = 0;
 		final Point2D p1 = new Point2D.Float(0, 5);
 		final Point2D p2 = new Point2D.Float(0, 5);
 
@@ -221,7 +220,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 		// Draw Icons
 		for (i = 0; i < stops.size(); i++) {
-			newX = (int) (trackWidth * (fractions[i] / 100));
+			int newX = (int) (trackWidth * (fractions[i] / 100));
 
 			p2.setLocation(newX, 5);
 			g.setColor(Color.black);
@@ -272,8 +271,8 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 			g.setColor(Color.black);
 			g.fillOval(newX - 3, arrowBarYPosition - 3, 6, 6);
 
-			iconLocX = newX - (((newX - (int) p1.getX()) / 2) + (ICON_SIZE / 2));
-			iconLocY = ((trackHeight) / 2 + 5);
+			iconLocX = (int) (p2.getX() - ((p2.getX() - p1.getX()) / 2 + ICON_SIZE / 2));
+			iconLocY = (int) (trackHeight / 2 - ICON_SIZE / 2 + p2.getY());
 
 			if (i == 0)
 				drawIcon(below, g, iconLocX, iconLocY);
@@ -286,9 +285,8 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		// Draw last region (above region)
 		p2.setLocation(trackWidth, 5);
 
-		iconLocX = trackWidth
-				- (((trackWidth - (int) p1.getX()) / 2) + (ICON_SIZE / 2));
-		iconLocY = ((trackHeight) / 2 + 5);
+		iconLocX = (int) (p2.getX() - ((p2.getX() - p1.getX()) / 2 + ICON_SIZE / 2));
+		iconLocY = (int) (trackHeight / 2 - ICON_SIZE / 2 + p2.getY());
 
 		drawIcon(above, g, iconLocX, iconLocY);
 		/*
@@ -383,15 +381,11 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		if(key == null)
 			return;
 		
-		final int xDisp = x-20;
-		g.translate(xDisp, y);
-		
 		Icon icon = iconMap.get(key);
 		if(icon == null)
 			icon = engine.createIcon(vp, key, ICON_SIZE, ICON_SIZE);
 		
 		icon.paintIcon(this, g, x, y);	
-		g.translate(-xDisp, -y);
 	}
 
 

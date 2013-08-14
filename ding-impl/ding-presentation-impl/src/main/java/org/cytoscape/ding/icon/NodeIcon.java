@@ -73,6 +73,7 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 		g2d.setColor(c.getForeground());
 		g2d.setStroke(BASIC_STROKE);
 		g2d.draw(newShape);
+		g2d.translate(-x, -y);
 	}
 
 	@Override
