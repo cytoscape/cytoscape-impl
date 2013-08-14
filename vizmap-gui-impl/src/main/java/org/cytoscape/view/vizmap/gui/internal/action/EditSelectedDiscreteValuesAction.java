@@ -45,18 +45,18 @@ import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 
 /**
- *
+ * Action that allows the user to edit all the selected discrete mapping values at once.
  */
-public class EditSelectedCellAction extends AbstractVizMapperAction {
+public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 
 	public static final String NAME = "Edit Selected Discrete Mapping Values";
 
 	private static final long serialVersionUID = 7640977428847967990L;
-	private static final Logger logger = LoggerFactory.getLogger(EditSelectedCellAction.class);
+	private static final Logger logger = LoggerFactory.getLogger(EditSelectedDiscreteValuesAction.class);
 
 	private final EditorManager editorManager;
 
-	public EditSelectedCellAction(final ServicesUtil servicesUtil, final EditorManager editorManager) {
+	public EditSelectedDiscreteValuesAction(final ServicesUtil servicesUtil, final EditorManager editorManager) {
 		super(NAME, servicesUtil);
 		this.editorManager = editorManager;
 	}
@@ -65,6 +65,7 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 	 * Edit all selected cells at once. This is for Discrete Mapping only.
 	 */
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void actionPerformed(final ActionEvent e) {
 		final VizMapperMainPanel vizMapperMainPanel = getVizMapperMainPanel();
 		
@@ -112,7 +113,7 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 					if (prop.getCellType() == CellType.DISCRETE) {
 						// First, update property sheet
 						prop.setValue(newValue);
-						// Then update .
+						// Then update the mapping
 						Object key = item.getProperty().getDisplayName();
 			
 						// If not String, need to parse actual value
@@ -160,7 +161,7 @@ public class EditSelectedCellAction extends AbstractVizMapperAction {
 				if (selected != null && model.getVisualMappingFunction() instanceof DiscreteMapping) {
 					// Make sure the selected rows have at least one Discrete Mapping entry
 					for (int i = 0; i < selected.length; i++) {
-						final Item item = (Item) table.getValueAt(i, 0);
+						final Item item = (Item) table.getValueAt(selected[i], 0);
 						
 						if (item != null && item.getProperty() instanceof VizMapperProperty) {
 							final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) item.getProperty();

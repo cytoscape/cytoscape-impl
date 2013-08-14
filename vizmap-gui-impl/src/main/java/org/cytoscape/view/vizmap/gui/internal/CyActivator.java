@@ -43,7 +43,8 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedCellAction;
+import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedDiscreteValuesAction;
+import org.cytoscape.view.vizmap.gui.internal.action.RemoveSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.controller.ImportDefaultVisualStylesCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.LoadVisualStylesCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
@@ -225,12 +226,19 @@ public class CyActivator extends AbstractCyActivator {
 		deleteMappingFunctionTaskFactoryProps.setProperty("menu", "context");
 		registerAllServices(bc, deleteVisualMappingsTaskFactory, deleteMappingFunctionTaskFactoryProps);
 		
-		EditSelectedCellAction editAction = new EditSelectedCellAction(servicesUtil, editorManager);
+		EditSelectedDiscreteValuesAction editAction = new EditSelectedDiscreteValuesAction(servicesUtil, editorManager);
 		Properties editSelectedProps = new Properties();
 		editSelectedProps.setProperty("service.type", "vizmapUI.contextMenu");
-		editSelectedProps.setProperty("title", EditSelectedCellAction.NAME);
+		editSelectedProps.setProperty("title", EditSelectedDiscreteValuesAction.NAME);
 		editSelectedProps.setProperty("menu", "context");
 		registerService(bc, editAction, CyAction.class, editSelectedProps);
+		
+		RemoveSelectedDiscreteValuesAction removeAction = new RemoveSelectedDiscreteValuesAction(servicesUtil);
+		Properties removeSelectedProps = new Properties();
+		removeSelectedProps.setProperty("service.type", "vizmapUI.contextMenu");
+		removeSelectedProps.setProperty("title", RemoveSelectedDiscreteValuesAction.NAME);
+		removeSelectedProps.setProperty("menu", "context");
+		registerService(bc, removeAction, CyAction.class, removeSelectedProps);
 		
 		// Discrete value generators:
 		RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
