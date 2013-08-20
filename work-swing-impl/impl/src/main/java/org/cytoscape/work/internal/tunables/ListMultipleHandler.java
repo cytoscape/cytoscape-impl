@@ -106,7 +106,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 
 		//create GUI
 		if ( listMultipleSelection.getPossibleValues().isEmpty() ) {
-			panel = null;
+			panel = new JPanel();
 			itemsContainerList = null;
 			return;
 		}
