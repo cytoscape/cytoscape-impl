@@ -25,7 +25,6 @@ package org.cytoscape.ding.icon;
  */
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -33,6 +32,7 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 
 
@@ -57,51 +57,50 @@ public class ArrowIcon extends VisualPropertyIcon<Shape> {
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setColor(c.getForeground());
 
-		int x1 = x + (c.getWidth() - width) / 2;
-		int y1 = c.getHeight()/2;
-		int x2 = x1 + width;
-		int y2 = y1;
+		double x1 = x;
+		double y1 = y + height / 2.0;
+		double x2 = x1 + width;
+		double y2 = y1;
 		
 		// If shape is not defined, treat as no-arrow.
 		if (value != null) {
 			final AffineTransform af = new AffineTransform();
 			g2d.setStroke(new BasicStroke(2.0f));
 	
-			Shape newShape = value;
-			final double minx = newShape.getBounds2D().getMinX();
-			final double miny = newShape.getBounds2D().getMinY();
+			Shape shape = value;
+			final double minx = shape.getBounds2D().getMinX();
+			final double miny = shape.getBounds2D().getMinY();
 			
 			// Adjust position if it is NOT in first quadrant.
 			if (minx < 0) {
 				af.setToTranslation(Math.abs(minx), 0);
-				newShape = af.createTransformedShape(newShape);
+				shape = af.createTransformedShape(shape);
 			}
 	
 			if (miny < 0) {
 				af.setToTranslation(0, Math.abs(miny));
-				newShape = af.createTransformedShape(newShape);
+				shape = af.createTransformedShape(shape);
 			}
 	
-			final double shapeWidth = newShape.getBounds2D().getWidth();
-			final double shapeHeight = newShape.getBounds2D().getHeight()*2;
+			final double shapeWidth = shape.getBounds2D().getWidth();
+			final double shapeHeight = shape.getBounds2D().getHeight() * 2;
 	
 			final double originalXYRatio = shapeWidth / shapeHeight;
-	
 			final double xRatio = (width / 3) / shapeWidth;
 			final double yRatio = height / shapeHeight;
 			af.setToScale(xRatio * originalXYRatio, yRatio);
-			newShape = af.createTransformedShape(newShape);
+			shape = af.createTransformedShape(shape);
 	
-			Rectangle2D bound = newShape.getBounds2D();
-			af.setToTranslation(width - bound.getCenterX(), y + (bound.getHeight())/2);
-			newShape = af.createTransformedShape(newShape);
+			Rectangle2D bound = shape.getBounds2D();
+			af.setToTranslation(x2 - bound.getWidth(), y2 - bound.getHeight() / 2);
+			shape = af.createTransformedShape(shape);
 			
-			g2d.fill(newShape);
+			g2d.fill(shape);
 			
-			x2 = (int) (newShape.getBounds2D().getCenterX()) - 2;
+			x2 = shape.getBounds2D().getCenterX() - 2;
 		}
 		
 		g2d.setStroke(EDGE_STROKE);
-		g2d.drawLine(x1, y1, x2, y2);
+		g2d.draw(new Line2D.Double(x1, y1, x2, y2));
 	}
 }
