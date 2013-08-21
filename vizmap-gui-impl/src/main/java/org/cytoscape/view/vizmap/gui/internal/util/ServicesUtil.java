@@ -31,6 +31,10 @@ public class ServicesUtil {
 		return cyServiceRegistrar.getService(serviceClass);
 	}
 	
+	public <T> T get(final Class<T> serviceClass, final String filter) {
+		return cyServiceRegistrar.getService(serviceClass, filter);
+	}
+	
 	public void registerAllServices(final Object service) {
 		cyServiceRegistrar.registerAllServices(service, new Properties());
 	}

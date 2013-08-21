@@ -27,9 +27,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor;
 import java.awt.Color;
 import java.awt.Paint;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -46,10 +43,7 @@ public class ColorVisualPropertyEditor extends BasicVisualPropertyEditor<Paint> 
 	 * @param cellRendererFactory 
 	 */
 	public ColorVisualPropertyEditor(final Class<Paint> type,
-									 final CyNetworkTableManager manager,
-									 final CyApplicationManager appManager,
 									 final EditorManager editorManager,
-									 final VisualMappingManager vmm,
 									 final CyColorPropertyEditor colorPropEditor,
 									 final ContinuousMappingCellRendererFactory cellRendererFactory) {
 		super(type, colorPropEditor, ContinuousEditorType.COLOR, cellRendererFactory);

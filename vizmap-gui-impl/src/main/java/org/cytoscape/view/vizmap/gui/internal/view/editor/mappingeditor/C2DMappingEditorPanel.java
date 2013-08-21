@@ -36,33 +36,27 @@ import javax.swing.ImageIcon;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.jdesktop.swingx.multislider.Thumb;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Continuous Mapping editor for discrete values, such as Font, Shape, Label
  * Position, etc.
- * 
  */
 public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Number, V> {
 	
 	private final static long serialVersionUID = 1213748837197780L;
 
-	private static final Logger logger = LoggerFactory.getLogger(C2DMappingEditorPanel.class);
-
 	private final EditorManager editorManager;
 
 	public C2DMappingEditorPanel(final VisualStyle style, final ContinuousMapping<Number, V> mapping, CyTable attr,
-			final CyApplicationManager appManager, final VisualMappingManager vmm, final EditorManager editorManager, final VisualMappingFunctionFactory continuousMappingFactory) {
-		super(style, mapping, attr, appManager, vmm, continuousMappingFactory);
+			final EditorManager editorManager, final ServicesUtil servicesUtil) {
+		super(style, mapping, attr, servicesUtil);
 
 		this.editorManager = editorManager;
 
@@ -72,7 +66,6 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		
 		initSlider();
 	}
-
 
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
@@ -184,9 +177,12 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		final double maxValue = tracer.getMax(type);
 
 		final C2DMappingEditorPanel<V> parentComponent = this;
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		
 		slider.addMouseListener(new MouseAdapter() {
 
 			// Handle value icon click.
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				int range = ((DiscreteTrackRenderer<Number, V>) slider.getTrackRenderer()).getRangeID(e.getX(),
 						e.getY());
@@ -217,7 +213,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 					updateMap();
 
 					slider.setTrackRenderer(new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
-							appManager.getCurrentRenderingEngine()));
+							appMgr.getCurrentRenderingEngine()));
 					slider.repaint();
 				}
 			}
@@ -256,7 +252,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		 */
 		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
 		DiscreteTrackRenderer<Number, V> dRend = new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
-				appManager.getCurrentRenderingEngine());
+				appMgr.getCurrentRenderingEngine());
 
 		slider.setThumbRenderer(thumbRend);
 		slider.setTrackRenderer(dRend);

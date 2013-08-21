@@ -37,8 +37,8 @@ import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 
 public class DiscreteLegend extends JPanel {
@@ -51,9 +51,7 @@ public class DiscreteLegend extends JPanel {
 	private static final Border BORDER = new MatteBorder(0, 6, 3, 0, Color.DARK_GRAY);
 
 	
-	public DiscreteLegend(DiscreteMapping<?, ?> discMapping, final CyApplicationManager appManager) {
-		super();
-
+	public DiscreteLegend(DiscreteMapping<?, ?> discMapping, final ServicesUtil servicesUtil) {
 		final String columnName = discMapping.getMappingColumnName();
 		final VisualProperty<Object> vp = (VisualProperty<Object>) discMapping.getVisualProperty();
 		setLayout(new BorderLayout());
@@ -86,6 +84,6 @@ public class DiscreteLegend extends JPanel {
 		}
 
 		add(LegendTable.getHeader(columnName, vp), BorderLayout.CENTER);
-		add(new LegendTable(appManager, data, vp), BorderLayout.SOUTH);
+		add(new LegendTable(data, vp, servicesUtil), BorderLayout.SOUTH);
 	}
 }

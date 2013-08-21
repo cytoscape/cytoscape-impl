@@ -36,12 +36,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
@@ -55,30 +52,19 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 	protected ContinuousMapping<K, V> mapping;
 	protected ContinuousMappingEditorPanel<K, V> editorPanel;
 
-	protected final CyNetworkTableManager manager;
-	protected final CyApplicationManager appManager;
 	protected final EditorManager editorManager;
-
-	protected final VisualMappingManager vmm;
-	protected final VisualMappingFunctionFactory continuousMappingFactory;
+	protected final ServicesUtil servicesUtil;
 
 	private final JLabel iconLabel;
 
 	private boolean isEditorDialogActive;
 	private JDialog currentDialog;
 
-	public AbstractContinuousMappingEditor(final CyNetworkTableManager manager,
-										   final CyApplicationManager appManager,
-										   final EditorManager editorManager,
-										   final VisualMappingManager vmm,
-										   final VisualMappingFunctionFactory continuousMappingFactory) {
+	public AbstractContinuousMappingEditor(final EditorManager editorManager, final ServicesUtil servicesUtil) {
 		this.isEditorDialogActive = false;
 		this.iconLabel = new JLabel();
-		this.vmm = vmm;
-		this.manager = manager;
-		this.appManager = appManager;
+		this.servicesUtil = servicesUtil;
 		this.editorManager = editorManager;
-		this.continuousMappingFactory = continuousMappingFactory;
 
 		editor = new JPanel();
 		((JPanel) editor).setLayout(new BorderLayout());

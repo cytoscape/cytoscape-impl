@@ -46,9 +46,8 @@ import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
@@ -68,24 +67,19 @@ public class LegendDialog extends JDialog {
 	private final static long serialVersionUID = 1202339876783665L;
 
 	private final VisualStyle visualStyle;
-	private final CyApplicationManager appManager;
-	private final VisualMappingManager vmm;
 
 	private JPanel jPanel1;
 	private JButton jButton1;
 	private JButton jButton2;
 	private JScrollPane jScrollPane1;
 
-	private VisualMappingFunctionFactory continuousMappingFactory;
+	private final ServicesUtil servicesUtil;
 
-	public LegendDialog(final VisualStyle vs, final CyApplicationManager appManager, final VisualMappingManager vmm, VisualMappingFunctionFactory continuousMappingFactory) {
-		super();
+	public LegendDialog(final VisualStyle vs, final ServicesUtil servicesUtil) {
 		this.setModal(true);
 
 		visualStyle = vs;
-		this.appManager = appManager;
-		this.vmm = vmm;
-		this.continuousMappingFactory = continuousMappingFactory;
+		this.servicesUtil = servicesUtil;
 
 		initComponents();
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -115,17 +109,19 @@ public class LegendDialog extends JDialog {
 
 	private void createMappingLegends(final Collection<VisualMappingFunction<?, ?>> mappings, final JPanel legend) {
 		for (VisualMappingFunction<?, ?> map : mappings) {
+			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 			final JPanel mappingLenegd;
 
 			if (map instanceof ContinuousMapping) {
-				mappingLenegd = new ContinuousMappingLegendPanel(visualStyle, (ContinuousMapping) map, appManager
-						.getCurrentNetwork().getDefaultNodeTable(), appManager, vmm, continuousMappingFactory);
+				mappingLenegd = new ContinuousMappingLegendPanel(visualStyle, (ContinuousMapping) map, appMgr
+						.getCurrentNetwork().getDefaultNodeTable(), servicesUtil);
 			} else if (map instanceof DiscreteMapping) {
-				mappingLenegd = new DiscreteLegend((DiscreteMapping<?, ?>) map, appManager);
+				mappingLenegd = new DiscreteLegend((DiscreteMapping<?, ?>) map, servicesUtil);
 			} else if (map instanceof DiscreteMapping) {
 				mappingLenegd = new PassthroughLegend((PassthroughMapping<?, ?>) map);
-			} else
+			} else {
 				continue;
+			}
 
 			// Add passthrough mappings to the top since they don't
 			// display anything besides the title.

@@ -52,15 +52,13 @@ final class BelowAndAbovePanel extends JPanel {
 
 	private final VisualProperty<?> vp;
 	private final boolean isBelow;
-
 	private Color boxColor;
-
-	private final ContinuousMapping mapping;
-
+	
+	private final ContinuousMapping<?, ?> mapping;
 	private final ContinuousMappingEditorPanel parentPanel;
 
 	BelowAndAbovePanel(final Color color, final boolean below, final ContinuousMapping<?, ?> mapping,
-			final ContinuousMappingEditorPanel parentPanel) {
+			final ContinuousMappingEditorPanel<?, ?> parentPanel) {
 		this.boxColor = color;
 		this.isBelow = below;
 		this.mapping = mapping;
@@ -87,6 +85,7 @@ final class BelowAndAbovePanel extends JPanel {
 				return;
 
 			newValue = ((GradientEditorPanel)parentPanel).colorEditor.showEditor(this, boxColor);
+			
 			if (newValue == null)
 				return;
 
@@ -95,9 +94,9 @@ final class BelowAndAbovePanel extends JPanel {
 			BoundaryRangeValues brv = null;
 			BoundaryRangeValues original;
 			ContinuousMappingPoint originalPoint;
-
 			
 			final SortedMap<Double, ContinuousMappingPoint> sortedPoints = new TreeMap<Double, ContinuousMappingPoint>();
+			
 			for (final Object point : mapping.getAllPoints()) {
 				ContinuousMappingPoint p = (ContinuousMappingPoint) point;
 				final Number val =(Number) p.getValue();
@@ -124,11 +123,10 @@ final class BelowAndAbovePanel extends JPanel {
 
 			((GradientEditorPanel) parentPanel).initSlider();
 			((GradientEditorPanel) parentPanel).updateView();
-			
 		}
 	}
 
-	public void setColor(Color newColor) {
+	public void setColor(final Color newColor) {
 		this.boxColor = newColor;
 		this.repaint();
 		this.getParent().repaint();
@@ -138,7 +136,7 @@ final class BelowAndAbovePanel extends JPanel {
 	 * Draw custom panel component
 	 */
 	@Override
-	public void paintComponent(Graphics g) {
+	public void paintComponent(final Graphics g) {
 		final Graphics2D g2d = (Graphics2D) g;
 		final Polygon poly = new Polygon();
 
@@ -155,7 +153,6 @@ final class BelowAndAbovePanel extends JPanel {
 			poly.addPoint(0, 0);
 			poly.addPoint(0, 20);
 			poly.addPoint(18, 10);
-
 		}
 
 		g2d.fillPolygon(poly);

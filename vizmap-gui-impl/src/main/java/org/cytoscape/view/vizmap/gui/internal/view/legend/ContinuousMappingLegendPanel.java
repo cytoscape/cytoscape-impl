@@ -47,12 +47,10 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.C2CMappingEditorPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.C2DMappingEditorPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.GradientEditorPanel;
@@ -61,6 +59,8 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 
 public class ContinuousMappingLegendPanel extends JPanel {
 
+	private static final long serialVersionUID = -954619979286771073L;
+	
 	private static final Font TITLE_FONT2 = new Font("SansSerif", Font.BOLD, 18);
 	private static final Color TITLE_COLOR = new Color(10, 200, 255);
 	private static final Border BORDER = new MatteBorder(0, 6, 3, 0, Color.DARK_GRAY);
@@ -73,27 +73,22 @@ public class ContinuousMappingLegendPanel extends JPanel {
 	final VisualStyle style;
 	final ContinuousMapping<?, ?> mapping;
 	final CyTable table;
-	final CyApplicationManager appManager;
-	final VisualMappingManager vmm;
-	final VisualMappingFunctionFactory continuousMappingFactory;
+	final ServicesUtil servicesUtil;
 
 	public ContinuousMappingLegendPanel(final VisualStyle style, final ContinuousMapping<?, ?> mapping,
-			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm, VisualMappingFunctionFactory continuousMappingFactory) {
-		super();
-
+			final CyTable table, final ServicesUtil servicesUtil) {
 		this.style = style;
 		this.mapping = mapping;
 		this.table = table;
-		this.appManager = appManager;
-		this.vmm = vmm;
+		this.servicesUtil = servicesUtil;
 		this.vp = mapping.getVisualProperty();
-		this.continuousMappingFactory = continuousMappingFactory;
 
 		// this.points = points;
 		// this.type = vpt;
 
 		// Resize it when window size changed.
 		this.addComponentListener(new ComponentAdapter() {
+			@Override
 			public void componentResized(ComponentEvent e) {
 				setLegend(e);
 			}
@@ -133,16 +128,15 @@ public class ContinuousMappingLegendPanel extends JPanel {
 
 		if (Paint.class.isAssignableFrom(vp.getRange().getType())) {
 			final GradientEditorPanel gPanel = new GradientEditorPanel(style,
-					(ContinuousMapping<Double, Color>) mapping, table, appManager, null, vmm, continuousMappingFactory);
+					(ContinuousMapping<Double, Color>) mapping, table, null, servicesUtil);
 			legend = new JLabel(gPanel.getLegend(trackW, 100));
 		} else if (Number.class.isAssignableFrom(vp.getRange().getType())) {
-			final C2CMappingEditorPanel numberPanel = new C2CMappingEditorPanel(style,
-					mapping, table, appManager, vmm, continuousMappingFactory);
+			final C2CMappingEditorPanel numberPanel = new C2CMappingEditorPanel(style, mapping, table, servicesUtil);
 			legend = new JLabel(numberPanel.getLegend(trackW, 150));
 		} else {
 			try {
-				C2DMappingEditorPanel discretePanel = new C2DMappingEditorPanel(style, mapping, table, appManager, vmm,
-						null, continuousMappingFactory);
+				C2DMappingEditorPanel discretePanel = new C2DMappingEditorPanel(style, mapping, table, null, 
+						servicesUtil);
 				legend = new JLabel(discretePanel.getLegend(trackW, 150));
 			} catch (Exception ex) {
 				legend = new JLabel("Legend Generator not available");

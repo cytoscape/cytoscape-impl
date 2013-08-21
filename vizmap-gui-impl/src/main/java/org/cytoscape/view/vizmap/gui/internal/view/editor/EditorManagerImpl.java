@@ -41,7 +41,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
@@ -52,7 +51,6 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
@@ -97,9 +95,7 @@ public class EditorManagerImpl implements EditorManager {
 	private final Map<Class<?>, ValueEditor<?>> valueEditors;
 
 	private final PropertyEditor mappingTypeEditor;
-
-	private final VisualMappingFunctionFactory continuousMappingFactory;
-	private ContinuousMappingCellRendererFactory cellRendererFactory;
+	private final ContinuousMappingCellRendererFactory cellRendererFactory;
 	private final ServicesUtil servicesUtil;
 
 	/**
@@ -108,10 +104,8 @@ public class EditorManagerImpl implements EditorManager {
 	 */
 	public EditorManagerImpl(final AttributeSetProxy attrProxy,
 							 final MappingFunctionFactoryProxy mappingFactoryProxy,
-							 final VisualMappingFunctionFactory continuousMappingFactory,
 							 final ContinuousMappingCellRendererFactory cellRendererFactory,
 							 final ServicesUtil servicesUtil) {
-		this.continuousMappingFactory = continuousMappingFactory;
 		this.cellRendererFactory = cellRendererFactory; 
 		this.servicesUtil = servicesUtil;
 
@@ -310,28 +304,26 @@ public class EditorManagerImpl implements EditorManager {
 		}
 	}
 
-	public void addRenderingEngineFactory(final RenderingEngineFactory<?> factory, final Map props) {
+	public void addRenderingEngineFactory(final RenderingEngineFactory<?> factory, final Map<?, ?> props) {
 		final VisualLexicon lexicon = factory.getVisualLexicon();
 		buildDiscreteEditors(lexicon);
 	}
 
-	public void removeRenderingEngineFactory(final RenderingEngineFactory<?> factory, final Map props) {
+	public void removeRenderingEngineFactory(final RenderingEngineFactory<?> factory, final Map<?, ?> props) {
 		// TODO: clean up state when rendering engines are removed.
 	}
 
 	@Override
+	@SuppressWarnings("rawtypes")
 	public PropertyEditor getContinuousEditor(final VisualProperty<?> vp) {
 		final ContinuousEditorType editorType = this.getVisualPropertyEditor(vp).getContinuousEditorType();
-		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		final CyNetworkTableManager tblMgr = servicesUtil.get(CyNetworkTableManager.class);
 
 		if (editorType == ContinuousEditorType.COLOR)
-			return new GradientEditor(tblMgr, appMgr, this, vmMgr, continuousMappingFactory);
+			return new GradientEditor(this, servicesUtil);
 		else if (editorType == ContinuousEditorType.CONTINUOUS)
-			return new C2CEditor(tblMgr, appMgr, this, vmMgr, continuousMappingFactory);
+			return new C2CEditor(this, servicesUtil);
 		else if (editorType == ContinuousEditorType.DISCRETE)
-			return new C2DEditor(tblMgr, appMgr, this, vmMgr, continuousMappingFactory);
+			return new C2DEditor(this, servicesUtil);
 
 		return null;
 	}

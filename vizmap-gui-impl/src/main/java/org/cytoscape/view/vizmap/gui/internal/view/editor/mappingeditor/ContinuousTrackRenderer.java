@@ -48,10 +48,10 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.jdesktop.swingx.JXMultiThumbSlider;
@@ -112,7 +112,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	private Point belowSquare;
 	private Point aboveSquare;
 
-	private final CyApplicationManager manager;
 	private final EditorValueRangeTracer tracer;
 	private final VisualStyle style;
 	
@@ -122,6 +121,8 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	private final Class<V> vpValueType;
 	private final Class<K> columnType;
 
+	private final ServicesUtil servicesUtil;
+	
 	/**
 	 * Creates a new ContinuousTrackRenderer object.
 	 * 
@@ -133,21 +134,18 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	 *            DOCUMENT ME!
 	 */
 	public ContinuousTrackRenderer(final VisualStyle style, final ContinuousMapping<K, V> mapping, V below, V above,
-			final EditorValueRangeTracer tracer,  final CyApplicationManager manager) {
-
-		if(mapping == null)
-			throw new NullPointerException("Continuous Mapping object is null. is missing.");
-		if(tracer == null)
-			throw new NullPointerException("Tracer is missing.");
-		if(manager == null)
-			throw new NullPointerException("Application manager is missing.");
+			final EditorValueRangeTracer tracer, final ServicesUtil servicesUtil) {
+		if (mapping == null)
+			throw new NullPointerException("'mapping' must not be null.");
+		if (tracer == null)
+			throw new NullPointerException("'tracer' must not be null.");
 		
 		this.below = below;
 		this.above = above;
 		this.vp = mapping.getVisualProperty();
 		this.tracer = tracer;
-		this.manager = manager;
 		this.style = style;
+		this.servicesUtil = servicesUtil;
 
 		cMapping = mapping;
 		this.columnType = mapping.getMappingColumnType();

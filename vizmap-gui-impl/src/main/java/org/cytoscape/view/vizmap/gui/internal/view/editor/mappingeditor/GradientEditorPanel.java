@@ -39,25 +39,20 @@ import javax.swing.JComponent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.jdesktop.swingx.multislider.Thumb;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Color Gradient Mapping editor.
  * 
  */
 public class GradientEditorPanel<T extends Number> extends ContinuousMappingEditorPanel<T, Color> {
-
-	private static final Logger logger = LoggerFactory.getLogger(GradientEditorPanel.class);
 
 	private final static long serialVersionUID = 1202339877433771L;
 
@@ -66,16 +61,12 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	private static final Color DEF_UPPER_COLOR = Color.WHITE;
 
 	// For updating current network views.
-	private final CyApplicationManager appManager;
 	protected final ValueEditor<Paint> colorEditor;
 
 	public GradientEditorPanel(final VisualStyle style, final ContinuousMapping<T, Color> mapping, final CyTable attr,
-			final CyApplicationManager appManager, final ValueEditor<Paint> colorEditor, final VisualMappingManager vmm, final VisualMappingFunctionFactory continuousMappingFactory) {
-		super(style, mapping, attr, appManager, vmm, continuousMappingFactory);
-
+			final ValueEditor<Paint> colorEditor, final ServicesUtil servicesUtil) {
+		super(style, mapping, attr, servicesUtil);
 		this.colorEditor = colorEditor;
-		this.appManager = appManager;
-
 		iconPanel.setVisible(false);
 		
 		initSlider();
@@ -105,7 +96,8 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	}
 
 	private void getAndSetColor() {
-		final Color newColor = (Color) colorEditor.showEditor(null, Color.white);
+		final Color newColor = (Color) colorEditor.showEditor(null, Color.WHITE);
+		
 		if (newColor != null) {
 			setColor(newColor);
 			setButtonColor(newColor);
@@ -142,7 +134,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		final BoundaryRangeValues<Color> previousRange = previousPoint.getRange();
 
 		Color lesserVal = slider.getModel().getSortedThumbs().get(slider.getModel().getThumbCount() - 1).getObject();
-		Color equalVal = Color.white;
+		Color equalVal = Color.WHITE;
 		Color greaterVal = previousRange.greaterValue;
 
 		lowerRange = new BoundaryRangeValues<Color>(lesserVal, equalVal, greaterVal);
@@ -175,14 +167,15 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	}
 
 	@Override
-	protected void deleteButtonActionPerformed(ActionEvent evt) {
+	protected void deleteButtonActionPerformed(final ActionEvent evt) {
 		final int selectedIndex = slider.getSelectedIndex();
 
 		if (0 <= selectedIndex) {
 			slider.getModel().removeThumb(selectedIndex);
 			mapping.removePoint(selectedIndex);
 			updateMap();
-			appManager.getCurrentNetworkView().updateView();
+			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+			appMgr.getCurrentNetworkView().updateView();
 			repaint();
 		}
 	}
@@ -247,8 +240,8 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			below = sortedPoints.get(sortedPoints.firstKey()).getRange().lesserValue;
 			above = sortedPoints.get(sortedPoints.lastKey()).getRange().greaterValue;
 		} else {
-			below = Color.black;
-			above = Color.white;
+			below = Color.BLACK;
+			above = Color.WHITE;
 		}
 
 		setSidePanelIconColor(below, above);
@@ -265,8 +258,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	}
 
 	void updateView() {
-		this.style.apply(appManager.getCurrentNetworkView());
-		appManager.getCurrentNetworkView().updateView();
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		style.apply(appMgr.getCurrentNetworkView());
+		appMgr.getCurrentNetworkView().updateView();
 		slider.repaint();
 	}
 

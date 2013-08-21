@@ -32,23 +32,26 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 public class GradientEditor extends AbstractContinuousMappingEditor<Double, Color> {
 
-	public GradientEditor(final CyNetworkTableManager manager, final CyApplicationManager appManager,
-			final EditorManager editorManager, final VisualMappingManager vmm, final VisualMappingFunctionFactory continuousMappingFactory) {
-		super(manager, appManager, editorManager, vmm, continuousMappingFactory);
+	public GradientEditor(final EditorManager editorManager, final ServicesUtil servicesUtil) {
+		super(editorManager, servicesUtil);
 	}
 
 	@Override
-	public void setValue(Object value) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setValue(final Object value) {
 		if (value instanceof ContinuousMapping == false)
 			throw new IllegalArgumentException("Value should be ContinuousMapping: this is " + value);
-		final CyNetwork currentNetwork = appManager.getCurrentNetwork();
+		
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		final CyNetwork currentNetwork = appMgr.getCurrentNetwork();
+		
 		if (currentNetwork == null)
 			return;
 
@@ -56,11 +59,14 @@ public class GradientEditor extends AbstractContinuousMappingEditor<Double, Colo
 		// TODO: error chekcing
 
 		mapping = (ContinuousMapping<Double, Color>) value;
-		@SuppressWarnings("unchecked")
 		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) mapping.getVisualProperty()
 				.getTargetDataType();
-		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-		this.editorPanel = new GradientEditorPanel(vmm.getCurrentVisualStyle(), mapping, attr, appManager,
-				editorManager.getValueEditor(Paint.class), vmm, continuousMappingFactory);
+		
+		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
+		final CyTable attr = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
+		
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		editorPanel = new GradientEditorPanel(vmMgr.getCurrentVisualStyle(), mapping, attr,
+				editorManager.getValueEditor(Paint.class), servicesUtil);
 	}
 }

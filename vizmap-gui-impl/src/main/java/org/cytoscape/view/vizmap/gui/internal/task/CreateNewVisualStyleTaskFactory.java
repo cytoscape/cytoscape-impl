@@ -24,23 +24,20 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public final class CreateNewVisualStyleTaskFactory extends AbstractTaskFactory {
 
-	private final VisualStyleFactory vsFactory;
-	private final VisualMappingManager vmm;
+	private final ServicesUtil servicesUtil;
 
-	public CreateNewVisualStyleTaskFactory(final VisualStyleFactory vsFactory, final VisualMappingManager vmm) {
-		this.vsFactory = vsFactory;
-		this.vmm = vmm;
+	public CreateNewVisualStyleTaskFactory(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CreateNewVisualStyleTask(vsFactory, vmm));
+		return new TaskIterator(new CreateNewVisualStyleTask(servicesUtil));
 	}
 }

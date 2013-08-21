@@ -44,16 +44,18 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
 public class LegendTable extends JPanel {
 
+	private static final long serialVersionUID = 3066611687984212582L;
+	
 	private final CyApplicationManager appManager;
 	private VisualProperty<Object> vp;
 	private JTable legendTable;
 
-	public LegendTable(final CyApplicationManager appManager, final Object[][] data, final VisualProperty<Object> vp) {
-		super();
-		this.appManager = appManager;
+	public LegendTable(final Object[][] data, final VisualProperty<Object> vp, final ServicesUtil servicesUtil) {
+		this.appManager = servicesUtil.get(CyApplicationManager.class);
 		this.vp = vp;
 		
 		legendTable = new JTable(data.length, 2);
@@ -86,7 +88,6 @@ public class LegendTable extends JPanel {
 		Icon icon = engine.createIcon(vp, value, 32, 32);
 		return icon;
 	}
-
 
 	public static JPanel getHeader(String attrName, VisualProperty<?> vp) {
 		final JPanel titles = new JPanel();

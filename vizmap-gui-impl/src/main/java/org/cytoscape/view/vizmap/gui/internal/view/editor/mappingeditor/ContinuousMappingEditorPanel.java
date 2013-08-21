@@ -56,15 +56,13 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
@@ -105,11 +103,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	protected Double lastSpinnerNumber = null;
 
-	protected CyNetworkManager cyNetworkManager;
-
 	// This should be injected.
 	protected final EditorValueRangeTracer tracer;
-	protected final CyApplicationManager appManager;
+	protected final ServicesUtil servicesUtil;
 
 	protected final VisualStyle style;
 
@@ -126,24 +122,22 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	 * property type T.
 	 */
 	public ContinuousMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping,
-			final CyTable table, final CyApplicationManager appManager, final VisualMappingManager vmm, final VisualMappingFunctionFactory continuousMappingFactory) {
+			final CyTable table, final ServicesUtil servicesUtil) {
 		if (mapping == null)
 			throw new NullPointerException("ContinuousMapping should not be null.");
 		if (table == null)
 			throw new NullPointerException("Data table should not be null.");
-		if (appManager == null)
-			throw new NullPointerException("Application Manager should not be null.");
 		if (style == null)
 			throw new NullPointerException("Visual Style should not be null.");
 
-		this.tracer = new EditorValueRangeTracer(vmm);
+		this.tracer = new EditorValueRangeTracer(servicesUtil);
 		this.mapping = mapping;
-		this.original = createCopy(continuousMappingFactory, mapping);
 		this.type = mapping.getVisualProperty();
-		this.appManager = appManager;
 		this.style = style;
 		this.mainPanel = createMainPanel();
 		this.dataTable = table;
+		this.servicesUtil = servicesUtil;
+		this.original = createCopy(mapping);
 
 		columnType = mapping.getMappingColumnType();
 		vpValueType = mapping.getVisualProperty().getRange().getType();
@@ -171,6 +165,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		slider.addMouseListener(new ThumbMouseListener());
 	}
 
+	@SuppressWarnings("serial")
 	private JPanel createMainPanel() {
 		return new JPanel() {
 			@Override
@@ -215,16 +210,21 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 
 	@SuppressWarnings("unchecked")
-	private ContinuousMapping<K, V> createCopy(VisualMappingFunctionFactory continuousMappingFactory, ContinuousMapping<K, V> source) {
-		String attribute = source.getMappingColumnName();
-		Class<?> attributeType = source.getMappingColumnType();
-		VisualProperty<?> visualProperty = source.getVisualProperty();
-		ContinuousMapping<K, V> mapping = (ContinuousMapping<K, V>) continuousMappingFactory.createVisualMappingFunction(attribute, attributeType, visualProperty);
+	private ContinuousMapping<K, V> createCopy(final ContinuousMapping<K, V> source) {
+		final String attribute = source.getMappingColumnName();
+		final Class<?> attributeType = source.getMappingColumnType();
+		final VisualProperty<?> visualProperty = source.getVisualProperty();
+		
+		final VisualMappingFunctionFactory continuousMappingFactory = 
+				servicesUtil.get(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+		final ContinuousMapping<K, V> mapping = (ContinuousMapping<K, V>) continuousMappingFactory
+				.createVisualMappingFunction(attribute, attributeType, visualProperty);
 		
 		for (ContinuousMappingPoint<K, V> point : source.getAllPoints()) {
 			BoundaryRangeValues<V> range = new BoundaryRangeValues<V>(point.getRange());
 			mapping.addPoint(point.getValue(), range);
 		}
+		
 		return mapping;
 	}
 

@@ -36,12 +36,10 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
@@ -70,14 +68,14 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 
 
 	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping, final CyTable attr,
-			final CyApplicationManager appManager, final VisualMappingManager vmm,
-			final VisualMappingFunctionFactory continuousMappingFactory) {
-		super(style, mapping, attr, appManager, vmm, continuousMappingFactory);
+			final ServicesUtil servicesUtil) {
+		super(style, mapping, attr, servicesUtil);
 
 		abovePanel.setVisible(false);
 		belowPanel.setVisible(false);
 
 		initSlider();
+		
 		if (mapping.getAllPoints().isEmpty()) {
 			addSlider(0d, FIRST_LOCATION);
 			addSlider(100d, SECOND_LOCATION);
@@ -216,7 +214,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
 
 		ContinuousTrackRenderer<K, V> cRend = new ContinuousTrackRenderer<K, V>(style, mapping, below, above, tracer,
-				appManager);
+				servicesUtil);
 		cRend.addPropertyChangeListener(this);
 
 		slider.setThumbRenderer(thumbRend);

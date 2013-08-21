@@ -25,22 +25,18 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  */
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CreateNewVisualStyleTask extends AbstractTask implements TunableValidator {
-
-	private static final Logger logger = LoggerFactory.getLogger(CreateNewVisualStyleTask.class);
 
 	@ProvidesTitle
 	public String getTitle() {
@@ -50,32 +46,30 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 	@Tunable(description = "Name of new Visual Style:")
 	public String vsName;
 
-	private final VisualStyleFactory vsFactory;
-	private final VisualMappingManager vmm;
+	private final ServicesUtil servicesUtil;
 
-	public CreateNewVisualStyleTask(final VisualStyleFactory vsFactory, final VisualMappingManager vmm) {
-		super();
-		this.vsFactory = vsFactory;
-		this.vmm = vmm;
+	public CreateNewVisualStyleTask(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
 	}
 
-	public void run(TaskMonitor tm) {
-		if (vsName == null)
-			return;
-
-		final VisualStyle style = vsFactory.createVisualStyle(vsName);
-
-		vmm.addVisualStyle(style);
-		vmm.setCurrentVisualStyle(style);
+	@Override
+	public void run(final TaskMonitor tm) {
+		if (vsName != null) {
+			final VisualStyleFactory vsFactory = servicesUtil.get(VisualStyleFactory.class);
+			final VisualStyle style = vsFactory.createVisualStyle(vsName);
+	
+			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+			vmMgr.addVisualStyle(style);
+			vmMgr.setCurrentVisualStyle(style);
+		}
 	}
 
+	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
-		Iterator<VisualStyle> it = this.vmm.getAllVisualStyles().iterator();
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 
-		while (it.hasNext()) {
-			VisualStyle exist_vs = it.next();
-
-			if (exist_vs.getTitle().equalsIgnoreCase(vsName)) {
+		for  (final VisualStyle vs : vmMgr.getAllVisualStyles()) {
+			if (vs.getTitle().equalsIgnoreCase(vsName)) {
 				try {
 					errMsg.append("Visual style " + vsName + " already existed.");
 					return ValidationState.INVALID;

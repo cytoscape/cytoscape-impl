@@ -27,6 +27,7 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -42,26 +43,25 @@ public class CopyVisualStyleTask extends AbstractTask {
 	@Tunable(description = "Name of copied Visual Style:")
 	public String vsName;
 
-	private final VisualMappingManager vmm;
-	private final VisualStyleFactory factory;
+	private final ServicesUtil servicesUtil;
 
-	public CopyVisualStyleTask(final VisualMappingManager vmm, final VisualStyleFactory factory) {
-		this.factory = factory;
-		this.vmm = vmm;
+	public CopyVisualStyleTask(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
-	public void run(TaskMonitor monitor) throws Exception {
-		final VisualStyle originalStyle = vmm.getCurrentVisualStyle();
+	public void run(final TaskMonitor monitor) throws Exception {
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		final VisualStyle originalStyle = vmMgr.getCurrentVisualStyle();
 
 		// Ignore if user does not enter new name.
-		if (vsName == null)
-			return;
-
-		final VisualStyle copiedStyle = factory.createVisualStyle(originalStyle);
-		copiedStyle.setTitle(vsName);
-
-		vmm.addVisualStyle(copiedStyle);
-		vmm.setCurrentVisualStyle(copiedStyle);
+		if (vsName != null) {
+			final VisualStyleFactory factory = servicesUtil.get(VisualStyleFactory.class);
+			final VisualStyle copiedStyle = factory.createVisualStyle(originalStyle);
+			copiedStyle.setTitle(vsName);
+	
+			vmMgr.addVisualStyle(copiedStyle);
+			vmMgr.setCurrentVisualStyle(copiedStyle);
+		}
 	}
 }

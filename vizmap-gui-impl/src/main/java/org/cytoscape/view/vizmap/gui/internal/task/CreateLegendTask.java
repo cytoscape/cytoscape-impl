@@ -26,34 +26,30 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.legend.LegendDialog;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 public class CreateLegendTask extends AbstractTask {
 
-	private final CyApplicationManager appManager;
-	private final VisualMappingManager vmm;
-	private final VisualMappingFunctionFactory continuousMappingFactory;
+	private final ServicesUtil servicesUtil;
 
-	public CreateLegendTask(final CyApplicationManager appManager, final VisualMappingManager vmm, VisualMappingFunctionFactory continuousMappingFactory) {
-		this.appManager = appManager;
-		this.vmm = vmm;
-		this.continuousMappingFactory = continuousMappingFactory;
+	public CreateLegendTask(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
-	public void run(TaskMonitor monitor) throws Exception {
+	public void run(final TaskMonitor monitor) throws Exception {
 		// Should be executed in EDT!
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final VisualStyle selectedStyle = vmm.getCurrentVisualStyle();
-				final LegendDialog ld = new LegendDialog(selectedStyle, appManager, vmm, continuousMappingFactory);
+				final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+				final VisualStyle selectedStyle = vmMgr.getCurrentVisualStyle();
+				final LegendDialog ld = new LegendDialog(selectedStyle, servicesUtil);
 				ld.showDialog(null);
 			}
 		});

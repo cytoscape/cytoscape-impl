@@ -29,36 +29,42 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 public class C2DEditor<V> extends AbstractContinuousMappingEditor<Number, V> {
 
-	public C2DEditor(final CyNetworkTableManager manager, final CyApplicationManager appManager,
-			final EditorManager editorManager, final VisualMappingManager vmm, VisualMappingFunctionFactory continuousMappingFactory) {
-		super(manager, appManager, editorManager, vmm, continuousMappingFactory);
+	public C2DEditor(final EditorManager editorManager, final ServicesUtil servicesUtil) {
+		super(editorManager, servicesUtil);
 	}
 
 	@Override
-	public void setValue(Object value) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setValue(final Object value) {
 		if (value instanceof ContinuousMapping == false)
 			throw new IllegalArgumentException("Value should be ContinuousMapping: this is " + value);
 
-		final CyNetwork currentNetwork = appManager.getCurrentNetwork();
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		final CyNetwork currentNetwork = appMgr.getCurrentNetwork();
+		
 		if (currentNetwork == null)
 			return;
 
 		ContinuousMapping<?, ?> mTest = (ContinuousMapping<?, ?>) value;
-
 		// TODO: error chekcing
+		
 		mapping = (ContinuousMapping<Number, V>) value;
-		@SuppressWarnings("unchecked")
+		
 		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) mapping.getVisualProperty()
 				.getTargetDataType();
-		final CyTable attr = manager.getTable(appManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-		this.editorPanel = new C2DMappingEditorPanel(vmm.getCurrentVisualStyle(), mapping, attr,
-				appManager, vmm, editorManager, continuousMappingFactory);
+		
+		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
+		final CyTable attr = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
+		
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		editorPanel = new C2DMappingEditorPanel(vmMgr.getCurrentVisualStyle(), mapping, attr,
+				editorManager, servicesUtil);
 	}
 }

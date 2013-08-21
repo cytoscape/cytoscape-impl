@@ -56,6 +56,7 @@ import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
@@ -82,14 +83,14 @@ public class VizMapPropertyBuilder {
 	private final DefaultTableCellRenderer defaultTableCellRenderer;
 
 	private final EditorManager editorManager;
-	private final CyApplicationManager appManager;
 	private final MappingFunctionFactoryManager mappingFactoryManager;
+	private final ServicesUtil servicesUtil;
 
-	public VizMapPropertyBuilder(final CyApplicationManager appManager, final EditorManager editorManager,
-			final MappingFunctionFactoryManager mappingFactoryManager) {
-		this.appManager = appManager;
+	public VizMapPropertyBuilder(final EditorManager editorManager,
+			final MappingFunctionFactoryManager mappingFactoryManager, final ServicesUtil servicesUtil) {
 		this.editorManager = editorManager;
 		this.mappingFactoryManager = mappingFactoryManager;
+		this.servicesUtil = servicesUtil;
 		this.defaultTableCellRenderer = new DefaultVizMapTableCellRenderer();
 	}
 
@@ -207,7 +208,8 @@ public class VizMapPropertyBuilder {
 			// Discrete Mapping
 			// This set should not contain null!
 			final SortedSet<Object> attrSet = new TreeSet<Object>();
-			final CyNetwork network = appManager.getCurrentNetwork();
+			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+			final CyNetwork network = appMgr.getCurrentNetwork();
 			
 			if (network != null) {
 				final Set<CyIdentifiable> graphObjects = new HashSet<CyIdentifiable>();
