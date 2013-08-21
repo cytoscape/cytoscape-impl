@@ -13,7 +13,6 @@
 	<artifactId>impl-parent</artifactId>
 	<packaging>pom</packaging>
 	<!-- Implementation bundles can have different version number -->
-	<version>3.1.0-SNAPSHOT</version>
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
@@ -39,6 +38,7 @@
 		<module>group-data-impl</module>
 		<module>group-view-impl</module>
 		<module>io-impl</module>
+		<module>json-impl</module>
 		<module>layout-cytoscape-impl</module>
 		<module>layout-impl</module>
 		<module>layout-jgraph-impl</module>
