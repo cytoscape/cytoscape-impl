@@ -26,6 +26,7 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
@@ -46,6 +47,7 @@ import org.cytoscape.work.internal.tunables.utils.myBoundedSwing;
 import org.cytoscape.work.internal.tunables.utils.mySlider;
 import org.cytoscape.work.util.AbstractBounded;
 import org.cytoscape.work.util.BoundedDouble;
+import org.cytoscape.work.util.BoundedChangeListener;
 
 
 /**
@@ -56,27 +58,44 @@ import org.cytoscape.work.util.BoundedDouble;
  * @param <T> type of <code>AbstractBounded</code>
  */
 @SuppressWarnings("unchecked")
-public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunableHandler implements ChangeListener, ActionListener {
+public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITunableHandler 
+                                                          implements ChangeListener, ActionListener,
+                                                                     BoundedChangeListener<N> {
 	/**
 	 * Representation of the <code>Bounded</code> in a <code>JSlider</code>
 	 */
 	private boolean useSlider = false;
 
 	/**
-	 * 1st representation of this <code>Bounded</code> object in its <code>GUIHandler</code>'s JPanel : a <code>JSlider</code>
+	 * 1st representation of this <code>Bounded</code> object in 
+	 * its <code>GUIHandler</code>'s JPanel : a <code>JSlider</code>
 	 */
 	private mySlider slider;
 
 	/**
-	 * 2nd representation of this <code>Bounded</code> object : a <code>JTextField</code> that will display to the user all the informations about the bounds
+	 * 2nd representation of this <code>Bounded</code> object : a <code>JTextField</code> 
+	 * that will display to the user all the informations about the bounds
 	 */
 	private myBoundedSwing boundedField;
 
 
 	/**
+ 	 * Save the last object we fetched.  This will allow us to detect that we're
+ 	 * received a completely new object and reset the UI.
+ 	 */
+	private T lastBounded = null;
+	private String title = null;
+
+	// Standard format
+	java.text.DecimalFormat df = new java.text.DecimalFormat("##.###");
+	// Scientific notation
+	java.text.DecimalFormat sdf = new java.text.DecimalFormat("#.###E0");
+
+	/**
 	 * Construction of the <code>GUIHandler</code> for the <code>Bounded</code> type
 	 *
-	 * If <code>useSlider</code> is set to <code>true</code> : displays the bounded object in a <code>JSlider</code> by using its bounds
+	 * If <code>useSlider</code> is set to <code>true</code> : displays the bounded 
+	 * object in a <code>JSlider</code> by using its bounds
 	 * else diplays it in a <code>JTextField</code> with informations about the bounds
 	 *
 	 * The Swing representation is then added to the <code>JPanel</code> for GUI representation
@@ -96,34 +115,15 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 	}
 
 	private void init() {
-		final String title = getDescription();
+		title = getDescription();
 		useSlider = getParams().getProperty("slider", "false").equalsIgnoreCase("true");
 		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 
 		try {
 			final T bounded = getBounded();
-			if (useSlider) {
-				JLabel label = new JLabel(title);
-				label.setFont(GUIDefaults.LABEL_FONT);
-				label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-				panel.add(label,BorderLayout.WEST);
-				slider = new mySlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
-				                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict());
-				slider.addChangeListener(this);
-				panel.add(slider,BorderLayout.CENTER);
-			} else {
-				final JLabel label =
-					new JLabel(title + " (max: " + bounded.getLowerBound().toString()
-					          + " min: " + bounded.getUpperBound().toString() + ")" );
-				label.setFont(GUIDefaults.LABEL_FONT);
-				label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-				boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
-				                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
-				                                  bounded.isUpperBoundStrict());
-				panel.add(label, BorderLayout.WEST);
-				panel.add(boundedField, BorderLayout.CENTER);
-				boundedField.addActionListener(this);
-			}
+			lastBounded = bounded;
+			lastBounded.addListener(this);
+			initPanel(bounded);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -136,6 +136,47 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 			tipManager.setInitialDelay(1);
 			tipManager.setDismissDelay(7500);
 			panel.setToolTipText(getTooltip());
+		}
+	}
+
+	private void initPanel (T bounded) {
+		if (useSlider) {
+			JLabel label = new JLabel(title);
+			label.setFont(GUIDefaults.LABEL_FONT);
+			// label.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+			panel.add(label,BorderLayout.WEST);
+			slider = new mySlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
+			                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict());
+			slider.addChangeListener(this);
+			panel.add(slider,BorderLayout.SOUTH);
+			// panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			panel.setBorder(
+				BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
+				                                   BorderFactory.createEmptyBorder(3,3,3,3)));
+			panel.validate();
+		} else {
+			// Do something reasonable for max and min...
+			// At some point, we should use superscripts for scientific notation...
+			double min = ((Number)bounded.getUpperBound()).doubleValue();
+			double max = ((Number)bounded.getLowerBound()).doubleValue();
+			double range = max - min;
+			java.text.DecimalFormat format = df;
+			if (range < 0.001 || range > 10000) {
+				format = sdf;
+			}
+
+			final JLabel label =
+				new JLabel(title + " (max: " + format.format((Number)bounded.getLowerBound())
+				          + " min: " + format.format((Number)bounded.getUpperBound()) + ")" );
+			label.setFont(GUIDefaults.LABEL_FONT);
+			label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
+			                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
+			                                  bounded.isUpperBoundStrict());
+			panel.add(label, BorderLayout.WEST);
+			panel.add(boundedField, BorderLayout.CENTER);
+			boundedField.addActionListener(this);
+			panel.validate();
 		}
 	}
 
@@ -154,17 +195,24 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 
 		try {
 			final T bounded = getBounded();
-			if (useSlider){
-				Number n = (Number) bounded.getValue();
-				slider.setValue(n);
-			}else{
-				final JLabel label =
-					new JLabel(title + " (max: " + bounded.getLowerBound().toString()
-					          + " min: " + bounded.getUpperBound().toString() + ")" );
-				label.setFont(GUIDefaults.LABEL_FONT);
-				boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
-				                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
-				                                  bounded.isUpperBoundStrict());
+			if (lastBounded != bounded) {
+				lastBounded = bounded;
+				lastBounded.addListener(this);
+				panel.removeAll();
+				initPanel(bounded);
+			} else {
+				if (useSlider){
+					Number n = (Number) bounded.getValue();
+					slider.setValue(n);
+				}else{
+					final JLabel label =
+						new JLabel(title + " (max: " + bounded.getLowerBound().toString()
+						          + " min: " + bounded.getUpperBound().toString() + ")" );
+					label.setFont(GUIDefaults.LABEL_FONT);
+					boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
+					                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
+					                                  bounded.isUpperBoundStrict());
+				}
 			}
 		} catch (Exception e){
 			e.printStackTrace();
@@ -175,7 +223,8 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 	/**
 	 * To set the value (from the JSlider or the JTextField) to the <code>Bounded</code> object
 	 *
-	 * The constraints of the bound values have to be respected : <code>lowerBound &lt; value &lt; upperBound</code> or <code>lowerBound &lti; value &lti; upperBound</code> ....
+	 * The constraints of the bound values have to be respected : 
+	 * <code>lowerBound &lt; value &lt; upperBound</code> or <code>lowerBound &lti; value &lti; upperBound</code> ....
 	 */
 	public void handle() {
 		try {
@@ -214,6 +263,22 @@ public class BoundedHandler<T extends AbstractBounded> extends AbstractGUITunabl
 	
 	public void stateChanged(ChangeEvent e) {
 		handle();
+	}
+
+	public void boundsChanged(AbstractBounded changedObject, N lower, N upper, 
+	                          boolean lowerStrict, boolean upperStrict) {
+		if (changedObject == lastBounded) {
+			panel.removeAll();
+			initPanel(lastBounded);
+		} else
+			((AbstractBounded)changedObject).removeListener(this);
+	}
+
+	public void valueChanged(AbstractBounded changedObject, N value) {
+		if (changedObject == lastBounded) {
+			update();
+		} else
+			((AbstractBounded)changedObject).removeListener(this);
 	}
 
 	@Override

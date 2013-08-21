@@ -32,6 +32,9 @@ import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.cytoscape.work.swing.RequestsUIHelper;
+import org.cytoscape.work.swing.TunableUIHelper;
+
 /**
  * Interceptor of <code>Tunable</code> that will be applied on
  * <code>GUITunableHandlers</code>.
@@ -58,12 +61,15 @@ import org.slf4j.LoggerFactory;
  * 
  * @author pasteur
  */
-public class JDialogTunableMutator extends JPanelTunableMutator {
+public class JDialogTunableMutator extends JPanelTunableMutator implements TunableUIHelper {
 
 	/** Provides an initialised logger. */
 	private Logger logger = LoggerFactory.getLogger(JDialogTunableMutator.class);
 
 	private Window parent = null;
+
+	private Dialog.ModalityType modality = Dialog.DEFAULT_MODALITY_TYPE;
+	private	Window dialogWindow = null;
 
 	/**
 	 * Constructor.
@@ -89,16 +95,20 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 		final JPanel panel = buildConfiguration(objectWithTunables, parent);
 
 		// no tunables found, everything OK for task to proceed
-		if (panel == null)
+		if (panel == null) {
 			return true;
-
-		// found the special case of the file handle cancel panel,
-		// which means we should quit now
-		else if (panel == HANDLER_CANCEL_PANEL)
+		} else if (panel == HANDLER_CANCEL_PANEL) {
+			// found the special case of the file handle cancel panel,
+			// which means we should quit now
 			return false;
+		} else {
+			if (objectWithTunables instanceof RequestsUIHelper) {
+				dialogWindow = (Window)panel.getTopLevelAncestor();
+				((RequestsUIHelper)objectWithTunables).setUIHelper(this);
+			}
 
-		else
 			return displayGUI(panel, objectWithTunables);
+		}
 	}
 
 	/**
@@ -117,10 +127,11 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 
 		do {
 			tunableDialog = new TunableDialog(parent, optionPanel);
+			dialogWindow = tunableDialog;
 			tunableDialog.setLocationRelativeTo(parent);
 
 			tunableDialog.setTitle(getTitle(objectWithTunables));
-			tunableDialog.setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
+			tunableDialog.setModalityType(modality);
 			tunableDialog.setVisible(true);
 
 			userInput = tunableDialog.getUserInput();
@@ -134,5 +145,13 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 		} else {
 			return false;
 		}
+	}
+
+	public Window getParent() {
+		return dialogWindow;
+	}
+
+	public void setModality(Dialog.ModalityType modality) {
+		this.modality = modality;
 	}
 }

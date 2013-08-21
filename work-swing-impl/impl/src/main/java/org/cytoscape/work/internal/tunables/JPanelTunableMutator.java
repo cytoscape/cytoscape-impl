@@ -59,7 +59,6 @@ import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Interceptor of <code>Tunable</code> that will be applied on <code>GUITunableHandlers</code>.
  *

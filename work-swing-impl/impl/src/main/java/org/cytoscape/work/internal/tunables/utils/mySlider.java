@@ -26,6 +26,7 @@ package org.cytoscape.work.internal.tunables.utils;
 
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -55,7 +57,10 @@ public class mySlider extends JComponent {
 	private List<Object>       m_listeners;
 	private Number initvalue;
     
-    java.text.DecimalFormat df = new java.text.DecimalFormat("##.##");
+		// Standard format
+    java.text.DecimalFormat df = new java.text.DecimalFormat("##.###");
+		// Scientific notation
+    java.text.DecimalFormat sdf = new java.text.DecimalFormat("#.###E0");
     
     private Number majortickspace;
     private int m_smin = 0;
@@ -82,13 +87,20 @@ public class mySlider extends JComponent {
         Hashtable labelTable = new Hashtable();
         majortickspace = (max.doubleValue()-min.doubleValue())/5;
         if(m_value instanceof Double || m_value instanceof Float){
-        	Float major = new Float(majortickspace.floatValue());
+        	Double major = new Double(majortickspace.doubleValue());
         	
-            float i = m_min.floatValue();
+            double i = m_min.doubleValue();
+					java.text.DecimalFormat format = df;
+					int fontSize = 9;
+					if (major < 0.001 || major > 10000) {
+						format = sdf;
+						fontSize = 9;
+					}
+
 	        int j=0;
 	        while(i <= m_max.doubleValue()){
-	        	JLabel label = new JLabel(df.format(i));
-	        	label.setFont(new Font("",Font.BOLD,9));
+	        	JLabel label = new JLabel(format.format(i));
+	        	label.setFont(new Font("",Font.BOLD,fontSize));
 	        	labelTable.put(j,label);
 	        	i+=major;
 	        	j+=20;
@@ -192,8 +204,11 @@ public class mySlider extends JComponent {
 //        });
         
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+				m_slider.setPreferredSize(new Dimension(400,40));
+				m_slider.setBorder(BorderFactory.createEmptyBorder(0,5,0,5));
         add(m_slider);
         add(m_field);
+				// System.out.println("slider preferred size = "+m_slider.getPreferredSize());
     }
     
 
@@ -289,7 +304,7 @@ public class mySlider extends JComponent {
             }
             if ( val > m_max.doubleValue()){
             	m_field.setBackground(Color.red);
-            	JOptionPane.showMessageDialog(null, "Value ("+val.doubleValue()+") is much than upper limit ("+df.format(m_max.doubleValue())+")"+newline+"Value will be set to default : "+m_value,"Alert",JOptionPane.ERROR_MESSAGE);
+            	JOptionPane.showMessageDialog(null, "Value ("+val.doubleValue()+") is more than upper limit ("+df.format(m_max.doubleValue())+")"+newline+"Value will be set to default : "+m_value,"Alert",JOptionPane.ERROR_MESSAGE);
             	setFieldValue();
             	m_field.setBackground(Color.white);
             	return m_value;

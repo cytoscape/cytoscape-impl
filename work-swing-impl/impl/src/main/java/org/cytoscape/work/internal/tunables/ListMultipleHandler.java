@@ -55,7 +55,9 @@ import javax.xml.ws.handler.MessageContext.Scope;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSelection;
 
 
 /**
@@ -65,7 +67,8 @@ import org.cytoscape.work.util.ListMultipleSelection;
  *
  * @param <T> type of items the List contains
  */
-public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements ListSelectionListener {
+public class ListMultipleHandler<T> extends AbstractGUITunableHandler 
+                                            implements ListSelectionListener, ListChangeListener<T> {
 	private JList itemsContainerList;
 	private DefaultListModel listModel;
 	private ListMultipleSelection<T> listMultipleSelection;
@@ -255,5 +258,15 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		handle();
+	}
+
+	@Override
+	public void selectionChanged(ListSelection<T> source, T... selection) {
+		update();
+	}
+
+	@Override
+	public void listChanged(ListSelection<T> source) {
+		update();
 	}
 }
