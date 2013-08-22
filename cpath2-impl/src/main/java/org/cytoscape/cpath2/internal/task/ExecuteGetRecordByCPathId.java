@@ -283,8 +283,12 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		// Set the Quick Find Default Index
 		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNetwork.NAME, String.class);
 
-		// Specify that this is a BINARY_NETWORK
-		AttributeUtil.set(cyNetwork, cyNetwork, "BIOPAX_NETWORK", Boolean.TRUE, Boolean.class);
+		/* a hack (for the biopax-impl core plugin): Set that this is not a BIOPAX_NETWORK 
+		 * but a BINARY_SIF converted from / related to original BioPAX... 
+		 * (BIOPAX_NETWORK attribute must be present there anyway for the biopax plugin 
+		 * to update the information and legend in the east Results Panel on node selection events)
+		 */
+		AttributeUtil.set(cyNetwork, cyNetwork, "BIOPAX_NETWORK", Boolean.FALSE, Boolean.class);
 
 		// Get all node details.
 		getNodeDetails(cyNetwork, taskMonitor);
