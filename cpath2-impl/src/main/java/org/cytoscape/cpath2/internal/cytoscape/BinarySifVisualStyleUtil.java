@@ -55,10 +55,11 @@ public class BinarySifVisualStyleUtil {
 	public final static String CONTROLS_METABOLIC_CHANGE = "METABOLIC_CATALYSIS";
 	public final static String PARTICIPATES_CONVERSION = "REACTS_WITH";
 	public final static String PARTICIPATES_INTERACTION = "INTERACTS_WITH";
-	public final static String CO_CONTROL_INDEPENDENT_SIMILAR = "CO_CONTROL_INDEPENDENT_SIMILAR";
-	public final static String CO_CONTROL_INDEPENDENT_ANTI = "CO_CONTROL_INDEPENDENT_ANTI";
-	public final static String CO_CONTROL_DEPENDENT_SIMILAR = "CO_CONTROL_DEPENDENT_SIMILAR";
-	public final static String CO_CONTROL_DEPENDENT_ANTI = "CO_CONTROL_DEPENDENT_ANTI";
+//	public final static String CO_CONTROL_INDEPENDENT_SIMILAR = "CO_CONTROL_INDEPENDENT_SIMILAR";
+//	public final static String CO_CONTROL_INDEPENDENT_ANTI = "CO_CONTROL_INDEPENDENT_ANTI";
+//	public final static String CO_CONTROL_DEPENDENT_SIMILAR = "CO_CONTROL_DEPENDENT_SIMILAR";
+//	public final static String CO_CONTROL_DEPENDENT_ANTI = "CO_CONTROL_DEPENDENT_ANTI";
+	public final static String CO_CONTROL = "CO_CONTROL";
 	private final static String INTERACTION = "interaction";
 
 	VisualStyle binarySifStyle;
@@ -134,6 +135,7 @@ public class BinarySifVisualStyleUtil {
 						BioPaxUtil.BIOPAX_ENTITY_TYPE, String.class,
 						BasicVisualLexicon.NODE_SHAPE);
 		function.putMapValue("Complex", NodeShapeVisualProperty.HEXAGON);
+		function.putMapValue("(Generic/Group)", NodeShapeVisualProperty.OCTAGON);
 		style.addVisualMappingFunction(function);
 	}
 
@@ -148,6 +150,7 @@ public class BinarySifVisualStyleUtil {
 						BioPaxUtil.BIOPAX_ENTITY_TYPE, String.class,
 						BasicVisualLexicon.NODE_FILL_COLOR);
 		function.putMapValue("Complex", lightBlue);
+		function.putMapValue("(Generic/Group)", lightBlue);
 		style.addVisualMappingFunction(function);
 	}
 
@@ -169,16 +172,20 @@ public class BinarySifVisualStyleUtil {
 				Color.decode("#00b0f0"));
 		function.putMapValue(SEQUENTIAL_CATALYSIS,
 				Color.decode("#7f7f7f"));
-		function.putMapValue(CO_CONTROL_DEPENDENT_ANTI,
-				Color.decode("#ff0000"));
-		function.putMapValue(CO_CONTROL_INDEPENDENT_ANTI,
-				Color.decode("#fd95a6"));
-		function.putMapValue(CO_CONTROL_DEPENDENT_SIMILAR,
-				Color.decode("#00b050"));
-		function.putMapValue(CO_CONTROL_INDEPENDENT_SIMILAR,
-				Color.decode("#92d050"));
+		function.putMapValue(CO_CONTROL,
+				Color.decode("#ff0000"));		
+//		function.putMapValue(CO_CONTROL_DEPENDENT_ANTI,
+//				Color.decode("#ff0000"));
+//		function.putMapValue(CO_CONTROL_INDEPENDENT_ANTI,
+//				Color.decode("#fd95a6"));
+//		function.putMapValue(CO_CONTROL_DEPENDENT_SIMILAR,
+//				Color.decode("#00b050"));
+//		function.putMapValue(CO_CONTROL_INDEPENDENT_SIMILAR,
+//				Color.decode("#92d050"));
 		function.putMapValue(COMPONENT_IN_SAME, Color.decode("#ffff00"));
 		function.putMapValue(COMPONENT_OF, Color.decode("#ffc000"));
+		
+		style.addVisualMappingFunction(function);
 	}
 
 	private void createDirectedEdges(VisualStyle style) {

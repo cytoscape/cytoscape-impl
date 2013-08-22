@@ -138,7 +138,7 @@ public class BioPaxContainer extends JPanel {
         	
         CyRow row = network.getRow(network);
         Boolean isBioPaxNetwork = row.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
-        if (isBioPaxNetwork != null) {
+        if (Boolean.TRUE.equals(isBioPaxNetwork)) {
             cl.show(cards, LEGEND_BIOPAX_CARD);
         } else {
             cl.show(cards, LEGEND_BINARY_CARD);

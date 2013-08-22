@@ -39,7 +39,7 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import org.biopax.paxtools.converter.OneTwoThree;
+import org.biopax.paxtools.converter.LevelUpgrader;
 import org.biopax.paxtools.io.SimpleIOHandler;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.BioPAXLevel;
@@ -293,11 +293,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			if (mergedNetwork != null) {
 				mergeNetworks(cyNetwork, taskMonitor);
 			} else {
-				if (taskMonitor != null) {
-					taskMonitor.setStatusMessage("Creating Network View...");
-					taskMonitor.setProgress(0);
-				}
-
 				VisualStyle visualStyle = cPathFactory.getBinarySifVisualStyleUtil().getVisualStyle();
 				mappingManager.setVisualStyle(visualStyle, view);
 				visualStyle.apply(view);
@@ -318,41 +313,8 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			if (mergedNetwork != null) {
 				mergeNetworks(cyNetwork, taskMonitor);
 			} else {
-				// } else if (cyNetwork.getNodeCount() <
-				// Integer.parseInt(CytoscapeInit.getProperties()
-				// .getProperty("viewThreshold"))) {
-				if (taskMonitor != null) {
-					taskMonitor.setStatusMessage("Creating Network View...");
-					taskMonitor.setProgress(0);
-				}
-
-				// Set up the right visual style
-				// VisualStyle visualStyle =
-				// BioPaxVisualStyleUtil.getBioPaxVisualStyle();
-
-				// Set up the right layout algorithm.
-				// LayoutUtil layoutAlgorithm = new LayoutUtil();
-
-				// Now, create the view.
-				// Use local create view option, so that we don't mess up the
-				// visual style.
-				// CyNetworkView view = createNetworkView(cyNetwork,
-				// cyNetwork.getCyRow(cyNetwork).get(CyNetwork.NAME, String.class),
-				// layoutAlgorithm, null);
-
-				// Now apply the visual style;
-				// Doing this as a separate step ensures that the visual style
-				// appears
-				// in the visual style drop-down menu.
-				// view.applyVizmapper(visualStyle);
+				//nothing (BioPAX visual style is applied by the biopax core plugin)
 			}
-		} else {
-			// If we have requested a halt, and we have a network, destroy it.
-			// TODO: Review: Network hasn't been added to manager at this point
-			// so we don't need to do the following, right?
-			// if (cyNetwork != null) {
-			// Cytoscape.destroyNetwork(cyNetwork);
-			// }
 		}
 	}
 
@@ -443,7 +405,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				Model model = convertFromOwl(new ByteArrayInputStream(xml.getBytes()));
 				// convert L2 to L3 if required (L1 is converted to L2 always anyway - by the handler)
 				if(BioPAXLevel.L2.equals(model.getLevel())) { // 
-					model = (new OneTwoThree()).filter(model);
+					model = (new LevelUpgrader()).filter(model);
 				}
 				//map biopax properties to Cy attributes for SIF nodes
 				for (BioPAXElement e : model.getObjects()) {
@@ -509,42 +471,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			masterList.add(currentList);
 		}
 		return masterList;
-	}
-
-	// private CyNetworkView createNetworkView (CyNetwork network, String title,
-	// CyLayoutAlgorithm
-	// layout, VisualStyle vs) {
-	//
-	// if (viewManager.viewExists((network.getSUID()))) {
-	// return Cytoscape.getNetworkView(network.getIdentifier());
-	// }
-	//
-	// final DingNetworkView view = new DingNetworkView(network, title);
-	// view.setGraphLOD(new CyGraphLOD());
-	// view.setIdentifier(network.getIdentifier());
-	// view.setTitle(network.getTitle());
-	// Cytoscape.getNetworkViewMap().put(network.getIdentifier(), view);
-	// Cytoscape.setSelectionMode(Cytoscape.getSelectionMode(), view);
-	//
-	// VisualMappingManager VMM = Cytoscape.getVisualMappingManager();
-	// if (vs != null) {
-	// view.setVisualStyle(vs.getName());
-	// VMM.setVisualStyle(vs);
-	// VMM.setNetworkView(view);
-	// }
-	//
-	// if (layout == null) {
-	// layout = CyLayouts.getDefaultLayout();
-	// }
-	//
-	// Cytoscape.firePropertyChange(cytoscape.view.CytoscapeDesktop.NETWORK_VIEW_CREATED,
-	// null, view);
-	// layout.doLayout(view);
-	// view.fitContent();
-	// view.redrawGraph(false, true);
-	// return view;
-	// }
-	
+	}	
 
 	class NullTaskMonitor implements TaskMonitor {
 		@Override
