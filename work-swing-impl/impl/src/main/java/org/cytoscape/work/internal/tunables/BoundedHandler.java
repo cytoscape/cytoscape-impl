@@ -265,8 +265,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 		handle();
 	}
 
-	public void boundsChanged(AbstractBounded changedObject, N lower, N upper, 
-	                          boolean lowerStrict, boolean upperStrict) {
+	public void boundsChanged(AbstractBounded changedObject) {
 		if (changedObject == lastBounded) {
 			panel.removeAll();
 			initPanel(lastBounded);
@@ -274,7 +273,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			((AbstractBounded)changedObject).removeListener(this);
 	}
 
-	public void valueChanged(AbstractBounded changedObject, N value) {
+	public void valueChanged(AbstractBounded changedObject) {
 		if (changedObject == lastBounded) {
 			update();
 		} else

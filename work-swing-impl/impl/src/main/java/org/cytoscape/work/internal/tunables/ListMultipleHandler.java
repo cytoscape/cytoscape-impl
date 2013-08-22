@@ -261,7 +261,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	}
 
 	@Override
-	public void selectionChanged(ListSelection<T> source, T... selection) {
+	public void selectionChanged(ListSelection<T> source) {
 		update();
 	}
 
