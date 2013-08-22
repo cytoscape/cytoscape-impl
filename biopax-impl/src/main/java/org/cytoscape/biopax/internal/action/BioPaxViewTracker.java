@@ -327,7 +327,9 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 
 	
 	private static boolean isBioPAXNetwork(CyNetwork cyNetwork) {
-		return Boolean.TRUE == cyNetwork.getRow(cyNetwork)
-			.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
+		return cyNetwork.getRow(cyNetwork)
+			.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class) != null; 
+		//TRUE means it's a network from a BioPAX file or URL
+		//FALSE means it's a BINARY_SIF network from Pathway Commons
 	}
 }
