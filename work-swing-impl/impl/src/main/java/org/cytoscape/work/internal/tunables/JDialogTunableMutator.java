@@ -80,8 +80,11 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 
 	/** {@inheritDoc} */
 	public void setConfigurationContext(Object win) {
-		if (win == null)
+		if (win == null) {
+			handlerMap.clear();
+			titleProviderMap.clear();
 			return;
+		}
 
 		if (win instanceof Window)
 			parent = (Window) win;
