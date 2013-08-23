@@ -11,6 +11,8 @@ public final class NotificationNames {
 	public static final String LOAD_DEFAULT_VISUAL_STYLES = "LOAD_DEFAULT_VISUAL_STYLES";
 	/** Body: null */
 	public static final String LOAD_VISUAL_STYLES = "LOAD_VISUAL_STYLES";
+	/** Body: Set<VisualMappingFunction> */
+	public static final String REMOVE_VISUAL_MAPPINGS = "REMOVE_VISUAL_MAPPINGS";
 	
 	// --- DATA UPDATED Events ---
 	

@@ -43,6 +43,7 @@ import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedDiscreteValuesA
 import org.cytoscape.view.vizmap.gui.internal.action.RemoveSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.controller.ImportDefaultVisualStylesCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.LoadVisualStylesCommand;
+import org.cytoscape.view.vizmap.gui.internal.controller.RemoveVisualMappingsCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
 import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
@@ -52,7 +53,7 @@ import org.cytoscape.view.vizmap.gui.internal.task.ClearBendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualMappingsTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualMappingsTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
@@ -204,12 +205,12 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Visual Styles Panel Context Menu
 		// -------------------------------------------------------------------------------------------------------------
-		final DeleteVisualMappingsTaskFactory deleteVisualMappingsTaskFactory = new DeleteVisualMappingsTaskFactory(servicesUtil);
-		final Properties deleteMappingFunctionTaskFactoryProps = new Properties();
-		deleteMappingFunctionTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		deleteMappingFunctionTaskFactoryProps.setProperty("title", "Remove Mappings from Selected Visual Properties");
-		deleteMappingFunctionTaskFactoryProps.setProperty("menu", "context");
-		registerAllServices(bc, deleteVisualMappingsTaskFactory, deleteMappingFunctionTaskFactoryProps);
+		final RemoveVisualMappingsTaskFactory removeVisualMappingsTaskFactory = new RemoveVisualMappingsTaskFactory(servicesUtil);
+		final Properties removeVisualMappingTaskFactoryProps = new Properties();
+		removeVisualMappingTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
+		removeVisualMappingTaskFactoryProps.setProperty("title", "Remove Mappings from Selected Visual Properties");
+		removeVisualMappingTaskFactoryProps.setProperty("menu", "context");
+		registerAllServices(bc, removeVisualMappingsTaskFactory, removeVisualMappingTaskFactoryProps);
 		
 		final EditSelectedDiscreteValuesAction editAction = new EditSelectedDiscreteValuesAction(servicesUtil, editorManager);
 		final Properties editSelectedProps = new Properties();
@@ -286,13 +287,15 @@ public class CyActivator extends AbstractCyActivator {
 		
 		final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand = new ImportDefaultVisualStylesCommand(servicesUtil);
 		final LoadVisualStylesCommand loadVisualStylesCommand = new LoadVisualStylesCommand(servicesUtil);
+		final RemoveVisualMappingsCommand removeVisualMappingsCommand = new RemoveVisualMappingsCommand(servicesUtil);
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,
 																 attributeSetProxy,
 																 mappingFactoryProxy,
 																 vizMapperMediator,
 																 vizMapperMenuMediator,
 																 importDefaultVisualStylesCommand,
-																 loadVisualStylesCommand);
+																 loadVisualStylesCommand,
+																 removeVisualMappingsCommand);
 		
 		registerAllServices(bc, vizMapperProxy, new Properties());
 		registerAllServices(bc, mappingFactoryProxy, new Properties());

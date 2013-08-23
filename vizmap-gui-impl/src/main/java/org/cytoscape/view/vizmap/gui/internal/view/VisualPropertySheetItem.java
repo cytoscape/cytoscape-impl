@@ -325,22 +325,25 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		});
 		model.addPropertyChangeListener("visualMappingFunction", new PropertyChangeListener() {
 			@Override
+			@SuppressWarnings("unchecked")
 			public void propertyChange(final PropertyChangeEvent e) {
 				final VisualMappingFunction<?, T> mapping = (VisualMappingFunction<?, T>) e.getNewValue();
 				final VisualMappingFunctionFactory mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
 				
 				final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp = 
-						vizMapPropertyBuilder.getColumnProperty(propSheetPnl);
+						vizMapPropertyBuilder.getColumnProperty(getPropSheetPnl());
 				columnProp.setValue(mapping == null ? null : mapping.getMappingColumnName());
 				columnProp.setInternalValue(mappingFactory);
 				
 				final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> mappingProp =
-						vizMapPropertyBuilder.getMappingTypeProperty(propSheetPnl);
+						vizMapPropertyBuilder.getMappingTypeProperty(getPropSheetPnl());
 				mappingProp.setValue(mappingFactory);
 				mappingProp.setInternalValue(mapping);
 				
 				if (mapping == null)
 					vizMapPropertyBuilder.removeMappingProperties(getPropSheetPnl());
+				else
+					vizMapPropertyBuilder.createMappingProperties(mapping, getPropSheetPnl(), mappingFactory);
 				
 				updateMapping();
 			}

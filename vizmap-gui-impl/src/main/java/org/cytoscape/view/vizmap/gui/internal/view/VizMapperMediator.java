@@ -75,6 +75,7 @@ import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.GenerateValuesTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem.MessageType;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel.VisualStyleDropDownButton;
@@ -187,7 +188,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					updateVisualPropertySheets((VisualStyle) body);
 				}
 			});
-		} else if (id.equals(VISUAL_STYLE_UPDATED) && body == vmProxy.getCurrentVisualStyle()) {
+		} else if (id.equals(VISUAL_STYLE_UPDATED) && body != null && body.equals(vmProxy.getCurrentVisualStyle())) {
 			updateVisualPropertySheets((VisualStyle) body);
 		} else if (id.equals(CURRENT_NETWORK_VIEW_CHANGED)) {
 			updateLockedValues((CyNetworkView) body);
@@ -576,8 +577,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 
 	protected void removeVisualMapping(final VisualPropertySheetItem<?> vpSheetItem) {
-		if (vpSheetItem.getModel().getVisualMappingFunction() != null)
-			vpSheetItem.getModel().setVisualMappingFunction(null);
+		final VisualMappingFunction<?, ?> vm = vpSheetItem.getModel().getVisualMappingFunction();
+		
+		if (vm != null)
+			sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, Collections.singleton(vm));
 	}
 
 	private void updateVisualStyleList(final SortedSet<VisualStyle> styles) {
@@ -612,6 +615,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void updateVisualPropertySheets(final VisualStyle vs) {
 		if (vs == null)
 			return;
