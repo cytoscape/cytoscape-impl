@@ -34,6 +34,7 @@ import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
@@ -41,17 +42,21 @@ public class TextIcon extends VisualPropertyIcon<Object> {
 
 	private static final long serialVersionUID = -4217147694751380332L;
 
-	private static final Font DEFAULT_FONT = new Font("SansSerif", Font.BOLD, 18);
-
+	private static final Font DEFAULT_FONT = new Font("SansSerif", Font.BOLD, 28);
+	private static final int MAX_TEXT_LEN = 5;
+	
 	public TextIcon(final Object value, final int width, final int height, final String name) {
 		super(value, width, height, name);
 	}
 
 	@Override
 	public void paintIcon(final Component c, final Graphics g, int x, int y) {
-		final String text = value != null ? value.toString() : "";
+		String text = value != null ? value.toString() : "";
 		
 		if (!text.isEmpty()) {
+			if (!(value instanceof Number) && text.length() > MAX_TEXT_LEN)
+				text = text.substring(0, MAX_TEXT_LEN - 1) + "...";
+			
 			// First get a large image from the text value
 			final BufferedImage bi = createLargeImage(text, DEFAULT_FONT, c.getForeground());
 			
@@ -65,7 +70,9 @@ public class TextIcon extends VisualPropertyIcon<Object> {
         final TextLayout layout = new TextLayout(text, font, frc);
         final Rectangle r = layout.getPixelBounds(null, 0, 0);
         
-        final BufferedImage bi = new BufferedImage(r.width + 4, r.height + 4, BufferedImage.TYPE_INT_ARGB);
+        // Note: Add a few pixels to width and height to prevent clipping the image when the text is scaled down
+        // (test with text = "5", for example)
+        final BufferedImage bi = new BufferedImage(r.width + 4, r.height + 1, BufferedImage.TYPE_INT_ARGB);
         
         final Graphics2D g2d = (Graphics2D) bi.getGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -87,10 +94,14 @@ public class TextIcon extends VisualPropertyIcon<Object> {
 		
 		final AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
 		final Graphics2D g2d = (Graphics2D) g;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		double sh = scale*ih; // scaled height
-		int vpad = (int) ((c.getHeight() - sh) / 2.0);
-
-		g2d.drawImage(bi, scaleOp, x, y+vpad); // draw it centered
+		final Rectangle2D r2d = scaleOp.getBounds2D(bi);
+		double sh = r2d.getHeight(); // scaled height
+		double sw = r2d.getWidth(); // scaled width
+		int vpad = (int) (1 + y + (height - sh) / 2.0);
+		int hpad = (int) (x + (width - sw) / 2.0);
+		
+		g2d.drawImage(bi, scaleOp, hpad, vpad); // draw it centered
 	}
 }
