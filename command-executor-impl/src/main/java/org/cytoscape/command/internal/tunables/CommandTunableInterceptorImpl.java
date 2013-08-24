@@ -40,10 +40,18 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 
 	public void setConfigurationContext(String args) {
 		this.args = args;
+		if (args == null) {
+			titleProviderMap.clear();
+			handlerMap.clear();
+		}
 	}
 
 	public void setConfigurationContext(Map<String, Object> args) {
 		this.mapArgs = args;
+		if (args == null) {
+			titleProviderMap.clear();
+			handlerMap.clear();
+		}
 	}
 
 	public boolean validateAndWriteBackTunables(Object o) {
