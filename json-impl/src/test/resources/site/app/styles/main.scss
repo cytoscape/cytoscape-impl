@@ -1,0 +1,33 @@
+$iconSpritePath: "../images/glyphicons-halflings.png";
+$iconWhiteSpritePath: "../images/glyphicons-halflings-white.png";
+
+@import 'sass-bootstrap/lib/bootstrap';
+
+.hero-unit {
+    margin: 50px auto 0 auto;
+    width: 300px;
+}
+
+.browsehappy {
+    margin: 0.2em 0;
+    background: #ccc;
+    color: #000;
+    padding: 0.2em 0;
+}
+
+
+#network {
+  width: 500px;
+  height: 500px;
+  top: 0;
+  left: 0;
+  background-color: white;
+  background: radial-gradient(circle farthest-corner at center center, #ffffff 40%, #e7e8e2 100%);
+  background-repeat: no-repeat;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

@@ -1,29 +1,72 @@
 package org.cytoscape.io.internal.read.json;
 
+import java.io.InputStream;
+import java.util.Map;
+
+import javax.lang.model.util.Elements;
+
+import org.cytoscape.io.internal.write.json.serializer.CyJsonToken;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class JSONCytoscapejsNetworkReader extends AbstractTask implements CyNetworkReader {
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class JSONCytoscapejsNetworkReader extends AbstractTask implements
+		CyNetworkReader {
+
+	private final CyNetworkViewFactory cyNetworkViewFactory;
+	private final CyNetworkFactory cyNetworkFactory;
+
+	private final JSONMapper mapper;
+
+	// Supports only one CyNetwork per file.
+	private CyNetwork network = null;
+
+	
+	private final InputStream is;
+	
+	public JSONCytoscapejsNetworkReader(InputStream is,
+			final CyNetworkViewFactory cyNetworkViewFactory,
+			final CyNetworkFactory cyNetworkFactory) {
+
+		if(is == null) {
+			throw new NullPointerException("Input Stream cannot be null.");
+		}
+		
+		this.mapper = new CytoscapejsMapper(cyNetworkFactory);
+		
+		this.cyNetworkFactory = cyNetworkFactory;
+		this.cyNetworkViewFactory = cyNetworkViewFactory;
+		
+		this.is = is;
+	}
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		// TODO Auto-generated method stub
-		return null;
+
+		CyNetwork[] result = new CyNetwork[1];
+		result[0] = network;
+		return result;
 	}
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		// TODO Auto-generated method stub
+
+		final ObjectMapper objMapper = new ObjectMapper();
+		final JsonNode rootNode = objMapper.readValue(is, JsonNode.class);
 		
+		this.network = this.mapper.createNetwork(rootNode);
 	}
 
 }

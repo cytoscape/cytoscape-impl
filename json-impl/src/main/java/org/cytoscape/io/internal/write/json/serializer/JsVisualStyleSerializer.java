@@ -11,6 +11,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -19,6 +20,14 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
+	
+	private final VisualMappingSerializer<PassthroughMapping<?,?>> passthrough;
+	private final VisualMappingSerializer<DiscreteMapping<?,?>> discrete;
+	
+	public JsVisualStyleSerializer() {
+		this.passthrough = new PassthroughMappingSerializer();
+		this.discrete = new DiscreteMappingSerializer();
+	}
 
 	@Override
 	public void serialize(final VisualStyle vs, JsonGenerator jg, SerializerProvider provider) throws IOException,
@@ -113,7 +122,8 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 			if (mapping.getVisualProperty().getTargetDataType() != CyNode.class)
 				continue;
 
-			if (mapping instanceof PassthroughMapping && mapping.getVisualProperty() == BasicVisualLexicon.NODE_LABEL) {
+			if (mapping instanceof PassthroughMapping) {
+				
 				jg.writeStringField(CONTENT.toString(), "data(" + mapping.getMappingColumnName() + ")");
 			}
 		}
