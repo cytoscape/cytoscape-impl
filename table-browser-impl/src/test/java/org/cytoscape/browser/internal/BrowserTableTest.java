@@ -208,13 +208,13 @@ public class BrowserTableTest {
 		
 		browserTable.setModel(btm); //to reset the columns and rows
 
-		btm.setShowAll(true);
-		//btm.fireTableDataChanged();
+		btm.setViewMode(BrowserTableModel.ViewMode.ALL);
+		btm.fireTableDataChanged();
 
 		assertEquals(3, browserTable.getRowCount());
 		
-		btm.setShowAll(false);
-		//btm.fireTableDataChanged();
+		btm.setViewMode(BrowserTableModel.ViewMode.SELECTED);
+		btm.fireTableDataChanged();
 
 		assertEquals(0, browserTable.getRowCount());
 		
@@ -222,7 +222,7 @@ public class BrowserTableTest {
 		table.getRow((long)1).set(CyNetwork.SELECTED, true);
 		assertEquals(1, browserTable.getRowCount());
 		
-		btm.setShowAll(true);
+		btm.setViewMode(BrowserTableModel.ViewMode.ALL);
 		RowSetRecord rsc = new RowSetRecord  (table.getRow((long)1), CyNetwork.SELECTED, (Object) true , (Object) true );
 		List<RowSetRecord> rscs = new ArrayList<RowSetRecord>();
 		rscs.add(rsc);
