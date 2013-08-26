@@ -27,6 +27,7 @@ package org.cytoscape.view.vizmap.gui.internal.action;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
@@ -36,6 +37,8 @@ import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItemModel;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 
 import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
@@ -48,11 +51,17 @@ public class RemoveSelectedDiscreteValuesAction extends AbstractVizMapperAction 
 	public static final String NAME = "Remove Selected Discrete Mapping Values";
 
 	private static final long serialVersionUID = 5111684472796917297L;
+	
+	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues;
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
 
 	public RemoveSelectedDiscreteValuesAction(final ServicesUtil servicesUtil) {
 		super(NAME, servicesUtil);
+		previousMappingValues = new HashMap<DiscreteMapping<?,?>, Map<Object, Object>>();
 	}
+	
+	// ==[ PUBLIC METHODS ]=============================================================================================
 
 	/**
 	 * Remove all selected values at once. This is for Discrete Mapping only.
@@ -82,6 +91,7 @@ public class RemoveSelectedDiscreteValuesAction extends AbstractVizMapperAction 
 			// Test with the first selected item
 			final DiscreteMapping dm = (DiscreteMapping) model.getVisualMappingFunction();
 			final Map<Object, Object> changes = new HashMap<Object, Object>();
+			final Map<Object, Object> previousValues = new HashMap<Object, Object>();
 			
 			for (int i = 0; i < selected.length; i++) {
 				final Item item = ((Item) table.getValueAt(selected[i], 0));
@@ -90,16 +100,28 @@ public class RemoveSelectedDiscreteValuesAction extends AbstractVizMapperAction 
 					final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) item.getProperty();
 					
 					if (prop.getCellType() == CellType.DISCRETE) {
-						// First, update property sheet
-						prop.setValue(null);
-						// Then update the mapping
-						changes.put(item.getProperty().getDisplayName(), null);
+						// Save the current value for undo
+						if (prop.getValue() != null)
+							previousValues.put(prop.getKey(), prop.getValue());
+						
+						// Mapping values to be removed
+						changes.put(prop.getKey(), null);
 					}
 				}
+				
+				// Save the mapping->old_values for undo
+				if (!previousValues.isEmpty())
+					previousMappingValues.put(dm, previousValues);
 			}
 			
+			// Update the visual mapping
 			dm.putAll(changes);
-			table.repaint();
+		}
+		
+		// Undo support
+		if (!previousMappingValues.isEmpty()) {
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new RemoveSelectedDiscreteValuesEdit());
 		}
 	}
 
@@ -137,5 +159,40 @@ public class RemoveSelectedDiscreteValuesAction extends AbstractVizMapperAction 
 		}
 		
 		setEnabled(enabled);
+	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private class RemoveSelectedDiscreteValuesEdit extends AbstractCyEdit {
+
+		public RemoveSelectedDiscreteValuesEdit() {
+			super(NAME);
+		}
+
+		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public void undo() {
+			for (final Entry<DiscreteMapping<?, ?>, Map<Object, Object>> entry : previousMappingValues.entrySet()) {
+				final DiscreteMapping dm = entry.getKey();
+				dm.putAll(entry.getValue());
+			}
+		}
+
+		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public void redo() {
+			for (final Entry<DiscreteMapping<?, ?>, Map<Object, Object>> entry : previousMappingValues.entrySet()) {
+				final DiscreteMapping dm = entry.getKey();
+				final Map<Object, Object> changes = new HashMap<Object, Object>();
+				
+				for (final Entry<Object, Object> originalEntry : entry.getValue().entrySet())
+					changes.put(originalEntry.getKey(), null);
+				
+				if (!changes.isEmpty())
+					dm.putAll(changes);
+			}
+		}
 	}
 }

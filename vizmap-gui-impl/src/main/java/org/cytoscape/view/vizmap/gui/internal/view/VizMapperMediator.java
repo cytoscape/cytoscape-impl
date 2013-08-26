@@ -65,6 +65,8 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedListener;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
@@ -91,7 +93,8 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 public class VizMapperMediator extends Mediator implements LexiconStateChangedListener, RowsSetListener, 
-														   UpdateNetworkPresentationListener {
+														   UpdateNetworkPresentationListener,
+														   VisualMappingFunctionChangedListener {
 
 	public static final String NAME = "VizMapperMediator";
 	
@@ -249,6 +252,31 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		if (view.equals(vmProxy.getCurrentNetworkView()))
 			updateLockedValues(view);
+	}
+	
+	@Override
+	public void handleEvent(final VisualMappingFunctionChangedEvent e) {
+		final VisualMappingFunction<?, ?> vm = e.getSource();
+		final VisualProperty<?> vp = vm.getVisualProperty();
+		final VisualStyle curStyle = vmProxy.getCurrentVisualStyle();
+		
+		// If the source mapping belongs to the current visual style, update the correspondent property sheet item
+		if (vm.equals(curStyle.getVisualMappingFunction(vp))) {
+			final VisualPropertySheet vpSheet = vizMapperMainPanel.getVisualPropertySheet(vp.getTargetDataType());
+			
+			if (vpSheet != null) {
+				final VisualPropertySheetItem<?> vpSheetItem = vpSheet.getItem(vp);
+				
+				if (vpSheetItem != null) {
+					invokeOnEDT(new Runnable() {
+						@Override
+						public void run() {
+							vpSheetItem.updateMapping();
+						}
+					});
+				}
+			}
+		}
 	}
 	
 	public VisualPropertySheetItem<?> getCurrentVisualPropertySheetItem() {
