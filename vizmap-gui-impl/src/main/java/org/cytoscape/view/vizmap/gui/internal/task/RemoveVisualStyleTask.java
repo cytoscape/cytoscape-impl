@@ -24,95 +24,95 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
 
-public class CopyVisualStyleTask extends AbstractTask {
 
-	@Tunable(description = "Name of copied Visual Style:")
-	public String vsName;
+public class RemoveVisualStyleTask extends AbstractTask {
 
-	private VisualStyle copiedStyle;
-	private VisualStyle previousCurrentStyle;
+	private final VisualStyle style;
 	private final ServicesUtil servicesUtil;
+	private final Set<CyNetworkView> networkViews = new HashSet<CyNetworkView>();
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public CopyVisualStyleTask(final ServicesUtil servicesUtil) {
+	public RemoveVisualStyleTask(final VisualStyle style, final ServicesUtil servicesUtil) {
+		this.style = style;
 		this.servicesUtil = servicesUtil;
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
-	@ProvidesTitle
-	public String getTitle() {
-		return "Copy Visual Style";
-	}
-	
 	@Override
-	public void run(final TaskMonitor monitor) throws Exception {
-		if (vsName != null) {
-			copyVisualStyle(vsName);
+	public void run(final TaskMonitor taskMonitor) throws Exception {
+		if (style != null) {
+			removeVisualStyle();
 			
 			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
-			undo.postEdit(new CopyVisualStyleEdit());
+			undo.postEdit(new RemoveVisualStyleEdit());
 		}
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private void copyVisualStyle(final String newName) {
+	private void removeVisualStyle() {
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		final VisualStyleFactory vsFactory = servicesUtil.get(VisualStyleFactory.class);
-		copiedStyle = vsFactory.createVisualStyle(vmMgr.getCurrentVisualStyle());
-		copiedStyle.setTitle(newName);
 
-		// Save the current visual style first, so it can be set as current again if the action is undone
-		previousCurrentStyle = vmMgr.getCurrentVisualStyle();
+		if (vmMgr.getDefaultVisualStyle().equals(style))
+			throw new IllegalArgumentException("You cannot delete the default style.");
 		
-		vmMgr.addVisualStyle(copiedStyle);
-		vmMgr.setCurrentVisualStyle(copiedStyle);
+		// First save the network views that have the style which is about to be deleted
+		final CyNetworkViewManager netViewMgr = servicesUtil.get(CyNetworkViewManager.class);
+		
+		for (final CyNetworkView view : netViewMgr.getNetworkViewSet()) {
+			if (style.equals(vmMgr.getVisualStyle(view)))
+				networkViews.add(view);
+		}
+		
+		// Now we can delete the visual style
+		vmMgr.removeVisualStyle(style);
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
 	
-	private class CopyVisualStyleEdit extends AbstractCyEdit {
+	private class RemoveVisualStyleEdit extends AbstractCyEdit {
 
-		public CopyVisualStyleEdit() {
-			super(getTitle());
+		public RemoveVisualStyleEdit() {
+			super("Remove Visual Style");
 		}
 
 		@Override
 		public void undo() {
+			// First register the visual style again
 			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 			
-			if (copiedStyle != null && vmMgr.getAllVisualStyles().contains(copiedStyle)) {
-				// Unregister the newly created visual style
-				vmMgr.removeVisualStyle(copiedStyle);
-				
-				// Also restore the previous current style
-				if (previousCurrentStyle != null)
-					vmMgr.setCurrentVisualStyle(previousCurrentStyle);
+			if (style != null && !vmMgr.getAllVisualStyles().contains(style))
+				vmMgr.addVisualStyle(style);
+			
+			// Now set the style to the saved views
+			final CyNetworkViewManager netViewMgr = servicesUtil.get(CyNetworkViewManager.class);
+			final Set<CyNetworkView> registeredViews = netViewMgr.getNetworkViewSet();
+			
+			for (final CyNetworkView view : networkViews) {
+				if (registeredViews.contains(view)) // Check if this view is still registered
+					vmMgr.setVisualStyle(style, view);
 			}
 		}
 
 		@Override
 		public void redo() {
-			// Register the copied visual style again
-			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-			
-			if (copiedStyle != null && !vmMgr.getAllVisualStyles().contains(copiedStyle)) {
-				vmMgr.addVisualStyle(copiedStyle);
-				vmMgr.setCurrentVisualStyle(copiedStyle);
-			}
+			if (style != null)
+				removeVisualStyle();
 		}
 	}
 }
