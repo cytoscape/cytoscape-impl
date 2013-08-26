@@ -63,7 +63,7 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 	@Override
 	public void run(final TaskMonitor tm) {
 		if (vsName != null) {
-			createVisualStyle(vsName);
+			createVisualStyle();
 			
 			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
 			undo.postEdit(new CreateNewVisualStyleEdit());
@@ -89,9 +89,9 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private void createVisualStyle(final String name) {
+	private void createVisualStyle() {
 		final VisualStyleFactory vsFactory = servicesUtil.get(VisualStyleFactory.class);
-		newStyle = vsFactory.createVisualStyle(name);
+		newStyle = vsFactory.createVisualStyle(vsName);
 
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 		

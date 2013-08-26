@@ -42,11 +42,13 @@ public class CopyVisualStyleTask extends AbstractTask {
 
 	private VisualStyle copiedStyle;
 	private VisualStyle previousCurrentStyle;
+	private final VisualStyle originalStyle;
 	private final ServicesUtil servicesUtil;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public CopyVisualStyleTask(final ServicesUtil servicesUtil) {
+	public CopyVisualStyleTask(final VisualStyle style, final ServicesUtil servicesUtil) {
+		this.originalStyle = style;
 		this.servicesUtil = servicesUtil;
 	}
 
@@ -59,8 +61,8 @@ public class CopyVisualStyleTask extends AbstractTask {
 	
 	@Override
 	public void run(final TaskMonitor monitor) throws Exception {
-		if (vsName != null) {
-			copyVisualStyle(vsName);
+		if (vsName != null && originalStyle != null) {
+			copyVisualStyle();
 			
 			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
 			undo.postEdit(new CopyVisualStyleEdit());
@@ -69,13 +71,13 @@ public class CopyVisualStyleTask extends AbstractTask {
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private void copyVisualStyle(final String newName) {
-		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+	private void copyVisualStyle() {
 		final VisualStyleFactory vsFactory = servicesUtil.get(VisualStyleFactory.class);
-		copiedStyle = vsFactory.createVisualStyle(vmMgr.getCurrentVisualStyle());
-		copiedStyle.setTitle(newName);
+		copiedStyle = vsFactory.createVisualStyle(originalStyle);
+		copiedStyle.setTitle(vsName);
 
 		// Save the current visual style first, so it can be set as current again if the action is undone
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 		previousCurrentStyle = vmMgr.getCurrentVisualStyle();
 		
 		vmMgr.addVisualStyle(copiedStyle);
