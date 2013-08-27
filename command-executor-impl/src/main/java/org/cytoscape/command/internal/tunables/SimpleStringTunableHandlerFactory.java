@@ -24,6 +24,8 @@ package org.cytoscape.command.internal.tunables;
  * #L%
  */
 
+import org.cytoscape.command.StringTunableHandler;
+import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.work.BasicTunableHandlerFactory;
 
 

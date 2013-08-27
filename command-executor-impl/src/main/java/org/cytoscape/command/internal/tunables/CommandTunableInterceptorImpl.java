@@ -26,6 +26,8 @@ package org.cytoscape.command.internal.tunables;
 
 import java.util.Map;
 
+import org.cytoscape.command.StringTunableHandler;
+import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.work.AbstractTunableInterceptor;
 
 import org.slf4j.Logger;

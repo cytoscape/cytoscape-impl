@@ -25,6 +25,7 @@ package org.cytoscape.command.internal.tunables;
  */
 
 import org.cytoscape.command.StringToModel;
+import org.cytoscape.command.StringTunableHandler;
 
 public interface CyIdentifiableTunableHandler extends StringTunableHandler {
 	public void setStringHandler(StringToModel stringHandler);
