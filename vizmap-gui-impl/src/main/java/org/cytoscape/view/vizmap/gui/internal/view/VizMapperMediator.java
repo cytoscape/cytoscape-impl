@@ -86,6 +86,8 @@ import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 import org.puremvc.java.multicore.interfaces.INotification;
 import org.puremvc.java.multicore.patterns.mediator.Mediator;
 import org.slf4j.Logger;
@@ -1029,19 +1031,35 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final VisualPropertySheetItemModel model = vpSheetItem.getModel();
 		final VisualProperty vp = model.getVisualProperty();
 
-		final VisualStyle curStyle = vmProxy.getCurrentVisualStyle();
-		final Object defaultVal = curStyle.getDefaultValue(vp);
-		Object newValue = null;
+		final VisualStyle style = vmProxy.getCurrentVisualStyle();
+		final Object oldValue = style.getDefaultValue(vp);
+		Object val = null;
 		
 		try {
 			final EditorManager editorMgr = servicesUtil.get(EditorManager.class);
-			newValue = editorMgr.showVisualPropertyValueEditor(vizMapperMainPanel, vp, defaultVal);
-		} catch (Exception ex) {
+			val = editorMgr.showVisualPropertyValueEditor(vizMapperMainPanel, vp, oldValue);
+		} catch (final Exception ex) {
 			logger.error("Error opening Visual Property values editor for: " + vp, ex);
 		}
 
-		if (newValue != null && !newValue.equals(defaultVal))
-			vpSheetItem.getModel().setDefaultValue(newValue);
+		final Object newValue = val;
+		
+		if (newValue != null && !newValue.equals(oldValue)) {
+			style.setDefaultValue(vp, newValue);
+			
+			// Undo support
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new AbstractCyEdit("Set Default Value") {
+				@Override
+				public void undo() {
+					style.setDefaultValue(vp, oldValue);
+				}
+				@Override
+				public void redo() {
+					style.setDefaultValue(vp, newValue);
+				}
+			});
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -1121,11 +1139,25 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 
 	private void onSelectedVisualStyleChanged(final PropertyChangeEvent e) {
-		final VisualStyle vs = (VisualStyle) e.getNewValue();
+		final VisualStyle newStyle = (VisualStyle) e.getNewValue();
+		final VisualStyle oldStyle = vmProxy.getCurrentVisualStyle();
 		
-		if (!ignoreVisualStyleSelectedEvents && vs != null && !vs.equals(vmProxy.getCurrentVisualStyle())) {
+		if (!ignoreVisualStyleSelectedEvents && newStyle != null && !newStyle.equals(oldStyle)) {
 			// Update proxy
-			vmProxy.setCurrentVisualStyle(vs);
+			vmProxy.setCurrentVisualStyle(newStyle);
+			
+			// Undo support
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new AbstractCyEdit("Set Current Visual Style") {
+				@Override
+				public void undo() {
+					vmProxy.setCurrentVisualStyle(oldStyle);
+				}
+				@Override
+				public void redo() {
+					vmProxy.setCurrentVisualStyle(newStyle);
+				}
+			});
 		}
 	}
 	
