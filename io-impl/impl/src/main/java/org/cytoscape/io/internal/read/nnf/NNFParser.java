@@ -31,13 +31,16 @@ import java.util.ArrayList;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 
 import java.util.Collection;
+
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+
 import java.util.Iterator;
 
 /**
@@ -60,13 +63,18 @@ public class NNFParser {
 	private final CyRootNetwork rootNetwork;
 	private final  Map<Object, CyNode> nMap;
 	
-	public NNFParser(CyRootNetwork rootNetwork,  Map<Object, CyNode> nMap) {
-		this.rootNetwork = rootNetwork;
+	public NNFParser(CyRootNetwork rootNetwork, CyNetworkFactory cyNetworkFactory, Map<Object, CyNode> nMap) {
+		if(rootNetwork != null) {
+			this.rootNetwork = rootNetwork;
+			this.overviewwork = this.rootNetwork.addSubNetwork();
+		} else {
+			overviewwork = cyNetworkFactory.createNetwork();
+			this.rootNetwork = ((CySubNetwork)overviewwork).getRootNetwork();
+		}
 		this.nMap = nMap;
 		
 		networkMap = new HashMap<String, CyNetwork>();
 		networks = new ArrayList<CyNetwork>();	
-		this.overviewwork = this.rootNetwork.addSubNetwork(); //this.cyNetworkFactory.createNetwork();
 	}
 
 

@@ -24,8 +24,6 @@ package org.cytoscape.io.internal.write;
  * #L%
  */
 
-import java.io.OutputStream;
-
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriterFactory;
 
@@ -33,7 +31,7 @@ public abstract class AbstractCyWriterFactory implements CyWriterFactory {
 
 	private final CyFileFilter filter;
 	
-	public AbstractCyWriterFactory(CyFileFilter filter) {
+	public AbstractCyWriterFactory(final CyFileFilter filter) {
 		this.filter = filter;
 	}
 	

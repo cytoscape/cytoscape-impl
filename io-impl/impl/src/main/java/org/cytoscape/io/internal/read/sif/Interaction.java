@@ -24,12 +24,9 @@ package org.cytoscape.io.internal.read.sif;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.StringTokenizer;
-
 
 /**
  * Utility class for representing one line of SIF file.
@@ -40,27 +37,26 @@ final class Interaction {
 	private String interactionType;
 
 	Interaction(final String rawText, final String delimiter) {
-        final StringTokenizer strtok = new StringTokenizer(rawText, delimiter);
-        int counter = 0;
+		final StringTokenizer strtok = new StringTokenizer(rawText, delimiter);
+		int counter = 0;
 		targets = new ArrayList<String>();
 
-        while (strtok.hasMoreTokens()) {
-            if (counter == 0)
-                source = strtok.nextToken().trim();
-            else if (counter == 1)
-                interactionType = strtok.nextToken().trim();
-            else 
-                targets.add(strtok.nextToken().trim());
+		while (strtok.hasMoreTokens()) {
+			if (counter == 0)
+				source = strtok.nextToken().trim();
+			else if (counter == 1)
+				interactionType = strtok.nextToken().trim();
+			else
+				targets.add(strtok.nextToken().trim());
 
-            counter++;
-        }
+			counter++;
+		}
 	}
-
 
 	/**
 	 * @return The source node identifier string.
 	 */
-	String getSource() {
+	final String getSource() {
 		return source;
 	}
 
