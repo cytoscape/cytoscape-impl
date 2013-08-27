@@ -90,7 +90,7 @@ public class RemoveSelectedDiscreteValuesAction extends AbstractVizMapperAction 
 	
 			// Test with the first selected item
 			final DiscreteMapping dm = (DiscreteMapping) model.getVisualMappingFunction();
-			final Map<Object, Object> changes = new HashMap<Object, Object>();
+			final Map<Object, Object> newValues = new HashMap<Object, Object>();
 			final Map<Object, Object> previousValues = new HashMap<Object, Object>();
 			
 			for (int i = 0; i < selected.length; i++) {
@@ -105,17 +105,17 @@ public class RemoveSelectedDiscreteValuesAction extends AbstractVizMapperAction 
 							previousValues.put(prop.getKey(), prop.getValue());
 						
 						// Mapping values to be removed
-						changes.put(prop.getKey(), null);
+						newValues.put(prop.getKey(), null);
 					}
 				}
-				
-				// Save the mapping->old_values for undo
-				if (!previousValues.isEmpty())
-					previousMappingValues.put(dm, previousValues);
 			}
 			
+			// Save the mapping->old_values for undo
+			if (!previousValues.isEmpty())
+				previousMappingValues.put(dm, previousValues);
+			
 			// Update the visual mapping
-			dm.putAll(changes);
+			dm.putAll(newValues);
 		}
 		
 		// Undo support
@@ -185,13 +185,13 @@ public class RemoveSelectedDiscreteValuesAction extends AbstractVizMapperAction 
 		public void redo() {
 			for (final Entry<DiscreteMapping<?, ?>, Map<Object, Object>> entry : previousMappingValues.entrySet()) {
 				final DiscreteMapping dm = entry.getKey();
-				final Map<Object, Object> changes = new HashMap<Object, Object>();
+				final Map<Object, Object> newValues = new HashMap<Object, Object>();
 				
 				for (final Entry<Object, Object> originalEntry : entry.getValue().entrySet())
-					changes.put(originalEntry.getKey(), null);
+					newValues.put(originalEntry.getKey(), null);
 				
-				if (!changes.isEmpty())
-					dm.putAll(changes);
+				if (!newValues.isEmpty())
+					dm.putAll(newValues);
 			}
 		}
 	}
