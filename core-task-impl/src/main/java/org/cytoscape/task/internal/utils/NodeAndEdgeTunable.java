@@ -39,22 +39,28 @@ public class NodeAndEdgeTunable {
 	@Tunable(description="Network", context="nogui")
 	public CyNetwork network = null;
 
-	public NodeList nodeList = new NodeList(null);
+	public NodeList nodeList = null;
 	@Tunable(description="List of nodes", context="nogui")
 	public NodeList getnodeList() {
 		if (network == null)
 			network = appMgr.getCurrentNetwork();
-		nodeList.setNetwork(network);
+		if (nodeList == null) 
+			nodeList = new NodeList(network);
+		else
+			nodeList.setNetwork(network);
 		return nodeList;
 	}
   public void setnodeList(NodeList setValue) {}
 
-	public EdgeList edgeList = new EdgeList(null);
+	public EdgeList edgeList = null;
 	@Tunable(description="List of edges", context="nogui")
 	public EdgeList getedgeList() {
 		if (network == null)
 			network = appMgr.getCurrentNetwork();
-		edgeList.setNetwork(network);
+		if (edgeList == null) 
+			edgeList = new EdgeList(network);
+		else
+			edgeList.setNetwork(network);
 		return edgeList;
 	}
   public void setedgeList(EdgeList setValue) {}
