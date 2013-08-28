@@ -9,7 +9,6 @@ import java.lang.ref.WeakReference;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 
@@ -56,11 +55,6 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	final ExecutorService executor;
 
 	/**
-	 * Used for showing the UI for long running tasks.
-	 */
-	final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-
-	/**
 	 * Tunable stuff.
 	 */
 	final JDialogTunableMutator dialogTunableMutator;
@@ -83,7 +77,6 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 		this.dialogTunableMutator = dialogTunableMutator;
 		parentWindow = null;
 		addShutdownHookForService(executor);
-		addShutdownHookForService(scheduledExecutor);
 	}
 
 	/**
@@ -121,7 +114,7 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 
 	public void execute(final TaskIterator iterator, Object tunableContext, TaskObserver observer) {
 		dialogTunableMutator.setConfigurationContext(parentWindow);
-		final TaskRunner taskRunner = new TaskRunner(this, executor, scheduledExecutor, iterator, 
+		final TaskRunner taskRunner = new TaskRunner(this, executor, iterator, 
 		                                             observer, taskWindow);
 		executor.submit(taskRunner);
 	}
@@ -206,7 +199,6 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
  * the user clicking the cancel button.
  */
 class TaskRunner implements Runnable {
-	static final long TASK_UI_SHOW_DELAY_MS = 1000L;
 	final TaskManagerImpl manager;
 
 	/**
@@ -214,10 +206,6 @@ class TaskRunner implements Runnable {
 	 */
 	final ExecutorService cancelExecutor;
 
-	/**
-	 * Used to show the task's UI if it's a long running task.
-	 */
-	final ScheduledExecutorService scheduledExecutor;
 	final TaskIterator iterator;
 	final TaskMonitorImpl monitor;
 	final TaskObserver observer;
@@ -225,11 +213,10 @@ class TaskRunner implements Runnable {
 	boolean cancelled = false;
 	Task currentTask = null;
 
-	public TaskRunner(final TaskManagerImpl manager, ExecutorService cancelExecutor, ScheduledExecutorService scheduledExecutor, 
+	public TaskRunner(final TaskManagerImpl manager, ExecutorService cancelExecutor, 
 	                  TaskIterator iterator, TaskObserver observer, TaskWindow window) {
 		this.manager = manager;
 		this.cancelExecutor = cancelExecutor;
-		this.scheduledExecutor = scheduledExecutor;
 		this.iterator = iterator;
 		this.observer = observer;
 		monitor = new TaskMonitorImpl(manager, window);
@@ -246,13 +233,6 @@ class TaskRunner implements Runnable {
 			manager.updateParent();
 			if (!manager.showTunables(currentTask))
 				return;
-
-			// Create a UI for the task if its been executing longer than 1 second.
-			final Future<?> showUILater = scheduledExecutor.schedule(new Runnable() {
-				public void run() {
-					monitor.showUI();
-				}
-			}, TASK_UI_SHOW_DELAY_MS, TimeUnit.MILLISECONDS);
 
 			// Record the task in the montor (for logging purposes)
 			monitor.setTask(currentTask);
@@ -280,11 +260,6 @@ class TaskRunner implements Runnable {
 			} else {
 				monitor.setAsFinished();
 			}
-
-			// The task has finished successfully. If the task
-			// is short lived (it ran under a second), don't show
-			// the task's UI.
-			showUILater.cancel(false);
 		} catch (Exception e) {
 			monitor.setAsExceptionOccurred(e);
 			e.printStackTrace();
@@ -423,15 +398,17 @@ class TaskMonitorImpl implements TaskMonitor {
         if (title != null && secondaryTitle != null && title.equals(secondaryTitle))
             secondaryTitle = null; // don't show a 2ary title if the main title's the same
 
-		if (ui != null) {
-			String titleString = title;
-			if (secondaryTitle != null)
-				titleString = String.format("<html>%s<br><br><font size=\"-2\">%s</font></html>", title, secondaryTitle);
-			ui.setTitle(titleString);
+		if (ui == null) {
+			showUI();
+		}
 
-			if (manager.isLatestMonitor(this)) {
-				manager.getStatusBar().setTitle(title);
-			}
+		String titleString = title;
+		if (secondaryTitle != null)
+			titleString = String.format("<html>%s<br><br><font size=\"-2\">%s</font></html>", title, secondaryTitle);
+		ui.setTitle(titleString);
+
+		if (manager.isLatestMonitor(this)) {
+			manager.getStatusBar().setTitle(title);
 		}
 	}
 
