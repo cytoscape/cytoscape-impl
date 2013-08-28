@@ -35,7 +35,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.gui.internal.model.RemoveLockedValuesVO;
+import org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -203,7 +203,7 @@ public class VizMapperMenuMediator extends Mediator {
 				mi.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						final RemoveLockedValuesVO vo = new RemoveLockedValuesVO(netView, 
+						final LockedValuesVO vo = new LockedValuesVO(netView, 
 								(Set)Collections.singleton(view), vpSet);
 						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 					}
@@ -219,7 +219,7 @@ public class VizMapperMenuMediator extends Mediator {
 				mi.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						final RemoveLockedValuesVO vo = new RemoveLockedValuesVO(netView, selectedViews, vpSet);
+						final LockedValuesVO vo = new LockedValuesVO(netView, selectedViews, vpSet);
 						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 					}
 				});
@@ -234,7 +234,7 @@ public class VizMapperMenuMediator extends Mediator {
 				mi.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						final RemoveLockedValuesVO vo = new RemoveLockedValuesVO(netView, selectedViews, vpSet);
+						final LockedValuesVO vo = new LockedValuesVO(netView, selectedViews, vpSet);
 						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 					}
 				});

@@ -72,8 +72,8 @@ import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
+import org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
-import org.cytoscape.view.vizmap.gui.internal.model.RemoveLockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.GenerateValuesTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
@@ -1071,46 +1071,17 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 //			logger.error("Error opening Visual Property values editor for: " + vp, ex);
 		}
 		
-		if (newValue == null || newValue.equals(curValue))
-			return;
-		
-		// TODO: move to an asynchronous task
-		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
-		
-		if (curNetView == null)
-			return;
-		
-		final Class<? extends CyIdentifiable> targetDataType = vp.getTargetDataType();
-		final Set<View<?>> selectedViews = new HashSet<View<?>>();
-		
-		if (targetDataType == CyNode.class)
-			selectedViews.addAll(vmProxy.getSelectedNodeViews(curNetView));
-		else if (targetDataType == CyEdge.class)
-			selectedViews.addAll(vmProxy.getSelectedEdgeViews(curNetView));
-		else
-			selectedViews.add(curNetView);
-		
-		// Clear or set the new locked value to all selected elements
-		for (final View<?> view : selectedViews) {
-			view.setLockedValue(vp, newValue);
+		if (newValue != null && !newValue.equals(curValue)) {
+			final LockedValuesVO vo = new LockedValuesVO((Map)Collections.singletonMap(vp, newValue));
+			sendNotification(NotificationNames.SET_LOCKED_VALUES, vo);
 		}
-		
-		model.setLockedValue(newValue);
-		model.setLockedValueState(newValue == null ? 
-				LockedValueState.ENABLED_NOT_SET : LockedValueState.ENABLED_UNIQUE_VALUE);
-		
-		curNetView.updateView();
 	}
 	
 	@SuppressWarnings("rawtypes")
 	private void removeLockedValue(final ActionEvent e, final VisualPropertySheetItem<?> vpSheetItem) {
-		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
-		
-		if (curNetView != null) {
-			final VisualProperty<?> visualProperty = vpSheetItem.getModel().getVisualProperty();
-			final RemoveLockedValuesVO vo = new RemoveLockedValuesVO((Set)Collections.singleton(visualProperty));
-			sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
-		}
+		final VisualProperty<?> visualProperty = vpSheetItem.getModel().getVisualProperty();
+		final LockedValuesVO vo = new LockedValuesVO((Set)Collections.singleton(visualProperty));
+		sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 	}
 
 	private void onSelectedVisualStyleChanged(final PropertyChangeEvent e) {

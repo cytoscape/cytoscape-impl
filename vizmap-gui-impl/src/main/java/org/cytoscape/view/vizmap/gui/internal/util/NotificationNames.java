@@ -14,7 +14,9 @@ public final class NotificationNames {
 	public static final String LOAD_VISUAL_STYLES = "LOAD_VISUAL_STYLES";
 	/** Body: Set<VisualMappingFunction> */
 	public static final String REMOVE_VISUAL_MAPPINGS = "REMOVE_VISUAL_MAPPINGS";
-	/** Body: {@link org.cytoscape.view.vizmap.gui.internal.model.RemoveLockedValuesVO} */
+	/** Body: {@link org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO} */
+	public static final String SET_LOCKED_VALUES = "SET_LOCKED_VALUES";
+	/** Body: {@link org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO} */
 	public static final String REMOVE_LOCKED_VALUES = "REMOVE_LOCKED_VALUES";
 	
 	// --- DATA UPDATED Events ---

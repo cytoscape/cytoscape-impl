@@ -41,10 +41,6 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.action.RemoveSelectedDiscreteValuesAction;
-import org.cytoscape.view.vizmap.gui.internal.controller.ImportDefaultVisualStylesCommand;
-import org.cytoscape.view.vizmap.gui.internal.controller.LoadVisualStylesCommand;
-import org.cytoscape.view.vizmap.gui.internal.controller.RemoveLockedValuesCommand;
-import org.cytoscape.view.vizmap.gui.internal.controller.RemoveVisualMappingsCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
 import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
@@ -284,19 +280,12 @@ public class CyActivator extends AbstractCyActivator {
 																		  iconManager);
 		final VizMapperMenuMediator vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
 		
-		final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand = new ImportDefaultVisualStylesCommand(servicesUtil);
-		final LoadVisualStylesCommand loadVisualStylesCommand = new LoadVisualStylesCommand(servicesUtil);
-		final RemoveVisualMappingsCommand removeVisualMappingsCommand = new RemoveVisualMappingsCommand(servicesUtil);
-		final RemoveLockedValuesCommand removeLockedValuesCommand = new RemoveLockedValuesCommand(servicesUtil);
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,
 																 attributeSetProxy,
 																 mappingFactoryProxy,
 																 vizMapperMediator,
 																 vizMapperMenuMediator,
-																 importDefaultVisualStylesCommand,
-																 loadVisualStylesCommand,
-																 removeVisualMappingsCommand,
-																 removeLockedValuesCommand);
+																 servicesUtil);
 		
 		registerAllServices(bc, vizMapperProxy, new Properties());
 		registerAllServices(bc, mappingFactoryProxy, new Properties());
