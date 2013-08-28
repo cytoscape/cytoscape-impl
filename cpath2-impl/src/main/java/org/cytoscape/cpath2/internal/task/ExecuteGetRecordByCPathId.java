@@ -66,8 +66,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -89,7 +87,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	private final static String CPATH_SERVER_DETAILS_URL = "CPATH_SERVER_DETAILS_URL";
 	private Logger logger = LoggerFactory.getLogger(ExecuteGetRecordByCPathId.class);
 	private final CPath2Factory cPathFactory;
-	private final VisualMappingManager mappingManager;
 
 
 	/**
@@ -111,8 +108,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			CPathResponseFormat format,
 			String networkTitle, 
 			CyNetwork mergedNetwork, 
-			CPath2Factory cPathFactory,  
-			VisualMappingManager mappingManager) 
+			CPath2Factory cPathFactory) 
 	{
 		this.webApi = webApi;
 		this.ids = ids;
@@ -120,7 +116,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		this.networkTitle = networkTitle;
 		this.mergedNetwork = mergedNetwork;
 		this.cPathFactory = cPathFactory;
-		this.mappingManager = mappingManager;
 	}
 
 	/**
@@ -297,10 +292,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			if (mergedNetwork != null) {
 				mergeNetworks(cyNetwork, taskMonitor);
 			} else {
-				VisualStyle visualStyle = cPathFactory.getBinarySifVisualStyleUtil().getVisualStyle();
-				mappingManager.setVisualStyle(visualStyle, view);
-				visualStyle.apply(view);
-				view.updateView();
+				//nothing
 			}
 		}
 	}

@@ -34,7 +34,6 @@ import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.cpath2.internal.cytoscape.BinarySifVisualStyleUtil;
 import org.cytoscape.cpath2.internal.cytoscape.MergeNetworkEdit;
 import org.cytoscape.cpath2.internal.mapping.MapCPathToCytoscape;
 import org.cytoscape.cpath2.internal.schemas.summary_response.BasicRecordType;
@@ -85,10 +84,9 @@ public class CPath2Factory {
 	private final CyNetworkFactory networkFactory;
 	private final CyLayoutAlgorithmManager layoutManager;
 	private final UndoSupport undoSupport;
-	private final BinarySifVisualStyleUtil binarySifVisualStyleUtil;
 	private final VisualMappingManager mappingManager;
 	
-	public CPath2Factory(CySwingApplication application, TaskManager taskManager, OpenBrowser openBrowser, CyNetworkManager networkManager, CyApplicationManager applicationManager, CyNetworkViewManager networkViewManager, CyNetworkReaderManager networkViewReaderManager, CyNetworkNaming naming, CyNetworkFactory networkFactory, CyLayoutAlgorithmManager layouts, UndoSupport undoSupport, BinarySifVisualStyleUtil binarySifVisualStyleUtil, VisualMappingManager mappingManager) {
+	public CPath2Factory(CySwingApplication application, TaskManager taskManager, OpenBrowser openBrowser, CyNetworkManager networkManager, CyApplicationManager applicationManager, CyNetworkViewManager networkViewManager, CyNetworkReaderManager networkViewReaderManager, CyNetworkNaming naming, CyNetworkFactory networkFactory, CyLayoutAlgorithmManager layouts, UndoSupport undoSupport, VisualMappingManager mappingManager) {
 		this.application = application;
 		this.taskManager = taskManager;
 		this.openBrowser = openBrowser;
@@ -100,7 +98,6 @@ public class CPath2Factory {
 		this.layoutManager = layouts;
 		this.networkFactory = networkFactory;
 		this.undoSupport = undoSupport;
-		this.binarySifVisualStyleUtil = binarySifVisualStyleUtil;
 		this.mappingManager = mappingManager;
 	}
 	
@@ -224,8 +221,5 @@ public class CPath2Factory {
 	public CyLayoutAlgorithmManager getCyLayoutAlgorithmManager() {
 		return layoutManager;
 	}
-	
-	public BinarySifVisualStyleUtil getBinarySifVisualStyleUtil() {
-		return binarySifVisualStyleUtil;
-	}
+
 }

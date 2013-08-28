@@ -42,6 +42,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.biopax.internal.BioPaxMapper;
+import org.cytoscape.biopax.internal.action.BioPaxViewTracker;
 import org.cytoscape.biopax.internal.action.LaunchExternalBrowser;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -122,25 +123,26 @@ public class BioPaxContainer extends JPanel {
      * Show Details Panel.
      */
     public void showDetails() {
-        CardLayout cl = (CardLayout)(cards.getLayout());
-        cl.show(cards, DETAILS_CARD);
-        label.setText("<a href='LEGEND'>Visual Legend</a>");
+    	if(BioPaxViewTracker.isBiopaxNetwork(applicationManager.getCurrentNetwork())) {
+    		CardLayout cl = (CardLayout)(cards.getLayout());
+    		cl.show(cards, DETAILS_CARD);
+    		label.setText("<a href='LEGEND'>Visual Legend</a>");
+    	}
     }
 
     /**
      * Show Legend Panel.
      */
     public void showLegend() {
-        CardLayout cl = (CardLayout)(cards.getLayout());
         CyNetwork network = applicationManager.getCurrentNetwork();
-        if(network == null)
+        if(network == null || !BioPaxViewTracker.isBiopaxNetwork(network))
         	return;
-        	
-        CyRow row = network.getRow(network);
-        Boolean isBioPaxNetwork = row.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
+
+        CardLayout cl = (CardLayout)(cards.getLayout());       
+        Boolean isBioPaxNetwork = network.getRow(network).get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class);
         if (Boolean.TRUE.equals(isBioPaxNetwork)) {
             cl.show(cards, LEGEND_BIOPAX_CARD);
-        } else {
+        } else { //FASLE and null - show SIF visual legend
             cl.show(cards, LEGEND_BINARY_CARD);
         }
         label.setText("<a href='DETAILS'>View Details</a>");

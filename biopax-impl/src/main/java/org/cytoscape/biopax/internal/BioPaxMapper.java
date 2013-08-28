@@ -44,7 +44,7 @@ import org.biopax.paxtools.util.Filter;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
 import org.cytoscape.biopax.internal.util.BioPaxUtil;
 import org.cytoscape.biopax.internal.util.BioPaxUtil.StaxHack;
-import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
+import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.biopax.internal.util.ExternalLink;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
 import org.cytoscape.biopax.internal.util.NodeAttributesWrapper;
@@ -73,11 +73,6 @@ public class BioPaxMapper {
 	 * is a BioPAX network.
 	 */
 	public static final String BIOPAX_NETWORK = "BIOPAX_NETWORK";
-	
-	/**
-	 * Cytoscape Attribute:  BioPAX Edge Type.
-	 */
-	public static final String BIOPAX_EDGE_TYPE = "BIOPAX_EDGE_TYPE";
 
 	/**
 	 * Cytoscape Attribute:  BioPAX RDF ID.
@@ -262,7 +257,7 @@ public class BioPaxMapper {
 			{
 				CyNode cyMemberNode = bpeToCyNodeMap.get(member);
 				CyEdge edge = network.addEdge(cyParentNode, cyMemberNode, true);
-				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "member", String.class);
+				AttributeUtil.set(network, edge, "interaction", "member", String.class);
 			}
 		}
 	}
@@ -348,7 +343,7 @@ public class BioPaxMapper {
 				CyNode complexMemberCyNode = bpeToCyNodeMap.get(member);
 				// create edge, set attributes
 				CyEdge edge = network.addEdge(complexCyNode, complexMemberCyNode, true);
-				AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, "contains", String.class);	
+				AttributeUtil.set(network, edge, "interaction", "contains", String.class);	
 			}
 		}
 	}
@@ -411,7 +406,7 @@ public class BioPaxMapper {
 			edge = network.addEdge(nodeB, nodeA, true);
 		}
 
-		AttributeUtil.set(network, edge, BIOPAX_EDGE_TYPE, type, String.class);
+		AttributeUtil.set(network, edge, "interaction", type, String.class);
 	}
 
 	
@@ -778,17 +773,17 @@ public class BioPaxMapper {
 		final double[] startX = {
 		                            0,
 		                            
-		(BioPaxVisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH * BioPaxVisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2,
+		(VisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH * VisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2,
 		                            0,
 		                            
-		(-1 * BioPaxVisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH * BioPaxVisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2
+		(-1 * VisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH * VisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2
 		                        };
 
 		final double[] startY = {
-		                            (-1 * BioPaxVisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT * BioPaxVisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2,
+		                            (-1 * VisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT * VisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2,
 		                            0,
 		                            
-		(BioPaxVisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT * BioPaxVisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2,
+		(VisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT * VisualStyleUtil.BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2,
 		                            0
 		                        };
 

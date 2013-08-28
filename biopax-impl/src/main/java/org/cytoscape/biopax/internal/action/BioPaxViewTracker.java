@@ -38,7 +38,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.biopax.internal.BioPaxMapper;
-import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
+import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.biopax.internal.view.BioPaxContainer;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;
 import org.cytoscape.model.CyNetwork;
@@ -74,7 +74,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	private final BioPaxContainer bpContainer;
 	private final CyApplicationManager cyApplicationManager;
 	private final VisualMappingManager visualMappingManager;
-	private final BioPaxVisualStyleUtil bioPaxVisualStyleUtil;
+	private final VisualStyleUtil visualStyleUtil;
 	private final CyLayoutAlgorithmManager layoutAlgorithmManager;
 	private final TaskManager taskManagerRef;
 	private final CyProperty<Properties> prop;
@@ -92,7 +92,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 			BioPaxContainer bpContainer, 
 			CyApplicationManager cyApplicationManager,
 			VisualMappingManager visualMappingManager,
-			BioPaxVisualStyleUtil bioPaxVisualStyleUtil,
+			VisualStyleUtil bioPaxVisualStyleUtil,
 			CyLayoutAlgorithmManager layoutAlgorithmManager, 
 			TaskManager taskManagerRef, 
 			CyProperty<Properties> prop, 
@@ -102,7 +102,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		this.bpContainer = bpContainer;
 		this.cyApplicationManager = cyApplicationManager;
 		this.visualMappingManager = visualMappingManager;
-		this.bioPaxVisualStyleUtil = bioPaxVisualStyleUtil;
+		this.visualStyleUtil = bioPaxVisualStyleUtil;
 		this.layoutAlgorithmManager = layoutAlgorithmManager;
 		this.taskManagerRef = taskManagerRef;
 		this.prop = prop;
@@ -116,7 +116,12 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {	
 		final CyNetworkView view = e.getNetworkView();
-		if(isBioPAXNetwork(view.getModel())) {
+		final CyNetwork cyNetwork = view.getModel();
+		
+		//handle only networks made from BioPAX data 
+		//or from Pathway Commons's binary SIF 
+		//(converted from BioPAX internally, by their plugins)
+		if(isBiopaxNetwork(cyNetwork)) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -125,9 +130,16 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 					
 					// apply BioPAX visual style and set tool tips
 					setNodeToolTips(view);
-					VisualStyle bioPaxVisualStyle = bioPaxVisualStyleUtil.getBioPaxVisualStyle();
-					visualMappingManager.setVisualStyle(bioPaxVisualStyle, view);
-					bioPaxVisualStyle.apply(view);
+					VisualStyle style; 
+					
+					if(Boolean.TRUE.equals(cyNetwork.getRow(cyNetwork)
+							.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class)))
+						style = visualStyleUtil.getBioPaxVisualStyle();
+					else 
+						style = visualStyleUtil.getBinarySifVisualStyle();
+					
+					visualMappingManager.setVisualStyle(style, view);
+					style.apply(view);
 					view.updateView();
 					
 					String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME; //min. fall-back
@@ -141,13 +153,6 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 					} else {
 						throw new IllegalArgumentException("Couldn't find layout algorithm: " + pref);
 					}			
-						    			
-// not yet migrated to cy3....   - set tooltips
-//	    			setNodeToolTips(view);	    			
-	    			// add node's context menu
-	    			// TODO: NodeViewTaskFactory?
-//	    			BiopaxNodeCtxMenuListener nodeCtxMenuListener = new BiopaxNodeCtxMenuListener();
-//	    			view.addNodeContextMenuListener(nodeCtxMenuListener);
 					
 					view.updateView();
 				}
@@ -163,7 +168,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		CyNetworkView view = e.getNetworkView();
 		
 		// update bpPanel accordingly
-       	if (view != null && isBioPAXNetwork(view.getModel())) {
+       	if (view != null && isBiopaxNetwork(view.getModel())) {
        		SwingUtilities.invokeLater(new Runnable() {
        			@Override
        			public void run() {
@@ -177,7 +182,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		if (isBioPAXNetwork(e.getNetworkView().getModel())) {
+		if (isBiopaxNetwork(e.getNetworkView().getModel())) {
 			//TODO nothing?
 		}
 	}
@@ -189,7 +194,7 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 		if(view == null) return;
 		
 		final CyNetwork network = view.getModel();
-		if (isBioPAXNetwork(network)) {
+		if (isBiopaxNetwork(network)) {
 
 			if (!network.getDefaultNodeTable().equals(e.getSource()))
 				return;
@@ -326,10 +331,19 @@ public class BioPaxViewTracker implements NetworkViewAddedListener,
 	}
 
 	
-	private static boolean isBioPAXNetwork(CyNetwork cyNetwork) {
-		return cyNetwork.getRow(cyNetwork)
-			.get(BioPaxMapper.BIOPAX_NETWORK, Boolean.class) != null; 
-		//TRUE means it's a network from a BioPAX file or URL
-		//FALSE means it's a BINARY_SIF network from Pathway Commons
+	/**
+	 * This is mainly to decide whether to watch for node selection
+	 * events or not, to update the Results Panel (eastern) with the node's 
+	 * info and visual legend. 
+	 * This is frankly a hack for specific networks/views created 
+	 * either from a BioPAX file/URL or Pathway Commons's web services 
+	 * (including Binary SIF networks created by their plugin).
+	 * 
+	 * @param cyNetwork
+	 */
+	public static boolean isBiopaxNetwork(CyNetwork cyNetwork) {
+		//true if the attribute column exists
+		return cyNetwork.getDefaultNetworkTable()
+				.getColumn(BioPaxMapper.BIOPAX_NETWORK) != null;
 	}
 }

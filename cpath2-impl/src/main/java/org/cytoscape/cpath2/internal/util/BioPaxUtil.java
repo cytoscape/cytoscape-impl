@@ -91,7 +91,6 @@ public final class BioPaxUtil {
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final int MAX_DISPLAY_STRING_LEN = 25;
 	public static final String NULL_ELEMENT_TYPE = "BioPAX Element";
-	public static final String BIOPAX_EDGE_TYPE = "BIOPAX_EDGE_TYPE";
 	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_MAP = "CHEMICAL_MODIFICATIONS_MAP";
 	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_LIST = "CHEMICAL_MODIFICATIONS";
 	public static final String BIOPAX_UNIFICATION_REFERENCES = "UNIFICATION_REFERENCES";
