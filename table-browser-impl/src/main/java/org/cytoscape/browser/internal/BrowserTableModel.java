@@ -51,7 +51,8 @@ import org.cytoscape.model.events.RowsCreatedListener;
 public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener {
 	public static enum ViewMode {
 		ALL,
-		SELECTED	
+		SELECTED,
+		AUTO
 	}
 
 	private static final long serialVersionUID = -517521404005631245L;
@@ -129,6 +130,11 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			case ALL:
 				count = dataTable.getRowCount();
 				break;
+			case AUTO:
+				count = dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE).size();
+				if (count == 0)
+					count = dataTable.getRowCount();
+				break;
 		}
 		//System.out.println("getRowCount: " + viewMode + " " + Integer.toString(count));
 		//dumpTable(dataTable);
@@ -175,6 +181,13 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 				return selectedRows.get(rowIndex);
 			case ALL:
 				return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
+			case AUTO:
+				if (selectedRows == null)
+					selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+				if (selectedRows.size() > 0)
+					return selectedRows.get(rowIndex);
+				else
+					return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 		}
 		return null;
 	}
@@ -302,18 +315,14 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	 * @param showAll
 	 */
 	void setViewMode(ViewMode viewMode) {
+		selectedRows = null;
 		//System.out.println("setViewMode: " + viewMode);
-		if (viewMode == ViewMode.SELECTED) {
-			CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
-			if (selectedColumn != null && selectedColumn.getType() == Boolean.class)
-				viewMode = ViewMode.SELECTED;
-			else
-				viewMode = ViewMode.ALL;
+		final CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
+		if (viewMode != ViewMode.ALL && selectedColumn != null && selectedColumn.getType() == Boolean.class)
+			this.viewMode = viewMode;
+		else
+			this.viewMode = ViewMode.ALL;
 			//System.out.println("setViewMode excepted; is now: " + viewMode);
-		} else {
-			viewMode = ViewMode.ALL;
-		}
-		this.viewMode = viewMode;
 		//dumpTable(dataTable);
 	}
 /*

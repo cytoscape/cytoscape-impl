@@ -130,11 +130,26 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private void createPopupMenu() {
 		
 		displayMode = new JPopupMenu();
-		
+		final JCheckBoxMenuItem displayAuto = new JCheckBoxMenuItem("Auto");
+		displayAuto.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.AUTO);
 		final JCheckBoxMenuItem displayAll = new JCheckBoxMenuItem("Show all");
 		displayAll.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.ALL);
 		final JCheckBoxMenuItem displaySelect = new JCheckBoxMenuItem("Show selected");
 		displaySelect.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.SELECTED);
+
+		displayAuto.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
+				changeSelectionMode();
+
+				displayAuto.setSelected(true);
+				displayAll.setSelected(false);
+				displaySelect.setSelected(false);
+			}
+		});
+		
 		
 		displayAll.addActionListener(new ActionListener() {
 			
@@ -143,6 +158,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				rowSelectionMode = BrowserTableModel.ViewMode.ALL;
 				changeSelectionMode();
 
+				displayAuto.setSelected(false);
 				displayAll.setSelected(true);
 				displaySelect.setSelected(false);
 			}
@@ -155,11 +171,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				rowSelectionMode = BrowserTableModel.ViewMode.SELECTED;
 				changeSelectionMode();
 				
+				displayAuto.setSelected(false);
 				displayAll.setSelected(false);
 				displaySelect.setSelected(true);
 			}
 		});
 		
+		displayMode.add(displayAuto);
 		displayMode.add(displayAll);
 		displayMode.add(displaySelect);
 	}

@@ -871,7 +871,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			return;		
 
 		//if (!model.isShowAll()) {
-		if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED) {
+		if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED || model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
 			model.clearSelectedRows();
 			boolean foundANonSelectedColumnName = false;
 			for (final RowSetRecord rowSet : e.getPayloadCollection()) {
@@ -890,7 +890,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		synchronized (this) {
 			//if (!model.isShowAll()) {
-			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED) {
+			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED || model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
 				model.fireTableDataChanged();
 			} else {
 				//table.clearSelection();
