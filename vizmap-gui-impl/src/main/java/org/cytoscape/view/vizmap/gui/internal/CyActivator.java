@@ -43,6 +43,7 @@ import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedDiscreteValuesA
 import org.cytoscape.view.vizmap.gui.internal.action.RemoveSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.controller.ImportDefaultVisualStylesCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.LoadVisualStylesCommand;
+import org.cytoscape.view.vizmap.gui.internal.controller.RemoveLockedValuesCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.RemoveVisualMappingsCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
 import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
@@ -286,6 +287,7 @@ public class CyActivator extends AbstractCyActivator {
 		final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand = new ImportDefaultVisualStylesCommand(servicesUtil);
 		final LoadVisualStylesCommand loadVisualStylesCommand = new LoadVisualStylesCommand(servicesUtil);
 		final RemoveVisualMappingsCommand removeVisualMappingsCommand = new RemoveVisualMappingsCommand(servicesUtil);
+		final RemoveLockedValuesCommand removeLockedValuesCommand = new RemoveLockedValuesCommand(servicesUtil);
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,
 																 attributeSetProxy,
 																 mappingFactoryProxy,
@@ -293,7 +295,8 @@ public class CyActivator extends AbstractCyActivator {
 																 vizMapperMenuMediator,
 																 importDefaultVisualStylesCommand,
 																 loadVisualStylesCommand,
-																 removeVisualMappingsCommand);
+																 removeVisualMappingsCommand,
+																 removeLockedValuesCommand);
 		
 		registerAllServices(bc, vizMapperProxy, new Properties());
 		registerAllServices(bc, mappingFactoryProxy, new Properties());

@@ -3,8 +3,8 @@ package org.cytoscape.view.vizmap.gui.internal.controller;
 import java.util.Set;
 
 import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualMappingsTask;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.TaskIterator;
@@ -27,7 +27,9 @@ public class RemoveVisualMappingsCommand extends SimpleCommand {
 	@SuppressWarnings("unchecked")
 	public void execute(final INotification notification) {
 		final Set<VisualMappingFunction<?, ?>> set = (Set<VisualMappingFunction<?, ?>>) notification.getBody();
-		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		
+		final VizMapperProxy proxy = (VizMapperProxy) getFacade().retrieveProxy(VizMapperProxy.NAME);
+		final VisualStyle style = proxy.getCurrentVisualStyle();
 		
 		final TaskIterator iterator = new TaskIterator(new RemoveVisualMappingsTask(set, style, servicesUtil));
 		final DialogTaskManager taskManager = servicesUtil.get(DialogTaskManager.class);

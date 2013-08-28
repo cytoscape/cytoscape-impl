@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap.gui.internal.controller;
 
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_VISUAL_STYLES;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.REMOVE_LOCKED_VALUES;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.REMOVE_VISUAL_MAPPINGS;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.STARTUP;
 
@@ -26,6 +27,7 @@ public class StartupCommand extends SimpleCommand {
 	private final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand;
 	private final LoadVisualStylesCommand loadVisualStylesCommand;
 	private final RemoveVisualMappingsCommand removeVisualMappingsCommand;
+	private final RemoveLockedValuesCommand removeLockedValuesCommand;
 	
 	public StartupCommand(final VizMapperProxy vizMapperProxy,
 						  final AttributeSetProxy attributeSetProxy,
@@ -34,7 +36,8 @@ public class StartupCommand extends SimpleCommand {
 						  final VizMapperMenuMediator vizMapperMenuMediator,
 						  final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand,
 						  final LoadVisualStylesCommand loadVisualStylesCommand,
-						  final RemoveVisualMappingsCommand removeVisualMappingsCommand) {
+						  final RemoveVisualMappingsCommand removeVisualMappingsCommand,
+						  final RemoveLockedValuesCommand removeLockedValuesCommand) {
 		this.vizMapperProxy = vizMapperProxy;
 		this.attributeSetProxy = attributeSetProxy;
 		this.mappingFactoryProxy = mappingFactoryProxy;
@@ -43,6 +46,7 @@ public class StartupCommand extends SimpleCommand {
 		this.importDefaultVisualStylesCommand = importDefaultVisualStylesCommand;
 		this.loadVisualStylesCommand = loadVisualStylesCommand;
 		this.removeVisualMappingsCommand = removeVisualMappingsCommand;
+		this.removeLockedValuesCommand = removeLockedValuesCommand;
 	}
 
 	@Override
@@ -60,6 +64,7 @@ public class StartupCommand extends SimpleCommand {
 		getFacade().registerCommand(LOAD_DEFAULT_VISUAL_STYLES, importDefaultVisualStylesCommand);
 		getFacade().registerCommand(LOAD_VISUAL_STYLES, loadVisualStylesCommand);
 		getFacade().registerCommand(REMOVE_VISUAL_MAPPINGS, removeVisualMappingsCommand);
+		getFacade().registerCommand(REMOVE_LOCKED_VALUES, removeLockedValuesCommand);
 
 		// Initialization of the visual styles list
 		getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);

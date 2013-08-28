@@ -35,8 +35,9 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.model.RemoveLockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
+import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.puremvc.java.multicore.interfaces.INotification;
 import org.puremvc.java.multicore.patterns.mediator.Mediator;
@@ -183,6 +184,7 @@ public class VizMapperMenuMediator extends Mediator {
 		 * @param view a View&lt;CyNode&gt;, View&lt;CyEdge&gt; or View&lt;CyNetwork&gt; object
 		 * @return
 		 */
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		CyMenuItem build(final CyNetworkView netView, final View<? extends CyIdentifiable> view) {
 			// Re-populate the Visual Property set 
 			vpSet.clear();
@@ -201,7 +203,9 @@ public class VizMapperMenuMediator extends Mediator {
 				mi.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						clearAll(netView, (Set)Collections.singleton(view));
+						final RemoveLockedValuesVO vo = new RemoveLockedValuesVO(netView, 
+								(Set)Collections.singleton(view), vpSet);
+						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 					}
 				});
 				rootMenu.add(mi);
@@ -215,7 +219,8 @@ public class VizMapperMenuMediator extends Mediator {
 				mi.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						clearAll(netView, selectedViews);
+						final RemoveLockedValuesVO vo = new RemoveLockedValuesVO(netView, selectedViews, vpSet);
+						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 					}
 				});
 				rootMenu.add(mi);
@@ -229,7 +234,8 @@ public class VizMapperMenuMediator extends Mediator {
 				mi.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						clearAll(netView, selectedViews);
+						final RemoveLockedValuesVO vo = new RemoveLockedValuesVO(netView, selectedViews, vpSet);
+						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 					}
 				});
 				rootMenu.add(mi);
@@ -271,33 +277,6 @@ public class VizMapperMenuMediator extends Mediator {
 			}
 			
 			return new CyMenuItem(rootMenu, 10000000.0f);
-		}
-		
-		protected void clearAll(final CyNetworkView netView, final Set<View<? extends CyIdentifiable>> viewSet) {
-			// TODO Move it to a Task?
-			final Thread t = new Thread() {
-				
-				@Override
-				public void run() {
-					boolean changed = false;
-					
-					for (final View<? extends CyIdentifiable> view : viewSet) {
-						for (VisualProperty<?> vp : vpSet) {
-							if (view.isDirectlyLocked(vp)) {
-								view.clearValueLock(vp);
-								changed = true;
-							}
-						}
-					}
-
-					if (changed) {
-						final VisualStyle style = proxy.getCurrentVisualStyle();
-						style.apply(netView);
-						netView.updateView();
-					}
-				};
-			};
-			t.start();
 		}
 		
 		private void showVizMapperPanel(final Class<? extends CyIdentifiable> targetDataType) {

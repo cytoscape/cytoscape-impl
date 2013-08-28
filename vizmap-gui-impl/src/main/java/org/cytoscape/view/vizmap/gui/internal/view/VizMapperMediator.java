@@ -62,7 +62,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
@@ -74,6 +73,7 @@ import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
+import org.cytoscape.view.vizmap.gui.internal.model.RemoveLockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.GenerateValuesTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
@@ -524,13 +524,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				bypassMenu.add(new JMenuItem(new AbstractAction("Remove Bypass") {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						final Thread t = new Thread() {
-							@Override
-							public void run() {
-								removeLockedValue(e, vpSheetItem);
-							};
-						};
-						t.start();
+						removeLockedValue(e, vpSheetItem);
 					}
 				}));
 				
@@ -1086,7 +1080,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		if (curNetView == null)
 			return;
 		
-		final Class<? extends CyIdentifiable> targetDataType = model.getVisualProperty().getTargetDataType();
+		final Class<? extends CyIdentifiable> targetDataType = vp.getTargetDataType();
 		final Set<View<?>> selectedViews = new HashSet<View<?>>();
 		
 		if (targetDataType == CyNode.class)
@@ -1108,33 +1102,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		curNetView.updateView();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void removeLockedValue(final ActionEvent e, final VisualPropertySheetItem<?> vpSheetItem) {
-		// TODO: move to an asynchronous task
 		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
 		
 		if (curNetView != null) {
-			final VisualPropertySheetItemModel<?> model = vpSheetItem.getModel();
-			final Class<? extends CyIdentifiable> targetDataType = model.getVisualProperty().getTargetDataType();
-			final Set<View<?>> selectedViews = new HashSet<View<?>>();
-			
-			if (targetDataType == CyNode.class)
-				selectedViews.addAll(vmProxy.getSelectedNodeViews(curNetView));
-			else if (targetDataType == CyEdge.class)
-				selectedViews.addAll(vmProxy.getSelectedEdgeViews(curNetView));
-			else
-				selectedViews.add(curNetView);
-			
-			// Clear or set the new locked value to all selected elements
-			for (final View<?> view : selectedViews) {
-				view.clearValueLock(model.getVisualProperty());
-			}
-			
-			model.setLockedValue(null);
-			model.setLockedValueState(LockedValueState.ENABLED_NOT_SET);
-			
-			final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getVisualStyle(curNetView);
-			style.apply(curNetView);
-			curNetView.updateView();
+			final VisualProperty<?> visualProperty = vpSheetItem.getModel().getVisualProperty();
+			final RemoveLockedValuesVO vo = new RemoveLockedValuesVO((Set)Collections.singleton(visualProperty));
+			sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 		}
 	}
 
