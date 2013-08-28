@@ -85,8 +85,8 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 		List<CyNode> selectedNodes;
 		Set<CyEdge> selectedEdges;
 
-		List<CyNode> nodeList = tunables.getNodeList();
-		List<CyEdge> edgeList = tunables.getEdgeList();
+		List<CyNode> nodeList = tunables.getNodeList(false);
+		List<CyEdge> edgeList = tunables.getEdgeList(false);
 		if (tunables.getNetwork() != null)
 			network = tunables.getNetwork();
 		

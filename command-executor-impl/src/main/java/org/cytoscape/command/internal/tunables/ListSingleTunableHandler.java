@@ -24,6 +24,7 @@ package org.cytoscape.command.internal.tunables;
  * #L%
  */
 
+import org.cytoscape.command.AbstractStringTunableHandler;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 import java.lang.reflect.Field;

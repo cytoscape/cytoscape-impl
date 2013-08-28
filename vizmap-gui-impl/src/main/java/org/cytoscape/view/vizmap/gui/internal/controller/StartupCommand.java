@@ -2,12 +2,15 @@ package org.cytoscape.view.vizmap.gui.internal.controller;
 
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_VISUAL_STYLES;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.REMOVE_LOCKED_VALUES;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.REMOVE_VISUAL_MAPPINGS;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.SET_LOCKED_VALUES;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.STARTUP;
 
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
 import org.puremvc.java.multicore.interfaces.INotification;
@@ -22,27 +25,21 @@ public class StartupCommand extends SimpleCommand {
 	private final AttributeSetProxy attributeSetProxy;
 	private final MappingFunctionFactoryProxy mappingFactoryProxy;
 	private final VizMapperMediator vizMapperMediator;
-	private final  VizMapperMenuMediator vizMapperMenuMediator;
-	private final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand;
-	private final LoadVisualStylesCommand loadVisualStylesCommand;
-	private final RemoveVisualMappingsCommand removeVisualMappingsCommand;
+	private final VizMapperMenuMediator vizMapperMenuMediator;
+	private final ServicesUtil servicesUtil;
 	
 	public StartupCommand(final VizMapperProxy vizMapperProxy,
 						  final AttributeSetProxy attributeSetProxy,
 						  final MappingFunctionFactoryProxy mappingFactoryProxy,
 						  final VizMapperMediator vizMapperMediator,
 						  final VizMapperMenuMediator vizMapperMenuMediator,
-						  final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand,
-						  final LoadVisualStylesCommand loadVisualStylesCommand,
-						  final RemoveVisualMappingsCommand removeVisualMappingsCommand) {
+						  final ServicesUtil servicesUtil) {
 		this.vizMapperProxy = vizMapperProxy;
 		this.attributeSetProxy = attributeSetProxy;
 		this.mappingFactoryProxy = mappingFactoryProxy;
 		this.vizMapperMediator = vizMapperMediator;
 		this.vizMapperMenuMediator = vizMapperMenuMediator;
-		this.importDefaultVisualStylesCommand = importDefaultVisualStylesCommand;
-		this.loadVisualStylesCommand = loadVisualStylesCommand;
-		this.removeVisualMappingsCommand = removeVisualMappingsCommand;
+		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
@@ -57,9 +54,11 @@ public class StartupCommand extends SimpleCommand {
 		getFacade().registerMediator(vizMapperMenuMediator);
 		
 		// Register other commands
-		getFacade().registerCommand(LOAD_DEFAULT_VISUAL_STYLES, importDefaultVisualStylesCommand);
-		getFacade().registerCommand(LOAD_VISUAL_STYLES, loadVisualStylesCommand);
-		getFacade().registerCommand(REMOVE_VISUAL_MAPPINGS, removeVisualMappingsCommand);
+		getFacade().registerCommand(LOAD_DEFAULT_VISUAL_STYLES, new ImportDefaultVisualStylesCommand(servicesUtil));
+		getFacade().registerCommand(LOAD_VISUAL_STYLES, new LoadVisualStylesCommand(servicesUtil));
+		getFacade().registerCommand(REMOVE_VISUAL_MAPPINGS, new RemoveVisualMappingsCommand(servicesUtil));
+		getFacade().registerCommand(REMOVE_LOCKED_VALUES, new RemoveLockedValuesCommand(servicesUtil));
+		getFacade().registerCommand(SET_LOCKED_VALUES, new SetLockedValuesCommand(servicesUtil));
 
 		// Initialization of the visual styles list
 		getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);

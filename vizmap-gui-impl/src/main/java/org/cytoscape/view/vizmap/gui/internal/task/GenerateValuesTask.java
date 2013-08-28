@@ -24,7 +24,9 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -46,6 +48,8 @@ import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
@@ -53,18 +57,26 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 
 public class GenerateValuesTask extends AbstractTask {
 
+	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues;
+	private final Map<DiscreteMapping<?, ?>, Map<Object, ?>> newMappingValues;
 	private final DiscreteMappingGenerator<?> generator;
 	private final VizMapperMainPanel vizMapperPanel;
 	private final ServicesUtil servicesUtil;
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public GenerateValuesTask(final DiscreteMappingGenerator<?> generator,
 							  final VizMapperMainPanel vizMapperPanel,
 							  final ServicesUtil servicesUtil) {
 		this.generator = generator;
 		this.vizMapperPanel = vizMapperPanel;
 		this.servicesUtil = servicesUtil;
+		previousMappingValues = new HashMap<DiscreteMapping<?,?>, Map<Object, Object>>();
+		newMappingValues = new HashMap<DiscreteMapping<?,?>, Map<Object, ?>>();
 	}
 
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
 	@Override
 	public void run(final TaskMonitor monitor) throws Exception {
 		final VisualPropertySheet selVpSheet = vizMapperPanel.getSelectedVisualPropertySheet();
@@ -73,7 +85,6 @@ public class GenerateValuesTask extends AbstractTask {
 			return;
 		
 		final Set<VisualPropertySheetItem<?>> vpSheetItems = selVpSheet.getSelectedItems();
-// TODO Should not manipulate GUI components directly--change the [view]model instead!
 		
 		for (final VisualPropertySheetItem<?> vpsItem : vpSheetItems) {
 			final VisualPropertySheetItemModel<?> model = vpsItem.getModel();
@@ -92,12 +103,21 @@ public class GenerateValuesTask extends AbstractTask {
 						|| ((generator instanceof NumberSeriesMappingGenerator 
 								|| generator instanceof RandomNumberMappingGenerator)
 								&& Number.class.isAssignableFrom(vpValueType)) )
-					generateMapping(vpsItem, prop.getValue().toString(), vp);
+					generateValues(vpsItem, prop.getValue().toString(), vp);
 			}
+		}
+		
+		// Undo support
+		if (!previousMappingValues.isEmpty()) {
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new GenerateValuesEdit());
 		}
 	}
 
-	private void generateMapping(final VisualPropertySheetItem<?> vpsItem, final String attrName,
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void generateValues(final VisualPropertySheetItem<?> vpsItem, final String attrName,
 			final VisualProperty<?> vp) {
 		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
 		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
@@ -105,28 +125,61 @@ public class GenerateValuesTask extends AbstractTask {
 		if (!(mapping instanceof DiscreteMapping))
 			return;
 
-		final DiscreteMapping<Object, Object> discMapping = (DiscreteMapping) mapping;
+		final DiscreteMapping<Object, Object> dm = (DiscreteMapping) mapping;
 		final PropertySheetPanel propSheetPnl = vpsItem.getPropSheetPnl();
 		final SortedSet<Object> keySet = new TreeSet<Object>();
 
+		final Map<Object, Object> previousValues = new HashMap<Object, Object>();
+		
 		for (final Property p : propSheetPnl.getProperties()) {
 			final VizMapperProperty<?, ?, ?> vmp = (VizMapperProperty<?, ?, ?>) p;
 			
-			if (vmp.getCellType().equals(CellType.DISCRETE))
+			if (vmp.getCellType().equals(CellType.DISCRETE)) {
 				keySet.add(vmp.getKey());
+				
+				// Save the current value for undo
+				previousValues.put(vmp.getKey(), vmp.getValue());
+			}
 		}
 
-		final Map<Object, ?> map = generator.generateMap(keySet);
-
-		discMapping.putAll(map);
-
-		for (final Property p : propSheetPnl.getProperties()) {
-			final VizMapperProperty<?, ?, ?> vmp = (VizMapperProperty<?, ?, ?>) p;
+		if (!keySet.isEmpty()) {
+			// Generate values
+			final Map<Object, ?> newValues = generator.generateMap(keySet);
 			
-			if (vmp.getCellType().equals(CellType.DISCRETE))
-				vmp.setValue(discMapping.getMapValue(vmp.getKey()));
+			// Save the mapping->old_values for undo
+			previousMappingValues.put(dm, previousValues);
+			// Save the mapping->new_values for redo
+			newMappingValues.put(dm, newValues);
+			
+			// Update the visual mapping
+			dm.putAll(newValues);
+		}
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private class GenerateValuesEdit extends AbstractCyEdit {
+
+		public GenerateValuesEdit() {
+			super("Mapping Value Generators");
 		}
 
-		propSheetPnl.getTable().repaint();
+		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public void undo() {
+			for (final Entry<DiscreteMapping<?, ?>, Map<Object, Object>> entry : previousMappingValues.entrySet()) {
+				final DiscreteMapping dm = entry.getKey();
+				dm.putAll(entry.getValue());
+			}
+		}
+
+		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public void redo() {
+			for (final Entry<DiscreteMapping<?, ?>, Map<Object, ?>> entry : newMappingValues.entrySet()) {
+				final DiscreteMapping dm = entry.getKey();
+				dm.putAll(entry.getValue());
+			}
+		}
 	}
 }

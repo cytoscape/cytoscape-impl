@@ -27,6 +27,7 @@ package org.cytoscape.command.internal.tunables;
 import org.cytoscape.work.BasicTunableHandlerFactory;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.command.StringToModel;
+import org.cytoscape.command.StringTunableHandlerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

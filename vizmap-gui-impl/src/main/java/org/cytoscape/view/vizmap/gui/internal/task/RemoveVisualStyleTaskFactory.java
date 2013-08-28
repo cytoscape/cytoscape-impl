@@ -27,26 +27,32 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 
-public class DeleteVisualStyleTask extends AbstractTask {
+/**
+ * Creates a task that will remove the current {@link VisualStyle}.
+ */
+public class RemoveVisualStyleTaskFactory extends AbstractTaskFactory {
 
 	private final ServicesUtil servicesUtil;
 
-	public DeleteVisualStyleTask(final ServicesUtil servicesUtil) {
+	public RemoveVisualStyleTaskFactory(final ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public TaskIterator createTaskIterator() {
+		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		
+		return new TaskIterator(new RemoveVisualStyleTask(style, servicesUtil));
+	}
+	
+	@Override
+	public boolean isReady() {
 		final VisualMappingManager vmm = servicesUtil.get(VisualMappingManager.class);
-		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
-
-		if (vmm.getDefaultVisualStyle().equals(currentStyle))
-			throw new IllegalArgumentException("You cannot delete the default style.");
-
-		vmm.removeVisualStyle(currentStyle);
+		
+		return vmm != null && !vmm.getDefaultVisualStyle().equals(vmm.getCurrentVisualStyle());
 	}
 }

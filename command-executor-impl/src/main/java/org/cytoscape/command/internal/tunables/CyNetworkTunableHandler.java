@@ -24,6 +24,7 @@ package org.cytoscape.command.internal.tunables;
  * #L%
  */
 
+import org.cytoscape.command.AbstractStringTunableHandler;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.Tunable;

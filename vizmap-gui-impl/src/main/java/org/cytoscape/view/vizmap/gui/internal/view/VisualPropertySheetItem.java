@@ -239,6 +239,25 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	}
 	
 	public void updateMapping() {
+		final VisualMappingFunction<?, T> mapping = getModel().getVisualMappingFunction();
+		final VisualMappingFunctionFactory mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
+		
+		final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp = 
+				vizMapPropertyBuilder.getColumnProperty(getPropSheetPnl());
+		columnProp.setValue(mapping == null ? null : mapping.getMappingColumnName());
+		columnProp.setInternalValue(mappingFactory);
+		
+		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> mappingProp =
+				vizMapPropertyBuilder.getMappingTypeProperty(getPropSheetPnl());
+		mappingProp.setValue(mappingFactory);
+		mappingProp.setInternalValue(mapping);
+		
+		if (mapping == null)
+			vizMapPropertyBuilder.removeMappingProperties(getPropSheetPnl());
+		else
+			vizMapPropertyBuilder.createMappingProperties(mapping, getPropSheetPnl(), mappingFactory);
+		
+		
 		updateMappingIcon();
 		updateRemoveMappingBtn();
 		updateMappingRowHeight();
@@ -327,24 +346,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			@Override
 			@SuppressWarnings("unchecked")
 			public void propertyChange(final PropertyChangeEvent e) {
-				final VisualMappingFunction<?, T> mapping = (VisualMappingFunction<?, T>) e.getNewValue();
-				final VisualMappingFunctionFactory mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
-				
-				final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp = 
-						vizMapPropertyBuilder.getColumnProperty(getPropSheetPnl());
-				columnProp.setValue(mapping == null ? null : mapping.getMappingColumnName());
-				columnProp.setInternalValue(mappingFactory);
-				
-				final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> mappingProp =
-						vizMapPropertyBuilder.getMappingTypeProperty(getPropSheetPnl());
-				mappingProp.setValue(mappingFactory);
-				mappingProp.setInternalValue(mapping);
-				
-				if (mapping == null)
-					vizMapPropertyBuilder.removeMappingProperties(getPropSheetPnl());
-				else
-					vizMapPropertyBuilder.createMappingProperties(mapping, getPropSheetPnl(), mappingFactory);
-				
 				updateMapping();
 			}
 		});

@@ -41,9 +41,6 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.action.RemoveSelectedDiscreteValuesAction;
-import org.cytoscape.view.vizmap.gui.internal.controller.ImportDefaultVisualStylesCommand;
-import org.cytoscape.view.vizmap.gui.internal.controller.LoadVisualStylesCommand;
-import org.cytoscape.view.vizmap.gui.internal.controller.RemoveVisualMappingsCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
 import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
@@ -54,7 +51,7 @@ import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualMappingsTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.DeleteVisualStyleTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -131,10 +128,6 @@ public class CyActivator extends AbstractCyActivator {
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
 		final BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, continuousMappingCellRendererFactory);
 
-		final RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
-		final CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(servicesUtil);
-		final CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(servicesUtil);
-		
 		// Context menu for edge bend
 		final BendFactory bf = getService(bc, BendFactory.class);
 		
@@ -171,32 +164,34 @@ public class CyActivator extends AbstractCyActivator {
 		// Tasks
 		// -------------------------------------------------------------------------------------------------------------
 		final CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(servicesUtil);
-		final DeleteVisualStyleTaskFactory removeVisualStyleTaskFactory = new DeleteVisualStyleTaskFactory(servicesUtil);
-		
 		final Properties createNewVisualStyleTaskFactoryProps = new Properties();
 		createNewVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
 		createNewVisualStyleTaskFactoryProps.setProperty("title", "Create New Visual Style");
 		createNewVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc,createNewVisualStyleTaskFactory, createNewVisualStyleTaskFactoryProps);
 
+		final RemoveVisualStyleTaskFactory removeVisualStyleTaskFactory = new RemoveVisualStyleTaskFactory(servicesUtil);
 		final Properties removeVisualStyleTaskFactoryProps = new Properties();
 		removeVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
 		removeVisualStyleTaskFactoryProps.setProperty("title", "Remove Visual Style");
 		removeVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc,removeVisualStyleTaskFactory, removeVisualStyleTaskFactoryProps);
 
+		final RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
 		final Properties renameVisualStyleTaskFactoryProps = new Properties();
 		renameVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
 		renameVisualStyleTaskFactoryProps.setProperty("title", "Rename Visual Style");
 		renameVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc, renameVisualStyleTaskFactory, renameVisualStyleTaskFactoryProps);
 
+		final CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(servicesUtil);
 		final Properties copyVisualStyleTaskFactoryProps = new Properties();
 		copyVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
 		copyVisualStyleTaskFactoryProps.setProperty("title", "Copy Visual Style");
 		copyVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc, copyVisualStyleTaskFactory, copyVisualStyleTaskFactoryProps);
 
+		final CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(servicesUtil);
 		final Properties createLegendTaskFactoryProps = new Properties();
 		createLegendTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
 		createLegendTaskFactoryProps.setProperty("title", "Create Legend");
@@ -285,17 +280,12 @@ public class CyActivator extends AbstractCyActivator {
 																		  iconManager);
 		final VizMapperMenuMediator vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
 		
-		final ImportDefaultVisualStylesCommand importDefaultVisualStylesCommand = new ImportDefaultVisualStylesCommand(servicesUtil);
-		final LoadVisualStylesCommand loadVisualStylesCommand = new LoadVisualStylesCommand(servicesUtil);
-		final RemoveVisualMappingsCommand removeVisualMappingsCommand = new RemoveVisualMappingsCommand(servicesUtil);
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,
 																 attributeSetProxy,
 																 mappingFactoryProxy,
 																 vizMapperMediator,
 																 vizMapperMenuMediator,
-																 importDefaultVisualStylesCommand,
-																 loadVisualStylesCommand,
-																 removeVisualMappingsCommand);
+																 servicesUtil);
 		
 		registerAllServices(bc, vizMapperProxy, new Properties());
 		registerAllServices(bc, mappingFactoryProxy, new Properties());
