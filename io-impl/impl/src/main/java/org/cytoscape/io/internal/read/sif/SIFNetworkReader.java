@@ -33,7 +33,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -72,9 +71,8 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 	
 	public SIFNetworkReader(InputStream is, final CyLayoutAlgorithmManager layouts,
 			final CyNetworkViewFactory cyNetworkViewFactory, final CyNetworkFactory cyNetworkFactory,
-			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager,
-			final CyApplicationManager cyApplicationManager) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
+			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager) {
+		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.layouts = layouts;
 		
 		this.nMap = new HashMap<String, CyNode>(10000);

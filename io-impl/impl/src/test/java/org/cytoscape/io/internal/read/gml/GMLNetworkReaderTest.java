@@ -306,7 +306,7 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		final File file = new File(filename);
 		GMLNetworkReader reader = new GMLNetworkReader(new FileInputStream(file), netFactory, viewFactory,
 													   renderingEngineManager, unrecognizedVisualPropertyMgr, 
-													   networkManager, rootNetworkManager, cyApplicationManager);
+													   networkManager, rootNetworkManager);
 		reader.run(taskMonitor);
 		
 		return reader;
