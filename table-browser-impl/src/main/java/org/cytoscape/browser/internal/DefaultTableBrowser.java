@@ -77,7 +77,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private final JComboBox networkChooser;
 	private final Class<? extends CyIdentifiable> objType;
 
-	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.SELECTED;
+	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
 	private boolean ignoreSetCurrentNetwork = true;
 	
 	public DefaultTableBrowser(final String tabTitle,
