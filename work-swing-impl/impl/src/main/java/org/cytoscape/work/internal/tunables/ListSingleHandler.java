@@ -31,6 +31,8 @@ import javax.swing.*;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.util.ListSelection;
+import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import java.awt.*;
@@ -45,7 +47,8 @@ import java.awt.event.ActionListener;
  *
  * @param <T> type of items the List contains
  */
-public class ListSingleHandler<T> extends AbstractGUITunableHandler implements ActionListener {
+public class ListSingleHandler<T> extends AbstractGUITunableHandler
+                                  implements ActionListener, ListChangeListener<T> {
 	
 	private static final Font COMBOBOX_FONT = new Font("SansSerif", Font.PLAIN, 12);
 //	private static final Dimension DEF_LABEL_SIZE = new Dimension(300, 25);
@@ -167,5 +170,15 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		handle();
+	}
+
+	@Override
+	public void selectionChanged(ListSelection<T> source) {
+		update();
+	}
+
+	@Override
+	public void listChanged(ListSelection<T> source) {
+		update();
 	}
 }

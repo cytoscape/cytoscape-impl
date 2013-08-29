@@ -40,6 +40,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public final class DisplayBioPaxXmlTask implements Task {
 	public static final Logger log = LoggerFactory.getLogger(DisplayBioPaxXmlTask.class);
 	private final View<CyNode> nodeView;

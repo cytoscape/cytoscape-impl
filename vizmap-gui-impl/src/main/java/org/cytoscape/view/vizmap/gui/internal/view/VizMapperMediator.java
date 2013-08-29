@@ -62,19 +62,22 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedListener;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
+import org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.GenerateValuesTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem.MessageType;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel.VisualStyleDropDownButton;
@@ -83,6 +86,8 @@ import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 import org.puremvc.java.multicore.interfaces.INotification;
 import org.puremvc.java.multicore.patterns.mediator.Mediator;
 import org.slf4j.Logger;
@@ -90,7 +95,8 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 public class VizMapperMediator extends Mediator implements LexiconStateChangedListener, RowsSetListener, 
-														   UpdateNetworkPresentationListener {
+														   UpdateNetworkPresentationListener,
+														   VisualMappingFunctionChangedListener {
 
 	public static final String NAME = "VizMapperMediator";
 	
@@ -187,7 +193,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					updateVisualPropertySheets((VisualStyle) body);
 				}
 			});
-		} else if (id.equals(VISUAL_STYLE_UPDATED) && body == vmProxy.getCurrentVisualStyle()) {
+		} else if (id.equals(VISUAL_STYLE_UPDATED) && body != null && body.equals(vmProxy.getCurrentVisualStyle())) {
 			updateVisualPropertySheets((VisualStyle) body);
 		} else if (id.equals(CURRENT_NETWORK_VIEW_CHANGED)) {
 			updateLockedValues((CyNetworkView) body);
@@ -248,6 +254,31 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		if (view.equals(vmProxy.getCurrentNetworkView()))
 			updateLockedValues(view);
+	}
+	
+	@Override
+	public void handleEvent(final VisualMappingFunctionChangedEvent e) {
+		final VisualMappingFunction<?, ?> vm = e.getSource();
+		final VisualProperty<?> vp = vm.getVisualProperty();
+		final VisualStyle curStyle = vmProxy.getCurrentVisualStyle();
+		
+		// If the source mapping belongs to the current visual style, update the correspondent property sheet item
+		if (vm.equals(curStyle.getVisualMappingFunction(vp))) {
+			final VisualPropertySheet vpSheet = vizMapperMainPanel.getVisualPropertySheet(vp.getTargetDataType());
+			
+			if (vpSheet != null) {
+				final VisualPropertySheetItem<?> vpSheetItem = vpSheet.getItem(vp);
+				
+				if (vpSheetItem != null) {
+					invokeOnEDT(new Runnable() {
+						@Override
+						public void run() {
+							vpSheetItem.updateMapping();
+						}
+					});
+				}
+			}
+		}
 	}
 	
 	public VisualPropertySheetItem<?> getCurrentVisualPropertySheetItem() {
@@ -493,13 +524,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				bypassMenu.add(new JMenuItem(new AbstractAction("Remove Bypass") {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
-						final Thread t = new Thread() {
-							@Override
-							public void run() {
-								removeLockedValue(e, vpSheetItem);
-							};
-						};
-						t.start();
+						removeLockedValue(e, vpSheetItem);
 					}
 				}));
 				
@@ -576,8 +601,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 
 	protected void removeVisualMapping(final VisualPropertySheetItem<?> vpSheetItem) {
-		if (vpSheetItem.getModel().getVisualMappingFunction() != null)
-			vpSheetItem.getModel().setVisualMappingFunction(null);
+		final VisualMappingFunction<?, ?> vm = vpSheetItem.getModel().getVisualMappingFunction();
+		
+		if (vm != null)
+			sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, Collections.singleton(vm));
 	}
 
 	private void updateVisualStyleList(final SortedSet<VisualStyle> styles) {
@@ -612,6 +639,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void updateVisualPropertySheets(final VisualStyle vs) {
 		if (vs == null)
 			return;
@@ -997,19 +1025,35 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final VisualPropertySheetItemModel model = vpSheetItem.getModel();
 		final VisualProperty vp = model.getVisualProperty();
 
-		final VisualStyle curStyle = vmProxy.getCurrentVisualStyle();
-		final Object defaultVal = curStyle.getDefaultValue(vp);
-		Object newValue = null;
+		final VisualStyle style = vmProxy.getCurrentVisualStyle();
+		final Object oldValue = style.getDefaultValue(vp);
+		Object val = null;
 		
 		try {
 			final EditorManager editorMgr = servicesUtil.get(EditorManager.class);
-			newValue = editorMgr.showVisualPropertyValueEditor(vizMapperMainPanel, vp, defaultVal);
-		} catch (Exception ex) {
+			val = editorMgr.showVisualPropertyValueEditor(vizMapperMainPanel, vp, oldValue);
+		} catch (final Exception ex) {
 			logger.error("Error opening Visual Property values editor for: " + vp, ex);
 		}
 
-		if (newValue != null && !newValue.equals(defaultVal))
-			vpSheetItem.getModel().setDefaultValue(newValue);
+		final Object newValue = val;
+		
+		if (newValue != null && !newValue.equals(oldValue)) {
+			style.setDefaultValue(vp, newValue);
+			
+			// Undo support
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new AbstractCyEdit("Set Default Value") {
+				@Override
+				public void undo() {
+					style.setDefaultValue(vp, oldValue);
+				}
+				@Override
+				public void redo() {
+					style.setDefaultValue(vp, newValue);
+				}
+			});
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -1027,73 +1071,39 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 //			logger.error("Error opening Visual Property values editor for: " + vp, ex);
 		}
 		
-		if (newValue == null || newValue.equals(curValue))
-			return;
-		
-		// TODO: move to an asynchronous task
-		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
-		
-		if (curNetView == null)
-			return;
-		
-		final Class<? extends CyIdentifiable> targetDataType = model.getVisualProperty().getTargetDataType();
-		final Set<View<?>> selectedViews = new HashSet<View<?>>();
-		
-		if (targetDataType == CyNode.class)
-			selectedViews.addAll(vmProxy.getSelectedNodeViews(curNetView));
-		else if (targetDataType == CyEdge.class)
-			selectedViews.addAll(vmProxy.getSelectedEdgeViews(curNetView));
-		else
-			selectedViews.add(curNetView);
-		
-		// Clear or set the new locked value to all selected elements
-		for (final View<?> view : selectedViews) {
-			view.setLockedValue(vp, newValue);
+		if (newValue != null && !newValue.equals(curValue)) {
+			final LockedValuesVO vo = new LockedValuesVO((Map)Collections.singletonMap(vp, newValue));
+			sendNotification(NotificationNames.SET_LOCKED_VALUES, vo);
 		}
-		
-		model.setLockedValue(newValue);
-		model.setLockedValueState(newValue == null ? 
-				LockedValueState.ENABLED_NOT_SET : LockedValueState.ENABLED_UNIQUE_VALUE);
-		
-		curNetView.updateView();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void removeLockedValue(final ActionEvent e, final VisualPropertySheetItem<?> vpSheetItem) {
-		// TODO: move to an asynchronous task
-		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
-		
-		if (curNetView != null) {
-			final VisualPropertySheetItemModel<?> model = vpSheetItem.getModel();
-			final Class<? extends CyIdentifiable> targetDataType = model.getVisualProperty().getTargetDataType();
-			final Set<View<?>> selectedViews = new HashSet<View<?>>();
-			
-			if (targetDataType == CyNode.class)
-				selectedViews.addAll(vmProxy.getSelectedNodeViews(curNetView));
-			else if (targetDataType == CyEdge.class)
-				selectedViews.addAll(vmProxy.getSelectedEdgeViews(curNetView));
-			else
-				selectedViews.add(curNetView);
-			
-			// Clear or set the new locked value to all selected elements
-			for (final View<?> view : selectedViews) {
-				view.clearValueLock(model.getVisualProperty());
-			}
-			
-			model.setLockedValue(null);
-			model.setLockedValueState(LockedValueState.ENABLED_NOT_SET);
-			
-			final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getVisualStyle(curNetView);
-			style.apply(curNetView);
-			curNetView.updateView();
-		}
+		final VisualProperty<?> visualProperty = vpSheetItem.getModel().getVisualProperty();
+		final LockedValuesVO vo = new LockedValuesVO((Set)Collections.singleton(visualProperty));
+		sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 	}
 
 	private void onSelectedVisualStyleChanged(final PropertyChangeEvent e) {
-		final VisualStyle vs = (VisualStyle) e.getNewValue();
+		final VisualStyle newStyle = (VisualStyle) e.getNewValue();
+		final VisualStyle oldStyle = vmProxy.getCurrentVisualStyle();
 		
-		if (!ignoreVisualStyleSelectedEvents && vs != null && !vs.equals(vmProxy.getCurrentVisualStyle())) {
+		if (!ignoreVisualStyleSelectedEvents && newStyle != null && !newStyle.equals(oldStyle)) {
 			// Update proxy
-			vmProxy.setCurrentVisualStyle(vs);
+			vmProxy.setCurrentVisualStyle(newStyle);
+			
+			// Undo support
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new AbstractCyEdit("Set Current Visual Style") {
+				@Override
+				public void undo() {
+					vmProxy.setCurrentVisualStyle(oldStyle);
+				}
+				@Override
+				public void redo() {
+					vmProxy.setCurrentVisualStyle(newStyle);
+				}
+			});
 		}
 	}
 	

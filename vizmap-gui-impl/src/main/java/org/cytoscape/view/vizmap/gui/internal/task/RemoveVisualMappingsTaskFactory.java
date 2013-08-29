@@ -24,9 +24,13 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheet;
@@ -35,25 +39,31 @@ import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class DeleteVisualMappingsTaskFactory extends AbstractTaskFactory {
+public class RemoveVisualMappingsTaskFactory extends AbstractTaskFactory {
 
 	private final ServicesUtil servicesUtil;
 
-	public DeleteVisualMappingsTaskFactory(final ServicesUtil servicesUtil) {
+	public RemoveVisualMappingsTaskFactory(final ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		Set<VisualPropertySheetItem<?>> selectedItems = null;
+		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		final Set<VisualMappingFunction<?, ?>> mappings = new HashSet<VisualMappingFunction<?,?>>();
 		final VizMapGUI gui = servicesUtil.get(VizMapGUI.class);
 		
 		if (gui instanceof VizMapperMainPanel) {
 			final VisualPropertySheet vpSheet = ((VizMapperMainPanel)gui).getSelectedVisualPropertySheet();
-			selectedItems = vpSheet.getSelectedItems();
+			final Set<VisualPropertySheetItem<?>> selectedItems = vpSheet.getSelectedItems();
+			
+			for (VisualPropertySheetItem<?> item : selectedItems) {
+				if (item.getModel().getVisualMappingFunction() != null)
+					mappings.add(item.getModel().getVisualMappingFunction());
+			}
 		}
 		
-		return new TaskIterator(new DeleteVisualMappingsTask(selectedItems));
+		return new TaskIterator(new RemoveVisualMappingsTask(mappings, style, servicesUtil));
 	}
 	
 	@Override

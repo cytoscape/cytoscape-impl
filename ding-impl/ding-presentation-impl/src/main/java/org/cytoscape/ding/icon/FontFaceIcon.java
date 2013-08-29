@@ -34,6 +34,7 @@ import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
@@ -55,7 +56,7 @@ public class FontFaceIcon extends VisualPropertyIcon<Font> {
 	public void paintIcon(final Component c, final Graphics g, int x, int y) {
 		if (value != null) {
 			// First get a large image from the text value
-			final Font font = new Font(value.getFamily(), value.getStyle(), FONT_SIZE);
+			final Font font = new Font(value.getFontName(), value.getStyle(), FONT_SIZE);
 			final BufferedImage bi = createLargeImage(TEXT, font, c.getForeground());
 			
 			// Then down-sample the image to fit the required width and height
@@ -68,7 +69,7 @@ public class FontFaceIcon extends VisualPropertyIcon<Font> {
         final TextLayout layout = new TextLayout(text, font, frc);
         final Rectangle r = layout.getPixelBounds(null, 0, 0);
         
-        final BufferedImage bi = new BufferedImage(r.width + 2, r.height + 2, BufferedImage.TYPE_INT_ARGB);
+        final BufferedImage bi = new BufferedImage(r.width, r.height, BufferedImage.TYPE_INT_ARGB);
         
         final Graphics2D g2d = (Graphics2D) bi.getGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -91,11 +92,14 @@ public class FontFaceIcon extends VisualPropertyIcon<Font> {
 		
 		final AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
 		final Graphics2D g2d = (Graphics2D) g;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		double sh = scale*ih; // scaled height
-		double sw = scale*iw; // scaled width
-		int vpad = (int) ((c.getHeight() - sh) / 2.0);
-		int hpad = (int) ((c.getWidth() - sw) / 2.0);
+		final Rectangle2D r2d = scaleOp.getBounds2D(bi);
+		double sh = r2d.getHeight(); // scaled height
+		double sw = r2d.getWidth(); // scaled width
+		int vpad = (int) (y + (height - sh) / 2.0);
+		int hpad = (int) (x + (width - sw) / 2.0);
+		
 		g2d.drawImage(bi, scaleOp, hpad, vpad); // draw it centered
 	}
 }

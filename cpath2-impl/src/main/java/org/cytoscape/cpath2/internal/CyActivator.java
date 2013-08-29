@@ -41,7 +41,6 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 
 import org.cytoscape.cpath2.internal.web_service.CytoscapeCPathWebService;
-import org.cytoscape.cpath2.internal.cytoscape.BinarySifVisualStyleUtil;
 import org.cytoscape.cpath2.internal.CPath2Factory;
 
 
@@ -53,7 +52,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import java.util.Properties;
 
 
-
+//TODO this entire bundle is to be independent app (deprecated by the way), optionally available from the Cy3 Apps Store; should not be in the cytoscape-impl
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
 		super();
@@ -78,8 +77,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory discreteMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=discrete)");
 		VisualMappingFunctionFactory passthroughMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		
-		BinarySifVisualStyleUtil binarySifVisualStyleUtil = new BinarySifVisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFactoryRef,passthroughMappingFactoryRef);
-		CPath2Factory cPath2Factory = new CPath2Factory(cySwingApplicationRef,taskManagerRef, openBrowserRef,cyNetworkManagerRef,cyApplicationManagerRef,cyNetworkViewManagerRef,cyNetworkReaderManagerRef,cyNetworkNamingRef,cyNetworkFactoryRef,cyLayoutsRef,undoSupportRef,binarySifVisualStyleUtil,visualMappingManagerRef);
+		CPath2Factory cPath2Factory = new CPath2Factory(cySwingApplicationRef,taskManagerRef, openBrowserRef,cyNetworkManagerRef,cyApplicationManagerRef,cyNetworkViewManagerRef,cyNetworkReaderManagerRef,cyNetworkNamingRef,cyNetworkFactoryRef,cyLayoutsRef,undoSupportRef,visualMappingManagerRef);
 		CytoscapeCPathWebService cPathWebService = new CytoscapeCPathWebService(cPath2Factory);
 		
 		registerAllServices(bc,cPathWebService, new Properties());

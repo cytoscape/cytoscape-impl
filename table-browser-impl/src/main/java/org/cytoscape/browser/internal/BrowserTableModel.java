@@ -49,6 +49,11 @@ import org.cytoscape.model.events.RowsCreatedListener;
 
 
 public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener {
+	public static enum ViewMode {
+		ALL,
+		SELECTED,
+		AUTO
+	}
 
 	private static final long serialVersionUID = -517521404005631245L;
 
@@ -57,9 +62,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	private final EquationCompiler compiler;
 
 	private final CyTableManager tableManager;
-
-	// If this is FALSE then we show all rows
-	private boolean regularViewMode;
+	private ViewMode viewMode;
 
 	private List<String> attrNames;
 	
@@ -74,7 +77,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			final CyTableManager tableManager) {
 		this.dataTable = dataTable;
 		this.compiler = compiler;
-		this.regularViewMode = false; 
+		this.viewMode = ViewMode.ALL; 
 		this.tableManager = tableManager;
 		this.tableType = tableType;
 
@@ -119,11 +122,23 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			return 0;
 
 		// Show selection mode OR all rows
-		if (regularViewMode)
-			return dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE).size();
-		else
-			return dataTable.getRowCount();
-
+		int count = 0;
+		switch (viewMode) {
+			case SELECTED:
+				count = dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE).size();
+				break;
+			case ALL:
+				count = dataTable.getRowCount();
+				break;
+			case AUTO:
+				count = dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE).size();
+				if (count == 0)
+					count = dataTable.getRowCount();
+				break;
+		}
+		//System.out.println("getRowCount: " + viewMode + " " + Integer.toString(count));
+		//dumpTable(dataTable);
+		return count;
 	}
 
 	// this should return the number of columns in model
@@ -159,13 +174,22 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	}
 
 	public CyRow getCyRow(final int rowIndex) {
-		if (regularViewMode) {
-			if (selectedRows == null)
-				selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
-			return selectedRows.get(rowIndex);
-		} else {
-			return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
+		switch (viewMode) {
+			case SELECTED:
+				if (selectedRows == null)
+					selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+				return selectedRows.get(rowIndex);
+			case ALL:
+				return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
+			case AUTO:
+				if (selectedRows == null)
+					selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+				if (selectedRows.size() > 0)
+					return selectedRows.get(rowIndex);
+				else
+					return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 		}
+		return null;
 	}
 
 
@@ -290,6 +314,18 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	 * 
 	 * @param showAll
 	 */
+	void setViewMode(ViewMode viewMode) {
+		selectedRows = null;
+		//System.out.println("setViewMode: " + viewMode);
+		final CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
+		if (viewMode != ViewMode.ALL && selectedColumn != null && selectedColumn.getType() == Boolean.class)
+			this.viewMode = viewMode;
+		else
+			this.viewMode = ViewMode.ALL;
+			//System.out.println("setViewMode excepted; is now: " + viewMode);
+		//dumpTable(dataTable);
+	}
+/*
 	void setShowAll(boolean showAll) {
 		// only set to regular view mode if selected column exists
 		if ( !showAll ) {
@@ -301,14 +337,21 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			regularViewMode = false;
 		}
 	}
+	*/
 
-	void updateShowAll() {
+	void updateViewMode() {
 		fireTableDataChanged();
 	}
 
+	ViewMode getViewMode() {
+		return viewMode;
+	}
+
+/*
 	boolean isShowAll() {
 		return !regularViewMode;
 	}
+	*/
 
 
 	public String getCyColumnName( final int column){
@@ -477,5 +520,29 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 
 	public Class<? extends CyIdentifiable> getTableType() {
 		return tableType;
+	}
+
+	private static void dumpTable(final CyTable table) {
+		System.out.println("Begin Table: " + table.getTitle());
+		final Collection<CyColumn> cols = table.getColumns();
+		for (final CyColumn col : cols) {
+			System.out.print(col.getName());
+			System.out.print('\t');
+		}
+		System.out.println();
+		for (final CyColumn col : cols) {
+			System.out.print(col.getType().getSimpleName());
+			System.out.print('\t');
+		}
+		System.out.println();
+		for (final CyRow row : table.getAllRows()) {
+			for (final CyColumn col : cols) {
+				System.out.print(row.getRaw(col.getName()));
+				System.out.print('\t');
+			}
+			System.out.println();
+		}
+		System.out.println("End Table");
+		System.out.println();
 	}
 }

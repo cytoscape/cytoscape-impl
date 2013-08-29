@@ -31,6 +31,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.command.StringToModel;
+import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.command.util.RowList;

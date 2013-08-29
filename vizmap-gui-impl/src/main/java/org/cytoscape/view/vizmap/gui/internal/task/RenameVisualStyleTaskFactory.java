@@ -39,7 +39,9 @@ public class RenameVisualStyleTaskFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new RenameVisualStyleTask(servicesUtil));
+		final VisualMappingManager vmm = servicesUtil.get(VisualMappingManager.class);
+		
+		return new TaskIterator(new RenameVisualStyleTask(vmm.getCurrentVisualStyle(), servicesUtil));
 	}
 	
 	@Override

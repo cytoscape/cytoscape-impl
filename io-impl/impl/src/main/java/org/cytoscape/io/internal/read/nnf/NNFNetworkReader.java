@@ -32,12 +32,14 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -48,7 +50,6 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 /**
  * Reader for graphs in the interactions file format. Given the filename,
@@ -65,18 +66,18 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 
 	public NNFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			CyNetworkManager cyNetworkManagerServiceRef, CyRootNetworkManager cyRootNetworkFactory,  CyApplicationManager cyApplicationManager) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManagerServiceRef, cyRootNetworkFactory, cyApplicationManager);
+			CyNetworkManager cyNetworkManagerServiceRef, CyRootNetworkManager cyRootNetworkFactory) {
+		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManagerServiceRef, cyRootNetworkFactory);
 		this.layouts = layouts;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
 		
-		this.initNodeMap();
-		CyRootNetwork rootNetwork = this.getRootNetwork();
+		final CyRootNetwork rootNetwork = getRootNetwork();
+		Map<Object, CyNode> nMap = this.getNodeMap();
 		
-		this.parser = new NNFParser(rootNetwork, this.nMap);
+		this.parser = new NNFParser(rootNetwork, cyNetworkFactory, nMap);
 		
 		try {
 			readInput(tm);
@@ -87,7 +88,8 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 			}
 		}
 	}
-
+	
+	
 	private void readInput(TaskMonitor tm) throws IOException {
 		this.parentTaskMonitor = tm;
 		tm.setProgress(0.0);
@@ -127,13 +129,13 @@ public class NNFNetworkReader extends AbstractNetworkReader {
 			throw new IOException("Input NNF file is empty!");
 		}
 
-		this.cyNetworks = new CyNetwork[parser.getNetworks().size()]; 
+		this.networks = new CyNetwork[parser.getNetworks().size()]; 
 		
 		Iterator<CyNetwork> it = parser.getNetworks().iterator();
 		
 		int i=0;
 		while(it.hasNext()){
-			this.cyNetworks[i++] = it.next();
+			this.networks[i++] = it.next();
 		}
 		
 		tm.setProgress(1.0);

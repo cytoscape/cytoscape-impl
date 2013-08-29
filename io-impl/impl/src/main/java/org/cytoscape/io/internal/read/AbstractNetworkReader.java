@@ -24,255 +24,253 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
-
-//import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.internal.util.ReadUtils;
-import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+public abstract class AbstractNetworkReader extends AbstractTask implements
+		CyNetworkReader {
 
-public abstract class AbstractNetworkReader extends AbstractTask implements CyNetworkReader {
-	
+	private static final String CREATE_NEW_COLLECTION_STRING = "Create new network collection";
+
+	private final Map<String, CyRootNetwork> name2RootMap;
+	private final Map<Object, CyNode> nodeMap;
+
+	private ListSingleSelection<String> rootNetworkList;
+	private ListSingleSelection<String> sourceColumnList;
+	private ListSingleSelection<String> targetColumnList;
+
 	/**
-	 * If this option is selected, reader should create new CyRootNetwork.
+	 * Data stream for the networks to be created.
 	 */
-	public static final String CREATE_NEW_COLLECTION_STRING ="Create new network collection";
-
-	protected CyNetwork[] cyNetworks;
-
-	protected VisualStyle[] visualstyles;
 	protected InputStream inputStream;
 
+	/**
+	 * Array of networks to be returned.
+	 */
+	protected CyNetwork[] networks;
+
+	/**
+	 * Will be used for creating network views.
+	 */
 	protected final CyNetworkViewFactory cyNetworkViewFactory;
+
+	/**
+	 * Will be used to create new CySubNetwork if this reader needs to create
+	 * new CyRootNetwork.
+	 */
 	protected final CyNetworkFactory cyNetworkFactory;
 
-	protected final CyNetworkManager cyNetworkManager;;
-	protected final CyRootNetworkManager cyRootNetworkManager;
+	@ProvidesTitle
+	public String getTitle() {
+		return "Import Network";
+	}
 
-	//******** tunables ********************
+	@Tunable(description = "Mapping Column for New Network:", groups = " ")
+	public ListSingleSelection<String> getSourceColumnList() {
+		return sourceColumnList;
+	}
 
-	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection" ,groups=" ")
-	public ListSingleSelection<String> getRootNetworkList(){
+	public void setSourceColumnList(ListSingleSelection<String> colList) {
+		this.sourceColumnList = colList;
+	}
+
+	@Tunable(description = "Mapping Column for Existing Network:", groups = " ", listenForChange = { "RootNetworkList" })
+	public ListSingleSelection<String> getTargetColumnList() {
+		return targetColumnList;
+	}
+
+	public void setTargetColumnList(ListSingleSelection<String> colList) {
+		this.targetColumnList = colList;
+		// looks like this does not have any effect, is this a bug?
+		this.targetColumnList.setSelectedValue(CyRootNetwork.SHARED_NAME);
+	}
+
+	@Tunable(description = "Network Collection:", groups = " ")
+	public ListSingleSelection<String> getRootNetworkList() {
 		return rootNetworkList;
 	}
-	public void setRootNetworkList (ListSingleSelection<String> roots){
-		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
+
+	public void setRootNetworkList(final ListSingleSelection<String> roots) {
+		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(
+				CREATE_NEW_COLLECTION_STRING)) {
 			// set default
 			List<String> colNames = new ArrayList<String>();
-			colNames.add("shared name");
+			colNames.add(CyRootNetwork.SHARED_NAME);
 			targetColumnList = new ListSingleSelection<String>(colNames);
 			return;
 		}
-		targetColumnList = getTargetColumns(name2RootMap.get(rootNetworkList.getSelectedValue()));
+		targetColumnList = getTargetColumns(name2RootMap.get(rootNetworkList
+				.getSelectedValue()));
 	}
 
-	public ListSingleSelection<String> sourceColumnList;
-	@Tunable(description = "Mapping Column for New Network:", groups=" ")
-	public ListSingleSelection<String> getSourceColumnList(){
-		return sourceColumnList;
-	}
-	public void setSourceColumnList(ListSingleSelection<String> colList){
-		this.sourceColumnList = colList;
-	}
-	
-	public ListSingleSelection<String> targetColumnList;
-	@Tunable(description = "Mapping Column for Existing Network:",groups=" ", listenForChange={"RootNetworkList"})
-	public ListSingleSelection<String> getTargetColumnList(){
-		return targetColumnList;
-	}
-	public void setTargetColumnList(ListSingleSelection<String> colList){
-		this.targetColumnList = colList;
+	private final ListSingleSelection<String> getTargetColumns(
+			final CyNetwork network) {
+		final CyTable selectedTable = network.getTable(CyNode.class,
+				CyRootNetwork.SHARED_ATTRS);
+		final List<String> colNames = new ArrayList<String>();
 
-		// looks like this does not have any effect, is this a bug?
-		this.targetColumnList.setSelectedValue("shared name");
-	}
-	
-	
-	@ProvidesTitle
-	public String getTitle() {
-		return "Import Network ";
-	}
-
-	
-	public ListSingleSelection<String> getTargetColumns (CyNetwork network) {
-		CyTable selectedTable = network.getTable(CyNode.class, CyRootNetwork.SHARED_ATTRS);
-
-		List<String> colNames = new ArrayList<String>();
-		
 		// Work-around to make the "shared name" the first in the list
 		boolean containSharedName = false;
 		// check if "shared name" column exist
-		if (CyTableUtil.getColumnNames(selectedTable).contains("shared name")){
+		if (CyTableUtil.getColumnNames(selectedTable).contains(
+				CyRootNetwork.SHARED_NAME)) {
 			containSharedName = true;
-			colNames.add("shared name");
+			colNames.add(CyRootNetwork.SHARED_NAME);
 		}
-		
-		for(CyColumn col: selectedTable.getColumns()) {
+
+		for (final CyColumn col : selectedTable.getColumns()) {
 			// Exclude SUID from the mapping key list
-			if (col.getName().equalsIgnoreCase("SUID")){
+			if (col.getName().equalsIgnoreCase(CyIdentifiable.SUID)) {
 				continue;
 			}
-			
-			if (col.getName().equalsIgnoreCase("shared name") && containSharedName){
+
+			if (col.getName().equalsIgnoreCase(CyRootNetwork.SHARED_NAME)
+					&& containSharedName) {
 				// "shared name" is already added in the first
 				continue;
 			}
 			colNames.add(col.getName());
 		}
-		
-		ListSingleSelection<String> columns = new ListSingleSelection<String>(colNames);
-		
-		return columns;
+
+		return new ListSingleSelection<String>(colNames);
 	}
 
-	
-	protected HashMap<String, CyRootNetwork> name2RootMap;
-	protected Map<Object, CyNode> nMap = new HashMap<Object, CyNode>(10000);
+	/**
+	 * 
+	 * 
+	 * @param inputStream
+	 * @param cyNetworkViewFactory
+	 * @param cyNetworkFactory
+	 * @param cyNetworkManager
+	 * @param cyRootNetworkManager
+	 * @param cyApplicationManager
+	 */
+	public AbstractNetworkReader(final InputStream inputStream,
+			final CyNetworkViewFactory cyNetworkViewFactory,
+			final CyNetworkFactory cyNetworkFactory,
+			final CyNetworkManager cyNetworkManager,
+			final CyRootNetworkManager cyRootNetworkManager) {
 
-	protected CyApplicationManager cyApplicationManager;
-	
-	public AbstractNetworkReader(InputStream inputStream, final CyNetworkViewFactory cyNetworkViewFactory,
-			final CyNetworkFactory cyNetworkFactory, final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager,
-			CyApplicationManager cyApplicationManager) {
 		if (inputStream == null)
 			throw new NullPointerException("Input stream is null");
 		if (cyNetworkViewFactory == null)
 			throw new NullPointerException("CyNetworkViewFactory is null");
 		if (cyNetworkFactory == null)
 			throw new NullPointerException("CyNetworkFactory is null");
+		if (cyRootNetworkManager == null)
+			throw new NullPointerException("CyRootNetworkManager is null");
 
 		this.inputStream = inputStream;
 		this.cyNetworkViewFactory = cyNetworkViewFactory;
 		this.cyNetworkFactory = cyNetworkFactory;
-		this.cyNetworkManager = cyNetworkManager;
-		this.cyRootNetworkManager = cyRootNetworkManager;
-		this.cyApplicationManager = cyApplicationManager;
-		
+
 		// initialize the network Collection
-		this.name2RootMap = ReadUtils.getRootNetworkMap(this.cyNetworkManager, this.cyRootNetworkManager);
-		
-		List<String> rootNames = new ArrayList<String>();
+		this.name2RootMap = getRootNetworkMap(cyNetworkManager, cyRootNetworkManager);
+		this.nodeMap = new HashMap<Object, CyNode>(10000);
+
+		final List<String> rootNames = new ArrayList<String>();
 		rootNames.add(CREATE_NEW_COLLECTION_STRING);
 		rootNames.addAll(name2RootMap.keySet());
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
-		
-		if (!SessionUtil.isReadingSessionFile()) {
-			final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
-			
-			if (selectedNetworks != null && selectedNetworks.size() > 0){
-				CyNetwork selectedNetwork = this.cyApplicationManager.getSelectedNetworks().get(0);
-				String rootName = "";
-				if (selectedNetwork instanceof CySubNetwork){
-					CySubNetwork subnet = (CySubNetwork) selectedNetwork;
-					CyRootNetwork rootNet = subnet.getRootNetwork();
-					rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
-				} else {
-					// it is a root network
-					rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
-				}
-				
-				rootNetworkList.setSelectedValue(rootName);
-			}
-		}
-		
+
 		// initialize target attribute list
-		List<String> colNames_target = new ArrayList<String>();
-		colNames_target.add("shared name");
+		final List<String> colNames_target = new ArrayList<String>();
+		colNames_target.add(CyRootNetwork.SHARED_NAME);
 		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
-	
+
 		// initialize source attribute list
-		List<String> colNames_source = new ArrayList<String>();
-		colNames_source.add("shared name");
+		final List<String> colNames_source = new ArrayList<String>();
+		colNames_source.add(CyRootNetwork.SHARED_NAME);
 		this.sourceColumnList = new ListSingleSelection<String>(colNames_source);
-	
 	}
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		return cyNetworks;
+		return networks;
 	}
-	
-	// Return the rootNetwork based on user selection, if not existed yet, create a new one
-	protected CyRootNetwork getRootNetwork(){
-		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
-		CyRootNetwork rootNetwork = this.name2RootMap.get(networkCollectionName);
 
-		if (networkCollectionName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
-			CyNetwork newNet = this.cyNetworkFactory.createNetwork();
-			return this.cyRootNetworkManager.getRootNetwork(newNet);
+	/**
+	 * 
+	 * Get target network collection, i.e., parent root network for all networks
+	 * to be loaded.
+	 * 
+	 * @return Root network for this network collection. If there is no such
+	 *         root, returns null.
+	 * 
+	 */
+	protected final CyRootNetwork getRootNetwork() {
+		final String networkCollectionName = this.rootNetworkList
+				.getSelectedValue();
+		final CyRootNetwork rootNetwork = this.name2RootMap
+				.get(networkCollectionName);
+
+		if (rootNetwork != null) {
+			// Initialize the map of nodes only when we add network to existing
+			// collection.
+			this.initNodeMap(rootNetwork);
 		}
-
 		return rootNetwork;
 	}
-	
-	// Build the key-node map for the entire root network
-	// Note: The keyColName should start with "shared"
-	protected void initNodeMap(){	
-		
-		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
-		CyRootNetwork rootNetwork = this.name2RootMap.get(networkCollectionName);
-		
-		if (networkCollectionName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)){
-			return;
+
+	/**
+	 * Returns map from key value to existing CyNode.
+	 * 
+	 * @return
+	 */
+	protected Map<Object, CyNode> getNodeMap() {
+		return this.nodeMap;
+	}
+
+	private final void initNodeMap(final CyRootNetwork rootNetwork) {
+		final String keyColumnName = this.getTargetColumnList()
+				.getSelectedValue();
+
+		final List<CyNode> nodes = rootNetwork.getNodeList();
+		for (final CyNode node : nodes) {
+			final Object keyValue = rootNetwork.getRow(node).getRaw(
+					keyColumnName);
+			if (keyValue != null) {
+				this.nodeMap.put(keyValue, node);
+			}
+		}
+	}
+
+	private final Map<String, CyRootNetwork> getRootNetworkMap(
+			CyNetworkManager cyNetworkManager,
+			CyRootNetworkManager cyRootNetworkManager) {
+
+		final Map<String, CyRootNetwork> name2RootMap = new HashMap<String, CyRootNetwork>();
+
+		for (CyNetwork net : cyNetworkManager.getNetworkSet()) {
+			final CyRootNetwork rootNet = cyRootNetworkManager.getRootNetwork(net);
+			if (!name2RootMap.containsValue(rootNet))
+				name2RootMap.put(
+						rootNet.getRow(rootNet).get(CyRootNetwork.NAME,
+								String.class), rootNet);
 		}
 
-		String targetKeyColName = this.targetColumnList.getSelectedValue();
-		
-		if (rootNetwork == null){
-			return;
-		}
-		
-		Iterator<CyNode> it = rootNetwork.getNodeList().iterator();
-		
-		while (it.hasNext()){
-			CyNode node = it.next();
-			Object keyValue =  rootNetwork.getRow(node).getRaw(targetKeyColName);
-			this.nMap.put(keyValue, node);				
-		}
+		return name2RootMap;
 	}
-	
-	// The following is replaced by the above one, it should be removed late
-	
-	// Build the key-node map for the entire root network
-	protected void initNodeMap(CyRootNetwork rootNetwork, String keyColName){	
-		// Note: The keyColName should start with "shared"
-		
-		if (rootNetwork == null){
-			return;
-		}
-		
-		Iterator<CyNode> it = rootNetwork.getNodeList().iterator();
-		
-		while (it.hasNext()){
-			CyNode node = it.next();
-			Object keyValue =  rootNetwork.getRow(node).getRaw(keyColName);
-			this.nMap.put(keyValue, node);				
-		}
-	}
+
 }

@@ -51,7 +51,7 @@ public class StrokeIcon extends VisualPropertyIcon<Stroke> {
 		
 		double x1 = x;
 		double y1 = y + height / 2.0;
-		double x2 = x + width;
+		double x2 = x1 + width;
 		double y2 = y1;
 		g2d.draw(new Line2D.Double(x1, y1, x2, y2));
 	}

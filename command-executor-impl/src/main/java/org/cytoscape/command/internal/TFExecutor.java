@@ -49,6 +49,7 @@ class TFExecutor implements Executor {
 	}
 
 	public void execute(String args, TaskObserver observer) throws Exception {
+		interceptor.setConfigurationContext((String)null); // Reset TunableInterceptor
 		// TODO
 		// At some point in the future, this code should be reorganized into
 		// a proper TaskManager - that's really what's happening here.
@@ -66,6 +67,7 @@ class TFExecutor implements Executor {
 	}
 
 	public void execute(Map<String, Object> args, TaskObserver observer) throws Exception {
+		interceptor.setConfigurationContext((Map<String, Object>)null); // Reset TunableInterceptor
 		TaskIterator ti = tf.createTaskIterator();
 		while (ti.hasNext()) {
 			Task t = ti.next();

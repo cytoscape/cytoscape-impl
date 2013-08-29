@@ -49,7 +49,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.biopax.internal.BioPaxFilter;
 import org.cytoscape.biopax.internal.action.BioPaxViewTracker;
 import org.cytoscape.biopax.internal.BioPaxReaderTaskFactory;
-import org.cytoscape.biopax.internal.util.BioPaxVisualStyleUtil;
+import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.biopax.internal.view.BioPaxContainer;
 import org.cytoscape.biopax.internal.view.BioPaxDetailsPanel;
 import org.cytoscape.biopax.internal.view.BioPaxCytoPanelComponent;
@@ -99,7 +99,7 @@ public class CyActivator extends AbstractCyActivator {
 		LaunchExternalBrowser launchExternalBrowser = new LaunchExternalBrowser(openBrowserRef);	
 		BioPaxDetailsPanel bioPaxDetailsPanel = new BioPaxDetailsPanel(launchExternalBrowser);
 		BioPaxContainer bioPaxContainer = new BioPaxContainer(launchExternalBrowser,cyApplicationManagerRef,cyNetworkViewManagerRef,bioPaxDetailsPanel,cySwingApplicationRef);
-		BioPaxVisualStyleUtil bioPaxVisualStyleUtil = new BioPaxVisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFunctionFactoryRef,passthroughMappingFunctionFactoryRef);
+		VisualStyleUtil bioPaxVisualStyleUtil = new VisualStyleUtil(visualStyleFactoryRef,visualMappingManagerRef,discreteMappingFunctionFactoryRef,passthroughMappingFunctionFactoryRef);
 		BioPaxViewTracker bioPaxViewTracker = new BioPaxViewTracker(bioPaxDetailsPanel,bioPaxContainer, cyApplicationManagerRef, 
 				visualMappingManagerRef, bioPaxVisualStyleUtil, cyLayoutsRef, taskManagerRef, cytoscapePropertiesServiceRef, cySwingApplicationRef);
 		InputStreamTaskFactory inputStreamTaskFactory = new BioPaxReaderTaskFactory(

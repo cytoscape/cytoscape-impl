@@ -255,7 +255,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		final BrowserTableModel btModel = (BrowserTableModel) model;
 
-		if (btModel.isShowAll() == false)
+		//if (btModel.isShowAll() == false)
+		if (btModel.getViewMode() == BrowserTableModel.ViewMode.SELECTED)
 			return;
 
 		final CyTable table = btModel.getDataTable();
@@ -869,7 +870,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		if (e.getSource() != dataTable)
 			return;		
 
-		if (!model.isShowAll()) {
+		//if (!model.isShowAll()) {
+		if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED || model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
 			model.clearSelectedRows();
 			boolean foundANonSelectedColumnName = false;
 			for (final RowSetRecord rowSet : e.getPayloadCollection()) {
@@ -887,7 +889,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		final Collection<RowSetRecord> rows = e.getPayloadCollection();
 
 		synchronized (this) {
-			if (!model.isShowAll()) {
+			//if (!model.isShowAll()) {
+			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED || model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
 				model.fireTableDataChanged();
 			} else {
 				//table.clearSelection();

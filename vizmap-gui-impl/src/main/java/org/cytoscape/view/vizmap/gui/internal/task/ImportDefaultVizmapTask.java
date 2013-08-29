@@ -40,6 +40,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -50,24 +51,20 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 	private static final Logger logger = LoggerFactory.getLogger(ImportDefaultVizmapTask.class);
 	private static final String PRESET_VIZMAP_FILE = "default_vizmap.xml";
 
-	private final VisualMappingManager vmm;
-	private final VizmapReaderManager vizmapReaderMgr;
-	private final RenderingEngineManager renderingEngineMgr;
+	private final ServicesUtil servicesUtil;
 	private final File vizmapFile;
 
-	public ImportDefaultVizmapTask(final VizmapReaderManager vizmapReaderMgr,
-								   final VisualMappingManager vmm,
-								   final CyApplicationConfiguration config,
-								   final RenderingEngineManager renderingEngineMgr) {
-		this.vizmapReaderMgr = vizmapReaderMgr;
-		this.vmm = vmm;
-		this.renderingEngineMgr = renderingEngineMgr;
+	public ImportDefaultVizmapTask(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
+
+		final CyApplicationConfiguration config = servicesUtil.get(CyApplicationConfiguration.class);
 		this.vizmapFile = new File(config.getConfigurationDirectoryLocation(), PRESET_VIZMAP_FILE);
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		final VizmapReader reader;
+		final VizmapReaderManager vizmapReaderMgr = servicesUtil.get(VizmapReaderManager.class);
 
 		if (vizmapFile.exists() == false) {
 			// get the file from resource
@@ -82,29 +79,26 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 		if (reader == null)
 			throw new NullPointerException("Failed to find Default Vizmap loader.");
 
-		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader, vmm, renderingEngineMgr));
+		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader, servicesUtil));
 	}
 
 	private static final class AddVisualStylesTask extends AbstractTask {
 
 		private final VizmapReader reader;
-		private final VisualMappingManager vmMgr;
-		private final RenderingEngineManager renderingEngineMgr;
+		private final ServicesUtil servicesUtil;
 
-		public AddVisualStylesTask(final VizmapReader reader,
-								   final VisualMappingManager vmMgr,
-								   final RenderingEngineManager renderingEngineMgr) {
+		public AddVisualStylesTask(final VizmapReader reader, final ServicesUtil servicesUtil) {
 			this.reader = reader;
-			this.vmMgr = vmMgr;
-			this.renderingEngineMgr = renderingEngineMgr;
+			this.servicesUtil = servicesUtil;
 		}
 
 		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
+		public void run(final TaskMonitor taskMonitor) throws Exception {
 			taskMonitor.setTitle("Loading preset Visual Styles...");
 			final Set<VisualStyle> styles = reader.getVisualStyles();
 
 			if (styles != null) {
+				final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 				final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
 				final String DEFAULT_STYLE_NAME = defStyle.getTitle();
 				VisualStyle newDefStyle = null;
@@ -166,6 +160,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 				target.removeVisualPropertyDependency(dep);
 			
 			// Copy the default visual properties, mappings and dependencies from source to target
+			final RenderingEngineManager renderingEngineMgr = servicesUtil.get(RenderingEngineManager.class);
 			final VisualLexicon lexicon = renderingEngineMgr.getDefaultVisualLexicon();
 			final Set<VisualProperty<?>> properties = lexicon.getAllVisualProperties();
 			

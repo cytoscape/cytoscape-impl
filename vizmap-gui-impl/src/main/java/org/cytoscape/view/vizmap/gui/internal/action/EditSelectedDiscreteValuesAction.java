@@ -27,6 +27,7 @@ package org.cytoscape.view.vizmap.gui.internal.action;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -38,6 +39,8 @@ import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItemModel;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,13 +57,21 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 	private static final long serialVersionUID = 7640977428847967990L;
 	private static final Logger logger = LoggerFactory.getLogger(EditSelectedDiscreteValuesAction.class);
 
+	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues;
+	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> newMappingValues;
 	private final EditorManager editorManager;
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public EditSelectedDiscreteValuesAction(final ServicesUtil servicesUtil, final EditorManager editorManager) {
 		super(NAME, servicesUtil);
 		this.editorManager = editorManager;
+		previousMappingValues = new HashMap<DiscreteMapping<?,?>, Map<Object, Object>>();
+		newMappingValues = new HashMap<DiscreteMapping<?,?>, Map<Object, Object>>();
 	}
 
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
 	/**
 	 * Edit all selected cells at once. This is for Discrete Mapping only.
 	 */
@@ -93,6 +104,7 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 			Object newValue = null;
 	
 			try {
+				// Get new value
 				newValue = editorManager.showVisualPropertyValueEditor(vizMapperMainPanel, vp, vp.getDefault());
 			} catch (Exception ex) {
 				logger.error("Could not edit value.", ex);
@@ -101,8 +113,8 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 			if (newValue == null)
 				continue;
 	
-			final Class<?> keyClass = dm.getMappingColumnType();
-			final Map<Object, Object> changes = new HashMap<Object, Object>();
+			final Map<Object, Object> newValues = new HashMap<Object, Object>();
+			final Map<Object, Object> previousValues = new HashMap<Object, Object>();
 			
 			for (int i = 0; i < selected.length; i++) {
 				final Item item = ((Item) table.getValueAt(selected[i], 0));
@@ -111,35 +123,31 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 					final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) item.getProperty();
 					
 					if (prop.getCellType() == CellType.DISCRETE) {
-						// First, update property sheet
-						prop.setValue(newValue);
-						// Then update the mapping
-						Object key = item.getProperty().getDisplayName();
-			
-						// If not String, need to parse actual value
-						try {
-							if (keyClass == Integer.class)
-								key = Integer.valueOf((String) key);
-							if (keyClass == Long.class)
-								key = Long.valueOf((String) key);
-							else if (keyClass == Double.class)
-								key = Double.valueOf((String) key);
-							else if (keyClass == Boolean.class)
-								key = Boolean.valueOf((String) key);
-							else if (keyClass == Float.class)
-								key = Float.valueOf((String) key);
-						} catch (Exception ex) {
-							logger.warn("Could not parse discrete mapping key value.  Ignored: " + key, e);
-							continue;
-						}
-			
-						changes.put(key, newValue);
+						// Save the current value for undo
+						previousValues.put(prop.getKey(), prop.getValue());
+						
+						// New value
+						newValues.put(prop.getKey(), newValue);
 					}
 				}
 			}
 			
-			dm.putAll(changes);
-			table.repaint();
+			// Save the mapping->old_values for undo
+			if (!previousValues.isEmpty())
+				previousMappingValues.put(dm, previousValues);
+			
+			// Save the mapping->new_values for redo
+			if (!newValues.isEmpty())
+				newMappingValues.put(dm, newValues);
+			
+			// Update the visual mapping
+			dm.putAll(newValues);
+		}
+		
+		// Undo support
+		if (!previousMappingValues.isEmpty()) {
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new EditSelectedDiscreteValuesEdit());
 		}
 	}
 
@@ -177,5 +185,34 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 		}
 		
 		setEnabled(enabled);
+	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private class EditSelectedDiscreteValuesEdit extends AbstractCyEdit {
+
+		public EditSelectedDiscreteValuesEdit() {
+			super(NAME);
+		}
+
+		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public void undo() {
+			for (final Entry<DiscreteMapping<?, ?>, Map<Object, Object>> entry : previousMappingValues.entrySet()) {
+				final DiscreteMapping dm = entry.getKey();
+				dm.putAll(entry.getValue());
+			}
+		}
+
+		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public void redo() {
+			for (final Entry<DiscreteMapping<?, ?>, Map<Object, Object>> entry : newMappingValues.entrySet()) {
+				final DiscreteMapping dm = entry.getKey();
+				dm.putAll(entry.getValue());
+			}
+		}
 	}
 }

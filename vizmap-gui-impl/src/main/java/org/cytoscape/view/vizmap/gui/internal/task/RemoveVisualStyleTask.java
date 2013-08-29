@@ -24,98 +24,95 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
 
-public class RenameVisualStyleTask extends AbstractTask {
 
-	@Tunable(description = "Enter new Visual Style name:")
-	public String vsName;
+public class RemoveVisualStyleTask extends AbstractTask {
 
-	private String previousName;
-	
 	private final VisualStyle style;
 	private final ServicesUtil servicesUtil;
+	private final Set<CyNetworkView> networkViews = new HashSet<CyNetworkView>();
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public RenameVisualStyleTask(final VisualStyle style, final ServicesUtil servicesUtil) {
+	public RemoveVisualStyleTask(final VisualStyle style, final ServicesUtil servicesUtil) {
 		this.style = style;
 		this.servicesUtil = servicesUtil;
-		final VisualMappingManager vmm = servicesUtil.get(VisualMappingManager.class);
-		vsName = vmm.getCurrentVisualStyle().getTitle();
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
-	@ProvidesTitle
-	public String getTitle() {
-		return "Rename Visual Style";
-	}
-	
 	@Override
-	public void run(final TaskMonitor monitor) throws Exception {
-		previousName = style.getTitle();
-		final boolean renamed = renameVisualStyle(vsName);
-		
-		if (renamed) {
+	public void run(final TaskMonitor taskMonitor) throws Exception {
+		if (style != null) {
+			removeVisualStyle();
+			
 			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
-			undo.postEdit(new RenameVisualStyleEdit());
+			undo.postEdit(new RemoveVisualStyleEdit());
 		}
 	}
-
+	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private boolean renameVisualStyle(final String name) {
-		boolean renamed = false;
+	private void removeVisualStyle() {
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+
+		if (vmMgr.getDefaultVisualStyle().equals(style))
+			throw new IllegalArgumentException("You cannot delete the default style.");
 		
-		if (name != null && style != null) {
-			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-	
-			if (style.equals(vmMgr.getDefaultVisualStyle()))
-				throw new IllegalArgumentException("You cannot rename the default style.");
-	
-			// Ignore if user does not enter new name.
-			if (!style.getTitle().equals(name)) {
-				style.setTitle(name);
-				renamed = true;
-				servicesUtil.sendNotification(NotificationNames.VISUAL_STYLE_NAME_CHANGED, style);
-			}
+		// First save the network views that have the style which is about to be deleted
+		final CyNetworkViewManager netViewMgr = servicesUtil.get(CyNetworkViewManager.class);
+		
+		for (final CyNetworkView view : netViewMgr.getNetworkViewSet()) {
+			if (style.equals(vmMgr.getVisualStyle(view)))
+				networkViews.add(view);
 		}
 		
-		return renamed;
+		// Now we can delete the visual style
+		vmMgr.removeVisualStyle(style);
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
 	
-	private class RenameVisualStyleEdit extends AbstractCyEdit {
+	private class RemoveVisualStyleEdit extends AbstractCyEdit {
 
-		public RenameVisualStyleEdit() {
-			super(getTitle());
+		public RemoveVisualStyleEdit() {
+			super("Remove Visual Style");
 		}
 
 		@Override
 		public void undo() {
+			// First register the visual style again
 			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 			
-			if (style != null && previousName != null && !style.equals(vmMgr.getDefaultVisualStyle()))
-				renameVisualStyle(previousName);
+			if (style != null && !vmMgr.getAllVisualStyles().contains(style))
+				vmMgr.addVisualStyle(style);
+			
+			// Now set the style to the saved views
+			final CyNetworkViewManager netViewMgr = servicesUtil.get(CyNetworkViewManager.class);
+			final Set<CyNetworkView> registeredViews = netViewMgr.getNetworkViewSet();
+			
+			for (final CyNetworkView view : networkViews) {
+				if (registeredViews.contains(view)) // Check if this view is still registered
+					vmMgr.setVisualStyle(style, view);
+			}
 		}
 
 		@Override
 		public void redo() {
-			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-			
-			if (style != null && vsName != null && !style.equals(vmMgr.getDefaultVisualStyle()))
-				renameVisualStyle(vsName);
+			if (style != null)
+				removeVisualStyle();
 		}
 	}
 }

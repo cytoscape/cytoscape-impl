@@ -56,7 +56,7 @@ public class ExecuteGetRecordByCPathIdTaskFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ExecuteGetRecordByCPathId(webApi, ids, format, networkTitle, networkToMerge, cPathFactory, mappingManager));
+		return new TaskIterator(new ExecuteGetRecordByCPathId(webApi, ids, format, networkTitle, networkToMerge, cPathFactory));
 	}
 
 }

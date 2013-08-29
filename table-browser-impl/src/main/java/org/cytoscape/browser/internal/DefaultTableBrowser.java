@@ -77,7 +77,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private final JComboBox networkChooser;
 	private final Class<? extends CyIdentifiable> objType;
 
-	private boolean rowSelectionMode;
+	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
 	private boolean ignoreSetCurrentNetwork = true;
 	
 	public DefaultTableBrowser(final String tabTitle,
@@ -130,21 +130,37 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private void createPopupMenu() {
 		
 		displayMode = new JPopupMenu();
-		
+		final JCheckBoxMenuItem displayAuto = new JCheckBoxMenuItem("Auto");
+		displayAuto.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.AUTO);
 		final JCheckBoxMenuItem displayAll = new JCheckBoxMenuItem("Show all");
-		displayAll.setSelected(rowSelectionMode);
+		displayAll.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.ALL);
 		final JCheckBoxMenuItem displaySelect = new JCheckBoxMenuItem("Show selected");
-		displaySelect.setSelected(! rowSelectionMode);
+		displaySelect.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.SELECTED);
+
+		displayAuto.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
+				changeSelectionMode();
+
+				displayAuto.setSelected(true);
+				displayAll.setSelected(false);
+				displaySelect.setSelected(false);
+			}
+		});
+		
 		
 		displayAll.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = true;
+				rowSelectionMode = BrowserTableModel.ViewMode.ALL;
 				changeSelectionMode();
 
-				displayAll.setSelected(rowSelectionMode);
-				displaySelect.setSelected(!rowSelectionMode);
+				displayAuto.setSelected(false);
+				displayAll.setSelected(true);
+				displaySelect.setSelected(false);
 			}
 		});
 		
@@ -152,14 +168,16 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = false;
+				rowSelectionMode = BrowserTableModel.ViewMode.SELECTED;
 				changeSelectionMode();
 				
-				displayAll.setSelected(rowSelectionMode);
-				displaySelect.setSelected(!rowSelectionMode);
+				displayAuto.setSelected(false);
+				displayAll.setSelected(false);
+				displaySelect.setSelected(true);
 			}
 		});
 		
+		displayMode.add(displayAuto);
 		displayMode.add(displayAll);
 		displayMode.add(displaySelect);
 	}
@@ -167,8 +185,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private void changeSelectionMode() {
 		//rowSelectionMode = selectionModeButton.isSelected();
 		BrowserTableModel model = (BrowserTableModel) getCurrentBrowserTable().getModel();
-		model.setShowAll(rowSelectionMode);
-		model.updateShowAll();
+		model.setViewMode(rowSelectionMode);
+		model.updateViewMode();
 	}
 	
 	@Override
@@ -218,7 +236,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		
 		if (currentBrowserTable != null) {
 			final BrowserTableModel model = (BrowserTableModel) currentBrowserTable.getModel();
-			model.setShowAll(rowSelectionMode);
+			model.setViewMode(rowSelectionMode);
 		}
 		
 		showSelectedTable();

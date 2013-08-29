@@ -32,36 +32,89 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class CopyVisualStyleTask extends AbstractTask {
-
-	@ProvidesTitle
-	public String getTitle() {
-		return "Copy Visual Style";
-	}
 
 	@Tunable(description = "Name of copied Visual Style:")
 	public String vsName;
 
+	private VisualStyle copiedStyle;
+	private VisualStyle previousCurrentStyle;
+	private final VisualStyle originalStyle;
 	private final ServicesUtil servicesUtil;
 
-	public CopyVisualStyleTask(final ServicesUtil servicesUtil) {
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
+	public CopyVisualStyleTask(final VisualStyle style, final ServicesUtil servicesUtil) {
+		this.originalStyle = style;
 		this.servicesUtil = servicesUtil;
 	}
 
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Copy Visual Style";
+	}
+	
 	@Override
 	public void run(final TaskMonitor monitor) throws Exception {
-		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		final VisualStyle originalStyle = vmMgr.getCurrentVisualStyle();
-
-		// Ignore if user does not enter new name.
-		if (vsName != null) {
-			final VisualStyleFactory factory = servicesUtil.get(VisualStyleFactory.class);
-			final VisualStyle copiedStyle = factory.createVisualStyle(originalStyle);
-			copiedStyle.setTitle(vsName);
+		if (vsName != null && originalStyle != null) {
+			copyVisualStyle();
+			
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new CopyVisualStyleEdit());
+		}
+	}
 	
-			vmMgr.addVisualStyle(copiedStyle);
-			vmMgr.setCurrentVisualStyle(copiedStyle);
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	private void copyVisualStyle() {
+		final VisualStyleFactory vsFactory = servicesUtil.get(VisualStyleFactory.class);
+		copiedStyle = vsFactory.createVisualStyle(originalStyle);
+		copiedStyle.setTitle(vsName);
+
+		// Save the current visual style first, so it can be set as current again if the action is undone
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		previousCurrentStyle = vmMgr.getCurrentVisualStyle();
+		
+		vmMgr.addVisualStyle(copiedStyle);
+		vmMgr.setCurrentVisualStyle(copiedStyle);
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private class CopyVisualStyleEdit extends AbstractCyEdit {
+
+		public CopyVisualStyleEdit() {
+			super(getTitle());
+		}
+
+		@Override
+		public void undo() {
+			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+			
+			if (copiedStyle != null && vmMgr.getAllVisualStyles().contains(copiedStyle)) {
+				// Unregister the newly created visual style
+				vmMgr.removeVisualStyle(copiedStyle);
+				
+				// Also restore the previous current style
+				if (previousCurrentStyle != null)
+					vmMgr.setCurrentVisualStyle(previousCurrentStyle);
+			}
+		}
+
+		@Override
+		public void redo() {
+			// Register the copied visual style again
+			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+			
+			if (copiedStyle != null && !vmMgr.getAllVisualStyles().contains(copiedStyle)) {
+				vmMgr.addVisualStyle(copiedStyle);
+				vmMgr.setCurrentVisualStyle(copiedStyle);
+			}
 		}
 	}
 }
