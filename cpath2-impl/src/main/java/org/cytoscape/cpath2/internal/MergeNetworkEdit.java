@@ -1,4 +1,4 @@
-package org.cytoscape.cpath2.internal.cytoscape;
+package org.cytoscape.cpath2.internal;
 
 /*
  * #%L
@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;

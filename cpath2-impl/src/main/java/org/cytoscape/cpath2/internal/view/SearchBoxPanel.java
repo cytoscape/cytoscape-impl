@@ -194,7 +194,7 @@ public class SearchBoxPanel extends JPanel {
      * @return
      */
     private JButton createSearchButton(final JTextField searchField) {
-        URL url = GradientHeader.class.getResource("resources/run_tool.gif");
+        URL url = GradientHeader.class.getResource("run_tool.gif");
         ImageIcon icon = new ImageIcon(url);
         //searchButton = new JButton(icon);
         searchButton = new JButton("Search");

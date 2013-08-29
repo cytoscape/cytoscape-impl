@@ -34,7 +34,6 @@ import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.cpath2.internal.cytoscape.MergeNetworkEdit;
 import org.cytoscape.cpath2.internal.mapping.MapCPathToCytoscape;
 import org.cytoscape.cpath2.internal.schemas.summary_response.BasicRecordType;
 import org.cytoscape.cpath2.internal.task.ExecuteGetRecordByCPathIdTaskFactory;

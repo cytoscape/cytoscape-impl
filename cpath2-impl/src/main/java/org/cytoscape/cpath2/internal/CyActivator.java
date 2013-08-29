@@ -52,7 +52,15 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import java.util.Properties;
 
 
-//TODO this entire bundle is to be independent app (deprecated by the way), optionally available from the Cy3 Apps Store; should not be in the cytoscape-impl
+/* Note: despite historically called "cpath2-impl" and having .cpath2. in its package names, 
+ * this plugin has nothing to do with Pathway Commons's new cPath2 server software
+ * (for which there is now new CyPath2 app available in the Apps Store)! 
+ * This one would be called "cpath1-impl" or "cpath1v2-impl" instead, for it 
+ * still connects to the cPath-based PathwayCommons service (pathwaycommons.org/pc/, 
+ * BioPAX Level2 data, not updated since 11/2011)
+ * 
+ * TODO remove from cytoscape-impl (core), move to the Apps Store or merge with CyPath2 app.
+ */
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
 		super();
