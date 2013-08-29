@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
@@ -186,8 +185,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements
 		this.cyNetworkFactory = cyNetworkFactory;
 
 		// initialize the network Collection
-		this.name2RootMap = ReadUtils.getRootNetworkMap(cyNetworkManager,
-				cyRootNetworkManager);
+		this.name2RootMap = getRootNetworkMap(cyNetworkManager, cyRootNetworkManager);
 		this.nodeMap = new HashMap<Object, CyNode>(10000);
 
 		final List<String> rootNames = new ArrayList<String>();
@@ -257,4 +255,22 @@ public abstract class AbstractNetworkReader extends AbstractTask implements
 			}
 		}
 	}
+
+	private final Map<String, CyRootNetwork> getRootNetworkMap(
+			CyNetworkManager cyNetworkManager,
+			CyRootNetworkManager cyRootNetworkManager) {
+
+		final Map<String, CyRootNetwork> name2RootMap = new HashMap<String, CyRootNetwork>();
+
+		for (CyNetwork net : cyNetworkManager.getNetworkSet()) {
+			final CyRootNetwork rootNet = cyRootNetworkManager.getRootNetwork(net);
+			if (!name2RootMap.containsValue(rootNet))
+				name2RootMap.put(
+						rootNet.getRow(rootNet).get(CyRootNetwork.NAME,
+								String.class), rootNet);
+		}
+
+		return name2RootMap;
+	}
+
 }
