@@ -25,8 +25,11 @@ package org.cytoscape.task.internal.hide;
  */
 
 
+import java.util.List;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -53,10 +56,11 @@ public class UnHideAllNodesTask extends AbstractNetworkViewTask {
 		e.setProgress(0.0);
 		
 		final CyNetwork network = view.getModel();
-		undoSupport.postEdit(new HideEdit(eventHelper, "Show All Nodes", network, view));
+		final List<CyNode> nodeList = network.getNodeList();
+		undoSupport.postEdit(new HideEdit("Show All Nodes", view, nodeList, true, eventHelper, vmMgr));
 		e.setProgress(0.2);
 		
-		HideUtils.setVisibleNodes(network.getNodeList(), true, view);
+		HideUtils.setVisibleNodes(nodeList, true, view);
 		e.setProgress(0.7);
 		
 		vmMgr.getVisualStyle(view).apply(view);
