@@ -9,4 +9,10 @@ public class DiscreteMappingSerializer implements VisualMappingSerializer<Discre
 		return null;
 	}
 
+	@Override
+	public String getTag(DiscreteMapping<?, ?> Mapping) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

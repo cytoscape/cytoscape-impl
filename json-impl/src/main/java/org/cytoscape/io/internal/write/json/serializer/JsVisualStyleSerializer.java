@@ -11,6 +11,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
@@ -23,10 +24,12 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 	
 	private final VisualMappingSerializer<PassthroughMapping<?,?>> passthrough;
 	private final VisualMappingSerializer<DiscreteMapping<?,?>> discrete;
+	private final VisualMappingSerializer<ContinuousMapping<?,?>> continuous;
 	
 	public JsVisualStyleSerializer() {
 		this.passthrough = new PassthroughMappingSerializer();
 		this.discrete = new DiscreteMappingSerializer();
+		this.continuous = new ContinuousMappingSerializer();
 	}
 
 	@Override
@@ -78,7 +81,7 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 		jg.writeEndObject();
 	}
 
-	private void serializeNodeStyle(final VisualStyle vs, JsonGenerator jg) throws IOException {
+	private final void serializeNodeStyle(final VisualStyle vs, JsonGenerator jg) throws IOException {
 		jg.writeStartObject();
 		jg.writeStringField(SELECTOR.toString(), NODE.toString());
 
@@ -114,17 +117,17 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 	}
 
 	private void createNodeMapping(final VisualStyle vs, JsonGenerator jg) throws IOException {
-		// TODO implememt this
-		// Passthrough
-		Collection<VisualMappingFunction<?, ?>> mappings = vs.getAllVisualMappingFunctions();
+		final Collection<VisualMappingFunction<?, ?>> mappings = vs.getAllVisualMappingFunctions();
 
-		for (VisualMappingFunction<?, ?> mapping : mappings) {
+		for (final VisualMappingFunction<?, ?> mapping : mappings) {
 			if (mapping.getVisualProperty().getTargetDataType() != CyNode.class)
 				continue;
 
 			if (mapping instanceof PassthroughMapping) {
+				final String tag = passthrough.getTag((PassthroughMapping<?, ?>) mapping);
+				jg.writeStringField(tag, passthrough.serialize((PassthroughMapping<?, ?>) mapping));
+			} else if(mapping instanceof DiscreteMapping ) {
 				
-				jg.writeStringField(CONTENT.toString(), "data(" + mapping.getMappingColumnName() + ")");
 			}
 		}
 
