@@ -75,7 +75,7 @@ public class NetworkMergeUtil {
         if (mergeNetworksExist()) {
             NetworkWrapper[] networks = (NetworkWrapper[]) getMergeNetworks().toArray
                 (new NetworkWrapper[getMergeNetworks().size()]);
-            URL iconURL = SearchDetailsPanel.class.getResource("resources/question.png");
+            URL iconURL = SearchDetailsPanel.class.getResource("question.png");
             Icon icon = null;
             if (iconURL != null) {
                 icon = new ImageIcon(iconURL);

@@ -24,16 +24,12 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.internal.util.ReadUtils;
-import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
@@ -45,20 +41,17 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public abstract class AbstractNetworkReader extends AbstractTask implements CyNetworkReader {
+public abstract class AbstractNetworkReader extends AbstractTask implements
+		CyNetworkReader {
 
 	private static final String CREATE_NEW_COLLECTION_STRING = "Create new network collection";
 
-	private final CyNetworkManager cyNetworkManager;
-	private final CyApplicationManager cyApplicationManager;
-	private final CyRootNetworkManager cyRootNetworkManager;
 	private final Map<String, CyRootNetwork> name2RootMap;
 	private final Map<Object, CyNode> nodeMap;
 
@@ -82,11 +75,11 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	protected final CyNetworkViewFactory cyNetworkViewFactory;
 
 	/**
-	 * Will be used to create new CySubNetwork if this reader needs to create new CyRootNetwork.
+	 * Will be used to create new CySubNetwork if this reader needs to create
+	 * new CyRootNetwork.
 	 */
 	protected final CyNetworkFactory cyNetworkFactory;
 
-	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Import Network";
@@ -109,7 +102,7 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	public void setTargetColumnList(ListSingleSelection<String> colList) {
 		this.targetColumnList = colList;
 		// looks like this does not have any effect, is this a bug?
-		this.targetColumnList.setSelectedValue("shared name");
+		this.targetColumnList.setSelectedValue(CyRootNetwork.SHARED_NAME);
 	}
 
 	@Tunable(description = "Network Collection:", groups = " ")
@@ -162,7 +155,6 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		return new ListSingleSelection<String>(colNames);
 	}
 
-
 	/**
 	 * 
 	 * 
@@ -173,14 +165,11 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 	 * @param cyRootNetworkManager
 	 * @param cyApplicationManager
 	 */
-	public AbstractNetworkReader(
-			
-			final InputStream inputStream,
+	public AbstractNetworkReader(final InputStream inputStream,
 			final CyNetworkViewFactory cyNetworkViewFactory,
 			final CyNetworkFactory cyNetworkFactory,
 			final CyNetworkManager cyNetworkManager,
-			final CyRootNetworkManager cyRootNetworkManager,
-			final CyApplicationManager cyApplicationManager) {
+			final CyRootNetworkManager cyRootNetworkManager) {
 
 		if (inputStream == null)
 			throw new NullPointerException("Input stream is null");
@@ -188,17 +177,15 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 			throw new NullPointerException("CyNetworkViewFactory is null");
 		if (cyNetworkFactory == null)
 			throw new NullPointerException("CyNetworkFactory is null");
+		if (cyRootNetworkManager == null)
+			throw new NullPointerException("CyRootNetworkManager is null");
 
 		this.inputStream = inputStream;
 		this.cyNetworkViewFactory = cyNetworkViewFactory;
 		this.cyNetworkFactory = cyNetworkFactory;
-		this.cyNetworkManager = cyNetworkManager;
-		this.cyRootNetworkManager = cyRootNetworkManager;
-		this.cyApplicationManager = cyApplicationManager;
 
 		// initialize the network Collection
-		this.name2RootMap = ReadUtils.getRootNetworkMap(this.cyNetworkManager,
-				this.cyRootNetworkManager);
+		this.name2RootMap = getRootNetworkMap(cyNetworkManager, cyRootNetworkManager);
 		this.nodeMap = new HashMap<Object, CyNode>(10000);
 
 		final List<String> rootNames = new ArrayList<String>();
@@ -207,36 +194,14 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
 
-		if (!SessionUtil.isReadingSessionFile()) {
-			final List<CyNetwork> selectedNetworks = cyApplicationManager
-					.getSelectedNetworks();
-
-			if (selectedNetworks != null && selectedNetworks.size() > 0) {
-				CyNetwork selectedNetwork = this.cyApplicationManager
-						.getSelectedNetworks().get(0);
-				String rootName = "";
-				if (selectedNetwork instanceof CySubNetwork) {
-					CySubNetwork subnet = (CySubNetwork) selectedNetwork;
-					CyRootNetwork rootNet = subnet.getRootNetwork();
-					rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME,
-							String.class);
-				} else {
-					// it is a root network
-					rootName = selectedNetwork.getRow(selectedNetwork).get(
-							CyNetwork.NAME, String.class);
-				}
-				rootNetworkList.setSelectedValue(rootName);
-			}
-		}
-
 		// initialize target attribute list
-		List<String> colNames_target = new ArrayList<String>();
-		colNames_target.add("shared name");
+		final List<String> colNames_target = new ArrayList<String>();
+		colNames_target.add(CyRootNetwork.SHARED_NAME);
 		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
 
 		// initialize source attribute list
-		List<String> colNames_source = new ArrayList<String>();
-		colNames_source.add("shared name");
+		final List<String> colNames_source = new ArrayList<String>();
+		colNames_source.add(CyRootNetwork.SHARED_NAME);
 		this.sourceColumnList = new ListSingleSelection<String>(colNames_source);
 	}
 
@@ -290,4 +255,22 @@ public abstract class AbstractNetworkReader extends AbstractTask implements CyNe
 			}
 		}
 	}
+
+	private final Map<String, CyRootNetwork> getRootNetworkMap(
+			CyNetworkManager cyNetworkManager,
+			CyRootNetworkManager cyRootNetworkManager) {
+
+		final Map<String, CyRootNetwork> name2RootMap = new HashMap<String, CyRootNetwork>();
+
+		for (CyNetwork net : cyNetworkManager.getNetworkSet()) {
+			final CyRootNetwork rootNet = cyRootNetworkManager.getRootNetwork(net);
+			if (!name2RootMap.containsValue(rootNet))
+				name2RootMap.put(
+						rootNet.getRow(rootNet).get(CyRootNetwork.NAME,
+								String.class), rootNet);
+		}
+
+		return name2RootMap;
+	}
+
 }

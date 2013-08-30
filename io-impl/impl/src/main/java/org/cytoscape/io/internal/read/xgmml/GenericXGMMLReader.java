@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +43,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -52,6 +52,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -117,7 +118,7 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 							  final CyRootNetworkManager cyRootNetworkManager,
 							  final CyApplicationManager cyApplicationManager
 							  ) {
-		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
+		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
@@ -129,6 +130,23 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		
 		if (attemptRepair)
 			this.inputStream = new RepairBareAmpersandsInputStream(inputStream, 512);
+		
+		if (!SessionUtil.isReadingSessionFile()) {
+			final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
+			if (selectedNetworks != null && selectedNetworks.size() > 0) {
+				final CyNetwork selectedNetwork = cyApplicationManager.getSelectedNetworks().get(0);
+				String rootName = "";
+				if (selectedNetwork instanceof CySubNetwork) {
+					CySubNetwork subnet = (CySubNetwork) selectedNetwork;
+					CyRootNetwork rootNet = subnet.getRootNetwork();
+					rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
+				} else {
+					// it is a root network
+					rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
+				}
+				getRootNetworkList().setSelectedValue(rootName);
+			}
+		}
 	}
 
 	@Override

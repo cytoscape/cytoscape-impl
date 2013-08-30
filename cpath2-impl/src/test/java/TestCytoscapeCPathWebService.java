@@ -1,4 +1,4 @@
-package org.cytoscape.coreapp.cpath2.test;
+
 
 /*
  * #%L

@@ -74,22 +74,5 @@ public class ReadUtils {
 		return in;
 	}
 
-	public static final Map<String, CyRootNetwork> getRootNetworkMap(
-			CyNetworkManager cyNetworkManager,
-			CyRootNetworkManager cyRootNetworkManager) {
-
-		HashMap<String, CyRootNetwork> name2RootMap = new HashMap<String, CyRootNetwork>();
-
-		for (CyNetwork net : cyNetworkManager.getNetworkSet()) {
-			final CyRootNetwork rootNet = cyRootNetworkManager
-					.getRootNetwork(net);
-			if (!name2RootMap.containsValue(rootNet))
-				name2RootMap.put(
-						rootNet.getRow(rootNet).get(CyRootNetwork.NAME,
-								String.class), rootNet);
-		}
-
-		return name2RootMap;
-	}
 
 }

@@ -191,10 +191,9 @@ public class GMLNetworkReader extends AbstractNetworkReader {
 			final RenderingEngineManager renderingEngineManager,
 			final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 			final CyNetworkManager cyNetworkManager,
-			final CyRootNetworkManager cyRootNetworkManager,
-			final CyApplicationManager cyApplicationManager) {
-		super(inputStream, viewFactory, networkFactory, cyNetworkManager,
-				cyRootNetworkManager, cyApplicationManager);
+			final CyRootNetworkManager cyRootNetworkManager) {
+		
+		super(inputStream, viewFactory, networkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.renderingEngineManager = renderingEngineManager;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 
