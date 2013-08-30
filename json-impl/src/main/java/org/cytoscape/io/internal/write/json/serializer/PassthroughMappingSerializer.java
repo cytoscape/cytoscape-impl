@@ -1,6 +1,8 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.view.model.VisualProperty;
@@ -9,18 +11,21 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 public class PassthroughMappingSerializer implements VisualMappingSerializer<PassthroughMapping<?, ?>> {
 	
-	private static final Set<VisualProperty<?>> COMPATIBLE_VP = new HashSet<VisualProperty<?>>();
+	/**
+	 * Map from Visual Property to equivalent cytoscape.js tag.
+	 */
+	private static final Map<VisualProperty<?>, String> COMPATIBLE_VP = new HashMap<VisualProperty<?>, String>();
 	
 	static {
-		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_LABEL);
-		COMPATIBLE_VP.add(BasicVisualLexicon.EDGE_LABEL);
+		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_LABEL, "content");
+		COMPATIBLE_VP.put(BasicVisualLexicon.EDGE_LABEL, "content");
 		
-		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_BORDER_WIDTH);
-		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_SIZE);
-		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_WIDTH);
-		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_HEIGHT);
-
-		COMPATIBLE_VP.add(BasicVisualLexicon.EDGE_WIDTH);
+//		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_BORDER_WIDTH);
+//		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_SIZE);
+//		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_WIDTH);
+//		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_HEIGHT);
+//
+//		COMPATIBLE_VP.add(BasicVisualLexicon.EDGE_WIDTH);
 	}
 
 
@@ -29,10 +34,18 @@ public class PassthroughMappingSerializer implements VisualMappingSerializer<Pas
 		
 		final VisualProperty<?> vp = mapping.getVisualProperty();
 	
-		if(COMPATIBLE_VP.contains(vp) == false) {
+		Set<VisualProperty<?>> terms = COMPATIBLE_VP.keySet();
+		if(terms.contains(vp) == false) {
 			return null;
 		}
 		
 		return "data(" + mapping.getMappingColumnName() + ")";
+	}
+
+
+	@Override
+	public String getTag(PassthroughMapping<?, ?> Mapping) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

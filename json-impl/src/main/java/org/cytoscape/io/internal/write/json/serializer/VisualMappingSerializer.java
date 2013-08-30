@@ -6,4 +6,6 @@ public interface VisualMappingSerializer <T extends VisualMappingFunction<?, ?>>
 
 	String serialize(final T mapping);
 	
+	String getTag(final T Mapping);
+	
 }
