@@ -29,10 +29,26 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JButton;
+import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.FlowLayout;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Range;
+import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 
 public class NumericValueEditor<V extends Number> implements VisualPropertyValueEditor<V> {
@@ -54,9 +70,13 @@ public class NumericValueEditor<V extends Number> implements VisualPropertyValue
 	 * Generic editor for all kinds of numbers.
 	 */
 	@Override public <S extends V> V showEditor(final Component parent, S initialValue, VisualProperty<S> vizProp) {
+		/*
 		Object value = null;
 		Number result = null;
 
+		System.out.println("Launching ProperBoundedIntervalDialog");
+		NumberValueDialog d = new NumberValueDialog(parent, vizProp);
+		System.out.println("Done ProperBoundedIntervalDialog");
 		System.out.println("VisualPropertyValueEditor: " + vizProp.getDisplayName());
 		
 		while (result == null) {
@@ -80,6 +100,13 @@ public class NumericValueEditor<V extends Number> implements VisualPropertyValue
 		}
 		
 		return type.cast(result);
+		*/
+
+		final NumberValueDialog d = new NumberValueDialog(parent, vizProp, initialValue);
+		if (d.getValue() == null)
+			return null;
+		else
+			return vizProp.getRange().getType().cast(d.getValue());
 	}
 	
 	/**
@@ -103,6 +130,156 @@ public class NumericValueEditor<V extends Number> implements VisualPropertyValue
 			return number.toBigInteger();
 		} else {
 			return number.doubleValue();
+		}
+	}
+}
+
+class NumberValueDialog extends JDialog {
+	private Number value = null;
+
+	public <S extends Number> NumberValueDialog(final Component parent, final VisualProperty<S> vizProp, final S initialValue) {
+		super(JOptionPane.getFrameForComponent(parent), vizProp.getDisplayName(), true);
+		super.setLayout(new GridBagLayout());
+		final GridBagConstraints c = new GridBagConstraints();
+
+		final ContinuousRange<S> range = (ContinuousRange<S>) vizProp.getRange();
+		final JLabel titleLabel = new JLabel(String.format("Enter %s:", readableRange(range)));
+		final JLabel errorLabel = new JLabel("<html><font color=\"red\" size=\"-1\">Not a valid number</font></html>");
+		errorLabel.setVisible(false);
+		final JTextField field = new JTextField(6);
+		if (initialValue != null)
+			field.setText(initialValue.toString());
+		final JButton okBtn = new JButton("  OK  ");
+		final JButton cancelBtn = new JButton("Cancel");
+		cancelBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				value = null;
+				dispose();
+			}
+		});
+		final ActionListener okAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				value = parseNumber(field.getText(), range.getType());
+				if (value != null) {
+					if (!range.inRange(range.getType().cast(value)))
+						value = null;
+				}
+				if (value == null) {
+					errorLabel.setVisible(true);
+					pack();
+				} else {
+					dispose();
+				}
+			}
+		};
+		okBtn.addActionListener(okAction);
+		field.addActionListener(okAction);
+		field.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) { clear(); }
+			public void removeUpdate(DocumentEvent e) { clear(); }
+			public void insertUpdate(DocumentEvent e) { clear(); }
+
+			void clear() {
+				errorLabel.setVisible(false);
+				pack();
+			}
+		});
+
+		c.gridx = 0;				c.gridy = 0;
+		c.gridwidth = 1;		c.gridheight = 1;
+		c.weightx = 0.0;		c.weighty = 0.0;
+		c.fill = GridBagConstraints.NONE;
+		c.insets = new Insets(10, 10, 5, 5);
+		super.add(titleLabel, c);
+
+		c.gridx = 1;				c.gridy = 0;
+		c.anchor = GridBagConstraints.WEST;
+		c.insets = new Insets(10, 0, 5, 10);
+		super.add(field, c);
+
+		c.gridx = 1;				c.gridy = 1;
+		c.insets = new Insets(0, 0, 10, 10);
+		super.add(errorLabel, c);
+
+		c.gridx = 0;				c.gridy = 2;
+		c.gridwidth = 2;		c.gridheight = 1;
+		c.weightx = 1.0;		c.weighty = 0.0;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0, 10, 10, 10);
+		final JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		btnPanel.add(cancelBtn);
+		btnPanel.add(okBtn);
+		super.add(btnPanel, c);
+
+		super.pack();
+		super.setVisible(true);
+		super.setLocationRelativeTo(parent);
+	}
+
+	public Number getValue() {
+		return value;
+	}
+
+	private static boolean isUnbounded(final Number value, final Class<?> type) {
+		if (type.equals(Integer.class)) {
+			return (value.equals(Integer.MIN_VALUE) || value.equals(Integer.MAX_VALUE));
+		} else if (type.equals(Long.class)) {
+			return (value.equals(Long.MIN_VALUE) || value.equals(Long.MAX_VALUE));
+		} else if (type.equals(Float.class)) {
+			return ((Float) value).isInfinite();
+		} else if (type.equals(Double.class)) {
+			return ((Double) value).isInfinite();
+		} else {
+			throw new IllegalArgumentException("Unknown number type: " + type);
+		}
+	}
+
+	private static <S extends Number> String readableRange(ContinuousRange<S> range) {
+		final S left  = range.getMin();
+		final S right = range.getMax();
+		final boolean includeLeft  = range.includeMin();
+		final boolean includeRight = range.includeMax();
+		final boolean leftBounded  = !isUnbounded(left, range.getType());
+		final boolean rightBounded = !isUnbounded(right, range.getType());
+
+		if (!leftBounded && !rightBounded) {
+			return "a number";
+		} else if (leftBounded && !rightBounded) {
+			if (includeLeft) {
+				return String.format("a number that is %s or greater", left);
+			} else {
+				return String.format("a number greater than %s", left);
+			}
+		} else if (!leftBounded && rightBounded) {
+			if (includeRight) {
+				return String.format("a number that is %s or less", right);
+			} else {
+				return String.format("a number that is less than %s", right);
+			}
+		} else {
+			if (includeLeft && includeRight) {
+				return String.format("a number between %s and %s", left, right);
+			} else {
+				return String.format("a number that is greater than%s %s and less than%s %s", (includeLeft ? " or equal to": ""), left, (includeRight ? " or equal to": ""), right);
+			}
+		}
+	}
+
+	private static Number parseNumber(final String s, final Class<?> type) {
+		try {
+			if (type.equals(Integer.class)) {
+				return Integer.valueOf(s);
+			} else if (type.equals(Long.class)) {
+				return Long.valueOf(s);
+			} else if (type.equals(Float.class)) {
+				return Float.valueOf(s);
+			} else if (type.equals(Double.class)) {
+				return Double.valueOf(s);
+			} else {
+				throw new IllegalArgumentException("unknown type: " + type);
+			}
+		} catch (NumberFormatException e) {
+			return null;
 		}
 	}
 }
