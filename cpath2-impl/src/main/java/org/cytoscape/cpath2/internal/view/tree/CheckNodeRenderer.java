@@ -74,7 +74,8 @@ public class CheckNodeRenderer implements TreeCellRenderer {
 class CustomNodePanel extends JPanel {
     private JCheckBox check;
     private JLabel label;
-    private static URL url = GradientHeader.class.getResource("resources/stock_autofilter.png");
+    private static URL url = GradientHeader.class
+    		.getResource("/org/cytoscape/cpath2/internal/view/stock_autofilter.png");
     private static ImageIcon filterIcon = new ImageIcon(url);
 
     /**
