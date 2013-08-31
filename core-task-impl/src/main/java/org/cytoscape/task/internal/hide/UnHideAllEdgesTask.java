@@ -25,7 +25,10 @@ package org.cytoscape.task.internal.hide;
  */
 
 
+import java.util.List;
+
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -54,10 +57,11 @@ public class UnHideAllEdgesTask extends AbstractNetworkViewTask {
 		e.setProgress(0.0);
 		
 		final CyNetwork network = view.getModel();
-		undoSupport.postEdit(new HideEdit(eventHelper, "Show All Edges", network, view));
+		final List<CyEdge> edgeList = network.getEdgeList();
+		undoSupport.postEdit(new HideEdit("Show All Edges", view, edgeList, true, eventHelper, vmMgr));
 		e.setProgress(0.2);
 		
-		HideUtils.setVisibleEdges(network.getEdgeList(), true, view);
+		HideUtils.setVisibleEdges(edgeList, true, view);
 		e.setProgress(0.7);
 		
 		vmMgr.getVisualStyle(view).apply(view);
