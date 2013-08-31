@@ -1,7 +1,6 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,12 +19,12 @@ public class PassthroughMappingSerializer implements VisualMappingSerializer<Pas
 		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_LABEL, "content");
 		COMPATIBLE_VP.put(BasicVisualLexicon.EDGE_LABEL, "content");
 		
-//		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_BORDER_WIDTH);
-//		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_SIZE);
-//		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_WIDTH);
-//		COMPATIBLE_VP.add(BasicVisualLexicon.NODE_HEIGHT);
-//
-//		COMPATIBLE_VP.add(BasicVisualLexicon.EDGE_WIDTH);
+		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_BORDER_WIDTH, "border-width");
+		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_SIZE, "width,height");
+		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_WIDTH, "width");
+		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_HEIGHT, "height");
+
+		COMPATIBLE_VP.put(BasicVisualLexicon.EDGE_WIDTH, "width");
 	}
 
 
@@ -44,8 +43,7 @@ public class PassthroughMappingSerializer implements VisualMappingSerializer<Pas
 
 
 	@Override
-	public String getTag(PassthroughMapping<?, ?> Mapping) {
-		// TODO Auto-generated method stub
-		return null;
+	public String getTag(PassthroughMapping<?, ?> mapping) {
+		return COMPATIBLE_VP.get(mapping.getVisualProperty());
 	}
 }

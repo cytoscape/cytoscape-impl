@@ -117,6 +117,62 @@
 			<version>${cytoscape.api.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>vizmap-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-impl</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>property-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>vizmap-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>
