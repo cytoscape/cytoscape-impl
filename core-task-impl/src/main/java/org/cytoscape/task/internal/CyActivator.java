@@ -1043,12 +1043,14 @@ public class CyActivator extends AbstractCyActivator {
 		applyPreferredLayoutTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		applyPreferredLayoutTaskFactoryProps.setProperty(MENU_GRAVITY,"5.0");
 		applyPreferredLayoutTaskFactoryProps.setProperty(TOOLTIP,"Apply Preferred Layout");
-		applyPreferredLayoutTaskFactoryProps.setProperty(COMMAND,"apply preferred");
-		applyPreferredLayoutTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"layout");
 		registerService(bc,applyPreferredLayoutTaskFactory,NetworkViewCollectionTaskFactory.class, applyPreferredLayoutTaskFactoryProps);
 		registerService(bc,applyPreferredLayoutTaskFactory,ApplyPreferredLayoutTaskFactory.class, applyPreferredLayoutTaskFactoryProps);
+
 		// For commands
-		registerService(bc,applyPreferredLayoutTaskFactory,TaskFactory.class, applyPreferredLayoutTaskFactoryProps);
+		Properties applyPreferredLayoutTaskFactoryProps2 = new Properties();
+		applyPreferredLayoutTaskFactoryProps2.setProperty(COMMAND,"apply preferred");
+		applyPreferredLayoutTaskFactoryProps2.setProperty(COMMAND_NAMESPACE,"layout");
+		registerService(bc,applyPreferredLayoutTaskFactory,TaskFactory.class, applyPreferredLayoutTaskFactoryProps2);
 
 		Properties deleteColumnTaskFactoryProps = new Properties();
 		deleteColumnTaskFactoryProps.setProperty(TITLE,"Delete column");
