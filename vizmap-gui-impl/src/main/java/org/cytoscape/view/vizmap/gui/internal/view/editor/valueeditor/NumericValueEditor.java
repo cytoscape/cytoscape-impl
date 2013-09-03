@@ -212,8 +212,8 @@ class NumberValueDialog extends JDialog {
 		super.add(btnPanel, c);
 
 		super.pack();
-		super.setVisible(true);
 		super.setLocationRelativeTo(parent);
+		super.setVisible(true);
 	}
 
 	public Number getValue() {
