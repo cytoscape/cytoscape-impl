@@ -37,7 +37,6 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 	private static final long serialVersionUID = 6852491198236306710L;
 	
 	private Graphics2D g2d;
-	private static final float ARC_RATIO = 0.35f;
 
 	public ObjectPositionIcon(final ObjectPosition value, int width, int height, String name) {
 		super(value, width, height, name);
@@ -48,16 +47,13 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 		g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		x = (int) ((c.getWidth() - width) / 2.0);
-		y = (int) ((c.getHeight() - height) / 2.0);
 		g2d.translate(x,  y);
-		
-		Float arc = width * ARC_RATIO;
-		g2d.fillRoundRect(0, 0, width, height, arc.intValue(), arc.intValue());
+		g2d.fillRect(0, 0, width, height);
 		
 		final ObjectPlacerGraphic lp = new ObjectPlacerGraphic(width, false, "Label");
 		lp.setObjectPosition(value);
 		lp.applyPosition();
 		lp.paint(g2d);
+		g2d.translate(-x,  -y);
 	}
 }
