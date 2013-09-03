@@ -42,7 +42,7 @@ public class EdgeBendIcon extends VisualPropertyIcon<Bend> {
 	private static final long serialVersionUID = 3321774231185088226L;
 
 	private static final Stroke EDGE_STROKE = new BasicStroke(2.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
-	private static final int FONT_SIZE = 32;
+	private static final int FONT_SIZE = 16;
 	private static final Font FONT = new Font("SansSerif", Font.BOLD, FONT_SIZE);
 	private static final Color NUMBER_COLOR = new Color(100, 100, 100, 90);
 
@@ -55,21 +55,28 @@ public class EdgeBendIcon extends VisualPropertyIcon<Bend> {
 		final Graphics2D g2d = (Graphics2D) g;
 		g2d.setColor(color);
 		g2d.setStroke(EDGE_STROKE);
-		final int yPosition = (height + 20) / 2;
 
 		// Turn AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+		g2d.translate(x,  y);
 		final Integer handles = value.getAllHandles().size();
+		
+		double x1 = 0;
+		double y1 = height / 2.0;
+		double x2 = x1 + width;
+		double y2 = y1;
+		
 		if (handles == 0) {
 			// No Handles: Just draw straight line
-			g2d.draw(new Line2D.Double(leftPad, yPosition, width * 1.5, yPosition));
+			g2d.draw(new Line2D.Double(x1, y1, x2, y2));
 		} else {
-			final double newWidth = width * 1.5;
-			final CubicCurve2D curvedLine = new CubicCurve2D.Double(leftPad, yPosition,
-					newWidth/2, yPosition + height,
-					newWidth*3/4, yPosition - height,
-					newWidth, yPosition);
+			double ww = width * 3/4;
+			final CubicCurve2D curvedLine = 
+					new CubicCurve2D.Double(x1, y1,
+											ww, y1 + height,
+											width - ww, y2 - height,
+											x2, y2);
 			g2d.draw(curvedLine);
 
 			final Font original = g2d.getFont();
@@ -77,13 +84,13 @@ public class EdgeBendIcon extends VisualPropertyIcon<Bend> {
 			if (value != null) {
 				g2d.setColor(NUMBER_COLOR);
 				g2d.setFont(FONT);
-				final int cHeight = c.getHeight();
-				g2d.drawString(handles.toString(), x+leftPad+15, y + (cHeight / 2) - 5);
+				g2d.drawString(handles.toString(), (int)(width - ww - 4), height / 2);
 			}
 
 			// Set to original
 			g2d.setFont(original);
 		}
+		
+		g2d.translate(-x,  -y);
 	}
-
 }
