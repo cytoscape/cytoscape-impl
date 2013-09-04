@@ -31,8 +31,11 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.NumberContinuousCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyNumberPropertyEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor2;
+import org.cytoscape.view.model.VisualProperty;
+import java.beans.PropertyEditor;
 
-public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPropertyEditor<T> {
+public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPropertyEditor<T> implements VisualPropertyEditor2<T> {
 
 	/**
 	 * Creates a new DiscreteNumber object.
@@ -48,5 +51,17 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 	public TableCellRenderer getContinuousTableCellRenderer(
 			final ContinuousMappingEditor<? extends Number, T> continuousMappingEditor) {
 		return new NumberContinuousCellRenderer((ContinuousMappingEditor<?, ?>) continuousMappingEditor);
+	}
+
+	public PropertyEditor getPropertyEditor() {
+		final CyNumberPropertyEditor<T> propertyEditor = (CyNumberPropertyEditor<T>) super.getPropertyEditor();
+		propertyEditor.setVisualProperty(null);
+		return propertyEditor;
+	}
+
+	public PropertyEditor getPropertyEditor(VisualProperty<T> vizProp) {
+		final CyNumberPropertyEditor<T> propertyEditor = (CyNumberPropertyEditor<T>) super.getPropertyEditor();
+		propertyEditor.setVisualProperty(vizProp);
+		return propertyEditor;
 	}
 }
