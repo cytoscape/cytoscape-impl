@@ -182,7 +182,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		BrowserTableModel model = (BrowserTableModel) getCurrentBrowserTable().getModel();
+		BrowserTable table = getCurrentBrowserTable();
+		if (table == null)
+			return;
+		BrowserTableModel model = (BrowserTableModel) table.getModel();
 		CyTable dataTable = model.getDataTable();
 
 		if (e.getSource() != dataTable)
