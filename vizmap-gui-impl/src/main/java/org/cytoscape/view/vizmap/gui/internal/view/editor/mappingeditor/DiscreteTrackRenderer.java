@@ -385,6 +385,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		if(icon == null)
 			icon = engine.createIcon(vp, key, ICON_SIZE, ICON_SIZE);
 		
+		g.setColor(Color.DARK_GRAY);
 		icon.paintIcon(this, g, x, y);	
 	}
 
@@ -484,7 +485,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 				drawIcon((V) objectValues[i], g, iconLocX, iconLocY);
 			}
 
-			g.setColor(Color.DARK_GRAY);
+			g.setColor(Color.GRAY);
 			g.setStroke(STROKE1);
 			g.drawLine(newX, 0, newX, trackHeight);
 
