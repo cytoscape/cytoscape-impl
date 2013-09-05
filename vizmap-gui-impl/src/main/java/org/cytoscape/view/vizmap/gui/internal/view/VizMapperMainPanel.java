@@ -94,7 +94,7 @@ import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
 public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultViewPanel, DefaultViewEditor,
 														  CytoPanelComponent, PopupMenuListener {
 
-	private static final String TITLE = "Visual Styles";
+	private static final String TITLE = "Style";
 
 	private DropDownMenuButton optionsBtn;
 	private JPanel stylesPnl;
@@ -341,7 +341,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			contextPopupMenu.add(new JSeparator());
 			
 			{
-				final JMenuItem mi = new JMenuItem("Remove Selected Visual Properties");
+				final JMenuItem mi = new JMenuItem("Hide Selected Visual Properties");
 				mi.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {

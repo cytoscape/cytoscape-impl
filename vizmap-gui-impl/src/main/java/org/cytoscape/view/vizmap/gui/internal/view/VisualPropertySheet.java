@@ -63,8 +63,8 @@ public class VisualPropertySheet extends JPanel{
 	private JPanel toolBarPnl;
 	private JPanel vpListHeaderPnl;
 	private JScrollPane vpListScr;
-	private DropDownMenuButton addVpsBtn;
-	private JPopupMenu addVpsMenu;
+	private DropDownMenuButton vpsBtn;
+	private JPopupMenu vpsMenu;
 	private JButton expandAllBtn;
 	private JButton collapseAllBtn;
 	
@@ -278,7 +278,7 @@ public class VisualPropertySheet extends JPanel{
 		if (toolBarPnl == null) {
 			toolBarPnl = new JPanel();
 			toolBarPnl.setLayout(new BoxLayout(toolBarPnl, BoxLayout.X_AXIS));
-			toolBarPnl.add(getAddVpsBtn());
+			toolBarPnl.add(getVpsBtn());
 			toolBarPnl.add(Box.createHorizontalGlue());
 			
 			if (model.getTargetDataType() != CyNetwork.class) {
@@ -338,21 +338,21 @@ public class VisualPropertySheet extends JPanel{
 		return vpListScr;
 	}
 	
-	private DropDownMenuButton getAddVpsBtn() {
-		if (addVpsBtn == null) {
-			addVpsBtn = new DropDownMenuButton(getAddVpsMenu());
-			addVpsBtn.setText("Add Visual Properties");
-			addVpsBtn.setHorizontalAlignment(DropDownMenuButton.LEFT);
-			addVpsBtn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+	private DropDownMenuButton getVpsBtn() {
+		if (vpsBtn == null) {
+			vpsBtn = new DropDownMenuButton(getVpsMenu());
+			vpsBtn.setText("Visual Properties");
+			vpsBtn.setHorizontalAlignment(DropDownMenuButton.LEFT);
+			vpsBtn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		}
 		
-		return addVpsBtn;
+		return vpsBtn;
 	}
 
-	private JPopupMenu getAddVpsMenu() {
-		if (addVpsMenu == null) {
-			addVpsMenu = new JPopupMenu();
-			addVpsMenu.addPopupMenuListener(new PopupMenuListener() {
+	private JPopupMenu getVpsMenu() {
+		if (vpsMenu == null) {
+			vpsMenu = new JPopupMenu();
+			vpsMenu.addPopupMenuListener(new PopupMenuListener() {
 				@Override
 				public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
 					updateMenuItems();
@@ -366,7 +366,7 @@ public class VisualPropertySheet extends JPanel{
 			});
 		}
 		
-		return addVpsMenu;
+		return vpsMenu;
 	}
 
 	protected JButton getExpandAllBtn() {
@@ -404,7 +404,7 @@ public class VisualPropertySheet extends JPanel{
 	}
 	
 	private void createMenuItems() {
-		final JPopupMenu rootMenu = getAddVpsMenu();
+		final JPopupMenu rootMenu = getVpsMenu();
 		
 		// Remove previous menu items
 		menuItemMap.clear();
@@ -550,27 +550,30 @@ public class VisualPropertySheet extends JPanel{
 		if (menuMap.size() > 1) {
 			rootMenu.add(new JSeparator());
 			
-			final JMenuItem addAllMi = new JMenuItem("Add All");
-			addAllMi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
-						setVisible(entry.getKey(), true);
+			{
+				final JMenuItem mi = new JMenuItem("Show All");
+				mi.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(final ActionEvent e) {
+						for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
+							setVisible(entry.getKey(), true);
+						}
 					}
-				}
-			});
-			rootMenu.add(addAllMi);
-			
-			final JMenuItem removeAllMi = new JMenuItem("Remove All");
-			removeAllMi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
-						setVisible(entry.getKey(), false);
+				});
+				rootMenu.add(mi);
+			}
+			{
+				final JMenuItem mi = new JMenuItem("Hide All");
+				mi.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(final ActionEvent e) {
+						for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
+							setVisible(entry.getKey(), false);
+						}
 					}
-				}
-			});
-			rootMenu.add(removeAllMi);
+				});
+				rootMenu.add(mi);
+			}
 			
 //			rootMenu.add(new JSeparator());
 //			
@@ -584,9 +587,9 @@ public class VisualPropertySheet extends JPanel{
 //			});
 //			rootMenu.add(makeDefMi);
 			
-			getAddVpsBtn().setEnabled(true);
+			getVpsBtn().setEnabled(true);
 		} else {
-			getAddVpsBtn().setEnabled(false);
+			getVpsBtn().setEnabled(false);
 		}
 	}
 	
