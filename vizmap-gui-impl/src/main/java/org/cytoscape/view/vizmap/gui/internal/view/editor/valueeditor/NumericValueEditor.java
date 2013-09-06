@@ -29,23 +29,35 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import javax.swing.JOptionPane;
+import javax.swing.JDialog;
 
-public class NumericValueEditor<T extends Number> extends
-		AbstractValueEditor<T> {
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.Range;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
+
+public class NumericValueEditor<V extends Number> implements VisualPropertyValueEditor<V> {
 
 	private static final String MESSAGE = "Please enter new number";
 	private static final String ERR_MESSAGE = "Not a valid number.";
 
-	public NumericValueEditor(final Class<T> type) {
-		super(type);
+	final Class<V> type;
+
+	public NumericValueEditor(final Class<V> type) {
+		this.type = type;
+	}
+
+	public Class<V> getValueType() {
+		return type;
 	}
 
 	/**
 	 * Generic editor for all kinds of numbers.
 	 */
-	@Override public <S extends T> T showEditor(final Component parent, S initialValue) {
+	@Override public <S extends V> V showEditor(final Component parent, S initialValue, VisualProperty<S> vizProp) {
 		Object value = null;
 		Number result = null;
+
+		System.out.println("VisualPropertyValueEditor: " + vizProp.getDisplayName());
 		
 		while (result == null) {
 			value = JOptionPane.showInputDialog(parent, MESSAGE, initialValue);
@@ -57,8 +69,13 @@ public class NumericValueEditor<T extends Number> extends
 			try {
 				final BigDecimal number = new BigDecimal(value.toString());
 				result = convert(number, type);
+				final V result2 = type.cast(result);
+				final Range<S> range = vizProp.getRange();
+				if (!range.inRange((S) result2)) {
+					throw new NumberFormatException();
+				}
 			} catch (NumberFormatException ne) {
-				JOptionPane.showMessageDialog(editorDialog, ERR_MESSAGE, "Invalid Input.", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(parent, ERR_MESSAGE, "Invalid Input.", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		

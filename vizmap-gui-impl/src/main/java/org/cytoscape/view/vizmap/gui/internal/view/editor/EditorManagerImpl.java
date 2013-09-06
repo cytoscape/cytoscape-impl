@@ -57,6 +57,7 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
@@ -93,6 +94,7 @@ public class EditorManagerImpl implements EditorManager {
 	private final Map<String, PropertyEditor> comboBoxEditors;
 	private final Map<Class<?>, ListEditor> attrComboBoxEditors;
 	private final Map<Class<?>, ValueEditor<?>> valueEditors;
+	private final Map<Class<?>, VisualPropertyValueEditor<?>> vizPropValueEditors;
 
 	private final PropertyEditor mappingTypeEditor;
 	private final ContinuousMappingCellRendererFactory cellRendererFactory;
@@ -112,6 +114,7 @@ public class EditorManagerImpl implements EditorManager {
 		editors = new HashMap<Class<?>, VisualPropertyEditor<?>>();
 		comboBoxEditors = new HashMap<String, PropertyEditor>();
 		valueEditors = new HashMap<Class<?>, ValueEditor<?>>();
+		vizPropValueEditors = new HashMap<Class<?>, VisualPropertyValueEditor<?>>();
 		
 		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 		final CyNetworkManager netMgr = servicesUtil.get(CyNetworkManager.class);
@@ -164,6 +167,18 @@ public class EditorManagerImpl implements EditorManager {
 		valueEditors.remove(ve.getValueType());
 	}
 
+	@Override
+	@SuppressWarnings("rawtypes")
+	public void addVisualPropertyValueEditor(final VisualPropertyValueEditor<?> ve, final Map properties) {
+		this.vizPropValueEditors.put(ve.getValueType(), ve);
+	}
+
+	@Override
+	@SuppressWarnings("rawtypes")
+	public void removeVisualPropertyValueEditor(final VisualPropertyValueEditor<?> ve, final Map properties) {
+		vizPropValueEditors.remove(ve.getValueType());
+	}
+
 	@SuppressWarnings("rawtypes")
 	public void addVisualPropertyEditor(final VisualPropertyEditor<?> vpEditor, final Map properties) {
 		editors.put(vpEditor.getType(), vpEditor);
@@ -178,13 +193,19 @@ public class EditorManagerImpl implements EditorManager {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <V> V showVisualPropertyValueEditor(final Component parentComponent, final VisualProperty<V> type,
 			V initialValue) throws Exception {
-		final ValueEditor<V> editor = (ValueEditor<V>) valueEditors.get(type.getRange().getType());
+		V newValue = null;
+		final Class<?> valueType = type.getRange().getType();
+		final VisualPropertyValueEditor<V> vizPropEditor = (VisualPropertyValueEditor<V>) vizPropValueEditors.get(valueType);
+		final ValueEditor<V> editor = (ValueEditor<V>) valueEditors.get(valueType);
 
-		if (editor == null)
+		if (vizPropEditor != null) {
+			newValue = vizPropEditor.showEditor(parentComponent, initialValue, type);
+		} else if (editor != null) {
+			newValue = editor.showEditor(parentComponent, initialValue);
+		} else {
 			throw new IllegalStateException("No value editor for " + type.getDisplayName() + " is available.");
+		}
 
-		final V newValue = editor.showEditor(parentComponent, initialValue);
-		
 		// Null is valid return value. It's from "Cancel" button.
 		if (newValue == null)
 			return null;

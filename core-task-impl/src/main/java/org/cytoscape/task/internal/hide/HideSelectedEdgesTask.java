@@ -55,10 +55,11 @@ public class HideSelectedEdgesTask extends AbstractNetworkViewTask {
 		e.setProgress(0.0);
 		
 		final CyNetwork network = view.getModel(); 
-		undoSupport.postEdit(new HideEdit(eventHelper, "Hide Selected Edges", network, view));
+		final List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+		
+		undoSupport.postEdit(new HideEdit("Hide Selected Edges", view, selectedEdges, false, eventHelper, vmMgr));
 		e.setProgress(0.3);
 		
-		final List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true); 
 		HideUtils.setVisibleEdges(selectedEdges, false, view);
 		e.setProgress(0.7);
 		
