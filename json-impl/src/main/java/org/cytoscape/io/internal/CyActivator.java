@@ -36,7 +36,6 @@ public class CyActivator extends AbstractCyActivator {
 		final CyNetworkManager cyNetworkManager = getService(bc, CyNetworkManager.class);
 		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
 		
-		
 		/////////////////// Readers ////////////////////////////
 
 		final CyFileFilter cytoscapejsReaderFilter = new CytoscapejsFileFilter(
