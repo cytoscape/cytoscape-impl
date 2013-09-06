@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.cytoscape.io.internal.read.AbstractNetworkReader;
+import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * Reader for graphs in the interactions file format. Given the filename,
  * provides the graph and attributes objects constructed from the file.
  */
-public class NNFNetworkReader extends AbstractNetworkReader {
+public class NNFNetworkReader extends AbstractCyNetworkReader {
 	private static final Logger logger = LoggerFactory.getLogger(NNFNetworkReader.class);
 
 	private final CyLayoutAlgorithmManager layouts;	
