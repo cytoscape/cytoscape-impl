@@ -40,12 +40,8 @@ import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager, PropertyChangeListener {
-
-	private static final Logger logger = LoggerFactory.getLogger(VizMapEventHandlerManagerImpl.class);
 
 	// This event is used in PropertyEditor object.
 	private static final String VALUE = "VALUE";
@@ -63,8 +59,6 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 		this.editorManager = editorManager;
 		this.attrManager = attrManager;
 		this.servicesUtil = servicesUtil;
-
-		registerCellEditorListeners();
 
 		eventHandlers = new HashMap<String, VizMapEventHandler>();
 		createHandlers(vizMapPropertyBuilder, vizMapperMediator);
@@ -123,12 +117,17 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 	 * Register listeners for editors.
 	 */
 	private void registerCellEditorListeners() {
-		// FIXME
-		for (final PropertyEditor p : editorManager.getCellEditors())
+		for (final PropertyEditor p : editorManager.getCellEditors()) {
+			// First remove the listener to prevent adding it more than once
+			p.removePropertyChangeListener(this);
 			p.addPropertyChangeListener(this);
+		}
 		
-		for (final PropertyEditor p : editorManager.getAttributeSelectors())
+		for (final PropertyEditor p : editorManager.getAttributeSelectors()) {
+			// First remove the listener to prevent adding it more than once
+			p.removePropertyChangeListener(this);
 			p.addPropertyChangeListener(this);
+		}
 
 		// Add Mapping type editor: continuous, discrete, or passthrough.
 		final PropertyEditor mappingSelector = editorManager.getMappingFunctionSelector();

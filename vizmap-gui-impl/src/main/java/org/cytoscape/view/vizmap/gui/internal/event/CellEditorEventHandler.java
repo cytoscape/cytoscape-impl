@@ -57,6 +57,8 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.Attribu
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
@@ -100,7 +102,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	 * @param e PCE to be processed in this handler.
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void processEvent(final PropertyChangeEvent e) {
 		final Object newVal = e.getNewValue();
 		final Object oldVal = e.getOldValue();
@@ -125,42 +127,66 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			return;
 		
 		final VisualProperty<?> vp = vpSheetItem.getModel().getVisualProperty();
+		final VisualMappingFunction mapping = vpSheetItem.getModel().getVisualMappingFunction();
 		
-		if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
-			// Case 1: Attribute type changed.
-			if (newVal != null && e.getSource() instanceof AttributeComboBoxPropertyEditor) {
-				final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
-				final VisualMappingFunctionFactory factory = 
-						(VisualMappingFunctionFactory) propSheetPnl.getTable().getValueAt(1, 1);
-				
-				VisualMappingFunction newMapping = switchColumn(factory, editor, prop, newVal.toString(), propSheetPnl);
-				vpSheetItem.getModel().setVisualMappingFunction(newMapping);
-				
-				if (newMapping == null)
-					vpSheetItem.getModel().setMappingColumnName(
-							prop.getValue() != null ? prop.getValue().toString() : null);
+		if (prop.getCellType() == CellType.DISCRETE && mapping instanceof DiscreteMapping) {
+			// Discrete mapping value changed:
+			// -------------------------------
+			// Create new map entry and register it.
+			final DiscreteMapping<Object, Object> discMap = (DiscreteMapping<Object, Object>) mapping;
+			setDiscreteMappingEntry(prop.getKey(), oldVal, newVal, discMap);
+		} else {
+			VisualMappingFunction newMapping = mapping;
+			String undoName = null;
+			
+			if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
+				// Attribute type changed:
+				// -----------------------
+				if (newVal != null && e.getSource() instanceof AttributeComboBoxPropertyEditor) {
+					final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
+					final VisualMappingFunctionFactory factory = 
+							(VisualMappingFunctionFactory) propSheetPnl.getTable().getValueAt(1, 1);
+					
+					newMapping = switchColumn(factory, editor, prop, newVal.toString(), propSheetPnl);
+					vpSheetItem.getModel().setVisualMappingFunction(newMapping);
+					
+					if (newMapping == null)
+						vpSheetItem.getModel().setMappingColumnName(
+								prop.getValue() != null ? prop.getValue().toString() : null);
+					
+					undoName = "Set Mapping Column";
+				}
+			} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
+				// Mapping type changed:
+				// -----------------------
+				// Parent is always root.
+				// TODO: refactor--this class should not have to know the row/column where the value is
+				Object controllingAttrName = propSheetPnl.getTable().getValueAt(0, 1);
+	
+				if (vp != null && controllingAttrName != null 
+						&& (newVal == null || newVal instanceof VisualMappingFunctionFactory)) {
+					newMapping = switchMappingType(prop, vp, (VisualMappingFunctionFactory) oldVal, 
+							(VisualMappingFunctionFactory) newVal, controllingAttrName.toString(), propSheetPnl);
+					vpSheetItem.getModel().setVisualMappingFunction(newMapping);
+					
+					undoName = "Set Mapping Type";
+				}
 			}
-		} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
-			// Case 2. Switch mapping type
-			// Parent is always root.
-			// TODO: refactor--this class should not have to know the row/column where the value is
-			Object controllingAttrName = propSheetPnl.getTable().getValueAt(0, 1);
-
-			if (vp != null && controllingAttrName != null 
-					&& (newVal == null || newVal instanceof VisualMappingFunctionFactory)) {
-				VisualMappingFunction newMapping = switchMappingType(prop, vp, (VisualMappingFunctionFactory) oldVal, 
-						(VisualMappingFunctionFactory) newVal, controllingAttrName.toString(), propSheetPnl);
-				vpSheetItem.getModel().setVisualMappingFunction(newMapping);
-			}
-		} else if (prop.getCellType() == CellType.DISCRETE) {
-			// Case 3: Discrete Cell editor event. Create new map entry and register it.
-			final VisualMappingFunction<?, ?> mapping = (VisualMappingFunction<?, ?>) prop.getInternalValue();
-
-			if (mapping instanceof DiscreteMapping) {
-				DiscreteMapping<Object, Object> discMap = (DiscreteMapping<Object, Object>) mapping;
-				
-				if (newVal == null || vp.getRange().getType().isAssignableFrom(newVal.getClass()))
-					discMap.putMapValue(prop.getKey(), newVal);
+			
+			if (newMapping != mapping && undoName != null) {
+				// Add undo support
+				final VisualMappingFunction myNewMapping = newMapping;
+				final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+				undo.postEdit(new AbstractCyEdit(undoName) {
+					@Override
+					public void undo() {
+						vpSheetItem.getModel().setVisualMappingFunction(mapping);
+					}
+					@Override
+					public void redo() {
+						vpSheetItem.getModel().setVisualMappingFunction(myNewMapping);
+					}
+				});
 			}
 		}
 	}
@@ -283,6 +309,31 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		return newMapping;
 	}
 
+	private void setDiscreteMappingEntry(final Object key, final Object oldVal, final Object newVal,
+			final DiscreteMapping<Object, Object> mapping) {
+		final VisualProperty<?> vp = mapping.getVisualProperty();
+		
+		if (newVal == null || vp.getRange().getType().isAssignableFrom(newVal.getClass())) {
+			mapping.putMapValue(key, newVal);
+			
+			// Undo support
+			if ((oldVal != null && newVal == null) || (newVal != null && !newVal.equals(oldVal))) {
+				final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+				undo.postEdit(new AbstractCyEdit("Set Discrete Mapping Value") {
+					@Override
+					public void undo() {
+						mapping.putMapValue(key, oldVal);
+					}
+					@Override
+					public void redo() {
+						mapping.putMapValue(key, newVal);
+					}
+				});
+			}
+		}
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void copyMappingValues(final VisualMappingFunction<?, ?> source, final VisualMappingFunction<?, ?> target) {
 		if (source instanceof ContinuousMapping && target instanceof ContinuousMapping) {
 			final CyNetwork curNet = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();

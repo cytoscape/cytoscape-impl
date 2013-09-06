@@ -134,10 +134,14 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		return canceled != true ? (T) iconList.getSelectedValue() : null;
 	}
 	
+	public void setValue(final T value) {
+		iconList.setSelectedValue(value, true);
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public <S extends T> T showEditor(final Component parent, final S initialValue) {
-		setListItems();
+		setListItems(initialValue);
 		setLocationRelativeTo(parent);
 		setVisible(true);
 		
@@ -289,13 +293,16 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		canceled = true;
 	}
 
-	private void setListItems() {
+	private void setListItems(final T selectedValue) {
 		renderIcons(values);
 		model.removeAllElements();
 		
 		for (final T key : values)
 			model.addElement(key);
 
+		if (selectedValue != null)
+			iconList.setSelectedValue(selectedValue, true);
+		
 		iconList.repaint();
 	}
 
