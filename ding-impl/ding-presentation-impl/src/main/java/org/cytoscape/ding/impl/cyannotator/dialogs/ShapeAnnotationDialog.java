@@ -35,7 +35,6 @@ import javax.swing.JFrame;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
 public class ShapeAnnotationDialog extends JDialog {
 
@@ -47,8 +46,8 @@ public class ShapeAnnotationDialog extends JDialog {
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
 	private final Point2D startingLocation;
-	private final ShapeAnnotation mAnnotation;
-	private ShapeAnnotation preview;
+	private final ShapeAnnotationImpl mAnnotation;
+	private ShapeAnnotationImpl preview;
 	private final boolean create;
 		
 	public ShapeAnnotationDialog(DGraphView view, Point2D start) {
@@ -61,7 +60,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		initComponents();		        
 	}
 
-	public ShapeAnnotationDialog(ShapeAnnotation mAnnotation) {
+	public ShapeAnnotationDialog(ShapeAnnotationImpl mAnnotation) {
 		this.mAnnotation=mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();

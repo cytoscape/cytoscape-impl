@@ -29,23 +29,30 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
 
-public class BoundedTextAnnotationFactory implements AnnotationFactory {
+public class BoundedTextAnnotationFactory implements DingAnnotationFactory<BoundedTextAnnotation> {
 
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
 		return new BoundedTextAnnotationDialog(view, location);
 	}
 
-	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		if ( type.equals(BoundedTextAnnotationImpl.NAME) ) {
-			Annotation a = new BoundedTextAnnotationImpl(cyAnnotator, view, argMap);
+	public BoundedTextAnnotation createAnnotation(Class<? extends BoundedTextAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
+		if (!(view instanceof DGraphView))
+			return null;
+
+		DGraphView dView = (DGraphView) view;
+		if ( type.equals(BoundedTextAnnotation.class) ) {
+			BoundedTextAnnotationImpl a = new BoundedTextAnnotationImpl(dView.getCyAnnotator(), dView, argMap);
 			a.update();
-			return a;
+			return (BoundedTextAnnotation)a;
 		} else 
 			return null;
 	}

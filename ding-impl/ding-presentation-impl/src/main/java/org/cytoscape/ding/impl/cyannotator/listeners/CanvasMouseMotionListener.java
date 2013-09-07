@@ -35,9 +35,10 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
+
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 
 public class CanvasMouseMotionListener implements MouseMotionListener{
 	private final CyAnnotator cyAnnotator;
@@ -56,9 +57,9 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 	}
 
 	public void mouseMoved(MouseEvent e) {
-		ShapeAnnotation resizeAnnotation = cyAnnotator.getResizeShape();
-		Annotation moveAnnotation = cyAnnotator.getMovingAnnotation();
-		ArrowAnnotation repositionAnnotation = cyAnnotator.getRepositioningArrow();
+		ShapeAnnotationImpl resizeAnnotation = cyAnnotator.getResizeShape();
+		DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
+		ArrowAnnotationImpl repositionAnnotation = cyAnnotator.getRepositioningArrow();
 		if (resizeAnnotation == null && moveAnnotation == null && repositionAnnotation == null) {
 			networkCanvas.mouseMoved(e);
 			return;
@@ -111,8 +112,8 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 
 			// See what's under our mouse
 			// Annotation?
-			Annotation a = cyAnnotator.getAnnotationAt(mousePoint);
-			if (a != null && !(a instanceof ArrowAnnotation)) {
+			DingAnnotation a = cyAnnotator.getAnnotationAt(mousePoint);
+			if (a != null && !(a instanceof ArrowAnnotationImpl)) {
 				repositionAnnotation.setTarget(a);
 
 			// Node?

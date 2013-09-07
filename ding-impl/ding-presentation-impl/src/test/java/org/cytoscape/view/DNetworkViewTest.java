@@ -31,7 +31,7 @@ import java.util.Map;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetworkTableManager;

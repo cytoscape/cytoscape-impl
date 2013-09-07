@@ -33,12 +33,12 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 public class ArrowAnnotationDialog extends JDialog {
 	private javax.swing.JButton applyButton;
@@ -47,9 +47,9 @@ public class ArrowAnnotationDialog extends JDialog {
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
 	private final Point2D startingLocation;
-	private final ArrowAnnotation mAnnotation;
-	private ArrowAnnotation preview;
-	private Annotation source = null;
+	private final ArrowAnnotationImpl mAnnotation;
+	private ArrowAnnotationImpl preview;
+	private DingAnnotation source = null;
 	private final boolean create;
 		
 	public ArrowAnnotationDialog(DGraphView view, Point2D start) {
@@ -63,7 +63,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		initComponents();		        
 	}
 
-	public ArrowAnnotationDialog(ArrowAnnotation mAnnotation) {
+	public ArrowAnnotationDialog(ArrowAnnotationImpl mAnnotation) {
 		this.mAnnotation=mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();

@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.cyannotator.api;
+package org.cytoscape.ding.impl.cyannotator.annotations;
 
 /*
  * #%L
@@ -33,16 +33,20 @@ import java.util.UUID;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 
 
-public interface Annotation {
+public interface DingAnnotation extends Annotation {
 	public static final String BACKGROUND =  "background";
 	public static final String FOREGROUND =  "foreground";
 
 	public String getCanvasName();
 	public void setCanvas(String canvas);
 	public void changeCanvas(String canvas);
+	public CyNetworkView getNetworkView();
 	public JComponent getCanvas();
 
 	public JComponent getComponent();

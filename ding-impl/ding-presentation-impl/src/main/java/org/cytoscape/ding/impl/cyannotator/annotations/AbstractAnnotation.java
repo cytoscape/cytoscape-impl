@@ -40,12 +40,15 @@ import java.util.UUID;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 /**
  *
@@ -55,7 +58,7 @@ import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
 //A BasicAnnotation Class
 //
 
-public class AbstractAnnotation extends JComponent implements Annotation {
+public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	private static int nextAnnotationNumber = 0;
 
 	private boolean selected=false;
@@ -80,6 +83,19 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	protected static final String CANVAS="canvas";
 	protected static final String TYPE="type";
 	protected static final String ANNOTATION_ID="uuid";
+
+	protected Map<String, String> savedArgMap = null;
+
+	/**
+	 * This constructor is used to create an empty annotation
+	 * before adding to a specific view.  In order for this annotation
+	 * to be functional, it must be added to the AnnotationManager
+	 * and setView must be called.
+	 */
+	public AbstractAnnotation(Map<String, String> argMap) {
+		arrowList = new HashSet<ArrowAnnotation>();
+		savedArgMap = argMap;
+	}
 
 	public AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view) {
 		this.view = view;
@@ -130,6 +146,30 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		
 	}
 
+	public void setView(DGraphView view) {
+		this.view = view;
+		this.cyAnnotator = view.getCyAnnotator();
+		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
+		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
+		this.globalZoom = view.getZoom();
+		if (savedArgMap != null) {
+			Point2D coords = getComponentCoordinates(savedArgMap);
+			this.globalZoom = Double.parseDouble(savedArgMap.get(ZOOM));
+			String canvasString = savedArgMap.get(CANVAS);
+			if (canvasString != null && canvasString.equals(BACKGROUND)) {
+				this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
+				this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
+			} else {
+				this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
+				this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
+			}
+			setLocation((int)coords.getX(), (int)coords.getY());
+			if (savedArgMap.containsKey(ANNOTATION_ID))
+				this.uuid = UUID.fromString(savedArgMap.get(ANNOTATION_ID));
+		}
+	}
+		
+
 	public String toString() {
 		Map<String,String>argMap = getArgMap();
 
@@ -152,8 +192,10 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 			canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		}
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(canvasName));
-		for (ArrowAnnotation arrow: arrowList) 
-			arrow.setCanvas(cnvs);
+		for (ArrowAnnotation arrow: arrowList) {
+			if (arrow instanceof DingAnnotation)
+				((DingAnnotation)arrow).setCanvas(cnvs);
+		}
 	}
 
 	@Override
@@ -163,9 +205,11 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		    (cnvs.equals(FOREGROUND) && canvasName.equals(DGraphView.Canvas.FOREGROUND_CANVAS)))
 			return;
 
-		if (!(this instanceof ArrowAnnotation)) {
-			for (ArrowAnnotation arrow: arrowList) 
-				arrow.changeCanvas(cnvs);
+		if (!(this instanceof ArrowAnnotationImpl)) {
+			for (ArrowAnnotation arrow: arrowList) {
+				if (arrow instanceof DingAnnotation)
+					((DingAnnotation)arrow).changeCanvas(cnvs);
+			}
 		}
 
 		// Remove ourselves from the current canvas
@@ -180,6 +224,11 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 		canvas.add(this);
 
 		canvas.repaint();  // update the canvas
+	}
+
+	@Override
+	public CyNetworkView getNetworkView() {
+		return (CyNetworkView)view;
 	}
 
 	@Override
@@ -215,11 +264,11 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	public CyAnnotator getCyAnnotator() {return cyAnnotator;}
     
 	public void moveAnnotation(Point2D location) {
-		if (!(this instanceof ArrowAnnotation)) {
+		if (!(this instanceof ArrowAnnotationImpl)) {
 			setLocation((int)location.getX(), (int)location.getY());
 			cyAnnotator.moveAnnotation(this);
 		} else {
-			cyAnnotator.positionArrow((ArrowAnnotation)this);
+			cyAnnotator.positionArrow((ArrowAnnotationImpl)this);
 		}
 	}
 
@@ -237,8 +286,10 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	public void removeAnnotation() {
 		canvas.remove(this);
 		cyAnnotator.removeAnnotation(this);
-		for (ArrowAnnotation arrow: arrowList) 
-			arrow.removeAnnotation();
+		for (ArrowAnnotation arrow: arrowList) {
+			if (arrow instanceof DingAnnotation)
+				((DingAnnotation)arrow).removeAnnotation();
+		}
 		canvas.repaint();
 	}
 
@@ -263,9 +314,11 @@ public class AbstractAnnotation extends JComponent implements Annotation {
 	public void addArrow(ArrowAnnotation arrow) {
 		arrowList.add(arrow);
 	}
+
 	public void removeArrow(ArrowAnnotation arrow) {
 		arrowList.remove(arrow);
 	}
+
 	public Set<ArrowAnnotation> getArrows() { return arrowList; }
 
 	@Override

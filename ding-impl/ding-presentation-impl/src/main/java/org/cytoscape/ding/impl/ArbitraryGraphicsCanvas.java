@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.model.CyNode;
 
 
@@ -259,8 +259,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			// System.out.println("   component is at node position: "+position.getX()+","+position.getY());
 
 			// If we're painting an annotation, set the zoom
-			if (c instanceof Annotation) {
-				Annotation a = (Annotation)c;
+			if (c instanceof DingAnnotation) {
+				DingAnnotation a = (DingAnnotation)c;
 				a.drawAnnotation(image2D, position.getX()+xOffset, position.getY()+yOffset, scaleFactor);
 			}
 		}

@@ -31,13 +31,15 @@ import java.awt.geom.Point2D;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.cytoscape.ding.impl.cyannotator.create.DingAnnotationFactory;
 
 public class AddAnnotationTask extends AbstractNetworkViewTask {
 
@@ -57,11 +59,11 @@ public class AddAnnotationTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		
-		if ( view instanceof DGraphView ) {
+		if ( view instanceof DGraphView  && annotationFactory instanceof DingAnnotationFactory ) {
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
 			
-		 			JDialog dialog = annotationFactory.createAnnotationDialog((DGraphView)view, location);	
+		 			JDialog dialog = ((DingAnnotationFactory)annotationFactory).createAnnotationDialog((DGraphView)view, location);	
 					dialog.setLocation((int)location.getX(), (int)location.getY());
 					dialog.setVisible(true);
 				}

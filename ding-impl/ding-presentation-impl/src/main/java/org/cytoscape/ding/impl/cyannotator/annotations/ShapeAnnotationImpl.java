@@ -30,13 +30,17 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
+// import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 
 public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnnotation {
@@ -51,7 +55,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double shapeHeight = 0.0;
 	protected double factor = 1.0;
 
-	public static final String NAME="SHAPE";
 	protected static final String WIDTH="width";
 	protected static final String HEIGHT="height";
 	protected static final String EDGECOLOR = "edgeColor";
@@ -61,6 +64,30 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected static final String FILLOPACITY = "fillOpacity";
 	protected static final String SHAPETYPE = "shapeType";
 
+
+	public enum ShapeType {
+		RECTANGLE ("Rectangle"),
+		ROUNDEDRECTANGLE ("Rounded Rectangle"),
+		ELLIPSE ("Ellipse"),
+		TRIANGLE ("Triangle"),
+		PENTAGON ("Pentagon"),
+		STAR5 ("5-Pointed Star"),
+		HEXAGON ("Hexagon"),
+		STAR6 ("6-Pointed Star");
+	
+		private final String name;
+		ShapeType (String name) { 
+			this.name = name; 
+		}
+	
+		public String shapeName() {
+			return this.name;
+		}
+
+		public String toString() {
+			return this.name;
+		}
+	} 
 
 	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height) {
 		super(cyAnnotator, view);
@@ -74,11 +101,11 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		super(c);
 		shapeWidth=width;
 		shapeHeight=height;
-		shapeType = c.getShapeType();
+		shapeType = GraphicsUtilities.getShapeType(c.getShapeType());
 		borderColor = c.getBorderColor();
 		borderWidth = c.getBorderWidth();
 		fillColor = c.getFillColor();
-		shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
+		shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 	}
 
   public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view,
@@ -95,7 +122,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.borderWidth=edgeThickness;
 		this.shapeWidth = width;
 		this.shapeHeight = height;
-		this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
+		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
     setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
   }
 
@@ -114,13 +141,13 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
     this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
-    this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
+    this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
     setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
   }
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,NAME);
+		argMap.put(TYPE,ShapeAnnotation.class.getName());
 		if (this.fillColor != null)
 			argMap.put(FILLCOLOR,convertColor(this.fillColor));
 		argMap.put(FILLOPACITY, Double.toString(this.fillOpacity));
@@ -135,7 +162,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		return argMap;
 	}
 
-	public ShapeType[] getSupportedShapes() {
+	public List<String> getSupportedShapes() {
 		return GraphicsUtilities.getSupportedShapes();
 	}
 
@@ -176,11 +203,19 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		return shape;
 	}
 
-	public ShapeType getShapeType() {return shapeType;}
+	@Override
+	public String getShapeType() {return shapeType.shapeName();}
+
+	public ShapeType getShapeTypeInt() {return shapeType;}
 
   public void setShapeType(ShapeType type) { 
 		shapeType = type; 
-		this.shape = GraphicsUtilities.getShape(shapeType, 0.0, 0.0, shapeWidth, shapeHeight);
+		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
+	}
+
+  public void setShapeType(String type) { 
+		shapeType = getShapeFromString(type);
+		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 	}
   
   public double getBorderWidth() {return borderWidth;}
@@ -242,6 +277,14 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	public JDialog getModifyDialog() {
 		return new ShapeAnnotationDialog(this);
+	}
+
+	private ShapeType getShapeFromString(String shapeName) {
+		for (ShapeType type: ShapeType.values()) {
+			if (type.shapeName().equals(shapeName))
+				return type;
+		}
+		return null;
 	}
 
 }

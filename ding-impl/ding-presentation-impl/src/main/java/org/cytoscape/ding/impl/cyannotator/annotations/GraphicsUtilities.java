@@ -38,14 +38,22 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation.ShapeType;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowType;
+// import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
+
+import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl.ShapeType;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
+
+// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
+// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
+// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowType;
 
 class GraphicsUtilities {
 	private static double halfPI = Math.PI/2.0;
@@ -55,12 +63,33 @@ class GraphicsUtilities {
 		ShapeType.TRIANGLE, ShapeType.STAR6, ShapeType.HEXAGON, ShapeType.PENTAGON
 	};
 
+	protected static final List<String> supportedShapeNames = Arrays.asList(
+		ShapeType.RECTANGLE.shapeName(),
+		ShapeType.ROUNDEDRECTANGLE.shapeName(),
+		ShapeType.ELLIPSE.shapeName(),
+		ShapeType.STAR5.shapeName(),
+		ShapeType.TRIANGLE.shapeName(),
+		ShapeType.STAR6.shapeName(),
+		ShapeType.HEXAGON.shapeName(),
+		ShapeType.PENTAGON.shapeName());
+
 	protected static final ArrowType supportedArrows[] = {
 		ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.CONCAVE, ArrowType.DIAMOND, ArrowType.OPEN, 
 		ArrowType.NONE, ArrowType.TRIANGLE, ArrowType.TSHAPE
 	};
 
-	static public Shape getShape(ShapeType shapeType, double x, double y, double width, double height) {
+	protected static final List<String> supportedArrowNames = Arrays.asList(
+		ArrowType.CIRCLE.arrowName(), 
+		ArrowType.CLOSED.arrowName(), 
+		ArrowType.CONCAVE.arrowName(), 
+		ArrowType.DIAMOND.arrowName(), 
+		ArrowType.OPEN.arrowName(), 
+		ArrowType.NONE.arrowName(), 
+		ArrowType.TRIANGLE.arrowName(), 
+		ArrowType.TSHAPE.arrowName());
+
+	static public Shape getShape(String shapeName, double x, double y, double width, double height) {
+		ShapeType shapeType = getShapeType(shapeName);
 		switch(shapeType) {
 			case RECTANGLE: return rectangleShape(x, y, width, height);
 			case ROUNDEDRECTANGLE: return roundedRectangleShape(x, y, width, height);
@@ -101,8 +130,8 @@ class GraphicsUtilities {
 		return defValue;
 	}
 
-	static public ShapeType[] getSupportedShapes() {
-		return supportedShapes;
+	static public List<String> getSupportedShapes() {
+		return supportedShapeNames;
 	}
 
 	// Given a position and a size, draw a shape.  We use the ShapeAnnotation to get the
@@ -125,15 +154,13 @@ class GraphicsUtilities {
 		// Set our fill color
 		if (annotation.getFillColor() != null) {
 			// System.out.println("drawShape: fill color = "+annotation.getFillColor());
-			// System.out.println("drawShape: fill opacity = "+annotation.getFillOpacity());
-			g2.setPaint(mixColor(annotation.getFillColor(), annotation.getFillOpacity()));
+			g2.setPaint(annotation.getFillColor());
 			g2.fill(shape);
 		}
 
 		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
 			// System.out.println("drawShape: border color = "+annotation.getBorderColor());
-			// System.out.println("drawShape: border opacity = "+annotation.getBorderOpacity());
-			g2.setPaint(mixColor(annotation.getBorderColor(), annotation.getBorderOpacity()));
+			g2.setPaint(annotation.getBorderColor());
 			g2.setStroke(new BasicStroke(border));
 			g2.draw(shape);
 		} else if (annotation.isSelected()) {
@@ -191,6 +218,10 @@ class GraphicsUtilities {
 
 	static public ArrowType[] getSupportedArrowTypes() {
 		return supportedArrows;
+	}
+
+	static public List<String> getSupportedArrowTypeNames() {
+		return supportedArrowNames;
 	}
 
 	static public void drawArrow(Graphics g, Line2D line, ArrowEnd end, Paint paint, double size, 

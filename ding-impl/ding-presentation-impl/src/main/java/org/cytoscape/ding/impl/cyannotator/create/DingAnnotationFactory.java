@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.cyannotator.api;
+package org.cytoscape.ding.impl.cyannotator.create;
 
 /*
  * #%L
@@ -24,23 +24,17 @@ package org.cytoscape.ding.impl.cyannotator.api;
  * #L%
  */
 
-import java.awt.Image;
-import java.net.URL;
+import java.awt.geom.Point2D;
+import java.util.Map;
 
-public interface ImageAnnotation extends ShapeAnnotation {
-	public void reloadImage();
+import javax.swing.JDialog;
 
-	public Image getImage();
-	public void setImage(Image image);
-	public URL getImageURL();
-	public void setImage(URL url);
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 
-	public void setImageOpacity(float opacity);
-	public float getImageOpacity();
-
-	public void setImageBrightness(int brightness);
-	public int getImageBrightness();
-
-	public void setImageContrast(int contrast);
-	public int getImageContrast();
+public interface DingAnnotationFactory <T extends Annotation> extends AnnotationFactory <T> {
+	JDialog createAnnotationDialog(DGraphView view, Point2D location); 
 }
