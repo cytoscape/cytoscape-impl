@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
 
 
 /**
@@ -53,9 +54,7 @@ public class NetworkGroupUtil {
         if (cyNetworks.size() == 0) return cyNetworks;
 
         for (CyNetwork net : cyNetworks) {
-            String attribute = BioPaxUtil.BIOPAX_NETWORK;
-            Boolean b = net.getRow(net).get(attribute, Boolean.class);
-            if (b != null && b) {
+            if (BioPaxUtil.isFromBiopax(net)) {
                 networkSet.add(net);
             }
         }

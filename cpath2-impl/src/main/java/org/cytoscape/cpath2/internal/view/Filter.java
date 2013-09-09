@@ -1,4 +1,4 @@
-package org.cytoscape.cpath2.internal.task;
+package org.cytoscape.cpath2.internal.view;
 
 /*
  * #%L
@@ -24,27 +24,23 @@ package org.cytoscape.cpath2.internal.task;
  * #L%
  */
 
-import java.net.URL;
+import java.util.List;
 
-import org.cytoscape.cpath2.internal.CPathFactory;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.cpath2.internal.schemas.summary_response.BasicRecordType;
 
-public class MergeNetworkTaskFactory extends AbstractTaskFactory {
-	private final URL cpathURL;
-	private final CyNetwork cyNetwork;
-	private final CPathFactory factory;
+/**
+ * Filter interface.
+ *
+ * @author Ethan Cerami
+ */
+public interface Filter {
 
-	public MergeNetworkTaskFactory(URL cpathURL, CyNetwork cyNetwork, CPathFactory factory) {
-		this.cpathURL = cpathURL;
-		this.cyNetwork = cyNetwork;
-		this.factory = factory;
-	}
-	
-	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new MergeNetworkTask(cpathURL, cyNetwork, factory));
-	}
-
+    /**
+     * Filters the record list.  Those items which pass the filter
+     * are included in the returned list.
+     *
+     * @param recordList List of RecordType Objects.
+     * @return List of RecordType Objects. 
+     */
+    public List<BasicRecordType> filter (List<BasicRecordType> recordList);
 }

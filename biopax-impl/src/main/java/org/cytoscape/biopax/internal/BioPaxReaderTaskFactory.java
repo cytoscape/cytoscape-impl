@@ -26,37 +26,21 @@ package org.cytoscape.biopax.internal;
 
 import java.io.InputStream;
 
-import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class BioPaxReaderTaskFactory extends AbstractInputStreamTaskFactory {
 
-	private final CyNetworkFactory networkFactory;
-	private final CyNetworkViewFactory viewFactory;
-	private final CyNetworkNaming naming;
-	private final CyNetworkManager networkManager; 
-	private final CyRootNetworkManager rootNetworkManager;
-	private final CyApplicationManager applicationManager;
+	private final CyServices cyServices;
+	private final VisualStyleUtil visualStyleUtil;
 
-	public BioPaxReaderTaskFactory(CyFileFilter filter, CyNetworkFactory networkFactory, 
-			CyNetworkViewFactory viewFactory, CyNetworkNaming naming,
-			CyNetworkManager networkManager, CyRootNetworkManager rootNetworkManager,
-			CyApplicationManager applicationManager)
+	public BioPaxReaderTaskFactory(CyFileFilter filter, CyServices cyServices, VisualStyleUtil visualStyleUtil)
 	{
 		super(filter);
-		this.networkFactory = networkFactory;
-		this.viewFactory = viewFactory;
-		this.naming = naming;
-		this.networkManager = networkManager;
-		this.rootNetworkManager = rootNetworkManager;
-		this.applicationManager = applicationManager;
+		this.cyServices = cyServices;
+		this.visualStyleUtil = visualStyleUtil;
 	}
 	
 
@@ -66,9 +50,7 @@ public class BioPaxReaderTaskFactory extends AbstractInputStreamTaskFactory {
 			inputName = "BioPAX_Network"; //default name fallback
 		
 		return new TaskIterator(
-			new BioPaxReaderTask(
-				is, inputName, networkFactory, viewFactory, naming, 
-				networkManager, rootNetworkManager, applicationManager)
+			new BioPaxReaderTask(is, inputName, cyServices, visualStyleUtil)
 		);
 	}
 

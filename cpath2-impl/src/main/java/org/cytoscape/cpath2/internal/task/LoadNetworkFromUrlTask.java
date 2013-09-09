@@ -31,7 +31,7 @@ import java.text.NumberFormat;
 
 import javax.swing.JOptionPane;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
@@ -46,9 +46,9 @@ import org.cytoscape.work.TaskMonitor;
  */
 public class LoadNetworkFromUrlTask implements Task {
 	private final URL url;
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 
-	public LoadNetworkFromUrlTask(URL url, CPath2Factory factory) {
+	public LoadNetworkFromUrlTask(URL url, CPathFactory factory) {
         this.url = url;
         this.factory = factory;
 	}

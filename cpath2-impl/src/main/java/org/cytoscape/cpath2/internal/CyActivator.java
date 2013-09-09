@@ -40,8 +40,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 
-import org.cytoscape.cpath2.internal.web_service.CytoscapeCPathWebService;
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
 
 
 
@@ -59,7 +58,7 @@ import java.util.Properties;
  * still connects to the cPath-based PathwayCommons service (pathwaycommons.org/pc/, 
  * BioPAX Level2 data, not updated since 11/2011)
  * 
- * TODO remove from cytoscape-impl (core), move to the Apps Store or merge with CyPath2 app.
+ * TODO remove/disable this old app.
  */
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -82,10 +81,16 @@ public class CyActivator extends AbstractCyActivator {
 		UndoSupport undoSupportRef = getService(bc,UndoSupport.class);
 		VisualMappingManager visualMappingManagerRef = getService(bc,VisualMappingManager.class);
 		VisualStyleFactory visualStyleFactoryRef = getService(bc,VisualStyleFactory.class);
-		VisualMappingFunctionFactory discreteMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=discrete)");
-		VisualMappingFunctionFactory passthroughMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		
-		CPath2Factory cPath2Factory = new CPath2Factory(cySwingApplicationRef,taskManagerRef, openBrowserRef,cyNetworkManagerRef,cyApplicationManagerRef,cyNetworkViewManagerRef,cyNetworkReaderManagerRef,cyNetworkNamingRef,cyNetworkFactoryRef,cyLayoutsRef,undoSupportRef,visualMappingManagerRef);
+		VisualMappingFunctionFactory discreteMappingFactoryRef = getService(bc,
+				VisualMappingFunctionFactory.class,"(mapping.type=discrete)");
+		VisualMappingFunctionFactory passthroughMappingFactoryRef = getService(bc,
+				VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
+		
+		CPathFactory cPath2Factory = new CPathFactory(cySwingApplicationRef,taskManagerRef, 
+				openBrowserRef, cyNetworkManagerRef, cyApplicationManagerRef, cyNetworkViewManagerRef, 
+				cyNetworkReaderManagerRef, cyNetworkNamingRef, cyNetworkFactoryRef, cyLayoutsRef, 
+				undoSupportRef,visualMappingManagerRef);
 		CytoscapeCPathWebService cPathWebService = new CytoscapeCPathWebService(cPath2Factory);
 		
 		registerAllServices(bc,cPathWebService, new Properties());

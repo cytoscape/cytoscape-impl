@@ -49,16 +49,16 @@ import org.biopax.paxtools.model.level3.EntityReference;
 import org.biopax.paxtools.model.level3.Named;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathException;
+import org.cytoscape.cpath2.internal.CPathProperties;
+import org.cytoscape.cpath2.internal.CPathResponseFormat;
+import org.cytoscape.cpath2.internal.CPathWebService;
+import org.cytoscape.cpath2.internal.EmptySetException;
 import org.cytoscape.cpath2.internal.StaxHack;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.cpath2.internal.util.BioPaxUtil;
 import org.cytoscape.cpath2.internal.util.SelectUtil;
-import org.cytoscape.cpath2.internal.web_service.CPathException;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
-import org.cytoscape.cpath2.internal.web_service.CPathResponseFormat;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
-import org.cytoscape.cpath2.internal.web_service.EmptySetException;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -86,7 +86,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	private final static String CPATH_SERVER_NAME_ATTRIBUTE = "CPATH_SERVER_NAME";
 	private final static String CPATH_SERVER_DETAILS_URL = "CPATH_SERVER_DETAILS_URL";
 	private Logger logger = LoggerFactory.getLogger(ExecuteGetRecordByCPathId.class);
-	private final CPath2Factory cPathFactory;
+	private final CPathFactory cPathFactory;
 
 
 	/**
@@ -108,7 +108,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			CPathResponseFormat format,
 			String networkTitle, 
 			CyNetwork mergedNetwork, 
-			CPath2Factory cPathFactory) 
+			CPathFactory cPathFactory) 
 	{
 		this.webApi = webApi;
 		this.ids = ids;
@@ -278,12 +278,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		// Set the Quick Find Default Index
 		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNetwork.NAME, String.class);
 
-		/* a hack (for the biopax-impl core plugin): Set that this is not a BIOPAX_NETWORK 
-		 * but a BINARY_SIF converted from / related to original BioPAX... 
-		 * (BIOPAX_NETWORK attribute must be present there anyway for the biopax plugin 
-		 * to update the information and legend in the east Results Panel on node selection events)
-		 */
-		AttributeUtil.set(cyNetwork, cyNetwork, "BIOPAX_NETWORK", Boolean.FALSE, Boolean.class);
 
 		// Get all node details.
 		getNodeDetails(cyNetwork, taskMonitor);
@@ -485,35 +479,5 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
         public void showMessage(TaskMonitor.Level level, String mesage) {
         }
 	}
-
-	private void fixDisplayName(Model model) {
-		if (logger.isInfoEnabled())
-			logger.info("Trying to auto-fix 'null' displayName...");
-		// where it's null, set to the shortest name if possible
-		for (Named e : model.getObjects(Named.class)) {
-			if (e.getDisplayName() == null) {
-				if (e.getStandardName() != null) {
-					e.setDisplayName(e.getStandardName());
-				} else if (!e.getName().isEmpty()) {
-					String dsp = e.getName().iterator().next();
-					for (String name : e.getName()) {
-						if (name.length() < dsp.length())
-							dsp = name;
-					}
-					e.setDisplayName(dsp);
-				}
-			}
-		}
-		// if required, set PE name to (already fixed) ER's name...
-		for(EntityReference er : model.getObjects(EntityReference.class)) {
-			for(SimplePhysicalEntity spe : er.getEntityReferenceOf()) {
-				if(spe.getDisplayName() == null || spe.getDisplayName().trim().length() == 0) {
-					if(er.getDisplayName() != null && er.getDisplayName().trim().length() > 0) {
-						spe.setDisplayName(er.getDisplayName());
-					}
-				}
-			}
-		}
-	}
-		
+	
 }

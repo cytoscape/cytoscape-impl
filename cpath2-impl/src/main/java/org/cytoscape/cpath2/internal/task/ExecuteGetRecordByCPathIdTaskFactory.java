@@ -24,9 +24,9 @@ package org.cytoscape.cpath2.internal.task;
  * #L%
  */
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
-import org.cytoscape.cpath2.internal.web_service.CPathResponseFormat;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathResponseFormat;
+import org.cytoscape.cpath2.internal.CPathWebService;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -39,12 +39,12 @@ public class ExecuteGetRecordByCPathIdTaskFactory extends AbstractTaskFactory {
 	private final CPathResponseFormat format;
 	private final String networkTitle;
 	private final CyNetwork networkToMerge;
-	private final CPath2Factory cPathFactory;
+	private final CPathFactory cPathFactory;
 	private final VisualMappingManager mappingManager;
 
 	public ExecuteGetRecordByCPathIdTaskFactory(CPathWebService webApi,
 			long[] ids, CPathResponseFormat format, String networkTitle,
-			CyNetwork networkToMerge, CPath2Factory cPathFactory, VisualMappingManager mappingManager) {
+			CyNetwork networkToMerge, CPathFactory cPathFactory, VisualMappingManager mappingManager) {
 		this.webApi = webApi;
 		this.ids = ids;
 		this.format = format;

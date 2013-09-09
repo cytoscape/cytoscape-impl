@@ -24,27 +24,23 @@ package org.cytoscape.cpath2.internal.task;
  * #L%
  */
 
-import java.net.URL;
-
-import org.cytoscape.cpath2.internal.CPathFactory;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.task.AbstractNodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class MergeNetworkTaskFactory extends AbstractTaskFactory {
-	private final URL cpathURL;
-	private final CyNetwork cyNetwork;
-	private final CPathFactory factory;
+public class ViewNetworkNeighborhoodTaskFactory extends AbstractNodeViewTaskFactory {
+	// TODO: Wire this up
+	
+	// TODO: This should be a service property
+    private static final String CONTEXT_MENU_TITLE = "View network neighborhood map";
 
-	public MergeNetworkTaskFactory(URL cpathURL, CyNetwork cyNetwork, CPathFactory factory) {
-		this.cpathURL = cpathURL;
-		this.cyNetwork = cyNetwork;
-		this.factory = factory;
+	public ViewNetworkNeighborhoodTaskFactory() {
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new MergeNetworkTask(cpathURL, cyNetwork, factory));
+	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
+		return new TaskIterator(new ViewNetworkNeighborhoodTask(nodeView, networkView));
 	}
-
 }

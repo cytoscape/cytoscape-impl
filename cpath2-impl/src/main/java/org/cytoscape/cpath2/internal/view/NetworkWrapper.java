@@ -1,4 +1,4 @@
-package org.cytoscape.cpath2.internal.task;
+package org.cytoscape.cpath2.internal.view;
 
 /*
  * #%L
@@ -24,27 +24,30 @@ package org.cytoscape.cpath2.internal.task;
  * #L%
  */
 
-import java.net.URL;
-
-import org.cytoscape.cpath2.internal.CPathFactory;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.model.CyRow;
 
-public class MergeNetworkTaskFactory extends AbstractTaskFactory {
-	private final URL cpathURL;
-	private final CyNetwork cyNetwork;
-	private final CPathFactory factory;
+public class NetworkWrapper {
+    private CyNetwork network;
 
-	public MergeNetworkTaskFactory(URL cpathURL, CyNetwork cyNetwork, CPathFactory factory) {
-		this.cpathURL = cpathURL;
-		this.cyNetwork = cyNetwork;
-		this.factory = factory;
-	}
-	
-	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new MergeNetworkTask(cpathURL, cyNetwork, factory));
-	}
+    public NetworkWrapper (CyNetwork network) {
+        this.network = network;
+    }
 
+    public CyNetwork getNetwork() {
+        return network;
+    }
+
+    public String toString() {
+        if (network != null) {
+        	CyRow row = network.getRow(network);
+        	String title = row.get(CyNetwork.NAME, String.class);
+            if (title != null && title.length() > 40) {
+                title = title.substring(0, 38) + "...";
+            }
+            return "Merge with:  " + title;
+        } else {
+            return "Create New Network";
+        }
+    }
 }

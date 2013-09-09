@@ -1,4 +1,4 @@
-package org.cytoscape.cpath2.internal.task;
+package org.cytoscape.cpath2.internal.view;
 
 /*
  * #%L
@@ -24,27 +24,25 @@ package org.cytoscape.cpath2.internal.task;
  * #L%
  */
 
-import java.net.URL;
+import org.cytoscape.cpath2.internal.schemas.search_response.ExtendedRecordType;
 
-import org.cytoscape.cpath2.internal.CPathFactory;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+/**
+ * Wrapper for ExtendedRecordType.
+ *
+ * @author Ethan Cerami.
+ */
+public class ExtendedRecordWrapper {
+    private ExtendedRecordType record;
 
-public class MergeNetworkTaskFactory extends AbstractTaskFactory {
-	private final URL cpathURL;
-	private final CyNetwork cyNetwork;
-	private final CPathFactory factory;
+    public ExtendedRecordWrapper (ExtendedRecordType record) {
+        this.record = record;
+    }
 
-	public MergeNetworkTaskFactory(URL cpathURL, CyNetwork cyNetwork, CPathFactory factory) {
-		this.cpathURL = cpathURL;
-		this.cyNetwork = cyNetwork;
-		this.factory = factory;
-	}
-	
-	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new MergeNetworkTask(cpathURL, cyNetwork, factory));
-	}
+    public ExtendedRecordType getRecord() {
+        return this.record;
+    }
 
+    public String toString() {
+        return record.getName();
+    }
 }
