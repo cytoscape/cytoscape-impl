@@ -44,6 +44,7 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -210,7 +211,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			first = taskIterator.next();
 			if (!displayTunables(first)) {
 				taskMonitor.cancel();
-                if (observer != null) observer.cancelled(first);
+                if (observer != null) observer.allFinished(FinishStatus.newCancelled(first));
 				return;
 			}
 
@@ -293,7 +294,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				handleObserver(task);
 
 				if (taskMonitor.cancelled()) {
-                    if (observer != null) observer.cancelled(task);
+                    if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 					return;
 				}
 
@@ -308,7 +309,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 
 					if (!displayTunables(task)) {
 						taskMonitor.cancel();
-                        if (observer != null) observer.cancelled(task);
+                        if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 						return;
 					}
 
@@ -318,15 +319,15 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 					handleObserver(first);
 
 					if (taskMonitor.cancelled()) {
-                        if (observer != null) observer.cancelled(task);
+                        if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 						break;
                     }
 				}
-				if (observer != null) observer.allFinished();
+                if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
 			} catch (Exception exception) {
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(new Exception(exception));
-                observer.failed(task, exception);
+                if (observer != null) observer.allFinished(FinishStatus.newFailed(task, exception));
 			} finally {
 				parent = null;
 				dialogTunableMutator.setConfigurationContext(null);

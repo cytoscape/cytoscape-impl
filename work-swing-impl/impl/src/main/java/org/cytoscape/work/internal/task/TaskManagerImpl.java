@@ -35,6 +35,7 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -226,7 +227,7 @@ class TaskRunner implements Runnable {
 	public void run() {
 		try {
 			if (!iterator.hasNext()) {
-                if (observer != null) observer.allFinished();
+                if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
 				return;
             }
 			// Get the first task in the iterator, then show its tunables.
@@ -234,7 +235,7 @@ class TaskRunner implements Runnable {
 			currentTask = iterator.next();
 			manager.updateParent();
 			if (!manager.showTunables(currentTask)) {
-                if (observer != null) observer.cancelled(currentTask);
+                if (observer != null) observer.allFinished(FinishStatus.newCancelled(currentTask));
 				return;
             }
 
@@ -261,15 +262,15 @@ class TaskRunner implements Runnable {
 			}
 			if (cancelled) {
 				monitor.setAsCancelled();
-                if (observer != null) observer.cancelled(currentTask);
+                if (observer != null) observer.allFinished(FinishStatus.newCancelled(currentTask));
 			} else {
 				monitor.setAsFinished();
-                if (observer != null) observer.allFinished();
+                if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
 			}
 		} catch (Exception e) {
 			monitor.setAsExceptionOccurred(e);
 			e.printStackTrace();
-            if (observer != null) observer.failed(currentTask, e);
+            if (observer != null) observer.allFinished(FinishStatus.newFailed(currentTask, e));
 		} finally {
 			manager.clearParent();
 		}
