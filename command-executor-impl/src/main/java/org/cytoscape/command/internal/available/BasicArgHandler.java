@@ -30,6 +30,8 @@ import java.lang.reflect.Method;
 
 import org.cytoscape.work.AbstractTunableHandler;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.model.CyTable;
+//import org.cytoscape.work.ProvidesInputHelp;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -55,8 +57,15 @@ public class BasicArgHandler extends AbstractTunableHandler implements ArgHandle
 				options = " "+((ListSingleSelection)getValue()).getPossibleValues().toString();
 			} else if (getType().equals(ListMultipleSelection.class) && getValue() != null) {
 				options = " "+((ListMultipleSelection)getValue()).getPossibleValues().toString();
+			} else if (getType().equals(CyTable.class) ){
+				options = " " + " [NodeTable -> Node:NetworkName , EdgeTable -> Edge:NetworkName , NetworkTable -> Network:NetworkName , " +
+						"UnassignedTable -> TableFileName]";
 			}
+			
+			//if(getValue() instanceof ProvidesInputHelp)
+			//	options = ( (ProvidesInputHelp)getValue()).inputHelp();
 		} catch (Exception e) {}
+		
 		String type = getType().getSimpleName();
 		return name + "=<" + type + options + ">";
 	}
