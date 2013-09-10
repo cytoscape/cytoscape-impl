@@ -77,13 +77,16 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 		// System.out.println("SyncTaskManager.execute");
 		final LoggingTaskMonitor taskMonitor = new LoggingTaskMonitor();
 		
+        Task task = null;
 		try {
 			while (taskIterator.hasNext()) {
-				final Task task = taskIterator.next();
+				task = taskIterator.next();
 				taskMonitor.setTask(task);
 
-				if (!displayTunables(task))
+				if (!displayTunables(task)) {
+                    if (observer != null) observer.cancelled(task);
 					return;
+                }
 
 				task.run(taskMonitor);
 
@@ -91,11 +94,11 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 					observer.taskFinished((ObservableTask)task);
 				} 
 			}
-			if (observer != null)
-				observer.allFinished();
+			if (observer != null) observer.allFinished();
 
 		} catch (Exception exception) {
 			taskMonitor.showException(exception);
+            if (observer != null && task != null) observer.failed(task, exception);
 		}
 	}
 
