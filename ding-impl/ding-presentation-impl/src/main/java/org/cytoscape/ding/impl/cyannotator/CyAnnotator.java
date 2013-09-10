@@ -216,7 +216,7 @@ public class CyAnnotator {
 	public DingAnnotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
 		DingAnnotation top = null;
 		for (DingAnnotation a: annotationMap.keySet()) {
-			if (a.getComponent().contains(x, y)) {
+			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
 				// System.out.println("Found component "+a.toString()+".  Z-order = "+cnvs.getComponentZOrder(a.getComponent()));
 				if ((top == null) || 
 				    (cnvs.getComponentZOrder(top.getComponent()) >
@@ -234,7 +234,7 @@ public class CyAnnotator {
 			return a;
 		}
 
-		return a = getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
+		return getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
 	}
 
 	public InnerCanvas getNetworkCanvas() {

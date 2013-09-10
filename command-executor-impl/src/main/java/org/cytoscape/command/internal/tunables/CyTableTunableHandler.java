@@ -25,20 +25,21 @@ package org.cytoscape.command.internal.tunables;
  */
 
 import org.cytoscape.command.AbstractStringTunableHandler;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListMultipleSelection;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.List;
 
-public class ListMultipleTunableHandler extends AbstractStringTunableHandler {
-    public ListMultipleTunableHandler(Field f, Object o, Tunable t) { super(f,o,t); }
-    public ListMultipleTunableHandler(Method get, Method set, Object o, Tunable t) { super(get,set,o,t); }
+public class CyTableTunableHandler extends AbstractStringTunableHandler implements CyIdentifiableTunableHandler {
+		private StringToModel stringHandler;
+    public CyTableTunableHandler(Field f, Object o, Tunable t) { super(f,o,t); }
+    public CyTableTunableHandler(Method get, Method set, Object o, Tunable t) { super(get,set,o,t); }
+		public void setStringHandler(StringToModel sth) { this.stringHandler = sth; }
+
 	public Object processArg(String arg) throws Exception {
-		ListMultipleSelection lss = (ListMultipleSelection)getValue();
-		
-		String[] options = arg.split("(?<!\\\\),");
-		lss.setSelectedValues(Arrays.asList(options));
-		return lss;
+		System.out.println("gettting table: " + arg);
+		return stringHandler.getTable(arg);
 	}
 }
