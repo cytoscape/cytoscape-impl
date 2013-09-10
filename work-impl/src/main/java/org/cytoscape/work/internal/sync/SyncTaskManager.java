@@ -34,6 +34,7 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +85,7 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 				taskMonitor.setTask(task);
 
 				if (!displayTunables(task)) {
-                    if (observer != null) observer.cancelled(task);
+                    if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 					return;
                 }
 
@@ -94,11 +95,11 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 					observer.taskFinished((ObservableTask)task);
 				} 
 			}
-			if (observer != null) observer.allFinished();
+            if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
 
 		} catch (Exception exception) {
 			taskMonitor.showException(exception);
-            if (observer != null && task != null) observer.failed(task, exception);
+            if (observer != null && task != null) observer.allFinished(FinishStatus.newFailed(task, exception));
 		}
 	}
 
