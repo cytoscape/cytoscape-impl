@@ -53,6 +53,7 @@ import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.Task;
 
 public class CommandHandler implements PaxAppender, TaskObserver {
 	boolean processingCommand = false;
@@ -304,5 +305,13 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		processingCommand = false;
 		resultsText.appendCommand("done");
 	}
+
+  public void failed(Task task, Exception e) {
+		resultsText.appendCommand("failed");
+  }
+
+  public void cancelled(Task task) {
+		resultsText.appendCommand("cancelled");
+  }
 	
 }
