@@ -238,10 +238,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
-		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "Edge");
-		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
-		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Add Edge");
-		addEdgeNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "0.5");
+		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_ADD_MENU);
+		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Edge");
+		addEdgeNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1");
 		registerService(bc, addEdgeNodeViewTaskFactory, NodeViewTaskFactory.class, addEdgeNodeViewTaskFactoryProps);
 
 		Properties dVisualLexiconProps = new Properties();

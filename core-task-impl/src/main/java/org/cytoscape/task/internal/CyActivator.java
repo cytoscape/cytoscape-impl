@@ -38,6 +38,7 @@ import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
 import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
 import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
 import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
 import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
@@ -1090,9 +1091,9 @@ public class CyActivator extends AbstractCyActivator {
 		connectSelectedNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		connectSelectedNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		connectSelectedNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		connectSelectedNodesTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
-		connectSelectedNodesTaskFactoryProps.setProperty(MENU_GRAVITY, "0.9");
-		connectSelectedNodesTaskFactoryProps.setProperty(TITLE, "Connect Selected Nodes with Undirected Edges");
+		connectSelectedNodesTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_ADD_MENU);
+		connectSelectedNodesTaskFactoryProps.setProperty(MENU_GRAVITY, "0.2");
+		connectSelectedNodesTaskFactoryProps.setProperty(TITLE, "Edges Connecting Selected Nodes");
 		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND, "connect selected nodes");
 		connectSelectedNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 //		registerService(bc, connectSelectedNodesTaskFactory, NetworkTaskFactory.class,
