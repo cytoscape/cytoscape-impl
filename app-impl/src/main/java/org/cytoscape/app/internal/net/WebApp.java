@@ -74,6 +74,8 @@ public class WebApp {
 	
 	/** The version of Cytoscape that this app has been known to be compatible with */
 	private String compatibleCytoscapeVersion;
+
+	private String citation;
 	
 	private ImageIcon imageIcon;
 	
@@ -253,6 +255,10 @@ public class WebApp {
 	public String getCompatibleCytoscapeVersion() {
 		return compatibleCytoscapeVersion;
 	}
+
+	public String getCitation() {
+		return citation;
+	}
 	
 	public List<Release> getReleases() {
 		return releases;
@@ -308,6 +314,10 @@ public class WebApp {
 	
 	public void setCompatibleCytoscapeVersion(String compatibleCytoscapeVersion) {
 		this.compatibleCytoscapeVersion = compatibleCytoscapeVersion;
+	}
+
+	public void setCitation(String citation) {
+		this.citation = citation;
 	}
 	
 	public void setImageIcon(ImageIcon imageIcon) {
