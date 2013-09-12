@@ -46,23 +46,21 @@ public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 		
 		editor.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseReleased(MouseEvent event) {
+			public void mouseReleased(MouseEvent evt) {
 				selectValue();
 			}
 		});
 	}
 
-	public void setParent(Component parent) {
+	public void setParent(final Component parent) {
 		this.parent = parent;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void setValue(Object value) {
-		if (value == null)
-			this.currentValue = null;
-		else
-			this.currentValue = (T) value;
+	public void setValue(final Object value) {
+		this.currentValue = (T) value;
+		super.setValue(value);
 	}
 
 	@Override
@@ -72,15 +70,14 @@ public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 
 	@SuppressWarnings("unchecked")
 	private final void selectValue() {
-		final T val = (T) super.getValue();
+		final T val = (T) getValue();
 		final T selectedVal = valEditor.showEditor(parent, val);
 
 		if (selectedVal != null) {
 			final T oldVal = val;
 			final T newVal = selectedVal;
 
-			super.setValue(newVal);
-			this.currentValue = newVal;
+			setValue(newVal);
 			firePropertyChange(oldVal, newVal);
 		}
 	}

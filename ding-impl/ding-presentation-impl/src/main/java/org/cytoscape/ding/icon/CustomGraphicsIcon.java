@@ -48,9 +48,9 @@ public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> 
 
 		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		final Image original = this.getImage();
-		final Image resized = original.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
+		Image img = this.getImage();
+		img = img.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
 		
-		g2d.drawImage(resized, (c.getWidth() - width) / 2, (c.getHeight() - height) / 2, width, height, c);
+		g2d.drawImage(img, x, y, width, height, c);
 	}
 }

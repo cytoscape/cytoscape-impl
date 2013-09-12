@@ -34,9 +34,9 @@ import java.util.TreeMap;
 
 import javax.swing.ImageIcon;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
@@ -177,7 +177,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		final double maxValue = tracer.getMax(type);
 
 		final C2DMappingEditorPanel<V> parentComponent = this;
-		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		final DefaultViewPanel defViewPanel = servicesUtil.get(DefaultViewPanel.class);
 		
 		slider.addMouseListener(new MouseAdapter() {
 
@@ -213,7 +213,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 					updateMap();
 
 					slider.setTrackRenderer(new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
-							appMgr.getCurrentRenderingEngine()));
+							defViewPanel.getRenderingEngine()));
 					slider.repaint();
 				}
 			}
@@ -252,7 +252,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		 */
 		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
 		DiscreteTrackRenderer<Number, V> dRend = new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
-				appMgr.getCurrentRenderingEngine());
+				defViewPanel.getRenderingEngine());
 
 		slider.setThumbRenderer(thumbRend);
 		slider.setTrackRenderer(dRend);

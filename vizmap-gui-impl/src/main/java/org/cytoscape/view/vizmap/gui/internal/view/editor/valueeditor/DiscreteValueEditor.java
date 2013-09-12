@@ -60,13 +60,13 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
+import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.jdesktop.swingx.JXList;
@@ -127,7 +127,6 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		this.iconMap = new HashMap<T, Icon>();
 
 		init();
-		setListItems();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -135,10 +134,14 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		return canceled != true ? (T) iconList.getSelectedValue() : null;
 	}
 	
+	public void setValue(final T value) {
+		iconList.setSelectedValue(value, true);
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public <S extends T> T showEditor(final Component parent, final S initialValue) {
-		setListItems();
+		setListItems(initialValue);
 		setLocationRelativeTo(parent);
 		setVisible(true);
 		
@@ -271,8 +274,8 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		
 		iconMap.clear();
 		
-		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-		final RenderingEngine<CyNetwork> engine = appMgr.getCurrentRenderingEngine();
+		final DefaultViewPanel defViewPanel = servicesUtil.get(DefaultViewPanel.class);
+		final RenderingEngine<CyNetwork> engine = defViewPanel != null ? defViewPanel.getRenderingEngine() : null;
 		
 		// Current engine is not ready yet.
 		if (engine != null) {
@@ -290,13 +293,16 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		canceled = true;
 	}
 
-	private void setListItems() {
+	private void setListItems(final T selectedValue) {
 		renderIcons(values);
 		model.removeAllElements();
 		
 		for (final T key : values)
 			model.addElement(key);
 
+		if (selectedValue != null)
+			iconList.setSelectedValue(selectedValue, true);
+		
 		iconList.repaint();
 	}
 

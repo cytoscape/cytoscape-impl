@@ -6,7 +6,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -56,12 +55,12 @@ import javax.swing.table.TableCellEditor;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
@@ -205,7 +204,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		if (defaultBtn != null) {
 			defaultBtn.setIcon(getIcon(model.getDefaultValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			defaultBtn.setToolTipText(model.getDefaultValue() == null ?
-					null : "Default Value: " + getDisplayString(model.getDefaultValue()));
+					null : "Default Value: " + VisualPropertyUtil.getDisplayString(model.getDefaultValue()));
 		}
 	}
 	
@@ -230,7 +229,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			if (state == LockedValueState.DISABLED)
 				toolTipText = "To bypass the visual property, first select one or more " + elementsStr;
 			else if (state == LockedValueState.ENABLED_UNIQUE_VALUE)
-				toolTipText = "Bypass: " + getDisplayString(model.getLockedValue());
+				toolTipText = "Bypass: " + VisualPropertyUtil.getDisplayString(model.getLockedValue());
 			else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES)
 				toolTipText = "The selected " + elementsStr + " have different bypass values";
 			
@@ -344,7 +343,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		});
 		model.addPropertyChangeListener("visualMappingFunction", new PropertyChangeListener() {
 			@Override
-			@SuppressWarnings("unchecked")
 			public void propertyChange(final PropertyChangeEvent e) {
 				updateMapping();
 			}
@@ -697,26 +695,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			getPropSheetTbl().setRowHeight(PROP_SHEET_ROW_HEIGHT);
 	}
 	
-	private String getDisplayString(final Object value) {
-		String s = null;
-		
-		if (value instanceof VisualPropertyValue) {
-			s = ((VisualPropertyValue)value).getDisplayName();
-		} else if (value instanceof Font) {
-			s  = ((Font)value).getFontName();
-		} else if (value instanceof Color) {
-			final Color c  = (Color)value;
-			int r = c.getRed();
-			int g = c.getGreen();
-			int b = c.getBlue();
-			s = String.format("R:%s G:%s B:%s - #%02x%02x%02x", r, g, b, r, g, b).toUpperCase();
-		} else if (value != null) {
-			s = value.toString();
-		}
-		
-		return s;
-	}
-	
 	// ==[ CLASSES ]====================================================================================================
 	
 	private class VizMapPropertySheetTable extends PropertySheetTable {
@@ -785,7 +763,8 @@ public class VisualPropertySheetItem<T> extends JPanel {
 				else
 					return "<html><Body BgColor=\"white\"><font Size=\"4\" Color=\"#" + colorString.substring(2, 8)
 							+ "\"><strong>" + prop.getDisplayName() + ": "
-							+ (prop.getValue() != null ? getDisplayString(prop.getValue()) : "<i>default value</i>")
+							+ (prop.getValue() != null ? 
+									VisualPropertyUtil.getDisplayString(prop.getValue()) : "<i>default value</i>")
 							+ "</font></strong></body></html>";
 			}
 		}

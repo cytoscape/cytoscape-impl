@@ -55,7 +55,7 @@ public class FilterCytoPanelComponent implements CytoPanelComponent, CytoPanelCo
 
 	@Override
 	public String getTitle() {
-		return "Filters";
+		return "Filter";
 	}
 
 	@Override

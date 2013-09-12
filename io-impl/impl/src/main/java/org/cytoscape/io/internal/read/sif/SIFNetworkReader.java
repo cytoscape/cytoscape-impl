@@ -33,7 +33,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.io.internal.read.AbstractNetworkReader;
+import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * Reader for graphs in the interactions file format. Given the filename,
  * provides the graph and attributes objects constructed from the file.
  */
-public class SIFNetworkReader extends AbstractNetworkReader {
+public class SIFNetworkReader extends AbstractCyNetworkReader {
 	private static final Logger logger = LoggerFactory.getLogger(SIFNetworkReader.class);
 
 	private static final String TAB = "\t";

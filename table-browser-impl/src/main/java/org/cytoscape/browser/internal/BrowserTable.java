@@ -256,7 +256,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		final BrowserTableModel btModel = (BrowserTableModel) model;
 
 		//if (btModel.isShowAll() == false)
-		if (btModel.getViewMode() == BrowserTableModel.ViewMode.SELECTED)
+		if (btModel.getViewMode() != BrowserTableModel.ViewMode.ALL)
 			return;
 
 		final CyTable table = btModel.getDataTable();

@@ -53,6 +53,7 @@ import org.cytoscape.view.vizmap.gui.MappingFunctionFactoryManager;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor2;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
@@ -441,8 +442,13 @@ public class VizMapPropertyBuilder {
 				
 				if (renderer != null)
 					cellRendererFactory.registerRenderer(valProp, renderer);
-				
-				final PropertyEditor cellEditor = vpEditor.getPropertyEditor();
+
+				PropertyEditor cellEditor = null;
+				if (vpEditor instanceof VisualPropertyEditor2) {
+					cellEditor = ((VisualPropertyEditor2) vpEditor).getPropertyEditor(vp);
+				} else {
+					cellEditor = vpEditor.getPropertyEditor();
+				}
 
 				if (cellEditor != null)
 					cellEditorFactory.registerEditor(valProp, cellEditor);

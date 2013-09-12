@@ -36,8 +36,8 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  * generated when you call this class. The new style saves all visual features
  * (like node shape) and will not be lost even after other style selected.
  */
-public class GMLNetworkReader extends AbstractNetworkReader {
+public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	/**
 	 * The following are all taken to be reserved keywords for gml (note that

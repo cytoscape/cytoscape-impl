@@ -55,8 +55,7 @@ import org.jdesktop.swingx.JXMultiThumbSlider;
 import org.jdesktop.swingx.multislider.Thumb;
 
 
-public class DiscreteTrackRenderer<K, V> extends JComponent implements
-		VizMapTrackRenderer {
+public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTrackRenderer {
 
 	private final static long serialVersionUID = 1213748837182053L;
 
@@ -95,9 +94,10 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 	 * @param engine
 	 */
 	public DiscreteTrackRenderer(final ContinuousMapping<K, V> mapping,
-			final V below, final V above, final EditorValueRangeTracer tracer,
-			final RenderingEngine<CyNetwork> engine) {
-
+								 final V below,
+								 final V above,
+								 final EditorValueRangeTracer tracer,
+								 final RenderingEngine<CyNetwork> engine) {
 		if (mapping == null)
 			throw new NullPointerException("Mapping is null.");
 		if (tracer == null)
@@ -114,6 +114,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		final Range<V> rangeObject = vp.getRange();
 
 		this.iconMap = new HashMap<V, Icon>();
+		
 		if (rangeObject.isDiscrete()) {
 			final Set<V> values = ((DiscreteRange<V>) rangeObject).values();
 			// create map of icons. Key is V value.
@@ -125,19 +126,18 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		}
 		
 		this.title = mapping.getMappingColumnName();
-
 		this.setBackground(BACKGROUND_COLOR);
 		this.setMinimumSize(MIN_SIZE);
 	}
 
-	
-	@Override public void paint(Graphics g) {
+	@Override
+	public void paint(Graphics g) {
 		super.paint(g);
 		paintComponent(g);
 	}
-
 	
-	@Override protected void paintComponent(Graphics gfx) {
+	@Override
+	protected void paintComponent(Graphics gfx) {
 		// Turn AA on
 		final Graphics2D g = (Graphics2D) gfx;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -157,8 +157,8 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		// set up the data for the gradient
 		final float[] fractions = new float[numPoints];
 		final Object[] objectValues = new Object[numPoints];
-
 		int i = 0;
+		
 		for (Thumb<V> thumb : stops) {
 			objectValues[i] = thumb.getObject();
 			fractions[i] = thumb.getPosition();
@@ -176,28 +176,23 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		arrow.addPoint(trackWidth - 20, arrowBarYPosition);
 		g.fill(arrow);
 
-		g.setColor(Color.gray);
+		g.setColor(Color.GRAY);
 		g.drawLine(0, arrowBarYPosition, 15, arrowBarYPosition - 30);
 		g.drawLine(15, arrowBarYPosition - 30, 25, arrowBarYPosition - 30);
 
 		g.setFont(SMALL_FONT);
 		g.drawString("Min=" + minValue, 28, arrowBarYPosition - 25);
 
-		g.drawLine(trackWidth, arrowBarYPosition, trackWidth - 15,
-				arrowBarYPosition + 30);
-		g.drawLine(trackWidth - 15, arrowBarYPosition + 30, trackWidth - 25,
-				arrowBarYPosition + 30);
+		g.drawLine(trackWidth, arrowBarYPosition, trackWidth - 15, arrowBarYPosition + 30);
+		g.drawLine(trackWidth - 15, arrowBarYPosition + 30, trackWidth - 25, arrowBarYPosition + 30);
 
 		final String maxStr = "Max=" + maxValue;
-		int strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
-				maxStr);
-		g.drawString(maxStr, trackWidth - strWidth - 26,
-				arrowBarYPosition + 35);
+		int strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), maxStr);
+		g.drawString(maxStr, trackWidth - strWidth - 26, arrowBarYPosition + 35);
 
-		g.setColor(Color.black);
+		g.setColor(Color.BLACK);
 		strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), title);
-		g.drawString(title, (trackWidth / 2) - (strWidth / 2),
-				arrowBarYPosition + 35);
+		g.drawString(title, (trackWidth / 2) - (strWidth / 2), arrowBarYPosition + 35);
 
 		if (numPoints == 0) {
 			g.setColor(BORDER_COLOR);
@@ -206,6 +201,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 			return;
 		}
+		
 		g.setStroke(STROKE1);
 
 		// Fill background
@@ -223,7 +219,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 			int newX = (int) (trackWidth * (fractions[i] / 100));
 
 			p2.setLocation(newX, 5);
-			g.setColor(Color.black);
+			g.setColor(Color.BLACK);
 			g.setStroke(STROKE1);
 
 			g.drawLine(newX, 5, newX, trackHeight + 4);
@@ -231,44 +227,35 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 			g.setColor(Color.DARK_GRAY);
 			g.setFont(TRACK_FONT);
 
-			final Float curPositionValue = ((Number) (((fractions[i] / 100) * valueRange) + minValue))
-					.floatValue();
+			final Float curPositionValue = ((Number) (((fractions[i] / 100) * valueRange) + minValue)).floatValue();
 			final String valueString = String.format("%.5f", curPositionValue);
 
 			int flipLimit = 90;
 			int borderVal = trackWidth - newX;
 
 			if (((i % 2) == 0) && (flipLimit < borderVal)) {
-				g.drawLine(newX, arrowBarYPosition, newX + 20,
-						arrowBarYPosition - 15);
-				g.drawLine(newX + 20, arrowBarYPosition - 15, newX + 30,
-						arrowBarYPosition - 15);
-				g.setColor(Color.black);
+				g.drawLine(newX, arrowBarYPosition, newX + 20, arrowBarYPosition - 15);
+				g.drawLine(newX + 20, arrowBarYPosition - 15, newX + 30, arrowBarYPosition - 15);
+				g.setColor(Color.BLACK);
 				g.drawString(valueString, newX + 33, arrowBarYPosition - 11);
 			} else if (((i % 2) == 1) && (flipLimit < borderVal)) {
-				g.drawLine(newX, arrowBarYPosition, newX + 20,
-						arrowBarYPosition + 15);
-				g.drawLine(newX + 20, arrowBarYPosition + 15, newX + 30,
-						arrowBarYPosition + 15);
-				g.setColor(Color.black);
+				g.drawLine(newX, arrowBarYPosition, newX + 20, arrowBarYPosition + 15);
+				g.drawLine(newX + 20, arrowBarYPosition + 15, newX + 30, arrowBarYPosition + 15);
+				g.setColor(Color.BLACK);
 				g.drawString(valueString, newX + 33, arrowBarYPosition + 19);
 			} else if (((i % 2) == 0) && (flipLimit >= borderVal)) {
-				g.drawLine(newX, arrowBarYPosition, newX - 20,
-						arrowBarYPosition - 15);
-				g.drawLine(newX - 20, arrowBarYPosition - 15, newX - 30,
-						arrowBarYPosition - 15);
-				g.setColor(Color.black);
+				g.drawLine(newX, arrowBarYPosition, newX - 20, arrowBarYPosition - 15);
+				g.drawLine(newX - 20, arrowBarYPosition - 15, newX - 30, arrowBarYPosition - 15);
+				g.setColor(Color.BLACK);
 				g.drawString(valueString, newX - 90, arrowBarYPosition - 11);
 			} else {
-				g.drawLine(newX, arrowBarYPosition, newX - 20,
-						arrowBarYPosition + 15);
-				g.drawLine(newX - 20, arrowBarYPosition + 15, newX - 30,
-						arrowBarYPosition + 15);
-				g.setColor(Color.black);
+				g.drawLine(newX, arrowBarYPosition, newX - 20, arrowBarYPosition + 15);
+				g.drawLine(newX - 20, arrowBarYPosition + 15, newX - 30, arrowBarYPosition + 15);
+				g.setColor(Color.BLACK);
 				g.drawString(valueString, newX - 90, arrowBarYPosition + 19);
 			}
 
-			g.setColor(Color.black);
+			g.setColor(Color.BLACK);
 			g.fillOval(newX - 3, arrowBarYPosition - 3, 6, 6);
 
 			iconLocX = (int) (p2.getX() - ((p2.getX() - p1.getX()) / 2 + ICON_SIZE / 2));
@@ -289,6 +276,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		iconLocY = (int) (trackHeight / 2 - ICON_SIZE / 2 + p2.getY());
 
 		drawIcon(above, g, iconLocX, iconLocY);
+		
 		/*
 		 * Finally, draw border line (rectangle)
 		 */
@@ -298,9 +286,8 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 		g.translate(-THUMB_WIDTH / 2, -12);
 	}
-
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public JComponent getRendererComponent(JXMultiThumbSlider slider) {
 		this.slider = slider;
 		return this;
@@ -310,7 +297,6 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		List<V> range = new ArrayList<V>();
 		return range;
 	}
-
 
 	public String getToolTipForCurrentLocation(int x, int y) {
 		int oldX = 0;
@@ -323,18 +309,15 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		for (Thumb<V> thumb : stops) {
 			newX = (int) (slider.getWidth() * (thumb.getPosition() / 100));
 
-			if ((oldX <= x) && (x <= newX) && (V_PADDING < y)
-					&& (y < (V_PADDING + trackHeight)))
+			if ((oldX <= x) && (x <= newX) && (V_PADDING < y) && (y < (V_PADDING + trackHeight)))
 				return "This is region " + i;
 
 			i++;
 			oldX = newX + 1;
 		}
 
-		if ((oldX <= x) && (x <= slider.getWidth()) && (V_PADDING < y)
-				&& (y < (V_PADDING + trackHeight)))
-			return "Last Area: " + oldX + " - " + slider.getWidth()
-					+ " (x, y) = " + x + ", " + y;
+		if ((oldX <= x) && (x <= slider.getWidth()) && (V_PADDING < y) && (y < (V_PADDING + trackHeight)))
+			return "Last Area: " + oldX + " - " + slider.getWidth() + " (x, y) = " + x + ", " + y;
 
 		return null;
 	}
@@ -358,36 +341,34 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 			thumb = stops.get(i);
 			newX = (int) (slider.getWidth() * (thumb.getPosition() / 100));
 
-			if ((oldX <= x) && (x <= newX) && (V_PADDING < y)
-					&& (y < (V_PADDING + trackHeight)))
+			if ((oldX <= x) && (x <= newX) && (V_PADDING < y) && (y < (V_PADDING + trackHeight)))
 				return i;
 
 			oldX = newX + 1;
 		}
 
-		if ((oldX <= x) && (x <= slider.getWidth()) && (V_PADDING < y)
-				&& (y < (V_PADDING + trackHeight)))
+		if ((oldX <= x) && (x <= slider.getWidth()) && (V_PADDING < y) && (y < (V_PADDING + trackHeight)))
 			return i;
 
 		// Invalid range
 		return -1;
 	}
 
-
-	/*
+	/**
 	 * Draw icon object based on the given data type.
 	 */
-	private void drawIcon(V key, Graphics2D g, int x, int y) {
-		if(key == null)
+	private void drawIcon(final V key, final Graphics2D g, final int x, final int y) {
+		if (key == null)
 			return;
 		
 		Icon icon = iconMap.get(key);
-		if(icon == null)
+		
+		if (icon == null)
 			icon = engine.createIcon(vp, key, ICON_SIZE, ICON_SIZE);
 		
+		g.setColor(Color.DARK_GRAY);
 		icon.paintIcon(this, g, x, y);	
 	}
-
 
 	public ImageIcon getTrackGraphicIcon(int iconWidth, int iconHeight) {
 		return createIcon(iconWidth, iconHeight, false);
@@ -397,21 +378,18 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		return createIcon(iconWidth, iconHeight, true);
 	}
 
-	private ImageIcon createIcon(int iconWidth, int iconHeight, boolean detail) {
-		if (slider == null) {
+	private ImageIcon createIcon(int iconWidth, int iconHeight, final boolean detail) {
+		if (slider == null)
 			return null;
-		}
 
-		final BufferedImage bi = new BufferedImage(iconWidth, iconHeight,
-				BufferedImage.TYPE_INT_RGB);
+		final BufferedImage bi = new BufferedImage(iconWidth, iconHeight, BufferedImage.TYPE_INT_RGB);
 		final Graphics2D g = bi.createGraphics();
 
 		// Turn AA on.
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		// Fill background
-		g.setColor(Color.white);
+		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, iconWidth, iconHeight);
 
 		double minValue = tracer.getMin(vp);
@@ -420,6 +398,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 		int track_width = iconWidth;
 		int trackHeight = iconHeight - 8;
+		
 		if (detail) {
 			trackHeight = iconHeight - 30;
 			//smallIconSize = (int) (trackHeight * 0.5);
@@ -429,7 +408,6 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 
 		// get the list of tumbs
 		List<Thumb<V>> stops = slider.getModel().getSortedThumbs();
-
 		int numPoints = stops.size();
 
 		// set up the data for the gradient
@@ -473,18 +451,15 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 			newX = (int) (track_width * (fractions[i] / 100));
 
 			p2.setLocation(newX, 0);
-			iconLocX = newX
-					- (((newX - (int) p1.getX()) / 2) + (ICON_SIZE / 2));
+			iconLocX = newX - (((newX - (int) p1.getX()) / 2) + (ICON_SIZE / 2));
 			iconLocY = ((trackHeight) / 2) - (ICON_SIZE / 2);
-
 			
-			if (i == 0) {
+			if (i == 0)
 				drawIcon(below, g, iconLocX, iconLocY);
-			} else {
+			else
 				drawIcon((V) objectValues[i], g, iconLocX, iconLocY);
-			}
 
-			g.setColor(Color.DARK_GRAY);
+			g.setColor(Color.GRAY);
 			g.setStroke(STROKE1);
 			g.drawLine(newX, 0, newX, trackHeight);
 
@@ -496,8 +471,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		 */
 		p2.setLocation(track_width, 0);
 
-		iconLocX = track_width
-				- (((track_width - (int) p1.getX()) / 2) + (ICON_SIZE / 2));
+		iconLocX = track_width - (((track_width - (int) p1.getX()) / 2) + (ICON_SIZE / 2));
 		iconLocY = ((trackHeight) / 2) - (ICON_SIZE / 2);
 		drawIcon(above, g, iconLocX, iconLocY);
 
@@ -513,40 +487,33 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		final String minStr = String.format("%.2f", minValue);
 		final String maxStr = String.format("%.2f", maxValue);
 		int strWidth;
-		g.setColor(Color.black);
+		g.setColor(Color.BLACK);
+		
 		if (detail) {
 			String fNum = null;
+			
 			for (int j = 0; j < fractions.length; j++) {
-				fNum = String.format("%.2f",
-						((fractions[j] / 100) * valueRange) + minValue);
-				strWidth = SwingUtilities.computeStringWidth(
-						g.getFontMetrics(), fNum);
-				g.drawString(fNum, (fractions[j] / 100) * iconWidth - strWidth
-						/ 2, iconHeight - 20);
+				fNum = String.format("%.2f", ((fractions[j] / 100) * valueRange) + minValue);
+				strWidth = SwingUtilities.computeStringWidth( g.getFontMetrics(), fNum);
+				g.drawString(fNum, (fractions[j] / 100) * iconWidth - strWidth / 2, iconHeight - 20);
 			}
 
 			g.drawString(minStr, 0, iconHeight);
-			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
-					maxStr);
+			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), maxStr);
 			g.drawString(maxStr, iconWidth - strWidth - 2, iconHeight);
 
 			g.setFont(TITLE_FONT);
 
-			final int titleWidth = SwingUtilities.computeStringWidth(
-					g.getFontMetrics(), title);
-			g.setColor(Color.black);
-			g.drawString(title, (iconWidth / 2) - (titleWidth / 2),
-					iconHeight - 5);
+			final int titleWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), title);
+			g.setColor(Color.BLACK);
+			g.drawString(title, (iconWidth / 2) - (titleWidth / 2), iconHeight - 5);
 			Polygon p = new Polygon();
 			p.addPoint(iconWidth, iconHeight - 9);
 			p.addPoint(iconWidth - 15, iconHeight - 15);
 			p.addPoint(iconWidth - 15, iconHeight - 9);
 			g.fillPolygon(p);
-			g.drawLine(0, iconHeight - 9, (iconWidth / 2) - (titleWidth / 2)
-					- 3, iconHeight - 9);
-			g.drawLine((iconWidth / 2) + (titleWidth / 2) + 3, iconHeight - 9,
-					iconWidth, iconHeight - 9);
-
+			g.drawLine(0, iconHeight - 9, (iconWidth / 2) - (titleWidth / 2) - 3, iconHeight - 9);
+			g.drawLine((iconWidth / 2) + (titleWidth / 2) + 3, iconHeight - 9, iconWidth, iconHeight - 9);
 		} else {
 			g.drawString(minStr, 0, iconHeight);
 			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
@@ -561,10 +528,8 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements
 		final double minValue = tracer.getMin(vp);
 		final double valueRange = tracer.getRange(vp);
 
-		final float position = slider.getModel()
-				.getThumbAt(slider.getSelectedIndex()).getPosition();
+		final float position = slider.getModel().getThumbAt(slider.getSelectedIndex()).getPosition();
 
-		return (((position / 100) * valueRange) + minValue);
+		return ((position / 100) * valueRange) + minValue;
 	}
-
 }
