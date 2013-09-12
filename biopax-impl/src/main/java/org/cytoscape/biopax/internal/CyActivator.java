@@ -45,12 +45,11 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 
 import org.cytoscape.biopax.internal.BioPaxFilter;
-import org.cytoscape.biopax.internal.BioPaxReaderTaskFactory;
+import org.cytoscape.biopax.internal.BioPaxReader;
 import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.io.read.InputStreamTaskFactory;
 
 
 import org.osgi.framework.BundleContext;
@@ -105,11 +104,12 @@ public class CyActivator extends AbstractCyActivator {
 		visualStyleUtil.getBinarySifVisualStyle(); //initialize
 			
 		// create the biopax reader object
-		InputStreamTaskFactory biopaxReaderFactory = new BioPaxReaderTaskFactory(bioPaxFilter, cyServices, visualStyleUtil);
-		
+		BioPaxReader biopaxReaderFactory = new BioPaxReader(bioPaxFilter, cyServices, visualStyleUtil);		
 		// register/export osgi services
-		registerService(bc, biopaxReaderFactory, InputStreamTaskFactory.class, new Properties());
-		
+		Properties props = new Properties();
+		props.setProperty("readerDescription","BioPAX reader");
+		props.setProperty("readerId","biopaxNetworkReader");
+		registerAllServices(bc, biopaxReaderFactory, props);		
 	}
 }
 

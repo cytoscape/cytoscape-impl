@@ -26,7 +26,9 @@ package org.cytoscape.biopax.internal;
 
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -40,15 +42,19 @@ import org.biopax.paxtools.controller.PropertyEditor;
 import org.biopax.paxtools.controller.SimpleEditorMap;
 import org.biopax.paxtools.converter.LevelUpgrader;
 import org.biopax.paxtools.io.SimpleIOHandler;
+import org.biopax.paxtools.io.sbgn.L3ToSBGNPDConverter;
+import org.biopax.paxtools.io.sif.InteractionRule;
+import org.biopax.paxtools.io.sif.SimpleInteractionConverter;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.BioPAXLevel;
 import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.*;
 import org.biopax.paxtools.model.level3.Process;
+import org.biopax.paxtools.util.BioPaxIOException;
 import org.biopax.paxtools.util.ClassFilterSet;
 import org.biopax.paxtools.util.Filter;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
-import org.cytoscape.biopax.internal.util.StaxHack;
+import org.cytoscape.biopax.internal.util.ClassLoaderHack;
 import org.cytoscape.biopax.internal.util.ExternalLink;
 import org.cytoscape.biopax.internal.util.ExternalLinkUtil;
 import org.cytoscape.biopax.internal.util.NodeAttributesWrapper;
@@ -262,15 +268,6 @@ public class BioPaxMapper {
 		
 		return network;
 	}
-
-//	private void convertToOWL(final Model model, final ByteArrayOutputStream stream) {
-//		StaxHack.runWithHack(new Runnable() {
-//			@Override
-//			public void run() {
-//				new SimpleIOHandler().convertToOWL(model, stream);
-//			}
-//		});
-//	}
 	
 	private void createMemberEdges(CyNetwork network) {
 		// for each PE,
@@ -578,7 +575,7 @@ public class BioPaxMapper {
 			AttributeUtil.set(network, node, BIOPAX_CHEMICAL_MODIFICATIONS_LIST, list, String.class);
 
 			//  Store Complete Map of Chemical Modifications --> # of Modifications
-			// TODO: How do we handle MultiHashMaps?
+			// TODO: shall we migrate the MultiHashMaps that used to be in Cy 2.x?
 //			setMultiHashMap(cyNodeId, nodeAttributes, BIOPAX_CHEMICAL_MODIFICATIONS_MAP, modificationsMap);
 
 			if (modificationsMap.containsKey(PHOSPHORYLATION_SITE)) {
@@ -964,7 +961,8 @@ public class BioPaxMapper {
 			model = new LevelUpgrader().filter(model);
 		}
 		
-		fixDisplayName(model);
+		if(model != null)
+			fixDisplayName(model);
 		
 		return model;
 	}
@@ -973,7 +971,7 @@ public class BioPaxMapper {
 		final Model[] model = new Model[1];
 		final SimpleIOHandler handler = new SimpleIOHandler();
 		handler.mergeDuplicates(true); // a workaround (illegal) BioPAX data having duplicated rdf:ID...
-		StaxHack.runWithHack(new Runnable() {
+		ClassLoaderHack.runWithHack(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -982,7 +980,7 @@ public class BioPaxMapper {
 					log.warn("Import failed: " + e);
 				}
 			}
-		});
+		}, com.ctc.wstx.stax.WstxInputFactory.class);
 		return model[0];
 	}
 
@@ -1242,7 +1240,7 @@ public class BioPaxMapper {
 	public static String toOwl(final BioPAXElement bpe) {
 		final StringWriter writer = new StringWriter();
 		final SimpleIOHandler simpleExporter = new SimpleIOHandler(BioPAXLevel.L3);
-		StaxHack.runWithHack(new Runnable() {
+		ClassLoaderHack.runWithHack(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -1251,7 +1249,7 @@ public class BioPaxMapper {
 					log.error("Failed printing '" + bpe.getRDFId() + "' to OWL", e);
 				}
 			}
-		});
+		}, com.ctc.wstx.stax.WstxInputFactory.class);
 		return writer.toString();
 	}
 
@@ -1290,5 +1288,54 @@ public class BioPaxMapper {
 		}
 	}
 	
+
+	/**
+	 * Converts a BioPAX Model to the SIF format.
+	 * 
+     * @param m
+     * @param out
+	 */
+	public static void convertToSif(Model m, OutputStream out) 
+	{
+		// TODO use a tunable/parameter (currently, it simply uses all available sif rules)
+		InteractionRule[] sifRules = SimpleInteractionConverter
+				.getRules(BioPAXLevel.L3).toArray(new InteractionRule[]{});
+		SimpleInteractionConverter sic = new SimpleInteractionConverter(
+                new HashMap(),
+                //in general, we cannot guess a list of URIs of molecules to exclude...
+                null, //no blacklist here
+                sifRules
+			);
+		
+		//biopax data might have interactions with exactly same properties,
+		// which dirties the result of the biopx-sif convertion...
+		ModelUtils.mergeEquivalentInteractions(m);
+		
+		try {
+			sic.writeInteractionsInSIF(m, out);
+		} catch (IOException e) {
+			throw new BioPaxIOException("biopax: writeInteractionsInSIF failed.", e);
+		}
+	}
 	
+    /**
+     * Converts a BioPAX Model to SBGN format.
+     *
+     * @param m
+     * @param out
+     */
+    public static void convertToSBGN(final Model m, final OutputStream out) {
+    	
+		ModelUtils.mergeEquivalentInteractions(m);
+    	
+		//fails when not using this hack (due to another jaxb library version at runtime...)
+    	ClassLoaderHack.runWithHack(new Runnable() {			
+			@Override
+			public void run() {		
+				//create a sbgn converter: no blacklist; do auto-layout
+				L3ToSBGNPDConverter converter = new L3ToSBGNPDConverter(null, null, true);
+				converter.writeSBGN(m, out);
+			}
+    	}, com.sun.xml.bind.v2.ContextFactory.class);
+    }
 }
