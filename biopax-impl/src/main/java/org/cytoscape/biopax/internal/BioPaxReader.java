@@ -29,14 +29,16 @@ import java.io.InputStream;
 import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
+import org.cytoscape.view.model.events.NetworkViewAddedEvent;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.work.TaskIterator;
 
-public class BioPaxReaderTaskFactory extends AbstractInputStreamTaskFactory {
+public class BioPaxReader extends AbstractInputStreamTaskFactory implements NetworkViewAddedListener {
 
 	private final CyServices cyServices;
 	private final VisualStyleUtil visualStyleUtil;
 
-	public BioPaxReaderTaskFactory(CyFileFilter filter, CyServices cyServices, VisualStyleUtil visualStyleUtil)
+	public BioPaxReader(CyFileFilter filter, CyServices cyServices, VisualStyleUtil visualStyleUtil)
 	{
 		super(filter);
 		this.cyServices = cyServices;
@@ -47,11 +49,18 @@ public class BioPaxReaderTaskFactory extends AbstractInputStreamTaskFactory {
 	@Override
 	public TaskIterator createTaskIterator(InputStream is, String inputName) {
 		if(inputName == null)
-			inputName = "BioPAX_Network"; //default name fallback
+			inputName = "BioPAX_Network"; //default fall-back
 		
 		return new TaskIterator(
 			new BioPaxReaderTask(is, inputName, cyServices, visualStyleUtil)
 		);
+	}
+
+
+	@Override
+	public void handleEvent(NetworkViewAddedEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
