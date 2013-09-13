@@ -24,7 +24,6 @@ package org.cytoscape.biopax.internal;
  * #L%
  */
 
-import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,7 +63,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.work.TaskMonitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,32 +152,10 @@ public class BioPaxMapper {
     public static final int MAX_DISPLAY_STRING_LEN = 25;
 	public static final String NULL_ELEMENT_TYPE = "BioPAX Element";	
 	
-	// custom node images (phosphorylation)
-	private static BufferedImage phosNode = null;
-	private static BufferedImage phosNodeSelectedTop = null;
-	private static BufferedImage phosNodeSelectedRight = null;
-	private static BufferedImage phosNodeSelectedBottom = null;
-	private static BufferedImage phosNodeSelectedLeft = null;
-	
 	private static final Map<String,String> cellLocationMap;
 	private static final Map<String,String> chemModificationsMap;
 	
 	static {
-		try {
-			phosNode = javax.imageio.ImageIO.read
-                    (BioPaxMapper.class.getResource("phos-node.jpg"));
-			phosNodeSelectedTop = javax.imageio.ImageIO.read
-                    (BioPaxMapper.class.getResource("phos-node-selected-top.jpg"));
-			phosNodeSelectedRight = javax.imageio.ImageIO.read
-                    (BioPaxMapper.class.getResource("phos-node-selected-right.jpg"));
-			phosNodeSelectedBottom = javax.imageio.ImageIO.read
-                    (BioPaxMapper.class.getResource("phos-node-selected-bottom.jpg"));
-			phosNodeSelectedLeft = javax.imageio.ImageIO.read
-                    (BioPaxMapper.class.getResource("phos-node-selected-left.jpg"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
 		// the following is for node labels
 		cellLocationMap = new HashMap<String, String>();
 		cellLocationMap.put("cellular component unknown", "");
@@ -204,17 +181,8 @@ public class BioPaxMapper {
 		chemModificationsMap.put("ubiquitination site", "U");	
 	}
 
-	private static BufferedImage[] customPhosGraphics = {
-		phosNode,
-        phosNodeSelectedTop,
-        phosNodeSelectedRight,
-        phosNodeSelectedBottom,
-        phosNodeSelectedLeft
-    };
-
 	private final Model model;
 	private final CyNetworkFactory networkFactory;
-	private final TaskMonitor taskMonitor;
 	
 	// BioPAX ID (URI) to CyNode map
 	// remark: nodes's CyTable will also have 'URI' (RDF Id) column
@@ -230,10 +198,9 @@ public class BioPaxMapper {
 	 * @param cyNetworkFactory
 	 * @param taskMonitor
 	 */
-	public BioPaxMapper(Model model, CyNetworkFactory cyNetworkFactory, TaskMonitor taskMonitor) {
+	public BioPaxMapper(Model model, CyNetworkFactory cyNetworkFactory) {
 		this.model = model;
 		this.networkFactory = cyNetworkFactory;
-		this.taskMonitor = taskMonitor;
 	}
 	
 
@@ -255,7 +222,7 @@ public class BioPaxMapper {
 		
 		// TODO create pathwayComponent edges (requires pathway nodes)?
 		
-		// create PE->memberPE edges (Arghhh!)?
+		// create PE->memberPE edges!
 		createMemberEdges(network);
 		
 		// Finally, set network attributes:
@@ -290,10 +257,6 @@ public class BioPaxMapper {
 
 
 	private void createEntityNodes(CyNetwork network) {
-		taskMonitor.setStatusMessage("Creating nodes (first pass)...");
-		taskMonitor.setProgress(0);
-		
-		int i = 0; //progress counter
 		Set<Entity> entities = model.getObjects(Entity.class);
 		for(Entity bpe: entities) {	
 			// do not make nodes for top/main pathways
@@ -308,11 +271,7 @@ public class BioPaxMapper {
 			bpeToCyNodeMap.put(bpe, node);
 				           
 			// traverse
-			createAttributesFromProperties(bpe, node, network);
-			
-			// update progress bar
-			double perc = (double) i++ / entities.size();
-			taskMonitor.setProgress(perc);
+			createAttributesFromProperties(bpe, model, node, network);
 		}
 		
 		if(log.isDebugEnabled())
@@ -325,12 +284,6 @@ public class BioPaxMapper {
 		//  Extract the List of all Interactions
 		Collection<Interaction> interactionList = model.getObjects(Interaction.class);
 
-		if (taskMonitor != null) {
-			taskMonitor.setStatusMessage("Creating edges...");
-			taskMonitor.setProgress(0);
-		}
-
-		int i = 0;
 		for (Interaction itr : interactionList) {	
 			if(log.isTraceEnabled()) {
 				log.trace("Mapping " + itr.getModelInterface().getSimpleName() 
@@ -343,11 +296,6 @@ public class BioPaxMapper {
 				addControlInteraction(network, (Control) itr);
 			} else {
 				addPhysicalInteraction(network, itr);
-			}
-			
-			if (taskMonitor != null) {
-				double perc = (double) i++ / interactionList.size();
-				taskMonitor.setProgress(perc);
 			}
 		}
 	}
@@ -478,7 +426,7 @@ public class BioPaxMapper {
 	 * returns chemical modification (abbreviated form).
 	 *
 	 */
-	private NodeAttributesWrapper getInteractionChemicalModifications(BioPAXElement participantElement) 
+	private static NodeAttributesWrapper getInteractionChemicalModifications(BioPAXElement participantElement) 
 	{
 		
 		if(participantElement == null) {
@@ -538,7 +486,7 @@ public class BioPaxMapper {
 	/*
 	 * A helper function to get post-translational modifications string.
 	 */
-	private String getModificationsString(NodeAttributesWrapper chemicalModificationsWrapper) 
+	private static String getModificationsString(NodeAttributesWrapper chemicalModificationsWrapper) 
 	{
 		// check args
 		if (chemicalModificationsWrapper == null) 
@@ -552,7 +500,7 @@ public class BioPaxMapper {
 	/**
 	 * A helper function to set chemical modification attributes
 	 */
-	private void setChemicalModificationAttributes(CyNetwork network, CyNode node, 
+	private static void setChemicalModificationAttributes(CyNetwork network, CyNode node, 
 			NodeAttributesWrapper chemicalModificationsWrapper) 
 	{
 		Map<String, Object> modificationsMap = (chemicalModificationsWrapper != null)
@@ -585,7 +533,7 @@ public class BioPaxMapper {
 	}
 
 	
-    private void createExtraXrefAttributes(BioPAXElement resource, CyNetwork network, CyNode node) {
+    private static void createExtraXrefAttributes(BioPAXElement resource, CyNetwork network, CyNode node) {
 		// the following code should replace the old way to set
 		// relationship references
 		List<String> xrefList = getXRefList(resource,
@@ -621,10 +569,7 @@ public class BioPaxMapper {
 			
 			StringBuffer temp = new StringBuffer();
 			
-			if(!"CPATH".equalsIgnoreCase(link.getDb()))
-				temp.append(ExternalLinkUtil.createLink(link.getDb(), link.getId()));
-			else
-				temp.append(link.toString());
+			temp.append(ExternalLinkUtil.createLink(link.getDb(), link.getId()));
 			
 			if(link instanceof UnificationXref) {
 				unifxfList.add(temp.toString());
@@ -661,7 +606,7 @@ public class BioPaxMapper {
 	}
 
 
-	public void createAttributesFromProperties(final BioPAXElement element,
+	public static void createAttributesFromProperties(final BioPAXElement element, final Model model,
 			final CyNode node, final CyNetwork network) 
 	{
 		@SuppressWarnings("rawtypes")
@@ -786,66 +731,6 @@ public class BioPaxMapper {
 		createExtraXrefAttributes(element, network, node);
 	}
 
-
-	private static String addPublicationXRefs(BioPAXElement resource) {
-		
-		if(!(resource instanceof XReferrable)) {
-			return null;
-		}
-		
-		List<ExternalLink> pubList = xrefToExternalLinks(resource, PublicationXref.class);
-
-		if (!pubList.isEmpty()) {
-			StringBuffer temp = new StringBuffer("<ul>");
-			for (ExternalLink xl : pubList) {
-				temp.append("<li>");
-				if (xl.getAuthor() != null) {
-					temp.append(xl.getAuthor() + " et al., ");
-				}
-
-				if (xl.getTitle() != null) {
-					temp.append(xl.getTitle());
-				}
-
-				if (xl.getSource() != null) {
-					temp.append(" (" + xl.getSource());
-
-					if (xl.getYear() != null) {
-						temp.append(", " + xl.getYear());
-					}
-
-					temp.append(")");
-				}
-				temp.append(ExternalLinkUtil.createLink(xl.getDbName(), xl.getId()));
-				temp.append("</li>");
-			}
-			temp.append("</ul> ");
-			return temp.toString();
-		}
-
-		return null;
-	}
-
-	
-	private static String addXRefs(List<ExternalLink> xrefList) {
-		if (!xrefList.isEmpty()) {
-			StringBuffer temp = new StringBuffer("<ul>");
-			for (ExternalLink link : xrefList) {
-                //  Ignore cPath Link.
-                if (link.getDbName() != null && link.getDbName().equalsIgnoreCase("CPATH")) {
-                    continue;
-                }
-                temp.append("<li>- ");
-				temp.append(ExternalLinkUtil.createLink(link.getDbName(), link.getId()));
-                temp.append("</li>");
-			}
-			temp.append("</ul>");
-			return temp.toString();
-		}
-
-		return null;
-	}
-
 	
 	public static <T extends Xref> List<ExternalLink> xrefToExternalLinks(BioPAXElement bpe, Class<T> xrefClass) {
 		
@@ -879,8 +764,7 @@ public class BioPaxMapper {
 			String source = null;
 			
 			db = x.getDb();
-			String ver = x.getIdVersion();
-			id = x.getId(); // + ((ver!=null) ? "_" + ver : "");
+			id = x.getId();
 			if(x instanceof RelationshipXref) {
 				RelationshipTypeVocabulary v = ((RelationshipXref)x).getRelationshipType();
 				if(v != null) relType = v.getTerm().toString();
@@ -1137,8 +1021,8 @@ public class BioPaxMapper {
 	 * @param classes BioPAX (PaxTools Model Interfaces) Classes
 	 * @return
 	 */
-	public static Collection<Class> getSubclassNames(Class<? extends BioPAXElement>... classes) {
-		Collection<Class> subclasses = new HashSet<Class>();
+	public static Collection<Class<? extends BioPAXElement>> getSubclassNames(Class<? extends BioPAXElement>... classes) {
+		Collection<Class<? extends BioPAXElement>> subclasses = new HashSet<Class<? extends BioPAXElement>>();
 		
 		for (Class<? extends BioPAXElement> c : classes) {
 			subclasses.addAll(SimpleEditorMap.L3.getKnownSubClassesOf(c));
@@ -1297,7 +1181,7 @@ public class BioPaxMapper {
 	 */
 	public static void convertToSif(Model m, OutputStream out) 
 	{
-		// TODO use a tunable/parameter (currently, it simply uses all available sif rules)
+		// TODO make it parameter (currently, it uses all available sif rules)
 		InteractionRule[] sifRules = SimpleInteractionConverter
 				.getRules(BioPAXLevel.L3).toArray(new InteractionRule[]{});
 		SimpleInteractionConverter sic = new SimpleInteractionConverter(

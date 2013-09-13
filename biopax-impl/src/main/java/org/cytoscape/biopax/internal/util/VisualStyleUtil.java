@@ -99,9 +99,8 @@ public class VisualStyleUtil {
 	private static final String CONTROLS_METABOLIC_CHANGE = "METABOLIC_CATALYSIS";
 	private static final String PARTICIPATES_CONVERSION = "REACTS_WITH";
 	private static final String PARTICIPATES_INTERACTION = "INTERACTS_WITH";
-	private static final String CO_CONTROL = "CO_CONTROL";
-	
-	//edge attr. name created by the core sif reader
+	private static final String CO_CONTROL = "CO_CONTROL";	
+	//edge attr. name created by the core SIF reader
 	private static final String INTERACTION = "interaction"; 
 	
 	
@@ -114,6 +113,34 @@ public class VisualStyleUtil {
 	private VisualStyle simpleBiopaxStyle;
 	private VisualStyle binarySifStyle;
 
+	//TODO use customPhosGraphics? (not migrated from Cy 2.x)
+	// custom node images (phosphorylation)	
+	private static BufferedImage[] customPhosGraphics = null;	
+	
+	static {
+		try {
+			BufferedImage phosNode = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node.jpg"));
+			BufferedImage phosNodeSelectedTop = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node-selected-top.jpg"));
+			BufferedImage phosNodeSelectedRight = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node-selected-right.jpg"));
+			BufferedImage phosNodeSelectedBottom = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node-selected-bottom.jpg"));
+			BufferedImage phosNodeSelectedLeft = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node-selected-left.jpg"));
+			customPhosGraphics = new BufferedImage[] {
+					phosNode,
+			        phosNodeSelectedTop,
+			        phosNodeSelectedRight,
+			        phosNodeSelectedBottom,
+			        phosNodeSelectedLeft
+			};			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	/**
 	 * Constructor

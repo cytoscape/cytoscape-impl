@@ -59,8 +59,7 @@ public class BioPaxReader extends AbstractInputStreamTaskFactory implements Netw
 
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
-		// TODO Auto-generated method stub
-		
+		// TODO anything left to do when NetworkViewAddedEvent fired?
 	}
 
 }
