@@ -121,7 +121,7 @@ public class JSONNetworkViewWriterTest {
 
 		// TODO: Find better way to test JSON file in JAVA
 		JsonFactory factory = new JsonFactory();
-		JsonParser jp = factory.createJsonParser(reader);
+		JsonParser jp = factory.createParser(reader);
 
 		final ObjectMapper mapper = new ObjectMapper();
 		final JsonNode rootNode = mapper.readValue(reader, JsonNode.class);

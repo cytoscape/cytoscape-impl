@@ -1,5 +1,6 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -26,19 +27,19 @@ public class JsCyNetworkSerializer extends JsonSerializer<CyNetwork> {
 		jgen.useDefaultPrettyPrinter();
 
 		jgen.writeStartObject();
-		jgen.writeObjectFieldStart(CyJsonToken.ELEMENTS.getName());
+		jgen.writeObjectFieldStart(ELEMENTS.getTag());
 
 		// Write array
 		final List<CyNode> nodes = network.getNodeList();
 		final List<CyEdge> edges = network.getEdgeList();
 
-		jgen.writeArrayFieldStart(CyJsonToken.NODES.getName());
+		jgen.writeArrayFieldStart(NODES.getTag());
 		for (final CyNode node : nodes) {
 			jgen.writeStartObject();
 
 			// Data field
-			jgen.writeObjectFieldStart(CyJsonToken.DATA.getName());
-			jgen.writeStringField(CyJsonToken.ID.getName(), node.getSUID().toString());
+			jgen.writeObjectFieldStart(DATA.getTag());
+			jgen.writeStringField(ID.getTag(), node.getSUID().toString());
 
 			// Write CyRow in "data" field
 			jgen.writeObject(network.getRow(node));
@@ -48,14 +49,14 @@ public class JsCyNetworkSerializer extends JsonSerializer<CyNetwork> {
 		}
 		jgen.writeEndArray();
 
-		jgen.writeArrayFieldStart(CyJsonToken.EDGES.getName());
+		jgen.writeArrayFieldStart(EDGES.getTag());
 		for (final CyEdge edge : edges) {
 			jgen.writeStartObject();
 
-			jgen.writeObjectFieldStart(CyJsonToken.DATA.getName());
-			jgen.writeStringField(CyJsonToken.ID.getName(), edge.getSUID().toString());
-			jgen.writeStringField(CyJsonToken.SOURCE.getName(), edge.getSource().getSUID().toString());
-			jgen.writeStringField(CyJsonToken.TARGET.getName(), edge.getTarget().getSUID().toString());
+			jgen.writeObjectFieldStart(DATA.getTag());
+			jgen.writeStringField(ID.getTag(), edge.getSUID().toString());
+			jgen.writeStringField(SOURCE.getTag(), edge.getSource().getSUID().toString());
+			jgen.writeStringField(TARGET.getTag(), edge.getTarget().getSUID().toString());
 
 			// Write CyRow in "data" field
 			jgen.writeObject(network.getRow(edge));

@@ -1,5 +1,8 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
+
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -58,11 +61,9 @@ public class CyJacksonModule extends SimpleModule {
 		@Override
 		public void serialize(CyNetwork network, JsonGenerator jgen, SerializerProvider provider) throws IOException,
 				JsonProcessingException {
-			
-
 
 			jgen.writeStartObject();
-			jgen.writeObjectFieldStart(CyJsonToken.NETWORK.getName());
+			jgen.writeObjectFieldStart("network");
 
 			// Network data table
 			jgen.writeObject(network.getRow(network));
@@ -71,7 +72,7 @@ public class CyJacksonModule extends SimpleModule {
 			final List<CyNode> nodes = network.getNodeList();
 			final List<CyEdge> edges = network.getEdgeList();
 
-			jgen.writeArrayFieldStart(CyJsonToken.NODES.getName());
+			jgen.writeArrayFieldStart(NODES.getTag());
 			for (final CyNode node : nodes) {
 				jgen.writeStartObject();
 				writeNodeInfo(node, jgen);
@@ -80,7 +81,7 @@ public class CyJacksonModule extends SimpleModule {
 			}
 			jgen.writeEndArray();
 
-			jgen.writeArrayFieldStart(CyJsonToken.EDGES.getName());
+			jgen.writeArrayFieldStart(EDGES.getTag());
 			for (final CyEdge edge : edges) {
 				jgen.writeStartObject();
 				writeEdgeInfo(edge, jgen);

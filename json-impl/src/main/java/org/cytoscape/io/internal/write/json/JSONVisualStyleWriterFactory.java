@@ -34,5 +34,4 @@ public class JSONVisualStyleWriterFactory implements CyWriterFactory, VizmapWrit
 	public CyWriter createWriter(final OutputStream os, final Set<VisualStyle> styles) {
 		return new JSONVisualStyleWriter(os, mapper, styles);
 	}
-
 }

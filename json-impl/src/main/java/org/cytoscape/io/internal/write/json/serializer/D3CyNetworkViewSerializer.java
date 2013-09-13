@@ -1,5 +1,7 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -34,11 +36,11 @@ public class D3CyNetworkViewSerializer extends JsonSerializer<CyNetworkView> {
 		jgen.writeStartObject();
 
 		long index = 0;
-		jgen.writeArrayFieldStart(CyJsonToken.NODES.getName());
+		jgen.writeArrayFieldStart(NODES.getTag());
 		for (final CyNode node : nodes) {
 			jgen.writeStartObject();
 
-			jgen.writeStringField(CyJsonToken.ID.getName(), node.getSUID().toString());
+			jgen.writeStringField(ID.getTag(), node.getSUID().toString());
 
 			// Write CyRow in "data" field
 			jgen.writeObject(network.getRow(node));
@@ -53,9 +55,9 @@ public class D3CyNetworkViewSerializer extends JsonSerializer<CyNetworkView> {
 		for (final CyEdge edge : edges) {
 			jgen.writeStartObject();
 
-			jgen.writeStringField(CyJsonToken.ID.getName(), edge.getSUID().toString());
-			jgen.writeNumberField(CyJsonToken.SOURCE.getName(), node2Index.get(edge.getSource()));
-			jgen.writeNumberField(CyJsonToken.TARGET.getName(), node2Index.get(edge.getTarget()));
+			jgen.writeStringField(ID.getTag(), edge.getSUID().toString());
+			jgen.writeNumberField(SOURCE.getTag(), node2Index.get(edge.getSource()));
+			jgen.writeNumberField(TARGET.getTag(), node2Index.get(edge.getTarget()));
 
 			// Write CyRow in "data" field
 			jgen.writeObject(network.getRow(edge));
