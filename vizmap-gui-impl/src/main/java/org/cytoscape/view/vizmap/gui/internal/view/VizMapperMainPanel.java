@@ -172,7 +172,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	@Override
 	public RenderingEngine<CyNetwork> getRenderingEngine() {
-		// TODO ???
 		return getStylesBtn().getRenderingEngine(getStylesBtn().getSelectedItem());
 	}
 	
@@ -183,7 +182,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	@Override
 	public void showEditor(Component parent) {
-		// TODO Auto-generated method stub
+		// TODO deprecate it?
 	}
 	
 	public Set<VisualPropertySheet> getVisualPropertySheets() {
@@ -251,13 +250,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	// ==[ PRIVATE METHODS ]============================================================================================
 
-// TODO
-//	private void initDefaultEditors() {
-//		nodeNumericalAttrEditor = editorManager.getDefaultComboBoxEditor("nodeNumericalAttrEditor");
-//		edgeNumericalAttrEditor = editorManager.getDefaultComboBoxEditor("edgeNumericalAttrEditor");
-//		mappingTypeEditor = editorManager.getDefaultComboBoxEditor("mappingTypeEditor");
-//	}
-
 	private void init() {
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -298,7 +290,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return stylesPnl;
 	}
 	
-	private JTabbedPane getPropertiesPn() {
+	JTabbedPane getPropertiesPn() {
 		if (propertiesPn == null) {
 			propertiesPn = new JTabbedPane(JTabbedPane.BOTTOM, JTabbedPane.WRAP_TAB_LAYOUT);
 		}
@@ -389,11 +381,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		final int MAX_ROWS = 5;
 		
 		final Color BG_COLOR = Color.WHITE;
-		final Color FG_COLOR = UIManager.getColor("Table.foreground");
-		final Color SEL_BG_COLOR = UIManager.getColor("Table.focusCellBackground");
-		final Color SEL_FG_COLOR = UIManager.getColor("Table.focusCellForeground");
+		final Color FG_COLOR = UIManager.getColor("Label.foreground");
+		final Color SEL_BG_COLOR = UIManager.getColor("List.selectionBackground");
+		final Color SEL_FG_COLOR = UIManager.getColor("List.selectionForeground");
 		final Color BORDER_COLOR = new Color(212, 212, 212);
-		final Color FOCUS_COLOR = UIManager.getColor("Focus.color");
+		final Color FOCUS_COLOR = UIManager.getColor("List.selectionBackground");
 		
 		private int cols;
 		
@@ -474,7 +466,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			dialog = new JDialog(SwingUtilities.getWindowAncestor(VisualStyleDropDownButton.this),
 					ModalityType.MODELESS);
 			dialog.setUndecorated(true);
-			dialog.setBackground(UIManager.getColor("ComboBox.background"));
+			dialog.setBackground(BG_COLOR);
 			
 			dialog.addFocusListener(new FocusAdapter() {
 				@Override
@@ -484,26 +476,10 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			});
 			
 			cols = MAX_COLUMNS;
-// TODO delete			
-//			if (items != null && items.size() <= MAX_COLUMNS*MAX_ROWS) {
-//				final int size = items.size();
-//				int testCols = MAX_COLUMNS;
-//				
-//				while (testCols >= 2) {
-//					cols = testCols;
-//					
-//					if (size % testCols == 0)
-//						break;
-//					testCols--;
-//				}
-//				
-//				if (size % cols != 0 && size / cols > MAX_ROWS)
-//					cols = 2;
-//			}
 			
 			final GridLayout gridLayout = new GridLayout(0, cols);
 			final JPanel mainPnl = new JPanel(gridLayout);
-			mainPnl.setBackground(UIManager.getColor("Table.background"));
+			mainPnl.setBackground(BG_COLOR);
 			setKeyBindings(mainPnl);
 			
 			if (styles != null) {
@@ -535,6 +511,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			// Text label
 			final JLabel lbl = new JLabel(vs.getTitle());
 			lbl.setHorizontalAlignment(CENTER);
+			lbl.setOpaque(true);
 			
 			// TODO Truncate the style name and add "..." if too long
 //			lbl.setUI(new BasicLabelUI() { // TODO add tooltip if truncated
@@ -610,7 +587,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 					BorderFactory.createLineBorder(BORDER_COLOR, 1));
 			final Border focusBorder = BorderFactory.createLineBorder(FOCUS_COLOR, 3);
 			final Border selectionBorder = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(1,  1,  1,  1),
-										 BorderFactory.createLineBorder(FOCUS_COLOR, 2));
+										 BorderFactory.createLineBorder(SEL_BG_COLOR, 2));
 			
 			if (vs.equals(focusedItem)) {
 				panel.setBorder(focusBorder);
@@ -625,11 +602,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			
 			if (label != null) {
 				if (vs.equals(selectedItem)) {
-					label.setForeground(SEL_FG_COLOR);
 					label.setBackground(SEL_BG_COLOR);
+					label.setForeground(SEL_FG_COLOR);
 				} else {
-					label.setForeground(FG_COLOR);
 					label.setBackground(BG_COLOR);
+					label.setForeground(FG_COLOR);
 				}
 			}
 		}
