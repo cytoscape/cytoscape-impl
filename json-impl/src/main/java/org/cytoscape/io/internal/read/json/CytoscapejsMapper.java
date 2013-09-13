@@ -1,6 +1,6 @@
 package org.cytoscape.io.internal.read.json;
 
-import static org.cytoscape.io.internal.write.json.serializer.CyJsonToken.*;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +27,9 @@ public class CytoscapejsMapper implements JSONMapper {
 	@Override
 	public CyNetwork createNetwork(final JsonNode rootNode) {
 
-		final JsonNode elements = rootNode.get(ELEMENTS.getName());
-		final JsonNode nodes = elements.get(NODES.getName());
-		final JsonNode edges = elements.get(EDGES.getName());
+		final JsonNode elements = rootNode.get(ELEMENTS.getTag());
+		final JsonNode nodes = elements.get(NODES.getTag());
+		final JsonNode edges = elements.get(EDGES.getTag());
 
 		final CyNetwork network = factory.createNetwork();
 		final Map<String, CyNode> nodeMap = this.addNodes(network, nodes);
@@ -44,9 +44,9 @@ public class CytoscapejsMapper implements JSONMapper {
 		final Map<String, CyNode> nodeMap = new HashMap<String, CyNode>();
 
 		for (final JsonNode node : nodes) {
-			final JsonNode data = node.get(DATA.getName());
+			final JsonNode data = node.get(DATA.getTag());
 			System.out.println(data);
-			final JsonNode nodeId = data.get(ID.getName());
+			final JsonNode nodeId = data.get(ID.getTag());
 			CyNode cyNode = nodeMap.get(nodeId.textValue());
 			if (cyNode == null) {
 				cyNode = network.addNode();
@@ -61,10 +61,10 @@ public class CytoscapejsMapper implements JSONMapper {
 			final Map<String, CyNode> nodeMap) {
 
 		for (final JsonNode edge : edges) {
-			final JsonNode data = edge.get(DATA.getName());
+			final JsonNode data = edge.get(DATA.getTag());
 			System.out.println(data);
-			final JsonNode source = data.get(SOURCE.getName());
-			final JsonNode target = data.get(TARGET.getName());
+			final JsonNode source = data.get(SOURCE.getTag());
+			final JsonNode target = data.get(TARGET.getTag());
 			
 			final CyNode sourceNode = nodeMap.get(source.textValue());
 			final CyNode targetNode = nodeMap.get(target.textValue());

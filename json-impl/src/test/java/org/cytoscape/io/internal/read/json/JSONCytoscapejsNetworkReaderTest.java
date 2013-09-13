@@ -41,7 +41,7 @@ public class JSONCytoscapejsNetworkReaderTest {
 		File cyjs1 = new File("./src/test/resources/testData/cyjs.json");
 
 		InputStream is = new FileInputStream(cyjs1);
-		JSONCytoscapejsNetworkReader reader = new JSONCytoscapejsNetworkReader(is, viewFactory, networkFactory);
+		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(is, viewFactory, networkFactory);
 		reader.run(tm);
 		final CyNetwork[] networks = reader.getNetworks();
 		testLoadedNetwork(networks);
@@ -54,8 +54,8 @@ public class JSONCytoscapejsNetworkReaderTest {
 		
 		CyNetwork network = networks[0];
 		assertNotNull(network);
-		int nodeCount = network.getNodeCount();
-		int edgeCount = network.getEdgeCount();
+		final int nodeCount = network.getNodeCount();
+		final int edgeCount = network.getEdgeCount();
 		assertEquals(331, nodeCount);
 		assertEquals(362, edgeCount);
 	}

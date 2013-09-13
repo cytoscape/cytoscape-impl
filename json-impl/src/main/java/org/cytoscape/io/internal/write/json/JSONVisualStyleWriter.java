@@ -2,7 +2,6 @@ package org.cytoscape.io.internal.write.json;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.charset.CharsetEncoder;
 import java.util.Set;
 
 import org.cytoscape.io.write.CyWriter;
@@ -31,8 +30,9 @@ public class JSONVisualStyleWriter extends AbstractTask implements CyWriter {
 			taskMonitor.setTitle("Writing Visual Styles to JSON...");
 			taskMonitor.setProgress(0);
 		}
-		visualStyles2jsonMapper.writeValue(new OutputStreamWriter(os, EncodingUtil.getEncoder()), styles);
+		visualStyles2jsonMapper.writeValue(
+				new OutputStreamWriter(os, EncodingUtil.getEncoder()),styles);
 		os.close();
+		taskMonitor.setProgress(100);
 	}
-
 }

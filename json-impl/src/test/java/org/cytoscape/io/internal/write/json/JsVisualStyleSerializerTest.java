@@ -56,6 +56,9 @@ public class JsVisualStyleSerializerTest {
 		serializer = new JsVisualStyleSerializer();
 		style = generateVisualStyle();
 		addMappings();
+		
+		// Simple test to check Visual Style contents
+		assertEquals("vs1", style.getTitle());
 	}
 
 	@After
@@ -104,6 +107,7 @@ public class JsVisualStyleSerializerTest {
 		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, Color.BLUE);
 		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 3d);
 		style.setDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY, 200);
+		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, Color.BLUE);
 
 		// Edge default values
 		style.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT,
@@ -121,13 +125,15 @@ public class JsVisualStyleSerializerTest {
 
 		TaskMonitor tm = mock(TaskMonitor.class);
 
-		Set<VisualStyle> styles = new HashSet<VisualStyle>();
+		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
+		styles.add(style);
 
 		final ObjectMapper jsMapper = new ObjectMapper();
 		jsMapper.registerModule(new CytoscapejsModule());
 
-		File temp = File.createTempFile("jsStyle", ".json");
-		temp.deleteOnExit();
+		File temp = new File("jsStyle.json");
+//		File temp = File.createTempFile("jsStyle", ".json");
+//		temp.deleteOnExit();
 
 		OutputStream os = new FileOutputStream(temp);
 		JSONVisualStyleWriter writer = new JSONVisualStyleWriter(os, jsMapper,
@@ -138,20 +144,18 @@ public class JsVisualStyleSerializerTest {
 	}
 
 	private final void testGeneratedJSONFile(File temp) throws Exception {
-		// Read contents
-		System.out.println("Temp = " + temp.getAbsolutePath());
-
 		final FileInputStream fileInputStream = new FileInputStream(temp);
 		final BufferedReader reader = new BufferedReader(new InputStreamReader(
 				fileInputStream, EncodingUtil.getDecoder()));
 
-		JsonFactory factory = new JsonFactory();
-		JsonParser jp = factory.createParser(reader);
+		final JsonFactory factory = new JsonFactory();
+		final JsonParser jp = factory.createParser(reader);
 
 		final ObjectMapper mapper = new ObjectMapper();
+	
 		final JsonNode rootNode = mapper.readValue(reader, JsonNode.class);
 
-		
+		System.out.println(mapper);
 		// Perform actual tests
 		assertNotNull(rootNode);
 

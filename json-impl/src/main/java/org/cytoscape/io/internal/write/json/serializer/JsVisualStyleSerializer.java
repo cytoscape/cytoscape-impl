@@ -8,6 +8,7 @@ import java.util.Collection;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -21,11 +22,12 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
-	
-	private final VisualMappingSerializer<PassthroughMapping<?,?>> passthrough;
-	private final VisualMappingSerializer<DiscreteMapping<?,?>> discrete;
-	private final VisualMappingSerializer<ContinuousMapping<?,?>> continuous;
-	
+
+	// VIsual Mapping serializers
+	private final VisualMappingSerializer<PassthroughMapping<?, ?>> passthrough;
+	private final VisualMappingSerializer<DiscreteMapping<?, ?>> discrete;
+	private final VisualMappingSerializer<ContinuousMapping<?, ?>> continuous;
+
 	public JsVisualStyleSerializer() {
 		this.passthrough = new PassthroughMappingSerializer();
 		this.discrete = new DiscreteMappingSerializer();
@@ -33,8 +35,8 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 	}
 
 	@Override
-	public void serialize(final VisualStyle vs, JsonGenerator jg, SerializerProvider provider) throws IOException,
-			JsonProcessingException {
+	public void serialize(final VisualStyle vs, final JsonGenerator jg, final SerializerProvider provider)
+			throws IOException, JsonProcessingException {
 
 		jg.useDefaultPrettyPrinter();
 
@@ -81,19 +83,37 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 		jg.writeEndObject();
 	}
 
-	private final void serializeNodeStyle(final VisualStyle vs, JsonGenerator jg) throws IOException {
+	private final void serializeNodeStyle(final VisualStyle vs, final JsonGenerator jg) throws IOException {
 		jg.writeStartObject();
 		jg.writeStringField(SELECTOR.toString(), NODE.toString());
 
 		jg.writeObjectFieldStart(CSS.toString());
+
+		// Generate mappings
+		createDefaults(vs, jg);
+
+		// Mappings
+		createNodeMapping(vs, jg);
+
+		jg.writeEndObject();
+
+		jg.writeEndObject();
+	}
+
+	/**
+	 * 
+	 * @param vs
+	 * @param jg
+	 * @throws IOException
+	 */
+	private void createDefaults(final VisualStyle vs, final JsonGenerator jg) throws IOException {
 		jg.writeStringField(BACKGROUND_COLOR.toString(),
 				decodeColor((Color) vs.getDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR)));
 		jg.writeStringField(COLOR.toString(),
 				decodeColor((Color) vs.getDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR)));
-		
+
 		jg.writeNumberField(FONT_WEIGHT.toString(), 100);
-		
-		// TODO: implement dynamic generator for these values
+
 		jg.writeStringField(TEXT_VALIGN.toString(), "center");
 		jg.writeStringField(TEXT_HALIGN.toString(), "center");
 		jg.writeNumberField(TEXT_OUTLINE_WIDTH.toString(), 0);
@@ -107,13 +127,16 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 		jg.writeNumberField(OPACITY.toString(), vs.getDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY) / 255f);
 		jg.writeStringField(SHAPE.toString(), vs.getDefaultValue(BasicVisualLexicon.NODE_SHAPE).getDisplayName()
 				.replaceAll(" ", "").toLowerCase());
-
-		// Mappings
-		createNodeMapping(vs, jg);
-
-		jg.writeEndObject();
-
-		jg.writeEndObject();
+	}
+	
+	
+	private final <T> T getDefaultVisualPropertyValue(final VisualStyle vs, final VisualProperty<T> vp) {
+		final T value = vs.getDefaultValue(vp);
+		if(value == null) {
+			return vp.getDefault();
+		} else {
+			return value;
+		}
 	}
 
 	private void createNodeMapping(final VisualStyle vs, JsonGenerator jg) throws IOException {
@@ -126,23 +149,21 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 			if (mapping instanceof PassthroughMapping) {
 				final String tag = passthrough.getTag((PassthroughMapping<?, ?>) mapping);
 				jg.writeStringField(tag, passthrough.serialize((PassthroughMapping<?, ?>) mapping));
-			} else if(mapping instanceof DiscreteMapping ) {
-				
+			} else if (mapping instanceof DiscreteMapping) {
+				final String tag = discrete.getTag((DiscreteMapping<?, ?>) mapping);
+				jg.writeStringField(tag, discrete.serialize((DiscreteMapping<?, ?>) mapping));
+			} else if (mapping instanceof ContinuousMapping) {
+				final String tag = continuous.getTag((ContinuousMapping<?, ?>) mapping);
+				jg.writeStringField(tag, continuous.serialize((ContinuousMapping<?, ?>) mapping));
 			}
 		}
-
-	}
-
-	private final void generateDiscreteMapping() {
-
 	}
 
 	private void createEdgeMapping(final VisualStyle vs, JsonGenerator jg) throws IOException {
-		// TODO implememt this
 		// Passthrough
-		Collection<VisualMappingFunction<?, ?>> mappings = vs.getAllVisualMappingFunctions();
+		final Collection<VisualMappingFunction<?, ?>> mappings = vs.getAllVisualMappingFunctions();
 
-		for (VisualMappingFunction<?, ?> mapping : mappings) {
+		for (final VisualMappingFunction<?, ?> mapping : mappings) {
 			if (mapping.getVisualProperty().getTargetDataType() != CyEdge.class)
 				continue;
 
@@ -163,12 +184,11 @@ public class JsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 				decodeColor((Color) vs.getDefaultValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT)));
 		jg.writeNumberField(OPACITY.toString(), vs.getDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY) / 255f);
 
-		jg.writeStringField(TARGET_ARROW_SHAPE.toString(), 
+		jg.writeStringField(TARGET_ARROW_SHAPE.toString(),
 				vs.getDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE).getDisplayName().toLowerCase());
-		jg.writeStringField(SOURCE_ARROW_SHAPE.toString(), 
+		jg.writeStringField(SOURCE_ARROW_SHAPE.toString(),
 				vs.getDefaultValue(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE).getDisplayName().toLowerCase());
-		
-		
+
 		// Mappings
 		createEdgeMapping(vs, jg);
 
