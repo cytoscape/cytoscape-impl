@@ -527,16 +527,16 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			// get the bounds
 			Rectangle targetBounds = a.getComponent().getBounds();
 			// Find the closest face and return
-			targetPoint = findFace(sourceCenter, targetBounds);
+			targetPoint = findFace(sourceCenter, targetBounds, targetAnchorType);
 		} else if (target instanceof CyNode) {
 			// get the target point from ding
 			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
 			Rectangle2D nodeBounds = getNodeBounds(nv);
-			targetPoint = findFace(sourceCenter, nodeBounds);
+			targetPoint = findFace(sourceCenter, nodeBounds, targetAnchorType);
 		}
 
 		Rectangle sourceBounds = source.getComponent().getBounds();
-		Point2D sourcePoint = findFace(targetPoint, sourceBounds);
+		Point2D sourcePoint = findFace(targetPoint, sourceBounds, sourceAnchorType);
 		return new Line2D.Double(sourcePoint, targetPoint);
 	}
 
@@ -547,7 +547,10 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	// Find the mid point to draw the target to
-	private Point2D findFace(Point2D source, Rectangle2D target) {
+	private Point2D findFace(Point2D source, Rectangle2D target, AnchorType anchorType) {
+		if (anchorType == AnchorType.CENTER) {
+			return new Point2D.Double(target.getX()+target.getWidth()/2, target.getY()+target.getHeight()/2);
+		}
 		Point2D.Double left = new Point2D.Double(target.getX(), target.getY()+target.getHeight()/2.0);
 		Point2D.Double right = new Point2D.Double(target.getX()+target.getWidth(), target.getY()+target.getHeight()/2.0);
 		Point2D.Double top = new Point2D.Double(target.getX()+target.getWidth()/2.0, target.getY());
