@@ -56,7 +56,6 @@ import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
-import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 
@@ -84,7 +83,7 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	
 	private final static long serialVersionUID = 1202339876950593L;
 	
-	private final Color BORDER_COLOR = UIManager.getLookAndFeelDefaults().getColor("Separator.foreground");
+	private final Color BORDER_COLOR = new Color(200, 200, 200);
 	
 	private int iconWidth = -1; // not initialized!
 	private int iconHeight = -1; // not initialized!
@@ -336,7 +335,8 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		
 		private final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC, 14);
 		private final Font NORMAL_FONT = new Font("SansSerif", Font.PLAIN, 14);
-		private final Color SELECTED_COLOR = new Color(30, 30, 80, 25);
+		private final Color BG_COLOR = Color.WHITE;
+		private final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
 
 		public IconCellRenderer() {
 			setOpaque(true);
@@ -351,7 +351,7 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 													  final boolean cellHasFocus) {
 			removeAll();
 			
-			setBackground(isSelected ? SELECTED_COLOR : list.getBackground());
+			setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
 			
 			final Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR);
 			final Border paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);

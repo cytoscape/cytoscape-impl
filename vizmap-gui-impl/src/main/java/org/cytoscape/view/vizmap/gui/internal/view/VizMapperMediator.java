@@ -9,6 +9,7 @@ import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISU
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -743,6 +744,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
 				}
 				
+				int minWidth = 200;
+				
 				for (final VisualPropertySheet vpSheet : vizMapperMainPanel.getVisualPropertySheets()) {
 					// Create new Visual Property Sheet Items
 					final Set<VisualPropertySheetItem<?>> vpSheetItems = 
@@ -752,11 +755,18 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						item.setVisible(visibleProps.contains(item.getModel().getId()));
 					
 					vpSheet.setItems(vpSheetItems);
+					
 					// Add event listeners to the new components
 					addViewListeners(vpSheet);
+					
+					minWidth = Math.max(minWidth, vpSheet.getMinimumSize().width);
 				}
 				
 				updateVisualPropertyItemsStatus();
+				
+				vizMapperMainPanel.setPreferredSize(
+						new Dimension(vizMapperMainPanel.getPropertiesPn().getMinimumSize().width + 20,
+									  vizMapperMainPanel.getPreferredSize().height));
 			}
 		});
 	}

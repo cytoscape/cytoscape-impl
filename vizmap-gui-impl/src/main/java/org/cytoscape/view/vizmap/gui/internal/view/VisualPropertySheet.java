@@ -154,6 +154,7 @@ public class VisualPropertySheet extends JPanel{
 			
 			// Add the visual property editors to the internal panel
 			int y = 0;
+			int minWidth = 120;
 			
 			for (final VisualPropertySheetItem<?> i : items) {
 				c.gridy = y++;
@@ -203,6 +204,8 @@ public class VisualPropertySheet extends JPanel{
 						}
 					});
 				}
+				
+				minWidth = Math.max(minWidth, i.getPreferredSize().width);
 			}
 			
 			// Add an empty panel to fill the vertical gap
@@ -213,7 +216,15 @@ public class VisualPropertySheet extends JPanel{
 			p.add(fillPnl, c);
 			
 			getVpListScr().setViewportView(p);
-			getVpListScr().repaint();
+			
+			minWidth = Math.min((minWidth += 10), 400);
+			getVpListScr().setMinimumSize(new Dimension(minWidth, getVpListScr().getMinimumSize().height));
+			setMinimumSize(new Dimension(minWidth, getMinimumSize().height));
+			
+			if (getParent() != null) {
+				minWidth = Math.max(minWidth + 8, getParent().getMinimumSize().width);
+				getParent().setMinimumSize(new Dimension(minWidth, getParent().getMinimumSize().height));
+			}
 		}
 		
 		updateCollapseExpandButtons();

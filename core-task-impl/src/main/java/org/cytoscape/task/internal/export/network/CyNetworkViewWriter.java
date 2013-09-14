@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.export.network;
 
 
 import java.io.File;
+import java.util.Collection;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
@@ -87,4 +88,8 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 	public String getTitle() {
 		return "Export Network";
 	}
+	
+
+	
+	
 }

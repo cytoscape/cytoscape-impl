@@ -44,7 +44,7 @@ import org.cytoscape.io.util.StreamUtil;
  * @author Ethan Cerami; (refactored by) Jason Montojo and Igor Rodchenkov
  */
 public class BioPaxFilter extends BasicCyFileFilter {
-	private static final String BIOPAX_XML_NAMESPACE = "www.biopax.org";
+	private static final String BIOPAX_NAMESPACE_STARTS_WITH= "http://www.biopax.org/release/biopax";
 
 	private static final int DEFAULT_LINES_TO_CHECK = 20;
 
@@ -83,7 +83,7 @@ public class BioPaxFilter extends BasicCyFileFilter {
 			int linesToCheck = DEFAULT_LINES_TO_CHECK;
 			while (linesToCheck > 0) {
 				String line = reader.readLine();
-				if (line != null && line.contains(BIOPAX_XML_NAMESPACE)) {
+				if (line != null && line.contains(BIOPAX_NAMESPACE_STARTS_WITH)) {
 					return true;
 				}
 				linesToCheck--;

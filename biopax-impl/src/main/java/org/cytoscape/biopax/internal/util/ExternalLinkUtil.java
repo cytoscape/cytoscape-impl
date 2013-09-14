@@ -97,7 +97,7 @@ public class ExternalLinkUtil {
 		StringBuffer buf = new StringBuffer();
 
         if (url != null) {
-			buf.append("<A class=\"link\" HREF=\"" + url + "\">" + dbName + ":  " + id + "</A>");
+			buf.append("<a class=\"link\" href=\"" + url + "\">" + dbName + ":  " + id + "</a>");
 		} else {
 			buf.append(dbName + ":  " + id);
 		}
