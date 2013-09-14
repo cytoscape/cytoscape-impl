@@ -208,12 +208,15 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 			}
 		});
     }
+
+    private boolean hasTagTreeBeenPopulated = false;
     
     // Queries the currently set app store url for available apps.
     private void queryForApps() {
-        final WebQuerier webQuerier = appManager.getWebQuerier();
-        if (webQuerier.appsHaveBeenLoaded())
+        if (hasTagTreeBeenPopulated)
             return;
+
+        final WebQuerier webQuerier = appManager.getWebQuerier();
 
     	taskManager.execute(new TaskIterator(new Task() {
 			
@@ -239,6 +242,7 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 						buildTagsTree();
 						
 						fillResultsTree(appManager.getWebQuerier().getAllApps());
+                        hasTagTreeBeenPopulated = true;
 					}
 					
 				});
