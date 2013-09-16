@@ -1,0 +1,223 @@
+package org.cytoscape.ding.impl.cyannotator.annotations;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.swing.JDialog;
+
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnnotation {
+	public static final String MEMBERS = "memberUUIDs";
+
+	List<DingAnnotation> annotations = null;
+	Rectangle2D bounds = null;
+
+	private static final Logger logger = LoggerFactory.getLogger(GroupAnnotationImpl.class);
+
+	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { 
+		super(cyAnnotator, view); 
+	}
+
+	public GroupAnnotationImpl(GroupAnnotationImpl c) { 
+		super(c);
+	}
+
+	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
+	                           List<Annotation> annotations, double zoom) {
+		super(cyAnnotator, view);
+		this.annotations  = new ArrayList<DingAnnotation>();
+		for (Annotation a: annotations) {
+			if (a instanceof DingAnnotation)
+				this.annotations.add((DingAnnotation)a);
+		}
+	}
+
+	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
+	                           Map<String, String> argMap) {
+		super(cyAnnotator, view, argMap);
+
+		// Get the UUIDs of all of the annotations
+		if (argMap.containsKey(MEMBERS)) {
+			String[] members = argMap.get(MEMBERS).split(",");
+			for (String uuid: members) {
+				// Create the uuid
+				UUID u = UUID.fromString(uuid);
+
+				// See if this annotation already exists
+				DingAnnotation a = cyAnnotator.getAnnotation(u);
+				if (a != null) {
+					// Yup, add it in to our list
+					addMember(a);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void addMember(Annotation member) {
+		if (member instanceof DingAnnotation) {
+			if (annotations == null) annotations = new ArrayList<DingAnnotation>();
+			DingAnnotation dMember = (DingAnnotation)member;
+			annotations.add(dMember);
+			dMember.setGroupParent(this);
+			// Set the bounding box and our location
+			updateBounds();
+			setLocation((int)bounds.getX(), (int)bounds.getY());
+		}
+	}
+
+	@Override
+	public List<Annotation> getMembers() {
+		return new ArrayList<Annotation>(annotations);
+	}
+
+	@Override
+	public void removeMember(Annotation member) {
+		if (member instanceof DingAnnotation) {
+			DingAnnotation dMember = (DingAnnotation)member;
+			if (annotations != null && annotations.contains(dMember)) {
+				annotations.remove(dMember);
+				dMember.setGroupParent(null);
+			}
+		}
+	}
+
+	public Map<String,String> getArgMap() {
+		Map<String, String> argMap = super.getArgMap();
+		argMap.put(TYPE,GroupAnnotation.class.getName());
+		String members = "";
+
+		for (DingAnnotation annotation: annotations) {
+			members+= annotation.getUUID().toString()+",";
+		}
+		argMap.put(MEMBERS, members.substring(0,members.length()-1));
+
+		return argMap;
+	}
+
+	public JDialog getModifyDialog() {
+			// return new GroupAnnotationDialog(this);
+			return null;
+	}
+
+	@Override
+	public void moveAnnotation(Point2D location) {
+		// Get our current location
+		Point currentLocation = getLocation();
+		double currentX = currentLocation.getX();
+		double currentY = currentLocation.getY();
+
+		// Calculate the delta
+		double deltaX = currentX - location.getX();
+		double deltaY = currentY - location.getY();
+
+		for (DingAnnotation child: annotations) {
+			// Move each child to it's new location
+			Point childLocation = child.getLocation();
+			Point2D newLocation = new Point2D.Double(childLocation.getX()-deltaX, childLocation.getY()-deltaY);
+			child.moveAnnotation(newLocation);
+		}
+
+		// Set our new location
+		setLocation((int)location.getX(), (int)location.getY());
+		cyAnnotator.moveAnnotation(this);
+	}
+
+	@Override
+	public void setSelected(boolean selected) {
+		for (DingAnnotation child: annotations) {
+			child.setSelected(selected);
+		}
+		super.setSelected(selected);
+	}
+
+	@Override
+	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+		// We don't do anything ourselves since each of our
+		// children is a component
+	}
+
+	@Override
+	public void paint(Graphics g) {				
+		// We don't do anything ourselves since each of our
+		// children is a component
+	}
+
+	@Override
+	public void setSpecificZoom(double newZoom) {
+		super.setSpecificZoom(newZoom);		
+	}
+
+	@Override
+	public void setZoom(double newZoom) {
+		super.setZoom(newZoom);		
+	}
+
+	public Rectangle2D getBounds2D() {
+		return bounds;
+	}
+
+	private void updateBounds() {
+		// Calculate the bounding box of all of our children
+		double xMin = Double.MAX_VALUE;
+		double yMin = Double.MAX_VALUE;
+		double xMax = Double.MIN_VALUE;
+		double yMax = Double.MIN_VALUE;
+
+		for (DingAnnotation child: annotations) {
+			Rectangle2D childBounds = child.getComponent().getBounds().getBounds2D();
+			if (childBounds.getMinX() < xMin) xMin = childBounds.getMinX();
+			if (childBounds.getMaxX() > xMax) xMax = childBounds.getMaxX();
+			if (childBounds.getMinY() < yMin) yMin = childBounds.getMinY();
+			if (childBounds.getMaxY() > yMax) yMax = childBounds.getMaxY();
+		}
+		bounds = new Rectangle2D.Double(xMin, yMin, xMax-xMin, yMax-yMin);
+	}
+
+	public Rectangle getBounds() {
+		return getBounds2D().getBounds();
+	}
+}

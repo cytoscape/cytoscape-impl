@@ -26,42 +26,33 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 
 
-import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class MoveAnnotationTask extends AbstractNetworkViewTask {
-	private final DingAnnotation annotation; 
-	private final Point2D start; 
-
-	private static final Logger logger = LoggerFactory.getLogger(MoveAnnotationTask.class);
+public class UngroupAnnotationsTaskFactory implements NetworkViewLocationTaskFactory {
 	
-	
-	public MoveAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D startingLocation) {
-		super(view);
-		while (annotation.getGroupParent() != null) {
-			annotation = (DingAnnotation)annotation.getGroupParent();
-		}
-		this.annotation = annotation;
-		this.start = startingLocation;
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
+		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		return new TaskIterator(new UngroupAnnotationsTask(networkView, annotation));
+
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
-		if ( view instanceof DGraphView ) {
-			annotation.moveAnnotation(start);
-		}
+	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
+		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		if (annotation != null && annotation instanceof GroupAnnotationImpl)
+			return true;
+		return false;
 	}
 }

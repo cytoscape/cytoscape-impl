@@ -26,42 +26,30 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 
 
-import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class MoveAnnotationTask extends AbstractNetworkViewTask {
-	private final DingAnnotation annotation; 
-	private final Point2D start; 
-
-	private static final Logger logger = LoggerFactory.getLogger(MoveAnnotationTask.class);
+public class GroupAnnotationsTaskFactory implements NetworkViewTaskFactory {
 	
-	
-	public MoveAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D startingLocation) {
-		super(view);
-		while (annotation.getGroupParent() != null) {
-			annotation = (DingAnnotation)annotation.getGroupParent();
-		}
-		this.annotation = annotation;
-		this.start = startingLocation;
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView) {
+		return new TaskIterator(new GroupAnnotationsTask(networkView));
+
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
-		if ( view instanceof DGraphView ) {
-			annotation.moveAnnotation(start);
-		}
+	public boolean isReady(CyNetworkView networkView) {
+		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		// Get all of the selected annotations
+		if (cyAnnotator.getSelectedAnnotations() != null && cyAnnotator.getSelectedAnnotations().size() > 1)
+			return true;
+		return false;
 	}
 }

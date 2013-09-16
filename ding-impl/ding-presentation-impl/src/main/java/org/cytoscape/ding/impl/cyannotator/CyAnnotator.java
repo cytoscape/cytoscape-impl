@@ -231,10 +231,17 @@ public class CyAnnotator {
 	public DingAnnotation getAnnotationAt(Point2D position) {
 		DingAnnotation a = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
 		if (a != null) {
+			while (a.getGroupParent() != null)
+				a = (DingAnnotation)a.getGroupParent();
 			return a;
 		}
 
-		return getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
+		a = getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
+		if (a != null) {
+			while (a.getGroupParent() != null)
+				a = (DingAnnotation)a.getGroupParent();
+		}
+		return a;
 	}
 
 	public InnerCanvas getNetworkCanvas() {
@@ -294,7 +301,7 @@ public class CyAnnotator {
 
 	}
 
-	public Set getSelectedAnnotations() { return selectedAnnotations; }
+	public Set<DingAnnotation> getSelectedAnnotations() { return selectedAnnotations; }
 
 	public void resizeShape(ShapeAnnotationImpl shape) {
 		resizing = shape;
@@ -321,6 +328,10 @@ public class CyAnnotator {
 	}
 
 	public void moveAnnotation(DingAnnotation annotation) {
+		// Get the top-level group
+		while ((annotation != null) && (annotation.getGroupParent() != null)) {
+			annotation = (DingAnnotation)annotation.getGroupParent();
+		}
 		moving = annotation;
 		if (moving != null)
 			moving.getCanvas().requestFocusInWindow();

@@ -1111,6 +1111,7 @@ public class CyActivator extends AbstractCyActivator {
 		groupNodesTaskFactoryProps.setProperty(TITLE,"Group Selected Nodes");
 		groupNodesTaskFactoryProps.setProperty(TOOLTIP,"Group Selected Nodes Together");
 		groupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
+		groupNodesTaskFactoryProps.setProperty(MENU_GRAVITY,"0.0");
 		groupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
 		groupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		registerService(bc,groupNodesTaskFactory,NetworkViewTaskFactory.class, groupNodesTaskFactoryProps);
@@ -1141,6 +1142,7 @@ public class CyActivator extends AbstractCyActivator {
 		unGroupNodesTaskFactoryProps.setProperty(TOOLTIP,"Ungroup Selected Nodes");
 		unGroupNodesTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
 		unGroupNodesTaskFactoryProps.setProperty(IN_MENU_BAR,"false");
+		unGroupNodesTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		unGroupNodesTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		registerService(bc,unGroupTaskFactory,NetworkViewTaskFactory.class, unGroupNodesTaskFactoryProps);
 		registerService(bc,unGroupTaskFactory,UnGroupTaskFactory.class, unGroupNodesTaskFactoryProps);

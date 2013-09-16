@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -42,26 +43,26 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MoveAnnotationTask extends AbstractNetworkViewTask {
-	private final DingAnnotation annotation; 
-	private final Point2D start; 
+public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 
-	private static final Logger logger = LoggerFactory.getLogger(MoveAnnotationTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(GroupAnnotationsTask.class);
 	
 	
-	public MoveAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D startingLocation) {
+	public GroupAnnotationsTask(CyNetworkView view) {
 		super(view);
-		while (annotation.getGroupParent() != null) {
-			annotation = (DingAnnotation)annotation.getGroupParent();
-		}
-		this.annotation = annotation;
-		this.start = startingLocation;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if ( view instanceof DGraphView ) {
-			annotation.moveAnnotation(start);
+			DGraphView dView = (DGraphView) view;
+			CyAnnotator cyAnnotator = dView.getCyAnnotator();
+			GroupAnnotationImpl group = new GroupAnnotationImpl(cyAnnotator, dView);
+			for (DingAnnotation child: cyAnnotator.getSelectedAnnotations()) {
+				group.addMember(child);
+			}
+			group.setSelected(false);
+			group.getCanvas().repaint();
 		}
 	}
 }

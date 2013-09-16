@@ -89,11 +89,13 @@ import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddArrowTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ChangeAnnotationCanvasTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.LayerAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.MoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ResizeAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.SelectAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
 
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
@@ -441,6 +443,28 @@ public class CyActivator extends AbstractCyActivator {
 		selectAnnotationTaskFactoryProps.setProperty(TITLE, "Select/Unselect Annotation");
 		registerService(bc, selectAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                selectAnnotationTaskFactoryProps);
+
+		// Annotation group
+		GroupAnnotationsTaskFactory groupAnnotationTaskFactory = new GroupAnnotationsTaskFactory();
+		Properties groupAnnotationTaskFactoryProps = new Properties();
+		groupAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		groupAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "100");
+		groupAnnotationTaskFactoryProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+		groupAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_GROUP_MENU);
+		groupAnnotationTaskFactoryProps.setProperty(TITLE, "Group Annotations");
+		registerService(bc, groupAnnotationTaskFactory, NetworkViewTaskFactory.class, 
+		                groupAnnotationTaskFactoryProps);
+
+		// Annotation ungroup
+		UngroupAnnotationsTaskFactory ungroupAnnotationTaskFactory = new UngroupAnnotationsTaskFactory();
+		Properties ungroupAnnotationTaskFactoryProps = new Properties();
+		ungroupAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		ungroupAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "100");
+		ungroupAnnotationTaskFactoryProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+		ungroupAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_GROUP_MENU);
+		ungroupAnnotationTaskFactoryProps.setProperty(TITLE, "Ungroup Annotations");
+		registerService(bc, ungroupAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
+		                ungroupAnnotationTaskFactoryProps);
 
 		// Set mouse drag selection modes
 		SelectModeTaskFactory selectNodesOnly = new SelectModeTaskFactory("Nodes only", applicationManagerServiceRef);
