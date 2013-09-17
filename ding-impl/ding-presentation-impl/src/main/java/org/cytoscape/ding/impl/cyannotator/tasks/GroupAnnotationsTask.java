@@ -29,6 +29,8 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
 
+import java.util.ArrayList;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -58,11 +60,18 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 			DGraphView dView = (DGraphView) view;
 			CyAnnotator cyAnnotator = dView.getCyAnnotator();
 			GroupAnnotationImpl group = new GroupAnnotationImpl(cyAnnotator, dView);
-			for (DingAnnotation child: cyAnnotator.getSelectedAnnotations()) {
+			group.addComponent(null); // Need to add this first so we can update things appropriately
+			cyAnnotator.addAnnotation(group);
+
+			// Now, add all of the children
+			for (DingAnnotation child: new ArrayList<DingAnnotation>(cyAnnotator.getSelectedAnnotations())) {
 				group.addMember(child);
+				child.setSelected(false);
 			}
-			group.setSelected(false);
-			group.getCanvas().repaint();
+
+			// Finally, set ourselves to be the selected component
+			group.setSelected(true);
+			group.update();
 		}
 	}
 }

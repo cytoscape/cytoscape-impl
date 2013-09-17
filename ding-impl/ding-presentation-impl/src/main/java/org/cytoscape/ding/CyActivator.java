@@ -83,6 +83,7 @@ import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.BoundedTextAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
@@ -240,7 +241,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
-		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "Edge");
 		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_ADD_MENU);
 		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Edge");
 		addEdgeNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1");
@@ -339,6 +340,11 @@ public class CyActivator extends AbstractCyActivator {
 		addBoundedTextTaskFactoryProps.setProperty(TITLE, "Bounded Text Annotation");
 		registerService(bc, addBoundedTextTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                addBoundedTextTaskFactoryProps);
+
+		AnnotationFactory groupAnnotationFactory = new GroupAnnotationFactory();
+		Properties groupFactory = new Properties();
+		groupFactory.setProperty("type","GroupAnnotation.class");
+		registerService(bc, groupAnnotationFactory, AnnotationFactory.class, groupFactory);
 
 		// Annotation edit
 		EditAnnotationTaskFactory editAnnotationTaskFactory = new EditAnnotationTaskFactory();

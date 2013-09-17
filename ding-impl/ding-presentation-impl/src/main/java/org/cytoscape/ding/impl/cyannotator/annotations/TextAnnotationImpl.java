@@ -120,7 +120,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		font=font.deriveFont(((float)(zoom/getSpecificZoom()))*font.getSize2D());
 				
 		setSize(getAnnotationWidth(), getAnnotationHeight());
-		super.setZoom(zoom);
+		super.setSpecificZoom(zoom);
 	}
 
 	@Override

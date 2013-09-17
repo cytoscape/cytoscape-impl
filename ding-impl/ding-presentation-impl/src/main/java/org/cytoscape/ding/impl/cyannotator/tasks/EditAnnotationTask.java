@@ -59,8 +59,10 @@ public class EditAnnotationTask extends AbstractNetworkViewTask {
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
 		 			JDialog dialog = annotation.getModifyDialog();	
-					dialog.setLocation((int)location.getX(), (int)location.getY());
-					dialog.setVisible(true);
+					if (dialog != null) {
+						dialog.setLocation((int)location.getX(), (int)location.getY());
+						dialog.setVisible(true);
+					}
 				}
 			});
 		}

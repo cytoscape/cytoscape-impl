@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.cyannotator.tasks;
+package org.cytoscape.ding.impl.cyannotator.create;
 
 /*
  * #%L
@@ -24,49 +24,36 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * #L%
  */
 
-
-
-import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
+import java.util.Map;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import javax.swing.JDialog;
 
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class GroupAnnotationFactory implements DingAnnotationFactory<GroupAnnotation> {
 
-public class UngroupAnnotationsTask extends AbstractNetworkViewTask {
-	GroupAnnotationImpl group = null;;
-
-	private static final Logger logger = LoggerFactory.getLogger(GroupAnnotationsTask.class);
-	
-	
-	public UngroupAnnotationsTask(CyNetworkView view, DingAnnotation annotation) {
-		super(view);
-		if (annotation instanceof GroupAnnotationImpl)
-			group = (GroupAnnotationImpl)annotation;
+	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
+		return null;
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
-		if ( view instanceof DGraphView ) {
-			DGraphView dView = (DGraphView) view;
-			CyAnnotator cyAnnotator = dView.getCyAnnotator();
-			for (Annotation child: group.getMembers()) {
-				group.removeMember(child);
-				child.setSelected(true);
-			}
-			group.removeAnnotation();
-		}
+	public GroupAnnotation createAnnotation(Class<? extends GroupAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
+		if (!(view instanceof DGraphView))
+			return null;
+
+		DGraphView dView = (DGraphView) view;
+		if ( type.equals(GroupAnnotation.class) ) {
+			GroupAnnotationImpl a = new GroupAnnotationImpl(dView.getCyAnnotator(), dView, argMap);
+			a.update();
+			return (GroupAnnotation)a;
+		} else 
+			return null;
 	}
 }

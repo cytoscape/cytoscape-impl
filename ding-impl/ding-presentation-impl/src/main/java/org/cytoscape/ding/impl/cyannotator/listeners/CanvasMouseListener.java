@@ -76,7 +76,7 @@ public class CanvasMouseListener implements MouseListener {
 
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		if (annotation == null) {
-			cyAnnotator.clearSelectedAnnotations();
+			// cyAnnotator.clearSelectedAnnotations();
 			if (!e.isConsumed()) {
 				networkCanvas.processMouseEvent(e);
 				e.consume();

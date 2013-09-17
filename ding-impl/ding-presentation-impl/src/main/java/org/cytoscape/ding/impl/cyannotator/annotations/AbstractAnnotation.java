@@ -150,7 +150,7 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
 		if (argMap.containsKey(PARENT_ID)) {
 			// See if the parent already exists
-			UUID parent_uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
+			UUID parent_uuid = UUID.fromString(argMap.get(PARENT_ID));
 			DingAnnotation parentAnnotation = cyAnnotator.getAnnotation(parent_uuid);
 			if (parentAnnotation != null && parentAnnotation instanceof GroupAnnotation) {
 				// It does -- add ourselves to it
@@ -283,7 +283,10 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	public void setGroupParent(GroupAnnotation parent) {
 		if (parent instanceof GroupAnnotationImpl) {
 			this.parent = (GroupAnnotationImpl)parent;
+		} else if (parent == null) {
+			this.parent = null;
 		}
+		cyAnnotator.addAnnotation(this);
 	}
 
 	@Override
@@ -364,6 +367,9 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		else
 			argMap.put(CANVAS, FOREGROUND);
 		argMap.put(ANNOTATION_ID, this.uuid.toString());
+
+		if (parent != null)
+			argMap.put(PARENT_ID, parent.getUUID().toString());
 
 		return argMap;
 	}

@@ -24,6 +24,8 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * #L%
  */
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -90,7 +92,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				DingAnnotation a = cyAnnotator.getAnnotation(u);
 				if (a != null) {
 					// Yup, add it in to our list
-					addMember(a);
+					if (annotations == null) 
+						annotations = new ArrayList<DingAnnotation>();
+					annotations.add(a);
 				}
 			}
 		}
@@ -101,11 +105,19 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		if (member instanceof DingAnnotation) {
 			if (annotations == null) annotations = new ArrayList<DingAnnotation>();
 			DingAnnotation dMember = (DingAnnotation)member;
-			annotations.add(dMember);
+			if (!annotations.contains(dMember))
+				annotations.add(dMember);
 			dMember.setGroupParent(this);
 			// Set the bounding box and our location
 			updateBounds();
 			setLocation((int)bounds.getX(), (int)bounds.getY());
+			setSize((int)bounds.getWidth(), (int)bounds.getHeight());
+			// Now, update our Z-order
+			int z = dMember.getCanvas().getComponentZOrder(dMember.getComponent());
+			if (z > getCanvas().getComponentZOrder(getComponent())) {
+				getCanvas().setComponentZOrder(getComponent(), z);
+			}
+			cyAnnotator.addAnnotation(this); // This forces an update of the argMap
 		}
 	}
 
@@ -122,6 +134,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				annotations.remove(dMember);
 				dMember.setGroupParent(null);
 			}
+			cyAnnotator.addAnnotation(this); // This forces an update of the argMap
 		}
 	}
 
@@ -130,10 +143,14 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		argMap.put(TYPE,GroupAnnotation.class.getName());
 		String members = "";
 
+		if (annotations == null || annotations.size() == 0)
+			return argMap;
+
 		for (DingAnnotation annotation: annotations) {
 			members+= annotation.getUUID().toString()+",";
 		}
-		argMap.put(MEMBERS, members.substring(0,members.length()-1));
+		if (members != null && members.length() > 1)
+			argMap.put(MEMBERS, members.substring(0, members.length()-1));
 
 		return argMap;
 	}
@@ -166,33 +183,54 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		cyAnnotator.moveAnnotation(this);
 	}
 
+/*
 	@Override
 	public void setSelected(boolean selected) {
-		for (DingAnnotation child: annotations) {
-			child.setSelected(selected);
-		}
+		// for (DingAnnotation child: annotations) {
+		// 	child.setSelected(selected);
+		// }
 		super.setSelected(selected);
 	}
+*/
 
 	@Override
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+		super.drawAnnotation(g, x, y, scaleFactor);
 		// We don't do anything ourselves since each of our
 		// children is a component
 	}
 
+	final static float dash1[] = {10.0f};
+
 	@Override
-	public void paint(Graphics g) {				
-		// We don't do anything ourselves since each of our
-		// children is a component
+	public void paint(Graphics g) {
+		super.paint(g);
+
+		Graphics2D g2=(Graphics2D)g;
+		if(isSelected()) {
+			updateBounds();
+			g2.setColor(Color.YELLOW);
+			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
+			g2.drawRect(0, 0, (int)bounds.getWidth(), (int)bounds.getHeight());
+		}
+
 	}
 
 	@Override
 	public void setSpecificZoom(double newZoom) {
+		if (annotations != null && annotations.size() > 0) {
+			for (DingAnnotation child: annotations)
+				child.setSpecificZoom(newZoom);
+		}
 		super.setSpecificZoom(newZoom);		
 	}
 
 	@Override
 	public void setZoom(double newZoom) {
+		if (annotations != null && annotations.size() > 0) {
+			for (DingAnnotation child: annotations)
+				child.setZoom(newZoom);
+		}
 		super.setZoom(newZoom);		
 	}
 
@@ -214,7 +252,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			if (childBounds.getMinY() < yMin) yMin = childBounds.getMinY();
 			if (childBounds.getMaxY() > yMax) yMax = childBounds.getMaxY();
 		}
-		bounds = new Rectangle2D.Double(xMin, yMin, xMax-xMin, yMax-yMin);
+		bounds = new Rectangle2D.Double(xMin-1, yMin-1, xMax-xMin+2, yMax-yMin+2);
+		getComponent().setSize((int)bounds.getWidth()+2, (int)bounds.getHeight()+2);
+		getComponent().setLocation((int)bounds.getX(), (int)bounds.getY());
 	}
 
 	public Rectangle getBounds() {

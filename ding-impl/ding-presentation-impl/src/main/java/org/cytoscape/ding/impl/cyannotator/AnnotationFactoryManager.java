@@ -89,8 +89,9 @@ public class AnnotationFactoryManager {
 		Annotation annotation = null;
 		for (AnnotationFactory factory: annotationFactories) {
 			annotation =  factory.createAnnotation(type, view, argMap);
-			if (annotation != null)
+			if (annotation != null) {
 				break;
+			}
 		}
 
 		return annotation;
