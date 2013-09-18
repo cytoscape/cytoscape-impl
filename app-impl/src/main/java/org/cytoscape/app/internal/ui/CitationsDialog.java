@@ -1,13 +1,20 @@
 package org.cytoscape.app.internal.ui;
 
-import java.util.List;
 import java.util.Set;
-import java.util.ArrayList;
+import java.util.TreeSet;
 import java.util.Date;
+import java.util.List;
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Comparator;
 
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -62,7 +69,7 @@ public class CitationsDialog {
     textPane.setEditable(false);
     textPane.setContentType("text/html");
 
-    final JButton saveButton = new JButton("Save for EndNote...");
+    //final JButton saveButton = new JButton("Save for EndNote...");
 
     dialog.setLayout(new GridBagLayout());
     final GridBagConstraints c = new GridBagConstraints();
@@ -75,7 +82,7 @@ public class CitationsDialog {
     dialog.add(new JScrollPane(textPane), c);
 
     final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    buttonsPanel.add(saveButton);
+    //buttonsPanel.add(saveButton);
 
     c.gridx = 0;      c.gridy = 1;
     c.gridwidth = 1;  c.gridheight = 1;
@@ -92,6 +99,9 @@ public class CitationsDialog {
   }
 }
 
+/**
+ * Generic container class for PubMed articles.
+ */
 class Article {
   final String pmid;
   final String pubDate;
@@ -151,15 +161,6 @@ class Article {
     return buffer.toString();
   }
 
-  public String getAuthorEtAl() {
-    if (authors.size() == 0)
-      return null;
-    else if (authors.size() == 1)
-      return authors.get(0);
-    else
-      return authors.get(0) + " et al";
-  }
-
   public String getVolume() {
     return volume;
   }
@@ -171,34 +172,39 @@ class Article {
   public String getPages() {
     return pages;
   }
-}
 
-class TextArticleFormatter {
-  public static String format(final Article article) {
-    return String.format("%s. %s %s, %s:%s (%s). %s",
-      article.getAuthorEtAl(),
-      article.getTitle(),
-      article.getSource(),
-      article.getVolume(),
-      article.getIssue(),
-      article.getPages(),
-      article.getPubDate());
+  public String toString() {
+    return toString("%s. <i>%s</i> %s, %s:%s (%s). %s.");
+  }
+
+  public String toString(final String fmtString) {
+    return String.format(fmtString, getAuthorsAsString(), getTitle(), getSource(), getVolume(), getIssue(), getPages(), getPubDate());
   }
 }
 
+/**
+ * Retrieves article summaries from PubMed and stores them in {@code Article} instances.
+ */
 class PubMedParser {
   static final String REQUEST_URL_BASE = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=";
 
-  private static String makeRequestURL(final List<String> pmids) {
+  /**
+   * Takes a sequence of PubMed IDs and returns a URL for requesting article summaries from PubMed.
+   */
+  protected static String makeRequestURL(final Iterable<String> pmids) {
     final StringBuffer buffer = new StringBuffer(REQUEST_URL_BASE);
-    for (int i = 0; i < pmids.size(); i++) {
-      buffer.append(pmids.get(i));
-      if (i != (pmids.size() - 1))
+    final Iterator<String> iterator = pmids.iterator();
+    while (iterator.hasNext()) {
+      buffer.append(iterator.next());
+      if (iterator.hasNext())
         buffer.append(',');
     }
     return buffer.toString();
   }
 
+  /**
+   * Constructs a new XML-to-DOM parser.
+   */
   protected static DocumentBuilder newXmlParser() throws ParserConfigurationException {
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setValidating(false);
@@ -208,30 +214,23 @@ class PubMedParser {
 
   protected DocumentBuilder xmlParser = null;
 
+  /**
+   * Issues a request to a given URL and returns its parsed XML content as a DOM.
+   */
   protected Document xmlRequest(final String url) throws ParserConfigurationException, MalformedURLException, IOException, SAXException {
     if (xmlParser == null)
       xmlParser = newXmlParser();
-    return xmlParser.parse(new URL(url).openConnection().getInputStream());
+    final InputStream inputStream = new URL(url).openConnection().getInputStream();
+    final Document doc = xmlParser.parse(inputStream);
+    inputStream.close();
+    return doc;
   }
 
-  public List<Article> retrieveArticles(final List<String> pmids) throws Exception {
-    final List<Article> articles = new ArrayList<Article>();
-    final Document root = xmlRequest(makeRequestURL(pmids));
-    final NodeList results = root.getChildNodes(); 
-    for (int i = 0; i < results.getLength(); i++) {
-      final Node result = results.item(i); // <eSummaryResult>
-      final NodeList docSums = result.getChildNodes();
-      for (int j = 0; j < docSums.getLength(); j++) {
-        final Node docSum = docSums.item(j); // <DocSum>
-        if (!"DocSum".equals(docSum.getNodeName()))
-          continue;
-        articles.add(parseArticle(docSum));
-      }
-    }
-    return articles;
-  }
-
-  private static Article parseArticle(final Node docSum) {
+  /**
+   * Takes a {@code DocSum} XML tag and returns an Article object containing all the
+   * information in the {@code DocSum} tag.
+   */
+  protected static Article parseArticle(final Node docSum) {
     String pmid = null;
     String pubDate = null;
     String source = null;
@@ -275,41 +274,64 @@ class PubMedParser {
     }
     return new Article(pmid, pubDate, source, title, authors, volume, issue, pages);
   }
+
+  /**
+   * Return the first key with the given value, or null if the map doesn't have the given value.
+   */
+  protected static <K,V> K keyForValue(final Map<K,V> map, final V value) {
+    for (final Map.Entry<K,V> entry : map.entrySet()) {
+      if (entry.getValue().equals(value))
+        return entry.getKey();
+    }
+    return null;
+  }
+
+  /**
+   * Takes a map of app names to their PubMed IDs, then returns
+   * a map of the (potentially) same app names to {@code Article} objects.
+   */
+  public Map<String,Article> retrieveArticles(final Map<String,String> pmids) throws ParserConfigurationException, MalformedURLException, IOException, SAXException {
+    final Map<String,Article> articles = new HashMap<String,Article>();
+    final Document root = xmlRequest(makeRequestURL(pmids.values()));
+    final NodeList results = root.getChildNodes();
+    for (int i = 0; i < results.getLength(); i++) {
+      final Node result = results.item(i); // <eSummaryResult>
+      final NodeList docSums = result.getChildNodes();
+      for (int j = 0; j < docSums.getLength(); j++) {
+        final Node docSum = docSums.item(j); // <DocSum>
+        if (!"DocSum".equals(docSum.getNodeName()))
+          continue;
+
+        final Article article = parseArticle(docSum);
+        final String name = keyForValue(pmids, article.getPmid());
+        articles.put(name, article);
+      }
+    }
+    return articles;
+  }
 }
 
 class RetrieveTask implements Task {
+  /**
+   * PubMed ID of Cytoscape article that will always be included in the citations dialog.
+   */
+  protected static final String CYTOSCAPE_PMID = "14597658";
+
   final WebQuerier webQuerier;
   final AppManager appMgr;
   final JTextPane textPane;
+
   public RetrieveTask(final WebQuerier webQuerier, final AppManager appMgr, final JTextPane textPane) {
     this.webQuerier = webQuerier;
     this.appMgr = appMgr;
     this.textPane = textPane;
   }
 
-  public void run(final TaskMonitor monitor) throws Exception {
-    monitor.setTitle("Retrieve citations from PubMed");
-
-    monitor.showMessage(TaskMonitor.Level.INFO, "Retrieve list of apps");
-    final List<String> pmids = getPmids();
-
-    monitor.showMessage(TaskMonitor.Level.INFO, "Retrieve articles");
-    final PubMedParser pubMedParser = new PubMedParser();
-    final List<Article> articles = pubMedParser.retrieveArticles(pmids);
-
-    final StringBuffer buffer = new StringBuffer("<html><ul>");
-    for (final Article article : articles) {
-      buffer.append("<li>");
-      buffer.append(TextArticleFormatter.format(article));
-      buffer.append("</li>");
-    }
-    buffer.append("</ul></html>");
-
-    textPane.setText(buffer.toString());
-  }
-
-  private List<String> getPmids() {
-    final List<String> pmids = new ArrayList<String>();
+  /**
+   * Return a map of app names to their PubMed IDs.
+   */
+  private Map<String,String> getPmidsOfApps() {
+    final Map<String,String> pmids = new HashMap<String,String>();
     final Set<WebApp> allApps = webQuerier.getAllApps();
     webQuerier.checkWebAppInstallStatus(allApps, appMgr);
     for (final WebApp app : allApps) {
@@ -317,9 +339,42 @@ class RetrieveTask implements Task {
        || app.getCorrespondingApp().getStatus() != App.AppStatus.INSTALLED)
         continue;
       if (app.getCitation() != null)
-        pmids.add(app.getCitation());
+        pmids.put(app.getFullName(), app.getCitation());
     }
     return pmids;
+  }
+
+  public void run(final TaskMonitor monitor) throws Exception {
+    monitor.setTitle("Retrieve citations from PubMed");
+
+    monitor.showMessage(TaskMonitor.Level.INFO, "Retrieve list of apps");
+    final Map<String,String> pmids = getPmidsOfApps();
+    pmids.put("Cytoscape", CYTOSCAPE_PMID);
+
+    monitor.showMessage(TaskMonitor.Level.INFO, "Retrieve articles");
+    final PubMedParser pubMedParser = new PubMedParser();
+    final Map<String,Article> articles = pubMedParser.retrieveArticles(pmids);
+    final StringBuffer buffer = new StringBuffer("<html><dl>");
+
+    buffer.append("<dt><b>Cytoscape</b></dt>");
+    buffer.append("<dd>");
+    buffer.append(articles.get("Cytoscape"));
+    buffer.append("</dd>");
+    buffer.append("</dl><br><br><dl>");
+    for (final String name : new TreeSet<String>(articles.keySet())) {
+      if (name.equals("Cytoscape"))
+        continue;
+      final Article article = articles.get(name);
+      buffer.append("<dt><b>");
+      buffer.append(name);
+      buffer.append("</b></dt>");
+      buffer.append("<dd>");
+      buffer.append(article.toString());
+      buffer.append("</dd>");
+    }
+    buffer.append("</dl></html>");
+
+    textPane.setText(buffer.toString());
   }
 
   public void cancel() {
