@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "dependencies": {
     "sass-bootstrap": "~2.3.0",
-    "jquery": "~1.9.1",
-    "arbor": "*"
+    "jquery": "latest",
+    "arbor": "*",
+    "cytoscape.js": "https://github.com/cytoscape/cytoscape.js.git#~2.0.2"
   },
   "devDependencies": {}
 }

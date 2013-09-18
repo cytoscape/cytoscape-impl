@@ -19,8 +19,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.internal.write.json.serializer.CytoscapejsModule;
-import org.cytoscape.io.internal.write.json.serializer.JsVisualStyleSerializer;
+import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsModule;
+import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleModule;
+import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleSerializer;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualLexicon;
@@ -44,19 +45,22 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JsVisualStyleSerializerTest {
+public class CytoscapeJsVisualStyleSerializerTest {
 
-	private JsVisualStyleSerializer serializer;
+	private CytoscapeJsVisualStyleSerializer serializer;
 
 	private VisualStyle style;
+	private VisualLexicon lexicon;
 
 	@Before
 	public void setUp() throws Exception {
 
-		serializer = new JsVisualStyleSerializer();
-		style = generateVisualStyle();
-		addMappings();
-		
+		final NullVisualProperty minimalRoot = new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property");
+		lexicon = new BasicVisualLexicon(minimalRoot);
+		serializer = new CytoscapeJsVisualStyleSerializer(lexicon);
+		style = generateVisualStyle(lexicon);
+		setDefaults();
+
 		// Simple test to check Visual Style contents
 		assertEquals("vs1", style.getTitle());
 	}
@@ -65,22 +69,13 @@ public class JsVisualStyleSerializerTest {
 	public void tearDown() throws Exception {
 	}
 
-	private final VisualStyle generateVisualStyle() {
+	private final VisualStyle generateVisualStyle(final VisualLexicon lexicon) {
 
-		// Create root node.
 		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
-
-		// Create root node.
-		final NullVisualProperty minimalRoot = new NullVisualProperty(
-				"MINIMAL_ROOT", "Minimal Root Visual Property");
-		final BasicVisualLexicon minimalLex = new BasicVisualLexicon(
-				minimalRoot);
 		final Set<VisualLexicon> lexSet = new HashSet<VisualLexicon>();
-		lexSet.add(minimalLex);
-		final Collection<VisualProperty<?>> nodeVP = minimalLex
-				.getAllDescendants(BasicVisualLexicon.NODE);
-		final Collection<VisualProperty<?>> edgeVP = minimalLex
-				.getAllDescendants(BasicVisualLexicon.EDGE);
+		lexSet.add(lexicon);
+		final Collection<VisualProperty<?>> nodeVP = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
+		final Collection<VisualProperty<?>> edgeVP = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		when(lexManager.getNodeVisualProperties()).thenReturn(nodeVP);
 		when(lexManager.getEdgeVisualProperties()).thenReturn(edgeVP);
 
@@ -89,32 +84,27 @@ public class JsVisualStyleSerializerTest {
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(
-				lexManager, serviceRegistrar, ptFactory, eventHelper);
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar,
+				ptFactory, eventHelper);
 
 		return visualStyleFactory.createVisualStyle("vs1");
-
 	}
 
-	private final void addMappings() {
-
+	private final void setDefaults() {
 		// Node default values
 		style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
 		style.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, 40d);
 		style.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, 30d);
-		style.setDefaultValue(BasicVisualLexicon.NODE_SHAPE,
-				NodeShapeVisualProperty.ROUND_RECTANGLE);
+		style.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ROUND_RECTANGLE);
 		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, Color.BLUE);
 		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 3d);
 		style.setDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY, 200);
 		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, Color.BLUE);
 
 		// Edge default values
-		style.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT,
-				Color.GREEN);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, Color.GREEN);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 5d);
-		style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE,
-				ArrowShapeVisualProperty.DIAMOND);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.DIAMOND);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 100);
 	}
 
@@ -129,30 +119,26 @@ public class JsVisualStyleSerializerTest {
 		styles.add(style);
 
 		final ObjectMapper jsMapper = new ObjectMapper();
-		jsMapper.registerModule(new CytoscapejsModule());
+		jsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon));
 
-		File temp = new File("jsStyle.json");
-//		File temp = File.createTempFile("jsStyle", ".json");
-//		temp.deleteOnExit();
+		File temp = new File("src/test/resources/site/app/data/cytoscapeJsStyle.json");
 
 		OutputStream os = new FileOutputStream(temp);
-		JSONVisualStyleWriter writer = new JSONVisualStyleWriter(os, jsMapper,
-				styles);
+		JSONVisualStyleWriter writer = new JSONVisualStyleWriter(os, jsMapper, styles);
 		writer.run(tm);
-
 		testGeneratedJSONFile(temp);
 	}
 
 	private final void testGeneratedJSONFile(File temp) throws Exception {
 		final FileInputStream fileInputStream = new FileInputStream(temp);
-		final BufferedReader reader = new BufferedReader(new InputStreamReader(
-				fileInputStream, EncodingUtil.getDecoder()));
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream,
+				EncodingUtil.getDecoder()));
 
 		final JsonFactory factory = new JsonFactory();
 		final JsonParser jp = factory.createParser(reader);
 
 		final ObjectMapper mapper = new ObjectMapper();
-	
+
 		final JsonNode rootNode = mapper.readValue(reader, JsonNode.class);
 
 		System.out.println(mapper);
@@ -161,5 +147,4 @@ public class JsVisualStyleSerializerTest {
 
 		reader.close();
 	}
-
 }

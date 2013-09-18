@@ -48,7 +48,7 @@ $(loadCy = function () {
     var networkData = {};
 
     // Load JSON file
-    $.getJSON('data/cyjs.json', function(network) {
+    $.getJSON('data/cytoscapeJsNetwork1.json', function(network) {
         console.log(network);
         networkData = network;
         $('.network').cytoscape(options);

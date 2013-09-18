@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 
 public class CytoscapeJsStyleConverter {
@@ -15,38 +16,43 @@ public class CytoscapeJsStyleConverter {
 	private final Map<CytoscapeJsToken, VisualProperty<?>> tag2nodeVp = new HashMap<CytoscapeJsToken, VisualProperty<?>>();
 	private final Map<CytoscapeJsToken, VisualProperty<?>> tag2edgeVp = new HashMap<CytoscapeJsToken, VisualProperty<?>>();
 
-	private CytoscapeJsStyleConverter() {
-	
+	CytoscapeJsStyleConverter() {
 		buildV2TMap();
+		buildT2VMap();
 	}
 	
 	private final void buildV2TMap() {
-		vp2tag.put(NODE_FILL_COLOR, BACKGROUND_COLOR);
-		vp2tag.put(NODE_LABEL_COLOR, COLOR);
-		vp2tag.put(NODE_WIDTH, WIDTH);
-		vp2tag.put(NODE_HEIGHT, HEIGHT);
-		vp2tag.put(NODE_SHAPE, SHAPE);
 		vp2tag.put(NODE_BORDER_PAINT, BORDER_COLOR);
-		vp2tag.put(NODE_BORDER_WIDTH, BORDER_WIDTH);
+		vp2tag.put(NODE_BORDER_PAINT, BORDER_COLOR);
 		vp2tag.put(NODE_BORDER_TRANSPARENCY, BORDER_OPACITY);
+		vp2tag.put(NODE_BORDER_WIDTH, BORDER_WIDTH);
+		vp2tag.put(NODE_FILL_COLOR, BACKGROUND_COLOR);
+		vp2tag.put(NODE_HEIGHT, HEIGHT);
+		vp2tag.put(NODE_HEIGHT, HEIGHT);
+		vp2tag.put(NODE_LABEL_COLOR, COLOR);
+		vp2tag.put(NODE_LABEL_COLOR, COLOR);
 		vp2tag.put(NODE_LABEL_FONT_SIZE, FONT_SIZE);
+		vp2tag.put(NODE_LABEL_FONT_SIZE, FONT_SIZE);
+		vp2tag.put(NODE_SHAPE, SHAPE);
+		vp2tag.put(NODE_WIDTH, WIDTH);
+		vp2tag.put(NODE_WIDTH, WIDTH);
+
+		vp2tag.put(EDGE_LABEL, CONTENT); 
+		vp2tag.put(EDGE_LABEL_FONT_SIZE, FONT_SIZE);
+		vp2tag.put(EDGE_LABEL_TRANSPARENCY, TEXT_OPACITY);
+		vp2tag.put(EDGE_LINE_TYPE, LINE_STYLE);
+		vp2tag.put(EDGE_PAINT, COLOR);
+		vp2tag.put(EDGE_SELECTED, SELECTED);
+		vp2tag.put(EDGE_SOURCE_ARROW_SHAPE, SOURCE_ARROW_SHAPE);
+		vp2tag.put(EDGE_TARGET_ARROW_SHAPE, TARGET_ARROW_SHAPE);
+		vp2tag.put(EDGE_TRANSPARENCY, OPACITY);
+		vp2tag.put(EDGE_WIDTH, WIDTH);
+
 	}
 
 	private final void buildT2VMap() {
 		// For nodes
 		tag2nodeVp.put(COLOR, NODE_LABEL_COLOR);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
-	
-	
 		tag2nodeVp.put(BACKGROUND_COLOR, NODE_PAINT);
 		tag2nodeVp.put(WIDTH, NODE_SIZE);
 		tag2nodeVp.put(SHAPE, NODE_SHAPE);
@@ -58,18 +64,33 @@ public class CytoscapeJsStyleConverter {
 		tag2nodeVp.put(BORDER_WIDTH, NODE_BORDER_WIDTH);
 		tag2nodeVp.put(OPACITY, NODE_TRANSPARENCY);
 		tag2nodeVp.put(BORDER_OPACITY, NODE_BORDER_TRANSPARENCY);
-//		tag2nodeVp.put(NODE_LABEL_FONT_FACE);
 		tag2nodeVp.put(TEXT_OPACITY, NODE_LABEL_TRANSPARENCY);
 	
+		// For edges
+		tag2edgeVp.put(LINE_COLOR, EDGE_PAINT);
+		tag2edgeVp.put(VISIBILITY, EDGE_VISIBLE);
+		tag2edgeVp.put(SELECTED, EDGE_SELECTED);
+		tag2edgeVp.put(WIDTH, EDGE_WIDTH);
+		tag2edgeVp.put(CONTENT, EDGE_LABEL);
+		tag2edgeVp.put(LINE_STYLE, EDGE_LINE_TYPE);
+		tag2edgeVp.put(FONT_SIZE, EDGE_LABEL_FONT_SIZE);
+		tag2edgeVp.put(TEXT_OPACITY, EDGE_LABEL_TRANSPARENCY);
+		tag2edgeVp.put(OPACITY, EDGE_TRANSPARENCY);
+		tag2edgeVp.put(SOURCE_ARROW_SHAPE, EDGE_SOURCE_ARROW_SHAPE);
+		tag2edgeVp.put(TARGET_ARROW_SHAPE, EDGE_TARGET_ARROW_SHAPE);
+
 	}
 	
 	
 	public <T extends CyIdentifiable> VisualProperty<?> getVisualProperty(CytoscapeJsToken tag, Class<T> type) {
-		return null;
+		if(type == CyNode.class) {
+			return tag2nodeVp.get(tag);
+		} else {
+			return tag2edgeVp.get(tag);
+		}
 	}
 
-
 	public CytoscapeJsToken getTag(final VisualProperty<?> vp) {
-		return null;
+		return vp2tag.get(vp);
 	}
 }
