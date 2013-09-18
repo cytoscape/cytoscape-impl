@@ -39,7 +39,7 @@ import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 
 /**
@@ -56,7 +56,7 @@ public class PhysicalEntityDetailsPanel extends JPanel implements MouseListener 
      * Constructor.
      * @param browser 
      */
-    public PhysicalEntityDetailsPanel(SearchHitsPanel searchHitsPanel, CPath2Factory factory) {
+    public PhysicalEntityDetailsPanel(SearchHitsPanel searchHitsPanel, CPathFactory factory) {
         this.setLayout(new BorderLayout());
 		this.searchHitsPanel = searchHitsPanel;
         textPane = createHtmlTextPane(factory.getOpenBrowser());

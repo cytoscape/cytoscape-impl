@@ -34,10 +34,13 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.BoundedTextAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
+// import org.cytoscape.ding.impl.cyannotator.api.BoundedTextAnnotation;
+// import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
 
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
@@ -45,7 +48,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	private String text;
 	private boolean shapeIsFit = false;
 
-	public static final String NAME="BOUNDED";
 	public static final String FONTCOLOR="fontColor";
 	public static final String TEXT="text";
 	public static final String COLOR="color";
@@ -112,7 +114,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE, NAME);
+		argMap.put(TYPE,BoundedTextAnnotation.class.getName());
 		argMap.put(TEXT,this.text);
 		argMap.put(COLOR,convertColor(this.textColor));
 		argMap.put(FONTFAMILY,this.font.getFamily());
@@ -129,7 +131,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		// System.out.println("Fitting shape to text: "+width+"x"+height);
 
 		// Different depending on the type...
-		switch (getShapeType()) {
+		ShapeType shapeType = getShapeTypeInt();
+		switch (shapeType) {
 		case ELLIPSE:
 			width = getTextWidth((Graphics2D)this.getGraphics())*3/2+8;
 			height = getTextHeight((Graphics2D)this.getGraphics())*2;

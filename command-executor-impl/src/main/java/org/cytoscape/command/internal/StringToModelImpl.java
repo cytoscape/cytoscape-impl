@@ -36,6 +36,7 @@ import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -48,6 +49,7 @@ public class StringToModelImpl implements StringToModel {
 	private final CyApplicationManager appMgr;
 	private final CyNetworkManager netMgr;
 	private final CyNetworkViewManager netViewMgr;
+	private final CyTableManager tableMgr;
 
 	private final static Logger logger = LoggerFactory.getLogger(StringToModelImpl.class);
 
@@ -58,11 +60,12 @@ public class StringToModelImpl implements StringToModel {
 	private final static String SUID = "suid";
 	private final static String UNSELECTED = "unselected";
 	
-	public StringToModelImpl(CyApplicationManager appMgr, CyNetworkManager netMgr, 
+	public StringToModelImpl(CyApplicationManager appMgr, CyNetworkManager netMgr, CyTableManager tableMgr,
 	                         CyNetworkViewManager netViewMgr) {
 		this.appMgr = appMgr;
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
+		this.tableMgr = tableMgr;
 	}
 
 	@Override
@@ -87,6 +90,43 @@ public class StringToModelImpl implements StringToModel {
 			if (strNet.equalsIgnoreCase(net.getRow(net).get(CyNetwork.NAME, String.class)))
 				return net;
 		}
+		return null;
+	}
+	
+	@Override
+	public CyTable getTable(String strTable) {
+		if (strTable == null || strTable.length() == 0 || strTable.equalsIgnoreCase(CURRENT))
+			return appMgr.getCurrentTable();
+
+		// Look for any special prefix
+		CyNetwork network;
+		String[] splitString = strTable.split(":");
+		if (splitString.length > 1) {
+			if (splitString[0].equalsIgnoreCase("node")) {
+				network = getNetwork(splitString[1]);
+				if(network != null)
+					return network.getDefaultNodeTable();
+			}
+			if (splitString[0].equalsIgnoreCase("edge")) {
+				network = getNetwork(splitString[1]);
+				if(network != null)
+					return network.getDefaultEdgeTable();
+			}
+			if (splitString[0].equalsIgnoreCase("network")) {
+				network = getNetwork(splitString[1]);
+				if(network != null)
+					return network.getDefaultNetworkTable();
+			}
+		}
+		else
+		{
+			for (CyTable tab :  tableMgr.getGlobalTables())
+			{
+				if (tab.getTitle().contains(strTable))
+					return tab;
+			}
+		}
+
 		return null;
 	}
 

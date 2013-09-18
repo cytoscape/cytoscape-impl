@@ -31,7 +31,7 @@ import java.awt.event.MouseListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 public class CanvasMouseListener implements MouseListener {
 	private final CyAnnotator cyAnnotator;
@@ -74,7 +74,7 @@ public class CanvasMouseListener implements MouseListener {
 			return;
 		}
 
-		Annotation annotation = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
+		DingAnnotation annotation = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		if (annotation == null) {
 			cyAnnotator.clearSelectedAnnotations();
 			if (!e.isConsumed()) {

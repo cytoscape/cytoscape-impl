@@ -30,6 +30,8 @@ import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -158,7 +160,7 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 		setupTextFieldListener();
     	setupDownloadSitesChangedListener();
     	
-		queryForApps();
+		//queryForApps();
 		
 		appManager.addAppListener(new AppsChangedListener() {
 			
@@ -173,6 +175,15 @@ public class InstallAppsPanel extends javax.swing.JPanel {
 				resultsTree.setSelectionPaths(selectionPaths);
 			}
 		});
+
+
+        this.addComponentListener(new ComponentAdapter() {
+        
+            @Override
+            public void componentShown(ComponentEvent e) {
+                queryForApps();
+            }
+        });
     }
     
     private void setupDownloadSitesChangedListener() {
@@ -200,18 +211,23 @@ public class InstallAppsPanel extends javax.swing.JPanel {
     
     // Queries the currently set app store url for available apps.
     private void queryForApps() {
+        final WebQuerier webQuerier = appManager.getWebQuerier();
+        if (webQuerier.appsHaveBeenLoaded())
+            return;
+
     	taskManager.execute(new TaskIterator(new Task() {
 			
 			// Obtain information for all available apps, then append tag information
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
-				WebQuerier webQuerier = appManager.getWebQuerier();
 		    	
 				taskMonitor.setTitle("Getting available apps");
 				taskMonitor.setStatusMessage("Obtaining apps from: " 
 						+ webQuerier.getCurrentAppStoreUrl());
 				
 				Set<WebApp> availableApps = webQuerier.getAllApps();
+                if (availableApps == null)
+                    return;
 			
 				// Once the information is obtained, update the tree
 				

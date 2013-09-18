@@ -34,8 +34,7 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -44,13 +43,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MoveAnnotationTask extends AbstractNetworkViewTask {
-	private final Annotation annotation; 
+	private final DingAnnotation annotation; 
 	private final Point2D start; 
 
 	private static final Logger logger = LoggerFactory.getLogger(MoveAnnotationTask.class);
 	
 	
-	public MoveAnnotationTask(CyNetworkView view, Annotation annotation, Point2D startingLocation) {
+	public MoveAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D startingLocation) {
 		super(view);
 		this.annotation = annotation;
 		this.start = startingLocation;

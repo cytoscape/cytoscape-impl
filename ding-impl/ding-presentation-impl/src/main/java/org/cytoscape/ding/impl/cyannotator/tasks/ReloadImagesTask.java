@@ -28,7 +28,7 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.awt.Component;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 
@@ -50,15 +50,15 @@ public class ReloadImagesTask implements Task {
 	public void run(TaskMonitor tm) throws Exception {
 		Component[] annotations=cyAnnotator.getForeGroundCanvas().getComponents();
 		for(int i=0;i<annotations.length;i++){
-			if(annotations[i] instanceof ImageAnnotation && !canceled) {
-				((ImageAnnotation)annotations[i]).reloadImage();
+			if(annotations[i] instanceof ImageAnnotationImpl && !canceled) {
+				((ImageAnnotationImpl)annotations[i]).reloadImage();
 			}
 		}
 
 		annotations=cyAnnotator.getBackGroundCanvas().getComponents();
 		for(int i=0;i<annotations.length;i++){
-			if(annotations[i] instanceof ImageAnnotation && !canceled)
-				((ImageAnnotation)annotations[i]).reloadImage();
+			if(annotations[i] instanceof ImageAnnotationImpl && !canceled)
+				((ImageAnnotationImpl)annotations[i]).reloadImage();
 		}
 	}
 

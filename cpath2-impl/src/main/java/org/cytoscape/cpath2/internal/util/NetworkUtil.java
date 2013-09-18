@@ -32,7 +32,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
 import org.cytoscape.cpath2.internal.task.LoadNetworkFromUrlTask;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -78,7 +78,7 @@ public class NetworkUtil implements Task {
      */
     private boolean merging;
 
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 
     /**
      * Neighborhood title parameter.
@@ -99,7 +99,7 @@ public class NetworkUtil implements Task {
      * @param nodeContextMenuListener NodeContextMenuListener
      */
     public NetworkUtil(String cpathRequest, CyNetwork cyNetwork,
-            boolean merging, CPath2Factory factory) {
+            boolean merging, CPathFactory factory) {
     	this.factory = factory;
     	
         // init member vars
@@ -206,18 +206,10 @@ public class NetworkUtil implements Task {
     private void postProcess(final CyNetwork cyNetwork, boolean doLayout) {
 
         // ref to view used below
-    		final Collection<CyNetworkView> views = factory.getCyNetworkViewManager().getNetworkViews(cyNetwork);
-    		CyNetworkView view = null;
-    		if(views.size() != 0)
-    			view = views.iterator().next();
-
-        // if do layout, do it
-// TODO: Port this?    
-//        if (doLayout) {
-//            LayoutUtil layoutUtil = new LayoutUtil();
-//            layoutUtil.doLayout(view);
-//            view.fitContent();
-//        }
+   		final Collection<CyNetworkView> views = factory.getCyNetworkViewManager().getNetworkViews(cyNetwork);
+   		CyNetworkView view = null;
+   		if(views.size() != 0)
+   			view = views.iterator().next();
 
         // setup web services url to pc attribute  - used by nodeContextMenuListener
         if (webServicesURL != null) {

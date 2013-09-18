@@ -68,15 +68,22 @@ import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 //
 // Annotation api
 //
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
 // Annotation creation
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.BoundedTextAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
+
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddArrowTaskFactory;
@@ -231,10 +238,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
-		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "Edge");
-		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
-		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Add Edge");
-		addEdgeNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "0.5");
+		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
+		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_ADD_MENU);
+		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Edge");
+		addEdgeNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1");
 		registerService(bc, addEdgeNodeViewTaskFactory, NodeViewTaskFactory.class, addEdgeNodeViewTaskFactoryProps);
 
 		Properties dVisualLexiconProps = new Properties();
@@ -256,10 +263,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
 		// Annotations
+		registerServiceListener(bc, annotationFactoryManager, "addAnnotationFactory", "removeAnnotationFactory",
+		                        AnnotationFactory.class);
 
 		// Arrow
 		AnnotationFactory arrowAnnotationFactory = new ArrowAnnotationFactory();
-		annotationFactoryManager.addAnnotationFactory(arrowAnnotationFactory, null);
+		Properties arrowFactory = new Properties();
+		arrowFactory.setProperty("type","ArrowAnnotation.class");
+		registerService(bc, arrowAnnotationFactory, AnnotationFactory.class, arrowFactory);
+
 		AddArrowTaskFactory addArrowTaskFactory = new AddArrowTaskFactory(arrowAnnotationFactory);
 		Properties addArrowTaskFactoryProps = new Properties();
 		addArrowTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -270,9 +282,11 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Image annotation
 		AnnotationFactory imageAnnotationFactory = new ImageAnnotationFactory(customGraphicsManagerServiceRef);
-		annotationFactoryManager.addAnnotationFactory(imageAnnotationFactory, null);
-		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
+		Properties imageFactory = new Properties();
+		imageFactory.setProperty("type","ImageAnnotation.class");
+		registerService(bc, imageAnnotationFactory, AnnotationFactory.class, imageFactory);
 
+		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
 		Properties addImageTaskFactoryProps = new Properties();
 		addImageTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addImageTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
@@ -282,9 +296,11 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Shape annotation
 		AnnotationFactory shapeAnnotationFactory = new ShapeAnnotationFactory();
-		annotationFactoryManager.addAnnotationFactory(shapeAnnotationFactory, null);
-		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
+		Properties shapeFactory = new Properties();
+		shapeFactory.setProperty("type","ShapeAnnotation.class");
+		registerService(bc, shapeAnnotationFactory, AnnotationFactory.class, shapeFactory);
 
+		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
 		Properties addShapeTaskFactoryProps = new Properties();
 		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addShapeTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
@@ -294,9 +310,11 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Text annotation
 		AnnotationFactory textAnnotationFactory = new TextAnnotationFactory();
-		annotationFactoryManager.addAnnotationFactory(textAnnotationFactory, null);
-		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
+		Properties textFactory = new Properties();
+		textFactory.setProperty("type","TextAnnotation.class");
+		registerService(bc, textAnnotationFactory, AnnotationFactory.class, textFactory);
 
+		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
 		Properties addTextTaskFactoryProps = new Properties();
 		addTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.5");
@@ -306,10 +324,12 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Bounded Text annotation
 		AnnotationFactory boundedAnnotationFactory = new BoundedTextAnnotationFactory();
-		annotationFactoryManager.addAnnotationFactory(boundedAnnotationFactory, null);
+		Properties boundedFactory = new Properties();
+		boundedFactory.setProperty("type","BoundedTextAnnotation.class");
+		registerService(bc, boundedAnnotationFactory, AnnotationFactory.class, boundedFactory);
+
 		AddAnnotationTaskFactory addBoundedTextTaskFactory = 
 			new AddAnnotationTaskFactory(boundedAnnotationFactory);
-
 		Properties addBoundedTextTaskFactoryProps = new Properties();
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addBoundedTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.6");

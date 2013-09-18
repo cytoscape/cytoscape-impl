@@ -29,23 +29,28 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 
-public class ArrowAnnotationFactory implements AnnotationFactory {
+public class ArrowAnnotationFactory implements DingAnnotationFactory<ArrowAnnotation> {
 
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
 		return new ArrowAnnotationDialog(view, location);
 	}
 
-	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		if ( type.equals(ArrowAnnotationImpl.NAME) ) 
-			return new ArrowAnnotationImpl(cyAnnotator, view, argMap);
-		else 
+	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
+		if (!(view instanceof DGraphView))
 			return null;
 
+		DGraphView dView = (DGraphView) view;
+		if (type.equals(ArrowAnnotation.class))
+			return (ArrowAnnotation)(new ArrowAnnotationImpl(dView.getCyAnnotator(), dView, argMap));
+		return null;
 	}
 }

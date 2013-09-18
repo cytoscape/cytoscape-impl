@@ -31,12 +31,15 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.level3.Control;
 import org.biopax.paxtools.model.level3.ControlType;
 import org.biopax.paxtools.model.level3.Interaction;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
+import org.cytoscape.biopax.internal.BioPaxMapper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -80,13 +83,15 @@ public class VisualStyleUtil {
 
 
 	private static final String BIO_PAX_VISUAL_STYLE = "BioPAX";
-	private static final String BINARY_SIF_VISUAL_STYLE = "PC2_SIF"; //Pathway Commons's SIF
+	private static final String BINARY_SIF_VISUAL_STYLE = "BioPAX_SIF";
+	
 	private static final double BIO_PAX_VISUAL_STYLE_INTERACTION_NODE_SIZE_SCALE = 0.67;
 	private static final double BIO_PAX_VISUAL_STYLE_COMPLEX_NODE_SIZE_SCALE = 0.67;
 	private static final Color DEFAULT_NODE_COLOR = new Color(255, 255, 255);
 	private static final Color DEFAULT_NODE_BORDER_COLOR = new Color(0, 102, 102);
 	private static final Color COMPLEX_NODE_COLOR = DEFAULT_NODE_COLOR; //new Color(0, 0, 0);
 	private static final Color COMPLEX_NODE_BORDER_COLOR = DEFAULT_NODE_BORDER_COLOR; //COMPLEX_NODE_COLOR;
+	
 	private static final String COMPONENT_OF = "COMPONENT_OF";
 	private static final String COMPONENT_IN_SAME = "IN_SAME_COMPONENT";
 	private static final String SEQUENTIAL_CATALYSIS = "SEQUENTIAL_CATALYSIS";
@@ -94,8 +99,8 @@ public class VisualStyleUtil {
 	private static final String CONTROLS_METABOLIC_CHANGE = "METABOLIC_CATALYSIS";
 	private static final String PARTICIPATES_CONVERSION = "REACTS_WITH";
 	private static final String PARTICIPATES_INTERACTION = "INTERACTS_WITH";
-	private static final String CO_CONTROL = "CO_CONTROL";
-	//edge attr. name created by the core sif reader
+	private static final String CO_CONTROL = "CO_CONTROL";	
+	//edge attr. name created by the core SIF reader
 	private static final String INTERACTION = "interaction"; 
 	
 	
@@ -105,9 +110,36 @@ public class VisualStyleUtil {
 	private final VisualMappingFunctionFactory passthroughFactory;
 	
 	
-	VisualStyle simpleBiopaxStyle;
+	private VisualStyle simpleBiopaxStyle;
+	private VisualStyle binarySifStyle;
+
+	//TODO use customPhosGraphics? (not migrated from Cy 2.x)
+	// custom node images (phosphorylation)	
+	private static BufferedImage[] customPhosGraphics = null;	
 	
-	VisualStyle binarySifStyle;
+	static {
+		try {
+			BufferedImage phosNode = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node.jpg"));
+			BufferedImage phosNodeSelectedTop = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node-selected-top.jpg"));
+			BufferedImage phosNodeSelectedRight = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node-selected-right.jpg"));
+			BufferedImage phosNodeSelectedBottom = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node-selected-bottom.jpg"));
+			BufferedImage phosNodeSelectedLeft = javax.imageio.ImageIO.read
+                    (BioPaxMapper.class.getResource("phos-node-selected-left.jpg"));
+			customPhosGraphics = new BufferedImage[] {
+					phosNode,
+			        phosNodeSelectedTop,
+			        phosNodeSelectedRight,
+			        phosNodeSelectedBottom,
+			        phosNodeSelectedLeft
+			};			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	
 	/**
@@ -159,7 +191,7 @@ public class VisualStyleUtil {
 			DiscreteMapping<String, Double> height = (DiscreteMapping<String, Double>) discreteFactory
 					.createVisualMappingFunction(BIOPAX_ENTITY_TYPE, String.class, NODE_HEIGHT);
 			// map all interactions to required size
-			for (Class c : BioPaxUtil.getSubclassNames(Interaction.class)) {
+			for (Class c : BioPaxMapper.getSubclassNames(Interaction.class)) {
 				String entityName = c.getSimpleName();
 				width.putMapValue(entityName,
 						new Double(BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH
@@ -240,7 +272,7 @@ public class VisualStyleUtil {
 			DiscreteMapping<String, NodeShape> shape = (DiscreteMapping<String, NodeShape>) discreteFactory
 					.createVisualMappingFunction(BIOPAX_ENTITY_TYPE, String.class, NODE_SHAPE);
 			// map all physical entities to circles
-			for (Class<? extends BioPAXElement> claz : BioPaxUtil.getSubclassNames(PhysicalEntity.class)) 
+			for (Class<? extends BioPAXElement> claz : BioPaxMapper.getSubclassNames(PhysicalEntity.class)) 
 			{
 				String name = claz.getSimpleName();
 				shape.putMapValue(name, NodeShapeVisualProperty.ELLIPSE);
@@ -248,11 +280,11 @@ public class VisualStyleUtil {
 			// use a different shape for Complex nodes
 			shape.putMapValue("Complex", NodeShapeVisualProperty.DIAMOND);
 			// hack for phosphorylated proteins
-			shape.putMapValue(BioPaxUtil.PROTEIN_PHOSPHORYLATED,
+			shape.putMapValue(BioPaxMapper.PROTEIN_PHOSPHORYLATED,
 					NodeShapeVisualProperty.ELLIPSE);
 
 			// map all interactions: control to triangles, others to square
-			for (Class<?> c : BioPaxUtil.getSubclassNames(Interaction.class)) {
+			for (Class<?> c : BioPaxMapper.getSubclassNames(Interaction.class)) {
 				if (Control.class.isAssignableFrom(c))
 					shape.putMapValue(c.getSimpleName(), NodeShapeVisualProperty.TRIANGLE);
 				else 
@@ -299,7 +331,7 @@ public class VisualStyleUtil {
 					NodeShapeVisualProperty.ELLIPSE);
 			// Complexes are Hexagons.
 			DiscreteMapping<String, NodeShape> shapeFunction = (DiscreteMapping<String, NodeShape>) discreteFactory
-					.createVisualMappingFunction(BIOPAX_ENTITY_TYPE, String.class, NODE_SHAPE);
+					.createVisualMappingFunction(BioPaxMapper.BIOPAX_ENTITY_TYPE, String.class, NODE_SHAPE);
 			shapeFunction.putMapValue("Complex", NodeShapeVisualProperty.HEXAGON);
 			shapeFunction.putMapValue("(Generic/Group)", NodeShapeVisualProperty.OCTAGON);
 			binarySifStyle.addVisualMappingFunction(shapeFunction);
@@ -310,7 +342,7 @@ public class VisualStyleUtil {
 			// Complexes are a Different Color.
 			Color lightBlue = new Color(153, 153, 255);
 			DiscreteMapping<String, Paint> paintFunction = (DiscreteMapping<String, Paint>) discreteFactory
-					.createVisualMappingFunction(BIOPAX_ENTITY_TYPE, String.class, NODE_FILL_COLOR);
+					.createVisualMappingFunction(BioPaxMapper.BIOPAX_ENTITY_TYPE, String.class, NODE_FILL_COLOR);
 			paintFunction.putMapValue("Complex", lightBlue);
 			paintFunction.putMapValue("(Generic/Group)", lightBlue);
 			binarySifStyle.addVisualMappingFunction(paintFunction);
@@ -356,5 +388,30 @@ public class VisualStyleUtil {
 		
 		return binarySifStyle;
 	}	
+	
+	/**
+	 * Based on given arguments, determines proper rectangle coordinates
+	 * used to render custom node shape.
+	 */
+	private static Rectangle2D getCustomShapeRect(BufferedImage image, int modificationCount) {
+		// our scale factor
+		double scale = .1;
+		final double[] startX = {
+					0, (BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH * BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2,
+		            0, (-1 * BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_WIDTH * BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2
+		};
 
+		final double[] startY = {
+					(-1 * BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT * BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2, 0, 
+		            (BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_HEIGHT * BIO_PAX_VISUAL_STYLE_PHYSICAL_ENTITY_NODE_SIZE_SCALE) / 2, 0
+		};
+
+		// create and return rect
+		return new java.awt.geom.Rectangle2D
+				.Double(startX[modificationCount] + ((-1 * (image.getWidth() / 2)) * scale),
+		                startY[modificationCount] + ((-1 * (image.getHeight() / 2)) * scale),
+		                (double) image.getWidth() * scale,
+		                (double) image.getHeight() * scale
+		        );
+	}
 }

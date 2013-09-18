@@ -51,10 +51,11 @@ import javax.swing.event.ListSelectionListener;
 
 import java.awt.Component;
 
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowType;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
+
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
 
 public class ArrowAnnotationPanel extends javax.swing.JPanel {
 	private int WIDTH = 500;
@@ -66,15 +67,15 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 	private int RIGHT = WIDTH-10;
 	private int ARROWHEIGHT = 175;
 
-	private ArrowAnnotation preview;
+	private ArrowAnnotationImpl preview;
 	private PreviewPanel previewPanel;
 	
 	private ArrowAnnotation mAnnotation;
 
-	public ArrowAnnotationPanel(ArrowAnnotation mAnnotation, PreviewPanel previewPanel, int width, int height) {
+	public ArrowAnnotationPanel(ArrowAnnotationImpl mAnnotation, PreviewPanel previewPanel, int width, int height) {
 		this.mAnnotation=mAnnotation;
 		this.previewPanel = previewPanel;
-		this.preview=(ArrowAnnotation)previewPanel.getPreviewAnnotation();
+		this.preview=(ArrowAnnotationImpl)previewPanel.getPreviewAnnotation();
 		this.WIDTH = width;
 		this.HEIGHT = height;
 		initComponents();
@@ -224,7 +225,7 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 		previewPanel.repaint();
 	}	
 	
-	public ArrowAnnotation getPreview() {
+	public ArrowAnnotationImpl getPreview() {
 		return preview;
 	}
 
@@ -251,11 +252,11 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 		// Arrow list
 		{
 			final JComboBox arrowList = new JComboBox();
-			arrowList.setModel(new DefaultComboBoxModel(mAnnotation.getSupportedArrows()));
+			arrowList.setModel(new DefaultComboBoxModel(mAnnotation.getSupportedArrows().toArray()));
 			arrowList.setSelectedItem(mAnnotation.getArrowType(end));
 			arrowList.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
-						preview.setArrowType(end, (ArrowType)arrowList.getSelectedItem());
+						preview.setArrowType(end, (String)arrowList.getSelectedItem());
 						previewPanel.repaint();
 				}
 			});		    

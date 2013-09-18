@@ -29,10 +29,11 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.awt.geom.Point2D;
 import java.awt.datatransfer.Transferable;
 
+import org.cytoscape.view.presentation.annotations.AnnotationFactory; 
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory; 
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager; 
 
 
 public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory {

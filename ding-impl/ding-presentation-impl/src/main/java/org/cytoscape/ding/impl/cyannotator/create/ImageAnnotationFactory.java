@@ -29,14 +29,17 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
+
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
 
-public class ImageAnnotationFactory implements AnnotationFactory {
+public class ImageAnnotationFactory implements DingAnnotationFactory<ImageAnnotation> {
 	private final CustomGraphicsManager customGraphicsManager;
 
 	public ImageAnnotationFactory(CustomGraphicsManager customGraphicsManager) {
@@ -47,11 +50,16 @@ public class ImageAnnotationFactory implements AnnotationFactory {
 		return new LoadImageDialog(view, location, customGraphicsManager);
 	}
 
-	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		if ( type.equals(ImageAnnotationImpl.NAME) ) {
-			Annotation a = new ImageAnnotationImpl(cyAnnotator, view,argMap,customGraphicsManager);
+	@Override
+	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> clazz, CyNetworkView view, Map<String, String> argMap) {
+		if (!(view instanceof DGraphView))
+			return null;
+
+		DGraphView dView = (DGraphView) view;
+		if (ImageAnnotation.class.equals(clazz)) {
+			ImageAnnotationImpl a = new ImageAnnotationImpl(dView.getCyAnnotator(), dView, argMap, customGraphicsManager);
 			a.update();
-			return a;
+			return (ImageAnnotation)a;
 		} else 
 			return null;
 	}

@@ -29,23 +29,30 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 
-public class ShapeAnnotationFactory implements AnnotationFactory {
+public class ShapeAnnotationFactory implements DingAnnotationFactory<ShapeAnnotation> {
 
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
 		return new ShapeAnnotationDialog(view, location);
 	}
 
-	public Annotation createAnnotation(String type, CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		if ( type.equals(ShapeAnnotationImpl.NAME) ) {
-			Annotation a = new ShapeAnnotationImpl(cyAnnotator, view,argMap);
+	public ShapeAnnotation createAnnotation(Class<? extends ShapeAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
+		if (!(view instanceof DGraphView))
+			return null;
+
+		DGraphView dView = (DGraphView) view;
+		if ( type.equals(ShapeAnnotation.class) ) {
+			ShapeAnnotationImpl a = new ShapeAnnotationImpl(dView.getCyAnnotator(), dView, argMap);
 			a.update();
-			return a;
+			return (ShapeAnnotation)a;
 		} else 
 			return null;
 	}

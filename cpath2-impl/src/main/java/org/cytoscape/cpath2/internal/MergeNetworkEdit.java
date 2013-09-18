@@ -63,7 +63,7 @@ public class MergeNetworkEdit extends AbstractCyEdit {
      */
     private Collection<CyEdge> cyEdges;
 
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 
     /**
      * Constructor.
@@ -72,7 +72,7 @@ public class MergeNetworkEdit extends AbstractCyEdit {
      * @param cyNodes   Set<CyNode>
      * @param cyEdges   Set<CyEdge>
      */
-    public MergeNetworkEdit(CyNetwork cyNetwork, Collection<CyNode> cyNodes, Collection<CyEdge> cyEdges, CPath2Factory factory) {
+    public MergeNetworkEdit(CyNetwork cyNetwork, Collection<CyNode> cyNodes, Collection<CyEdge> cyEdges, CPathFactory factory) {
         super("Merge Network");
         this.factory = factory;
 

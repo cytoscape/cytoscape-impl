@@ -44,14 +44,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathProperties;
+import org.cytoscape.cpath2.internal.CPathResponseFormat;
+import org.cytoscape.cpath2.internal.CPathWebService;
+import org.cytoscape.cpath2.internal.CPathWebServiceImpl;
 import org.cytoscape.cpath2.internal.schemas.summary_response.BasicRecordType;
 import org.cytoscape.cpath2.internal.task.ExecuteGetRecordByCPathIdTaskFactory;
-import org.cytoscape.cpath2.internal.view.model.NetworkWrapper;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
-import org.cytoscape.cpath2.internal.web_service.CPathResponseFormat;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
-import org.cytoscape.cpath2.internal.web_service.CPathWebServiceImpl;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskManager;
 
@@ -64,7 +63,7 @@ public class DownloadDetails extends JDialog {
     private MergePanel mergePanel;
     private long ids[];
     private String peName;
-    private final CPath2Factory factory;
+    private final CPathFactory factory;
     
     /**
      * Constructor.
@@ -72,7 +71,7 @@ public class DownloadDetails extends JDialog {
      * @param peName                Name of Physical Entity.
      * @param bpContainer 
      */
-    public DownloadDetails(List<BasicRecordType> passedRecordList, String peName, CPath2Factory factory) {    	
+    public DownloadDetails(List<BasicRecordType> passedRecordList, String peName, CPathFactory factory) {    	
         super();
         this.factory = factory;
         

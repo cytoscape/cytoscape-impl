@@ -583,8 +583,9 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	protected JButton getRemoveMappingBtn() {
 		if (removeMappingBtn == null) {
-			removeMappingBtn = new JButton("Remove Visual Mapping");
+			removeMappingBtn = new JButton("Remove Mapping", iconMgr.getIcon(IconManager.DEL_ICON));
 			removeMappingBtn.setUI(new VPButtonUI(VPButtonUI.CENTER));
+			removeMappingBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
 			updateRemoveMappingBtn();
 		}
 		

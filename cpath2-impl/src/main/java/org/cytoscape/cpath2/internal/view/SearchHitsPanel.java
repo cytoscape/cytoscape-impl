@@ -52,17 +52,13 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathWebService;
+import org.cytoscape.cpath2.internal.CPathWebServiceListener;
 import org.cytoscape.cpath2.internal.schemas.search_response.ExtendedRecordType;
 import org.cytoscape.cpath2.internal.schemas.search_response.SearchResponseType;
 import org.cytoscape.cpath2.internal.schemas.summary_response.SummaryResponseType;
 import org.cytoscape.cpath2.internal.task.SelectPhysicalEntity;
-import org.cytoscape.cpath2.internal.view.model.ExtendedRecordWrapper;
-import org.cytoscape.cpath2.internal.view.model.InteractionBundleModel;
-import org.cytoscape.cpath2.internal.view.model.PathwayTableModel;
-import org.cytoscape.cpath2.internal.view.model.RecordList;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
-import org.cytoscape.cpath2.internal.web_service.CPathWebServiceListener;
 
 /**
  * Search Hits Panel.
@@ -83,7 +79,7 @@ public class SearchHitsPanel extends JPanel implements CPathWebServiceListener, 
     private HashMap <Long, RecordList> parentRecordsMap;
 	private CytoPanelState cytoPanelState;
     private JFrame detailsFrame;
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 
     /**
      * Constructor.
@@ -92,7 +88,7 @@ public class SearchHitsPanel extends JPanel implements CPathWebServiceListener, 
      * @param webApi                    cPath Web API.
      */
     public SearchHitsPanel(InteractionBundleModel interactionBundleModel, PathwayTableModel
-            pathwayTableModel, CPathWebService webApi, CPath2Factory factory) {
+            pathwayTableModel, CPathWebService webApi, CPathFactory factory) {
     	this.factory = factory;
         this.interactionBundleModel = interactionBundleModel;
         this.pathwayTableModel = pathwayTableModel;

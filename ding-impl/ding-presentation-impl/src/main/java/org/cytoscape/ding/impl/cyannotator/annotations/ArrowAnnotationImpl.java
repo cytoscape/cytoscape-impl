@@ -33,16 +33,19 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.model.CyNode;
 
@@ -50,13 +53,15 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	private Paint lineColor = Color.BLACK; // These are paint's so we can do gradients
 	private float lineWidth = 1.0f;
 
-	private Annotation source = null;
+	private DingAnnotation source = null;
 	private ArrowType sourceType = ArrowType.NONE;
+	private AnchorType sourceAnchorType = AnchorType.ANCHOR;
 	private Paint sourceColor = null;
 	private double sourceSize = 1.0;
 
 	private Object target = null;
 	private ArrowType targetType = ArrowType.OPEN;
+	private AnchorType targetAnchorType = AnchorType.ANCHOR;
 	private Paint targetColor = null;
 	private double targetSize = 1.0;
 
@@ -67,9 +72,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	private double xOffset = 0.0;
 	private double yOffset = 0.0;
 
+
 	private Line2D arrowLine = null;
 
-	public static final String NAME="ARROW";
 	protected static final String ARROWCOLOR = "lineColor";
 	protected static final String ARROWTHICKNESS = "lineThickness";
 
@@ -86,6 +91,25 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	protected static final String TARGETSIZE = "targetSize";
 	protected static final String TARGETCOLOR = "targetColor";
 
+
+  public enum ArrowType {
+    CIRCLE ("Circle"),
+    CLOSED ("Closed Arrow"),
+    CONCAVE ("Concave Arrow"),
+    DIAMOND ("Diamond"),
+    OPEN ("Open Arrow"),
+    NONE ("No Arrow"),
+    TRIANGLE ("Triangular Head"),
+    TSHAPE ("T-Shape");
+
+    private final String name;
+    ArrowType (String name) {
+      this.name = name;
+    }
+    public String arrowName() { return this.name; }
+
+    public String toString() { return this.name; }
+  }
 
 	public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) {
 		super(cyAnnotator, view);
@@ -112,7 +136,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
   public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view,
-	                           Annotation source, Object target, float lineWidth,
+	                           DingAnnotation source, Object target, float lineWidth,
 	                           Paint lineColor, 
 	                           ArrowType sourceType, Paint sourceColor, float sourceSize,
 	                           ArrowType targetType, Paint targetColor, float targetSize) {
@@ -184,7 +208,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,NAME);
+		argMap.put(TYPE,ArrowAnnotation.class.getName());
 		if (this.lineColor != null)
 			argMap.put(ARROWCOLOR,convertColor(this.lineColor));
 		argMap.put(ARROWTHICKNESS, Float.toString(this.lineWidth));
@@ -200,7 +224,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			Point2D xy = (Point2D) target;
 			argMap.put(TARGETPOINT,Double.toString(xy.getX())+","+Double.toString(xy.getY()));
 		} else if (target instanceof Annotation) {
-			argMap.put(TARGETANN,((Annotation)target).getUUID().toString());
+			argMap.put(TARGETANN,((DingAnnotation)target).getUUID().toString());
 		} else if (target instanceof CyNode) {
 			CyNode node = (CyNode)target;
 			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
@@ -220,8 +244,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	public Annotation getSource() { return this.source; }
 	public void setSource(Annotation source) { 
 		if (this.source != null)
-			source.removeArrow(this);
-		this.source = source; 
+			((DingAnnotation)source).removeArrow(this);
+		this.source = (DingAnnotation)source; 
 		source.addArrow(this);
 
 		updateBounds();
@@ -232,10 +256,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		this.target = target; 
 		updateBounds();
 	}
+
 	public void setTarget(CyNode target) { 
 		this.target = target; 
 		updateBounds();
 	}
+
 	public void setTarget(Point2D target) { 
 		// Convert target to node coordinates
 		this.target = getNodeCoordinates(target.getX(), target.getY()); 
@@ -258,18 +284,42 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			this.targetSize = width; 
 	}
 
-	public ArrowType getArrowType(ArrowEnd end) { 
+	public String getArrowType(ArrowEnd end) { 
 		if (end == ArrowEnd.SOURCE)
-			return this.sourceType; 
+			return this.sourceType.arrowName(); 
 		else
-			return this.targetType; 
+			return this.targetType.arrowName(); 
 	}
 
-	public void setArrowType(ArrowEnd end, ArrowType type) { 
+	public void setArrowType(ArrowEnd end, String type) { 
+		ArrowType aType = null;
+
+		for (ArrowType t: ArrowType.values()) {
+			if (t.arrowName().equals(type)) {
+				aType = t;
+			}
+		}
+
+		if (aType == null) return;
+
 		if (end == ArrowEnd.SOURCE)
-			this.sourceType = type; 
+			this.sourceType = aType; 
 		else
-			this.targetType = type; 
+			this.targetType = aType; 
+	}
+
+	public AnchorType getAnchorType(ArrowEnd end) {
+		if (end == ArrowEnd.SOURCE)
+			return this.sourceAnchorType; 
+		else
+			return this.targetAnchorType; 
+	}
+
+	public void setAnchorType(ArrowEnd end, AnchorType type) {
+		if (end == ArrowEnd.SOURCE)
+			this.sourceAnchorType = type;
+		else
+			this.targetAnchorType = type;
 	}
 
 	public Paint getLineColor() { 
@@ -307,7 +357,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		super.setSpecificZoom(zoom);		
 	}
 
-	public ArrowType[] getSupportedArrows() { return GraphicsUtilities.getSupportedArrowTypes(); }
+	public List<String> getSupportedArrows() { return GraphicsUtilities.getSupportedArrowTypeNames(); }
     
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
@@ -463,7 +513,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
-	private Line2D getArrowLine(Object target, Annotation source) {
+	private Line2D getArrowLine(Object target, DingAnnotation source) {
 		if (usedForPreviews) {
 			return new Line2D.Double(10.0, shapeHeight/2, shapeWidth-20.0, shapeHeight/2);
 		}
@@ -472,8 +522,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		Point2D sourceCenter = centerPoint(source.getComponent().getBounds());
 		if (target instanceof Point2D) {
 			targetPoint = getComponentCoordinates(((Point2D)target).getX(), ((Point2D)target).getY());
-		} else if (target instanceof Annotation) {
-			Annotation a = (Annotation)target;
+		} else if (target instanceof DingAnnotation) {
+			DingAnnotation a = (DingAnnotation)target;
 			// get the bounds
 			Rectangle targetBounds = a.getComponent().getBounds();
 			// Find the closest face and return

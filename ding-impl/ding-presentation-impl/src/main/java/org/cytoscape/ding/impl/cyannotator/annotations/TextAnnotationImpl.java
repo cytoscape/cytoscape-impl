@@ -36,15 +36,16 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
+// import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
 	private String text;
 
-	public static final String NAME="TEXT";
 	public static final String FONTCOLOR="fontColor";
 	public static final String TEXT="text";
 	public static final String COLOR="color";
@@ -97,7 +98,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,NAME);
+		argMap.put(TYPE,TextAnnotation.class.getName());
 		argMap.put(TEXT,this.text);
 		argMap.put(COLOR,convertColor(this.textColor));
 		argMap.put(FONTFAMILY,this.font.getFamily());

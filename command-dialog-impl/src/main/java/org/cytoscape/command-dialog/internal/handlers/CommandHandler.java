@@ -53,6 +53,8 @@ import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.Task;
 
 public class CommandHandler implements PaxAppender, TaskObserver {
 	boolean processingCommand = false;
@@ -300,9 +302,9 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 			resultsText.appendResult(res.toString());
 	}
 
-	public void allFinished() {
+	public void allFinished(FinishStatus status) {
 		processingCommand = false;
-		resultsText.appendCommand("done");
+		resultsText.appendCommand(status.getType().toString());
 	}
 	
 }

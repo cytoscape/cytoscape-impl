@@ -52,12 +52,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathProperties;
+import org.cytoscape.cpath2.internal.CPathWebService;
 import org.cytoscape.cpath2.internal.task.ExecutePhysicalEntitySearch;
 import org.cytoscape.cpath2.internal.task.ExecutePhysicalEntitySearch.ResultHandler;
-import org.cytoscape.cpath2.internal.view.model.Organism;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
 import org.cytoscape.work.TaskIterator;
 
 /**
@@ -71,14 +70,14 @@ public class SearchBoxPanel extends JPanel {
     private static final String ENTER_TEXT = "Enter Gene Name or ID";
     private PulsatingBorder pulsatingBorder;
     private JComboBox organismComboBox;
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 	
     /**
      * Constructor.
      *
      * @param webApi CPath Web Service Object.
      */
-    public SearchBoxPanel(CPathWebService webApi, CPath2Factory factory) {
+    public SearchBoxPanel(CPathWebService webApi, CPathFactory factory) {
         this.webApi = webApi;
         this.factory = factory;
         

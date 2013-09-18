@@ -41,7 +41,6 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,10 +120,10 @@ public class LoadImageDialog extends JDialog {
 			BufferedImage image = ImageIO.read(imageFile);
 			URL url = imageFile.toURI().toURL();
 			//The Attributes are x, y, Image, componentNumber, scaleFactor
-			ImageAnnotation newOne=new ImageAnnotationImpl(cyAnnotator, view, 
-			                                               (int)startingLocation.getX(), (int)startingLocation.getY(), 
-			                                               url, image, 
- 			                                               view.getZoom(),cgm);
+			ImageAnnotationImpl newOne=new ImageAnnotationImpl(cyAnnotator, view, 
+			                                                   (int)startingLocation.getX(), (int)startingLocation.getY(), 
+			                                                   url, image, 
+ 			                                                   view.getZoom(),cgm);
 
 			newOne.addComponent(null);
 			cyAnnotator.addAnnotation(newOne);

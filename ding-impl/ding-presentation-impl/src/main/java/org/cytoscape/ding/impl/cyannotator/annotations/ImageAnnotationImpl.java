@@ -38,26 +38,31 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.awt.image.VolatileImage;
 import java.net.URL;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JDialog;
+
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
+// import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl.ShapeType;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnnotation {
+public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnnotation {
 	private BufferedImage image;
 	private	URL url = null;
 
-	public static final String NAME="IMAGE";
 	private static final String URL="URL";
 	private static final String WIDTH="width";
 	private static final String HEIGHT="height";
@@ -88,10 +93,10 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		}
 	}
 
-	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { super(cyAnnotator, view); }
+	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { super(cyAnnotator, view, 0, 0); }
 
 	public ImageAnnotationImpl(ImageAnnotationImpl c) { 
-		super(c);
+		super((ShapeAnnotationImpl)c, 0, 0);
 		this.image = c.image;
 		this.customGraphicsManager = c.customGraphicsManager;
 		imageWidth=image.getWidth();
@@ -99,10 +104,10 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		this.url = c.url;
 	}
 
-	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, int x, int y, 
+	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
 	                           URL url, BufferedImage image, double zoom, 
 	                           CustomGraphicsManager customGraphicsManager) {
-		super(cyAnnotator, view, x, y, zoom);
+		super(cyAnnotator, view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 		this.image=image;
 		this.customGraphicsManager = customGraphicsManager;
 		imageWidth=image.getWidth();
@@ -148,7 +153,7 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE, NAME);
+		argMap.put(TYPE,ImageAnnotation.class.getName());
 		argMap.put(URL, url.toString());
 		argMap.put(WIDTH, Double.toString(imageWidth));
 		argMap.put(HEIGHT, Double.toString(imageHeight));
@@ -233,9 +238,8 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 	public int getImageContrast() { return this.contrast; }
 
 	// Shape annotation methods.  We add these so we can get resizeImage functionality
-	public ShapeType[] getSupportedShapes() {
-		ShapeType[] types = {ShapeType.RECTANGLE};
-		return types;
+	public List<String> getSupportedShapes() {
+		return Collections.singletonList(ShapeType.RECTANGLE.shapeName());
 	}
 
 	public void setSize(double width, double height) {
@@ -250,10 +254,10 @@ public class ImageAnnotationImpl extends AbstractAnnotation implements ImageAnno
 		setSize((int)width, (int)height);
 	}
 
-	public ShapeType getShapeType() {
-		return ShapeType.RECTANGLE;
+	public String getShapeType() {
+		return ShapeType.RECTANGLE.shapeName();
 	}
-	public void setShapeType(ShapeType type) {}
+	public void setShapeType(String type) {}
 
 	public double getBorderWidth() {
 		return borderWidth;

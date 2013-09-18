@@ -75,7 +75,7 @@ import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.events.GraphViewChangeListenerChain;
 import org.cytoscape.ding.impl.events.GraphViewEdgesHiddenEvent;
 import org.cytoscape.ding.impl.events.GraphViewEdgesRestoredEvent;
@@ -2654,9 +2654,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 		
 		if (targetType == CyNode.class) {
+			applyToAllNodes(vp, null);
 			m_nodeDetails.clear();
 			nodeViewDefaultSupport.setViewDefault((VisualProperty<V>)vp, defaultValue);
 		} else if (targetType == CyEdge.class) {
+			applyToAllEdges(vp, null);
 			m_edgeDetails.clear();
 			edgeViewDefaultSupport.setViewDefault((VisualProperty<V>)vp, defaultValue);
 		} else if (targetType == CyNetwork.class) {

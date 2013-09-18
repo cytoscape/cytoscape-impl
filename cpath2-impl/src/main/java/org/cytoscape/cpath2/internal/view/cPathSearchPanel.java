@@ -32,14 +32,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathProperties;
+import org.cytoscape.cpath2.internal.CPathWebService;
+import org.cytoscape.cpath2.internal.CPathWebServiceListener;
 import org.cytoscape.cpath2.internal.schemas.search_response.SearchResponseType;
 import org.cytoscape.cpath2.internal.schemas.summary_response.SummaryResponseType;
-import org.cytoscape.cpath2.internal.view.model.InteractionBundleModel;
-import org.cytoscape.cpath2.internal.view.model.PathwayTableModel;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
-import org.cytoscape.cpath2.internal.web_service.CPathWebServiceListener;
 
 /**
  * Main GUI Panel for Searching a cPath Instance.
@@ -53,14 +51,14 @@ public class cPathSearchPanel extends JPanel implements CPathWebServiceListener 
     private JPanel searchBoxPanel;
     private JPanel searchHitsPanel = null;
     private JPanel cards;
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 
     /**
      * Constructor.
      *
      * @param webApi CPathWebService API.
      */
-    public cPathSearchPanel(CPathWebService webApi, CPath2Factory factory) {
+    public cPathSearchPanel(CPathWebService webApi, CPathFactory factory) {
     	this.factory = factory;
     	
         //  Store the web API model

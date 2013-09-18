@@ -59,6 +59,7 @@ public class NodeAttributesWrapper {
 
 	// gets the abbrevation string (used in node label)
 	public String getAbbreviationString() {
-		return abbreviationString;
+		return (abbreviationString != null && !abbreviationString.isEmpty())
+				? abbreviationString : "";
 	}
 }

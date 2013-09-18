@@ -27,7 +27,7 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -58,10 +58,10 @@ public class CanvasMouseWheelListener implements MouseWheelListener{
 		else
 				factor = 0.9;
 
-		Set<Annotation> selectedAnnotations = cyAnnotator.getSelectedAnnotations();
+		Set<DingAnnotation> selectedAnnotations = cyAnnotator.getSelectedAnnotations();
 		if(selectedAnnotations != null && selectedAnnotations.size() > 0){
 			//If some annotations are selected
-			for (Annotation annotation: selectedAnnotations) {
+			for (DingAnnotation annotation: selectedAnnotations) {
 				annotation.setSpecificZoom( prevZoom * factor  );
 			}
 
