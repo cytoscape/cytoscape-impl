@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class JsVsiaulStyleSetSerializer extends JsonSerializer<Set<VisualStyle>> {
+public class CytoscapeJsVsiaulStyleSetSerializer extends JsonSerializer<Set<VisualStyle>> {
 
 	@Override
 	public void serialize(final Set<VisualStyle> styleSet, JsonGenerator jgen, SerializerProvider provider)

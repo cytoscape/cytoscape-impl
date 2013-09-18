@@ -1,0 +1,106 @@
+{
+  "elements" : {
+    "nodes" : [ {
+      "data" : {
+        "id" : "32",
+        "selected" : false,
+        "SUID" : 32,
+        "name" : "n5"
+      },
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "31",
+        "selected" : false,
+        "SUID" : 31,
+        "name" : "n4: Alone"
+      },
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "30",
+        "selected" : false,
+        "SUID" : 30,
+        "name" : "n3"
+      },
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "29",
+        "selected" : false,
+        "SUID" : 29,
+        "name" : "n2: 日本語テスト"
+      },
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "28",
+        "selected" : false,
+        "SUID" : 28,
+        "name" : "n1"
+      },
+      "position" : {
+        "x" : 50.0,
+        "y" : 50.0
+      },
+      "selected" : false
+    } ],
+    "edges" : [ {
+      "data" : {
+        "id" : "34",
+        "source" : "29",
+        "target" : "30",
+        "selected" : false,
+        "SUID" : 34,
+        "name" : "エッジ2"
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "36",
+        "source" : "28",
+        "target" : "28",
+        "selected" : false,
+        "SUID" : 36,
+        "name" : "e1self"
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "35",
+        "source" : "28",
+        "target" : "30",
+        "selected" : false,
+        "SUID" : 35,
+        "name" : "e3"
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "33",
+        "source" : "28",
+        "target" : "29",
+        "selected" : false,
+        "SUID" : 33,
+        "name" : "e1"
+      },
+      "selected" : false
+    } ]
+  }
+}

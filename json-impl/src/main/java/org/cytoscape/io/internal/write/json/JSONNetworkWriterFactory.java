@@ -3,6 +3,8 @@ package org.cytoscape.io.internal.write.json;
 import java.io.OutputStream;
 
 import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.read.json.CytoscapejsMapper;
+import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsModule;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyNetwork;
