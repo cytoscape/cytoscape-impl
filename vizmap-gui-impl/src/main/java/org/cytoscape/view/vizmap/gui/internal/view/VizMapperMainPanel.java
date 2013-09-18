@@ -251,6 +251,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	// ==[ PRIVATE METHODS ]============================================================================================
 
 	private void init() {
+		setPreferredSize(new Dimension(420, getPreferredSize().height));
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		
@@ -262,8 +263,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 						.addComponent(getStylesPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 								GroupLayout.PREFERRED_SIZE).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 						.addComponent(getPropertiesPn(), GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)));
-		
-		setPreferredSize(new Dimension(380, getPreferredSize().height));
 	}
 	
 	private JPanel getStylesPnl() {
@@ -385,7 +384,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		final Color SEL_BG_COLOR = UIManager.getColor("List.selectionBackground");
 		final Color SEL_FG_COLOR = UIManager.getColor("List.selectionForeground");
 		final Color BORDER_COLOR = new Color(212, 212, 212);
-		final Color FOCUS_COLOR = UIManager.getColor("List.selectionBackground");
 		
 		private int cols;
 		
@@ -583,17 +581,20 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 
 		private void updateItem(final JPanel panel, final VisualStyle vs) {
-			final Border border = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2,  2,  2,  2),
-					BorderFactory.createLineBorder(BORDER_COLOR, 1));
-			final Border focusBorder = BorderFactory.createLineBorder(FOCUS_COLOR, 3);
-			final Border selectionBorder = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(1,  1,  1,  1),
-										 BorderFactory.createLineBorder(SEL_BG_COLOR, 2));
-			
 			if (vs.equals(focusedItem)) {
-				panel.setBorder(focusBorder);
+				final Border border = BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(1,  1,  1,  1),
+						BorderFactory.createLineBorder(SEL_BG_COLOR, 2));
+				panel.setBorder(border);
 			} else if (vs.equals(selectedItem)) {
-				panel.setBorder(selectionBorder);
+				final Border border = BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(2,  2,  2,  2),
+						BorderFactory.createLineBorder(SEL_BG_COLOR, 1));
+				panel.setBorder(border);
 			} else {
+				final Border border = BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(2,  2,  2,  2),
+						BorderFactory.createLineBorder(BORDER_COLOR, 1));
 				panel.setBorder(border);
 			}
 			
@@ -601,7 +602,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			final JLabel label = (JLabel) layout.getLayoutComponent(BorderLayout.SOUTH);
 			
 			if (label != null) {
-				if (vs.equals(selectedItem)) {
+				if (vs.equals(focusedItem)) {
 					label.setBackground(SEL_BG_COLOR);
 					label.setForeground(SEL_FG_COLOR);
 				} else {

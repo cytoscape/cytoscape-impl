@@ -12,6 +12,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -94,7 +96,7 @@ import org.puremvc.java.multicore.patterns.mediator.Mediator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "serial"})
 public class VizMapperMediator extends Mediator implements LexiconStateChangedListener, RowsSetListener, 
 														   UpdateNetworkPresentationListener,
 														   VisualMappingFunctionChangedListener {
@@ -126,6 +128,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private final Map<DiscreteMappingGenerator<?>, JMenuItem> mappingGenerators;
 	private final Map<TaskFactory, JMenuItem> taskFactories;
+	
+	private final Set<String> defVisibleProps;
+	/** IDs of property sheet items that were set visible/invisible by the user */
+	private final Map<String, Boolean> userProps;
 
 	private static final Logger logger = LoggerFactory.getLogger(VizMapperMediator.class);
 
@@ -153,6 +159,40 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		mappingGenerators = new HashMap<DiscreteMappingGenerator<?>, JMenuItem>();
 		taskFactories = new HashMap<TaskFactory, JMenuItem>();
+		
+		userProps = new HashMap<String, Boolean>();
+		
+		defVisibleProps = new HashSet<String>();
+		// TODO: load default visual properties from app file
+		defVisibleProps.add("NODE_BORDER_PAINT");
+		defVisibleProps.add("NODE_BORDER_WIDTH");
+		defVisibleProps.add("NODE_FILL_COLOR");
+		defVisibleProps.add("NODE_LABEL");
+		defVisibleProps.add("NODE_LABEL_COLOR");
+		defVisibleProps.add("NODE_LABEL_FONT_SIZE");
+		defVisibleProps.add("NODE_SHAPE");
+		defVisibleProps.add("NODE_SIZE");
+		defVisibleProps.add("NODE_WIDTH");
+		defVisibleProps.add("NODE_HEIGHT");
+		defVisibleProps.add("NODE_TRANSPARENCY");
+		defVisibleProps.add("nodeSizeLocked");
+		defVisibleProps.add("EDGE_LABEL");
+		defVisibleProps.add("EDGE_LABEL_COLOR");
+		defVisibleProps.add("EDGE_LABEL_FONT_SIZE");
+		defVisibleProps.add("EDGE_LINE_TYPE");
+		defVisibleProps.add("EDGE_UNSELECTED_PAINT");
+		defVisibleProps.add("EDGE_SOURCE_ARROW_SHAPE");
+		defVisibleProps.add("EDGE_SOURCE_ARROW_UNSELECTED_PAINT");
+		defVisibleProps.add("EDGE_TARGET_ARROW_UNSELECTED_PAINT");
+		defVisibleProps.add("EDGE_TARGET_ARROW_SHAPE");
+		defVisibleProps.add("EDGE_STROKE_UNSELECTED_PAINT");
+		defVisibleProps.add("EDGE_TRANSPARENCY");
+		defVisibleProps.add("EDGE_WIDTH");
+		defVisibleProps.add("arrowColorMatchesEdge");
+		defVisibleProps.add("NETWORK_BACKGROUND_PAINT");
+		defVisibleProps.add("NETWORK_TITLE");
+		defVisibleProps.add("NETWORK_NODE_SELECTION");
+		defVisibleProps.add("NETWORK_EDGE_SELECTION");
 		
 		setViewComponent(vizMapperMainPanel);
 	}
@@ -599,6 +639,19 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				}
 			});
 		}
+		
+		// Save sheet items that were explicitly shown/hidden by the user,
+		// so his preferences can be respected when the current style changes
+		vpSheetItem.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(final ComponentEvent e) {
+				userProps.put(vpSheetItem.getModel().getId(), Boolean.TRUE);
+			}
+			@Override
+			public void componentHidden(final ComponentEvent e) {
+				userProps.put(vpSheetItem.getModel().getId(), Boolean.FALSE);
+			}
+		});
 	}
 
 	protected void removeVisualMapping(final VisualPropertySheetItem<?> vpSheetItem) {
@@ -693,38 +746,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		if (vpSheets.isEmpty()) {
 			// First time
-			// TODO: load default visual properties from app file
-			// #######################
-			visibleProps.add("NODE_BORDER_PAINT");
-			visibleProps.add("NODE_BORDER_WIDTH");
-			visibleProps.add("NODE_FILL_COLOR");
-			visibleProps.add("NODE_LABEL");
-			visibleProps.add("NODE_LABEL_COLOR");
-			visibleProps.add("NODE_LABEL_FONT_SIZE");
-			visibleProps.add("NODE_SHAPE");
-			visibleProps.add("NODE_SIZE");
-			visibleProps.add("NODE_WIDTH");
-			visibleProps.add("NODE_HEIGHT");
-			visibleProps.add("NODE_TRANSPARENCY");
-			visibleProps.add("nodeSizeLocked");
-			visibleProps.add("EDGE_LABEL");
-			visibleProps.add("EDGE_LABEL_COLOR");
-			visibleProps.add("EDGE_LABEL_FONT_SIZE");
-			visibleProps.add("EDGE_LINE_TYPE");
-			visibleProps.add("EDGE_UNSELECTED_PAINT");
-			visibleProps.add("EDGE_SOURCE_ARROW_SHAPE");
-			visibleProps.add("EDGE_SOURCE_ARROW_UNSELECTED_PAINT");
-			visibleProps.add("EDGE_TARGET_ARROW_UNSELECTED_PAINT");
-			visibleProps.add("EDGE_TARGET_ARROW_SHAPE");
-			visibleProps.add("EDGE_STROKE_UNSELECTED_PAINT");
-			visibleProps.add("EDGE_TRANSPARENCY");
-			visibleProps.add("EDGE_WIDTH");
-			visibleProps.add("arrowColorMatchesEdge");
-			visibleProps.add("NETWORK_BACKGROUND_PAINT");
-			visibleProps.add("NETWORK_TITLE");
-			visibleProps.add("NETWORK_NODE_SELECTION");
-			visibleProps.add("NETWORK_EDGE_SELECTION");
-			// #######################
+			visibleProps.addAll(defVisibleProps);
 		} else {
 			for (final VisualPropertySheet sheet : vpSheets) {
 				for (VisualPropertySheetItem<?> item : sheet.getItems()) {
@@ -751,8 +773,22 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					final Set<VisualPropertySheetItem<?>> vpSheetItems = 
 							createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType());
 					
-					for (final VisualPropertySheetItem<?> item : vpSheetItems)
-						item.setVisible(visibleProps.contains(item.getModel().getId()));
+					for (final VisualPropertySheetItem<?> item : vpSheetItems) {
+						// Items that are set visible by the user should still be visible when the current style changes.
+						// Items hidden by the user will not be shown again when the current style changes,
+						// unless it has a visual mapping:
+						final String vpId = item.getModel().getId();
+						
+						// Start with the default properties,
+						// but keep the ones previously hidden by the user invisible...
+						boolean b = defVisibleProps.contains(vpId) && !Boolean.FALSE.equals(userProps.get(vpId));
+						// ...but always show properties that have a mapping
+						b = b || item.getModel().getVisualMappingFunction() != null;
+						// ...or that were set visible by the user
+						b = b || Boolean.TRUE.equals(userProps.get(vpId));
+						
+						item.setVisible(b);
+					}
 					
 					vpSheet.setItems(vpSheetItems);
 					

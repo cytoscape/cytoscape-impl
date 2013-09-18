@@ -19,9 +19,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -77,6 +79,8 @@ public class VisualPropertySheet extends JPanel{
 	private final Map<VisualPropertyDependency<?>, VisualPropertySheetItem<?>> depItemMap;
 	private final Map<VisualPropertySheetItem<?>, JCheckBoxMenuItem> menuItemMap;
 	
+	private VisualPropertySheetItem<?> selectionHead;
+	private VisualPropertySheetItem<?> selectionTail;
 	private boolean doNotUpdateCollapseExpandButtons;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -90,38 +94,7 @@ public class VisualPropertySheet extends JPanel{
 		this.model = model;
 		this.iconMgr = iconMgr;
 		
-		items = new TreeSet<VisualPropertySheetItem<?>>(
-				new Comparator<VisualPropertySheetItem<?>>() {
-					@Override
-					public int compare(final VisualPropertySheetItem<?> i1, final VisualPropertySheetItem<?> i2) {
-						VisualPropertySheetItemModel<?> m1 = i1.getModel();
-						VisualPropertySheetItemModel<?> m2 = i2.getModel();
-						String title1 = m1.getTitle();
-						String title2 = m2.getTitle();
-						
-						final VisualPropertyDependency<?> dep1 = m1.getVisualPropertyDependency();
-						final VisualPropertyDependency<?> dep2 = m2.getVisualPropertyDependency();
-						
-						// Put dependencies in the end of the sorted list
-						if (dep1 == null && dep2 != null)
-							return -1;
-						if (dep1 != null && dep2 == null)
-							return 1;
-						
-						if (dep1 != null && dep2 != null) {
-							title1 = dep1.getDisplayName();
-							title2 = dep2.getDisplayName();
-						}
-						
-						// Locale-specific sorting
-						final Collator collator = Collator.getInstance(Locale.getDefault());
-						collator.setStrength(Collator.PRIMARY);
-						
-						return collator.compare(title1, title2);
-					}
-				}
-			);
-		
+		items = new TreeSet<VisualPropertySheetItem<?>>();
 		vpItemMap = new HashMap<VisualProperty<?>, VisualPropertySheetItem<?>>();
 		depItemMap = new HashMap<VisualPropertyDependency<?>, VisualPropertySheetItem<?>>();
 		menuItemMap = new HashMap<VisualPropertySheetItem<?>, JCheckBoxMenuItem>();
@@ -182,6 +155,8 @@ public class VisualPropertySheet extends JPanel{
 						}
 						@Override
 						public void componentHidden(final ComponentEvent e) {
+							if (selectionHead == i) selectionHead = null;
+							if (selectionTail == i) selectionTail = null;
 							updateCollapseExpandButtons();
 						}
 					});
@@ -214,6 +189,15 @@ public class VisualPropertySheet extends JPanel{
 			c.fill = GridBagConstraints.BOTH;
 			c.weighty = 1;
 			p.add(fillPnl, c);
+			
+			fillPnl.addMouseListener(new MouseAdapter() {
+				@Override
+				@SuppressWarnings("unchecked")
+				public void mouseClicked(final MouseEvent e) {
+					if (!e.isShiftDown() || e.isControlDown()) // Deselect all items
+						setSelectedItems(Collections.EMPTY_SET);
+				}
+			});
 			
 			getVpListScr().setViewportView(p);
 			
@@ -258,8 +242,14 @@ public class VisualPropertySheet extends JPanel{
 	}
 	
 	public synchronized void setSelectedItems(final Set<VisualPropertySheetItem<?>> selectedItems) {
-		for (final VisualPropertySheetItem<?> i : items)
-			 i.setSelected(selectedItems != null && selectedItems.contains(i));
+		for (final VisualPropertySheetItem<?> i : items) {
+			 i.setSelected(selectedItems != null && i.isVisible() && selectedItems.contains(i));
+			 
+			 if (!i.isSelected()) {
+				 if (i == selectionHead) selectionHead = null;
+				 if (i == selectionTail) selectionTail = null;
+			 }
+		}
 	}
 	
 	public void setVisible(final VisualPropertySheetItem<?> item, final boolean visible) {
@@ -657,19 +647,81 @@ public class VisualPropertySheet extends JPanel{
 		updateCollapseExpandButtons();
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void onMouseClickedItem(final MouseEvent e, final VisualPropertySheetItem<?> item) {
-		if (!SwingUtilities.isRightMouseButton(e) && !item.isSelected()) {
-			if (e.isShiftDown()) {
-				// TODO Select range
-				item.setSelected(true);
-			} else if (e.isControlDown()) {
-				// Add to selection
-				item.setSelected(true);
+		if (SwingUtilities.isRightMouseButton(e)) {
+			selectionHead = item;
+		} else {
+			if (e.isControlDown()) {
+				// Toggle this item's selection state
+				item.setSelected(!item.isSelected());
+				// Find new selection range head
+				selectionHead = item.isSelected() ? item : findNextSelectionHead(selectionHead);
 			} else {
-				// Select only this one
-				setSelectedItems((Set) (Collections.singleton(item)));
+				if (e.isShiftDown()) {
+					if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected()
+							&& selectionHead != item) {
+						// First deselect previous range, if there is a tail
+						if (selectionTail != null)
+							changeRangeSelection(selectionHead, selectionTail, false);
+						// Now select the new range
+						changeRangeSelection(selectionHead, (selectionTail = item), true);
+					} else if (!item.isSelected()) {
+						item.setSelected(true);
+					}
+				} else {
+					setSelectedItems((Set) (Collections.singleton(item)));
+				}
+				
+				if (getSelectedItems().size() == 1)
+					selectionHead = item;
 			}
 		}
+	}
+	
+	private void changeRangeSelection(final VisualPropertySheetItem<?> item1, final VisualPropertySheetItem<?> item2,
+			final boolean selected) {
+		final NavigableSet<VisualPropertySheetItem<?>> subSet;
+		
+		if (item1.compareTo(item2) <= 0)
+			subSet = items.subSet(item1, false, item2, true);
+		else
+			subSet = items.subSet(item2, true, item1, false);
+				
+		for (final VisualPropertySheetItem<?> nextItem : subSet) {
+			if (nextItem.isVisible())
+				nextItem.setSelected(selected);
+		}
+	}
+	
+	private VisualPropertySheetItem<?> findNextSelectionHead(final VisualPropertySheetItem<?> fromItem) {
+		VisualPropertySheetItem<?> head = null;
+		NavigableSet<VisualPropertySheetItem<?>> subSet = items.tailSet(fromItem, false);
+		
+		// Try with the tail subset first
+		for (final VisualPropertySheetItem<?> nextItem : subSet) {
+			if (nextItem.isVisible() && nextItem.isSelected()) {
+				head = nextItem;
+				break;
+			}
+		}
+		
+		if (head == null) {
+			// Try with the head subset
+			subSet = items.headSet(fromItem, false);
+			final Iterator<VisualPropertySheetItem<?>> iterator = subSet.descendingIterator();
+			
+			while (iterator.hasNext()) {
+				final VisualPropertySheetItem<?> nextItem = iterator.next();
+				
+				if (nextItem.isVisible() && nextItem.isSelected()) {
+					head = nextItem;
+					break;
+				}
+			}
+		}
+		
+		return head;
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
