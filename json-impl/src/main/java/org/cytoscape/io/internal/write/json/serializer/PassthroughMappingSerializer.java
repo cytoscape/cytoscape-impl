@@ -40,10 +40,4 @@ public class PassthroughMappingSerializer implements VisualMappingSerializer<Pas
 		
 		return "data(" + mapping.getMappingColumnName() + ")";
 	}
-
-
-	@Override
-	public String getTag(PassthroughMapping<?, ?> mapping) {
-		return COMPATIBLE_VP.get(mapping.getVisualProperty());
-	}
 }

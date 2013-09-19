@@ -1,43 +1,44 @@
 [ {
-  "TITLE" : "vs1",
-  "STYLE" : [ {
-    "SELECTOR" : "node",
-    "CSS" : {
-      "font-size" : 12,
-      "background-color" : "rgb(255,255,255)",
-      "border-color" : "rgb(0,0,255)",
-      "shape" : {
-        "displayName" : "Round Rectangle",
-        "serializableString" : "ROUND_RECTANGLE"
-      },
+  "title" : "vs1",
+  "style" : [ {
+    "selector" : "node",
+    "css" : {
+      "opacity" : 200,
+      "shape" : "roundrectangle",
       "height" : 30.0,
-      "width" : 40.0,
-      "border-width" : 3.0,
+      "font-size" : 12,
+      "text-opacity" : 255,
+      "background-color" : "rgb(120,120,120)",
+      "y" : 0.0,
+      "background-color" : "rgb(255,255,255)",
+      "font-family" : "SansSerif",
       "color" : "rgb(0,0,255)",
-      "border-opacity" : 255
+      "border-opacity" : 255,
+      "width" : 50.0,
+      "border-width" : 3.0,
+      "x" : 0.0,
+      "border-color" : "rgb(0,0,255)",
+      ":visible" : true,
+      "width" : "mapData(degree, 0, 100, red, green)",
+      "content" : "data(name)"
     }
   }, {
-    "SELECTOR" : "edge",
-    "CSS" : {
-      "content" : "",
-      "text-opacity" : 255,
-      "color" : "rgb(128,128,128)",
+    "selector" : "edge",
+    "css" : {
+      "source-arrow-shape" : "t",
       "opacity" : 100,
-      "target-arrow-shape" : {
-        "displayName" : "Diamond",
-        "serializableString" : "DIAMOND"
-      },
+      "line-color" : "rgb(128,128,128)",
       "width" : 5.0,
-      "source-arrow-shape" : {
-        "displayName" : "None",
-        "serializableString" : "NONE"
-      },
       "font-size" : 10,
+      "text-opacity" : 255,
       ":selected" : false,
-      "line-style" : {
-        "displayName" : "Solid",
-        "serializableString" : "SOLID"
-      }
+      "color" : "rgb(0,0,0)",
+      "line-color" : "rgb(0,255,0)",
+      "target-arrow-shape" : "diamond",
+      "line-style" : "dots",
+      "font-family" : "SansSerif",
+      "line-color" : "rgb(64,64,64)",
+      "content" : "data(interaction)"
     }
   } ]
 } ]

@@ -46,6 +46,11 @@
 		<!-- Cytoscape 3 Dependencies -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>application-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
