@@ -26,6 +26,8 @@ import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.Collator;
+import java.util.Locale;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -57,6 +59,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
@@ -74,7 +77,7 @@ import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 
 @SuppressWarnings("serial")
-public class VisualPropertySheetItem<T> extends JPanel {
+public class VisualPropertySheetItem<T> extends JPanel implements Comparable<VisualPropertySheetItem<?>> {
 
 	public enum MessageType { INFO, WARNING, ERROR	}
 
@@ -304,6 +307,39 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		
 		getTitleLbl().setForeground(UIManager.getColor(enabled ? "Label.foreground" : "Label.disabledForeground"));
 		super.setEnabled(enabled);
+	}
+	
+	@Override
+	public int compareTo(final VisualPropertySheetItem<?> other) {
+		final VisualPropertySheetItemModel<?> m1 = this.getModel();
+		final VisualPropertySheetItemModel<?> m2 = other.getModel();
+		String title1 = m1.getTitle();
+		String title2 = m2.getTitle();
+		
+		final VisualPropertyDependency<?> dep1 = m1.getVisualPropertyDependency();
+		final VisualPropertyDependency<?> dep2 = m2.getVisualPropertyDependency();
+		
+		// Put dependencies in the end of the sorted list
+		if (dep1 == null && dep2 != null)
+			return -1;
+		if (dep1 != null && dep2 == null)
+			return 1;
+		
+		if (dep1 != null && dep2 != null) {
+			title1 = dep1.getDisplayName();
+			title2 = dep2.getDisplayName();
+		}
+		
+		// Locale-specific sorting
+		final Collator collator = Collator.getInstance(Locale.getDefault());
+		collator.setStrength(Collator.PRIMARY);
+		
+		return collator.compare(title1, title2);
+	}
+	
+	@Override
+	public String toString() {
+		return model != null ? model.getTitle() : "?";
 	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================

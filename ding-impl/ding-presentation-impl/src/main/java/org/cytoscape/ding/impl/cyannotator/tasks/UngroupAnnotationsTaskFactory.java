@@ -28,43 +28,31 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.awt.geom.Point2D;
 
-import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 
-public class EditAnnotationTask extends AbstractNetworkViewTask {
-	private final DingAnnotation annotation; 
-	private final Point2D location; 
+public class UngroupAnnotationsTaskFactory implements NetworkViewLocationTaskFactory {
+	
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
+		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		return new TaskIterator(new UngroupAnnotationsTask(networkView, annotation));
 
-	private static final Logger logger = LoggerFactory.getLogger(EditAnnotationTask.class);
-	
-	
-	public EditAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D location) {
-		super(view);
-		this.annotation = annotation;
-		this.location = location;
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
-		
-		if ( view instanceof DGraphView ) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {
-		 			JDialog dialog = annotation.getModifyDialog();	
-					if (dialog != null) {
-						dialog.setLocation((int)location.getX(), (int)location.getY());
-						dialog.setVisible(true);
-					}
-				}
-			});
-		}
+	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
+		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		if (annotation != null && annotation instanceof GroupAnnotationImpl)
+			return true;
+		return false;
 	}
 }

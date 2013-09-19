@@ -370,6 +370,11 @@ public class WebQuerier {
 					}
 				}
 				
+				keyName = "citation";
+				if (jsonObject.has(keyName)) {
+					webApp.setCitation(jsonObject.get(keyName).toString());
+				}
+				
 				try {
 					List<WebApp.Release> releases = new LinkedList<WebApp.Release>();
 					

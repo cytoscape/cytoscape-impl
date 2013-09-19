@@ -28,43 +28,28 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.awt.geom.Point2D;
 
-import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class EditAnnotationTask extends AbstractNetworkViewTask {
-	private final DingAnnotation annotation; 
-	private final Point2D location; 
+public class GroupAnnotationsTaskFactory implements NetworkViewTaskFactory {
+	
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView) {
+		return new TaskIterator(new GroupAnnotationsTask(networkView));
 
-	private static final Logger logger = LoggerFactory.getLogger(EditAnnotationTask.class);
-	
-	
-	public EditAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D location) {
-		super(view);
-		this.annotation = annotation;
-		this.location = location;
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
-		
-		if ( view instanceof DGraphView ) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {
-		 			JDialog dialog = annotation.getModifyDialog();	
-					if (dialog != null) {
-						dialog.setLocation((int)location.getX(), (int)location.getY());
-						dialog.setVisible(true);
-					}
-				}
-			});
-		}
+	public boolean isReady(CyNetworkView networkView) {
+		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		// Get all of the selected annotations
+		if (cyAnnotator.getSelectedAnnotations() != null && cyAnnotator.getSelectedAnnotations().size() > 1)
+			return true;
+		return false;
 	}
 }
