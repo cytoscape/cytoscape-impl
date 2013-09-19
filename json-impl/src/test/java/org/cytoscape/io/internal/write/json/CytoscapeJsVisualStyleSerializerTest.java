@@ -22,23 +22,35 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsModule;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleModule;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleSerializer;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
+import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
+import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingFactory;
+import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingFactory;
+import org.cytoscape.view.vizmap.internal.mappings.PassthroughMappingFactory;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import cern.colt.map.PrimeFinder;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -52,14 +64,25 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	private VisualStyle style;
 	private VisualLexicon lexicon;
 
+	private PassthroughMappingFactory passthroughFactory;
+	private ContinuousMappingFactory continuousFactory;
+	private DiscreteMappingFactory discreteFactory;
+
 	@Before
 	public void setUp() throws Exception {
 
 		final NullVisualProperty minimalRoot = new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property");
 		lexicon = new BasicVisualLexicon(minimalRoot);
 		serializer = new CytoscapeJsVisualStyleSerializer(lexicon);
+
+		final CyEventHelper eventHelper = mock(CyEventHelper.class);
+		passthroughFactory = new PassthroughMappingFactory(eventHelper);
+		discreteFactory = new DiscreteMappingFactory(eventHelper);
+		continuousFactory = new ContinuousMappingFactory(eventHelper);
+
 		style = generateVisualStyle(lexicon);
 		setDefaults();
+		setMappings();
 
 		// Simple test to check Visual Style contents
 		assertEquals("vs1", style.getTitle());
@@ -103,9 +126,43 @@ public class CytoscapeJsVisualStyleSerializerTest {
 
 		// Edge default values
 		style.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, Color.GREEN);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DOT);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 5d);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.DIAMOND);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, ArrowShapeVisualProperty.T);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 100);
+	}
+
+	private final void setMappings() {
+		// Passthrough mappings
+		final VisualMappingFunction<String, String> nodeLabelMapping = passthroughFactory.createVisualMappingFunction(
+				CyNetwork.NAME, String.class, BasicVisualLexicon.NODE_LABEL);
+		final VisualMappingFunction<String, String> edgeLabelMapping = passthroughFactory.createVisualMappingFunction(
+				CyEdge.INTERACTION, String.class, BasicVisualLexicon.EDGE_LABEL);
+		style.addVisualMappingFunction(nodeLabelMapping);
+		style.addVisualMappingFunction(edgeLabelMapping);
+
+		// Continuous mappings
+		final ContinuousMapping<Integer, Double> nodeWidthMapping = (ContinuousMapping<Integer, Double>) continuousFactory.createVisualMappingFunction(
+				"degree", Integer.class, BasicVisualLexicon.NODE_WIDTH);
+		final VisualMappingFunction<Integer, Double> nodeHeightMapping = continuousFactory.createVisualMappingFunction(
+				"degree", Integer.class, BasicVisualLexicon.NODE_HEIGHT);
+		
+		final BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(20d, 20d, 20d);
+		final BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(100d, 100d, 100d);
+		nodeWidthMapping.addPoint(0, bv0);
+		nodeWidthMapping.addPoint(20, bv1);
+
+		style.addVisualMappingFunction(nodeWidthMapping);
+		
+		
+		// Discrete mappings
+		final DiscreteMapping<String, NodeShape> nodeShapeMapping = (DiscreteMapping<String, NodeShape>) discreteFactory
+				.createVisualMappingFunction("Node Type", String.class, BasicVisualLexicon.NODE_SHAPE);
+		nodeShapeMapping.putMapValue("gene", NodeShapeVisualProperty.DIAMOND);
+		nodeShapeMapping.putMapValue("protein", NodeShapeVisualProperty.ELLIPSE);
+		nodeShapeMapping.putMapValue("compound", NodeShapeVisualProperty.ROUND_RECTANGLE);
+		nodeShapeMapping.putMapValue("pathway", NodeShapeVisualProperty.OCTAGON);
 	}
 
 	@Test
@@ -146,5 +203,9 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		assertNotNull(rootNode);
 
 		reader.close();
+	}
+
+	private final void testDefaults() throws Exception {
+
 	}
 }

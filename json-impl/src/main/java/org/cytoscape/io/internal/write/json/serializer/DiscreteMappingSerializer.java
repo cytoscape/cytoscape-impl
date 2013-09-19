@@ -6,13 +6,7 @@ public class DiscreteMappingSerializer implements VisualMappingSerializer<Discre
 
 	@Override
 	public String serialize(final DiscreteMapping<?, ?> mapping) {
+		
 		return null;
 	}
-
-	@Override
-	public String getTag(DiscreteMapping<?, ?> Mapping) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

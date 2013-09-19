@@ -2,9 +2,9 @@
   "elements" : {
     "nodes" : [ {
       "data" : {
-        "id" : "32",
+        "id" : "751",
+        "SUID" : 751,
         "selected" : false,
-        "SUID" : 32,
         "name" : "n5"
       },
       "position" : {
@@ -14,9 +14,9 @@
       "selected" : false
     }, {
       "data" : {
-        "id" : "31",
+        "id" : "750",
+        "SUID" : 750,
         "selected" : false,
-        "SUID" : 31,
         "name" : "n4: Alone"
       },
       "position" : {
@@ -26,9 +26,9 @@
       "selected" : false
     }, {
       "data" : {
-        "id" : "30",
+        "id" : "749",
+        "SUID" : 749,
         "selected" : false,
-        "SUID" : 30,
         "name" : "n3"
       },
       "position" : {
@@ -38,9 +38,9 @@
       "selected" : false
     }, {
       "data" : {
-        "id" : "29",
+        "id" : "748",
+        "SUID" : 748,
         "selected" : false,
-        "SUID" : 29,
         "name" : "n2: 日本語テスト"
       },
       "position" : {
@@ -50,9 +50,9 @@
       "selected" : false
     }, {
       "data" : {
-        "id" : "28",
+        "id" : "747",
+        "SUID" : 747,
         "selected" : false,
-        "SUID" : 28,
         "name" : "n1"
       },
       "position" : {
@@ -63,41 +63,41 @@
     } ],
     "edges" : [ {
       "data" : {
-        "id" : "34",
-        "source" : "29",
-        "target" : "30",
+        "id" : "753",
+        "source" : "748",
+        "target" : "749",
         "selected" : false,
-        "SUID" : 34,
+        "SUID" : 753,
         "name" : "エッジ2"
       },
       "selected" : false
     }, {
       "data" : {
-        "id" : "36",
-        "source" : "28",
-        "target" : "28",
+        "id" : "755",
+        "source" : "747",
+        "target" : "747",
         "selected" : false,
-        "SUID" : 36,
+        "SUID" : 755,
         "name" : "e1self"
       },
       "selected" : false
     }, {
       "data" : {
-        "id" : "35",
-        "source" : "28",
-        "target" : "30",
+        "id" : "754",
+        "source" : "747",
+        "target" : "749",
         "selected" : false,
-        "SUID" : 35,
+        "SUID" : 754,
         "name" : "e3"
       },
       "selected" : false
     }, {
       "data" : {
-        "id" : "33",
-        "source" : "28",
-        "target" : "29",
+        "id" : "752",
+        "source" : "747",
+        "target" : "748",
         "selected" : false,
-        "SUID" : 33,
+        "SUID" : 752,
         "name" : "e1"
       },
       "selected" : false

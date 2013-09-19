@@ -6,13 +6,11 @@ import java.util.Set;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleModule;
-import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsModule;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.io.write.VizmapWriterFactory;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
