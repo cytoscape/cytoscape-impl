@@ -1,12 +1,15 @@
 package org.cytoscape.io.internal.read.json;
 
 import java.io.InputStream;
+import java.util.Map;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -18,7 +21,7 @@ public class CytoscapeJsNetworkReader extends AbstractTask implements CyNetworkR
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final CyNetworkFactory cyNetworkFactory;
 
-	private final JSONMapper mapper;
+	private final CytoscapejsMapper mapper;
 
 	// Supports only one CyNetwork per file.
 	private CyNetwork network = null;
@@ -50,7 +53,17 @@ public class CytoscapeJsNetworkReader extends AbstractTask implements CyNetworkR
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		return null;
+		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
+
+		// TODO: Apply (X, Y) to the nodes
+		final Map<CyNode, Double[]> positionMap = mapper.getNodePosition();
+		for(CyNode node: positionMap.keySet()) {
+			final Double[] position = positionMap.get(node);
+			view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, position[0]);
+			view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, position[1]);
+		}
+		
+		return view;
 	}
 
 	@Override
