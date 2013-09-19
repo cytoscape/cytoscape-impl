@@ -718,15 +718,21 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		for (CyColumn dependent : columnDependents) {
 			VirtualColumnInfo info = dependent.getVirtualColumnInfo();
 			CyTableImpl table2 = (CyTableImpl) dependent.getTable();
+			if (table2 == table && columnName.equals(dependent.getName())) {
+				// Ticket #2144: For whatever reason, there are cycles in the virtual
+				// column dependency graph.  This breaks the cycle, but we need to
+				// determine whether these cycles should even exist.
+				continue;
+			}
 			String targetJoinKey = info.getTargetJoinKey();
 			if (targetJoinKey.equals(table2.getPrimaryKey().getName())) {
-				fireVirtualColumnRowSetEvent(table2, key, targetJoinKey, newValue, newRawValue);
+				fireVirtualColumnRowSetEvent(table2, key, dependent.getName(), newValue, newRawValue);
 			} else {
 				String normalizedTargetJoinKey = table2.normalizeColumnName(targetJoinKey);			
 				SetMultimap<Object, Object> reverseMap = table2.reverse.get(normalizedTargetJoinKey);
 				if(reverseMap != null) {
 					for (Object key2 : reverseMap.get(key)) {
-						fireVirtualColumnRowSetEvent(table2, key2, targetJoinKey, newValue, newRawValue);
+						fireVirtualColumnRowSetEvent(table2, key2, dependent.getName(), newValue, newRawValue);
 					}
 				}
 			}
