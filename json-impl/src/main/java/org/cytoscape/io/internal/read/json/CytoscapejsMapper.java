@@ -1,9 +1,20 @@
 package org.cytoscape.io.internal.read.json;
 
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.DATA;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.EDGES;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ELEMENTS;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ID;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.NODES;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION_X;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION_Y;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.SOURCE;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.TARGET;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
@@ -11,6 +22,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -97,11 +109,60 @@ public class CytoscapejsMapper implements JSONMapper {
 			final String fieldName = fieldNames.next();
 			if (fieldName.equals(ID.getTag()) == false && fieldName.equals(CyIdentifiable.SUID) == false
 					&& fieldName.equals(CyNetwork.SELECTED) == false) {
-				if (network.getRow(graphObject).getTable().getColumn(fieldName) == null) {
-					network.getRow(graphObject).getTable().createColumn(fieldName, String.class, false);
+
+				CyTable table = network.getRow(graphObject).getTable();
+				if (table.getColumn(fieldName) == null) {
+					final Class<?> dataType = getDataType(data.get(fieldName));
+					if (dataType == List.class) {
+						table.createListColumn(fieldName, String.class, false);
+					} else {
+						table.createColumn(fieldName, dataType, false);
+					}
 				}
-				network.getRow(graphObject).set(fieldName, data.get(fieldName).asText());
+
+				network.getRow(graphObject).set(fieldName, getValue(data.get(fieldName)));
 			}
+		}
+	}
+
+	private final Class<?> getDataType(JsonNode entry) {
+		if (entry.isArray()) {
+			return List.class;
+		} else if (entry.isLong()) {
+			return Long.class;
+		} else if (entry.isBoolean()) {
+			return Boolean.class;
+		} else if (entry.isInt()) {
+			return Integer.class;
+		} else if (entry.isFloat()) {
+			return Float.class;
+		} else if (entry.isDouble()) {
+			return Double.class;
+		} else {
+			return String.class;
+		}
+	}
+
+	private final Object getValue(JsonNode entry) {
+		if (entry.isArray()) {
+			Iterator<JsonNode> values = entry.elements();
+			final List<String> list = new ArrayList<String>();
+			while (values.hasNext()) {
+				list.add(values.next().asText());
+			}
+			return list;
+		} else if (entry.isLong()) {
+			return entry.longValue();
+		} else if (entry.isBoolean()) {
+			return entry.booleanValue();
+		} else if (entry.isInt()) {
+			return entry.intValue();
+		} else if (entry.isFloat()) {
+			return entry.floatValue();
+		} else if (entry.isDouble()) {
+			return entry.doubleValue();
+		} else {
+			return entry.asText();
 		}
 	}
 
