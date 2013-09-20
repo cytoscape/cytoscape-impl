@@ -4,14 +4,11 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.BasicCyFileFilter;
-import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.read.json.CytoscapeJsNetworkReaderFactory;
-import org.cytoscape.io.internal.read.json.CytoscapejsFileFilter;
 import org.cytoscape.io.internal.write.json.JSONNetworkWriterFactory;
 import org.cytoscape.io.internal.write.json.JSONVisualStyleWriterFactory;
-import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsModule;
-import org.cytoscape.io.internal.write.json.serializer.D3TreeModule;
+import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
 import org.cytoscape.io.internal.write.json.serializer.D3jsModule;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
@@ -56,7 +53,7 @@ public class CyActivator extends AbstractCyActivator {
 		// ///////////////// Writers ////////////////////////////
 
 		ObjectMapper cytoscapeJsMapper = new ObjectMapper();
-		cytoscapeJsMapper.registerModule(new CytoscapeJsModule());
+		cytoscapeJsMapper.registerModule(new CytoscapeJsNetworkModule());
 
 		final ObjectMapper d3jsMapper = new ObjectMapper();
 		d3jsMapper.registerModule(new D3jsModule());

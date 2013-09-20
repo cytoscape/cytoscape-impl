@@ -1,7 +1,8 @@
 package org.cytoscape.io.internal.write.json;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,24 +11,13 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsModule;
-import org.cytoscape.model.CyEdge;
+import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,7 +27,7 @@ public class CytoscapeJsViewWriterTest extends AbstractJsonNetworkViewWriterTest
 	public void testNetworkViewWriter() throws Exception {
 
 		final ObjectMapper jsMapper = new ObjectMapper();
-		jsMapper.registerModule(new CytoscapeJsModule());
+		jsMapper.registerModule(new CytoscapeJsNetworkModule());
 
 		// Generate file to test site directory.
 		File temp = new File("src/test/resources/site/app/data/cytoscapeJsNetwork1.json");
