@@ -34,19 +34,20 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-
 		// Importing Services:
 		StreamUtil streamUtil = getService(bc, StreamUtil.class);
 
 		final CyNetworkViewFactory cyNetworkViewFactory = getService(bc, CyNetworkViewFactory.class);
 		final CyNetworkFactory cyNetworkFactory = getService(bc, CyNetworkFactory.class);
 		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
+		final CyNetworkManager cyNetworkManager = getService(bc, CyNetworkManager.class);
+		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
 
 		// ///////////////// Readers ////////////////////////////
 		final BasicCyFileFilter cytoscapejsReaderFilter = new BasicCyFileFilter(new String[] { "cyjs" },
 				new String[] { "application/json" }, "Cytoscape.js JSON format", DataCategory.NETWORK, streamUtil);
 		final CytoscapeJsNetworkReaderFactory jsReaderFactory = new CytoscapeJsNetworkReaderFactory(
-				cytoscapejsReaderFilter, cyNetworkViewFactory, cyNetworkFactory);
+				cytoscapejsReaderFilter, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 
 		final Properties cytoscapeJsNetworkReaderFactoryProps = new Properties();
 		cytoscapeJsNetworkReaderFactoryProps.put(ID, "cytoscapeJsNetworkReaderFactory");
