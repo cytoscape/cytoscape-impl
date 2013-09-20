@@ -114,7 +114,7 @@ public class CytoscapejsMapper implements JSONMapper {
 				if (table.getColumn(fieldName) == null) {
 					final Class<?> dataType = getDataType(data.get(fieldName));
 					if (dataType == List.class) {
-						table.createListColumn(fieldName, String.class, false);
+						table.createListColumn(fieldName, getListDataType(data.get(fieldName)), false);
 					} else {
 						table.createColumn(fieldName, dataType, false);
 					}
@@ -122,6 +122,28 @@ public class CytoscapejsMapper implements JSONMapper {
 
 				network.getRow(graphObject).set(fieldName, getValue(data.get(fieldName)));
 			}
+		}
+	}
+	
+	private final Class<?> getListDataType(JsonNode arrayNode) {
+		
+		if(arrayNode.size() == 0) {
+			return String.class;
+		}
+		JsonNode entry = arrayNode.get(0);
+		
+		if (entry.isLong()) {
+			return Long.class;
+		} else if (entry.isBoolean()) {
+			return Boolean.class;
+		} else if (entry.isInt()) {
+			return Integer.class;
+		} else if (entry.isFloat()) {
+			return Float.class;
+		} else if (entry.isDouble()) {
+			return Double.class;
+		} else {
+			return String.class;
 		}
 	}
 
@@ -166,6 +188,10 @@ public class CytoscapejsMapper implements JSONMapper {
 		}
 	}
 
+	private final void createList(JsonNode arrayData) {
+		
+	}
+	
 	protected Map<CyNode, Double[]> getNodePosition() {
 		return this.positionMap;
 	}

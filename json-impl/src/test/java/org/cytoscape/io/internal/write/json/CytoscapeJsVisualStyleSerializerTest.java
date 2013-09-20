@@ -172,7 +172,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		final ObjectMapper jsMapper = new ObjectMapper();
 		jsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon));
 
-		File temp = new File("src/test/resources/site/app/data/cytoscapeJsStyle.json");
+		File temp = new File("target/cytoscapeJsStyle.json");
 
 		OutputStream os = new FileOutputStream(temp);
 		JSONVisualStyleWriter writer = new JSONVisualStyleWriter(os, jsMapper, styles);
