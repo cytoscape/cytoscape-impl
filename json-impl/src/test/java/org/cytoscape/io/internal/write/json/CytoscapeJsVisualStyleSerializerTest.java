@@ -1,6 +1,7 @@
 package org.cytoscape.io.internal.write.json;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,15 +12,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsModule;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleModule;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleSerializer;
 import org.cytoscape.model.CyEdge;
@@ -32,7 +29,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
-import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -49,8 +45,6 @@ import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import cern.colt.map.PrimeFinder;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
