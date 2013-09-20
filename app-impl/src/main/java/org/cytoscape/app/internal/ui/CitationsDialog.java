@@ -43,6 +43,11 @@ import java.awt.GridBagConstraints;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+import java.io.File;
+
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskIterator;
@@ -57,6 +62,7 @@ public class CitationsDialog {
   final WebQuerier webQuerier;
   final AppManager appMgr;
   final TaskManager taskMgr;
+  final Frame parent;
   final JDialog dialog;
   final JTextPane textPane;
 
@@ -64,6 +70,7 @@ public class CitationsDialog {
     this.webQuerier = webQuerier;
     this.appMgr = appMgr;
     this.taskMgr = taskMgr;
+    this.parent = parent;
 
     dialog = new JDialog(parent, "Citations", JDialog.ModalityType.MODELESS);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -80,8 +87,6 @@ public class CitationsDialog {
       }
     });
 
-    //final JButton saveButton = new JButton("Save for EndNote...");
-
     dialog.setLayout(new GridBagLayout());
     final GridBagConstraints c = new GridBagConstraints();
 
@@ -89,18 +94,8 @@ public class CitationsDialog {
     c.gridwidth = 1;  c.gridheight = 1;
     c.weightx = 1.0;  c.weighty = 1.0;
     c.fill = GridBagConstraints.BOTH;
-    c.insets = new Insets(0, 0, 10, 0);
+    c.insets = new Insets(0, 0, 0, 0);
     dialog.add(new JScrollPane(textPane), c);
-
-    final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    //buttonsPanel.add(saveButton);
-
-    c.gridx = 0;      c.gridy = 1;
-    c.gridwidth = 1;  c.gridheight = 1;
-    c.weightx = 1.0;  c.weighty = 0.0;
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(0, 10, 10, 10);
-    dialog.add(buttonsPanel, c);
   }
 
   public void show() {
@@ -185,11 +180,11 @@ class Article {
   }
 
   public String toString() {
-    return toString("%s. <i>%s</i> %s, %s:%s (%s). %s.");
+    return toString("%s. <i>%s</i> %s, %s:%s (%s). %s. PubMed ID: %s.");
   }
 
   public String toString(final String fmtString) {
-    return String.format(fmtString, getAuthorsAsString(), getTitle(), getSource(), getVolume(), getIssue(), getPages(), getPubDate());
+    return String.format(fmtString, getAuthorsAsString(), getTitle(), getSource(), getVolume(), getIssue(), getPages(), getPubDate(), getPmid());
   }
 }
 
@@ -365,23 +360,23 @@ class RetrieveTask implements Task {
     monitor.showMessage(TaskMonitor.Level.INFO, "Retrieve articles");
     final PubMedParser pubMedParser = new PubMedParser();
     final Map<String,Article> articles = pubMedParser.retrieveArticles(pmids);
-    final StringBuffer buffer = new StringBuffer("<html><dl>");
-    buffer.append(formatArticleAsHtmlDefinition("Cytoscape", articles.get("Cytoscape")));
-    buffer.append("</dl><br><br><dl>");
+
+    final StringBuffer buffer = new StringBuffer("<html>");
+    formatArticleAsHtmlDefinition("Cytoscape", articles.get("Cytoscape"), buffer);
+    buffer.append("<br><hr><br>");
     for (final String name : new TreeSet<String>(articles.keySet())) {
       if (name.equals("Cytoscape"))
         continue;
       final Article article = articles.get(name);
-      buffer.append(formatArticleAsHtmlDefinition(name, article));
+      formatArticleAsHtmlDefinition(name, article, buffer);
     }
-    buffer.append("</dl></html>");
+    buffer.append("</html>");
 
     textPane.setText(buffer.toString());
   }
 
-  private static String formatArticleAsHtmlDefinition(final String name, final Article article) {
-    final StringBuffer buffer = new StringBuffer();
-    buffer.append("<dt><b>");
+  private static void formatArticleAsHtmlDefinition(final String name, final Article article, final StringBuffer buffer) {
+    buffer.append("<dl><dt><b>");
     buffer.append(name);
     buffer.append("</b></dt>");
     buffer.append("<dd>");
@@ -390,8 +385,7 @@ class RetrieveTask implements Task {
     buffer.append("<font size=\"-1\"><a href=\"http://www.ncbi.nlm.nih.gov/pubmed/");
     buffer.append(article.getPmid());
     buffer.append("\">Open in PubMed &rarr;</a></font>");
-    buffer.append("</dd>");
-    return buffer.toString();
+    buffer.append("</dd></dl>");
   }
 
   public void cancel() {
