@@ -85,7 +85,8 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
-import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
 
 /**
  * VizMapper UI main panel.
@@ -103,7 +104,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	protected VisualStyleDropDownButton stylesBtn;
 	protected DefaultComboBoxModel stylesCmbModel;
 
-	private final IconManager iconMgr;
+	private final ThemeManager themeMgr;
 	
 	/** Menu items under the options button */
 	private JPopupMenu mainMenu;
@@ -124,11 +125,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	 * Create new instance of VizMapperMainPanel object. GUI layout is handled
 	 * by abstract class.
 	 */
-	public VizMapperMainPanel(final IconManager iconMgr) {
-		if (iconMgr == null)
-			throw new IllegalArgumentException("'iconMgr' must not be null");
+	public VizMapperMainPanel(final ThemeManager themeMgr) {
+		if (themeMgr == null)
+			throw new IllegalArgumentException("'themeMgr' must not be null");
 		
-		this.iconMgr = iconMgr;
+		this.themeMgr = themeMgr;
 		
 		vpSheetMap = new HashMap<Class<? extends CyIdentifiable>, VisualPropertySheet>();
 		defViewPanelsMap = new HashMap<String, JPanel>();
@@ -251,7 +252,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	// ==[ PRIVATE METHODS ]============================================================================================
 
 	private void init() {
-		setPreferredSize(new Dimension(420, getPreferredSize().height));
+		setMinimumSize(new Dimension(420, getMinimumSize().height));
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		
@@ -268,7 +269,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private JPanel getStylesPnl() {
 		if (stylesPnl == null) {
 			stylesPnl = new JPanel();
-			stylesPnl.setBorder(BorderFactory.createTitledBorder("Current Visual Style"));
+			stylesPnl.setBorder(BorderFactory.createTitledBorder("Current Style"));
 			
 			final GroupLayout stylesPanelLayout = new GroupLayout(stylesPnl);
 			stylesPnl.setLayout(stylesPanelLayout);
@@ -307,10 +308,10 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	DropDownMenuButton getOptionsBtn() {
 		if (optionsBtn == null) {
-			optionsBtn = new DropDownMenuButton(getMainMenu());
+			optionsBtn = new DropDownMenuButton(getMainMenu(), false);
 			optionsBtn.setToolTipText("Options...");
-			optionsBtn.setIcon(iconMgr.getIcon(IconManager.OPTION_ICON));
-			optionsBtn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+			optionsBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(11.0f));
+			optionsBtn.setText("\uF0D7"); // icon-caret-down
 		}
 		
 		return optionsBtn;

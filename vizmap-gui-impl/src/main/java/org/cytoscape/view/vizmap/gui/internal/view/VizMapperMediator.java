@@ -79,7 +79,7 @@ import org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.GenerateValuesTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
 import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem.MessageType;
@@ -124,7 +124,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private final ServicesUtil servicesUtil;
 	private final VizMapperMainPanel vizMapperMainPanel;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
-	private final IconManager iconMgr;
+	private final ThemeManager themeMgr;
 	
 	private final Map<DiscreteMappingGenerator<?>, JMenuItem> mappingGenerators;
 	private final Map<TaskFactory, JMenuItem> taskFactories;
@@ -140,7 +140,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	public VizMapperMediator(final VizMapperMainPanel vizMapperMainPanel,
 							 final ServicesUtil servicesUtil,
 							 final VizMapPropertyBuilder vizMapPropertyBuilder,
-							 final IconManager iconMgr) {
+							 final ThemeManager themeMgr) {
 		super(NAME, vizMapperMainPanel);
 		
 		if (vizMapperMainPanel == null)
@@ -149,13 +149,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			throw new IllegalArgumentException("'servicesUtil' must not be null");
 		if (vizMapPropertyBuilder == null)
 			throw new IllegalArgumentException("'vizMapPropertyBuilder' must not be null");
-		if (iconMgr == null)
-			throw new IllegalArgumentException("'iconMgr' must not be null");
+		if (themeMgr == null)
+			throw new IllegalArgumentException("'themeMgr' must not be null");
 		
 		this.vizMapperMainPanel = vizMapperMainPanel;
 		this.servicesUtil = servicesUtil;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
-		this.iconMgr = iconMgr;
+		this.themeMgr = themeMgr;
 		
 		mappingGenerators = new HashMap<DiscreteMappingGenerator<?>, JMenuItem>();
 		taskFactories = new HashMap<TaskFactory, JMenuItem>();
@@ -762,7 +762,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			public void run() {
 				for (final Class<? extends CyIdentifiable> type : SHEET_TYPES) {
 					final VisualPropertySheetModel model = new VisualPropertySheetModel(type, style, lexicon);
-					final VisualPropertySheet vpSheet = new VisualPropertySheet(model, iconMgr);
+					final VisualPropertySheet vpSheet = new VisualPropertySheet(model, themeMgr);
 					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
 				}
 				
@@ -849,7 +849,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				
 				// Create View
 				final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder,
-						iconMgr);
+						themeMgr);
 				items.add(sheetItem);
 				
 				// Add listeners to item and model:
@@ -896,7 +896,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			
 			final VisualPropertySheetItemModel<?> model = new VisualPropertySheetItemModel(dep, style, engine, lexicon);
 			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder,
-					iconMgr);
+					themeMgr);
 			items.add(sheetItem);
 		}
 		
@@ -1153,6 +1153,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void onDependencySelectionChanged(final ItemEvent e, final VisualPropertySheetItem<?> vpSheetItem) {
 		final boolean selected = e.getStateChange() == ItemEvent.SELECTED;
 		final VisualPropertyDependency<?> dep = vpSheetItem.getModel().getVisualPropertyDependency();
@@ -1168,6 +1169,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			evtHelper.fireEvent(new LexiconStateChangedEvent(this, visualProperties, parent));
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void handleContextMenuEvent(final MouseEvent e, final VisualPropertySheet vpSheet, 
 			final VisualPropertySheetItem<?> vpSheetItem) {
 		// Select the right-clicked sheet item, if not selected yet

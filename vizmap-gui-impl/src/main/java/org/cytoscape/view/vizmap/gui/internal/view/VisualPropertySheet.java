@@ -45,6 +45,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
@@ -56,7 +57,8 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 
 @SuppressWarnings("serial")
@@ -72,7 +74,7 @@ public class VisualPropertySheet extends JPanel{
 	
 	private final VisualPropertySheetModel model;
 	
-	private final IconManager iconMgr;
+	private final ThemeManager themeMgr;
 	
 	private final TreeSet<VisualPropertySheetItem<?>> items;
 	private final Map<VisualProperty<?>, VisualPropertySheetItem<?>> vpItemMap;
@@ -85,14 +87,14 @@ public class VisualPropertySheet extends JPanel{
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public VisualPropertySheet(final VisualPropertySheetModel model, final IconManager iconMgr) {
+	public VisualPropertySheet(final VisualPropertySheetModel model, final ThemeManager themeMgr) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
-		if (iconMgr == null)
-			throw new IllegalArgumentException("'iconMgr' must not be null");
+		if (themeMgr == null)
+			throw new IllegalArgumentException("'themeMgr' must not be null");
 		
 		this.model = model;
-		this.iconMgr = iconMgr;
+		this.themeMgr = themeMgr;
 		
 		items = new TreeSet<VisualPropertySheetItem<?>>();
 		vpItemMap = new HashMap<VisualProperty<?>, VisualPropertySheetItem<?>>();
@@ -294,8 +296,8 @@ public class VisualPropertySheet extends JPanel{
 	private JPanel getVpListHeaderPnl() {
 		if (vpListHeaderPnl == null) {
 			vpListHeaderPnl = new JPanel();
-			vpListHeaderPnl.setBackground(Color.DARK_GRAY);
-			vpListHeaderPnl.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+			vpListHeaderPnl.setBorder(
+					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			vpListHeaderPnl.setLayout(new BoxLayout(vpListHeaderPnl, BoxLayout.X_AXIS));
 			
 			vpListHeaderPnl.add(Box.createRigidArea(new Dimension(2, 12)));
@@ -306,7 +308,7 @@ public class VisualPropertySheet extends JPanel{
 			
 			if (model.getTargetDataType() != CyNetwork.class) {
 				final JLabel mapLbl = new HeaderLabel("Map.");
-				mapLbl.setToolTipText("Visual Mapping");
+				mapLbl.setToolTipText("Mapping");
 				vpListHeaderPnl.add(mapLbl);
 			}
 			
@@ -342,7 +344,8 @@ public class VisualPropertySheet extends JPanel{
 	private DropDownMenuButton getVpsBtn() {
 		if (vpsBtn == null) {
 			vpsBtn = new DropDownMenuButton(getVpsMenu());
-			vpsBtn.setText("Visual Properties");
+			vpsBtn.setText("Properties");
+			vpsBtn.setToolTipText("Show/Hide Properties...");
 			vpsBtn.setHorizontalAlignment(DropDownMenuButton.LEFT);
 			vpsBtn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		}
@@ -372,9 +375,14 @@ public class VisualPropertySheet extends JPanel{
 
 	protected JButton getExpandAllBtn() {
 		if (expandAllBtn == null) {
-			expandAllBtn = new JButton(iconMgr.getIcon(IconManager.EXPAND_ALL_ICON));
-			expandAllBtn.setToolTipText("Expand all visual mapping panels");
-			expandAllBtn.setBorder(BorderFactory.createEmptyBorder());
+			expandAllBtn = new JButton("\uF103"); // icon-double-angle-down
+			expandAllBtn.setToolTipText("Expand all mappings");
+			expandAllBtn.setBorderPainted(false);
+			expandAllBtn.setContentAreaFilled(false);
+			expandAllBtn.setOpaque(false);
+			expandAllBtn.setFocusPainted(false);
+			expandAllBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			expandAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 			
 			expandAllBtn.addActionListener(new ActionListener() {
 				@Override
@@ -389,9 +397,14 @@ public class VisualPropertySheet extends JPanel{
 	
 	protected JButton getCollapseAllBtn() {
 		if (collapseAllBtn == null) {
-			collapseAllBtn = new JButton(iconMgr.getIcon(IconManager.COLLAPSE_ALL_ICON));
-			collapseAllBtn.setToolTipText("Collapse all visual mapping panels");
-			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder());
+			collapseAllBtn = new JButton("\uF102"); // icon-double-angle-up
+			collapseAllBtn.setToolTipText("Collapse all mappings");
+			collapseAllBtn.setBorderPainted(false);
+			collapseAllBtn.setContentAreaFilled(false);
+			collapseAllBtn.setOpaque(false);
+			collapseAllBtn.setFocusPainted(false);
+			collapseAllBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 			
 			collapseAllBtn.addActionListener(new ActionListener() {
 				@Override
@@ -729,7 +742,7 @@ public class VisualPropertySheet extends JPanel{
 	private static class HeaderLabel extends JLabel {
 		
 		final static Font FONT = new Font("Arial", Font.BOLD, 10);
-		final static Color FG_COLOR = Color.WHITE;
+		final static Color FG_COLOR = Color.DARK_GRAY;
 		
 		HeaderLabel(final String text) {
 			super(text);

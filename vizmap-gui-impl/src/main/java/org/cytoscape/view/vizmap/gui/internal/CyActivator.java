@@ -54,7 +54,7 @@ import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFacto
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualMappingsTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
@@ -268,8 +268,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Create the main GUI component
 		// -------------------------------------------------------------------------------------------------------------
-		final IconManager iconManager = new IconManager();
-		final VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(iconManager);
+		final ThemeManager themeManager = new ThemeManager();
+		final VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(themeManager);
 		
 		// Start the PureMVC components
 		// -------------------------------------------------------------------------------------------------------------
@@ -279,7 +279,7 @@ public class CyActivator extends AbstractCyActivator {
 		final VizMapperMediator vizMapperMediator = new VizMapperMediator(vizMapperMainPanel,
 																		  servicesUtil,
 																		  vizMapPropertyBuilder,
-																		  iconManager);
+																		  themeManager);
 		final VizMapperMenuMediator vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
 		
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,
