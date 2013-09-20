@@ -165,8 +165,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		return argMap;
 	}
 
-	public void reloadImage()
-	{
+	public void reloadImage() {
 		// Get the image from the image pool again
 		try {
 			this.cg = customGraphicsManager.getCustomGraphicsBySourceURL(this.url);
@@ -238,6 +237,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	public int getImageContrast() { return this.contrast; }
 
 	// Shape annotation methods.  We add these so we can get resizeImage functionality
+
+	// At this point, we only support RECTANGLE.  At some point, it would be really
+	// useful to clip the image to the shape
 	public List<String> getSupportedShapes() {
 		return Collections.singletonList(ShapeType.RECTANGLE.shapeName());
 	}
@@ -257,6 +259,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	public String getShapeType() {
 		return ShapeType.RECTANGLE.shapeName();
 	}
+
+	public void setCustomShape(Shape shape) {
+	}
+
 	public void setShapeType(String type) {}
 
 	public double getBorderWidth() {
