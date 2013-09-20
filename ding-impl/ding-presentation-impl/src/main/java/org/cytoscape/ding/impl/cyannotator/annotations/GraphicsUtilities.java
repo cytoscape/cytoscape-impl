@@ -34,6 +34,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -71,7 +72,8 @@ class GraphicsUtilities {
 		ShapeType.TRIANGLE.shapeName(),
 		ShapeType.STAR6.shapeName(),
 		ShapeType.HEXAGON.shapeName(),
-		ShapeType.PENTAGON.shapeName());
+		ShapeType.PENTAGON.shapeName(),
+		ShapeType.CUSTOM.shapeName());
 
 	protected static final ArrowType supportedArrows[] = {
 		ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.CONCAVE, ArrowType.DIAMOND, ArrowType.OPEN, 
@@ -99,6 +101,7 @@ class GraphicsUtilities {
 			case TRIANGLE: return regularPolygon(3, x, y, width, height); // Pentagon
 			case PENTAGON: return regularPolygon(5, x, y, width, height); // Pentagon
 			case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
+			case CUSTOM: return null;
 			default: return rectangleShape(x, y, width, height);
 		}
 	}
@@ -147,8 +150,21 @@ class GraphicsUtilities {
 		if (!isPrinting && border < 1.0f) border = 1.0f;
 		// System.out.println("Border width = "+border+", isPrinting = "+isPrinting);
 
-		// Get the shape
-		Shape shape = getShape(annotation.getShapeType(), x+border, y+border, width-border, height-border);
+		Shape shape = null;
+		if (annotation.getShapeType().equals(ShapeType.CUSTOM)) {
+			shape = annotation.getShape();
+			// Scale the shape appropriately
+			Rectangle2D originalBounds = shape.getBounds2D();
+			double widthScale = (width-border)/originalBounds.getWidth();
+			double heightScale = (height-border)/originalBounds.getHeight();
+			AffineTransform transform = AffineTransform.getScaleInstance(widthScale, heightScale);
+			transform.translate(x+border, y+border);
+			shape = transform.createTransformedShape(shape);
+		} else {
+			// Get the shape
+			shape = getShape(annotation.getShapeType(), x+border, y+border, width-border, height-border);
+		}
+
 		// System.out.println("drawShape: shape = "+shape.toString());
 
 		// Set our fill color
@@ -174,6 +190,131 @@ class GraphicsUtilities {
 			g2.setStroke(new BasicStroke(border));
 			g2.draw(shape);
 		}
+	}
+
+	static public String serializeShape(final Shape s) {
+        final StringBuffer buffer = new StringBuffer();
+        final PathIterator i = s.getPathIterator(null);
+        switch (i.getWindingRule()) {
+            case PathIterator.WIND_EVEN_ODD:
+                buffer.append("EO ");
+                break;
+            case PathIterator.WIND_NON_ZERO:
+                buffer.append("NZ ");
+                break;
+        }
+
+        final double[] nums = new double[6];
+        for (; !i.isDone(); i.next()) {
+            final int type = i.currentSegment(nums);
+            switch (type) {
+                case PathIterator.SEG_CLOSE:
+                    buffer.append("Z");
+                    break;
+                case PathIterator.SEG_MOVETO:
+                    buffer.append("M ");
+                    buffer.append(nums[0]);
+                    buffer.append(' ');
+                    buffer.append(nums[1]);
+                    buffer.append(' ');
+                    break;
+                case PathIterator.SEG_LINETO:
+                    buffer.append("L ");
+                    buffer.append(nums[0]);
+                    buffer.append(' ');
+                    buffer.append(nums[1]);
+                    buffer.append(' ');
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    buffer.append("Q ");
+                    buffer.append(nums[0]);
+                    buffer.append(' ');
+                    buffer.append(nums[1]);
+                    buffer.append(' ');
+                    buffer.append(nums[2]);
+                    buffer.append(' ');
+                    buffer.append(nums[3]);
+                    buffer.append(' ');
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    buffer.append("C ");
+                    buffer.append(nums[0]);
+                    buffer.append(' ');
+                    buffer.append(nums[1]);
+                    buffer.append(' ');
+                    buffer.append(nums[2]);
+                    buffer.append(' ');
+                    buffer.append(nums[3]);
+                    buffer.append(' ');
+                    buffer.append(nums[4]);
+                    buffer.append(' ');
+                    buffer.append(nums[5]);
+                    buffer.append(' ');
+                    break;
+            }
+        }
+
+        return buffer.toString();
+    }
+
+	static public Shape deserializeShape(final String str) {
+        final Path2D.Double path = new Path2D.Double();
+
+        final String[] pieces = str.split("\\p{Space}+");
+        if (pieces.length < 1) {
+            return path;
+        }
+
+        final String windingRule = pieces[0];
+        if (windingRule.equalsIgnoreCase("eo")) {
+            path.setWindingRule(Path2D.WIND_EVEN_ODD);
+        } else if (windingRule.equalsIgnoreCase("nz")) {
+            path.setWindingRule(Path2D.WIND_NON_ZERO);
+        } else {
+            throw new IllegalArgumentException(String.format("Winding rule must be either 'eo' or 'nz': %s", str));
+        }
+
+        final double[] nums = new double[6];
+        for (int i = 1; i < pieces.length; /* increment based on command */) {
+            final String cmd = pieces[i];
+            i++; // move past the command
+            if (cmd.equalsIgnoreCase("z")) {
+                path.closePath();
+            } else if (cmd.equalsIgnoreCase("m")) {
+                i += parseDoubles(pieces, i, 2, nums);
+                path.moveTo(nums[0], nums[1]);
+            } else if (cmd.equalsIgnoreCase("l")) {
+                i += parseDoubles(pieces, i, 2, nums);
+                path.lineTo(nums[0], nums[1]);
+            } else if (cmd.equalsIgnoreCase("q")) {
+                i += parseDoubles(pieces, i, 4, nums);
+                path.quadTo(nums[0], nums[1], nums[2], nums[3]);
+            } else if (cmd.equalsIgnoreCase("c")) {
+                i += parseDoubles(pieces, i, 6, nums);
+                path.curveTo(nums[0], nums[1], nums[2], nums[3], nums[4], nums[5]);
+            } else {
+                throw new IllegalArgumentException(String.format("Unknown command '%s': %s", cmd, str));
+            }
+        }
+
+        return (Shape)path;
+    }
+
+	private static int parseDoubles(final String[] pieces,  final int startIndex, final int expectedNum, final double[] nums) {
+        if (startIndex + expectedNum > pieces.length) {
+            throw new IllegalArgumentException(String.format("Command expects at least %d arguments", expectedNum));
+        }
+
+        for (int i = 0; i < expectedNum; i++) {
+            final String num = pieces[i + startIndex];
+            try {
+                nums[i] = Double.parseDouble(num);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(String.format("'%s' is not a valid number", num));
+            }
+        }
+
+        return expectedNum;
 	}
 
 	static public Shape getArrowShape(ArrowType arrowType, double size) {

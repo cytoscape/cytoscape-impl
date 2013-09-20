@@ -125,6 +125,12 @@ public class Parser {
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("S"));
 
+		opt.addOption(OptionBuilder
+		              .withLongOpt("rest")
+		              .withDescription("Start a rest service")
+		              .withValueSeparator('\0').withArgName("port").hasArgs()
+		              .create("R"));
+
 		return opt;
 	}
 
@@ -197,6 +203,10 @@ public class Parser {
 		// Do we have any command scripts requested?
 		if (line.hasOption("S"))
 			startupConfig.setCommandScript(line.getOptionValue("S"));
+
+		// Do we want a rest server?
+		if (line.hasOption("R"))
+			startupConfig.setRestPort(line.getOptionValue("R"));
 	}
 
 	private void printHelp() {

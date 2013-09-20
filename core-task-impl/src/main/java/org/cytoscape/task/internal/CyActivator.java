@@ -187,6 +187,7 @@ import org.cytoscape.task.internal.select.SelectFirstNeighborsTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFromFileListTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectTaskFactory;
 import org.cytoscape.task.internal.session.NewSessionTaskFactoryImpl;
+import org.cytoscape.task.internal.session.OpenSessionCommandTaskFactory;
 import org.cytoscape.task.internal.session.OpenSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionAsTaskFactoryImpl;
 import org.cytoscape.task.internal.session.SaveSessionTaskFactoryImpl;
@@ -358,6 +359,7 @@ public class CyActivator extends AbstractCyActivator {
 		FitSelectedTaskFactory fitSelectedTaskFactory = new FitSelectedTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
 		FitContentTaskFactory fitContentTaskFactory = new FitContentTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
 		NewSessionTaskFactoryImpl newSessionTaskFactory = new NewSessionTaskFactoryImpl(cySessionManagerServiceRef, tunableSetterServiceRef);
+		OpenSessionCommandTaskFactory openSessionCommandTaskFactory = new OpenSessionCommandTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyGroupManager,recentlyOpenedTrackerServiceRef);
 		OpenSessionTaskFactoryImpl openSessionTaskFactory = new OpenSessionTaskFactoryImpl(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyGroupManager,recentlyOpenedTrackerServiceRef,tunableSetterServiceRef);
 		SaveSessionTaskFactoryImpl saveSessionTaskFactory = new SaveSessionTaskFactoryImpl( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef);
 		SaveSessionAsTaskFactoryImpl saveSessionAsTaskFactory = new SaveSessionAsTaskFactoryImpl( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef, tunableSetterServiceRef);
@@ -1005,10 +1007,20 @@ public class CyActivator extends AbstractCyActivator {
 		openSessionTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		openSessionTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		openSessionTaskFactoryProps.setProperty(TOOLTIP,"Open Session");
-		openSessionTaskFactoryProps.setProperty(COMMAND,"open");
-		openSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
-		registerService(bc,openSessionTaskFactory,TaskFactory.class, openSessionTaskFactoryProps);
 		registerService(bc,openSessionTaskFactory,OpenSessionTaskFactory.class, openSessionTaskFactoryProps);
+
+		// We can't use the "normal" OpenSessionTaskFactory for commands
+		// because it inserts the task with the file tunable in it, so the
+		// Command processor never sees it, so we need a special OpenSessionTaskFactory
+		// for commands
+		// openSessionTaskFactoryProps.setProperty(COMMAND,"open");
+		// openSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
+		// registerService(bc,openSessionTaskFactory,TaskFactory.class, openSessionTaskFactoryProps);
+
+		Properties openSessionCommandTaskFactoryProps = new Properties();
+		openSessionCommandTaskFactoryProps.setProperty(COMMAND,"open");
+		openSessionCommandTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
+		registerService(bc,openSessionCommandTaskFactory,TaskFactory.class, openSessionCommandTaskFactoryProps);
 
 		Properties saveSessionTaskFactoryProps = new Properties();
 		saveSessionTaskFactoryProps.setProperty(PREFERRED_MENU,"File");

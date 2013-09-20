@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.internal.attribute.AttributeFilter;
+import org.cytoscape.filter.internal.degree.DegreeFilter;
 import org.cytoscape.filter.internal.filters.model.AtomicFilter;
 import org.cytoscape.filter.internal.filters.model.CompositeFilter;
 import org.cytoscape.filter.internal.filters.model.NumericFilter;
@@ -18,22 +20,15 @@ import org.cytoscape.filter.internal.filters.model.TopologyFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.filter.internal.quickfind.util.QuickFindImpl;
-import org.cytoscape.filter.internal.transformers.DegreeFilter;
-import org.cytoscape.filter.internal.transformers.NumericAttributeFilter;
-import org.cytoscape.filter.internal.transformers.StringAttributeFilter;
 import org.cytoscape.filter.model.Transformer;
-import org.cytoscape.filter.model.TransformerExecutionStrategy;
 import org.cytoscape.filter.model.TransformerSink;
-import org.cytoscape.filter.model.TransformerSource;
-import org.cytoscape.filter.predicates.NumericPredicate;
-import org.cytoscape.filter.predicates.StringPredicate;
+import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.work.util.ListSingleSelection;
 
 public class PerformanceScaffold {
 	static final String STRING_COLUMN = "string";
@@ -118,13 +113,9 @@ public class PerformanceScaffold {
 		protected Object baselineFilter;
 		protected List<Transformer<CyNetwork, CyIdentifiable>> subjectTransformers;
 		protected TransformerManager transformerManager;
-		protected TransformerExecutionStrategy strategy;
-		
-		private TransformerSource<CyNetwork, CyIdentifiable> source;
 		
 		public UseCase(TransformerManager transformerManager) {
 			this.transformerManager = transformerManager;
-			source = transformerManager.getTransformerSource(CyNetwork.class);
 		}
 
 		void execute(CyNetwork network, int iterations) {
@@ -180,7 +171,7 @@ public class PerformanceScaffold {
 					hits.incrementAndGet();
 				}
 			};
-			strategy.execute(network, subjectTransformers, source, sink);
+			transformerManager.execute(network, subjectTransformers, sink);
 			return hits.intValue();
 		}
 		
@@ -216,17 +207,13 @@ public class PerformanceScaffold {
 			System.out.printf("Index\t%s\t%d\n", filter.getControllingAttribute(), System.currentTimeMillis() - start);
 
 			subjectTransformers = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
-			StringAttributeFilter filter2 = new StringAttributeFilter();
-			filter2.attributeName = LIST_STRING_COLUMN;
+			AttributeFilter filter2 = new AttributeFilter();
+			filter2.setAttributeName(LIST_STRING_COLUMN);
 			filter2.setCriterion(searchTerm);
-			filter2.setPredicate(StringPredicate.IS);
-			filter2.caseSensitive = true;
-			ListSingleSelection<String> type = filter2.getType();
-			type.setSelectedValue("nodes");
-			filter2.setType(type);			
+			filter2.setPredicate(Predicate.IS);
+			filter2.setCaseSensitive(true);
+			filter2.type.setSelectedValue("nodes");
 			subjectTransformers.add(filter2);
-
-			strategy = transformerManager.getOptimalStrategy(subjectTransformers);
 		}
 	}
 
@@ -254,12 +241,10 @@ public class PerformanceScaffold {
 			
 			subjectTransformers = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
 			DegreeFilter filter2 = new DegreeFilter();
-			filter2.criterion = minDegree;
-			filter2.edgeType = CyEdge.Type.ANY;
-			filter2.setPredicate(NumericPredicate.GREATER_THAN_OR_EQUAL);
+			filter2.setCriterion(minDegree);
+			filter2.setEdgeType(CyEdge.Type.ANY);
+			filter2.setPredicate(Predicate.GREATER_THAN_OR_EQUAL);
 			subjectTransformers.add(filter2);
-
-			strategy = transformerManager.getOptimalStrategy(subjectTransformers);
 		}
 	}
 
@@ -291,16 +276,12 @@ public class PerformanceScaffold {
 			System.out.printf("Index\t%s\t%d\n", filter.getControllingAttribute(), System.currentTimeMillis() - start);
 
 			subjectTransformers = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
-			NumericAttributeFilter filter2 = new NumericAttributeFilter();
-			filter2.attributeName = INTEGER_COLUMN;
-			filter2.criterion = searchTerm;
-			filter2.setPredicate(NumericPredicate.EQUALS);
-			ListSingleSelection<String> type = filter2.getType();
-			type.setSelectedValue("nodes");
-			filter2.setType(type);
+			AttributeFilter filter2 = new AttributeFilter();
+			filter2.setAttributeName(INTEGER_COLUMN);
+			filter2.setCriterion(searchTerm);
+			filter2.setPredicate(Predicate.IS);
+			filter2.type.setSelectedValue("nodes");
 			subjectTransformers.add(filter2);
-			
-			strategy = transformerManager.getOptimalStrategy(subjectTransformers);
 		}
 	}
 }

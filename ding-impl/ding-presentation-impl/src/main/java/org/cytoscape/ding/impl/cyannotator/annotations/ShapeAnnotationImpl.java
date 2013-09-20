@@ -63,6 +63,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected static final String FILLCOLOR = "fillColor";
 	protected static final String FILLOPACITY = "fillOpacity";
 	protected static final String SHAPETYPE = "shapeType";
+	protected static final String CUSTOMSHAPE = "customShape";
 
 
 	public enum ShapeType {
@@ -73,7 +74,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		PENTAGON ("Pentagon"),
 		STAR5 ("5-Pointed Star"),
 		HEXAGON ("Hexagon"),
-		STAR6 ("6-Pointed Star");
+		STAR6 ("6-Pointed Star"),
+		CUSTOM ("Custom");
 	
 		private final String name;
 		ShapeType (String name) { 
@@ -141,7 +143,10 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
     this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
-    this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
+		if (this.shapeType != ShapeType.CUSTOM)
+    	this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
+		else if (argMap.containsKey(CUSTOMSHAPE))
+    	this.shape = GraphicsUtilities.deserializeShape(argMap.get(CUSTOMSHAPE));
     setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
   }
 
@@ -159,6 +164,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		argMap.put(SHAPETYPE, Integer.toString(this.shapeType.ordinal()));
 		argMap.put(WIDTH, Double.toString(this.shapeWidth));
 		argMap.put(HEIGHT, Double.toString(this.shapeHeight));
+		if (shapeType.equals(ShapeType.CUSTOM))
+			argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
 		return argMap;
 	}
 
@@ -210,12 +217,14 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
   public void setShapeType(ShapeType type) { 
 		shapeType = type; 
-		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
+		if (shapeType != ShapeType.CUSTOM)
+			this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 	}
 
   public void setShapeType(String type) { 
 		shapeType = getShapeFromString(type);
-		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
+		if (shapeType != ShapeType.CUSTOM)
+			this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 	}
   
   public double getBorderWidth() {return borderWidth;}
@@ -273,6 +282,11 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeWidth = width;
 		shapeHeight = height;
     setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
+	}
+
+	public void setCustomShape(Shape shape) {
+		this.shapeType = ShapeType.CUSTOM;
+		this.shape = shape;
 	}
 
 	public JDialog getModifyDialog() {

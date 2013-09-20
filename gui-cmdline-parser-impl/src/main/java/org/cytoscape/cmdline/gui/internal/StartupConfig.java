@@ -159,11 +159,27 @@ public class StartupConfig {
 		try{
 			File scriptName = new File(args);
 		}catch(Exception e){
-			System.err.println("Can't file script file: "+args+": "+e.toString());
+			System.err.println("Can't find script file: "+args+": "+e.toString());
 			logger.error(e.toString());
 			return;
 		}
 		localProps.setProperty("scriptFile", args);
+		taskStart = true;
+	}
+
+	public void setRestPort(String args) {
+		if (args == null || args.length() == 0)
+			args = "8080";
+		else {
+			try {
+				Integer port = Integer.valueOf(args);
+			} catch(Exception e) {
+				System.err.println("Rest port argument not an integer: "+args);
+				logger.error(e.toString());
+				return;
+			}
+		}
+		localProps.setProperty("restPort", args);
 		taskStart = true;
 	}
 
