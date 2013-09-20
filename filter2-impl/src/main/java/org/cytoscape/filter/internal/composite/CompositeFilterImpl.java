@@ -1,16 +1,18 @@
-package org.cytoscape.filter.internal.transformers;
+package org.cytoscape.filter.internal.composite;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.work.Tunable;
 
-public class CompositeFilterImpl<C, E> implements CompositeFilter<C, E> {
-	@Tunable()
-	public Type type;
+public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> implements CompositeFilter<C, E> {
+	static final String ID = "org.cytoscape.CompositeFilter";
 	
+	private Type type;
+
 	List<Filter<C, E>> filters;
 
 	private Class<C> contextType;
@@ -18,6 +20,7 @@ public class CompositeFilterImpl<C, E> implements CompositeFilter<C, E> {
 	private Class<E> elementType;
 	
 	public CompositeFilterImpl(Class<C> contextType, Class<E> elementType) {
+		type = Type.ALL;
 		filters = new ArrayList<Filter<C,E>>();
 		this.contextType = contextType;
 		this.elementType = elementType;
@@ -30,7 +33,7 @@ public class CompositeFilterImpl<C, E> implements CompositeFilter<C, E> {
 
 	@Override
 	public String getId() {
-		return "org.cytoscape.FilterChain";
+		return ID;
 	}
 
 	
@@ -38,6 +41,7 @@ public class CompositeFilterImpl<C, E> implements CompositeFilter<C, E> {
 	public void append(Filter<C, E> filter) {
 		checkTypes(filter);
 		filters.add(filter);
+		notifyListeners();
 	}
 
 	private void checkTypes(Filter<C, E> filter) {
@@ -56,6 +60,7 @@ public class CompositeFilterImpl<C, E> implements CompositeFilter<C, E> {
 	public void insert(int index, Filter<C, E> filter) {
 		checkTypes(filter);
 		filters.add(index, filter);
+		notifyListeners();
 	}
 
 	@Override
@@ -65,7 +70,11 @@ public class CompositeFilterImpl<C, E> implements CompositeFilter<C, E> {
 
 	@Override
 	public Filter<C, E> remove(int index) {
-		return filters.remove(index);
+		try {
+			return filters.remove(index);
+		} finally {
+			notifyListeners();
+		}
 	}
 	
 	@Override
@@ -74,6 +83,7 @@ public class CompositeFilterImpl<C, E> implements CompositeFilter<C, E> {
 	}
 
 	@Override
+	@Tunable
 	public Type getType() {
 		return type;
 	}
@@ -81,6 +91,7 @@ public class CompositeFilterImpl<C, E> implements CompositeFilter<C, E> {
 	@Override
 	public void setType(Type type) {
 		this.type = type;
+		notifyListeners();
 	}
 
 	@Override

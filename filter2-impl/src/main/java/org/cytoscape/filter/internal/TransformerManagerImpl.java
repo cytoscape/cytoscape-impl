@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -14,13 +13,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.filter.TransformerManager;
-import org.cytoscape.filter.internal.transformers.CompositeFilterImpl;
+import org.cytoscape.filter.internal.composite.CompositeFilterImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.HolisticTransformer;
 import org.cytoscape.filter.model.Transformer;
-import org.cytoscape.filter.model.TransformerExecutionStrategy;
 import org.cytoscape.filter.model.TransformerFactory;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.model.TransformerSource;
@@ -31,6 +29,7 @@ public class TransformerManagerImpl implements TransformerManager {
 	
 	TransformerExecutionStrategy bufferedStrategy;
 	TransformerExecutionStrategy unbufferedStrategy;
+	private boolean interactiveModeEnabled;
 
 	public TransformerManagerImpl() {
 		int maximumThreads = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
@@ -71,7 +70,6 @@ public class TransformerManagerImpl implements TransformerManager {
 		}
 	}
 	
-	@Override
 	public <C, E> TransformerExecutionStrategy getOptimalStrategy(List<Transformer<C, E>> transformers) {
 		for (Transformer<C, E> transformer : transformers) {
 			if (transformer instanceof ElementTransformer || transformer instanceof HolisticTransformer) {
@@ -123,12 +121,6 @@ public class TransformerManagerImpl implements TransformerManager {
 		return new CompositeFilterImpl<C, E>(contextType, elementType);
 	}
 	
-	@Override
-	public <C, E> List<Transformer<C, E>> optimize(List<Transformer<C, E>> transformers) {
-		// TODO: Implement me
-		return transformers;
-	}
-	
 	public void registerTransformerFactory(TransformerFactory<?, ?> factory, Map<String, String> properties) {
 		transformerFactories.put(factory.getId(), factory);
 	}
@@ -145,24 +137,6 @@ public class TransformerManagerImpl implements TransformerManager {
 			return null;
 		}
 		return (Transformer<C, E>) factory.createTransformer();
-	}
-	
-	@Override
-	public <C, E> List<Transformer<C, E>> createTransformerList(String id) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
-	}
-	
-	@Override
-	public <C, E> void registerTransformerList(String id, Transformer<C, E>... transformers) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
-	}
-	
-	@Override
-	public Set<String> getRegisteredTransformerListIds() {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
 	}
 	
 	class BufferedExecutionStrategy implements TransformerExecutionStrategy {
@@ -301,5 +275,15 @@ public class TransformerManagerImpl implements TransformerManager {
 			};
 		}
 		return iterators;
+	}
+	
+	@Override
+	public boolean getInteractiveModeEnabled() {
+		return interactiveModeEnabled;
+	}
+	
+	@Override
+	public void setInteractiveModeEnabled(boolean enabled) {
+		interactiveModeEnabled = enabled;
 	}
 }
