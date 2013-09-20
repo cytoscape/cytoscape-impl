@@ -33,6 +33,9 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
 import java.awt.Frame;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -48,6 +51,7 @@ import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.util.swing.OpenBrowser;
 
 public class CitationsDialog {
   final WebQuerier webQuerier;
@@ -56,7 +60,7 @@ public class CitationsDialog {
   final JDialog dialog;
   final JTextPane textPane;
 
-  public CitationsDialog(WebQuerier webQuerier, AppManager appMgr, TaskManager taskMgr, Frame parent) {
+  public CitationsDialog(WebQuerier webQuerier, AppManager appMgr, TaskManager taskMgr, Frame parent, final OpenBrowser openBrowser) {
     this.webQuerier = webQuerier;
     this.appMgr = appMgr;
     this.taskMgr = taskMgr;
@@ -68,6 +72,13 @@ public class CitationsDialog {
     textPane = new JTextPane();
     textPane.setEditable(false);
     textPane.setContentType("text/html");
+    textPane.addHyperlinkListener(new HyperlinkListener() {
+      public void hyperlinkUpdate(HyperlinkEvent e) {
+        if (!e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
+          return;
+        openBrowser.openURL(e.getURL().toString());
+      }
+    });
 
     //final JButton saveButton = new JButton("Save for EndNote...");
 
@@ -355,26 +366,32 @@ class RetrieveTask implements Task {
     final PubMedParser pubMedParser = new PubMedParser();
     final Map<String,Article> articles = pubMedParser.retrieveArticles(pmids);
     final StringBuffer buffer = new StringBuffer("<html><dl>");
-
-    buffer.append("<dt><b>Cytoscape</b></dt>");
-    buffer.append("<dd>");
-    buffer.append(articles.get("Cytoscape"));
-    buffer.append("</dd>");
+    buffer.append(formatArticleAsHtmlDefinition("Cytoscape", articles.get("Cytoscape")));
     buffer.append("</dl><br><br><dl>");
     for (final String name : new TreeSet<String>(articles.keySet())) {
       if (name.equals("Cytoscape"))
         continue;
       final Article article = articles.get(name);
-      buffer.append("<dt><b>");
-      buffer.append(name);
-      buffer.append("</b></dt>");
-      buffer.append("<dd>");
-      buffer.append(article.toString());
-      buffer.append("</dd>");
+      buffer.append(formatArticleAsHtmlDefinition(name, article));
     }
     buffer.append("</dl></html>");
 
     textPane.setText(buffer.toString());
+  }
+
+  private static String formatArticleAsHtmlDefinition(final String name, final Article article) {
+    final StringBuffer buffer = new StringBuffer();
+    buffer.append("<dt><b>");
+    buffer.append(name);
+    buffer.append("</b></dt>");
+    buffer.append("<dd>");
+    buffer.append(article.toString());
+    buffer.append("<br>");
+    buffer.append("<font size=\"-1\"><a href=\"http://www.ncbi.nlm.nih.gov/pubmed/");
+    buffer.append(article.getPmid());
+    buffer.append("\">Open in PubMed &rarr;</a></font>");
+    buffer.append("</dd>");
+    return buffer.toString();
   }
 
   public void cancel() {

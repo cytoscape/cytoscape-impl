@@ -130,6 +130,7 @@ import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -271,7 +272,8 @@ public class CyActivator extends AbstractCyActivator {
 		 
     	 StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
     	 FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
-		
+    	 OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
+
     	 CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(cyApplicationManagerRef,
                  cyEventHelperRef,
                  cyGroupAggregationManagerRef, 
@@ -401,7 +403,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, appManagerAction, CyAction.class, new Properties());
 
 		// Show citations dialog
-		final CitationsAction citationsAction = new CitationsAction(webQuerier, appManager, dialogTaskManagerRef, cySwingApplicationRef);
+		final CitationsAction citationsAction = new CitationsAction(webQuerier, appManager, dialogTaskManagerRef, cySwingApplicationRef, openBrowser);
 		registerService(bc, citationsAction, CyAction.class, new Properties());
 		
 		// Start local server that reports app installation status to the app store when requested,
