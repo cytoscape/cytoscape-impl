@@ -49,6 +49,7 @@ import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsDeletedEvent;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TablePrivacyChangedEvent;
@@ -1175,7 +1176,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				}
 	        }
 		}
-		
+		if(changed)
+			eventHelper.fireEvent(new RowsDeletedEvent( this,  (Collection<Object>) primaryKeys));
 		return changed;
 	}
 	

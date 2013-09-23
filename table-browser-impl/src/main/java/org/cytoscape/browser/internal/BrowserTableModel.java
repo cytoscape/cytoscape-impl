@@ -46,9 +46,11 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
+import org.cytoscape.model.events.RowsDeletedListener;
+import org.cytoscape.model.events.RowsDeletedEvent;
 
 
-public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener {
+public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener,RowsDeletedListener {
 	public static enum ViewMode {
 		ALL,
 		SELECTED,
@@ -304,6 +306,26 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		rowIndexToPrimaryKey = newRowIndex;
 		for ( Object pk : e.getPayloadCollection() )
 			rowIndexToPrimaryKey[maxRowIndex++] = pk;
+
+		fireTableDataChanged();
+	}
+	
+	@Override
+	public synchronized void handleEvent(RowsDeletedEvent e) {
+		if(!e.getSource().equals(this.dataTable))
+			return ;
+
+		int index=0;
+		
+		final Collection<CyRow> rows = dataTable.getAllRows();
+		
+		final String primaryKey = dataTable.getPrimaryKey().getName();
+		
+		for ( CyRow row : rows ) 
+			rowIndexToPrimaryKey[index++] = row.getRaw(primaryKey);
+		maxRowIndex = index;
+		selectedRows = null;
+		
 
 		fireTableDataChanged();
 	}
