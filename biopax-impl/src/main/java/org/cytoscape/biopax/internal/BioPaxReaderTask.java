@@ -24,19 +24,29 @@ package org.cytoscape.biopax.internal;
  * #L%
  */
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.Model;
+import org.biopax.paxtools.model.level3.Entity;
+import org.biopax.paxtools.model.level3.EntityReference;
+import org.biopax.paxtools.util.BioPaxIOException;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
 import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -44,6 +54,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -69,10 +80,12 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 
 	private InputStream stream;
 	private String inputName;
-	private CyNetwork network;
+	private final Collection<CyNetwork> networks;
 	private CyRootNetwork rootNetwork;
 	
-	/*
+	private CyNetworkReader anotherReader;
+	
+	/**
 	 * BioPAX parsing/converting options.
 	 * 
 	 * @author rodche
@@ -87,22 +100,22 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		 * some of dependent utility class objects and simple properties are used to
 		 * generate node attributes.
 		 */
-		DEFAULT("BioPAX states,interactions -> nodes; BioPAX properties -> edges/attributes"),
+		DEFAULT("States,interactions ->nodes; properties ->edges,attributes"),
 		
 		/**
 		 * BioPAX to SIF, and then to Cytoscape mapping:
 		 * first, it converts BioPAX to SIF (using Paxtools library); next, 
-		 * delegates network/view creation to the first available SIF reader.
+		 * delegates network/view creation to the first available SIF anotherReader.
 		 */
-		SIF("BioPAX to SIF first, add attributes"),
+		SIF("BioPAX to SIF"),
 		
 		/**
 		 * BioPAX to SBGN, and then to Cytoscape network/view mapping:
 		 * converts BioPAX to SBGN-ML (using Paxtools library); next, 
-		 * delegates network/view creation to the first available SBGN reader,
+		 * delegates network/view creation to the first available SBGN anotherReader,
 		 * e.g., CySBGN (if present).
 		 */
-		SBGN("BioPAX to SBGN first, add attributes");
+		SBGN("BioPAX to SBGN");
 		
 		public final String descr;
 		
@@ -134,7 +147,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Create a Network from BioPAX";
+		return "Import Network from BioPAX";
 	}
 	
 	
@@ -148,6 +161,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	public BioPaxReaderTask(InputStream stream, String inputName, 
 			CyServices cyServices, VisualStyleUtil visualStyleUtil) 
 	{
+		this.networks = new HashSet<CyNetwork>();
 		this.stream = stream;
 		this.inputName = inputName;
 		this.cyServices = cyServices;
@@ -164,22 +178,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		rootNames.add(CREATE_NEW_COLLECTION);
 		rootNames.addAll(nameToRootNetworkMap.keySet());
 		rootNetworkSelection = new ListSingleSelection<String>(rootNames);
-		rootNetworkSelection.setSelectedValue(CREATE_NEW_COLLECTION);		
-		
-		// guess default target network group (root) from the first of currently selected network
-//		final List<CyNetwork> selectedNetworks = cyServices.applicationManager.getSelectedNetworks();
-//		if (selectedNetworks != null && !selectedNetworks.isEmpty()){
-//			CyNetwork selectedNetwork = cyServices.applicationManager.getSelectedNetworks().get(0);
-//			String rootName = "";
-//			if (selectedNetwork instanceof CySubNetwork){
-//				CySubNetwork subnet = (CySubNetwork) selectedNetwork;
-//				CyRootNetwork rootNet = subnet.getRootNetwork();
-//				rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
-//			} else {
-//				rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
-//			}				
-//			rootNetworkList.setSelectedValue(rootName);
-//		}
+		rootNetworkSelection.setSelectedValue(CREATE_NEW_COLLECTION);
 		
 		readerModeSelection = new ListSingleSelection<ReaderMode>(ReaderMode.values());
 		readerModeSelection.setSelectedValue(ReaderMode.DEFAULT);
@@ -193,46 +192,156 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	
 	public void run(TaskMonitor taskMonitor) throws Exception 
 	{
-		Model model = BioPaxMapper.read(stream);
+		// import BioPAX data into a new in-memory model
+		final Model model = BioPaxMapper.read(stream);
+		
 		if(model == null) {
 			log.error("Failed to read BioPAX model");
 			return;
 		}
 		
-		String networkName = getNetworkName(model);
+		final String networkName = getNetworkName(model);
 		log.info("Model " + networkName + " contains " 
 				+ model.getObjects().size() + " BioPAX elements");
+		
+		final BioPaxMapper mapper = new BioPaxMapper(model, cyServices.networkFactory);
 			
 		switch (readerModeSelection.getSelectedValue()) {
 		case DEFAULT:
+			anotherReader = null;
 			// Map BioPAX Data to Cytoscape Nodes/Edges (run as task)
-			BioPaxMapper mapper = new BioPaxMapper(model, cyServices.networkFactory, taskMonitor);
-			network = mapper.createCyNetwork(networkName, rootNetwork);
+			taskMonitor.setStatusMessage("Mapping BioPAX model to CyNetwork...");
+			CyNetwork network = mapper.createCyNetwork(networkName, rootNetwork);
+			if (network.getNodeCount() == 0)
+				throw new BioPaxIOException("Pathway is empty. Please check the BioPAX source file.");
 			// set the biopax network mapping type for other plugins
 			AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "DEFAULT", String.class);
+			networks.add(network);
 			break;
 		case SIF:
-			//TODO convert, delegate to a SIF converter
-			// set the biopax network mapping type for other plugins
-			AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "SIF", String.class);
-			//TODO create node attributes from biopax properties
+			//convert to SIF
+			File sifFile = File.createTempFile("tmp_biopax", ".sif");
+			sifFile.deleteOnExit();
+			BioPaxMapper.convertToSif(model, new FileOutputStream(sifFile));
+			// try to discover a SIF reader and pass the data there
+			anotherReader =  cyServices.networkViewReaderManager.getReader(sifFile.toURI(), networkName);			
+			if(anotherReader != null) {
+				insertTasksAfterCurrentTask(
+//				cyServices.taskManager.execute( new TaskIterator(
+					anotherReader, 
+					new AbstractTask() {
+					@Override
+					public void run(TaskMonitor taskMonitor) throws Exception {
+						taskMonitor.setStatusMessage("Creating node attributes from BioPAX properties...");
+						taskMonitor.setProgress(0.0);
+						CyNetwork[] cyNetworks = anotherReader.getNetworks();
+						int i = 0;
+						for (CyNetwork network : cyNetworks) {	
+							networks.add(network);
+							//create attributes from biopax properties
+							createBiopaxSifAttributes(model, network, mapper, taskMonitor);
+							// set the biopax network mapping type for other plugins
+							AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "SIF", String.class);
+							taskMonitor.setProgress(++i/cyNetworks.length);
+						}
+					}
+				})
+//				)
+				;				
+			} else {
+				//fail with a message
+				throw new BioPaxIOException("No SIF readers found.");
+			}
 			break;
 		case SBGN:
-			//TODO convert, delegate to a SBGN converter
-			// set the biopax network mapping type for other plugins
-			AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "SBGN", String.class);
-			//TODO create node attributes from biopax properties
+			//convert to SBGN
+			File sbgnFile = File.createTempFile("tmp_biopax", ".sbgn");
+			sbgnFile.deleteOnExit(); 
+			BioPaxMapper.convertToSBGN(model, new FileOutputStream(sbgnFile));
+			// try to discover a SBGN reader to pass the xml data there
+			anotherReader =  cyServices.networkViewReaderManager.getReader(sbgnFile.toURI(), networkName);
+			if(anotherReader != null) {				
+				insertTasksAfterCurrentTask(
+//				cyServices.taskManager.execute( new TaskIterator(	
+					anotherReader, 
+					new AbstractTask() {
+					@Override
+					public void run(TaskMonitor taskMonitor) throws Exception {
+						taskMonitor.setProgress(0.0);
+						for (CyNetwork network : anotherReader.getNetworks()) {	
+							networks.add(network);
+							
+							//TODO create attributes from biopax properties (depends on actual SBGN reader, if any) ?
+						
+							// set the biopax network mapping type for other plugins
+							AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "SBGN", String.class);	
+						}
+						taskMonitor.setProgress(1.0);
+					}
+				})
+//				)
+				;
+			} else {
+				//fail with a message
+				throw new BioPaxIOException("No SBGN readers found, or BioPAX to SBGN " +
+						"conversion failed (check " + sbgnFile.getAbsolutePath());
+			}
 			break;
 		default:
 			break;
 		}
-		
-		if (network.getNodeCount() == 0) {
-			log.error("Pathway is empty. Please check the BioPAX source file.");
-		}
 	}
 
 	
+	private void createBiopaxSifAttributes(Model model, CyNetwork cyNetwork, 
+			BioPaxMapper mapper, TaskMonitor taskMonitor) {
+			
+		taskMonitor.setStatusMessage("Updating SIF network " +
+				"node/edge attributes from the BioPAX model...");				
+
+		// Set the Quick Find Default Index
+		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNetwork.NAME, String.class);
+
+		// we need the biopax sub-model to create node/edge attributes
+		final Set<String> uris = new HashSet<String>();
+		for (CyNode node : cyNetwork.getNodeList()) {
+			//hack: we know that the built-in Cy3 SIF reader uses URIs 
+			// from the Pathway Commons SIF data to fill the NAME column by default...
+			String uri = cyNetwork.getRow(node).get(CyNetwork.NAME, String.class);
+			if(uri != null && !uri.contains("/group/")) {
+				uris.add(uri);
+			} 
+		}
+
+		if (cancelled) return;
+
+		// Set node/edge attributes from the Biopax Model
+		for (CyNode node : cyNetwork.getNodeList()) {
+			String uri = cyNetwork.getRow(node).get(CyNetwork.NAME, String.class);
+			BioPAXElement e = model.getByID(uri);// can be null (for generic/group nodes)
+			if(e instanceof EntityReference || e instanceof Entity) 
+			{
+				//note: in fact, SIF formatted data contains only ERs, PEs (no sub-classes), and Complexes / Generics.
+				BioPaxMapper.createAttributesFromProperties(e, model, node, cyNetwork);
+			} else if (e != null){
+				log.warn("SIF network has an unexpected node: " + uri 
+						+ " of type " + e.getModelInterface());
+				BioPaxMapper.createAttributesFromProperties(e, model, node, cyNetwork);
+			} else { //e == null						
+				if(uri.contains("/group/")) {
+					AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_ENTITY_TYPE, "(Generic)", String.class);
+					AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_URI, uri, String.class);
+					AttributeUtil.set(cyNetwork, node, CyRootNetwork.SHARED_NAME, "(Group)", String.class);
+					AttributeUtil.set(cyNetwork, node, CyNetwork.NAME, "(Group)", String.class);
+				} else {
+					log.warn("URI, which is not a generated " +
+							"generic/group's one, is not found on the server: " + uri);
+				}
+			}
+		}
+	}
+
+
 	private String getNetworkName(Model model) {
 		// make a network name from pathway name(s) or the file name
 		String name = BioPaxMapper.getName(model);
@@ -260,53 +369,71 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		return new CyNetwork[]{network};
+		return networks.toArray(new CyNetwork[] {});
 	}
 
+	
 	@Override
-	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		final CyNetworkView view = cyServices.networkViewFactory.createNetworkView(network);
+	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				if(applyVisualStyle) { //optionally apply style
-					//visual style depends on the tunable
-					VisualStyle style = null; 				
-					switch (readerModeSelection.getSelectedValue()) {
-					case DEFAULT:
-						style= visualStyleUtil.getBioPaxVisualStyle();
-						break;
-					case SIF:
-						style= visualStyleUtil.getBinarySifVisualStyle();
-						break;
-					default:
-						break;
+		//callback array (has to be final)
+		CyNetworkView view;
+		
+		//visual style depends on the tunable
+		VisualStyle style = null; 				
+		switch (readerModeSelection.getSelectedValue()) {
+		case DEFAULT:
+			style = visualStyleUtil.getBioPaxVisualStyle();
+			view = cyServices.networkViewFactory.createNetworkView(network);
+			cyServices.networkViewManager.addNetworkView(view); //required here
+			break;
+		case SIF:
+			style = visualStyleUtil.getBinarySifVisualStyle();
+			view = anotherReader.buildCyNetworkView(network);
+			cyServices.networkViewManager.addNetworkView(view); //TODO duplicate view?
+			break;
+		case SBGN:
+		default:
+			view = anotherReader.buildCyNetworkView(network);
+			//TODO: a layout for SBGN views (if not already done)? 
+			break;
+		}
+
+		if(view != null) {
+			final VisualStyle s = style;
+			final CyNetworkView v = view;
+
+			//optionally apply style and layout
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					if(applyVisualStyle && s != null) {
+						cyServices.mappingManager.setVisualStyle(s, v);
+						s.apply(v);
 					}
 
-					if(style != null) {
-						cyServices.mappingManager.setVisualStyle(style, view);
-						style.apply(view);
+					if(applyLayout) {
+						layout(v);
 					}
+
+					v.updateView();
 				}
-				
-				if(applyLayout) {
-					// do layout
-					CyLayoutAlgorithm layout = cyServices.layoutManager.getLayout("force-directed");
-					if (layout == null) {
-						layout = cyServices.layoutManager.getLayout(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
-						log.warn("'force-directed' layout not found; will use the default one.");
-					}
-					cyServices.taskManager.execute(layout.createTaskIterator(view, 
-							layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
-				}
-				
-				view.updateView();
-			} 
-		});
+			});
+		}
 		
 		return view;
+	}
+
+
+	private void layout(CyNetworkView view) {
+		// do layout
+		CyLayoutAlgorithm layout = cyServices.layoutManager.getLayout("force-directed");
+		if (layout == null) {
+			layout = cyServices.layoutManager.getLayout(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
+			log.warn("'force-directed' layout not found; will use the default one.");
+		}
+		cyServices.taskManager.execute(layout.createTaskIterator(view, 
+				layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
 	}
 
 }

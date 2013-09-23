@@ -49,6 +49,10 @@
 			<artifactId>filter-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -71,11 +75,6 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>event-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

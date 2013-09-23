@@ -11,8 +11,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -23,9 +21,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.Collator;
+import java.util.Locale;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -57,9 +56,11 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
-import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -74,7 +75,7 @@ import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 
 @SuppressWarnings("serial")
-public class VisualPropertySheetItem<T> extends JPanel {
+public class VisualPropertySheetItem<T> extends JPanel implements Comparable<VisualPropertySheetItem<?>> {
 
 	public enum MessageType { INFO, WARNING, ERROR	}
 
@@ -90,7 +91,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	private static final int MSG_ICON_WIDTH = 18;
 	private static final int MSG_ICON_HEIGHT = 15;
 	
-	static final Color FG_COLOR = new Color(115, 115, 115);
 	static final Color BG_COLOR = Color.WHITE;
 	static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
 	
@@ -98,6 +98,10 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	static final Color BTN_BORDER_DISABLED_COLOR = new Color(248, 248, 248);
 	static final int BTN_H_MARGIN = 1;
 	static final int BTN_BORDER_WIDTH = 1;
+	
+	static final Color INFO_COLOR = Color.LIGHT_GRAY;
+	static final Color WARN_COLOR = new Color(184, 174, 105);
+	static final Color ERR_COLOR = new Color(109, 73, 74);
 	
 	private JPanel topPnl;
 	private JPanel mappingPnl;
@@ -118,23 +122,23 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	private final VisualPropertySheetItemModel<T> model;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
-	private final IconManager iconMgr;
+	private final ThemeManager themeMgr;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public VisualPropertySheetItem(final VisualPropertySheetItemModel<T> model,
 								   final VizMapPropertyBuilder vizMapPropertyBuilder,
-								   final IconManager iconMgr) {
+								   final ThemeManager themeMgr) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
 		if (vizMapPropertyBuilder == null)
 			throw new IllegalArgumentException("'vizMapPropertyBuilder' must not be null");
-		if (iconMgr == null)
-			throw new IllegalArgumentException("'iconMgr' must not be null");
+		if (themeMgr == null)
+			throw new IllegalArgumentException("'themeMgr' must not be null");
 		
 		this.model = model;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
-		this.iconMgr = iconMgr;
+		this.themeMgr = themeMgr;
 		disabledBtnIcon = getIcon(null, VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
 		
 		init();
@@ -213,15 +217,17 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			final LockedValueState state = model.getLockedValueState();
 			bypassBtn.setEnabled(isEnabled() && state != LockedValueState.DISABLED);
 			
-			// TODO: create better icons
-			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
-			
-			if (state == LockedValueState.ENABLED_UNIQUE_VALUE)
-				bypassBtn.setText(null);
-			else if (state == LockedValueState.ENABLED_MULTIPLE_VALUES)
-				bypassBtn.setText("?");
-			else
+			if (state == LockedValueState.ENABLED_MULTIPLE_VALUES) {
+				bypassBtn.setForeground(Color.GRAY);
+				bypassBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(19.0f));
+				bypassBtn.setText("\uF059"); // icon-question-sign
+			} else {
+				bypassBtn.setForeground(UIManager.getColor("Button.foreground"));
+				bypassBtn.setFont(UIManager.getFont("Button.font"));
 				bypassBtn.setText("");
+			}
+			
+			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			
 			final String elementsStr = model.getTargetDataType() == CyNode.class ? "nodes" : "edges";
 			String toolTipText = "No bypass";
@@ -304,6 +310,39 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		
 		getTitleLbl().setForeground(UIManager.getColor(enabled ? "Label.foreground" : "Label.disabledForeground"));
 		super.setEnabled(enabled);
+	}
+	
+	@Override
+	public int compareTo(final VisualPropertySheetItem<?> other) {
+		final VisualPropertySheetItemModel<?> m1 = this.getModel();
+		final VisualPropertySheetItemModel<?> m2 = other.getModel();
+		String title1 = m1.getTitle();
+		String title2 = m2.getTitle();
+		
+		final VisualPropertyDependency<?> dep1 = m1.getVisualPropertyDependency();
+		final VisualPropertyDependency<?> dep2 = m2.getVisualPropertyDependency();
+		
+		// Put dependencies in the end of the sorted list
+		if (dep1 == null && dep2 != null)
+			return -1;
+		if (dep1 != null && dep2 == null)
+			return 1;
+		
+		if (dep1 != null && dep2 != null) {
+			title1 = dep1.getDisplayName();
+			title2 = dep2.getDisplayName();
+		}
+		
+		// Locale-specific sorting
+		final Collator collator = Collator.getInstance(Locale.getDefault());
+		collator.setStrength(Collator.PRIMARY);
+		
+		return collator.compare(title1, title2);
+	}
+	
+	@Override
+	public String toString() {
+		return model != null ? model.getTitle() : "?";
 	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================
@@ -406,11 +445,9 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			final JPanel bottomPnl = new JPanel();
 			bottomPnl.setLayout(new BoxLayout(bottomPnl, BoxLayout.X_AXIS));
 			bottomPnl.add(Box.createHorizontalGlue());
-			bottomPnl.add(Box.createHorizontalGlue());
 			bottomPnl.add(getRemoveMappingBtn());
-			bottomPnl.add(Box.createHorizontalGlue());
-			bottomPnl.add(Box.createVerticalStrut(PROP_SHEET_ROW_HEIGHT));
-			bottomPnl.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+			bottomPnl.add(Box.createRigidArea(new Dimension(0, PROP_SHEET_ROW_HEIGHT)));
+			bottomPnl.setBorder(BorderFactory.createEmptyBorder(0, 4, 4, 4));
 			
 			mappingPnl.add(bottomPnl, BorderLayout.SOUTH);
 			
@@ -477,7 +514,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	protected ExpandCollapseButton getShowMappingBtn() {
 		if (expandCollapseBtn == null) {
-			expandCollapseBtn = new ExpandCollapseButton(new ActionListener() {
+			expandCollapseBtn = new ExpandCollapseButton(false, new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent ae) {
 					if (getMappingPnl().isShowing())
@@ -491,8 +528,6 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			expandCollapseBtn.setMinimumSize(d);
 			expandCollapseBtn.setPreferredSize(d);
 			expandCollapseBtn.setMaximumSize(d);
-			expandCollapseBtn.setForeground(FG_COLOR);
-			expandCollapseBtn.setBackground(BG_COLOR);
 			expandCollapseBtn.setBorder(
 					BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD, BUTTON_H_PAD));
 			expandCollapseBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -583,9 +618,14 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	protected JButton getRemoveMappingBtn() {
 		if (removeMappingBtn == null) {
-			removeMappingBtn = new JButton("Remove Mapping", iconMgr.getIcon(IconManager.DEL_ICON));
-			removeMappingBtn.setUI(new VPButtonUI(VPButtonUI.CENTER));
-			removeMappingBtn.setHorizontalTextPosition(SwingConstants.RIGHT);
+			removeMappingBtn = new JButton("\uF014"); // icon-trash
+			removeMappingBtn.setToolTipText("Remove Mapping");
+			removeMappingBtn.setBorderPainted(false);
+			removeMappingBtn.setContentAreaFilled(false);
+			removeMappingBtn.setOpaque(false);
+			removeMappingBtn.setFocusable(false);
+			removeMappingBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			removeMappingBtn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 			updateRemoveMappingBtn();
 		}
 		
@@ -606,6 +646,7 @@ public class VisualPropertySheetItem<T> extends JPanel {
 			msgIconLbl = new JLabel(" ");
 			msgIconLbl.setHorizontalTextPosition(SwingConstants.CENTER);
 			msgIconLbl.setPreferredSize(new Dimension(MSG_ICON_WIDTH, MSG_ICON_HEIGHT));
+			msgIconLbl.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(16.0f));
 		}
 		
 		return msgIconLbl;
@@ -644,42 +685,44 @@ public class VisualPropertySheetItem<T> extends JPanel {
 	
 	private void updateSelection() {
 		getTopPnl().setBackground(selected ? SELECTED_BG_COLOR : BG_COLOR);
-		
-		if (model.isVisualMappingAllowed()) {
-			getShowMappingBtn().setBackground(selected ? SELECTED_BG_COLOR : BG_COLOR);
-			getShowMappingBtn().repaint();
-		}
 	}
 	
 	private void updateMessageIcon(final MessageType type) {
-		String iconName = null;
+		String text = null;
+		Color fg = null;
 		
-		if (type == MessageType.INFO)
-			iconName = IconManager.INFO_ICON;
-		else if (type == MessageType.WARNING)
-			iconName = IconManager.WARN_ICON;
-		else if (type == MessageType.ERROR)
-			iconName = IconManager.ERROR_ICON;
+		if (type == MessageType.INFO) {
+			text = "\uF05A"; // icon-info-sign
+			fg = INFO_COLOR;
+		} else if (type == MessageType.WARNING) {
+			text = "\uF071"; // icon-warning-sign
+			fg = WARN_COLOR;
+		} else if (type == MessageType.ERROR) {
+			text = "\uF056"; // icon-minus-sign
+			fg = ERR_COLOR;
+		}
 		
-		getMsgIconLbl().setIcon(iconName != null ? iconMgr.getIcon(iconName) : null);
+		getMsgIconLbl().setText(text);
+		getMsgIconLbl().setForeground(fg);
 	}
 	
 	private void updateMappingIcon() {
 		final JToggleButton btn = getMappingBtn();
 		final VisualMappingFunction<?, T> mapping = model.getVisualMappingFunction();
 		final String colName = mapping != null ? mapping.getMappingColumnName() : null;
+		btn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(16.0f));
 		
 		if (mapping == null) {
 			btn.setText("");
-			btn.setToolTipText("No Visual Mapping");
+			btn.setToolTipText("No Mapping");
 		} else if (mapping instanceof DiscreteMapping) {
-			btn.setText("Dm");
+			btn.setText("D \uF142"); // icon-ellipsis-vertical
 			btn.setToolTipText("Discrete Mapping for column \"" + colName + "\"");
 		} else if (mapping instanceof ContinuousMapping) {
-			btn.setText("Cm");
+			btn.setText("C \uF07D"); // icon-resize-vertical
 			btn.setToolTipText("Continuous Mapping for column \"" + colName + "\"");
 		} else if (mapping instanceof PassthroughMapping) {
-			btn.setText("Pm");
+			btn.setText("P \uF105"); // icon-angle-right
 			btn.setToolTipText("Passthrough Mapping for column \"" + colName + "\"");
 		}
 	}
@@ -805,77 +848,25 @@ public class VisualPropertySheetItem<T> extends JPanel {
 		}
 	}
 	
-	private static class ExpandCollapseButton extends JButton {
+	private class ExpandCollapseButton extends JButton {
 		
-	    BufferedImage openImg, closedImg, disabledClosedImg;
-	    final int PAD = 8;
-	    
-	    public ExpandCollapseButton(final ActionListener al) {
-	        addActionListener(al);
+	    public ExpandCollapseButton(final boolean selected, final ActionListener al) {
 	        setRequestFocusEnabled(true);
+	        setBorderPainted(false);
+			setContentAreaFilled(false);
+			setOpaque(false);
+			setFocusPainted(false);
+			setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			setForeground(Color.DARK_GRAY);
+			
+			addActionListener(al);
+			setSelected(selected);
 	    }
 	    
 	    @Override
-	    protected void paintComponent(final Graphics g) {
-	        super.paintComponent(g);
-	        
-	        if (openImg == null)
-	        	createImages();
-	        
-	        final Graphics2D g2 = (Graphics2D)g;
-	        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	        
-	        if (isSelected())
-	            g2.drawImage(openImg, 0, 0, this);
-	        else
-	            g2.drawImage(isEnabled() ? closedImg : disabledClosedImg, 0, 0, this);
-	    }
-	    
-	    @Override
-	    public void repaint() {
-	    	openImg = closedImg = null;
-	    	super.repaint();
-	    }
-	    
-	    private void createImages() {
-	        int w = getSize().width;
-	        int h = getSize().height;
-	        
-	        openImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-	        Graphics2D g2 = openImg.createGraphics();
-	        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	        g2.setPaint(getBackground());
-	        g2.fillRect(0, 0, w, h);
-	        int[] x = { PAD, w-PAD, w/2 };
-	        int[] y = { PAD, PAD,   h-PAD };
-	        Polygon p = new Polygon(x, y, 3);
-	        g2.setPaint(getForeground());
-	        g2.fill(p);
-	        g2.dispose();
-	        
-	        closedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-	        g2 = closedImg.createGraphics();
-	        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	        g2.setPaint(getBackground());
-	        g2.fillRect(0, 0, w, h);
-	        x = new int[] { PAD, w-PAD, w-PAD };
-	        y = new int[] { h/2, PAD,   h-PAD };
-	        p = new Polygon(x, y, 3);
-	        g2.setPaint(getForeground());
-	        g2.fill(p);
-	        g2.dispose();
-	        
-	        disabledClosedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-	        g2 = disabledClosedImg.createGraphics();
-	        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	        g2.setPaint(getBackground());
-	        g2.fillRect(0, 0, w, h);
-	        x = new int[] { PAD, w-PAD, w-PAD };
-	        y = new int[] { h/2, PAD,   h-PAD };
-	        p = new Polygon(x, y, 3);
-	        g2.setPaint(getForeground().brighter().brighter());
-	        g2.fill(p);
-	        g2.dispose();
+	    public void setSelected(final boolean b) {
+	    	setText(b ? "\uF0D7": "\uF0D9"); // icon-caret-down : icon-caret-left
+	    	super.setSelected(b);
 	    }
 	}
 

@@ -1,0 +1,106 @@
+{
+  "elements" : {
+    "nodes" : [ {
+      "data" : {
+        "id" : "751",
+        "SUID" : 751,
+        "selected" : false,
+        "name" : "n5"
+      },
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "750",
+        "SUID" : 750,
+        "selected" : false,
+        "name" : "n4: Alone"
+      },
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "749",
+        "SUID" : 749,
+        "selected" : false,
+        "name" : "n3"
+      },
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "748",
+        "SUID" : 748,
+        "selected" : false,
+        "name" : "n2: 日本語テスト"
+      },
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "747",
+        "SUID" : 747,
+        "selected" : false,
+        "name" : "n1"
+      },
+      "position" : {
+        "x" : 50.0,
+        "y" : 50.0
+      },
+      "selected" : false
+    } ],
+    "edges" : [ {
+      "data" : {
+        "id" : "753",
+        "source" : "748",
+        "target" : "749",
+        "selected" : false,
+        "SUID" : 753,
+        "name" : "エッジ2"
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "755",
+        "source" : "747",
+        "target" : "747",
+        "selected" : false,
+        "SUID" : 755,
+        "name" : "e1self"
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "754",
+        "source" : "747",
+        "target" : "749",
+        "selected" : false,
+        "SUID" : 754,
+        "name" : "e3"
+      },
+      "selected" : false
+    }, {
+      "data" : {
+        "id" : "752",
+        "source" : "747",
+        "target" : "748",
+        "selected" : false,
+        "SUID" : 752,
+        "name" : "e1"
+      },
+      "selected" : false
+    } ]
+  }
+}

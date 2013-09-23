@@ -37,7 +37,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
-import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 
@@ -50,7 +50,7 @@ public abstract class AbstractVizMapperAction extends AbstractAction implements 
 	
 	protected DefaultViewEditor defViewEditor;
 	protected VisualMappingManager vmm;
-	protected IconManager iconManager;
+	protected ThemeManager themeManager;
 
 	protected Properties vizmapUIResource;
 
@@ -79,8 +79,8 @@ public abstract class AbstractVizMapperAction extends AbstractAction implements 
 		this.iconId = iconId;
 	}
 	
-	public void setIconManager(IconManager iconManager) {
-		this.iconManager = iconManager;
+	public void setThemeManager(final ThemeManager themeManager) {
+		this.themeManager = themeManager;
 	}
 	
 	@Override

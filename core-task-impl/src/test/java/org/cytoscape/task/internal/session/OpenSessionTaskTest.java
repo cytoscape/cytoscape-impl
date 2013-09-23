@@ -39,7 +39,10 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySession.Builder;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.internal.session.OpenSessionTask.OpenSessionWithoutWarningTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
@@ -60,10 +63,12 @@ public class OpenSessionTaskTest {
 	@Mock private RecentlyOpenedTracker tracker;
 	
 	@Mock private CySessionReader reader;
+	private CySession session;
 	
 	private File sampleFile;
 	
 	@Before
+	@SuppressWarnings("unchecked")
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
 		
@@ -71,17 +76,19 @@ public class OpenSessionTaskTest {
 		
 		sampleFile = new File("./src/test/resources/test_session1.cys");
 		when(readerMgr.getReader(sampleFile.toURI(),sampleFile.getName())).thenReturn(reader);
+		
+		session = new Builder().build();
+		when(reader.getSession()).thenReturn(session);
 	}
 	
 	@Test
 	public void testRun() throws Exception {
 		final OpenSessionTask t = new OpenSessionTask(mgr, readerMgr, appMgr, netMgr, tableMgr, netTableMgr, grMgr, tracker);
-		t.setTaskIterator(new TaskIterator(t));
+		OpenSessionWithoutWarningTask t2 = t.new OpenSessionWithoutWarningTask();
+		t2.file = sampleFile;
+		t2.setTaskIterator(new TaskIterator(t2));
 
-		t.file = sampleFile;
-		
-		t.run(tm);
+		t2.run(tm);
 		verify(reader, times(1)).run(tm);
 	}
-
 }

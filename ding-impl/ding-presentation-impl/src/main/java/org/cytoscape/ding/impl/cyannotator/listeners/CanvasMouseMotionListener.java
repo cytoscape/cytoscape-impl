@@ -69,7 +69,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		int mouseY = e.getY();
 
 		if (moveAnnotation != null) {
-			moveAnnotation.getComponent().setLocation(mouseX, mouseY);
+			moveAnnotation.moveAnnotation(new Point2D.Double((double)mouseX, (double)mouseY));
 			moveAnnotation.update();
 			moveAnnotation.getCanvas().repaint();
 		} else if (resizeAnnotation != null) {

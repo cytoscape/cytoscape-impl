@@ -76,7 +76,7 @@ public class CanvasMouseListener implements MouseListener {
 
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		if (annotation == null) {
-			cyAnnotator.clearSelectedAnnotations();
+			// cyAnnotator.clearSelectedAnnotations();
 			if (!e.isConsumed()) {
 				networkCanvas.processMouseEvent(e);
 				e.consume();
@@ -84,6 +84,11 @@ public class CanvasMouseListener implements MouseListener {
 			return;
 		}
 
+/*
+ * It seems to be a little confusing to have double-click
+ * selection on annotations.
+ */
+/*
 		if(e.getClickCount()==2 && !e.isConsumed()) {
 			e.consume();
 			//We have doubled clicked on an Annotation
@@ -103,6 +108,7 @@ public class CanvasMouseListener implements MouseListener {
 			//Repaint the canvas
 			annotation.getCanvas().repaint();	
 		}
+*/
 	}
 
 	public void mouseEntered(MouseEvent e) {

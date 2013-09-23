@@ -51,6 +51,9 @@ public class MoveAnnotationTask extends AbstractNetworkViewTask {
 	
 	public MoveAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D startingLocation) {
 		super(view);
+		while (annotation.getGroupParent() != null) {
+			annotation = (DingAnnotation)annotation.getGroupParent();
+		}
 		this.annotation = annotation;
 		this.start = startingLocation;
 	}

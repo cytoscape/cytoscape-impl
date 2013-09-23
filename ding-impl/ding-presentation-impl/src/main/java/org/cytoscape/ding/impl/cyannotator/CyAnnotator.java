@@ -25,6 +25,7 @@ package org.cytoscape.ding.impl.cyannotator;
  */
 
 import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 // import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 // import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 
@@ -158,7 +159,7 @@ public class CyAnnotator {
 				if (type == null)
 					continue;
 
-				if (type.equals("ARROW") || type.equals("ArrowAnnotation.class")) {
+				if (type.equals("ARROW") || type.equals("org.cytoscape.view.presentation.annotations.ArrowAnnotation")) {
 					arrowList.add(argMap);
 					continue;
 				}
@@ -171,6 +172,15 @@ public class CyAnnotator {
 						annotation.getCanvas().add(annotation.getComponent());
 					else
 						foreGroundCanvas.add(annotation.getComponent());
+				}
+
+				// Now that we've added the annotation, update
+				// the group membership
+				if (a != null && a instanceof GroupAnnotation) {
+					GroupAnnotation g = (GroupAnnotation)a;
+					for (Annotation child: g.getMembers()) {
+						g.addMember(child);
+					}
 				}
 			}
 
@@ -216,6 +226,7 @@ public class CyAnnotator {
 	public DingAnnotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
 		DingAnnotation top = null;
 		for (DingAnnotation a: annotationMap.keySet()) {
+			// System.out.println("Looking at component "+a.toString());
 			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
 				// System.out.println("Found component "+a.toString()+".  Z-order = "+cnvs.getComponentZOrder(a.getComponent()));
 				if ((top == null) || 
@@ -231,10 +242,18 @@ public class CyAnnotator {
 	public DingAnnotation getAnnotationAt(Point2D position) {
 		DingAnnotation a = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
 		if (a != null) {
+			while (a.getGroupParent() != null) {
+				a = (DingAnnotation)a.getGroupParent();
+			}
 			return a;
 		}
 
-		return getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
+		a = getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
+		if (a != null) {
+			while (a.getGroupParent() != null)
+				a = (DingAnnotation)a.getGroupParent();
+		}
+		return a;
 	}
 
 	public InnerCanvas getNetworkCanvas() {
@@ -253,7 +272,6 @@ public class CyAnnotator {
 		if (!(annotation instanceof DingAnnotation))
 			return;
 		DingAnnotation dingAnnotation = (DingAnnotation)annotation;
-		// System.out.println("Adding annotation: "+annotation);
 		annotationMap.put(dingAnnotation, dingAnnotation.getArgMap());
 		updateNetworkAttributes(view.getModel());
 	}
@@ -280,7 +298,7 @@ public class CyAnnotator {
 	public void clearSelectedAnnotations() {
 		boolean repaintForeGround = false;
 		boolean repaintBackGround = false;
-		for (DingAnnotation a: selectedAnnotations) {
+		for (DingAnnotation a: new ArrayList<DingAnnotation>(selectedAnnotations)) {
 			setSelectedAnnotation(a, false);
 			if (a.getCanvasName().equals(Annotation.FOREGROUND))
 				repaintForeGround = true;
@@ -294,7 +312,7 @@ public class CyAnnotator {
 
 	}
 
-	public Set getSelectedAnnotations() { return selectedAnnotations; }
+	public Set<DingAnnotation> getSelectedAnnotations() { return selectedAnnotations; }
 
 	public void resizeShape(ShapeAnnotationImpl shape) {
 		resizing = shape;
@@ -321,6 +339,10 @@ public class CyAnnotator {
 	}
 
 	public void moveAnnotation(DingAnnotation annotation) {
+		// Get the top-level group
+		while ((annotation != null) && (annotation.getGroupParent() != null)) {
+			annotation = (DingAnnotation)annotation.getGroupParent();
+		}
 		moving = annotation;
 		if (moving != null)
 			moving.getCanvas().requestFocusInWindow();

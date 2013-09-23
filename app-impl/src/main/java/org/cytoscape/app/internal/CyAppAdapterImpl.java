@@ -43,7 +43,7 @@ import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.model.Transformer;
-import org.cytoscape.filter.predicates.StringPredicate;
+import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -267,7 +267,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private Annotation annotation;
 	private Transformer transformer;
 	private TransformerManager transformerManager;
-	private StringPredicate stringPredicate;
+	private Predicate predicate;
 	private Transformers transformers;
 
 /// from core-task api

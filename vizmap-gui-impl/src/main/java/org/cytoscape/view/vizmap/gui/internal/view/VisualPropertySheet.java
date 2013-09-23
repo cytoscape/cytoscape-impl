@@ -19,9 +19,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -43,6 +45,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
@@ -54,7 +57,8 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.internal.theme.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 
 @SuppressWarnings("serial")
@@ -70,58 +74,29 @@ public class VisualPropertySheet extends JPanel{
 	
 	private final VisualPropertySheetModel model;
 	
-	private final IconManager iconMgr;
+	private final ThemeManager themeMgr;
 	
 	private final TreeSet<VisualPropertySheetItem<?>> items;
 	private final Map<VisualProperty<?>, VisualPropertySheetItem<?>> vpItemMap;
 	private final Map<VisualPropertyDependency<?>, VisualPropertySheetItem<?>> depItemMap;
 	private final Map<VisualPropertySheetItem<?>, JCheckBoxMenuItem> menuItemMap;
 	
+	private VisualPropertySheetItem<?> selectionHead;
+	private VisualPropertySheetItem<?> selectionTail;
 	private boolean doNotUpdateCollapseExpandButtons;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public VisualPropertySheet(final VisualPropertySheetModel model, final IconManager iconMgr) {
+	public VisualPropertySheet(final VisualPropertySheetModel model, final ThemeManager themeMgr) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
-		if (iconMgr == null)
-			throw new IllegalArgumentException("'iconMgr' must not be null");
+		if (themeMgr == null)
+			throw new IllegalArgumentException("'themeMgr' must not be null");
 		
 		this.model = model;
-		this.iconMgr = iconMgr;
+		this.themeMgr = themeMgr;
 		
-		items = new TreeSet<VisualPropertySheetItem<?>>(
-				new Comparator<VisualPropertySheetItem<?>>() {
-					@Override
-					public int compare(final VisualPropertySheetItem<?> i1, final VisualPropertySheetItem<?> i2) {
-						VisualPropertySheetItemModel<?> m1 = i1.getModel();
-						VisualPropertySheetItemModel<?> m2 = i2.getModel();
-						String title1 = m1.getTitle();
-						String title2 = m2.getTitle();
-						
-						final VisualPropertyDependency<?> dep1 = m1.getVisualPropertyDependency();
-						final VisualPropertyDependency<?> dep2 = m2.getVisualPropertyDependency();
-						
-						// Put dependencies in the end of the sorted list
-						if (dep1 == null && dep2 != null)
-							return -1;
-						if (dep1 != null && dep2 == null)
-							return 1;
-						
-						if (dep1 != null && dep2 != null) {
-							title1 = dep1.getDisplayName();
-							title2 = dep2.getDisplayName();
-						}
-						
-						// Locale-specific sorting
-						final Collator collator = Collator.getInstance(Locale.getDefault());
-						collator.setStrength(Collator.PRIMARY);
-						
-						return collator.compare(title1, title2);
-					}
-				}
-			);
-		
+		items = new TreeSet<VisualPropertySheetItem<?>>();
 		vpItemMap = new HashMap<VisualProperty<?>, VisualPropertySheetItem<?>>();
 		depItemMap = new HashMap<VisualPropertyDependency<?>, VisualPropertySheetItem<?>>();
 		menuItemMap = new HashMap<VisualPropertySheetItem<?>, JCheckBoxMenuItem>();
@@ -154,6 +129,7 @@ public class VisualPropertySheet extends JPanel{
 			
 			// Add the visual property editors to the internal panel
 			int y = 0;
+			int minWidth = 120;
 			
 			for (final VisualPropertySheetItem<?> i : items) {
 				c.gridy = y++;
@@ -181,6 +157,8 @@ public class VisualPropertySheet extends JPanel{
 						}
 						@Override
 						public void componentHidden(final ComponentEvent e) {
+							if (selectionHead == i) selectionHead = null;
+							if (selectionTail == i) selectionTail = null;
 							updateCollapseExpandButtons();
 						}
 					});
@@ -203,6 +181,8 @@ public class VisualPropertySheet extends JPanel{
 						}
 					});
 				}
+				
+				minWidth = Math.max(minWidth, i.getPreferredSize().width);
 			}
 			
 			// Add an empty panel to fill the vertical gap
@@ -212,8 +192,25 @@ public class VisualPropertySheet extends JPanel{
 			c.weighty = 1;
 			p.add(fillPnl, c);
 			
+			fillPnl.addMouseListener(new MouseAdapter() {
+				@Override
+				@SuppressWarnings("unchecked")
+				public void mouseClicked(final MouseEvent e) {
+					if (!e.isShiftDown() || e.isControlDown()) // Deselect all items
+						setSelectedItems(Collections.EMPTY_SET);
+				}
+			});
+			
 			getVpListScr().setViewportView(p);
-			getVpListScr().repaint();
+			
+			minWidth = Math.min((minWidth += 10), 400);
+			getVpListScr().setMinimumSize(new Dimension(minWidth, getVpListScr().getMinimumSize().height));
+			setMinimumSize(new Dimension(minWidth, getMinimumSize().height));
+			
+			if (getParent() != null) {
+				minWidth = Math.max(minWidth + 8, getParent().getMinimumSize().width);
+				getParent().setMinimumSize(new Dimension(minWidth, getParent().getMinimumSize().height));
+			}
 		}
 		
 		updateCollapseExpandButtons();
@@ -247,8 +244,14 @@ public class VisualPropertySheet extends JPanel{
 	}
 	
 	public synchronized void setSelectedItems(final Set<VisualPropertySheetItem<?>> selectedItems) {
-		for (final VisualPropertySheetItem<?> i : items)
-			 i.setSelected(selectedItems != null && selectedItems.contains(i));
+		for (final VisualPropertySheetItem<?> i : items) {
+			 i.setSelected(selectedItems != null && i.isVisible() && selectedItems.contains(i));
+			 
+			 if (!i.isSelected()) {
+				 if (i == selectionHead) selectionHead = null;
+				 if (i == selectionTail) selectionTail = null;
+			 }
+		}
 	}
 	
 	public void setVisible(final VisualPropertySheetItem<?> item, final boolean visible) {
@@ -293,8 +296,8 @@ public class VisualPropertySheet extends JPanel{
 	private JPanel getVpListHeaderPnl() {
 		if (vpListHeaderPnl == null) {
 			vpListHeaderPnl = new JPanel();
-			vpListHeaderPnl.setBackground(Color.DARK_GRAY);
-			vpListHeaderPnl.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+			vpListHeaderPnl.setBorder(
+					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			vpListHeaderPnl.setLayout(new BoxLayout(vpListHeaderPnl, BoxLayout.X_AXIS));
 			
 			vpListHeaderPnl.add(Box.createRigidArea(new Dimension(2, 12)));
@@ -305,7 +308,7 @@ public class VisualPropertySheet extends JPanel{
 			
 			if (model.getTargetDataType() != CyNetwork.class) {
 				final JLabel mapLbl = new HeaderLabel("Map.");
-				mapLbl.setToolTipText("Visual Mapping");
+				mapLbl.setToolTipText("Mapping");
 				vpListHeaderPnl.add(mapLbl);
 			}
 			
@@ -341,7 +344,8 @@ public class VisualPropertySheet extends JPanel{
 	private DropDownMenuButton getVpsBtn() {
 		if (vpsBtn == null) {
 			vpsBtn = new DropDownMenuButton(getVpsMenu());
-			vpsBtn.setText("Visual Properties");
+			vpsBtn.setText("Properties");
+			vpsBtn.setToolTipText("Show/Hide Properties...");
 			vpsBtn.setHorizontalAlignment(DropDownMenuButton.LEFT);
 			vpsBtn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		}
@@ -371,9 +375,14 @@ public class VisualPropertySheet extends JPanel{
 
 	protected JButton getExpandAllBtn() {
 		if (expandAllBtn == null) {
-			expandAllBtn = new JButton(iconMgr.getIcon(IconManager.EXPAND_ALL_ICON));
-			expandAllBtn.setToolTipText("Expand all visual mapping panels");
-			expandAllBtn.setBorder(BorderFactory.createEmptyBorder());
+			expandAllBtn = new JButton("\uF103"); // icon-double-angle-down
+			expandAllBtn.setToolTipText("Expand all mappings");
+			expandAllBtn.setBorderPainted(false);
+			expandAllBtn.setContentAreaFilled(false);
+			expandAllBtn.setOpaque(false);
+			expandAllBtn.setFocusPainted(false);
+			expandAllBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			expandAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 			
 			expandAllBtn.addActionListener(new ActionListener() {
 				@Override
@@ -388,9 +397,14 @@ public class VisualPropertySheet extends JPanel{
 	
 	protected JButton getCollapseAllBtn() {
 		if (collapseAllBtn == null) {
-			collapseAllBtn = new JButton(iconMgr.getIcon(IconManager.COLLAPSE_ALL_ICON));
-			collapseAllBtn.setToolTipText("Collapse all visual mapping panels");
-			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder());
+			collapseAllBtn = new JButton("\uF102"); // icon-double-angle-up
+			collapseAllBtn.setToolTipText("Collapse all mappings");
+			collapseAllBtn.setBorderPainted(false);
+			collapseAllBtn.setContentAreaFilled(false);
+			collapseAllBtn.setOpaque(false);
+			collapseAllBtn.setFocusPainted(false);
+			collapseAllBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 			
 			collapseAllBtn.addActionListener(new ActionListener() {
 				@Override
@@ -646,19 +660,81 @@ public class VisualPropertySheet extends JPanel{
 		updateCollapseExpandButtons();
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void onMouseClickedItem(final MouseEvent e, final VisualPropertySheetItem<?> item) {
-		if (!SwingUtilities.isRightMouseButton(e) && !item.isSelected()) {
-			if (e.isShiftDown()) {
-				// TODO Select range
-				item.setSelected(true);
-			} else if (e.isControlDown()) {
-				// Add to selection
-				item.setSelected(true);
+		if (SwingUtilities.isRightMouseButton(e)) {
+			selectionHead = item;
+		} else {
+			if (e.isControlDown()) {
+				// Toggle this item's selection state
+				item.setSelected(!item.isSelected());
+				// Find new selection range head
+				selectionHead = item.isSelected() ? item : findNextSelectionHead(selectionHead);
 			} else {
-				// Select only this one
-				setSelectedItems((Set) (Collections.singleton(item)));
+				if (e.isShiftDown()) {
+					if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected()
+							&& selectionHead != item) {
+						// First deselect previous range, if there is a tail
+						if (selectionTail != null)
+							changeRangeSelection(selectionHead, selectionTail, false);
+						// Now select the new range
+						changeRangeSelection(selectionHead, (selectionTail = item), true);
+					} else if (!item.isSelected()) {
+						item.setSelected(true);
+					}
+				} else {
+					setSelectedItems((Set) (Collections.singleton(item)));
+				}
+				
+				if (getSelectedItems().size() == 1)
+					selectionHead = item;
 			}
 		}
+	}
+	
+	private void changeRangeSelection(final VisualPropertySheetItem<?> item1, final VisualPropertySheetItem<?> item2,
+			final boolean selected) {
+		final NavigableSet<VisualPropertySheetItem<?>> subSet;
+		
+		if (item1.compareTo(item2) <= 0)
+			subSet = items.subSet(item1, false, item2, true);
+		else
+			subSet = items.subSet(item2, true, item1, false);
+				
+		for (final VisualPropertySheetItem<?> nextItem : subSet) {
+			if (nextItem.isVisible())
+				nextItem.setSelected(selected);
+		}
+	}
+	
+	private VisualPropertySheetItem<?> findNextSelectionHead(final VisualPropertySheetItem<?> fromItem) {
+		VisualPropertySheetItem<?> head = null;
+		NavigableSet<VisualPropertySheetItem<?>> subSet = items.tailSet(fromItem, false);
+		
+		// Try with the tail subset first
+		for (final VisualPropertySheetItem<?> nextItem : subSet) {
+			if (nextItem.isVisible() && nextItem.isSelected()) {
+				head = nextItem;
+				break;
+			}
+		}
+		
+		if (head == null) {
+			// Try with the head subset
+			subSet = items.headSet(fromItem, false);
+			final Iterator<VisualPropertySheetItem<?>> iterator = subSet.descendingIterator();
+			
+			while (iterator.hasNext()) {
+				final VisualPropertySheetItem<?> nextItem = iterator.next();
+				
+				if (nextItem.isVisible() && nextItem.isSelected()) {
+					head = nextItem;
+					break;
+				}
+			}
+		}
+		
+		return head;
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
@@ -666,7 +742,7 @@ public class VisualPropertySheet extends JPanel{
 	private static class HeaderLabel extends JLabel {
 		
 		final static Font FONT = new Font("Arial", Font.BOLD, 10);
-		final static Color FG_COLOR = Color.WHITE;
+		final static Color FG_COLOR = Color.DARK_GRAY;
 		
 		HeaderLabel(final String text) {
 			super(text);

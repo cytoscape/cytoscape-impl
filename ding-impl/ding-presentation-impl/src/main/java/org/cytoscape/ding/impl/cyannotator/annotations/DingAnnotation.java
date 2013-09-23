@@ -25,6 +25,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  */
 
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,7 @@ import javax.swing.JDialog;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 
 
@@ -87,4 +89,9 @@ public interface DingAnnotation extends Annotation {
 
 	// Overrides of Component
 	public void paint(Graphics g);
+	public Point getLocation();
+
+	// Group support
+	public void setGroupParent(GroupAnnotation parent);
+	public GroupAnnotation getGroupParent();
 }

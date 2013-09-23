@@ -292,6 +292,10 @@ public class WebQuerier {
 		
 		return new HashSet<AppTag>(appTagsByUrl.get(currentAppStoreUrl).values());
 	}
+
+	public boolean appsHaveBeenLoaded() {
+		return this.appsByUrl.get(currentAppStoreUrl) != null;
+	}
 	
 	public Set<WebApp> getAllApps() {
 		// If we have a cached result from the previous query, use that one
@@ -366,6 +370,11 @@ public class WebQuerier {
 					}
 				}
 				
+				keyName = "citation";
+				if (jsonObject.has(keyName)) {
+					webApp.setCitation(jsonObject.get(keyName).toString());
+				}
+				
 				try {
 					List<WebApp.Release> releases = new LinkedList<WebApp.Release>();
 					
@@ -431,16 +440,17 @@ public class WebQuerier {
                     JOptionPane.showMessageDialog(
                         null,
                         "<html>" +
-                        "Unable to connect to the App Store website to get the list of apps.<br><br>" +
-                        "<blockquote><tt>" + e.getClass().getName() + ": " + e.getMessage() + "</tt></blockquote><br><br>" +
+                        "Unable to connect to the App Store website.<br><br>" +
+                        "<blockquote><tt>" + e.getClass().getName() + ": " + e.getMessage() + "</tt></blockquote><br>" +
                         "Please make sure your internet connection is working.<br><br>" +
                         "If you are behind a proxy, make sure the settings are correct by<br>" +
                         "going to <i>Edit</i> &gt; <i>Settings</i> &gt; <i>Proxy Settings</i>.",
-                        "Unable to get list of apps",
+                        "Unable to connect to the App Store",
                         JOptionPane.ERROR_MESSAGE);
                 }
             });
 			e.printStackTrace();
+			result = null;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			DebugHelper.print("Error parsing JSON: " + e.getMessage());
@@ -448,7 +458,7 @@ public class WebQuerier {
 		}
 	
 		
-		DebugHelper.print(result.size() + " apps found from web store.");
+		//DebugHelper.print(result.size() + " apps found from web store.");
 		
 		// Cache the result of this query
 		this.appsByUrl.put(currentAppStoreUrl, result);

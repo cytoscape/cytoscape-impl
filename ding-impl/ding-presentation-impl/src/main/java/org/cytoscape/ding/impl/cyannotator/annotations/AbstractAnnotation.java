@@ -29,6 +29,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
@@ -41,7 +42,9 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
@@ -67,7 +70,6 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	private double myZoom = 1.0;
 
 	private DGraphView.Canvas canvasName;
-	private CyAnnotator cyAnnotator;
 	private UUID uuid = UUID.randomUUID();
 
 	private Set<ArrowAnnotation> arrowList;
@@ -75,6 +77,8 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	protected boolean usedForPreviews=false;
 	protected DGraphView view;
 	protected ArbitraryGraphicsCanvas canvas;
+	protected GroupAnnotationImpl parent = null;
+	protected CyAnnotator cyAnnotator;
 
 	protected static final String ID="id";
 	protected static final String ZOOM="zoom";
@@ -83,6 +87,7 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	protected static final String CANVAS="canvas";
 	protected static final String TYPE="type";
 	protected static final String ANNOTATION_ID="uuid";
+	protected static final String PARENT_ID="parent";
 
 	protected Map<String, String> savedArgMap = null;
 
@@ -143,6 +148,17 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		setLocation((int)coords.getX(), (int)coords.getY());
 		if (argMap.containsKey(ANNOTATION_ID))
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
+		if (argMap.containsKey(PARENT_ID)) {
+			// See if the parent already exists
+			UUID parent_uuid = UUID.fromString(argMap.get(PARENT_ID));
+			DingAnnotation parentAnnotation = cyAnnotator.getAnnotation(parent_uuid);
+			if (parentAnnotation != null && parentAnnotation instanceof GroupAnnotation) {
+				// It does -- add ourselves to it
+				((GroupAnnotation)parentAnnotation).addMember((Annotation)this);
+			} else {
+				// It doesn't -- let the parent add us
+			}
+		}
 		
 	}
 
@@ -262,6 +278,21 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
     
 	@Override
 	public CyAnnotator getCyAnnotator() {return cyAnnotator;}
+
+	@Override
+	public void setGroupParent(GroupAnnotation parent) {
+		if (parent instanceof GroupAnnotationImpl) {
+			this.parent = (GroupAnnotationImpl)parent;
+		} else if (parent == null) {
+			this.parent = null;
+		}
+		cyAnnotator.addAnnotation(this);
+	}
+
+	@Override
+	public GroupAnnotation getGroupParent() {
+		return (GroupAnnotation)parent;
+	}
     
 	public void moveAnnotation(Point2D location) {
 		if (!(this instanceof ArrowAnnotationImpl)) {
@@ -277,6 +308,8 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		canvas.modifyComponentLocation(x, y, this);
 	}
 
+	public Point getLocation() { return super.getLocation(); }
+
 	public boolean contains(int x, int y) {
 		if (x > getX() && y > getY() && x-getX() < getWidth() && y-getY() < getHeight())
 			return true;
@@ -290,6 +323,9 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 			if (arrow instanceof DingAnnotation)
 				((DingAnnotation)arrow).removeAnnotation();
 		}
+		if (parent != null)
+			parent.removeMember(this);
+
 		canvas.repaint();
 	}
 
@@ -331,6 +367,9 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		else
 			argMap.put(CANVAS, FOREGROUND);
 		argMap.put(ANNOTATION_ID, this.uuid.toString());
+
+		if (parent != null)
+			argMap.put(PARENT_ID, parent.getUUID().toString());
 
 		return argMap;
 	}

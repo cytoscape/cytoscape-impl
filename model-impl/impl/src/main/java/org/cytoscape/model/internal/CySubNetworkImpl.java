@@ -325,7 +325,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		} catch (NullPointerException e) {
 			name = "(unavailable)";
 		}
-		return "CySubNetwork: " + getSUID() + " name: " + name; 
+		return name; 
 	}
 	
 	@Override

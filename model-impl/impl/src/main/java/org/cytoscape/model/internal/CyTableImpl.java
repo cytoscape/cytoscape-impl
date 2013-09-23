@@ -27,8 +27,10 @@ package org.cytoscape.model.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -697,11 +699,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		if (fireEvents && virtColumn == null) {
 			// Fire an event for each table in the virtual column chain
-			fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue);
+			fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue, Collections.newSetFromMap(new IdentityHashMap<VirtualColumnInfo, Boolean>()));
 		}
 	}
 
-	private void fireVirtualColumnRowSetEvent(CyTableImpl table, Object key, String columnName, Object newValue, Object newRawValue) {
+	private void fireVirtualColumnRowSetEvent(CyTableImpl table, Object key, String columnName, Object newValue, Object newRawValue, Set<VirtualColumnInfo> seen) {
 		// Fire an event for this table
 		CyRow row = table.getRowNoCreate(key);
 		if (row == null) {
@@ -718,16 +720,20 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		
 		for (CyColumn dependent : columnDependents) {
 			VirtualColumnInfo info = dependent.getVirtualColumnInfo();
+			if (seen.contains(info)) {
+				continue;
+			}
+			seen.add(info);
 			CyTableImpl table2 = (CyTableImpl) dependent.getTable();
 			String targetJoinKey = info.getTargetJoinKey();
 			if (targetJoinKey.equals(table2.getPrimaryKey().getName())) {
-				fireVirtualColumnRowSetEvent(table2, key, targetJoinKey, newValue, newRawValue);
+				fireVirtualColumnRowSetEvent(table2, key, dependent.getName(), newValue, newRawValue, seen);
 			} else {
 				String normalizedTargetJoinKey = table2.normalizeColumnName(targetJoinKey);			
 				SetMultimap<Object, Object> reverseMap = table2.reverse.get(normalizedTargetJoinKey);
 				if(reverseMap != null) {
 					for (Object key2 : reverseMap.get(key)) {
-						fireVirtualColumnRowSetEvent(table2, key2, targetJoinKey, newValue, newRawValue);
+						fireVirtualColumnRowSetEvent(table2, key2, dependent.getName(), newValue, newRawValue, seen);
 					}
 				}
 			}

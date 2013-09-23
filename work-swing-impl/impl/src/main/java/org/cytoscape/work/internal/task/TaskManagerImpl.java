@@ -35,6 +35,7 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -225,14 +226,18 @@ class TaskRunner implements Runnable {
 
 	public void run() {
 		try {
-			if (!iterator.hasNext())
+			if (!iterator.hasNext()) {
+                if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
 				return;
+            }
 			// Get the first task in the iterator, then show its tunables.
 			// If the user clicks cancel, exit this method and never show a UI for this task.
 			currentTask = iterator.next();
 			manager.updateParent();
-			if (!manager.showTunables(currentTask))
+			if (!manager.showTunables(currentTask)) {
+                if (observer != null) observer.allFinished(FinishStatus.newCancelled(currentTask));
 				return;
+            }
 
 			// Record the task in the montor (for logging purposes)
 			monitor.setTask(currentTask);
@@ -257,16 +262,17 @@ class TaskRunner implements Runnable {
 			}
 			if (cancelled) {
 				monitor.setAsCancelled();
+                if (observer != null) observer.allFinished(FinishStatus.newCancelled(currentTask));
 			} else {
 				monitor.setAsFinished();
+                if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
 			}
 		} catch (Exception e) {
 			monitor.setAsExceptionOccurred(e);
 			e.printStackTrace();
+            if (observer != null) observer.allFinished(FinishStatus.newFailed(currentTask, e));
 		} finally {
 			manager.clearParent();
-			if (observer != null) 
-				observer.allFinished();
 		}
 	}
 
@@ -295,10 +301,8 @@ class TaskRunner implements Runnable {
  * Acts as a bridge between {@code TaskRunner} and {@code TaskUI}
  * and {@code TaskStatusBar}.
  * Method calls are stored internally until {@code showUI} is invoked.
- * For example, {@code setTitle} does not have any effect on the task's UI
- * until {@code showUI} is invoked. This class updates the task's UI to the
- * last set title when {@code showUI} is invoked. This mechanism allows
- * short-living tasks to invoke methods on the monitor without affecting the UI.
+ * This prevents prematurely creating a UI for a task. A task gets a UI
+ * once it sets a title.
  */
 class TaskMonitorImpl implements TaskMonitor {
 	public static final Map<String,URL> ICON_URLS = new HashMap<String,URL>();
