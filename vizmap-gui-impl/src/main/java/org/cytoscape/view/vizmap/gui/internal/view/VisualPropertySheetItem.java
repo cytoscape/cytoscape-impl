@@ -716,13 +716,13 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			btn.setText("");
 			btn.setToolTipText("No Mapping");
 		} else if (mapping instanceof DiscreteMapping) {
-			btn.setText("D \uF142"); // icon-ellipsis-vertical
+			btn.setText("\uF142 \uF142"); // icon-ellipsis-vertical
 			btn.setToolTipText("Discrete Mapping for column \"" + colName + "\"");
 		} else if (mapping instanceof ContinuousMapping) {
-			btn.setText("C \uF07D"); // icon-resize-vertical
+			btn.setText("\uF142 \uF07D"); // icon-ellipsis-vertical + icon-resize-vertical
 			btn.setToolTipText("Continuous Mapping for column \"" + colName + "\"");
 		} else if (mapping instanceof PassthroughMapping) {
-			btn.setText("P \uF105"); // icon-angle-right
+			btn.setText("\uF142 \uF105"); // icon-ellipsis-vertical + icon-angle-right
 			btn.setToolTipText("Passthrough Mapping for column \"" + colName + "\"");
 		}
 	}
