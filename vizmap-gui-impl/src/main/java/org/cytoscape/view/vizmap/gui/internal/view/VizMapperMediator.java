@@ -56,6 +56,7 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
+import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -273,12 +274,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		// Check selected nodes and edges of the current view
+		final CyTable tbl = e.getSource();
+		
+		// Update bypass buttons--check selected nodes and edges of the current view
 		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
 		
 		if (curNetView != null && !e.getColumnRecords(CyNetwork.SELECTED).isEmpty()) {
 			final CyNetwork curNet = curNetView.getModel();
-			final CyTable tbl = e.getSource();
 			
 			// We have to get all selected elements again
 			if (tbl.equals(curNet.getDefaultEdgeTable()))
@@ -287,6 +289,37 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				updateLockedValues(vmProxy.getSelectedNodeViews(curNetView), CyNode.class);
 			else if (tbl.equals(curNet.getDefaultNetworkTable()))
 				updateLockedValues(Collections.singleton((View<CyNetwork>)curNetView), CyNetwork.class);
+		}
+		
+		// Also update mappings
+		final CyNetwork curNet = vmProxy.getCurrentNetwork();
+		
+		if (curNet != null) {
+			VisualPropertySheet vpSheet = null;
+			
+			if (tbl.equals(curNet.getDefaultEdgeTable()))
+				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyEdge.class);
+			else if (tbl.equals(curNet.getDefaultNodeTable()))
+				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNode.class);
+			else if (tbl.equals(curNet.getDefaultNetworkTable()))
+				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
+			
+			if (vpSheet != null) {
+				final Collection<RowSetRecord> payloadCollection = e.getPayloadCollection();
+				
+				for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
+					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
+					
+					if (mapping != null) {
+						for (final RowSetRecord record : payloadCollection) {
+							if (mapping.getMappingColumnName().equalsIgnoreCase(record.getColumn())) {
+								item.updateMapping();
+								break;
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	
