@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
+import java.awt.Paint;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -157,6 +158,15 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		nodeShapeMapping.putMapValue("protein", NodeShapeVisualProperty.ELLIPSE);
 		nodeShapeMapping.putMapValue("compound", NodeShapeVisualProperty.ROUND_RECTANGLE);
 		nodeShapeMapping.putMapValue("pathway", NodeShapeVisualProperty.OCTAGON);
+
+		style.addVisualMappingFunction(nodeShapeMapping);
+		
+		final DiscreteMapping<String, Paint> edgeColorMapping = (DiscreteMapping<String, Paint>) discreteFactory
+				.createVisualMappingFunction("interaction", String.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		edgeColorMapping.putMapValue("pp", Color.green);
+		edgeColorMapping.putMapValue("pd", Color.red);
+
+		style.addVisualMappingFunction(edgeColorMapping);
 	}
 
 	@Test
