@@ -37,7 +37,7 @@ public class OpenBrowserImplTest {
 	OpenBrowser openBrowser = new OpenBrowserImpl();
 
 	
-	@Test
+	@Test(expected=java.lang.IllegalArgumentException.class)
 	public void testOpenURL() {
 		Assume.assumeTrue(Desktop.isDesktopSupported());
 
