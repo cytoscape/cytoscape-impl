@@ -208,6 +208,10 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			}
 		}
 	}
+	
+	private final void generateDiscreteMapping(DiscreteMapping mapping) {
+		colName = mapping.getMappingColumnName() 
+	}
 
 
 	@Override
