@@ -26,13 +26,12 @@ public class JSONVisualStyleWriter extends AbstractTask implements CyWriter {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (taskMonitor != null) {
-			taskMonitor.setTitle("Writing Visual Styles to JSON...");
-			taskMonitor.setProgress(0);
-		}
-		visualStyles2jsonMapper.writeValue(
-				new OutputStreamWriter(os, EncodingUtil.getEncoder()),styles);
+		taskMonitor.setTitle("Writing Visual Styles to JSON...");
+		taskMonitor.setProgress(0);
+		
+		visualStyles2jsonMapper.writeValue(new OutputStreamWriter(os, EncodingUtil.getEncoder()), styles);
 		os.close();
+		
 		taskMonitor.setProgress(100);
 	}
 }

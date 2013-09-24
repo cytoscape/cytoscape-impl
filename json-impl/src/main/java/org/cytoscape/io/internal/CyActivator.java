@@ -34,9 +34,9 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-		// Importing Services:
-		StreamUtil streamUtil = getService(bc, StreamUtil.class);
-
+		
+		// Importing Services
+		final StreamUtil streamUtil = getService(bc, StreamUtil.class);
 		final CyNetworkViewFactory cyNetworkViewFactory = getService(bc, CyNetworkViewFactory.class);
 		final CyNetworkFactory cyNetworkFactory = getService(bc, CyNetworkFactory.class);
 		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
@@ -48,15 +48,15 @@ public class CyActivator extends AbstractCyActivator {
 				new String[] { "application/json" }, "Cytoscape.js JSON format", DataCategory.NETWORK, streamUtil);
 		final CytoscapeJsNetworkReaderFactory jsReaderFactory = new CytoscapeJsNetworkReaderFactory(
 				cytoscapejsReaderFilter, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
-
 		final Properties cytoscapeJsNetworkReaderFactoryProps = new Properties();
+
 		cytoscapeJsNetworkReaderFactoryProps.put(ID, "cytoscapeJsNetworkReaderFactory");
 		registerService(bc, jsReaderFactory, InputStreamTaskFactory.class, cytoscapeJsNetworkReaderFactoryProps);
 
-		// ///////////////// Writers ////////////////////////////
-		ObjectMapper cytoscapeJsMapper = new ObjectMapper();
-		cytoscapeJsMapper.registerModule(new CytoscapeJsNetworkModule());
 
+		// ///////////////// Writers ////////////////////////////
+		final ObjectMapper cytoscapeJsMapper = new ObjectMapper();
+		cytoscapeJsMapper.registerModule(new CytoscapeJsNetworkModule());
 		final ObjectMapper d3jsMapper = new ObjectMapper();
 		d3jsMapper.registerModule(new D3jsModule());
 
@@ -64,22 +64,19 @@ public class CyActivator extends AbstractCyActivator {
 				new String[] { "application/json" }, "Cytoscape.js JSON format", DataCategory.NETWORK, streamUtil);
 		final BasicCyFileFilter d3jsFilter = new BasicCyFileFilter(new String[] { "d3" },
 				new String[] { "application/json" }, "D3.js JSON format", DataCategory.NETWORK, streamUtil);
-
 		final BasicCyFileFilter vizmapJsonFilter = new BasicCyFileFilter(new String[] { "json" },
-				new String[] { "application/json" }, "Cytoscape.js Visual Style JSON format", DataCategory.VIZMAP,
-				streamUtil);
+				new String[] { "application/json" }, "Cytoscape.js Visual Style JSON format", DataCategory.VIZMAP, streamUtil);
 
 		// For Cytoscape.js
-		final JSONNetworkWriterFactory cytoscapeJsWriterFactory = new JSONNetworkWriterFactory(cytoscapejsFilter,
-				cytoscapeJsMapper);
+		final JSONNetworkWriterFactory cytoscapeJsWriterFactory = new JSONNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
 		registerAllServices(bc, cytoscapeJsWriterFactory, new Properties());
 
 		// For D3.js Force layout
 		final JSONNetworkWriterFactory d3jsWriterFactory = new JSONNetworkWriterFactory(d3jsFilter, d3jsMapper);
 		registerAllServices(bc, d3jsWriterFactory, new Properties());
 
-		final JSONVisualStyleWriterFactory jsonVSWriterFactory = new JSONVisualStyleWriterFactory(vizmapJsonFilter,
-				applicationManager);
+		// For Visual Style
+		final JSONVisualStyleWriterFactory jsonVSWriterFactory = new JSONVisualStyleWriterFactory(vizmapJsonFilter, applicationManager);
 		registerAllServices(bc, jsonVSWriterFactory, new Properties());
 	}
 }

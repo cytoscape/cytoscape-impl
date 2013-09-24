@@ -4,6 +4,7 @@ import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.cytoscape.model.CyEdge;
@@ -24,6 +25,14 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 
+	private static final Collection<VisualProperty<?>> NODE_SELECTED_PROPERTIES = new ArrayList<VisualProperty<?>>();
+	private static final Collection<VisualProperty<?>> EDGE_SELECTED_PROPERTIES = new ArrayList<VisualProperty<?>>();
+	static {
+		EDGE_SELECTED_PROPERTIES.add(BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
+		NODE_SELECTED_PROPERTIES.add(BasicVisualLexicon.NODE_SELECTED_PAINT);
+	}
+	
+	
 	// Visual Mapping serializer
 	private final VisualMappingSerializer<PassthroughMapping<?, ?>> passthrough;
 	private final VisualMappingSerializer<DiscreteMapping<?, ?>> discrete;
@@ -72,7 +81,9 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeArrayFieldStart(STYLE.getTag());
 		// Node Mapping
 		serializeVisualProperties(BasicVisualLexicon.NODE, vs, jg);
+		serializeSelectedProperties(BasicVisualLexicon.NODE, vs, jg);
 		serializeVisualProperties(BasicVisualLexicon.EDGE, vs, jg);
+		serializeSelectedProperties(BasicVisualLexicon.EDGE, vs, jg);
 
 		// Selected
 //		serializeSelectedStyle(vs, jg);
@@ -88,14 +99,38 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeObjectFieldStart(CSS.getTag());
 
 		// Generate mappings
-		createDefaults(vp, vs, jg);
+		final Collection<VisualProperty<?>> visualProperties = lexicon.getAllDescendants(vp);
+		for(VisualProperty<?> removed:NODE_SELECTED_PROPERTIES) {
+			visualProperties.remove(removed);
+		}
+		for(VisualProperty<?> removed:EDGE_SELECTED_PROPERTIES) {
+			visualProperties.remove(removed);
+		}
+		createDefaults(visualProperties, vs, jg);
 		// Mappings
-		createMappings(vp, vs, jg);
+		createMappings(visualProperties, vs, jg);
 
 		jg.writeEndObject();
 		jg.writeEndObject();
 	}
 
+	private final void serializeSelectedProperties(final VisualProperty<?> vp, final VisualStyle vs, final JsonGenerator jg) throws IOException {
+		jg.writeStartObject();
+		jg.writeStringField(SELECTOR.getTag(), vp.getIdString().toLowerCase() + SELECTED.getTag());
+		jg.writeObjectFieldStart(CSS.getTag());
+
+		// Generate mappings
+		if(vp == BasicVisualLexicon.NODE) {
+			createDefaults(NODE_SELECTED_PROPERTIES, vs, jg);
+			createMappings(NODE_SELECTED_PROPERTIES, vs, jg);
+		} else {
+			createDefaults(EDGE_SELECTED_PROPERTIES, vs, jg);
+			createMappings(EDGE_SELECTED_PROPERTIES, vs, jg);
+		}
+
+		jg.writeEndObject();
+		jg.writeEndObject();
+	}
 
 	/**
 	 * 
@@ -103,11 +138,10 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	 * @param jg
 	 * @throws IOException
 	 */
-	private void createDefaults(final VisualProperty<?> parent, final VisualStyle vs, final JsonGenerator jg) throws IOException {
-		final Collection<VisualProperty<?>> visualProperties = lexicon.getAllDescendants(parent);
+	private void createDefaults( final Collection<VisualProperty<?>> visualProperties, final VisualStyle vs, final JsonGenerator jg) throws IOException {
 		
 		for(final VisualProperty<?> vp: visualProperties) {
-			// Check mapping exists or not
+			// If mapping is available, use it instead.
 			final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
 			if(mapping != null) {
 				continue;
@@ -117,8 +151,26 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			if(tag == null) {
 				continue;
 			}
+			
 			// tag can be null.  In that case, use default,
-			jg.writeObjectField(tag.getTag(), getDefaultVisualPropertyValue(vs, vp));
+			if(writeValue(vp)) {
+				jg.writeObjectField(tag.getTag(), getDefaultVisualPropertyValue(vs, vp));
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	private final boolean writeValue(final VisualProperty<?> vp) {
+
+		if(vp == BasicVisualLexicon.EDGE_TRANSPARENCY || vp == BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY || 
+				vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY || vp == BasicVisualLexicon.NODE_TRANSPARENCY ||
+				vp == BasicVisualLexicon.NODE_BORDER_TRANSPARENCY) {
+			return false;
+		} else {
+			return true;
 		}
 	}
 
@@ -133,8 +185,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	}
 
 
-	private void createMappings(final VisualProperty<?> parent, final VisualStyle vs, JsonGenerator jg) throws IOException {
-		final Collection<VisualProperty<?>> visualProperties = lexicon.getAllDescendants(parent);
+	private void createMappings(final Collection<VisualProperty<?>> visualProperties, final VisualStyle vs, JsonGenerator jg) throws IOException {
 		for (final VisualProperty<?> vp : visualProperties) {
 			final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
 			if(mapping == null) {
@@ -156,27 +207,6 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 				jg.writeStringField(tag, continuous.serialize((ContinuousMapping<?, ?>) mapping));
 			}
 		}
-	}
-
-
-	private void serializeSelectedStyle(final VisualStyle vs, JsonGenerator jg) throws IOException {
-//		jg.writeStartObject();
-//		jg.writeStringField(SELECTOR.toString(), SELECTED.toString());
-//
-//		jg.writeObjectFieldStart(CSS.toString());
-//		jg.writeStringField(BACKGROUND_COLOR.toString(),
-//				decodeColor((Color) vs.getDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT)));
-//
-//		jg.writeStringField(LINE_COLOR.toString(),
-//				decodeColor((Color) vs.getDefaultValue(BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT)));
-//		jg.writeStringField(SOURCE_ARROW_COLOR.toString().toString(),
-//				decodeColor((Color) vs.getDefaultValue(BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT)));
-//		jg.writeStringField(TARGET_ARROW_COLOR.toString().toString(),
-//				decodeColor((Color) vs.getDefaultValue(BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT)));
-//
-//		jg.writeEndObject();
-//
-//		jg.writeEndObject();
 	}
 
 

@@ -16,6 +16,7 @@ public class CytoscapeJsVisualStyleModule extends SimpleModule {
 			// Value serializers
 			addSerializer(new ColorSerializer());
 			addSerializer(new ShapeSerializer());
+//			addSerializer(new OpacitySerializer());
 			addSerializer(new ArrowShapeSerializer());
 			addSerializer(new LineStyleSerializer());
 			addSerializer(new FontFaceSerializer());
