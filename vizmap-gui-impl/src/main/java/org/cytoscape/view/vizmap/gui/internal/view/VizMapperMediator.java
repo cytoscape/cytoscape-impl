@@ -50,6 +50,12 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.events.ColumnCreatedEvent;
+import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -98,7 +104,8 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"unchecked", "serial"})
 public class VizMapperMediator extends Mediator implements LexiconStateChangedListener, RowsSetListener, 
-														   UpdateNetworkPresentationListener,
+														   ColumnCreatedListener, ColumnDeletedListener,
+														   ColumnNameChangedListener, UpdateNetworkPresentationListener,
 														   VisualMappingFunctionChangedListener {
 
 	public static final String NAME = "VizMapperMediator";
@@ -266,29 +273,39 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		// TODO also update after bypass is set
-		// TODO what about when deleting elements?
 		// Check selected nodes and edges of the current view
 		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
 		
-		if (curNetView == null || e.getColumnRecords(CyNetwork.SELECTED).isEmpty())
-			return;
-		
-		final CyNetwork curNet = curNetView.getModel();
-		final CyTable defNetTbl = curNet.getDefaultNetworkTable();
-		final CyTable defNodeTbl = curNet.getDefaultNodeTable();
-		final CyTable defEdgeTbl = curNet.getDefaultEdgeTable();
-		final CyTable tbl = e.getSource();
-		
-		// We have to get all selected elements again
-		if (tbl.equals(defEdgeTbl))
-			updateLockedValues(vmProxy.getSelectedEdgeViews(curNetView), CyEdge.class);
-		else if (tbl.equals(defNodeTbl))
-			updateLockedValues(vmProxy.getSelectedNodeViews(curNetView), CyNode.class);
-		else if (tbl.equals(defNetTbl))
-			updateLockedValues(Collections.singleton((View<CyNetwork>)curNetView), CyNetwork.class);
+		if (curNetView != null && !e.getColumnRecords(CyNetwork.SELECTED).isEmpty()) {
+			final CyNetwork curNet = curNetView.getModel();
+			final CyTable tbl = e.getSource();
+			
+			// We have to get all selected elements again
+			if (tbl.equals(curNet.getDefaultEdgeTable()))
+				updateLockedValues(vmProxy.getSelectedEdgeViews(curNetView), CyEdge.class);
+			else if (tbl.equals(curNet.getDefaultNodeTable()))
+				updateLockedValues(vmProxy.getSelectedNodeViews(curNetView), CyNode.class);
+			else if (tbl.equals(curNet.getDefaultNetworkTable()))
+				updateLockedValues(Collections.singleton((View<CyNetwork>)curNetView), CyNetwork.class);
+		}
 	}
 	
+	@Override
+	public void handleEvent(final ColumnDeletedEvent e) {
+		onColumnChanged(e.getColumnName(), e.getSource());
+	}
+
+	@Override
+	public void handleEvent(final ColumnCreatedEvent e) {
+		onColumnChanged(e.getColumnName(), e.getSource());
+	}
+	
+	@Override
+	public void handleEvent(final ColumnNameChangedEvent e) {
+		onColumnChanged(e.getOldColumnName(), e.getSource());
+		onColumnChanged(e.getNewColumnName(), e.getSource());
+	}
+
 	@Override
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView view = e.getSource();
@@ -994,7 +1011,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				}
 			}
 			
-			item.setMessage(msg, msgType);
+			final String finalMsg = msg;
+			final MessageType finalMsgType = msgType;
+			
+			invokeOnEDT(new Runnable() {
+				@Override
+				public void run() {
+					item.setMessage(finalMsg, finalMsgType);
+				}
+			});
 		}
 	}
 	
@@ -1171,6 +1196,28 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
  			evtHelper.fireEvent(new LexiconStateChangedEvent(this, parent, visualProperties));
 		else
 			evtHelper.fireEvent(new LexiconStateChangedEvent(this, visualProperties, parent));
+	}
+	
+	private void onColumnChanged(final String colName, final CyTable tbl) {
+		final CyNetwork curNet = vmProxy.getCurrentNetwork();
+		VisualPropertySheet vpSheet = null;
+		
+		if (tbl.equals(curNet.getDefaultEdgeTable()))
+			vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyEdge.class);
+		else if (tbl.equals(curNet.getDefaultNodeTable()))
+			vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNode.class);
+		else if (tbl.equals(curNet.getDefaultNetworkTable()))
+			vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
+		
+		if (vpSheet != null) {
+			// Update mapping status of this sheet's properties, if necessary
+			for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
+				final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
+				
+				if (mapping != null && mapping.getMappingColumnName().equalsIgnoreCase(colName))
+					updateMappingStatus(item);
+			}
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")

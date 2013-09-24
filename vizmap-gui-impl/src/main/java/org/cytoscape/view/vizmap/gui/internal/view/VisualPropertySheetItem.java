@@ -262,7 +262,6 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		else
 			vizMapPropertyBuilder.createMappingProperties(mapping, getPropSheetPnl(), mappingFactory);
 		
-		
 		updateMappingIcon();
 		updateRemoveMappingBtn();
 		updateMappingRowHeight();
