@@ -589,9 +589,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			// Right-click
 			vpSheetItem.addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseClicked(final MouseEvent e) {
-					if (SwingUtilities.isRightMouseButton(e))
-						handleContextMenuEvent(e, vpSheet, vpSheetItem);
+				public void mousePressed(final MouseEvent e) {
+					handleContextMenuEvent(e, vpSheet, vpSheetItem);
+				}
+
+				@Override
+				public void mouseReleased(final MouseEvent e) {
+					handleContextMenuEvent(e, vpSheet, vpSheetItem);
 				}
 			});
 			
@@ -1172,6 +1176,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	@SuppressWarnings("rawtypes")
 	private void handleContextMenuEvent(final MouseEvent e, final VisualPropertySheet vpSheet, 
 			final VisualPropertySheetItem<?> vpSheetItem) {
+		if (!e.isPopupTrigger())
+			return;
+		
 		// Select the right-clicked sheet item, if not selected yet
 		if (!vpSheetItem.isSelected())
 			vpSheet.setSelectedItems((Set) (Collections.singleton(vpSheetItem)));

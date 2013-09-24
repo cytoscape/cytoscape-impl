@@ -70,8 +70,6 @@ import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -93,7 +91,7 @@ import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
  */
 @SuppressWarnings("serial")
 public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultViewPanel, DefaultViewEditor,
-														  CytoPanelComponent, PopupMenuListener {
+														  CytoPanelComponent {
 
 	private static final String TITLE = "Style";
 
@@ -232,21 +230,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		final VisualStyleDropDownButton vsBtn = getStylesBtn();
 		vsBtn.setItems(styles);
-	}
-	
-	// --- EVENTS ---
-	
-	@Override
-	public void popupMenuCanceled(final PopupMenuEvent e) {
-		// disableAllPopup();
-	}
-
-	@Override
-	public void popupMenuWillBecomeInvisible(final PopupMenuEvent e) {
-	}
-
-	@Override
-	public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
 	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================
