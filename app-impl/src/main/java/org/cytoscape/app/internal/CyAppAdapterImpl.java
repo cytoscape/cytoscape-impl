@@ -45,6 +45,7 @@ import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
+import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.CyGroupAggregationManager;
@@ -269,6 +270,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private TransformerManager transformerManager;
 	private Predicate predicate;
 	private Transformers transformers;
+	private TransformerViewFactory transformerViewFactory;
 
 /// from core-task api
 	private LoadVizmapFileTaskFactory loadVizmapFileTaskFactory;
