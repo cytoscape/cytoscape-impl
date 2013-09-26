@@ -2,13 +2,13 @@ package org.cytoscape.io.internal.write.json.serializer;
 
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -18,7 +18,9 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
@@ -32,6 +34,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 	private static final Collection<VisualProperty<?>> NODE_SELECTED_PROPERTIES = new ArrayList<VisualProperty<?>>();
 	private static final Collection<VisualProperty<?>> EDGE_SELECTED_PROPERTIES = new ArrayList<VisualProperty<?>>();
+
 	static {
 		EDGE_SELECTED_PROPERTIES.add(BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
 		NODE_SELECTED_PROPERTIES.add(BasicVisualLexicon.NODE_SELECTED_PAINT);
@@ -39,8 +42,6 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 	// Visual Mapping serializer
 	private final VisualMappingSerializer<PassthroughMapping<?, ?>> passthrough;
-	private final VisualMappingSerializer<DiscreteMapping<?, ?>> discrete;
-	private final VisualMappingSerializer<ContinuousMapping<?, ?>> continuous;
 
 	// Mapping between Visual Property and Cytoscape.js tags
 	private final CytoscapeJsStyleConverter converter;
@@ -48,10 +49,11 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	// Target visual lexicon.
 	private final VisualLexicon lexicon;
 
-	public CytoscapeJsVisualStyleSerializer(final VisualLexicon lexicon) {
+	private final ValueSerializerManager manager;
+
+	public CytoscapeJsVisualStyleSerializer(final ValueSerializerManager manager, final VisualLexicon lexicon) {
 		this.passthrough = new PassthroughMappingSerializer();
-		this.discrete = new DiscreteMappingSerializer();
-		this.continuous = new ContinuousMappingSerializer();
+		this.manager = manager;
 
 		this.converter = new CytoscapeJsStyleConverter();
 		this.lexicon = lexicon;
@@ -136,25 +138,128 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeEndObject();
 	}
 
-	private final void serializeDiscreteMapping(final VisualProperty<?> vp, final VisualStyle vs, final JsonGenerator jg, Class<? extends CyIdentifiable> target)
-			throws IOException {
+	private final void serializeDiscreteMapping(final VisualProperty<?> vp, final VisualStyle vs,
+			final JsonGenerator jg, Class<? extends CyIdentifiable> target) throws IOException {
 		// Find discreteMappings
 		final Collection<VisualMappingFunction<?, ?>> mappings = vs.getAllVisualMappingFunctions();
 		for (VisualMappingFunction<?, ?> mapping : mappings) {
-			if(mapping.getVisualProperty().getTargetDataType() != target) {
+			if (mapping.getVisualProperty().getTargetDataType() != target) {
 				continue;
 			}
-			
-			if (mapping instanceof DiscreteMapping) {
-				final VisualProperty<?> mappingVp = mapping.getVisualProperty();
-				final CytoscapeJsToken tag = converter.getTag(mappingVp);
-				if (tag == null) {
-					continue;
-				} else {
+
+			final VisualProperty<?> mappingVp = mapping.getVisualProperty();
+			final CytoscapeJsToken tag = converter.getTag(mappingVp);
+			if (tag == null) {
+				continue;
+			} else {
+				if (mapping instanceof DiscreteMapping) {
 					generateDiscreteMappingSection(tag, (DiscreteMapping<?, ?>) mapping, vp, vs, jg);
+				} else if (mapping instanceof ContinuousMapping) {
+					generateContinuousMappingSection(tag, (ContinuousMapping<?, ?>) mapping, vp, vs, jg);
 				}
 			}
 		}
+	}
+
+	private final void generateContinuousMappingSection(final CytoscapeJsToken jsTag,
+			final ContinuousMapping<?, ?> mapping, final VisualProperty<?> vp, final VisualStyle vs,
+			final JsonGenerator jg) throws IOException {
+
+		final Class<?> type = mapping.getVisualProperty().getRange().getType();
+		final String columnName = mapping.getMappingColumnName();
+		final List<?> points = mapping.getAllPoints();
+		final String objectType = vp.getIdString().toLowerCase();
+
+		// Special case 1: Empty mapping
+		if (points.size() == 0) {
+			// No mapping points. Ignore.
+			return;
+		}
+
+		// Special case 2: only one point split into 3 selectors.
+		if (points.size() == 1) {
+			final ContinuousMappingPoint<?, ?> point = (ContinuousMappingPoint<?, ?>) points.get(0);
+			final Number bound = (Number) point.getValue();
+			writeSelector(jg, point.getRange().lesserValue, "<", objectType, columnName, jsTag.getTag(), bound);
+			writeSelector(jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
+			writeSelector(jg, point.getRange().greaterValue, ">", objectType, columnName, jsTag.getTag(), bound);
+			return;
+		}
+
+		// Sort points by value. This is necessary to create correct mapping.
+		final TreeMap<Number, ContinuousMappingPoint<?, ?>> pointMap = new TreeMap<Number, ContinuousMappingPoint<?, ?>>();
+		for (final Object point : points) {
+			final ContinuousMappingPoint<?, ?> p = (ContinuousMappingPoint<?, ?>) point;
+			Number val = (Number) p.getValue();
+			pointMap.put(val, p);
+		}
+
+		System.out.println("LAST: " + pointMap.lastKey());
+		System.out.println("FIRST: " + pointMap.firstKey());
+
+		final ValueSerializer serializer = manager.getSerializer(type);
+		ContinuousMappingPoint<?, ?> prevPoint = null;
+		for (final Number key : pointMap.descendingKeySet()) {
+
+			final ContinuousMappingPoint<?, ?> point = (ContinuousMappingPoint<?, ?>) pointMap.get(key);
+			final Number bound = (Number) point.getValue();
+			// Largest key
+			if (key.equals(pointMap.lastKey())) {
+				// Highest value. This should be executed first.
+				writeSelector(jg, point.getRange().greaterValue, ">", objectType, columnName, jsTag.getTag(), bound);
+				writeSelector(jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
+				prevPoint = point;
+			} else if (key.equals(pointMap.firstKey())) {
+				// Lowest value. This should be executed LAST.
+				generateMap(jg, columnName, objectType, jsTag.getTag(), point, prevPoint, serializer);
+				writeSelector(jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
+				writeSelector(jg, point.getRange().lesserValue, "<", objectType, columnName, jsTag.getTag(), bound);
+			} else {
+				// Create map
+				generateMap(jg, columnName, objectType, jsTag.getTag(), point, prevPoint, serializer);
+				prevPoint = point;
+			}
+		}
+	}
+
+	private final void generateMap(final JsonGenerator jg, final String columnName, String objectType, String tag,
+			final ContinuousMappingPoint<?, ?> point, final ContinuousMappingPoint<?, ?> prevPoint,
+			ValueSerializer serializer) throws IOException {
+		// Create map
+		Object lowerVal = point.getRange().greaterValue;
+		Object upperVal = prevPoint.getRange().lesserValue;
+
+		String lowerValString = lowerVal.toString();
+		String upperValString = upperVal.toString();
+		if (serializer != null) {
+			lowerValString = serializer.serialize(lowerVal);
+			upperValString = serializer.serialize(upperVal);
+		}
+		String map = "mapData(" + columnName + ",";
+		map += point.getValue().toString() + "," + prevPoint.getValue().toString() + "," + lowerValString + ","
+				+ upperValString + ")";
+		writeSelector(jg, map, "<", objectType, columnName, tag, (Number) prevPoint.getValue());
+	}
+
+	private final void writeSelector(final JsonGenerator jg, Object value, String operator, String objectType,
+			String colName, String jsTag, Number bound) throws IOException {
+
+		jg.writeStartObject();
+
+		String tag = objectType + "[" + colName + " " + operator + " ";
+		tag += bound + "]";
+
+		jg.writeStringField(SELECTOR.getTag(), tag);
+		jg.writeObjectFieldStart(CSS.getTag());
+
+		jg.writeObjectField(jsTag, value);
+
+		jg.writeEndObject();
+		jg.writeEndObject();
+	}
+
+	private final void writeContinupusMap() {
+
 	}
 
 	/**
@@ -168,8 +273,9 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	 * @throws IOException
 	 * @throws JsonGenerationException
 	 */
-	private final void generateDiscreteMappingSection(final CytoscapeJsToken jsTag,  final DiscreteMapping<?, ?> mapping, final VisualProperty<?> vp,
-			final VisualStyle vs, final JsonGenerator jg) throws IOException {
+	private final void generateDiscreteMappingSection(final CytoscapeJsToken jsTag,
+			final DiscreteMapping<?, ?> mapping, final VisualProperty<?> vp, final VisualStyle vs,
+			final JsonGenerator jg) throws IOException {
 
 		final Map<?, ?> mappingPairs = mapping.getAll();
 
@@ -189,13 +295,12 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			jg.writeStringField(SELECTOR.getTag(), tag);
 			jg.writeObjectFieldStart(CSS.getTag());
 
-			jg.writeObjectField(jsTag.getTag(),value); 
+			jg.writeObjectField(jsTag.getTag(), value);
 
 			jg.writeEndObject();
 			jg.writeEndObject();
 		}
 	}
-
 
 	/**
 	 * 
@@ -209,7 +314,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		for (final VisualProperty<?> vp : visualProperties) {
 			// If mapping is available, use it instead.
 			final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
-			if (mapping != null) {
+			if (mapping != null && mapping instanceof PassthroughMapping) {
 				continue;
 			}
 
@@ -220,7 +325,8 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 			// tag can be null. In that case, use default,
 			if (writeValue(vp)) {
-				jg.writeObjectField(tag.getTag(), getDefaultVisualPropertyValue(vs, vp));
+				final Object defaultValue = getDefaultVisualPropertyValue(vs, vp);
+				jg.writeObjectField(tag.getTag(), defaultValue);
 			}
 		}
 	}
@@ -253,7 +359,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			JsonGenerator jg) throws IOException {
 		for (final VisualProperty<?> vp : visualProperties) {
 			final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
-			if (mapping == null) {
+			if (mapping == null || mapping instanceof DiscreteMapping) {
 				continue;
 			}
 
@@ -266,10 +372,6 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			final String tag = jsTag.getTag();
 			if (mapping instanceof PassthroughMapping) {
 				jg.writeStringField(tag, passthrough.serialize((PassthroughMapping<?, ?>) mapping));
-			} else if (mapping instanceof DiscreteMapping) {
-				jg.writeStringField(tag, discrete.serialize((DiscreteMapping<?, ?>) mapping));
-			} else if (mapping instanceof ContinuousMapping) {
-				jg.writeStringField(tag, continuous.serialize((ContinuousMapping<?, ?>) mapping));
 			}
 		}
 	}

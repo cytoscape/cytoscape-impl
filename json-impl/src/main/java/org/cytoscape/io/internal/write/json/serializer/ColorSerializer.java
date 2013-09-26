@@ -1,6 +1,7 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
 import java.awt.Color;
+import java.awt.Paint;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -8,20 +9,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class ColorSerializer extends JsonSerializer<Color> {
+public class ColorSerializer extends JsonSerializer<Paint> {
 
 	private static final Color DEF_COLOR = Color.WHITE;
 	
 	@Override
-	public void serialize(Color value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
+	public void serialize(Paint value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
 			JsonProcessingException {
 
-		if (value != null) {
-			jgen.writeString(decodeColor(value));
-		} else {
-			// Use default color
+		// Make sure it is a color object
+		if(value instanceof Color == false || value == null) {
 			jgen.writeString(decodeColor(DEF_COLOR));
+			return;
 		}
+		
+		jgen.writeString(decodeColor((Color) value));
 	}
 
 	private final String decodeColor(final Color color) {
@@ -36,7 +38,7 @@ public class ColorSerializer extends JsonSerializer<Color> {
 	}
 
 	@Override
-	public Class<Color> handledType() {
-		return Color.class;
+	public Class<Paint> handledType() {
+		return Paint.class;
 	}
 }

@@ -12,7 +12,8 @@ public class CytoscapeJsVisualStyleModule extends SimpleModule {
 			super("CytoscapejsVisualStyleModule", new Version(1, 0, 0, null, null, null));
 			
 			// For Visual Styles
-			
+		
+			final ValueSerializerManager manager = new ValueSerializerManager();
 			// Value serializers
 			addSerializer(new ColorSerializer());
 			addSerializer(new ShapeSerializer());
@@ -23,7 +24,7 @@ public class CytoscapeJsVisualStyleModule extends SimpleModule {
 		
 			
 			// VIsual Style Serializers
-			addSerializer(new CytoscapeJsVisualStyleSerializer(lexicon));
+			addSerializer(new CytoscapeJsVisualStyleSerializer(manager, lexicon));
 			addSerializer(new CytoscapeJsVsiaulStyleSetSerializer());
 		}
 	}

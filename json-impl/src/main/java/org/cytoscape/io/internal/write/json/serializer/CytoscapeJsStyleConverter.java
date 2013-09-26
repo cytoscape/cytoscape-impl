@@ -16,6 +16,7 @@ public class CytoscapeJsStyleConverter {
 	private final Map<CytoscapeJsToken, VisualProperty<?>> tag2nodeVp = new HashMap<CytoscapeJsToken, VisualProperty<?>>();
 	private final Map<CytoscapeJsToken, VisualProperty<?>> tag2edgeVp = new HashMap<CytoscapeJsToken, VisualProperty<?>>();
 
+
 	CytoscapeJsStyleConverter() {
 		buildV2TMap();
 		buildT2VMap();
@@ -24,42 +25,48 @@ public class CytoscapeJsStyleConverter {
 
 	/**
 	 * Map from Cytoscape Visual Properties to Cytoscape.js tag
+	 * This map will be used when Cytoscape generate JSON file 
+	 * FROM existing CYtoscape Visual Style.
 	 */
 	private final void buildV2TMap() {
-		// For nodes
+
+		///////////////// For nodes ///////////////////
 		vp2tag.put(NODE_BORDER_PAINT, BORDER_COLOR);
 		vp2tag.put(NODE_BORDER_TRANSPARENCY, BORDER_OPACITY);
 		vp2tag.put(NODE_BORDER_WIDTH, BORDER_WIDTH);
+
 		vp2tag.put(NODE_FILL_COLOR, BACKGROUND_COLOR);
-		vp2tag.put(NODE_SELECTED_PAINT, BACKGROUND_COLOR);
+		vp2tag.put(NODE_TRANSPARENCY, OPACITY);
+
 		vp2tag.put(NODE_LABEL, CONTENT);
 		vp2tag.put(NODE_LABEL_COLOR, COLOR);
 		vp2tag.put(NODE_LABEL_FONT_SIZE, FONT_SIZE);
 		vp2tag.put(NODE_LABEL_FONT_FACE, FONT_FAMILY);
 		vp2tag.put(NODE_LABEL_TRANSPARENCY, TEXT_OPACITY);
+
 		vp2tag.put(NODE_SHAPE, SHAPE);
-		vp2tag.put(NODE_SIZE, WIDTH);
+
 		vp2tag.put(NODE_HEIGHT, HEIGHT);
 		vp2tag.put(NODE_WIDTH, WIDTH);
-		vp2tag.put(NODE_TRANSPARENCY, OPACITY);
-		vp2tag.put(NODE_X_LOCATION, POSITION_X);
-		vp2tag.put(NODE_Y_LOCATION, POSITION_Y);
 
+		// TODO: Ding-dependent visual properties?
+		
 		// For edges
+		vp2tag.put(EDGE_WIDTH, WIDTH);
+
 		vp2tag.put(EDGE_LABEL, CONTENT); 
 		vp2tag.put(EDGE_LABEL_FONT_SIZE, FONT_SIZE);
 		vp2tag.put(EDGE_LABEL_FONT_FACE, FONT_FAMILY);
 		vp2tag.put(EDGE_LABEL_COLOR, COLOR);
 		vp2tag.put(EDGE_LABEL_TRANSPARENCY, TEXT_OPACITY);
+
 		vp2tag.put(EDGE_LINE_TYPE, LINE_STYLE);
-		vp2tag.put(EDGE_PAINT, LINE_COLOR);
-		vp2tag.put(EDGE_UNSELECTED_PAINT, LINE_COLOR);
+
 		vp2tag.put(EDGE_STROKE_UNSELECTED_PAINT, LINE_COLOR);
-		vp2tag.put(EDGE_STROKE_SELECTED_PAINT, LINE_COLOR);
+		vp2tag.put(EDGE_TRANSPARENCY, OPACITY);
+
 		vp2tag.put(EDGE_SOURCE_ARROW_SHAPE, SOURCE_ARROW_SHAPE);
 		vp2tag.put(EDGE_TARGET_ARROW_SHAPE, TARGET_ARROW_SHAPE);
-		vp2tag.put(EDGE_TRANSPARENCY, OPACITY);
-		vp2tag.put(EDGE_WIDTH, WIDTH);
 	}
 
 
