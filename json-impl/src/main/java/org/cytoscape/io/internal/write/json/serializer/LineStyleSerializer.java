@@ -21,6 +21,8 @@ public class LineStyleSerializer extends JsonSerializer<LineType> {
 	static {
 		LINE_MAP.put(LineTypeVisualProperty.SOLID, "solid");
 		LINE_MAP.put(LineTypeVisualProperty.DOT, "dotted");
+		LINE_MAP.put(LineTypeVisualProperty.DASH_DOT, "dotted");
+		LINE_MAP.put(LineTypeVisualProperty.LONG_DASH, "dashed");
 		LINE_MAP.put(LineTypeVisualProperty.EQUAL_DASH, "dashed");
 	}
 
@@ -35,7 +37,7 @@ public class LineStyleSerializer extends JsonSerializer<LineType> {
 			// Use default color
 			String lineStyleString = LINE_MAP.get(value);
 			if(lineStyleString == null) {
-				lineStyleString =  LINE_MAP.get(LineTypeVisualProperty.SOLID);
+				lineStyleString =  LINE_MAP.get(LineTypeVisualProperty.LONG_DASH);
 			}
 			jgen.writeString(lineStyleString);
 		}

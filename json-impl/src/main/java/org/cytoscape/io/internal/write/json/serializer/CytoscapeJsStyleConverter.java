@@ -62,7 +62,7 @@ public class CytoscapeJsStyleConverter {
 
 		vp2tag.put(EDGE_LINE_TYPE, LINE_STYLE);
 
-		vp2tag.put(EDGE_STROKE_UNSELECTED_PAINT, LINE_COLOR);
+		vp2tag.put(EDGE_UNSELECTED_PAINT, LINE_COLOR);
 		vp2tag.put(EDGE_TRANSPARENCY, OPACITY);
 
 		vp2tag.put(EDGE_SOURCE_ARROW_SHAPE, SOURCE_ARROW_SHAPE);

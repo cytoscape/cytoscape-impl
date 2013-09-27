@@ -1,0 +1,137 @@
+[ {
+  "title" : "vs1",
+  "style" : [ {
+    "selector" : "node",
+    "css" : {
+      "font-size" : 12,
+      "shape" : "roundrectangle",
+      "height" : 30.0,
+      "color" : "rgb(0,0,255)",
+      "font-family" : "SansSerif",
+      "width" : 40.0,
+      "border-width" : 2.0,
+      "border-color" : "rgb(0,0,255)",
+      "background-color" : "rgb(255,255,255)",
+      "content" : "data(name)"
+    }
+  }, {
+    "selector" : "node[Node Type = 'gene']",
+    "css" : {
+      "shape" : "diamond"
+    }
+  }, {
+    "selector" : "node[Node Type = 'compound']",
+    "css" : {
+      "shape" : "roundrectangle"
+    }
+  }, {
+    "selector" : "node[Node Type = 'pathway']",
+    "css" : {
+      "shape" : "octagon"
+    }
+  }, {
+    "selector" : "node[Node Type = 'protein']",
+    "css" : {
+      "shape" : "ellipse"
+    }
+  }, {
+    "selector" : "node[Degree > 10]",
+    "css" : {
+      "background-color" : "rgb(0,0,255)"
+    }
+  }, {
+    "selector" : "node[Degree = 10]",
+    "css" : {
+      "background-color" : "rgb(255,175,175)"
+    }
+  }, {
+    "selector" : "node[Degree > 5][Degree < 10]",
+    "css" : {
+      "background-color" : "mapData(Degree,5,10,rgb(255,255,255),rgb(0,255,0))"
+    }
+  }, {
+    "selector" : "node[Degree > 2][Degree < 5]",
+    "css" : {
+      "background-color" : "mapData(Degree,2,5,rgb(255,200,0),rgb(255,255,255))"
+    }
+  }, {
+    "selector" : "node[Degree = 2]",
+    "css" : {
+      "background-color" : "rgb(255,0,0)"
+    }
+  }, {
+    "selector" : "node[Degree < 2]",
+    "css" : {
+      "background-color" : "rgb(0,0,0)"
+    }
+  }, {
+    "selector" : "node[Degree > 20]",
+    "css" : {
+      "width" : 400.0
+    }
+  }, {
+    "selector" : "node[Degree = 20]",
+    "css" : {
+      "width" : 200.0
+    }
+  }, {
+    "selector" : "node[Degree > 1][Degree < 20]",
+    "css" : {
+      "width" : "mapData(Degree,1,20,20.0,200.0)"
+    }
+  }, {
+    "selector" : "node[Degree = 1]",
+    "css" : {
+      "width" : 20.0
+    }
+  }, {
+    "selector" : "node[Degree < 1]",
+    "css" : {
+      "width" : 20.0
+    }
+  }, {
+    "selector" : "node[Degree > 10]",
+    "css" : {
+      "color" : "rgb(0,0,255)"
+    }
+  }, {
+    "selector" : "node[Degree = 10]",
+    "css" : {
+      "color" : "rgb(255,175,175)"
+    }
+  }, {
+    "selector" : "node[Degree > 3][Degree < 10]",
+    "css" : {
+      "color" : "mapData(Degree,3,10,rgb(0,255,0),rgb(255,0,0))"
+    }
+  }, {
+    "selector" : "node[Degree = 3]",
+    "css" : {
+      "color" : "rgb(255,255,0)"
+    }
+  }, {
+    "selector" : "node[Degree < 3]",
+    "css" : {
+      "color" : "rgb(0,0,0)"
+    }
+  }, {
+    "selector" : "node:selected",
+    "css" : { }
+  }, {
+    "selector" : "edge",
+    "css" : {
+      "line-style" : "dotted",
+      "width" : 2.0,
+      "color" : "rgb(255,0,0)",
+      "target-arrow-shape" : "diamond",
+      "source-arrow-shape" : "tee",
+      "line-color" : "rgb(64,64,64)",
+      "font-size" : 10,
+      "font-family" : "SansSerif",
+      "content" : "data(interaction)"
+    }
+  }, {
+    "selector" : "edge:selected",
+    "css" : { }
+  } ]
+} ]

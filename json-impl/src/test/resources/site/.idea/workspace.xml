@@ -26,52 +26,25 @@
       <file leaf-file-name="main.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/scripts/main.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="42" selection-start="782" selection-end="782" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1456">
+            <state line="21" column="38" selection-start="449" selection-end="449" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1196">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="js1.cyjs" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/data/js1.cyjs">
+      <file leaf-file-name="sampleGeneratedVS.json" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/data/sampleGeneratedVS.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="466256">
+            <state line="404" column="2" selection-start="5936" selection-end="9888" vertical-scroll-proportion="0.38625956" vertical-offset="8786" max-vertical-offset="14030">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="galFiltered.cyjs" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/data/galFiltered.cyjs">
+      <file leaf-file-name="sampleGenerated.cyjs" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/data/sampleGenerated.cyjs">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="12873" column="4" selection-start="354736" selection-end="354736" vertical-scroll-proportion="0.0" vertical-offset="359694" max-vertical-offset="361172">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="main.scss" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/styles/main.scss">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="24" selection-start="365" selection-end="365" vertical-scroll-proportion="0.0" vertical-offset="588" max-vertical-offset="1008">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="cytoscapeJsNetwork2.json" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/data/cytoscapeJsNetwork2.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3108">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="cytoscapeJsNetwork1.json" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/data/cytoscapeJsNetwork1.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3108">
+            <state line="4906" column="23" selection-start="147523" selection-end="147523" vertical-scroll-proportion="0.0" vertical-offset="112171" max-vertical-offset="296654">
               <folding />
             </state>
           </provider>
@@ -92,7 +65,10 @@
         <option value="$PROJECT_DIR$/app/data/galFiltered.cyjs" />
         <option value="$PROJECT_DIR$/app/styles/main.scss" />
         <option value="$PROJECT_DIR$/app/data/vs1.json" />
+        <option value="$PROJECT_DIR$/app/data/cytoscapeJsNetwork1.json" />
         <option value="$PROJECT_DIR$/app/scripts/main.js" />
+        <option value="$PROJECT_DIR$/app/data/sampleGenerated.cyjs" />
+        <option value="$PROJECT_DIR$/app/data/sampleGeneratedVS.json" />
       </list>
     </option>
   </component>
@@ -142,6 +118,20 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="site" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="site" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="site" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -219,23 +209,15 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="full.screen.before.presentation.mode" value="false" />
     <property name="options.splitter.main.proportions" value="0.3" />
+    <property name="full.screen.before.presentation.mode" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="options.lastSelected" value="preferences.pluginManager" />
     <property name="FullScreen" value="false" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="DartUnitRunConfigurationType" factoryName="DartUnit">
-      <option name="VMOptions" />
-      <option name="arguments" />
-      <option name="filePath" />
-      <option name="scope" value="ALL" />
-      <option name="testName" />
-      <method />
-    </configuration>
     <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
       <option name="VMOptions" />
       <option name="arguments" />
@@ -246,8 +228,16 @@
       <option name="showConsoleOnStdOut" value="false" />
       <method />
     </configuration>
-    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma" singleton="true">
-      <setting name="config_file" value="" />
+    <configuration default="true" type="DartUnitRunConfigurationType" factoryName="DartUnit">
+      <option name="VMOptions" />
+      <option name="arguments" />
+      <option name="filePath" />
+      <option name="scope" value="ALL" />
+      <option name="testName" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma" singleton="true" config-file="">
+      <envs />
       <method />
     </configuration>
     <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true">
@@ -322,9 +312,9 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24947916" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout-to-restore>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -384,14 +374,19 @@
         <state line="43" column="29" selection-start="1974" selection-end="1974" vertical-scroll-proportion="0.48251748" vertical-offset="506" max-vertical-offset="1610" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/data/cytoscapeJsNetwork2.json">
+    <entry file="file://$PROJECT_DIR$/app/data/cytoscapeJsNetwork1.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2553">
+        <state line="11" column="16" selection-start="213" selection-end="213" vertical-scroll-proportion="0.19312978" vertical-offset="0" max-vertical-offset="2553">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/data/cytoscapeJsNetwork1.json">
+    <entry file="file://$PROJECT_DIR$/app/data/galFiltered.cyjs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12873" column="4" selection-start="354736" selection-end="354736" vertical-scroll-proportion="0.0" vertical-offset="359694" max-vertical-offset="361172" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/data/cytoscapeJsNetwork2.json">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2553">
           <folding />
@@ -400,28 +395,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/styles/main.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="24" selection-start="365" selection-end="365" vertical-scroll-proportion="0.0" vertical-offset="588" max-vertical-offset="1008">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/data/galFiltered.cyjs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="12873" column="4" selection-start="354736" selection-end="354736" vertical-scroll-proportion="0.0" vertical-offset="359694" max-vertical-offset="361172">
+        <state line="21" column="24" selection-start="365" selection-end="365" vertical-scroll-proportion="0.3687023" vertical-offset="0" max-vertical-offset="1310">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/scripts/main.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="42" selection-start="782" selection-end="782" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1456">
+        <state line="21" column="38" selection-start="449" selection-end="449" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1196">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/data/js1.cyjs">
+    <entry file="file://$PROJECT_DIR$/app/data/sampleGenerated.cyjs">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="466256">
+        <state line="4906" column="23" selection-start="147523" selection-end="147523" vertical-scroll-proportion="0.0" vertical-offset="112171" max-vertical-offset="296654">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/data/sampleGeneratedVS.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="404" column="2" selection-start="5936" selection-end="9888" vertical-scroll-proportion="0.38625956" vertical-offset="8786" max-vertical-offset="14030">
           <folding />
         </state>
       </provider>

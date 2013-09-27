@@ -19,7 +19,7 @@ $(function () {
             cy = this;
             cy.load(networkData.elements);
             // Apply Visual Style CSS
-            var targetStyleName = "vs1";
+            var targetStyleName = "gal1";
             var title = "";
             var visualstyle;
             for(var i=0; i<vs.length; i++) {
@@ -37,9 +37,9 @@ $(function () {
     var vs = {};
 
     // Load data files.
-    $.getJSON('data/js1.json', function(visualStyle) {
+    $.getJSON('data/sampleGeneratedVS.json', function(visualStyle) {
         vs = visualStyle;
-        $.getJSON('data/js1.cyjs', function(network) {
+        $.getJSON('data/sampleGenerated.cyjs', function(network) {
             networkData = network;
             $('.network').cytoscape(options);
         });

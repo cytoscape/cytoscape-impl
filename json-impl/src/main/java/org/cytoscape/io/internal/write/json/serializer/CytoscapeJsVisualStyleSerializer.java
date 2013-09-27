@@ -85,12 +85,12 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeArrayFieldStart(STYLE.getTag());
 		// Node Mapping
 		serializeVisualProperties(BasicVisualLexicon.NODE, vs, jg);
+		serializeMappings(BasicVisualLexicon.NODE, vs, jg, CyNode.class);
 		serializeSelectedProperties(BasicVisualLexicon.NODE, vs, jg);
-		serializeDiscreteMapping(BasicVisualLexicon.NODE, vs, jg, CyNode.class);
 
 		serializeVisualProperties(BasicVisualLexicon.EDGE, vs, jg);
+		serializeMappings(BasicVisualLexicon.EDGE, vs, jg, CyEdge.class);
 		serializeSelectedProperties(BasicVisualLexicon.EDGE, vs, jg);
-		serializeDiscreteMapping(BasicVisualLexicon.EDGE, vs, jg, CyEdge.class);
 
 		jg.writeEndArray();
 
@@ -138,8 +138,8 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeEndObject();
 	}
 
-	private final void serializeDiscreteMapping(final VisualProperty<?> vp, final VisualStyle vs,
-			final JsonGenerator jg, Class<? extends CyIdentifiable> target) throws IOException {
+	private final void serializeMappings(final VisualProperty<?> vp, final VisualStyle vs, final JsonGenerator jg,
+			Class<? extends CyIdentifiable> target) throws IOException {
 		// Find discreteMappings
 		final Collection<VisualMappingFunction<?, ?>> mappings = vs.getAllVisualMappingFunctions();
 		for (VisualMappingFunction<?, ?> mapping : mappings) {
@@ -238,7 +238,25 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		String map = "mapData(" + columnName + ",";
 		map += point.getValue().toString() + "," + prevPoint.getValue().toString() + "," + lowerValString + ","
 				+ upperValString + ")";
-		writeSelector(jg, map, "<", objectType, columnName, tag, (Number) prevPoint.getValue());
+		writeMapSelector(jg, map, objectType, columnName, tag, (Number) point.getValue(), (Number) prevPoint.getValue());
+	}
+
+	private final void writeMapSelector(final JsonGenerator jg, Object value, String objectType, String colName,
+			String jsTag, Number boundL, Number boundU) throws IOException {
+
+		jg.writeStartObject();
+
+		// Always define region, i.e., a < P <b
+		String tag = objectType + "[" + colName + " > ";
+		tag += boundL + "][" + colName + " < " + boundU + "]";
+
+		jg.writeStringField(SELECTOR.getTag(), tag);
+		jg.writeObjectFieldStart(CSS.getTag());
+
+		jg.writeObjectField(jsTag, value);
+
+		jg.writeEndObject();
+		jg.writeEndObject();
 	}
 
 	private final void writeSelector(final JsonGenerator jg, Object value, String operator, String objectType,
@@ -256,10 +274,6 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 		jg.writeEndObject();
 		jg.writeEndObject();
-	}
-
-	private final void writeContinupusMap() {
-
 	}
 
 	/**
@@ -286,10 +300,11 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			final Object value = mappingPairs.get(key);
 			jg.writeStartObject();
 
-			String tag = vp.getIdString().toLowerCase() + "[\'" + colName + "\' = ";
+			String tag = vp.getIdString().toLowerCase() + "[" + colName + " = ";
 			if (colType == Integer.class || colType == Double.class || colType == Float.class || colType == Long.class) {
 				tag += key + "]";
 			} else {
+				// String
 				tag += "\'" + key + "\']";
 			}
 			jg.writeStringField(SELECTOR.getTag(), tag);
