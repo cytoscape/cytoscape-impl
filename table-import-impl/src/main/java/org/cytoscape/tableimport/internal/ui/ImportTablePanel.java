@@ -1413,55 +1413,62 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		setKeyList();
 	}
 
+    /*
+     * This method indicates whether the first row of a file that is being imported as a table should be used to
+     * populate column names.
+     */
+    private void useFirstRow(boolean useFirstRow)
+    {
+        final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
+        if( useFirstRow ) {
+            if ((previewPanel.getPreviewTable() != null) && (model != null)) {
+                columnHeaders = new String[previewPanel.getPreviewTable().getColumnCount()];
+
+                for (int i = 0; i < columnHeaders.length; i++) {
+                    // Save the header
+                    columnHeaders[i] = previewPanel.getPreviewTable().getColumnModel().getColumn(i)
+                            .getHeaderValue().toString();
+                    previewPanel.getPreviewTable().getColumnModel().getColumn(i)
+                            .setHeaderValue((String) model.getValueAt(0, i));
+                }
+
+                model.removeRow(0);
+                previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
+            }
+
+        } else {
+            // Restore row
+            String currentName = null;
+            Object headerVal = null;
+
+            for (int i = 0; i < columnHeaders.length; i++) {
+                headerVal = previewPanel.getPreviewTable().getColumnModel().getColumn(i)
+                        .getHeaderValue();
+
+                if (headerVal == null) {
+                    currentName = "";
+                } else {
+                    currentName = headerVal.toString();
+                }
+
+                previewPanel.getPreviewTable().getColumnModel().getColumn(i)
+                        .setHeaderValue(columnHeaders[i]);
+                columnHeaders[i] = currentName;
+            }
+
+            model.insertRow(0, columnHeaders);
+            previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
+            //startRowSpinner.setEnabled(true);
+        }
+
+        updateAliasTable();
+        updatePrimaryKeyComboBox();
+
+    }
 
 
 	private void transferNameCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
-		final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
-
-		if (transferNameCheckBox.isSelected()) {
-			if ((previewPanel.getPreviewTable() != null) && (model != null)) {
-				columnHeaders = new String[previewPanel.getPreviewTable().getColumnCount()];
-
-				for (int i = 0; i < columnHeaders.length; i++) {
-					// Save the header
-					columnHeaders[i] = previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-					                               .getHeaderValue().toString();
-					previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-					            .setHeaderValue((String) model.getValueAt(0, i));
-				}
-
-				model.removeRow(0);
-				previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
-			}
-
-			//startRowSpinner.setEnabled(false);
-		} else {
-			// Restore row
-			String currentName = null;
-			Object headerVal = null;
-
-			for (int i = 0; i < columnHeaders.length; i++) {
-				headerVal = previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-				                        .getHeaderValue();
-
-				if (headerVal == null) {
-					currentName = "";
-				} else {
-					currentName = headerVal.toString();
-				}
-
-				previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-				            .setHeaderValue(columnHeaders[i]);
-				columnHeaders[i] = currentName;
-			}
-
-			model.insertRow(0, columnHeaders);
-			previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
-			//startRowSpinner.setEnabled(true);
-		}
-
-		updateAliasTable();
-		updatePrimaryKeyComboBox();
+		useFirstRow(transferNameCheckBox.isSelected());
 		repaint();
 	}
 
@@ -1567,19 +1574,19 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		readAnnotationForPreview( checkDelimiter());
 		transferNameCheckBox.setEnabled(true);
-		transferNameCheckBox.setSelected(false);
+		transferNameCheckBox.setSelected(true);
+		useFirstRow(true);
 
 		if (previewPanel.getPreviewTable() == null) {
 			return;
 		} else {
-			columnHeaders = new String[previewPanel.getPreviewTable().getColumnCount()];
 			ColumnResizer.adjustColumnPreferredWidths(previewPanel.getPreviewTable());
 			previewPanel.getPreviewTable().repaint();
 		}
 	}
 
 	private void delimiterCheckBoxActionPerformed(ActionEvent evt) throws IOException {
-		transferNameCheckBox.setSelected(false);
+        transferNameCheckBox.setSelected(false);
 		displayPreview();
 	}
 

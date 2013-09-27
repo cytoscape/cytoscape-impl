@@ -40,10 +40,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
@@ -68,6 +65,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
@@ -790,6 +788,28 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 	}
 
+    /**
+     * When the center is changed, this method ought to be called rather than modifying m_xCenter and m_yCenter
+     * directly so that edges maintain appropriate starting points at the center of whatever node they are associated with.
+     */
+    void setCenter(double x, double y)
+    {
+        double changeX = x - m_xCenter;
+        double changeY = y - m_yCenter;
+        m_xCenter = x;
+        m_yCenter = y;
+
+        if( addEdgeMode.addingEdge() )
+        {
+            Point2D sourcePoint = AddEdgeStateMonitor.getSourcePoint(m_view);
+            double newX = sourcePoint.getX() - changeX;
+            double newY = sourcePoint.getY() - changeY;
+            sourcePoint.setLocation(newX, newY);
+            AddEdgeStateMonitor.setSourcePoint(m_view, sourcePoint);
+        }
+
+    }
+
 	
 	private void adjustZoom(int notches) {
 		final double factor;
@@ -807,6 +827,25 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 		// Update view model.
 		m_view.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
+
+        //This code updates the source point so that it is better related to the selected node.
+        //TODO: Center the source point on the selected node perfectly.
+        if (addEdgeMode.addingEdge())
+        {
+            NodeView nodeView = mousePressedDelegator.getPickedNodeView();
+            View<CyNode> view = (DNodeView)mousePressedDelegator.getPickedNodeView();
+
+            AddEdgeStateMonitor.setSourceNode(m_view, view.getModel());
+            double[] coords = new double[2];
+            coords[0] = nodeView.getXPosition();
+            coords[1] = nodeView.getYPosition();
+            ensureInitialized();
+            ((DGraphView) m_view).xformNodeToComponentCoords(coords);
+
+            Point sourceP = new Point();
+            sourceP.setLocation(coords[0], coords[1]);
+            AddEdgeStateMonitor.setSourcePoint(m_view, sourceP);
+        }
 		repaint();
 	}
 
@@ -980,14 +1019,16 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 	private void pan(double deltaX, double deltaY) {
 		synchronized (m_lock) {
-			m_xCenter -= (deltaX / m_scaleFactor);
-			m_yCenter -= (deltaY / m_scaleFactor);
+			double newX = m_xCenter - (deltaX / m_scaleFactor);
+			double newY = m_yCenter - (deltaY / m_scaleFactor);
+            setCenter(newX, newY);
 		}
 		m_view.m_viewportChanged = true;
 		repaint();
 	}
 
 	private class AddEdgeMousePressedDelegator extends ButtonDelegator {
+
 		@Override
 		void singleLeftClick(MouseEvent e) {
 			Point rawPt = e.getPoint();
@@ -997,9 +1038,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.xformComponentToNodeCoords(loc);
 			Point xformPt = new Point();
 			xformPt.setLocation(loc[0],loc[1]); 
-			NodeView nview = m_view.getPickedNodeView(rawPt);
-			if ( nview != null && !InnerCanvas.this.isPopupMenuDisabled()) 
-				popup.createNodeViewMenu(nview, e.getX(), e.getY(), "Edge");
+			NodeView nodeView = m_view.getPickedNodeView(rawPt);
+			if ( nodeView != null && !InnerCanvas.this.isPopupMenuDisabled())
+				popup.createNodeViewMenu(nodeView, e.getX(), e.getY(), "Edge");
 		}
 	}
 
@@ -1119,7 +1160,26 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_lastXMousePos = e.getX();
 			m_lastYMousePos = e.getY();
 		}
-	
+
+        private NodeView pickedNodeView = null;
+        private double pickedNodeWidth = 0.0;
+        private double pickedNodeHeight = 0.0;
+
+        private NodeView getPickedNodeView()
+        {
+            return pickedNodeView;
+        }
+
+        private double getPickedNodeWidth()
+        {
+            return pickedNodeWidth;
+        }
+
+        private double getPickedNodeHeight()
+        {
+            return pickedNodeHeight;
+        }
+
 	
 		@Override
 		void singleRightClick(MouseEvent e) {
@@ -1132,6 +1192,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 			NodeView nview = m_view.getPickedNodeView(e.getPoint());
 			if (nview != null && !InnerCanvas.this.isPopupMenuDisabled()) {
+                pickedNodeView = nview;
+                pickedNodeHeight = pickedNodeView.getHeight();
+                pickedNodeWidth = pickedNodeView.getWidth();
 				popup.createNodeViewMenu(nview,e.getX(),e.getY(),"NEW");
 			} else {
 				EdgeView edgeView = m_view.getPickedEdgeView(e.getPoint());
@@ -1382,8 +1445,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_lastYMousePos = e.getY();
 	
 			synchronized (m_lock) {
-				m_xCenter -= (deltaX / m_scaleFactor);
-				m_yCenter -= (deltaY / m_scaleFactor);
+				double newX = m_xCenter - (deltaX / m_scaleFactor);
+				double newY = m_yCenter - (deltaY / m_scaleFactor);
+                setCenter(newX, newY);
 			}
 	
 			m_view.m_viewportChanged = true;

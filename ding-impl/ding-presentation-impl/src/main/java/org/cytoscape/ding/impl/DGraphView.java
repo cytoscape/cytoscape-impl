@@ -1536,8 +1536,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public void setCenter(double x, double y) {
 		synchronized (m_lock) {
-			m_networkCanvas.m_xCenter = x;
-			m_networkCanvas.m_yCenter = y;
+            m_networkCanvas.setCenter(x,y);
 			m_viewportChanged = true;
 			
 			// Update view model
