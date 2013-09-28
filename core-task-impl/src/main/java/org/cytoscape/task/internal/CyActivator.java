@@ -1008,6 +1008,7 @@ public class CyActivator extends AbstractCyActivator {
 		openSessionTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		openSessionTaskFactoryProps.setProperty(TOOLTIP,"Open Session");
 		registerService(bc,openSessionTaskFactory,OpenSessionTaskFactory.class, openSessionTaskFactoryProps);
+		registerService(bc,openSessionTaskFactory,TaskFactory.class, openSessionTaskFactoryProps);
 
 		// We can't use the "normal" OpenSessionTaskFactory for commands
 		// because it inserts the task with the file tunable in it, so the
