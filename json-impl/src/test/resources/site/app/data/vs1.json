@@ -3,15 +3,15 @@
   "style" : [ {
     "selector" : "node",
     "css" : {
-      "font-size" : 12,
-      "shape" : "roundrectangle",
       "height" : 30.0,
-      "color" : "rgb(0,0,255)",
-      "font-family" : "SansSerif",
       "width" : 40.0,
+      "color" : "rgb(0,0,255)",
+      "font-size" : 12,
       "border-width" : 2.0,
-      "border-color" : "rgb(0,0,255)",
       "background-color" : "rgb(255,255,255)",
+      "border-color" : "rgb(0,0,255)",
+      "shape" : "roundrectangle",
+      "font-family" : "SansSerif",
       "content" : "data(name)"
     }
   }, {
@@ -116,18 +116,21 @@
     }
   }, {
     "selector" : "node:selected",
-    "css" : { }
+    "css" : {
+      "background-color" : "rgb(255,255,0)"
+    }
   }, {
     "selector" : "edge",
     "css" : {
-      "line-style" : "dotted",
-      "width" : 2.0,
       "color" : "rgb(255,0,0)",
-      "target-arrow-shape" : "diamond",
-      "source-arrow-shape" : "tee",
-      "line-color" : "rgb(64,64,64)",
       "font-size" : 10,
+      "target-arrow-shape" : "diamond",
+      "width" : 2.0,
       "font-family" : "SansSerif",
+      "line-style" : "dotted",
+      "line-color" : "rgb(64,64,64)",
+      "line-color" : "rgb(255,0,0)",
+      "source-arrow-shape" : "tee",
       "content" : "data(interaction)"
     }
   }, {

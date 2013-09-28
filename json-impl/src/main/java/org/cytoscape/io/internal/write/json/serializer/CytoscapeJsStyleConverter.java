@@ -49,6 +49,9 @@ public class CytoscapeJsStyleConverter {
 		vp2tag.put(NODE_HEIGHT, HEIGHT);
 		vp2tag.put(NODE_WIDTH, WIDTH);
 
+		// For selected
+		vp2tag.put(NODE_SELECTED_PAINT, BACKGROUND_COLOR);
+
 		// TODO: Ding-dependent visual properties?
 		
 		// For edges
@@ -67,6 +70,9 @@ public class CytoscapeJsStyleConverter {
 
 		vp2tag.put(EDGE_SOURCE_ARROW_SHAPE, SOURCE_ARROW_SHAPE);
 		vp2tag.put(EDGE_TARGET_ARROW_SHAPE, TARGET_ARROW_SHAPE);
+		
+		// For selected
+		vp2tag.put(EDGE_SELECTED_PAINT, LINE_COLOR);
 	}
 
 

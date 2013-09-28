@@ -26,7 +26,7 @@
       <file leaf-file-name="main.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/scripts/main.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="38" selection-start="449" selection-end="449" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1196">
+            <state line="21" column="38" selection-start="449" selection-end="449" vertical-scroll-proportion="0.0" vertical-offset="588" max-vertical-offset="1456">
               <folding />
             </state>
           </provider>
@@ -35,16 +35,7 @@
       <file leaf-file-name="sampleGeneratedVS.json" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/data/sampleGeneratedVS.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="404" column="2" selection-start="5936" selection-end="9888" vertical-scroll-proportion="0.38625956" vertical-offset="8786" max-vertical-offset="14030">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="sampleGenerated.cyjs" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/data/sampleGenerated.cyjs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="4906" column="23" selection-start="147523" selection-end="147523" vertical-scroll-proportion="0.0" vertical-offset="112171" max-vertical-offset="296654">
+            <state line="425" column="12" selection-start="10380" selection-end="10380" vertical-scroll-proportion="8.258154" vertical-offset="0" max-vertical-offset="17080">
               <folding />
             </state>
           </provider>
@@ -75,7 +66,7 @@
   <component name="ProjectFrameBounds">
     <option name="y" value="22" />
     <option name="width" value="2560" />
-    <option name="height" value="1418" />
+    <option name="height" value="1574" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -276,7 +267,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="2560" height="1418" extended-state="6" />
+    <frame x="0" y="22" width="2560" height="1574" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -376,9 +367,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/data/cytoscapeJsNetwork1.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="16" selection-start="213" selection-end="213" vertical-scroll-proportion="0.19312978" vertical-offset="0" max-vertical-offset="2553">
-          <folding />
-        </state>
+        <state line="11" column="16" selection-start="213" selection-end="213" vertical-scroll-proportion="0.19312978" vertical-offset="0" max-vertical-offset="2553" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/data/galFiltered.cyjs">
@@ -388,16 +377,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/data/cytoscapeJsNetwork2.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2553">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2553" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/styles/main.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="24" selection-start="365" selection-end="365" vertical-scroll-proportion="0.3687023" vertical-offset="0" max-vertical-offset="1310">
-          <folding />
-        </state>
+        <state line="21" column="24" selection-start="365" selection-end="365" vertical-scroll-proportion="0.3687023" vertical-offset="0" max-vertical-offset="1310" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/scripts/main.js">
@@ -409,14 +394,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/data/sampleGenerated.cyjs">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4906" column="23" selection-start="147523" selection-end="147523" vertical-scroll-proportion="0.0" vertical-offset="112171" max-vertical-offset="296654">
-          <folding />
-        </state>
+        <state line="4906" column="23" selection-start="147523" selection-end="147523" vertical-scroll-proportion="0.0" vertical-offset="112171" max-vertical-offset="296654" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/data/sampleGeneratedVS.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="404" column="2" selection-start="5936" selection-end="9888" vertical-scroll-proportion="0.38625956" vertical-offset="8786" max-vertical-offset="14030">
+        <state line="425" column="12" selection-start="10380" selection-end="10380" vertical-scroll-proportion="8.258154" vertical-offset="0" max-vertical-offset="17080">
           <folding />
         </state>
       </provider>
