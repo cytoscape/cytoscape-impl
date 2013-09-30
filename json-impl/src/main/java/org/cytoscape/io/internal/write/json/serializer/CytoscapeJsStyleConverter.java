@@ -17,7 +17,7 @@ public class CytoscapeJsStyleConverter {
 	private final Map<CytoscapeJsToken, VisualProperty<?>> tag2edgeVp = new HashMap<CytoscapeJsToken, VisualProperty<?>>();
 
 
-	CytoscapeJsStyleConverter() {
+	public CytoscapeJsStyleConverter() {
 		buildV2TMap();
 		buildT2VMap();
 	}

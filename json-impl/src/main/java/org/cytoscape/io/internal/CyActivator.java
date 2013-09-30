@@ -9,7 +9,7 @@ import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.read.json.CytoscapeJsNetworkReaderFactory;
 import org.cytoscape.io.internal.write.json.JSONNetworkWriterFactory;
-import org.cytoscape.io.internal.write.json.JSONVisualStyleWriterFactory;
+import org.cytoscape.io.internal.write.json.CytoscapeJsVisualStyleWriterFactory;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
 import org.cytoscape.io.internal.write.json.serializer.D3jsModule;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -76,7 +76,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, d3jsWriterFactory, new Properties());
 
 		// For Visual Style
-		final JSONVisualStyleWriterFactory jsonVSWriterFactory = new JSONVisualStyleWriterFactory(vizmapJsonFilter, applicationManager);
+		final CytoscapeJsVisualStyleWriterFactory jsonVSWriterFactory = new CytoscapeJsVisualStyleWriterFactory(vizmapJsonFilter, applicationManager);
 		registerAllServices(bc, jsonVSWriterFactory, new Properties());
 	}
 }

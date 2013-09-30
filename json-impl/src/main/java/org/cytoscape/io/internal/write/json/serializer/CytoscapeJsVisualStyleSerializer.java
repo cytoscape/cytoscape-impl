@@ -37,6 +37,8 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 	static {
 		EDGE_SELECTED_PROPERTIES.add(BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
+		EDGE_SELECTED_PROPERTIES.add(BasicVisualLexicon.EDGE_SELECTED_PAINT);
+
 		NODE_SELECTED_PROPERTIES.add(BasicVisualLexicon.NODE_SELECTED_PAINT);
 	}
 
@@ -60,7 +62,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	}
 
 	/**
-	 * Serialize a Visual Style to a CYtoscape.js JSON.
+	 * Serialize a Visual Style to a Cytoscape.js JSON.
 	 * 
 	 * @param vs
 	 * @param jg
@@ -339,7 +341,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			}
 
 			// tag can be null. In that case, use default,
-			if (writeValue(vp)) {
+			if (writeValue(vp, vs, jg)) {
 				final Object defaultValue = getDefaultVisualPropertyValue(vs, vp);
 				jg.writeObjectField(tag.getTag(), defaultValue);
 			}
@@ -347,14 +349,22 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	}
 
 	/**
+	 * Special case handler which requires value conversion.
+	 * TODO: better way to do this?
 	 * 
 	 * @return
+	 * @throws IOException
+	 * @throws JsonProcessingException
 	 */
-	private final boolean writeValue(final VisualProperty<?> vp) {
+	private final boolean writeValue(final VisualProperty<?> vp, final VisualStyle vs, final JsonGenerator jg)
+			throws JsonProcessingException, IOException {
 
 		if (vp == BasicVisualLexicon.EDGE_TRANSPARENCY || vp == BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY
 				|| vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY || vp == BasicVisualLexicon.NODE_TRANSPARENCY
 				|| vp == BasicVisualLexicon.NODE_BORDER_TRANSPARENCY) {
+			final Integer defaultValue = (Integer) getDefaultVisualPropertyValue(vs, vp);
+			double doubleValue = defaultValue/255d;
+			jg.writeNumberField(converter.getTag(vp).getTag(), doubleValue);
 			return false;
 		} else {
 			return true;

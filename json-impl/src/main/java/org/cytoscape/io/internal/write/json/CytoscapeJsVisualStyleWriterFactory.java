@@ -18,12 +18,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Writer factory for Visual Styles.
  * 
  */
-public class JSONVisualStyleWriterFactory implements CyWriterFactory, VizmapWriterFactory {
+public class CytoscapeJsVisualStyleWriterFactory implements CyWriterFactory, VizmapWriterFactory {
 
 	private final CyFileFilter filter;
 	private final CyApplicationManager applicationManager;
 	
-	public JSONVisualStyleWriterFactory(final CyFileFilter filter, final CyApplicationManager applicationManager) {
+	public CytoscapeJsVisualStyleWriterFactory(final CyFileFilter filter, final CyApplicationManager applicationManager) {
 		this.filter = filter;
 		this.applicationManager = applicationManager;
 	}
@@ -39,6 +39,6 @@ public class JSONVisualStyleWriterFactory implements CyWriterFactory, VizmapWrit
 		final VisualLexicon lexicon = applicationManager.getCurrentRenderingEngine().getVisualLexicon();
 		final ObjectMapper cytoscapeJsMapper = new ObjectMapper();
 		cytoscapeJsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon));
-		return new JSONVisualStyleWriter(os, cytoscapeJsMapper, styles);
+		return new CytoscapeJsVisualStyleWriter(os, cytoscapeJsMapper, styles, lexicon);
 	}
 }
