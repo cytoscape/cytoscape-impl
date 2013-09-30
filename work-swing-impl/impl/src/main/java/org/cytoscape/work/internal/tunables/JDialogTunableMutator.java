@@ -78,11 +78,23 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 		super();
 	}
 
-	/** {@inheritDoc} */
-	public void setConfigurationContext(Object win) {
+	/**
+	 * Used configure the TunableMutator so that it builds its
+	 * configuration object in the correct location. For instance,
+	 * a GUI based TunableMutator might call this method with a
+	 * JPanel, indicating that the TunableMutator should build its
+	 * configuration within that JPanel.  This method may be a 
+	 * no-op depending on the type of configuration.
+	 * @param o The context object in which the configuration will be built.
+	 * @param resetContext It tells whether the context map variables need to be cleared
+	 */
+	public void setConfigurationContext(Object win, boolean resetContext) {
 		if (win == null) {
-			handlerMap.clear();
-			titleProviderMap.clear();
+			if(resetContext)
+			{
+				handlerMap.clear();
+				titleProviderMap.clear();
+			}
 			return;
 		}
 

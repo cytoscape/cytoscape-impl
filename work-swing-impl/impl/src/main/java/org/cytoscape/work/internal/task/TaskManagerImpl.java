@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.*;
 
 import java.net.URL;
 
@@ -56,6 +57,11 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	final ExecutorService executor;
 
 	/**
+	 * Atomic variable to control the number of task iterators running at the same time.
+	 */
+	public AtomicInteger iteratorsRunning;
+
+	/**
 	 * Tunable stuff.
 	 */
 	final JDialogTunableMutator dialogTunableMutator;
@@ -75,6 +81,7 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	public TaskManagerImpl(final JDialogTunableMutator dialogTunableMutator, final CyProperty<Properties> property) {
 		super(dialogTunableMutator);
 		executor = Executors.newCachedThreadPool(new TaskThreadFactory(property));
+		iteratorsRunning = new AtomicInteger();
 		this.dialogTunableMutator = dialogTunableMutator;
 		parentWindow = null;
 		addShutdownHookForService(executor);
@@ -114,7 +121,7 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	}
 
 	public void execute(final TaskIterator iterator, Object tunableContext, TaskObserver observer) {
-		dialogTunableMutator.setConfigurationContext(parentWindow);
+		dialogTunableMutator.setConfigurationContext(parentWindow,(iteratorsRunning.incrementAndGet() <= 1));
 		final TaskRunner taskRunner = new TaskRunner(this, executor, iterator, 
 		                                             observer, taskWindow);
 		executor.submit(taskRunner);
@@ -144,7 +151,7 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	 * {@code TaskRunner} before making calls to {@code showTunables}.
 	 */
 	public void updateParent() {
-		dialogTunableMutator.setConfigurationContext(parentWindow);
+		dialogTunableMutator.setConfigurationContext(parentWindow,(iteratorsRunning.get() <= 1));
 	}
 
 	/**
@@ -153,7 +160,7 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	 */
 	public void clearParent() {
 		setExecutionContext(null);
-		dialogTunableMutator.setConfigurationContext(null);
+		dialogTunableMutator.setConfigurationContext(null,(iteratorsRunning.get() <= 1));
 	}
 
 	/**
@@ -273,6 +280,7 @@ class TaskRunner implements Runnable {
             if (observer != null) observer.allFinished(FinishStatus.newFailed(currentTask, e));
 		} finally {
 			manager.clearParent();
+			manager.iteratorsRunning.decrementAndGet();
 		}
 	}
 
