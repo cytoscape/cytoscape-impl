@@ -115,8 +115,10 @@ public class CyActivator extends AbstractCyActivator {
 		final StringValueEditor stringValueEditor = new StringValueEditor();
 		final BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
 		
+		final ThemeManager themeManager = new ThemeManager();
+		
 		final CyColorChooser colorChooser = new CyColorChooser();
-		final CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorChooser);
+		final CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorChooser, themeManager);
 		final CyFontPropertyEditor cyFontPropertyEditor = new CyFontPropertyEditor();
 		
 		final ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class, editorManager, cyColorPropertyEditor, continuousMappingCellRendererFactory);
@@ -268,7 +270,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Create the main GUI component
 		// -------------------------------------------------------------------------------------------------------------
-		final ThemeManager themeManager = new ThemeManager();
 		final VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(themeManager);
 		
 		// Start the PureMVC components

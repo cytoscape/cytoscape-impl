@@ -156,7 +156,6 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	public void setSelected(final boolean selected) {
 		this.selected = selected;
-		requestFocus();
 		
 		if (!selected && getModel().isVisualMappingAllowed())
 			getPropSheetTbl().clearSelection(); // This prevents some bugs when editing discrete mappings!
@@ -257,10 +256,21 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		mappingProp.setValue(mappingFactory);
 		mappingProp.setInternalValue(mapping);
 		
-		if (mapping == null)
+		if (mapping == null) {
 			vizMapPropertyBuilder.removeMappingProperties(getPropSheetPnl());
-		else
+		} else {
+			final int rowCount = getPropSheetTbl().getRowCount();
+			final int[] selectedRows = getPropSheetTbl().getSelectedRows();
 			vizMapPropertyBuilder.createMappingProperties(mapping, getPropSheetPnl(), mappingFactory);
+			
+			if (selectedRows != null && selectedRows.length > 0 && getPropSheetTbl().getRowCount() == rowCount) {
+				// Keep the same rows selected
+				final ListSelectionModel selModel = getPropSheetTbl().getSelectionModel();
+				
+				for (final int r : selectedRows)
+					selModel.addSelectionInterval(r, r);
+			}
+		}
 		
 		updateMappingIcon();
 		updateRemoveMappingBtn();
