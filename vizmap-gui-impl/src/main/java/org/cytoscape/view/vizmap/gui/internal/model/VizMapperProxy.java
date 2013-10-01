@@ -1,5 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.model;
 
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
@@ -16,6 +17,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.model.CyEdge;
@@ -48,7 +51,8 @@ import org.puremvc.java.multicore.patterns.proxy.Proxy;
 public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
-							  		   SessionLoadedListener, SetCurrentNetworkViewListener {
+							  		   SessionLoadedListener, SetCurrentNetworkListener,
+							  		   SetCurrentNetworkViewListener {
 
 	public static final String NAME = "VisualStyleProxy";
 	
@@ -129,6 +133,10 @@ public class VizMapperProxy extends Proxy
 			vmMgr.setCurrentVisualStyle(vs);
 	}
 
+	public VisualStyle getVisualStyle(final CyNetworkView view) {
+		return servicesUtil.get(VisualMappingManager.class).getVisualStyle(view);
+	}
+	
 	public CyNetwork getCurrentNetwork() {
 		return servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
 	}
@@ -251,6 +259,11 @@ public class VizMapperProxy extends Proxy
 	@Override
 	public void handleEvent(final SetCurrentVisualStyleEvent e) {
 		sendNotification(CURRENT_VISUAL_STYLE_CHANGED, e.getVisualStyle());
+	}
+	
+	@Override
+	public void handleEvent(final SetCurrentNetworkEvent e) {
+		sendNotification(CURRENT_NETWORK_CHANGED, e.getNetwork());
 	}
 	
 	@Override

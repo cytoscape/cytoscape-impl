@@ -171,7 +171,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	@Override
 	public RenderingEngine<CyNetwork> getRenderingEngine() {
-		return getStylesBtn().getRenderingEngine(getStylesBtn().getSelectedItem());
+		return getStylesBtn().getRenderingEngine(getSelectedVisualStyle());
 	}
 	
 	@Override
@@ -182,6 +182,14 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	@Override
 	public void showEditor(Component parent) {
 		// TODO deprecate it?
+	}
+	
+	public VisualStyle getSelectedVisualStyle() {
+		return getStylesBtn().getSelectedItem();
+	}
+	
+	public void setSelectedVisualStyle(final VisualStyle style) {
+		getStylesBtn().setSelectedItem(style);
 	}
 	
 	public Set<VisualPropertySheet> getVisualPropertySheets() {

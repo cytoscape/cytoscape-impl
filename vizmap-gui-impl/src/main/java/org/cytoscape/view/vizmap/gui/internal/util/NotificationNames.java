@@ -23,7 +23,9 @@ public final class NotificationNames {
 	
 	/** Body: SortedSet<VisualStyle> */
 	public static final String VISUAL_STYLE_SET_CHANGED = "VISUAL_STYLE_SET_CHANGED";
-	/** Body: {@link org.cytoscape.view.vizmap.VisualStyle} */
+	/** Body: {@link org.cytoscape.model.CyNetwork} */
+	public static final String CURRENT_NETWORK_CHANGED = "CURRENT_NETWORK_CHANGED";
+	/** Body: {@link org.cytoscape.view.model.CyNetworkView} */
 	public static final String CURRENT_NETWORK_VIEW_CHANGED = "CURRENT_NETWORK_VIEW_CHANGED";
 	/** Body: {@link org.cytoscape.view.vizmap.VisualStyle} */
 	public static final String CURRENT_VISUAL_STYLE_CHANGED = "CURRENT_VISUAL_STYLE_CHANGED";

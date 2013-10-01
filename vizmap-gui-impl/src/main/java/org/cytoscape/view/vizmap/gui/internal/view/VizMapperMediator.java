@@ -20,6 +20,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,6 +94,8 @@ import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem.Messa
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel.VisualStyleDropDownButton;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -125,6 +128,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private MappingFunctionFactoryProxy mappingFactoryProxy;
 	
 	private boolean ignoreVisualStyleSelectedEvents;
+	
 	private VisualPropertySheetItem<?> curVpSheetItem;
 	private VizMapperProperty<?, ?, ?> curVizMapperProperty;
 	private CyNetworkView previewNetView;
@@ -233,20 +237,45 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		if (id.equals(VISUAL_STYLE_SET_CHANGED)) {
 			updateVisualStyleList((SortedSet<VisualStyle>) body);
 		} else if (id.equals(CURRENT_VISUAL_STYLE_CHANGED)) {
-			invokeOnEDT(new Runnable() { // It's important to run the following actions in the same thread!
-				@Override
+			final Thread thread = new Thread() {
+				// Create a new Thread to prevent invokeAndWait being called from the EventDispatchThread
 				public void run() {
-					ignoreVisualStyleSelectedEvents = true;
-					selectCurrentVisualStyle((VisualStyle) body);
-					ignoreVisualStyleSelectedEvents = false;
-					updateVisualPropertySheets((VisualStyle) body);
-				}
-			});
+					try {
+						SwingUtilities.invokeAndWait(new Runnable() {
+							@Override
+							public void run() {
+								ignoreVisualStyleSelectedEvents = true;
+								selectCurrentVisualStyle((VisualStyle) body);
+								ignoreVisualStyleSelectedEvents = false;
+							}
+						});
+						
+						updateVisualPropertySheets((VisualStyle) body);
+					} catch (InterruptedException e) {
+						logger.error("Error selecting current Visual Style", e);
+					} catch (InvocationTargetException e) {
+						logger.error("Error selecting current Visual Style", e);
+					}
+			     }
+			};
+			thread.start();
 		} else if (id.equals(VISUAL_STYLE_UPDATED) && body != null && body.equals(vmProxy.getCurrentVisualStyle())) {
 			updateVisualPropertySheets((VisualStyle) body);
 		} else if (id.equals(CURRENT_NETWORK_VIEW_CHANGED)) {
-			updateLockedValues((CyNetworkView) body);
-			updateVisualPropertyItemsStatus();
+			final CyNetworkView view = (CyNetworkView) body;
+			
+			// Ignore it, if the selected style is not the current one,
+			// because it should change the selection style first and then recreate all the items, anyway.
+			if (view == null || vmProxy.getVisualStyle(view).equals(vizMapperMainPanel.getSelectedVisualStyle())) {
+				updateLockedValues((CyNetworkView) body);
+				
+				if (body instanceof CyNetworkView) {
+					updateMappings(CyNode.class, view.getModel().getDefaultNodeTable());
+					updateMappings(CyEdge.class, view.getModel().getDefaultEdgeTable());
+				}
+				
+				updateVisualPropertyItemsStatus();
+			}
 		} else if (id.equals(VISUAL_STYLE_NAME_CHANGED)) {
 			vizMapperMainPanel.getStylesBtn().repaint();
 		}
@@ -313,7 +342,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					if (mapping != null) {
 						for (final RowSetRecord record : payloadCollection) {
 							if (mapping.getMappingColumnName().equalsIgnoreCase(record.getColumn())) {
-								item.updateMapping();
+								invokeOnEDT(new Runnable() {
+									@Override
+									public void run() {
+										item.updateMapping();
+									}
+								});
+								
 								break;
 							}
 						}
@@ -734,15 +769,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void selectCurrentVisualStyle(final VisualStyle vs) {
-		final VisualStyleDropDownButton btn = vizMapperMainPanel.getStylesBtn();
-		
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				final VisualStyle selectedVs = btn.getSelectedItem();
+				final VisualStyle selectedVs = vizMapperMainPanel.getSelectedVisualStyle();
 				
 				if (vs != null && !vs.equals(selectedVs))
-					btn.setSelectedItem(vs);
+					vizMapperMainPanel.setSelectedVisualStyle(vs);
 			}
 		});
 	}
@@ -762,16 +795,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			final Class<? extends CyIdentifiable> curTargetDataType = selVpSheet != null ?
 					selVpSheet.getModel().getTargetDataType() : null;
 			
-			invokeOnEDT(new Runnable() {
-				@Override
-				public void run() {
-					createVisualPropertySheets();
-					
-					// Select the same sheet that was selected before
-					final VisualPropertySheet vpSheet = vizMapperMainPanel.getVisualPropertySheet(curTargetDataType);
-					vizMapperMainPanel.setSelectedVisualPropertySheet(vpSheet);
-				}
-			});
+			createVisualPropertySheets(curTargetDataType);
 		} else {
 			// TODO group by target data type, because the VP id is not guaranteed to be unique among different types
 			final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
@@ -791,7 +815,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
-	private void createVisualPropertySheets() {
+	private void createVisualPropertySheets(final Class<? extends CyIdentifiable> selectedTargetDataType) {
 		final VisualStyle style = vmProxy.getCurrentVisualStyle();
 		final VisualLexicon lexicon = vmProxy.getCurrentVisualLexicon();
 		// TODO group by target data type, because the VP id is not guaranteed to be unique among different types
@@ -857,6 +881,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				vizMapperMainPanel.setPreferredSize(
 						new Dimension(vizMapperMainPanel.getPropertiesPn().getMinimumSize().width + 20,
 									  vizMapperMainPanel.getPreferredSize().height));
+				
+				// Select the same sheet that was selected before
+				final VisualPropertySheet vpSheet = vizMapperMainPanel.getVisualPropertySheet(selectedTargetDataType);
+				vizMapperMainPanel.setSelectedVisualPropertySheet(vpSheet);
 			}
 		});
 	}
@@ -999,6 +1027,38 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				
 				// If item is enabled, check whether or not the mapping is valid for the current network
 				updateMappingStatus(item);
+			}
+		}
+	}
+	
+	private void updateMappings(final Class<? extends CyIdentifiable> targetDataType, final CyTable table) {
+		if (table != null) {
+			final VisualPropertySheet vpSheet = vizMapperMainPanel.getVisualPropertySheet(targetDataType);
+			
+			if (vpSheet != null) {
+				final Collection<CyColumn> columns = table.getColumns();
+				final HashMap<String, Class<?>> colTypes = new HashMap<String, Class<?>>();
+				
+				for (final CyColumn col : columns)
+					colTypes.put(col.getName().toLowerCase(), col.getType());
+					
+				for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
+					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
+					
+					// Passthrough mappings don't need to be updated
+					if (mapping instanceof DiscreteMapping || mapping instanceof ContinuousMapping) {
+						final Class<?> colType = colTypes.get(mapping.getMappingColumnName().toLowerCase());
+						
+						if (colType != null && mapping.getMappingColumnType().isAssignableFrom(colType)) {
+							invokeOnEDT(new Runnable() {
+								@Override
+								public void run() {
+									item.updateMapping();
+								}
+							});
+						}
+					}
+				}
 			}
 		}
 	}
