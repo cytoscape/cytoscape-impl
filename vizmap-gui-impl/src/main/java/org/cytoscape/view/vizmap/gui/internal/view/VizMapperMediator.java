@@ -672,26 +672,11 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			}
 			
 			// Right-click
-			vpSheetItem.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(final MouseEvent e) {
-					handleContextMenuEvent(e, vpSheet, vpSheetItem);
-				}
-
-				@Override
-				public void mouseReleased(final MouseEvent e) {
-					handleContextMenuEvent(e, vpSheet, vpSheetItem);
-				}
-			});
+			final ContextMenuMouseListener cmMouseListener = new ContextMenuMouseListener(vpSheet, vpSheetItem);
+			vpSheetItem.addMouseListener(cmMouseListener);
 			
 			if (vpSheetItem.getModel().isVisualMappingAllowed()) {
-				vpSheetItem.getPropSheetPnl().getTable().addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(final MouseEvent e) {
-						if (SwingUtilities.isRightMouseButton(e))
-							handleContextMenuEvent(e, vpSheet, vpSheetItem);
-					}
-				});
+				vpSheetItem.getPropSheetPnl().getTable().addMouseListener(cmMouseListener);
 				
 				vpSheetItem.getRemoveMappingBtn().addActionListener(new ActionListener() {
 					@Override
@@ -1313,17 +1298,50 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
-	private void handleContextMenuEvent(final MouseEvent e, final VisualPropertySheet vpSheet, 
-			final VisualPropertySheetItem<?> vpSheetItem) {
-		if (!e.isPopupTrigger())
-			return;
+	/**
+	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
+	 * @param runnable
+	 */
+	private void invokeOnEDT(final Runnable runnable) {
+		if (SwingUtilities.isEventDispatchThread())
+			runnable.run();
+		else
+			SwingUtilities.invokeLater(runnable);
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private class ContextMenuMouseListener extends MouseAdapter {
 		
-		// Select the right-clicked sheet item, if not selected yet
-		if (!vpSheetItem.isSelected())
-			vpSheet.setSelectedItems((Set) (Collections.singleton(vpSheetItem)));
+		private VisualPropertySheet vpSheet;
+		private VisualPropertySheetItem<?> vpSheetItem;
 		
-		if (vpSheetItem.isEnabled()) {
+		ContextMenuMouseListener(final VisualPropertySheet vpSheet,
+				final VisualPropertySheetItem<?> vpSheetItem) {
+			this.vpSheet = vpSheet;
+			this.vpSheetItem = vpSheetItem;
+		}
+
+		@Override
+		public void mousePressed(final MouseEvent e) {
+			handleContextMenuEvent(e, vpSheet, vpSheetItem);
+		}
+
+		@Override
+		public void mouseReleased(final MouseEvent e) {
+			handleContextMenuEvent(e, vpSheet, vpSheetItem);
+		}
+		
+		@SuppressWarnings("rawtypes")
+		private void handleContextMenuEvent(final MouseEvent e, final VisualPropertySheet vpSheet, 
+				final VisualPropertySheetItem<?> vpSheetItem) {
+			if (!e.isPopupTrigger())
+				return;
+			
+			// Select the right-clicked sheet item, if not selected yet
+			if (!vpSheetItem.isSelected())
+				vpSheet.setSelectedItems((Set) (Collections.singleton(vpSheetItem)));
+			
 			final JPopupMenu contextMenu = vizMapperMainPanel.getContextMenu();
 			
 			invokeOnEDT(new Runnable() {
@@ -1340,16 +1358,5 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				}
 			});
 		}
-	}
-	
-	/**
-	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
-	 * @param runnable
-	 */
-	private void invokeOnEDT(final Runnable runnable) {
-		if (SwingUtilities.isEventDispatchThread())
-			runnable.run();
-		else
-			SwingUtilities.invokeLater(runnable);
 	}
 }
