@@ -354,7 +354,7 @@ public class VisualPropertySheet extends JPanel{
 		return vpsBtn;
 	}
 
-	private JPopupMenu getVpsMenu() {
+	protected JPopupMenu getVpsMenu() {
 		if (vpsMenu == null) {
 			vpsMenu = new JPopupMenu();
 			vpsMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -589,18 +589,6 @@ public class VisualPropertySheet extends JPanel{
 				});
 				rootMenu.add(mi);
 			}
-			
-//			rootMenu.add(new JSeparator());
-//			
-//			final JMenuItem makeDefMi = new JMenuItem("Make Default");
-//			makeDefMi.addActionListener(new ActionListener() {
-//				@Override
-//				public void actionPerformed(final ActionEvent e) {
-//					// TODO
-//					JOptionPane.showMessageDialog(VisualPropertySheet.this, "Feature not implemented yet...");
-//				}
-//			});
-//			rootMenu.add(makeDefMi);
 			
 			getVpsBtn().setEnabled(true);
 		} else {

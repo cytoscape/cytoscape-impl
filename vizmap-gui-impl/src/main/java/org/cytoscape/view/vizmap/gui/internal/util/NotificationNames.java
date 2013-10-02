@@ -34,6 +34,9 @@ public final class NotificationNames {
 	/** Body: {@link org.cytoscape.view.vizmap.VisualStyle} */
 	public static final String VISUAL_STYLE_NAME_CHANGED = "VISUAL_STYLE_NAME_CHANGED";
 	
+	/** Body: {@link java.util.Properties} */
+	public static final String VIZMAP_PROPS_CHANGED = "VIZMAP_PROPS_CHANGED";
+	
 	
 	private NotificationNames() {
 		// restrict instantiation
