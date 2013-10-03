@@ -217,6 +217,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 			// set the biopax network mapping type for other plugins
 			AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "DEFAULT", String.class);
 			networks.add(network);
+			cyServices.networkManager.addNetwork(network);
 			break;
 		case SIF:
 			//convert to SIF
