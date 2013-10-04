@@ -1,5 +1,6 @@
 package org.cytoscape.filter.internal.view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -11,6 +12,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -24,6 +26,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 
 public class FilterPanelController {
+	private static final Color SELECTED_BACKGROUND_COLOR = new Color(222, 234, 252);
+
 	private int totalSelected;
 	private TransformerManager transformerManager;
 	private TransformerViewManager transformerViewManager;
@@ -155,10 +159,12 @@ public class FilterPanelController {
 		updateEditPanel(panel);
 	}
 	
-	void handleCheck(FilterPanel panel, JCheckBox checkBox) {
+	void handleCheck(FilterPanel panel, JCheckBox checkBox, JComponent view) {
 		if (checkBox.isSelected()) {
+			view.setBackground(SELECTED_BACKGROUND_COLOR);
 			totalSelected += 1;
 		} else {
+			view.setBackground(Color.WHITE);
 			totalSelected -=1;
 		}
 		updateEditPanel(panel);
@@ -174,7 +180,7 @@ public class FilterPanelController {
 		panel.validate();
 	}
 
-	public Component createView(FilterPanel parent, Filter<CyNetwork, CyIdentifiable> filter, int depth) {
+	public JComponent createView(FilterPanel parent, Filter<CyNetwork, CyIdentifiable> filter, int depth) {
 		if (filter instanceof CompositeFilter) {
 			return new CompositeFilterPanel(parent, this, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth);
 		}

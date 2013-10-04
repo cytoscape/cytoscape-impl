@@ -1,6 +1,5 @@
 package org.cytoscape.filter.internal.degree;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -8,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -20,6 +20,7 @@ import org.cytoscape.filter.internal.prefuse.JRangeSliderExtended;
 import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
+import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
@@ -46,7 +47,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 	}
 
 	@Override
-	public Component createView(Transformer<?, ?> transformer) {
+	public JComponent createView(Transformer<?, ?> transformer) {
 		DegreeFilter filter = (DegreeFilter) transformer;
 		Controller controller = new Controller(filter);
 		View view = new View(controller);
@@ -129,6 +130,8 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		private JComboBox edgeTypeComboBox;
 
 		public View(final Controller controller) {
+			ViewUtil.configureFilterView(this);
+			
 			edgeTypeComboBox = new JComboBox(new DynamicComboBoxModel<EdgeTypeElement>(edgeTypeComboBoxModel));
 			
 			JRangeSliderExtended slider = new JRangeSliderExtended(controller.getSliderModel(), JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
@@ -142,7 +145,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			setLayout(new GridBagLayout());
 			add(new JLabel("Degree"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(edgeTypeComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(slider, new GridBagConstraints(2, 0, 1, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(slider, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
 			
 			controller.synchronize(this);
 		}

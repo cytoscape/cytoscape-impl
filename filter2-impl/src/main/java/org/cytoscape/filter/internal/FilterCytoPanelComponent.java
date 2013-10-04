@@ -11,15 +11,16 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
+import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
 
 public class FilterCytoPanelComponent implements CytoPanelComponent {
 
 	FilterPanel panel;
 
-	public FilterCytoPanelComponent(TransformerManager transformerManager, TransformerViewManager transformerViewManager, CyApplicationManager applicationManager) {
+	public FilterCytoPanelComponent(TransformerManager transformerManager, TransformerViewManager transformerViewManager, CyApplicationManager applicationManager, IconManager iconManager) {
 		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, applicationManager);
-		panel = new FilterPanel(controller);
+		panel = new FilterPanel(controller, iconManager);
 		panel.setPreferredSize(new Dimension(450, 300));
 	}
 	

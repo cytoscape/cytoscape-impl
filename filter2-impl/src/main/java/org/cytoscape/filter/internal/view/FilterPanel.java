@@ -42,9 +42,12 @@ public class FilterPanel extends JPanel {
 	private JMenuItem exportMenu;
 	private JMenuItem importMenu;
 	private JScrollPane scrollPane;
+	private IconManager iconManager;
 
-	public FilterPanel(final FilterPanelController controller) {
+	public FilterPanel(final FilterPanelController controller, IconManager iconManager) {
 		this.controller = controller;
+		this.iconManager = iconManager;
+		
 		filterComboBoxModel = controller.getFilterComboBoxModel();
 		
 		createSelectionPanel();
@@ -87,9 +90,9 @@ public class FilterPanel extends JPanel {
 		menu.add(exportMenu);
 		menu.add(importMenu);
 
-		JLabel arrowLabel = new JLabel("▼");
-		Font arrowFont = arrowLabel.getFont().deriveFont(10.0f);
-		arrowLabel.setFont(arrowFont);
+		JLabel arrowLabel = new JLabel(IconManager.ICON_COG);
+		Font iconFont = iconManager.getIconFont(17.0f);
+		arrowLabel.setFont(iconFont);
 		arrowLabel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent event) {
@@ -164,8 +167,10 @@ public class FilterPanel extends JPanel {
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 	
-		outdentButton = new JButton("◀");
-		Font arrowFont = outdentButton.getFont().deriveFont(10.0f);
+		Font arrowFont = iconManager.getIconFont(11.0f);
+		Font iconFont = iconManager.getIconFont(17.0f);
+
+		outdentButton = new JButton(IconManager.ICON_STEP_BACKWARD);
 		outdentButton.setFont(arrowFont);
 		outdentButton.addActionListener(new ActionListener() {
 			@Override
@@ -174,7 +179,7 @@ public class FilterPanel extends JPanel {
 			}
 		});
 		
-		JButton indentButton = new JButton("▶");
+		JButton indentButton = new JButton(IconManager.ICON_STEP_FORWARD);
 		indentButton.setFont(arrowFont);
 		indentButton.addActionListener(new ActionListener() {
 			@Override
@@ -183,7 +188,8 @@ public class FilterPanel extends JPanel {
 			}
 		});
 		
-		JButton deleteButton = new JButton("Delete");
+		JButton deleteButton = new JButton(IconManager.ICON_TRASH);
+		deleteButton.setFont(iconFont);
 		deleteButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
