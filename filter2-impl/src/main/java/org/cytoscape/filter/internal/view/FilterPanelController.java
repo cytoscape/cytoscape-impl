@@ -209,10 +209,23 @@ public class FilterPanelController {
 		return new DynamicComboBoxModel<FilterComboBoxElement>(transformerViewManager.getFilterComboBoxModel());
 	}
 
+	@SuppressWarnings("unchecked")
 	void handleFilterSelected(JComboBox filterComboBox, FilterPanel panel) {
 		if (filterComboBox.getSelectedIndex() == 0) {
-			// TODO: Prompt for name
-			addNewFilter(String.format("My filter %d", ++filtersCreated));
+			String defaultName = String.format("My filter %d", ++filtersCreated);
+			String name;
+			String message = "Please provide a name for your filter.";
+			while (true) {
+				name = (String) JOptionPane.showInputDialog(null, message, "Create New Filter", JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
+				if (name == null) {
+					return;
+				}
+				if (validateFilterName(null, name, (DynamicComboBoxModel<FilterElement>) filterComboBox.getModel())) {
+					break;
+				}
+				message = "The name '" + name + "' is already being used by another filter.  Please provide a different name.";
+			}
+			addNewFilter(name);
 		}
 		FilterElement selected = (FilterElement) filterComboBox.getSelectedItem();
 		if (selected == null) {
@@ -222,6 +235,20 @@ public class FilterPanelController {
 		viewUpdater.handleFilterStructureChanged();
 	}
 	
+	private boolean validateFilterName(String oldName, String newName, DynamicComboBoxModel<FilterElement> comboBoxModel) {
+		if (oldName != null && oldName.equalsIgnoreCase(newName)) {
+			// Name didn't change.
+			return true;
+		}
+		
+		for (FilterElement element : comboBoxModel) {
+			if (element.name.equalsIgnoreCase(newName)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private void addNewFilter(String name) {
 		CompositeFilter<CyNetwork, CyIdentifiable> filter = transformerManager.createCompositeFilter(CyNetwork.class, CyIdentifiable.class);
 		filter.addListener(viewUpdater);
@@ -259,9 +286,24 @@ public class FilterPanelController {
 		filterComboBoxModel.remove(index);
 	}
 
+	@SuppressWarnings("unchecked")
 	void handleRename(FilterPanel panel) {
-		// TODO Auto-generated method stub
-		showComingSoonMessage(panel);
+		JComboBox comboBox = panel.getFilterComboBox();
+		FilterElement selected = (FilterElement) comboBox.getSelectedItem();
+		String defaultName = selected.name;
+		String name;
+		String message = "Please provide a name for your filter.";
+		while (true) {
+			name = (String) JOptionPane.showInputDialog(null, message, "Rename Filter", JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
+			if (name == null) {
+				return;
+			}
+			if (validateFilterName(defaultName, name, (DynamicComboBoxModel<FilterElement>) comboBox.getModel())) {
+				break;
+			}
+			message = "The name '" + name + "' is already being used by another filter.  Please provide a different name.";
+		}
+		selected.name = name;
 	}
 
 	public DynamicComboBoxModel<FilterElement> getFilterComboBoxModel() {
@@ -269,7 +311,7 @@ public class FilterPanelController {
 	}
 	
 	static class FilterElement {
-		public final String name;
+		public String name;
 		public final CompositeFilter<CyNetwork, CyIdentifiable> filter;
 		
 		public FilterElement(String name, CompositeFilter<CyNetwork, CyIdentifiable> filter) {

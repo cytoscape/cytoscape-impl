@@ -236,4 +236,8 @@ public class FilterPanel extends JPanel {
 	public Component getEditPanel() {
 		return editControlPanel;
 	}
+
+	public JComboBox getFilterComboBox() {
+		return filterComboBox;
+	}
 }
