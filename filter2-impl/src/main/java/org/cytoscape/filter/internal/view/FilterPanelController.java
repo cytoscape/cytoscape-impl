@@ -15,7 +15,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager.FilterComboBoxElement;
@@ -36,11 +35,12 @@ public class FilterPanelController {
 	int filtersCreated = 0;
 	private ViewUpdater viewUpdater;
 	
-	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, CyApplicationManager applicationManager) {
+	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, ViewUpdater viewUpdater) {
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
+		this.viewUpdater = viewUpdater;
 		
-		viewUpdater = new ViewUpdater(applicationManager, this);
+		viewUpdater.setController(this);
 		
 		List<FilterElement> modelItems = new ArrayList<FilterElement>();
 		modelItems.add(new FilterElement("(Create New Filter...)", null));
@@ -328,5 +328,13 @@ public class FilterPanelController {
 	public Filter<CyNetwork, CyIdentifiable> getFilter() {
 		FilterElement selected = (FilterElement) filterComboBoxModel.getSelectedItem();
 		return selected.filter;
+	}
+
+	public void setUpdating(boolean updating, FilterPanel panel) {
+		if (updating) {
+			panel.setStatus("Applying filter...");
+		} else {
+			panel.setStatus("");
+		}
 	}
 }

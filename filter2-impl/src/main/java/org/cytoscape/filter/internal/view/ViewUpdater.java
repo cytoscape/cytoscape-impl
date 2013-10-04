@@ -13,12 +13,16 @@ import org.cytoscape.view.model.CyNetworkView;
 public class ViewUpdater extends LazyWorker implements TransformerListener {
 	private CyApplicationManager applicationManager;
 	private FilterPanelController controller;
+	private FilterPanel panel;
 	
-	public ViewUpdater(CyApplicationManager applicationManager, FilterPanelController controller) {
+	public ViewUpdater(CyApplicationManager applicationManager) {
 		this.applicationManager = applicationManager;
-		this.controller = controller;
 	}
 
+	public void setView(FilterPanel panel) {
+		this.panel = panel;
+	}
+	
 	@Override
 	public void handleSettingsChanged() {
 		requestWork();
@@ -30,22 +34,39 @@ public class ViewUpdater extends LazyWorker implements TransformerListener {
 	
 	@Override
 	protected void doWork() {
+		if (controller == null) {
+			return;
+		}
+		
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+		if (networkView == null) {
+			return;
+		}
+		
 		final CyNetwork network = networkView.getModel(); 
 		if (network == null) {
 			return;
 		}
 		
-		Filter<CyNetwork, CyIdentifiable> filter = controller.getFilter();
-		
-		for (CyNode node : network.getNodeList()) {
-			CyRow row = network.getRow(node);
-			row.set(CyNetwork.SELECTED, filter.accepts(network, node));
+		controller.setUpdating(true, panel);
+		try {
+			Filter<CyNetwork, CyIdentifiable> filter = controller.getFilter();
+			
+			for (CyNode node : network.getNodeList()) {
+				CyRow row = network.getRow(node);
+				row.set(CyNetwork.SELECTED, filter.accepts(network, node));
+			}
+			for (CyEdge edge : network.getEdgeList()) {
+				CyRow row = network.getRow(edge);
+				row.set(CyNetwork.SELECTED, filter.accepts(network, edge));
+			}
+			networkView.updateView();
+		} finally {
+			controller.setUpdating(false, panel);
 		}
-		for (CyEdge edge : network.getEdgeList()) {
-			CyRow row = network.getRow(edge);
-			row.set(CyNetwork.SELECTED, filter.accepts(network, edge));
-		}
-		networkView.updateView();
+	}
+
+	public void setController(FilterPanelController controller) {
+		this.controller = controller;
 	}
 }

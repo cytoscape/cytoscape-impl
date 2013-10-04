@@ -43,10 +43,13 @@ public class FilterPanel extends JPanel {
 	private JMenuItem importMenu;
 	private JScrollPane scrollPane;
 	private IconManager iconManager;
+	private JLabel statusLabel;
 
-	public FilterPanel(final FilterPanelController controller, IconManager iconManager) {
+	public FilterPanel(final FilterPanelController controller, IconManager iconManager, ViewUpdater viewUpdater) {
 		this.controller = controller;
 		this.iconManager = iconManager;
+		
+		viewUpdater.setView(this);
 		
 		filterComboBoxModel = controller.getFilterComboBoxModel();
 		
@@ -90,23 +93,26 @@ public class FilterPanel extends JPanel {
 		menu.add(exportMenu);
 		menu.add(importMenu);
 
-		JLabel arrowLabel = new JLabel(IconManager.ICON_COG);
+		JLabel optionsLabel = new JLabel(IconManager.ICON_COG);
 		Font iconFont = iconManager.getIconFont(17.0f);
-		arrowLabel.setFont(iconFont);
-		arrowLabel.addMouseListener(new MouseAdapter() {
+		optionsLabel.setFont(iconFont);
+		optionsLabel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent event) {
 				handleShowMenu(event);
 			}
 		});
 		
+		statusLabel = new JLabel("");
+		
 		setLayout(new GridBagLayout());
 		int row = 0;
 		add(selectionPanel, new GridBagConstraints(0, row, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		add(arrowLabel, new GridBagConstraints(1, row++, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
+		add(statusLabel, new GridBagConstraints(1, row, 1, 1, 0, 0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
+		add(optionsLabel, new GridBagConstraints(2, row++, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
 		
 		Component editPanel = createEditPanel();
-		add(editPanel, new GridBagConstraints(0, row++, 2, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		add(editPanel, new GridBagConstraints(0, row++, 3, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 		
 		FilterElement element = (FilterElement) filterComboBox.getSelectedItem();
 		createView(element.filter);
@@ -239,5 +245,9 @@ public class FilterPanel extends JPanel {
 
 	public JComboBox getFilterComboBox() {
 		return filterComboBox;
+	}
+	
+	public void setStatus(String status) {
+		statusLabel.setText(status);
 	}
 }
