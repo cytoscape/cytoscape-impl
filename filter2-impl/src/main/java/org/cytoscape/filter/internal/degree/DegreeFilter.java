@@ -39,6 +39,11 @@ public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	public void setCriterion(Object criterion) {
 		rawCriterion = criterion;
 		
+		if (criterion == null) {
+			lowerBound = null;
+			upperBound = null;
+		}
+		
 		if (criterion instanceof Number[]) {
 			Number[] range = (Number[]) criterion;
 			lowerBound = range[0];
@@ -78,6 +83,10 @@ public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	public boolean accepts(CyNetwork context, CyIdentifiable element) {
 		if (!(element instanceof CyNode)) {
 			return false;
+		}
+		
+		if (upperBound == null && lowerBound == null) {
+			return true;
 		}
 		
 		CyNode node = (CyNode) element;
