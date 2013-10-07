@@ -54,7 +54,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -66,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * BioPAX File / InputStream Reader Implementation.
  *
  * @author Ethan Cerami.
- * @author Igor Rodchenkov (re-factoring, using PaxTools API)
+ * @author Igor Rodchenkov (re-factoring, using PaxTools API, Cytoscape 3)
  */
 public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	
@@ -138,11 +137,8 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	public ListSingleSelection<ReaderMode> readerModeSelection;
 
 	
-	@Tunable(description = "Apply a BioPAX-aware visual style?", groups = "Options")
-	public boolean applyVisualStyle = true;
-	
-	@Tunable(description = "Use the force-directed layout?", groups = "Options")
-	public boolean applyLayout = true;
+	@Tunable(description = "Apply BioPAX/SIF visual style and force-directed layout?", groups = "Options")
+	public boolean applyStyle = true;
 	
 	
 	@ProvidesTitle
@@ -204,6 +200,9 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		log.info("Model " + networkName + " contains " 
 				+ model.getObjects().size() + " BioPAX elements");
 		
+		//set parent/root network (can be null - add a new networks group)
+		rootNetwork = nameToRootNetworkMap.get(rootNetworkSelection.getSelectedValue());
+		
 		final BioPaxMapper mapper = new BioPaxMapper(model, cyServices.networkFactory);
 			
 		switch (readerModeSelection.getSelectedValue()) {
@@ -217,7 +216,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 			// set the biopax network mapping type for other plugins
 			AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "DEFAULT", String.class);
 			networks.add(network);
-			cyServices.networkManager.addNetwork(network);
+//			cyServices.networkManager.addNetwork(network); //TODO required or not?
 			break;
 		case SIF:
 			//convert to SIF
@@ -374,24 +373,26 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	}
 
 	
+	/* Looks, unless called directly, this runs once the view is created 
+	 * for the first time, i.e., after the network is imported from a biopax file/stream 
+	 * (so it's up to the user or another app. then to apply custom style/layout to 
+	 * new view, should the first one is destroyed and new one created.
+	 */
 	@Override
 	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
 		
-		//callback array (has to be final)
-		CyNetworkView view;
-		
+		CyNetworkView view;		
 		//visual style depends on the tunable
-		VisualStyle style = null; 				
+		VisualStyle style = null; 
+		
 		switch (readerModeSelection.getSelectedValue()) {
 		case DEFAULT:
 			style = visualStyleUtil.getBioPaxVisualStyle();
 			view = cyServices.networkViewFactory.createNetworkView(network);
-			cyServices.networkViewManager.addNetworkView(view); //required here
 			break;
 		case SIF:
 			style = visualStyleUtil.getBinarySifVisualStyle();
 			view = anotherReader.buildCyNetworkView(network);
-			cyServices.networkViewManager.addNetworkView(view); //TODO duplicate view?
 			break;
 		case SBGN:
 		default:
@@ -401,25 +402,25 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		}
 
 		if(view != null) {
-			final VisualStyle s = style;
-			final CyNetworkView v = view;
+			if(!cyServices.networkViewManager.getNetworkViews(network).contains(view))
+				cyServices.networkViewManager.addNetworkView(view);
 
-			//optionally apply style and layout
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					if(applyVisualStyle && s != null) {
-						cyServices.mappingManager.setVisualStyle(s, v);
-						s.apply(v);
+			final VisualStyle vs = style;
+			if(vs != null) {
+				final CyNetworkView v = view;
+				//optionally apply style and layout
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if(applyStyle) {
+							layout(v); //runs in a separate task/thread
+							cyServices.mappingManager.setVisualStyle(vs, v);
+							vs.apply(v);
+							v.updateView();
+						}						
 					}
-
-					if(applyLayout) {
-						layout(v);
-					}
-
-					v.updateView();
-				}
-			});
+				});
+			}
 		}
 		
 		return view;
