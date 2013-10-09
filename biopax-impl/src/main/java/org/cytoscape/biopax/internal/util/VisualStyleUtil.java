@@ -333,7 +333,7 @@ public class VisualStyleUtil {
 			DiscreteMapping<String, NodeShape> shapeFunction = (DiscreteMapping<String, NodeShape>) discreteFactory
 					.createVisualMappingFunction(BioPaxMapper.BIOPAX_ENTITY_TYPE, String.class, NODE_SHAPE);
 			shapeFunction.putMapValue("Complex", NodeShapeVisualProperty.HEXAGON);
-			shapeFunction.putMapValue("(Generic/Group)", NodeShapeVisualProperty.OCTAGON);
+			shapeFunction.putMapValue("(generic)", NodeShapeVisualProperty.OCTAGON);
 			binarySifStyle.addVisualMappingFunction(shapeFunction);
 
 			// Node color
@@ -344,7 +344,7 @@ public class VisualStyleUtil {
 			DiscreteMapping<String, Paint> paintFunction = (DiscreteMapping<String, Paint>) discreteFactory
 					.createVisualMappingFunction(BioPaxMapper.BIOPAX_ENTITY_TYPE, String.class, NODE_FILL_COLOR);
 			paintFunction.putMapValue("Complex", lightBlue);
-			paintFunction.putMapValue("(Generic/Group)", lightBlue);
+			paintFunction.putMapValue("(generic)", lightBlue);
 			binarySifStyle.addVisualMappingFunction(paintFunction);
 
 			// Node label

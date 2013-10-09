@@ -329,10 +329,10 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 				BioPaxMapper.createAttributesFromProperties(e, model, node, cyNetwork);
 			} else { //e == null						
 				if(uri.contains("/group/")) {
-					AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_ENTITY_TYPE, "(Generic)", String.class);
+					AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_ENTITY_TYPE, "(generic)", String.class);
 					AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_URI, uri, String.class);
-					AttributeUtil.set(cyNetwork, node, CyRootNetwork.SHARED_NAME, "(Group)", String.class);
-					AttributeUtil.set(cyNetwork, node, CyNetwork.NAME, "(Group)", String.class);
+					AttributeUtil.set(cyNetwork, node, CyRootNetwork.SHARED_NAME, "(generic)", String.class);
+					AttributeUtil.set(cyNetwork, node, CyNetwork.NAME, "(generic)", String.class);
 				} else {
 					log.warn("URI, which is not a generated " +
 							"generic/group's one, is not found on the server: " + uri);
