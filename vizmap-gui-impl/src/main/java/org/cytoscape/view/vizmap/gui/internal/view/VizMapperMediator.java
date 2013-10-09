@@ -1295,6 +1295,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private void onColumnChanged(final String colName, final CyTable tbl) {
 		final CyNetwork curNet = vmProxy.getCurrentNetwork();
+		if (curNet == null) return;
 		VisualPropertySheet vpSheet = null;
 		
 		if (tbl.equals(curNet.getDefaultEdgeTable()))
