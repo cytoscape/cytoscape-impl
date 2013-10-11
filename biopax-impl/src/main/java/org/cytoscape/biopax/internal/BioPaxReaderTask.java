@@ -188,6 +188,9 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	
 	public void run(TaskMonitor taskMonitor) throws Exception 
 	{
+		taskMonitor.setTitle("BioPAX reader");
+		taskMonitor.setProgress(0.0);
+		
 		// import BioPAX data into a new in-memory model
 		final Model model = BioPaxMapper.read(stream);
 		
@@ -220,14 +223,15 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 			break;
 		case SIF:
 			//convert to SIF
+			taskMonitor.setStatusMessage("Mapping BioPAX model to SIF, then to " +
+					"CyNetwork (using the first discovered SIF reader)...");
 			File sifFile = File.createTempFile("tmp_biopax", ".sif");
 			sifFile.deleteOnExit();
 			BioPaxMapper.convertToSif(model, new FileOutputStream(sifFile));
 			// try to discover a SIF reader and pass the data there
-			anotherReader =  cyServices.networkViewReaderManager.getReader(sifFile.toURI(), networkName);			
+			anotherReader =  cyServices.networkViewReaderManager.getReader(sifFile.toURI(), networkName);		
 			if(anotherReader != null) {
 				insertTasksAfterCurrentTask(
-//				cyServices.taskManager.execute( new TaskIterator(
 					anotherReader, 
 					new AbstractTask() {
 					@Override
@@ -236,17 +240,16 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 						taskMonitor.setProgress(0.0);
 						CyNetwork[] cyNetworks = anotherReader.getNetworks();
 						int i = 0;
-						for (CyNetwork network : cyNetworks) {	
-							networks.add(network);
+						for (CyNetwork net : cyNetworks) {	
+							networks.add(net);
 							//create attributes from biopax properties
-							createBiopaxSifAttributes(model, network, mapper, taskMonitor);
+							createBiopaxSifAttributes(model, net, mapper, taskMonitor);
 							// set the biopax network mapping type for other plugins
-							AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "SIF", String.class);
+							AttributeUtil.set(net, net, BioPaxMapper.BIOPAX_NETWORK, "SIF", String.class);
 							taskMonitor.setProgress(++i/cyNetworks.length);
 						}
 					}
 				})
-//				)
 				;				
 			} else {
 				//fail with a message
@@ -255,6 +258,8 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 			break;
 		case SBGN:
 			//convert to SBGN
+			taskMonitor.setStatusMessage("Mapping BioPAX model to SBGN, " +
+					"then to CyNetwork (using the first discovered SBGN reader)...");
 			File sbgnFile = File.createTempFile("tmp_biopax", ".sbgn");
 			sbgnFile.deleteOnExit(); 
 			BioPaxMapper.convertToSBGN(model, new FileOutputStream(sbgnFile));
