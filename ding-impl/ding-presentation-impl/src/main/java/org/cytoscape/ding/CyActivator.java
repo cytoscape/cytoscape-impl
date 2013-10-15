@@ -456,6 +456,7 @@ public class CyActivator extends AbstractCyActivator {
 		groupAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		groupAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "100");
 		groupAnnotationTaskFactoryProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+		groupAnnotationTaskFactoryProps.setProperty(IN_MENU_BAR, "false");
 		groupAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_GROUP_MENU);
 		groupAnnotationTaskFactoryProps.setProperty(TITLE, "Group Annotations");
 		registerService(bc, groupAnnotationTaskFactory, NetworkViewTaskFactory.class, 

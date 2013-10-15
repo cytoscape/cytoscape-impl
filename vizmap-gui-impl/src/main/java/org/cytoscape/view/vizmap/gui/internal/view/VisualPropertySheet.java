@@ -206,6 +206,7 @@ public class VisualPropertySheet extends JPanel{
 			minWidth = Math.min((minWidth += 10), 400);
 			getVpListScr().setMinimumSize(new Dimension(minWidth, getVpListScr().getMinimumSize().height));
 			setMinimumSize(new Dimension(minWidth, getMinimumSize().height));
+			setPreferredSize(new Dimension(minWidth, getPreferredSize().height));
 			
 			if (getParent() != null) {
 				minWidth = Math.max(minWidth + 8, getParent().getMinimumSize().width);
@@ -353,7 +354,7 @@ public class VisualPropertySheet extends JPanel{
 		return vpsBtn;
 	}
 
-	private JPopupMenu getVpsMenu() {
+	protected JPopupMenu getVpsMenu() {
 		if (vpsMenu == null) {
 			vpsMenu = new JPopupMenu();
 			vpsMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -588,18 +589,6 @@ public class VisualPropertySheet extends JPanel{
 				});
 				rootMenu.add(mi);
 			}
-			
-//			rootMenu.add(new JSeparator());
-//			
-//			final JMenuItem makeDefMi = new JMenuItem("Make Default");
-//			makeDefMi.addActionListener(new ActionListener() {
-//				@Override
-//				public void actionPerformed(final ActionEvent e) {
-//					// TODO
-//					JOptionPane.showMessageDialog(VisualPropertySheet.this, "Feature not implemented yet...");
-//				}
-//			});
-//			rootMenu.add(makeDefMi);
 			
 			getVpsBtn().setEnabled(true);
 		} else {

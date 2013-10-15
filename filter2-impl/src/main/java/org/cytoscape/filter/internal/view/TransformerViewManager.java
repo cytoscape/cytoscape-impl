@@ -1,12 +1,13 @@
 package org.cytoscape.filter.internal.view;
 
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.JComponent;
 
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.model.Transformer;
@@ -28,7 +29,7 @@ public class TransformerViewManager {
 		filterComboBoxModel.add(new FilterComboBoxElement("Add...", null));
 	}
 	
-	public Component createView(Transformer<CyNetwork, CyIdentifiable> transformer) {
+	public JComponent createView(Transformer<CyNetwork, CyIdentifiable> transformer) {
 		TransformerViewFactory viewFactory = viewFactories.get(transformer.getId());
 		if (viewFactory == null) {
 			return null;

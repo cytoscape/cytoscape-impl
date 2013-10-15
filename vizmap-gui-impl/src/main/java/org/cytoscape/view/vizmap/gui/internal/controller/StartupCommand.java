@@ -9,6 +9,7 @@ import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.STAR
 
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
+import org.cytoscape.view.vizmap.gui.internal.model.PropsProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
@@ -24,6 +25,7 @@ public class StartupCommand extends SimpleCommand {
 	private final VizMapperProxy vizMapperProxy;
 	private final AttributeSetProxy attributeSetProxy;
 	private final MappingFunctionFactoryProxy mappingFactoryProxy;
+	private final PropsProxy propsProxy;
 	private final VizMapperMediator vizMapperMediator;
 	private final VizMapperMenuMediator vizMapperMenuMediator;
 	private final ServicesUtil servicesUtil;
@@ -31,12 +33,14 @@ public class StartupCommand extends SimpleCommand {
 	public StartupCommand(final VizMapperProxy vizMapperProxy,
 						  final AttributeSetProxy attributeSetProxy,
 						  final MappingFunctionFactoryProxy mappingFactoryProxy,
+						  final PropsProxy propsProxy,
 						  final VizMapperMediator vizMapperMediator,
 						  final VizMapperMenuMediator vizMapperMenuMediator,
 						  final ServicesUtil servicesUtil) {
 		this.vizMapperProxy = vizMapperProxy;
 		this.attributeSetProxy = attributeSetProxy;
 		this.mappingFactoryProxy = mappingFactoryProxy;
+		this.propsProxy = propsProxy;
 		this.vizMapperMediator = vizMapperMediator;
 		this.vizMapperMenuMediator = vizMapperMenuMediator;
 		this.servicesUtil = servicesUtil;
@@ -48,6 +52,7 @@ public class StartupCommand extends SimpleCommand {
 		getFacade().registerProxy(vizMapperProxy);
 		getFacade().registerProxy(attributeSetProxy);
 		getFacade().registerProxy(mappingFactoryProxy);
+		getFacade().registerProxy(propsProxy);
 		
 		// Register mediators
 		getFacade().registerMediator(vizMapperMediator);

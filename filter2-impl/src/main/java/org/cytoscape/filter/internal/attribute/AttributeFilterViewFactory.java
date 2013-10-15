@@ -1,7 +1,6 @@
 package org.cytoscape.filter.internal.attribute;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -17,6 +16,7 @@ import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -32,7 +32,9 @@ import org.cytoscape.filter.internal.prefuse.JRangeSlider;
 import org.cytoscape.filter.internal.prefuse.JRangeSliderExtended;
 import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
+import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.Matcher;
+import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
@@ -47,9 +49,11 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 	List<AttributeComboBoxElement> nameComboBoxModel;
 	List<PredicateElement> predicateComboBoxModel;
 	private boolean interactive;
+	private IconManager iconManager;
 	
-	public AttributeFilterViewFactory(ModelMonitor modelMonitor) {
+	public AttributeFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
 		this.modelMonitor = modelMonitor;
+		this.iconManager = iconManager;
 		interactive = true;
 		
 		nameComboBoxModel = modelMonitor.getAttributeComboBoxModel();
@@ -68,10 +72,10 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 	}
 
 	@Override
-	public Component createView(Transformer<?, ?> transformer) {
+	public JComponent createView(Transformer<?, ?> transformer) {
 		AttributeFilter filter = (AttributeFilter) transformer;
 		Controller controller = new Controller(filter);
-		View view = new View(controller);
+		View view = new View(controller, iconManager);
 		modelMonitor.registerAttributeFilterView(view, controller);
 		return view;
 	}
@@ -256,7 +260,9 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		private JPanel spacerPanel;
 		private JPanel predicatePanel;
 		
-		public View(final Controller controller) {
+		public View(final Controller controller, IconManager iconManager) {
+			ViewUtil.configureFilterView(this);
+			
 			slider = new JRangeSliderExtended(controller.getSliderModel(), JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
 			slider.addChangeListener(new ChangeListener() {
 				@Override
@@ -296,8 +302,8 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			arrowLabel = new JLabel("◀");
-			Font arrowFont = arrowLabel.getFont().deriveFont(10.0f);
+			arrowLabel = new JLabel(IconManager.ICON_CARET_LEFT);
+			Font arrowFont = iconManager.getIconFont(16.0f);
 			arrowLabel.setFont(arrowFont);
 			arrowLabel.addMouseListener(new MouseAdapter() {
 				@Override
@@ -332,10 +338,12 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			});
 			
 			spacerPanel = new JPanel();
+			spacerPanel.setOpaque(false);
+			
 			predicatePanel = new JPanel();
+			predicatePanel.setOpaque(false);
 			predicatePanel.setLayout(new GridBagLayout());
 			
-			arrowLabel.setBackground(Color.red);
 			setLayout(new GridBagLayout());
 			controller.synchronize(this);
 		}
@@ -354,9 +362,9 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		protected void handleArrowClicked(Controller controller) {
 			optionsExpanded = !optionsExpanded;
 			if (optionsExpanded) {
-				arrowLabel.setText("▼");				
+				arrowLabel.setText(IconManager.ICON_CARET_DOWN);
 			} else {
-				arrowLabel.setText("◀");				
+				arrowLabel.setText(IconManager.ICON_CARET_LEFT);
 			}
 			controller.handleAttributeSelected(this, nameComboBox);
 		}
@@ -364,7 +372,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		void handleNumericAttributeSelected() {
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(slider, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(slider, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
 
 			slider.invalidate();
 			validate();

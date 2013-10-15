@@ -157,6 +157,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	private void computeAttributeRanges() {
 		lock.writeLock().lock();
 		try {
+			if (network == null) return;
 			computeAttributeRanges(network.getDefaultNodeTable(), nodeAttributeRanges);
 			computeAttributeRanges(network.getDefaultEdgeTable(), edgeAttributeRanges);
 		} finally {

@@ -28,11 +28,19 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
+import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
 import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.CyColorCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorChooser;
 
@@ -49,16 +57,17 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 
 	private CyColorCellRenderer label;
 
-	private JButton button;
-	private Color color;
+	private JButton editBtn;
+	private JButton removeBtn;
+	private Color color = Color.WHITE;
 
 	private final CyColorChooser chooser;
 
 	/**
 	 * Creates a new CyColorPropertyEditor object.
+	 * @param themeManager 
 	 */
-	public CyColorPropertyEditor(final CyColorChooser chooser) {
-		color = Color.white;
+	public CyColorPropertyEditor(final CyColorChooser chooser, final ThemeManager themeMgr) {
 		this.chooser = chooser;
 
 		SwingUtilities.invokeLater(new Runnable() {
@@ -68,23 +77,31 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 				editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
 				((JPanel) editor).add("*", label = new CyColorCellRenderer());
 				label.setOpaque(false);
-				((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
-				button.addActionListener(new ActionListener() {
+				
+				((JPanel) editor).add(editBtn = ComponentFactory.Helper.getFactory().createMiniButton());
+				editBtn.setText("\uF141");
+				editBtn.setToolTipText("Edit color");
+				editBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(14.0f));
+				editBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						selectColor();
 					}
 				});
-				((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
-				button.setText("X");
-				button.addActionListener(new ActionListener() {
+				
+				((JPanel) editor).add(removeBtn = ComponentFactory.Helper.getFactory().createMiniButton());
+				removeBtn.setText("\uF014");
+				removeBtn.setToolTipText("Remove color");
+				removeBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(14.0f));
+				removeBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						selectNull();
 					}
 				});
 				((JPanel) editor).setOpaque(false);
+				
+				setKeyBindings((JPanel) editor);
 			}
 		});
-
 	}
 
 	@Override
@@ -120,6 +137,38 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 		firePropertyChange(oldColor, null);
 	}
 
+	private void setKeyBindings(final JPanel panel) {
+		final ActionMap actionMap = panel.getActionMap();
+		final InputMap inputMap = panel.getInputMap(JComponent.WHEN_FOCUSED);
+
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), KeyAction.VK_DELETE);
+		actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
+		actionMap.put(KeyAction.VK_DELETE, new KeyAction(KeyAction.VK_DELETE));
+	}
+
+	@SuppressWarnings("serial")
+	private class KeyAction extends AbstractAction {
+
+		final static String VK_SPACE = "VK_SPACE";
+		final static String VK_DELETE = "VK_DELETE";
+		
+		KeyAction(final String actionCommand) {
+			putValue(ACTION_COMMAND_KEY, actionCommand);
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final String cmd = e.getActionCommand();
+			
+			if (cmd.equals(VK_SPACE)) {
+				selectColor();
+			} else if (cmd.equals(VK_DELETE)) {
+				selectNull();
+			}
+		}
+	}
+	
 	public static class AsInt extends ColorPropertyEditor {
 		public void setValue(Object arg0) {
 			if (arg0 instanceof Integer)

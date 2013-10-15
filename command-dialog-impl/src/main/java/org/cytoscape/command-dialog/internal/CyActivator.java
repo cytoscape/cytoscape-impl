@@ -127,6 +127,7 @@ public class CyActivator extends AbstractCyActivator {
 		sleepProperties.setProperty(COMMAND, "sleep");
 		registerService(bc, sleepCommand, TaskFactory.class, sleepProperties);
 
+		// TODO:  need to delay so all other bundles can get registered!
 		// If the user specified a script file, execute it now.
 		if (dialog != null && scriptFile != null) {
 			javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -135,6 +136,8 @@ public class CyActivator extends AbstractCyActivator {
 					dialog.executeCommand("command run commands file="+scriptFile);
 				}
 			});
+		} else if (dialog == null && scriptFile != null) {
+			// Execute without a dialog
 		}
 
 	}

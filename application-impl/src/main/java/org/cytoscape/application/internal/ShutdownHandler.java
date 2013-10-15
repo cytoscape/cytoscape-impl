@@ -49,7 +49,11 @@ public class ShutdownHandler implements CyShutdown {
 	}
 
 	public void exit(int retVal) {
-		CyShutdownEvent ev =  new CyShutdownEvent(ShutdownHandler.this);
+		exit(retVal, false);
+	}
+
+	public void exit(int retVal, boolean force) {
+		CyShutdownEvent ev =  new CyShutdownEvent(ShutdownHandler.this, force);
 		eh.fireEvent( ev );
 
 		if ( ev.actuallyShutdown() )

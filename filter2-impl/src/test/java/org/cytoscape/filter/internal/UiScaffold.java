@@ -21,7 +21,10 @@ import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
+import org.cytoscape.filter.internal.view.IconManager;
+import org.cytoscape.filter.internal.view.IconManagerImpl;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
+import org.cytoscape.filter.internal.view.ViewUpdater;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
@@ -67,12 +70,15 @@ public class UiScaffold {
 		ModelMonitor modelMonitor = new ModelMonitor();
 		modelMonitor.handleEvent(new SetCurrentNetworkEvent(applicationManager, network));
 		
+		IconManager iconManager = new IconManagerImpl();
+
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
-		transformerViewManager.registerTransformerViewFactory(new AttributeFilterViewFactory(modelMonitor), properties);
+		transformerViewManager.registerTransformerViewFactory(new AttributeFilterViewFactory(modelMonitor, iconManager), properties);
 		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);
-		
-		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, applicationManager);
-		FilterPanel panel = new FilterPanel(controller);
+
+		ViewUpdater viewUpdater = new ViewUpdater(applicationManager);
+		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, viewUpdater);
+		FilterPanel panel = new FilterPanel(controller, iconManager, viewUpdater);
 		
 		JRootPane root = frame.getRootPane();
 		root.setLayout(new GridBagLayout());
