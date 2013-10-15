@@ -98,29 +98,29 @@ public class ImportDataTableTask extends AbstractTask {
 		this.importTypeChooser = chooser;
 	}
 
-	public ListSingleSelection<String> rootNetworkList;
+	public ListSingleSelection<String> networkCollectionsList;
 	@Tunable(description = "Network Collection", groups = {"Target Network Data","Select a Network Collection"},gravity=2.0,  xorKey="To a Network Collection")
-	public ListSingleSelection<String> getRootNetworkList() {
-		return rootNetworkList;
+	public ListSingleSelection<String> getNetworkCollectionsList() {
+		return networkCollectionsList;
 	}
 
-	public void setRootNetworkList(ListSingleSelection<String> roots) {
-		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+	public void setNetworkCollectionsList(ListSingleSelection<String> roots) {
+		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(networkCollectionsList.getSelectedValue()),
 				dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
-		if(!columnList.getPossibleValues().containsAll(tempList.getPossibleValues())
-				|| columnList.getPossibleValues().size() != tempList.getPossibleValues().size())
-			columnList = tempList;
+		if(!keyColumnForMapping.getPossibleValues().containsAll(tempList.getPossibleValues())
+				|| keyColumnForMapping.getPossibleValues().size() != tempList.getPossibleValues().size())
+			keyColumnForMapping = tempList;
 	}
 
-	public ListSingleSelection<String> columnList;
+	public ListSingleSelection<String> keyColumnForMapping;
 	@Tunable(description = "Key Column for Network:", groups = {"Target Network Data","Select a Network Collection"},gravity=3.0, xorKey="To a Network Collection", listenForChange = {
 			"DataTypeOptions", "RootNetworkList" })
-	public ListSingleSelection<String> getColumnList() {
-		return columnList;
+	public ListSingleSelection<String> getKeyColumnForMapping() {
+		return keyColumnForMapping;
 	}
 
-	public void setColumnList(ListSingleSelection<String> colList) {
-		this.columnList = colList;
+	public void setKeyColumnForMapping(ListSingleSelection<String> colList) {
+		this.keyColumnForMapping = colList;
 	}
 
 	public ListMultipleSelection<String> networkList;
@@ -141,11 +141,11 @@ public class ImportDataTableTask extends AbstractTask {
 	}
 
 	public void setDataTypeOptions(ListSingleSelection<TableType> options) {
-		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(networkCollectionsList.getSelectedValue()),
 				dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
-		if(!columnList.getPossibleValues().containsAll(tempList.getPossibleValues()) 
-				|| columnList.getPossibleValues().size() != tempList.getPossibleValues().size())
-			columnList = tempList;
+		if(!keyColumnForMapping.getPossibleValues().containsAll(tempList.getPossibleValues()) 
+				|| keyColumnForMapping.getPossibleValues().size() != tempList.getPossibleValues().size())
+			keyColumnForMapping = tempList;
 	}
 
 	@ProvidesTitle
@@ -211,12 +211,12 @@ public class ImportDataTableTask extends AbstractTask {
 		}
 		List<String> rootNames = new ArrayList<String>();
 		rootNames.addAll(name2RootMap.keySet());
-		rootNetworkList = new ListSingleSelection<String>(rootNames);
+		networkCollectionsList = new ListSingleSelection<String>(rootNames);
 		if(!rootNames.isEmpty())
 		{
-			rootNetworkList.setSelectedValue(rootNames.get(0));
+			networkCollectionsList.setSelectedValue(rootNames.get(0));
 	
-			columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
+			keyColumnForMapping = getColumns(name2RootMap.get(networkCollectionsList.getSelectedValue()),
 					dataTypeOptions.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
 		}
 	}
@@ -270,7 +270,7 @@ public class ImportDataTableTask extends AbstractTask {
 	}
 
 	private void mapTableToDefaultAttrs(TableType tableType) {
-		CyTable targetTable = getTable(name2RootMap.get(rootNetworkList.getSelectedValue()), tableType,
+		CyTable targetTable = getTable(name2RootMap.get(networkCollectionsList.getSelectedValue()), tableType,
 				CyRootNetwork.SHARED_DEFAULT_ATTRS);
 		if (targetTable != null) {
 			applyMapping(targetTable);
@@ -315,7 +315,7 @@ public class ImportDataTableTask extends AbstractTask {
 	private CyColumn getJoinTargetColumn(CyTable targetTable) {
 		String joinKeyName = CyNetwork.NAME;
 		if(importTypeChooser.getSelectedValue().matches("To a Network Collection"))
-			joinKeyName = columnList.getSelectedValue();
+			joinKeyName = keyColumnForMapping.getSelectedValue();
 		return targetTable.getColumn(joinKeyName);
 	}
 
@@ -395,7 +395,7 @@ public class ImportDataTableTask extends AbstractTask {
 		Class<?> joinTargetColumnType = String.class;
 		if(importTypeChooser.getSelectedValue().matches("To a Network Collection"))
 			joinTargetColumnType = getJoinTargetColumn(
-					getTable(name2RootMap.get(rootNetworkList.getSelectedValue()), dataTypeOptions.getSelectedValue(),
+					getTable(name2RootMap.get(networkCollectionsList.getSelectedValue()), dataTypeOptions.getSelectedValue(),
 							CyNetwork.DEFAULT_ATTRS)).getType();
 		if (byReader) {
 			for (CyTable readerTable : reader.getTables())

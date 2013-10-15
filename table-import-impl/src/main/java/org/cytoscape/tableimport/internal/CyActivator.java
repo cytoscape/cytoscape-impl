@@ -42,6 +42,7 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.util.swing.OpenBrowser;
 
 import org.cytoscape.tableimport.internal.ImportAttributeTableReaderFactory;
@@ -54,11 +55,14 @@ import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.tableimport.internal.reader.ontology.OBONetworkReaderFactory;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.work.TaskFactory;
 
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.application.swing.CyAction;
-
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 
 import org.osgi.framework.BundleContext;
 
@@ -97,6 +101,11 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
 		CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
 		CytoscapeServices.mapGlobalToLocalTableTaskFactory = getService(bc, MapGlobalToLocalTableTaskFactory.class);
+		
+   	    StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
+   	    ImportDataTableTaskFactory importAttrTFServiceRef = getService(bc,ImportDataTableTaskFactory.class);
+   	    VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
+   	    CyNetworkViewFactory nullNetworkViewFactory = getService(bc, CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
 
 		BasicCyFileFilter attrsTableFilter_txt = new BasicCyFileFilter(new String[]{"csv","tsv", "txt", "tab", "net"}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
 		BasicCyFileFilter attrsTableFilter_xls = new BasicCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",TABLE,CytoscapeServices.streamUtil);
@@ -150,6 +159,52 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableManager tableManagerNetwork= CytoscapeServices.cyTableManager;
 		NetworkTableMappingParametersHandlerFactory networkTableMappingParametersHandlerFactory = new NetworkTableMappingParametersHandlerFactory(dialogTypeNetwork, tableManagerNetwork);
 		registerService(bc,networkTableMappingParametersHandlerFactory,GUITunableHandlerFactory.class, new Properties());
+		
+		Properties loadFileTablesProps = new Properties();
+		loadFileTablesProps.setProperty(COMMAND, "load file");
+		loadFileTablesProps.setProperty(COMMAND_NAMESPACE, "table");
+		TaskFactory loadFileTableFactory = new LoadNoGuiTableReaderFactory(streamUtilServiceRef,CytoscapeServices.cyTableManager,false);
+		// Register the service as a TaskFactory for commands
+		registerService(bc,loadFileTableFactory, TaskFactory.class, loadFileTablesProps);
+		
+		Properties loadURLTablesProps = new Properties();
+		loadURLTablesProps.setProperty(COMMAND, "load url");
+		loadURLTablesProps.setProperty(COMMAND_NAMESPACE, "table");
+		TaskFactory loadURLTableFactory = new LoadNoGuiTableReaderFactory(streamUtilServiceRef,CytoscapeServices.cyTableManager,true);
+		// Register the service as a TaskFactory for commands
+		registerService(bc,loadURLTableFactory, TaskFactory.class, loadURLTablesProps);
+		
+		Properties importFileTablesProps = new Properties();
+		importFileTablesProps.setProperty(COMMAND, "import file");
+		importFileTablesProps.setProperty(COMMAND_NAMESPACE, "table");
+		TaskFactory importFileTableFactory = new ImportNoGuiTableReaderFactory(streamUtilServiceRef,importAttrTFServiceRef,false);
+		// Register the service as a TaskFactory for commands
+		registerService(bc,importFileTableFactory, TaskFactory.class, importFileTablesProps);
+		
+		Properties importURLTablesProps = new Properties();
+		importURLTablesProps.setProperty(COMMAND, "import url");
+		importURLTablesProps.setProperty(COMMAND_NAMESPACE, "table");
+		TaskFactory importURLTableFactory = new ImportNoGuiTableReaderFactory(streamUtilServiceRef,importAttrTFServiceRef,true);
+		// Register the service as a TaskFactory for commands
+		registerService(bc,importURLTableFactory, TaskFactory.class, importURLTablesProps);
+		
+		Properties importFileNetworksProps = new Properties();
+		importFileNetworksProps.setProperty(COMMAND, "import file");
+		importFileNetworksProps.setProperty(COMMAND_NAMESPACE, "network");
+		TaskFactory importFileNetworkFactory = new ImportNoGuiNetworkReaderFactory(streamUtilServiceRef,false,CytoscapeServices.cyNetworkManager,
+				CytoscapeServices.cyNetworkViewManager,CytoscapeServices.cyProperties,CytoscapeServices.cyNetworkNaming,
+				visualMappingManagerServiceRef,nullNetworkViewFactory);
+		// Register the service as a TaskFactory for commands
+		registerService(bc,importFileNetworkFactory, TaskFactory.class, importFileNetworksProps);
+		
+		Properties importURLNetworksProps = new Properties();
+		importURLNetworksProps.setProperty(COMMAND, "import url");
+		importURLNetworksProps.setProperty(COMMAND_NAMESPACE, "network");
+		TaskFactory importURLNetworkFactory = new ImportNoGuiNetworkReaderFactory(streamUtilServiceRef,true,CytoscapeServices.cyNetworkManager,
+				CytoscapeServices.cyNetworkViewManager,CytoscapeServices.cyProperties,CytoscapeServices.cyNetworkNaming,
+				visualMappingManagerServiceRef,nullNetworkViewFactory);
+		// Register the service as a TaskFactory for commands
+		registerService(bc,importURLNetworkFactory, TaskFactory.class, importURLNetworksProps);
 	}
 }
 
