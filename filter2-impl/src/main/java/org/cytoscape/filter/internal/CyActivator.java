@@ -33,6 +33,8 @@ import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
 import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
+import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
+import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
 import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.IconManagerImpl;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
@@ -57,6 +59,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(context, new DegreeFilterFactory(), TransformerFactory.class, new Properties());
 		registerService(context, new AttributeFilterFactory(), TransformerFactory.class, new Properties());
+		registerService(context, new TopologyFilterFactory(), TransformerFactory.class, new Properties());
 		
 		ModelMonitor modelMonitor = new ModelMonitor();
 		registerAllServices(context, modelMonitor, new Properties());
@@ -65,6 +68,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerService(context, new DegreeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
 		registerService(context, new AttributeFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
+		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, new Properties());
 
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
 		CytoPanelComponent filterPanel = new FilterCytoPanelComponent(transformerManager, transformerViewManager, applicationManager, iconManager);

@@ -19,6 +19,8 @@ import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
 import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
+import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
+import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.IconManager;
@@ -66,6 +68,7 @@ public class UiScaffold {
 		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
 		transformerManager.registerTransformerFactory(new AttributeFilterFactory(), properties);
 		transformerManager.registerTransformerFactory(new DegreeFilterFactory(), properties);
+		transformerManager.registerTransformerFactory(new TopologyFilterFactory(), properties);
 
 		ModelMonitor modelMonitor = new ModelMonitor();
 		modelMonitor.handleEvent(new SetCurrentNetworkEvent(applicationManager, network));
@@ -75,6 +78,7 @@ public class UiScaffold {
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
 		transformerViewManager.registerTransformerViewFactory(new AttributeFilterViewFactory(modelMonitor, iconManager), properties);
 		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);
+		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(), properties);
 
 		ViewUpdater viewUpdater = new ViewUpdater(applicationManager);
 		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, viewUpdater);
