@@ -181,6 +181,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			if (opacity != 100.0)
 				nView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, (int)(opacity*255.0/100.0));
 
+			viewStyle.apply(network.getRow(nView.getModel()), nView);
+
 		} else {
 			CyNode groupNode = group.getGroupNode();
 
@@ -218,7 +220,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		}
 		
 //		viewStyle.apply(view);
-//		view.updateView();
+		view.updateView();
 	}
 
 	private Dimension calculateCenter(CyNetworkView view, List<CyNode> nodeList) {
