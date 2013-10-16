@@ -24,15 +24,15 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
+import static org.cytoscape.browser.internal.IconManager.ICON_COG;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
@@ -55,6 +55,10 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.ColumnCreatedEvent;
+import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -67,7 +71,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 
 public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
-		NetworkAddedListener, NetworkAboutToBeDestroyedListener, TableAboutToBeDeletedListener {
+		NetworkAddedListener, NetworkAboutToBeDestroyedListener, TableAboutToBeDeletedListener,
+		ColumnCreatedListener, ColumnDeletedListener {
 
 	private static final long serialVersionUID = 627394119637512735L;
 
@@ -91,7 +96,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 							   final DialogTaskManager guiTaskManager,
 							   final PopupMenuHelper popupMenuHelper,
 							   final CyApplicationManager applicationManager,
-							   final CyEventHelper eventHelper) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+							   final CyEventHelper eventHelper,
+							   final IconManager iconManager) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, networkManager,
 				deleteTableTaskFactory, guiTaskManager, popupMenuHelper, applicationManager, eventHelper);
 
@@ -107,23 +113,22 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		networkChooser.setEnabled(false);
 		
 		createPopupMenu();
-		selectionModeButton = new JButton();
-		selectionModeButton.addActionListener(this);
-		selectionModeButton.setBorder(null);
-		selectionModeButton.setMargin(new Insets(0, 0, 0, 0));
-		selectionModeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table-gear-icon.png")));
-		selectionModeButton.setBorder(null);
+		selectionModeButton = new JButton(ICON_COG);
 		selectionModeButton.setToolTipText("Change Table Mode");
+		AttributeBrowserToolBar.styleButton(selectionModeButton,
+				iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
+		selectionModeButton.addActionListener(this);
 		
 		selectionModeButton.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				displayMode.show(e.getComponent(), e.getX(), e.getY());
 			}
-		
 		});
+		
 		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
 				deleteTableTaskFactory, guiTaskManager, networkChooser, selectionModeButton, objType,
-				applicationManager);// , mapGlobalTableTaskFactoryService);
+				applicationManager, iconManager);// , mapGlobalTableTaskFactoryService);
+		
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
 	
@@ -284,6 +289,18 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
 		deleteTable(cyTable);
+	}
+	
+	@Override
+	public void handleEvent(final ColumnDeletedEvent e) {
+		if (e.getSource() == currentTable)
+			attributeBrowserToolBar.updateEnableState();
+	}
+
+	@Override
+	public void handleEvent(final ColumnCreatedEvent e) {
+		if (e.getSource() == currentTable)
+			attributeBrowserToolBar.updateEnableState();
 	}
 	
 	private static final class NetworkChooserCustomRenderer extends JLabel implements ListCellRenderer {

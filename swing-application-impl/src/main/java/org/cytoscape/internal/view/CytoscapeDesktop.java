@@ -104,7 +104,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 * Tabbed/InternalFrame/ExternalFrame
 	 */
 	protected NetworkViewManager networkViewManager;
-	
 
 	//
 	// CytoPanel Variables
@@ -119,13 +118,21 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private final CyShutdown shutdown; 
 	private final CyEventHelper cyEventHelper;
 	private final CyServiceRegistrar registrar;
+	private final IconManager iconManager;
 	private final JToolBar statusToolBar;
 
 	/**
 	 * Creates a new CytoscapeDesktop object.
 	 */
-	public CytoscapeDesktop(CytoscapeMenus cyMenus, NetworkViewManager networkViewManager, NetworkPanel networkPanel,
-			CyShutdown shut, CyEventHelper eh, CyServiceRegistrar registrar, DialogTaskManager taskManager, TaskStatusPanelFactory taskStatusPanelFactory) {
+	public CytoscapeDesktop(final CytoscapeMenus cyMenus,
+							final NetworkViewManager networkViewManager,
+							final NetworkPanel networkPanel,
+							final CyShutdown shut,
+							final CyEventHelper eh,
+							final CyServiceRegistrar registrar,
+							final DialogTaskManager taskManager,
+							final TaskStatusPanelFactory taskStatusPanelFactory,
+							final IconManager iconManager) {
 		super(TITLE_PREFIX_STRING + NEW_SESSION_NAME);
 
 		this.cyMenus = cyMenus;
@@ -134,6 +141,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		this.shutdown = shut;
 		this.cyEventHelper = eh;
 		this.registrar = registrar;
+		this.iconManager = iconManager;
 		
 		taskManager.setExecutionContext(this);
 
@@ -240,7 +248,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 */
 	private BiModalJSplitPane createTopRightPane(NetworkViewManager networkViewManager) {
 		// create cytopanel with tabs along the top
-		cytoPanelEast = new CytoPanelImp(CytoPanelName.EAST, JTabbedPane.TOP, CytoPanelState.HIDE, cyEventHelper, this);
+		cytoPanelEast = new CytoPanelImp(CytoPanelName.EAST, JTabbedPane.TOP, CytoPanelState.HIDE, cyEventHelper, this,
+				iconManager);
 
 		// determine proper network view manager component
 		Component networkViewComp = (Component) networkViewManager.getDesktopPane();
@@ -270,7 +279,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private BiModalJSplitPane createRightPane(BiModalJSplitPane topRightPane) {
 		// create cytopanel with tabs along the bottom
 		cytoPanelSouth = new CytoPanelImp(CytoPanelName.SOUTH, JTabbedPane.BOTTOM,
-		                                  CytoPanelState.DOCK, cyEventHelper, this);
+		                                  CytoPanelState.DOCK, cyEventHelper, this, iconManager);
 
 		// create the split pane - hidden by default
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.VERTICAL_SPLIT,
@@ -293,9 +302,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private void createBottomLeft() {
 
 		// create cytopanel with tabs along the top for manual layout
-		cytoPanelSouthWest = new CytoPanelImp(CytoPanelName.SOUTH_WEST,
-						      JTabbedPane.TOP,
-						      CytoPanelState.HIDE, cyEventHelper, this);
+		cytoPanelSouthWest = new CytoPanelImp(CytoPanelName.SOUTH_WEST, JTabbedPane.TOP,
+						      CytoPanelState.HIDE, cyEventHelper, this, iconManager);
 
         final BiModalJSplitPane split = new BiModalJSplitPane(this, JSplitPane.VERTICAL_SPLIT,
                                       BiModalJSplitPane.MODE_HIDE_SPLIT, new JPanel(),
@@ -325,7 +333,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private BiModalJSplitPane createMasterPane(NetworkPanel networkPanel,
 	                                             BiModalJSplitPane rightPane) {
 		// create cytopanel with tabs along the top
-		cytoPanelWest = new CytoPanelImp(CytoPanelName.WEST, JTabbedPane.TOP, CytoPanelState.DOCK, cyEventHelper, this);
+		cytoPanelWest = new CytoPanelImp(CytoPanelName.WEST, JTabbedPane.TOP, CytoPanelState.DOCK, cyEventHelper, this,
+				iconManager);
 
 		// add the network panel to our tab
 		String tab1Name = new String("Network");
