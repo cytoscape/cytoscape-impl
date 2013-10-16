@@ -73,6 +73,7 @@ import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
+import org.cytoscape.internal.view.IconManagerImpl;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
@@ -215,13 +216,16 @@ public class CyActivator extends AbstractCyActivator {
 		                                             dynamicTaskFactoryProvisionerServiceRef,
 		                                             editNetworkTitleTFServiceRef);
 
+		final IconManagerImpl iconManager = new IconManagerImpl();
+		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
 		                                                         networkViewManager, networkPanel,
 		                                                         cytoscapeShutdownServiceRef,
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
 		                                                         dialogTaskManagerServiceRef,
-		                                                         taskStatusPanelFactoryRef);
+		                                                         taskStatusPanelFactoryRef,
+		                                                         iconManager);
 
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
 
