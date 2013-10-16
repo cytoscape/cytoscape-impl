@@ -24,6 +24,7 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
+import static org.cytoscape.browser.internal.IconManager.*;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -580,7 +581,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	 */
 	private JButton getSelectButton() {
 		if (selectButton == null) {
-			selectButton = new JButton("\uF0DB");
+			selectButton = new JButton(ICON_COLUMNS);
 			selectButton.setToolTipText("Show Column");
 			styleButton(selectButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 
@@ -599,9 +600,19 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private JButton getFunctionBuilderButton() {
 		if (formulaBuilderButton == null) {
-			formulaBuilderButton = new JButton("f\u2093");
+			formulaBuilderButton = new JButton("f(x)");
 			formulaBuilderButton.setToolTipText("Function Builder");
-			styleButton(formulaBuilderButton, new Font("Serif", Font.ITALIC | Font.BOLD, 18));
+			
+			Font iconFont = null;
+			
+			try {
+				iconFont = Font.createFont(Font.TRUETYPE_FONT, 
+						getClass().getResourceAsStream("/fonts/jsMath-cmti10.ttf"));
+			} catch (Exception e) {
+				throw new RuntimeException("Error loading font", e);
+			}
+			
+			styleButton(formulaBuilderButton, iconFont.deriveFont(18.0f));
 
 			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(this);
 
@@ -657,7 +668,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private JButton getDeleteButton() {
 		if (deleteAttributeButton == null) {
-			deleteAttributeButton = new JButton("\uF014");
+			deleteAttributeButton = new JButton(ICON_TRASH);
 			deleteAttributeButton.setToolTipText("Delete Columns...");
 			styleButton(deleteAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			
@@ -676,7 +687,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private JButton getDeleteTableButton() {
 		if (deleteTableButton == null) {
-			deleteTableButton = new JButton("\uF0CE\uF057");
+			deleteTableButton = new JButton(ICON_TABLE + "" + ICON_REMOVE_SIGN);
 			deleteTableButton.setToolTipText("Delete Table...");
 			styleButton(deleteTableButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
 			
@@ -696,7 +707,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private JButton getSelectAllButton() {
 		if (selectAllAttributesButton == null) {
-			selectAllAttributesButton = new JButton("\uF046 \uF046");
+			selectAllAttributesButton = new JButton(ICON_CHECK + " " + ICON_CHECK);
 			selectAllAttributesButton.setToolTipText("Show All Columns");
 			styleButton(selectAllAttributesButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
 
@@ -723,7 +734,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private JButton getUnselectAllButton() {
 		if (unselectAllAttributesButton == null) {
-			unselectAllAttributesButton = new JButton("\uF096 \uF096");
+			unselectAllAttributesButton = new JButton(ICON_CHECK_EMPTY + " " + ICON_CHECK_EMPTY);
 			unselectAllAttributesButton.setToolTipText("Hide All Columns");
 			styleButton(unselectAllAttributesButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
 
@@ -812,7 +823,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	 */
 	private JButton getNewButton() {
 		if (createNewAttributeButton == null) {
-			createNewAttributeButton = new JButton("\uF016");
+			createNewAttributeButton = new JButton(ICON_FILE_ALT);
 			createNewAttributeButton.setToolTipText("Create New Column");
 			styleButton(createNewAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			

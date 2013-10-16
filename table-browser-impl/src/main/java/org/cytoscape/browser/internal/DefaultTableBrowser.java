@@ -24,6 +24,8 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
+import static org.cytoscape.browser.internal.IconManager.ICON_COG;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -111,7 +113,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		networkChooser.setEnabled(false);
 		
 		createPopupMenu();
-		selectionModeButton = new JButton("\uF013");
+		selectionModeButton = new JButton(ICON_COG);
 		selectionModeButton.setToolTipText("Change Table Mode");
 		AttributeBrowserToolBar.styleButton(selectionModeButton,
 				iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));

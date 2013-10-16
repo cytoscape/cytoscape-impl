@@ -24,16 +24,15 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
+import static org.cytoscape.internal.view.IconManager.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -44,6 +43,8 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -538,7 +539,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		}
 	}
 
-
 	/**
 	 * Constructs this CytoPanel.
 	 */
@@ -549,18 +549,15 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 		// add label and button components to yet another panel, 
 		// so we can layout properly
-		final JPanel floatDockPanel = new JPanel(new BorderLayout());
-		final JPanel closeAndFloatPanel = new JPanel(new FlowLayout());
-		
-		closeAndFloatPanel.setBackground(FLOAT_PANEL_COLOR);
-		
-		// set float dock panel attributes
-		closeAndFloatPanel.add(floatButton);
-		closeAndFloatPanel.add(closeButton);
-		floatDockPanel.add(floatLabel, BorderLayout.WEST);
-		floatDockPanel.add(closeAndFloatPanel, BorderLayout.EAST);
-		
+		final JPanel floatDockPanel = new JPanel();
+		final BoxLayout boxLayout = new BoxLayout(floatDockPanel, BoxLayout.X_AXIS);
+		floatDockPanel.setLayout(boxLayout);
 		floatDockPanel.setBackground(FLOAT_PANEL_COLOR);
+		
+		floatDockPanel.add(floatLabel);
+		floatDockPanel.add(Box.createHorizontalGlue());
+		floatDockPanel.add(floatButton);
+		floatDockPanel.add(closeButton);
 
 		// set preferred size - we can use float or dock icon dimensions - they are the same
 		final FontMetrics fm = floatLabel.getFontMetrics(floatLabel.getFont());
@@ -608,14 +605,14 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private void initButtons() {
 		// Create Float / Dock Button
-		floatButton = new JButton("\uF096");
+		floatButton = new JButton(ICON_CHECK_EMPTY);
 		floatButton.setToolTipText(TOOL_TIP_FLOAT);
 		styleButton(floatButton);
 		floatButton.setFont(iconManager.getIconFont(12));
 		floatButton.setSelected(true);
 		
 		// Create close button
-		closeButton = new JButton("\uF00D");
+		closeButton = new JButton(ICON_REMOVE);
 		closeButton.setToolTipText(TOOL_TIP_CLOSE);
 		styleButton(closeButton);
 		closeButton.setFont(iconManager.getIconFont(13));
@@ -666,7 +663,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			externalWindow.setTitle(getTitle());
 
 			// set proper button icon/text
-			floatButton.setText("\uF08D");
+			floatButton.setText(ICON_PUSHPIN);
 			floatButton.setToolTipText(TOOL_TIP_DOCK);
 
 			// set float label text
@@ -814,13 +811,15 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	}
 	
 	private static void styleButton(final AbstractButton btn) {
-		btn.setMargin(new Insets(0, 0, 0, 0));
-		btn.setBorder(BorderFactory.createLineBorder(Color.black));
-		btn.setBackground(FLOAT_PANEL_COLOR);
+		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		btn.setForeground(FG_COLOR);
+		btn.setBackground(FLOAT_PANEL_COLOR);
 		btn.setMinimumSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
+		btn.setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
+		btn.setSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
 		btn.setRolloverEnabled(false);
 		btn.setFocusPainted(false);
-		btn.setBorderPainted(false);
+		btn.setFocusable(false);
+		btn.setContentAreaFilled(false);
 	}
 }
