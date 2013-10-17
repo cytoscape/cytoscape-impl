@@ -24,19 +24,25 @@ package org.cytoscape.biopax.internal;
  * #L%
  */
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.Entity;
@@ -219,17 +225,20 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 			// set the biopax network mapping type for other plugins
 			AttributeUtil.set(network, network, BioPaxMapper.BIOPAX_NETWORK, "DEFAULT", String.class);
 			networks.add(network);
-//			cyServices.networkManager.addNetwork(network); //TODO required or not?
 			break;
 		case SIF:
-			//convert to SIF
+			//convert to EXTENDED SIF
 			taskMonitor.setStatusMessage("Mapping BioPAX model to SIF, then to " +
 					"CyNetwork (using the first discovered SIF reader)...");
-			File sifFile = File.createTempFile("tmp_biopax", ".sif");
-			sifFile.deleteOnExit();
-			BioPaxMapper.convertToSif(model, new FileOutputStream(sifFile));
+			final File sifEdgesFile = File.createTempFile("tmp_biopax2sif_edges", ".sif");
+			sifEdgesFile.deleteOnExit();
+			final File sifNodesFile = File.createTempFile("tmp_biopax2sif_nodes", ".sif");
+			sifNodesFile.deleteOnExit();
+			BioPaxMapper.convertToExtendedBinarySIF(model, 
+					new FileOutputStream(sifEdgesFile), new FileOutputStream(sifNodesFile));
+			
 			// try to discover a SIF reader and pass the data there
-			anotherReader =  cyServices.networkViewReaderManager.getReader(sifFile.toURI(), networkName);		
+			anotherReader =  cyServices.networkViewReaderManager.getReader(sifEdgesFile.toURI(), networkName);		
 			if(anotherReader != null) {
 				insertTasksAfterCurrentTask(
 					anotherReader, 
@@ -243,7 +252,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 						for (CyNetwork net : cyNetworks) {	
 							networks.add(net);
 							//create attributes from biopax properties
-							createBiopaxSifAttributes(model, net, mapper, taskMonitor);
+							createBiopaxSifAttributes(model, net, sifNodesFile, taskMonitor);
 							// set the biopax network mapping type for other plugins
 							AttributeUtil.set(net, net, BioPaxMapper.BIOPAX_NETWORK, "SIF", String.class);
 							taskMonitor.setProgress(++i/cyNetworks.length);
@@ -255,6 +264,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 				//fail with a message
 				throw new BioPaxIOException("No SIF readers found.");
 			}
+			
 			break;
 		case SBGN:
 			//convert to SBGN
@@ -299,24 +309,31 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 
 	
 	private void createBiopaxSifAttributes(Model model, CyNetwork cyNetwork, 
-			BioPaxMapper mapper, TaskMonitor taskMonitor) {
+			File sifNodes, TaskMonitor taskMonitor) throws IOException {
 			
 		taskMonitor.setStatusMessage("Updating SIF network " +
-				"node/edge attributes from the BioPAX model...");				
+				"node/edge attributes from the BioPAX model...");
+		
+		//parse the extended sif nodes file into map: "URI" -> other attributes (as a single TSV string)
+		Map<String, String> uriToDescriptionMap = new HashMap<String, String>();
+		BufferedReader reader = new BufferedReader(new FileReader(sifNodes));
+		while(reader.ready()) {
+			String line = reader.readLine();
+			if(line.trim().isEmpty())
+				continue; //skip blank lines if any accidentally present there
+			//columns are: URI\tTYPE\tNAME\tUnifXrefs(semicolon-separated)
+			String[] cols = line.split("\t");			
+			assert cols.length == 4 : "BUG: unexpected number of columns (" +
+					cols.length + "; must be 4) in the SIF file: " + sifNodes.getAbsolutePath();
+			// put into the map
+			uriToDescriptionMap.put(cols[0], 
+				StringUtils.join(ArrayUtils.remove(cols, 0), '\t'));
+		}
+		reader.close();
+		
 
 		// Set the Quick Find Default Index
 		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNetwork.NAME, String.class);
-
-		// we need the biopax sub-model to create node/edge attributes
-		final Set<String> uris = new HashSet<String>();
-		for (CyNode node : cyNetwork.getNodeList()) {
-			//hack: we know that the built-in Cy3 SIF reader uses URIs 
-			// from the Pathway Commons SIF data to fill the NAME column by default...
-			String uri = cyNetwork.getRow(node).get(CyNetwork.NAME, String.class);
-			if(uri != null && !uri.contains("/group/")) {
-				uris.add(uri);
-			} 
-		}
 
 		if (cancelled) return;
 
@@ -332,15 +349,21 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 				log.warn("SIF network has an unexpected node: " + uri 
 						+ " of type " + e.getModelInterface());
 				BioPaxMapper.createAttributesFromProperties(e, model, node, cyNetwork);
-			} else { //e == null						
-				if(uri.contains("/group/")) {
-					AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_ENTITY_TYPE, "(generic)", String.class);
-					AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_URI, uri, String.class);
-					AttributeUtil.set(cyNetwork, node, CyRootNetwork.SHARED_NAME, "(generic)", String.class);
-					AttributeUtil.set(cyNetwork, node, CyNetwork.NAME, "(generic)", String.class);
-				} else {
-					log.warn("URI, which is not a generated " +
-							"generic/group's one, is not found on the server: " + uri);
+			} else { //e == null; the URI/ID was auto-generated by the sif-converter and not present in the model
+				AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_URI, uri, String.class);				
+				//set other attributes from the tmp_biopax2sif_nodes*.sif file
+				String sifNodeAttrs = uriToDescriptionMap.get(uri);
+				assert (sifNodeAttrs != null && !sifNodeAttrs.isEmpty()) : "Bug: no SIF attributes found for " + uri;
+				String[] cols = sifNodeAttrs.split("\t");
+				AttributeUtil.set(cyNetwork, node, BioPaxMapper.BIOPAX_ENTITY_TYPE, cols[0], String.class);
+				AttributeUtil.set(cyNetwork, node, CyRootNetwork.SHARED_NAME, cols[1], String.class);
+				AttributeUtil.set(cyNetwork, node, CyNetwork.NAME, cols[1], String.class);
+				if(cols.length > 2) { //no xrefs is possible for some generic nodes
+					List<String> xrefs = Arrays.asList(cols[2].split(";"));
+					AttributeUtil.set(cyNetwork, node, 
+							BioPaxMapper.BIOPAX_XREF_IDS, xrefs, String.class);
+					AttributeUtil.set(cyNetwork, node, CyNetwork.HIDDEN_ATTRS, 
+							BioPaxMapper.BIOPAX_UNIFICATION_REFERENCES, xrefs, String.class);
 				}
 			}
 		}

@@ -337,18 +337,48 @@ public class VisualStyleUtil {
 			DiscreteMapping<String, NodeShape> shapeFunction = (DiscreteMapping<String, NodeShape>) discreteFactory
 					.createVisualMappingFunction(BioPaxMapper.BIOPAX_ENTITY_TYPE, String.class, NODE_SHAPE);
 			shapeFunction.putMapValue("Complex", NodeShapeVisualProperty.HEXAGON);
-			shapeFunction.putMapValue("(generic)", NodeShapeVisualProperty.OCTAGON);
+			shapeFunction.putMapValue("Generic", NodeShapeVisualProperty.OCTAGON);
+			shapeFunction.putMapValue("ComplexGroup", NodeShapeVisualProperty.HEXAGON);
+			shapeFunction.putMapValue("GenericProteinReference", NodeShapeVisualProperty.OCTAGON);
+			shapeFunction.putMapValue("GenericSmallMoleculeReference", NodeShapeVisualProperty.OCTAGON);
+			shapeFunction.putMapValue("GenericDnaReference", NodeShapeVisualProperty.ROUND_RECTANGLE);
+			shapeFunction.putMapValue("GenericDnaRegionReference", NodeShapeVisualProperty.ROUND_RECTANGLE);
+			shapeFunction.putMapValue("GenericRnaReference", NodeShapeVisualProperty.ROUND_RECTANGLE);
+			shapeFunction.putMapValue("GenericRnaRegionReference", NodeShapeVisualProperty.ROUND_RECTANGLE);
+			shapeFunction.putMapValue("GenericEntityReference", NodeShapeVisualProperty.OCTAGON);
 			binarySifStyle.addVisualMappingFunction(shapeFunction);
 
 			// Node color
-			Color color = new Color(255, 153, 153);
+			Color color = new Color(0xFF9999); //LIGHTCORAL
 			binarySifStyle.setDefaultValue(NODE_FILL_COLOR, color);
-			// Complexes are a Different Color.
-			Color lightBlue = new Color(153, 153, 255);
+			// Complexes and generics are a Different Color.			
+			Color colorLightBlue = new Color(0x99CCFF); //light blue
+			Color colorLavender = new Color(0xCCCCFF); //lavender or so
+			Color colorPR = new Color(0xFF3300); //somewhat coral, orange-pink
+			Color colorTurquoise = new Color(0x33CCCC); //turquoise
 			DiscreteMapping<String, Paint> paintFunction = (DiscreteMapping<String, Paint>) discreteFactory
 					.createVisualMappingFunction(BioPaxMapper.BIOPAX_ENTITY_TYPE, String.class, NODE_FILL_COLOR);
-			paintFunction.putMapValue("Complex", lightBlue);
-			paintFunction.putMapValue("(generic)", lightBlue);
+			paintFunction.putMapValue("Complex", colorLightBlue);
+			paintFunction.putMapValue("Generic", colorLavender);
+			paintFunction.putMapValue("ComplexGroup", colorLightBlue);
+			paintFunction.putMapValue("GenericProteinReference", colorPR);
+			paintFunction.putMapValue("GenericSmallMoleculeReference", colorLavender);
+			paintFunction.putMapValue("GenericDnaReference", colorTurquoise);
+			paintFunction.putMapValue("GenericDnaRegionReference", colorTurquoise);
+			paintFunction.putMapValue("GenericRnaReference", colorTurquoise);
+			paintFunction.putMapValue("GenericRnaRegionReference", colorTurquoise);
+			paintFunction.putMapValue("GenericEntityReference", colorLavender);
+			
+			//may be also consider generic PEs? (if these ever show up)
+//			paintFunction.putMapValue("GenericPhysicalEntity", lightBlue);			
+//			paintFunction.putMapValue("GenericProtein", lightBlue);
+//			paintFunction.putMapValue("GenericSmallMolecule", lightBlue);
+//			paintFunction.putMapValue("GenericDna", lightBlue);
+//			paintFunction.putMapValue("GenericDnaRegion", lightBlue);
+//			paintFunction.putMapValue("GenericRna", lightBlue);
+//			paintFunction.putMapValue("GenericRnaRegion", lightBlue);
+//			paintFunction.putMapValue("GenericGene", lightBlue);
+			
 			binarySifStyle.addVisualMappingFunction(paintFunction);
 
 			// Node label
