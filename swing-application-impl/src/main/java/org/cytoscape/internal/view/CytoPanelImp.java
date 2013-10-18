@@ -40,12 +40,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -60,6 +61,7 @@ import javax.swing.event.ChangeListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelComponentName;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
@@ -184,6 +186,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private final CyEventHelper cyEventHelper;
 	private final IconManager iconManager;
 	private final JFrame parent;
+	
+	private final Map<CytoPanelComponentName, CytoPanelComponent> coreComponents;
 
 	/**
 	 * Constructor.
@@ -198,9 +202,10 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 						final CyEventHelper eh,
 						final CySwingApplication cySwingApp,
 						final IconManager iconManager) {
-		
 		this.cyEventHelper = eh;
 		this.parent = cySwingApp.getJFrame();
+		coreComponents = new HashMap<CytoPanelComponentName, CytoPanelComponent>();
+		
 		// setup our tabbed pane
 		tabbedPane = new JTabbedPane(tabPlacement);
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -240,30 +245,20 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		return compassDirection;
 	}
 
-
 	public void add(CytoPanelComponent comp) {
 		// Check our sizes, and override, if necessary
 		checkSizes(comp.getComponent());
+		// add tab to JTabbedPane
 		tabbedPane.addTab(comp.getTitle(), comp.getIcon(), comp.getComponent());
-		notifyListeners(NOTIFICATION_COMPONENT_ADDED);
-	}
-
-	/**
-	 * Adds a component to the CytoPanel with specified title, icon, and tool tip.
-	 *
-	 * @param title     Component title (can be null).
-	 * @param icon      Component icon (can be null).
-	 * @param component Component reference.
-	 * @param tip       Component Tool tip text.
-	 */
-	public void add(String title, Icon icon, Component component, String tip) {
-		// Check our sizes, and override, if necessary
-		checkSizes(component);
-		// add tab to JTabbedPane (string, icon, component, tip)
-		tabbedPane.addTab(title, icon, component, tip);
-
 		// send out a notification
 		notifyListeners(NOTIFICATION_COMPONENT_ADDED);
+	}
+	
+	public void add(CytoPanelComponent cp, CytoPanelComponentName cpCompName) {
+		if (cpCompName != null)
+			coreComponents.put(cpCompName, cp);
+		
+		add(cp);
 	}
 
 	/**
@@ -315,20 +310,17 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * @param component Component reference.
 	 * @return int      Index of the Component or -1 if not found.
 	 */
+	@Override
 	public int indexOfComponent(Component component) {
 		// get the index from JTabbedPane
 		return tabbedPane.indexOfComponent(component);
 	}
-
-	/**
-	 * Returns the first Component index with given title.
-	 *
-	 * @param title Component title.
-	 * @return int  Component index with given title or -1 if not found.
-	 */
-	public int indexOfComponent(String title) {
-		// get the index from JTabbedPane
-		return tabbedPane.indexOfTab(title);
+	
+	@Override
+	public int indexOfComponent(CytoPanelComponentName name) {
+		final CytoPanelComponent cpComp = coreComponents.get(name);
+		
+		return cpComp != null ? indexOfComponent(cpComp.getComponent()) : -1;
 	}
 
 	/**
@@ -336,6 +328,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 *
 	 * @param component Component reference.
 	 */
+	@Override
 	public void remove(Component component) {
 		// remove tab from JTabbedPane (component)
 		tabbedPane.remove(component);
@@ -347,12 +340,20 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	public void remove(CytoPanelComponent comp) {
 		tabbedPane.remove(comp.getComponent());
 	}
+	
+	public void remove(CytoPanelComponent comp, CytoPanelComponentName cpCompName) {
+		remove(comp);
+		
+		if (cpCompName != null)
+			coreComponents.remove(cpCompName);
+	}
 
 	/**
 	 * Removes the component from the CytoPanel at the specified index.
 	 *
 	 * @param index Component index.
 	 */
+	@Override
 	public void remove(int index) {
 		// remove tab from JTabbedPane (index)
 		tabbedPane.remove(index);
@@ -368,6 +369,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	public void removeAll() {
 		// remove all tabs and components from JTabbedPane
 		tabbedPane.removeAll();
+		coreComponents.clear();
 
 		// send out a notification
 		notifyListeners(NOTIFICATION_COMPONENT_REMOVED);
@@ -394,6 +396,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 *
 	 * @param cytoPanelState A CytoPanelState.
 	 */
+	@Override
 	public void setState(CytoPanelState cytoPanelState) {
 		boolean success = false;
 
@@ -428,6 +431,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 *
 	 * @return A CytoPanelState.
 	 */
+	@Override
 	public CytoPanelState getState() {
 		return cytoPanelState;
 	}
@@ -436,6 +440,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * Our implementation of the ChangeListener interface,
 	 * to determine when new tab has been selected
 	 */
+	@Override
 	public void stateChanged(ChangeEvent e) {
 		// Handle the resize
 		resizeSelectedComponent();

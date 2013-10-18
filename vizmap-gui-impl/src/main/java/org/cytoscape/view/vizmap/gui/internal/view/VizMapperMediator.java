@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -43,6 +44,7 @@ import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CytoPanelComponentName;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -562,7 +564,11 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private void initView() {
 		createPreviewNetworkView();
-		servicesUtil.registerAllServices(vizMapperMainPanel);
+		
+		Properties props = new Properties();
+		props.setProperty("cytoPanelComponentName", CytoPanelComponentName.STYLE.toString());
+		servicesUtil.registerAllServices(vizMapperMainPanel, props);
+		
 		addViewListeners();
 	}
 	

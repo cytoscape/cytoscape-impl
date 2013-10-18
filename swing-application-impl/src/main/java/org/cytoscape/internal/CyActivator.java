@@ -42,6 +42,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelComponentName;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
@@ -219,7 +220,7 @@ public class CyActivator extends AbstractCyActivator {
 		final IconManagerImpl iconManager = new IconManagerImpl();
 		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
-		                                                         networkViewManager, networkPanel,
+		                                                         networkViewManager,
 		                                                         cytoscapeShutdownServiceRef,
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
@@ -381,7 +382,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
 		                arrangeVerticalTaskFactoryProps);
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
-		registerAllServices(bc, networkPanel, new Properties());
+		
+		Properties networkPanelProps = new Properties();
+		networkPanelProps.setProperty("cytoPanelComponentName", CytoPanelComponentName.NETWORK.toString());
+		registerAllServices(bc, networkPanel, networkPanelProps);
+		
 		registerAllServices(bc, networkViewManager, new Properties());
 		registerAllServices(bc, birdsEyeViewHandler, new Properties());
 		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class, new Properties());

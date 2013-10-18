@@ -48,6 +48,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -69,6 +71,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -102,7 +106,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSelectedNetworksListener,
+public class NetworkPanel extends JPanel implements CytoPanelComponent,
+		TreeSelectionListener, SetSelectedNetworksListener,
 		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener,
 		NetworkViewAboutToBeDestroyedListener, RowsSetListener {
 
@@ -110,6 +115,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
 
+	private static final String TITLE = "Network";
+	
 	static final Color FONT_COLOR = new Color(20, 20, 20);
 	private static final int TABLE_ROW_HEIGHT = 16;
 	private static final Dimension PANEL_SIZE = new Dimension(400, 700);
@@ -146,6 +153,8 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 	private CyRootNetwork selectedRoot;
 	private Set<CyRootNetwork> selectedRootSet;
 
+	private final Icon icon;
+	
 	/**
 	 * 
 	 * @param appMgr
@@ -174,6 +183,9 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 		root = new NetworkTreeNode("Network Root", null);
 		treeTableModel = new NetworkTreeTableModel(this, root);
 		treeTable = new JTreeTable(treeTableModel);
+		
+		icon = new ImageIcon(getClass().getResource("/images/class_hi.gif"));
+		
 		initialize();
 
 		this.actionGravityMap = new HashMap<JMenuItem, Double>();
@@ -225,6 +237,26 @@ public class NetworkPanel extends JPanel implements TreeSelectionListener, SetSe
 		rootPopupMenu.add(selectAllSubNetsMenuItem);
 	}
 
+	@Override
+	public Component getComponent() {
+		return this;
+	}
+
+	@Override
+	public CytoPanelName getCytoPanelName() {
+		return CytoPanelName.WEST;
+	}
+
+	@Override
+	public String getTitle() {
+		return TITLE;
+	}
+
+	@Override
+	public Icon getIcon() {
+		return icon;
+	}
+	
 	protected void initialize() {
 		setLayout(new BorderLayout());
 		setPreferredSize(PANEL_SIZE);
