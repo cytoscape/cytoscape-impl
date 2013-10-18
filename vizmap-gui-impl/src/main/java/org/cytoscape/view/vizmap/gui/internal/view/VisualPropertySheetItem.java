@@ -18,6 +18,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -25,6 +26,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.Collator;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -46,6 +48,7 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicButtonUI;
@@ -656,6 +659,23 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			msgIconLbl.setHorizontalTextPosition(SwingConstants.CENTER);
 			msgIconLbl.setPreferredSize(new Dimension(MSG_ICON_WIDTH, MSG_ICON_HEIGHT));
 			msgIconLbl.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(16.0f));
+			
+			// Hack to prolong a tooltip’s visible delay
+			// Thanks to: http://tech.chitgoks.com/2010/05/31/disable-tooltip-delay-in-java-swing/
+			msgIconLbl.addMouseListener(new MouseAdapter() {
+			    final int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
+			    final int dismissDelayMinutes = (int) TimeUnit.MINUTES.toMillis(1); // 1 minute
+			    
+			    @Override
+			    public void mouseEntered(final MouseEvent e) {
+			        ToolTipManager.sharedInstance().setDismissDelay(dismissDelayMinutes);
+			    }
+			 
+			    @Override
+			    public void mouseExited(final MouseEvent e) {
+			        ToolTipManager.sharedInstance().setDismissDelay(defaultDismissTimeout);
+			    }
+			});
 		}
 		
 		return msgIconLbl;
