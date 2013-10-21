@@ -948,7 +948,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportVizmapTaskFactoryProps.setProperty(ENABLE_FOR,"vizmap");
 		exportVizmapTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
 		exportVizmapTaskFactoryProps.setProperty(MENU_GRAVITY,"1.4");
-		exportVizmapTaskFactoryProps.setProperty(TITLE,"Vizmap...");
+		exportVizmapTaskFactoryProps.setProperty(TITLE,"Style...");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND,"export");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		registerService(bc,exportVizmapTaskFactory,TaskFactory.class, exportVizmapTaskFactoryProps);
