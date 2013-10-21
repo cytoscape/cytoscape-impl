@@ -29,6 +29,7 @@ import org.cytoscape.filter.internal.view.TransformerViewManager;
 import org.cytoscape.filter.internal.view.ViewUpdater;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.mockito.Mock;
@@ -44,13 +45,17 @@ public class UiScaffold {
 	void start() {
 		MockitoAnnotations.initMocks(this);
 		
+		Random random = new Random(0);
+
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
 		CyNetwork network = networkTestSupport.getNetwork();
+		CyTable nodeTable = network.getDefaultNodeTable();
+		nodeTable.createColumn("Score", Double.class, false);
 		for (int i = 0; i < TOTAL_NODES; i++) {
-			network.addNode();
+			CyNode node = network.addNode();
+			network.getRow(node).set("Score", random.nextGaussian());
 		}
 		
-		Random random = new Random(0);
 		List<CyNode> nodes = network.getNodeList();
 		for (int i = 0; i < TOTAL_EDGES; i++) {
 			CyNode source = nodes.get(random.nextInt(nodes.size()));
@@ -81,7 +86,7 @@ public class UiScaffold {
 		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(), properties);
 
 		ViewUpdater viewUpdater = new ViewUpdater(applicationManager);
-		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, viewUpdater);
+		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, viewUpdater, modelMonitor);
 		FilterPanel panel = new FilterPanel(controller, iconManager, viewUpdater);
 		
 		JRootPane root = frame.getRootPane();

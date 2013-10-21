@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -18,7 +19,8 @@ import org.cytoscape.filter.internal.attribute.AttributeFilterView;
 import org.cytoscape.filter.internal.attribute.AttributeFilterView.AttributeComboBoxElement;
 import org.cytoscape.filter.internal.degree.DegreeFilterController;
 import org.cytoscape.filter.internal.degree.DegreeFilterView;
-import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
+import org.cytoscape.filter.internal.view.RangeChooserController;
+import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -26,6 +28,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.events.ColumnCreatedEvent;
@@ -40,7 +44,10 @@ import org.cytoscape.model.events.RowsSetListener;
 
 public class ModelMonitor implements SetCurrentNetworkListener,
 									 RowsSetListener, ColumnCreatedListener, ColumnDeletedListener, ColumnNameChangedListener,
-									 AddedEdgesListener {
+									 AddedEdgesListener, AboutToRemoveEdgesListener {
+	
+	private static final int INTERACTIVITY_THRESHOLD = 100000;
+	
 	CyNetwork network;
 	int[] nodeDegreeRange;
 	boolean enabled;
@@ -54,6 +61,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	
 	Map<DegreeFilterView, DegreeFilterController> degreeViews;
 	private Map<AttributeFilterView, AttributeFilterController> attributeViews;
+	private List<InteractivityChangedListener> interactivityChangedListeners;
 	
 	public ModelMonitor() {
 		nodeDegreeRange = new int[] { Integer.MAX_VALUE, Integer.MIN_VALUE };
@@ -64,6 +72,8 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		attributeNames = new ArrayList<AttributeComboBoxElement>();
 		defaultAttributeName = new AttributeComboBoxElement(null, "Choose attribute...");
 		attributeNames.add(defaultAttributeName);
+		
+		interactivityChangedListeners = new CopyOnWriteArrayList<InteractivityChangedListener>();
 		
 		degreeViews = new WeakHashMap<DegreeFilterView, DegreeFilterController>();
 		attributeViews = new WeakHashMap<AttributeFilterView, AttributeFilterController>();
@@ -99,6 +109,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				return;
 			}
 			
+			boolean changed = false;
 			for (RowSetRecord record : event.getPayloadCollection()) {
 				String name = record.getColumn();
 				double[] range = ranges.get(name);
@@ -116,8 +127,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				} else if (Number.class.isAssignableFrom(type)) {
 					updateRange(range, (Number) value);
 				}
+				changed = true;
 			}
-			updateAttributeSliders();
+			if (changed) {
+				updateAttributeSliders();
+			}
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -143,61 +157,32 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				return;
 			}
 			network = model;
-			clearNumericData();
-			computeAttributeRanges();
-			computeNodeDegreeRange();
-			updateDegreeSliders();
-			updateAttributeNames(network);
-			updateAttributeSliders();
+			
+			int totalObjects = network.getNodeCount() + network.getEdgeCount();
+			boolean isInteractive = totalObjects < INTERACTIVITY_THRESHOLD;
+			setInteractive(isInteractive);
+			notifyInteractivityListeners(isInteractive);
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
 	
-	private void computeAttributeRanges() {
-		lock.writeLock().lock();
-		try {
-			if (network == null) return;
-			computeAttributeRanges(network.getDefaultNodeTable(), nodeAttributeRanges);
-			computeAttributeRanges(network.getDefaultEdgeTable(), edgeAttributeRanges);
-		} finally {
-			lock.writeLock().unlock();
+	public void setInteractive(boolean isInteractive) {
+		clearNumericData();
+		updateAttributeNames(network);
+		if (isInteractive) {
+			computeNodeDegreeRange();
+			updateDegreeSliders();
+			updateAttributeSliders();
+		}
+	}
+	
+	private void notifyInteractivityListeners(boolean isInteractive) {
+		for (InteractivityChangedListener listener : interactivityChangedListeners) {
+			listener.handleInteractivityChanged(isInteractive);
 		}
 	}
 
-	private void computeAttributeRanges(CyTable table, Map<String, double[]> ranges) {
-		for (CyColumn column : table.getColumns()) {
-			String name = column.getName();
-			Class<?> type = column.getType();
-			double[] range = null;
-			
-			if (List.class.equals(type)) {
-				Class<?> elementType = column.getListElementType();
-				if (Number.class.isAssignableFrom(elementType)) {
-					range = ranges.get(name);
-					if (range == null) {
-						range = new double[] { Double.MAX_VALUE, Double.MIN_VALUE };
-						ranges.put(name, range);
-					}
-					for (CyRow row : table.getAllRows()) {
-						List<?> list = row.getList(name, elementType);
-						updateRange(range, list);
-					}
-				}
-			} else if (Number.class.isAssignableFrom(type)) {
-				range = ranges.get(name);
-				if (range == null) {
-					range = new double[] { Double.MAX_VALUE, Double.MIN_VALUE };
-					ranges.put(name, range);
-				}
-				for (CyRow row : table.getAllRows()) {
-					Object value = row.get(name, type);
-					updateRange(range, (Number) value);
-				}
-			}
-		}
-	}
-	
 	private void updateRange(double[] range, Number value) {
 		if (value == null) {
 			return;
@@ -223,7 +208,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 
 	private void updateAttributeSliders() {
 		for (AttributeFilterController controller : attributeViews.values()) {
-			NumberRangeModel model = controller.getSliderModel();
+			RangeChooserController chooserController = controller.getRangeChooserController();
 			AttributeFilter filter = controller.getFilter();
 			
 			Class<? extends CyIdentifiable> attributeType = filter.getAttributeType();
@@ -248,11 +233,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				type = column.getListElementType();
 			}
 			if (Integer.class.equals(type) || Long.class.equals(type)) {
-				model.setMinValue((int) range[0]);
-				model.setMaxValue((int) range[1]);
+				chooserController.setBounds((long) range[0], (long) range[1]);
 			} else {
-				model.setMinValue(range[0]);
-				model.setMaxValue(range[1]);
+				chooserController.setBounds(range[0], range[1]);
 			}
 		}
 	}
@@ -280,13 +263,28 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 	
+	@Override
+	public void handleEvent(AboutToRemoveEdgesEvent event) {
+		if (network != event.getSource()) {
+			return;
+		}
+		
+		lock.writeLock().lock();
+		try {
+			clearDegreeData();
+			computeNodeDegreeRange();
+			updateDegreeSliders();
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
+	
 	private void updateDegreeSliders() {
 		Integer minimum = nodeDegreeRange[0];
 		Integer maximum = nodeDegreeRange[1];
 		for (DegreeFilterController controller : degreeViews.values()) {
-			NumberRangeModel model = controller.getSliderModel();
-			model.setMinValue(minimum);
-			model.setMaxValue(maximum);
+			RangeChooserController chooserController = controller.getRangeChooserController();
+			chooserController.setBounds(minimum, maximum);
 		}
 	}
 
@@ -417,15 +415,18 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 	
 	private void clearNumericData() {
-		lock.writeLock().lock();
-		try {
-			nodeDegreeRange[0] = Integer.MAX_VALUE;
-			nodeDegreeRange[1] = Integer.MIN_VALUE;
-		} finally {
-			lock.writeLock().unlock();
-		}
+		// Assume the caller has write lock.
+		clearDegreeData();
+		nodeAttributeRanges.clear();
+		edgeAttributeRanges.clear();
 	}
 
+	private void clearDegreeData() {
+		// Assume the caller has write lock.
+		nodeDegreeRange[0] = Integer.MAX_VALUE;
+		nodeDegreeRange[1] = Integer.MIN_VALUE;
+	}
+	
 	public int getMinimumDegree() {
 		lock.readLock().lock();
 		try {
@@ -506,22 +507,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 	
-	boolean getEnabled() {
-		return enabled;
-	}
-	
-	void setEnabled(boolean enabled) {
-		lock.writeLock().lock();
-		try {
-			this.enabled = enabled;
-			if (!enabled) {
-				clearNumericData();
-			}
-		} finally {
-			lock.writeLock().unlock();
-		}
-	}
-
 	public List<AttributeComboBoxElement> getAttributeComboBoxModel() {
 		return attributeNames;
 	}
@@ -586,19 +571,25 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 			
 			if (CyNode.class.equals(type)) {
-				CyColumn column = network.getDefaultNodeTable().getColumn(name);
-				return getAttributeRange(column, nodeAttributeRanges);
+				CyTable table = network.getDefaultNodeTable();
+				return getAttributeRange(table, name, nodeAttributeRanges);
 			} else {
-				CyColumn column = network.getDefaultEdgeTable().getColumn(name);
-				return getAttributeRange(column, edgeAttributeRanges);
+				CyTable table = network.getDefaultEdgeTable();
+				return getAttributeRange(table, name, edgeAttributeRanges);
 			}
 		} finally {
 			lock.readLock().unlock();
 		}
 	}
 
-	private Number[] getAttributeRange(CyColumn column, Map<String, double[]> ranges) {
-		double[] range = ranges.get(column.getName());
+	private Number[] getAttributeRange(CyTable table, String name, Map<String, double[]> ranges) {
+		double[] range = ranges.get(name);
+		CyColumn column = table.getColumn(name);
+		if (range == null) {
+			range = computeRange(table, name, column);
+			ranges.put(name, range);
+		}
+		
 		Class<?> type = column.getType();
 		if (List.class.equals(type)) {
 			type = column.getListElementType();
@@ -607,5 +598,55 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			return new Number[] { (long) range[0], (long) range[1] };
 		}
 		return new Number[] { range[0], range[1] };
+	}
+	
+	private double[] computeRange(CyTable table, String name, CyColumn column) {
+		double[] range = new double[] { Double.MAX_VALUE, Double.MIN_VALUE };
+		Class<?> type = column.getType();
+		if (List.class.equals(type)) {
+			Class<?> elementType = column.getListElementType();
+			if (Number.class.isAssignableFrom(elementType)) {
+				for (CyRow row : table.getAllRows()) {
+					List<?> list = row.getList(name, elementType);
+					updateRange(range, list);
+				}
+			}
+		} else if (Number.class.isAssignableFrom(type)) {
+			for (CyRow row : table.getAllRows()) {
+				Object value = row.get(name, type);
+				updateRange(range, (Number) value);
+			}
+		}
+		return range;
+	}
+
+	public void addInteractivityChangedListener(InteractivityChangedListener listener) {
+		if (interactivityChangedListeners.contains(listener)) {
+			return;
+		}
+		
+		interactivityChangedListeners.add(listener);
+	}
+	
+	public void removeInteractivityChangedListener(InteractivityChangedListener listener) {
+		interactivityChangedListeners.remove(listener);
+	}
+
+	public void recomputeAttributeRange(String name, Class<? extends CyIdentifiable> type) {
+		lock.writeLock().lock();
+		try {
+			if (network == null) {
+				return;
+			}
+			Map<String, double[]> ranges;
+			if (type.equals(CyNode.class)) {
+				ranges = nodeAttributeRanges;
+			} else {
+				ranges = edgeAttributeRanges;
+			}
+			ranges.remove(name);
+		} finally {
+			lock.writeLock().unlock();
+		}
 	}
 }

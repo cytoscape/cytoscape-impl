@@ -72,7 +72,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, new Properties());
 
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
-		CytoPanelComponent filterPanel = new FilterCytoPanelComponent(transformerManager, transformerViewManager, applicationManager, iconManager);
+		CytoPanelComponent filterPanel = new FilterCytoPanelComponent(transformerManager, transformerViewManager, applicationManager, iconManager, modelMonitor);
 		Properties filterPanelProps = new Properties();
 		filterPanelProps.setProperty("cytoPanelComponentName", CytoPanelComponentName.FILTER.toString());
 		registerService(context, filterPanel, CytoPanelComponent.class, filterPanelProps);
