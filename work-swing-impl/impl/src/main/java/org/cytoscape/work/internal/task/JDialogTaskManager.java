@@ -196,7 +196,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		final Task first; 
 
 		try {
-			dialogTunableMutator.setConfigurationContext(parent);
+			dialogTunableMutator.setConfigurationContext(parent,true);
 
 			if ( tunableContext != null && !displayTunables(tunableContext) ) {
 				taskMonitor.cancel();
@@ -330,7 +330,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
                 if (observer != null) observer.allFinished(FinishStatus.newFailed(task, exception));
 			} finally {
 				parent = null;
-				dialogTunableMutator.setConfigurationContext(null);
+				dialogTunableMutator.setConfigurationContext(null,true);
 			}
 
 			// clean up the task monitor
