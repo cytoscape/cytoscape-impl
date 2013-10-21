@@ -25,7 +25,7 @@ package org.cytoscape.browser.internal;
  */
 
 
-public class ValidatedObjectAndEditString {
+public class ValidatedObjectAndEditString implements Comparable{
 	private final Object validatedObject;
 	private final String editString;
 	private String errorText;
@@ -62,4 +62,23 @@ public class ValidatedObjectAndEditString {
 		return "ValidatedObjectAndEditString: validatedObject=" + validatedObject
 		       + ", editString=" + editString;
 	}
+
+    @Override
+    public int compareTo(Object o) {
+        ValidatedObjectAndEditString v = (ValidatedObjectAndEditString)o;
+        try
+        {
+            Double d1 = Double.parseDouble(getEditString());
+            Double d2 = Double.parseDouble(v.getEditString());
+            return d1.compareTo(d2);
+
+        }
+        catch(NumberFormatException nfe)
+        {
+            return getEditString().compareTo(v.getEditString());
+        }
+
+    }
+
+
 }
