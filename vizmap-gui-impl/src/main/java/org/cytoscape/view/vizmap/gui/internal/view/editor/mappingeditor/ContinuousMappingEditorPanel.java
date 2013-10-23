@@ -63,6 +63,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
@@ -493,25 +494,29 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			final CyColumn col = dataTable.getColumn(mapping.getMappingColumnName());
 
 			if (col != null) {
-				Double maxValue = Double.NEGATIVE_INFINITY;
-				Double minValue = Double.POSITIVE_INFINITY;
+				// If the current mapping already have points, start with the actual mapping's min/max values
+				Double max = VisualPropertyUtil.getMaxValue(mapping);
+				Double min = VisualPropertyUtil.getMinValue(mapping);
+				max = max == null ? Double.NEGATIVE_INFINITY : max;
+				min = min == null ? Double.POSITIVE_INFINITY : min;
+				
 				final List<?> valueList = col.getValues(col.getType());
 
 				for (Object o : valueList) {
 					if (o instanceof Number) {
 						Number val = (Number) o;
 
-						if (val.doubleValue() > maxValue)
-							maxValue = val.doubleValue();
+						if (val.doubleValue() > max)
+							max = val.doubleValue();
 
-						if (val.doubleValue() < minValue)
-							minValue = val.doubleValue();
+						if (val.doubleValue() < min)
+							min = val.doubleValue();
 					}
 
 				}
 
-				tracer.setMax(type, maxValue);
-				tracer.setMin(type, minValue);
+				tracer.setMax(type, max);
+				tracer.setMin(type, min);
 			}
 		}
 	}

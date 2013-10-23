@@ -108,18 +108,6 @@ public class NumberRangeModel extends DefaultBoundedRangeModel implements Valued
 		if (m_min instanceof Integer) {
 			setRange(m_lo.intValue(), m_hi.intValue() - m_lo.intValue(), m_min.intValue(),
 			         m_max.intValue());
-		} else if (m_min instanceof Long) {
-			long range = (m_max.longValue() - m_min.longValue());
-			int v;
-			int e;
-			if (range == 0) {
-				v = 0;
-				e = 0;
-			} else {
-				v = 10000 * (int) ((m_lo.longValue() - m_min.longValue()) / range);
-				e = (10000 * (int) ((m_hi.longValue() - m_min.longValue()) / range)) - v;
-			}
-			setRange(v, e, 0, 10000);
 		} else {
 			double range = m_max.doubleValue() - m_min.doubleValue();
 			int v = (int) Math.round(10000 *  ((m_lo.doubleValue() - m_min.doubleValue()) / range));

@@ -64,11 +64,18 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 	
 	private final TableChooser tableChooser;
 
-	public GlobalTableBrowser(String tabTitle, CyTableManager tableManager, CyNetworkTableManager networkTableManager,
-			CyServiceRegistrar serviceRegistrar, EquationCompiler compiler,
-			CyNetworkManager networkManager, DeleteTableTaskFactory deleteTableTaskFactoryService,
-			DialogTaskManager guiTaskManagerServiceRef, PopupMenuHelper popupMenuHelper,
-			CyApplicationManager applicationManager, CyEventHelper eventHelper){//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+	public GlobalTableBrowser(final String tabTitle,
+							  final CyTableManager tableManager,
+							  final CyNetworkTableManager networkTableManager,
+							  final CyServiceRegistrar serviceRegistrar,
+							  final EquationCompiler compiler,
+							  final CyNetworkManager networkManager,
+							  final DeleteTableTaskFactory deleteTableTaskFactoryService,
+							  final DialogTaskManager guiTaskManagerServiceRef,
+							  final PopupMenuHelper popupMenuHelper,
+							  final CyApplicationManager applicationManager,
+							  final CyEventHelper eventHelper,
+							  final IconManager iconManager){//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, networkManager,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
 		
@@ -84,7 +91,8 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		tableChooser.setEnabled(false);
 		
 		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, null, applicationManager);//, mapGlobalTableTaskFactoryService);
+				deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, null, applicationManager,
+				iconManager);//, mapGlobalTableTaskFactoryService);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}

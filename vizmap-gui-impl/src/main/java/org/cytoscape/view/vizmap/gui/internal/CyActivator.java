@@ -46,6 +46,7 @@ import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
 import org.cytoscape.view.vizmap.gui.internal.event.VizMapEventHandlerManagerImpl;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
+import org.cytoscape.view.vizmap.gui.internal.model.PropsProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.ClearBendTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
@@ -115,8 +116,10 @@ public class CyActivator extends AbstractCyActivator {
 		final StringValueEditor stringValueEditor = new StringValueEditor();
 		final BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
 		
+		final ThemeManager themeManager = new ThemeManager();
+		
 		final CyColorChooser colorChooser = new CyColorChooser();
-		final CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorChooser);
+		final CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorChooser, themeManager);
 		final CyFontPropertyEditor cyFontPropertyEditor = new CyFontPropertyEditor();
 		
 		final ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class, editorManager, cyColorPropertyEditor, continuousMappingCellRendererFactory);
@@ -268,12 +271,13 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Create the main GUI component
 		// -------------------------------------------------------------------------------------------------------------
-		final ThemeManager themeManager = new ThemeManager();
 		final VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(themeManager);
 		
 		// Start the PureMVC components
 		// -------------------------------------------------------------------------------------------------------------
 		final VizMapperProxy vizMapperProxy = new VizMapperProxy(servicesUtil);
+		final PropsProxy propsProxy = new PropsProxy(servicesUtil);
+		
 		final VizMapPropertyBuilder vizMapPropertyBuilder = new VizMapPropertyBuilder(editorManager, mappingFunctionFactoryManager, servicesUtil);
 		
 		final VizMapperMediator vizMapperMediator = new VizMapperMediator(vizMapperMainPanel,
@@ -285,12 +289,15 @@ public class CyActivator extends AbstractCyActivator {
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,
 																 attributeSetProxy,
 																 mappingFactoryProxy,
+																 propsProxy,
 																 vizMapperMediator,
 																 vizMapperMenuMediator,
 																 servicesUtil);
 		
 		registerAllServices(bc, vizMapperProxy, new Properties());
 		registerAllServices(bc, mappingFactoryProxy, new Properties());
+		registerAllServices(bc, propsProxy, new Properties());
+		
 		registerAllServices(bc, vizMapperMediator, new Properties());
 		
 		registerServiceListener(bc, vizMapperMediator, "onCyActionRegistered", "onCyActionUnregistered", CyAction.class);

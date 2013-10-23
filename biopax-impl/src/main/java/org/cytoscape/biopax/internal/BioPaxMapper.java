@@ -1179,28 +1179,52 @@ public class BioPaxMapper {
      * @param m
      * @param out
 	 */
-	public static void convertToSif(Model m, OutputStream out) 
+//	public static void convertToSif(Model m, OutputStream out) 
+//	{
+//		// TODO select SIF rules (currently, it uses all available sif rules)
+//		SimpleInteractionConverter sic = new SimpleInteractionConverter(
+//                new HashMap(),
+//                null, //no blacklist (the list of ubiquitous molecules to ignore, which depends on biopax data source...)
+//                SimpleInteractionConverter.getRules(BioPAXLevel.L3).toArray(new InteractionRule[]{})
+//			);
+//		
+//		//merge interactions with exactly same properties, which dirty the result of the biopax-sif conversion...
+//		ModelUtils.mergeEquivalentInteractions(m);
+//		
+//		try {
+//			sic.writeInteractionsInSIF(m, out);
+//		} catch (IOException e) {
+//			throw new BioPaxIOException("biopax: writeInteractionsInSIF failed.", e);
+//		}
+//	}
+	
+	/**
+	 * Converts a BioPAX Model to the EXTENDED SIF format.
+	 * 
+	 * @param m
+	 * @param edgeStream
+	 * @param nodeStream
+	 * @throws IOException
+	 */
+	public static void convertToExtendedBinarySIF(Model m, OutputStream edgeStream, OutputStream nodeStream) throws IOException 
 	{
-		// TODO make it parameter (currently, it uses all available sif rules)
-		InteractionRule[] sifRules = SimpleInteractionConverter
-				.getRules(BioPAXLevel.L3).toArray(new InteractionRule[]{});
+//		final String edgeColumns = "#PARTICIPANT_A\tINTERACTION_TYPE\tPARTICIPANT_B\tINTERACTION_DATA_SOURCE\tINTERACTION_PUBMED_ID\n";
+//		edgeStream.write(edgeColumns.getBytes());
+//		final String nodeColumns = "#PARTICIPANT\tPARTICIPANT_TYPE\tPARTICIPANT_NAME\tUNIFICATION_XREF\tRELATIONSHIP_XREF\n";	
+//		nodeStream.write(nodeColumns.getBytes());		
 		SimpleInteractionConverter sic = new SimpleInteractionConverter(
                 new HashMap(),
-                //in general, we cannot guess a list of URIs of molecules to exclude...
-                null, //no blacklist here
-                sifRules
+                null, //no blacklist (the list of ubiquitous molecules to ignore, which depends on biopax data source...)
+                SimpleInteractionConverter.getRules(BioPAXLevel.L3).toArray(new InteractionRule[]{})
 			);
-		
-		//biopax data might have interactions with exactly same properties,
-		// which dirties the result of the biopx-sif convertion...
-		ModelUtils.mergeEquivalentInteractions(m);
-		
-		try {
-			sic.writeInteractionsInSIF(m, out);
-		} catch (IOException e) {
-			throw new BioPaxIOException("biopax: writeInteractionsInSIF failed.", e);
-		}
-	}
+		//merge interactions with exactly same properties, which dirty the result of the biopax-sif conversion...
+		ModelUtils.mergeEquivalentInteractions(m);		
+		sic.writeInteractionsInSIFNX(
+			m, edgeStream, nodeStream,
+			Arrays.asList("EntityReference/displayName", "EntityReference/xref:UnificationXref"),
+			null, true);
+	}	
+	
 	
     /**
      * Converts a BioPAX Model to SBGN format.

@@ -1,6 +1,6 @@
 package org.cytoscape.filter.internal.composite;
 
-import java.awt.Component;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.Group;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 
@@ -23,6 +24,7 @@ import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.FilterViewModel;
+import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.CompositeFilter.Type;
 import org.cytoscape.filter.model.Filter;
@@ -31,9 +33,9 @@ import org.cytoscape.model.CyNetwork;
 
 @SuppressWarnings("serial")
 public class CompositeFilterPanel extends JPanel {
-	private static final Border BORDER = BorderFactory.createEtchedBorder();
+	private static final Border BORDER = BorderFactory.createMatteBorder(0, 0, 2, 0, Color.DARK_GRAY);
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
-	
+
 	private Map<Filter<CyNetwork, CyIdentifiable>, FilterViewModel> viewModels;
 	private GroupLayout layout;
 	private int depth;
@@ -52,6 +54,8 @@ public class CompositeFilterPanel extends JPanel {
 		this.filterPanelController = filterPanelController;
 		this.depth = depth;
 		this.model = model;
+
+		ViewUtil.configureFilterView(this);
 		
 		viewModels = new WeakHashMap<Filter<CyNetwork,CyIdentifiable>, FilterViewModel>();
 		layout = new GroupLayout(this);
@@ -70,7 +74,7 @@ public class CompositeFilterPanel extends JPanel {
 		
 		for (int i = 0; i < model.getLength(); i++) {
 			Filter<CyNetwork, CyIdentifiable> filter = model.get(i);
-			Component component = filterPanelController.createView(parent, filter, depth + 1);
+			JComponent component = filterPanelController.createView(parent, filter, depth + 1);
 			FilterViewModel viewModel = new FilterViewModel(component, filterPanelController, parent);
 			viewModels.put(filter, viewModel);
 		}
@@ -178,7 +182,7 @@ public class CompositeFilterPanel extends JPanel {
 	}
 
 	public void addFilter(Filter<CyNetwork, CyIdentifiable> filter) {
-		Component component = filterPanelController.createView(parent, filter, depth + 1);
+		JComponent component = filterPanelController.createView(parent, filter, depth + 1);
 		final FilterViewModel viewModel = new FilterViewModel(component, filterPanelController, parent);
 		addViewModel(filter, viewModel);
 	}

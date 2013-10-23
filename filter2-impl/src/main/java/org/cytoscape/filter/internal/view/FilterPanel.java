@@ -14,6 +14,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -42,9 +43,17 @@ public class FilterPanel extends JPanel {
 	private JMenuItem exportMenu;
 	private JMenuItem importMenu;
 	private JScrollPane scrollPane;
+	private IconManager iconManager;
+	private JCheckBox applyAutomaticallyCheckBox;
+	private JButton applyFilterButton;
+	private JButton cancelApplyButton;
 
-	public FilterPanel(final FilterPanelController controller) {
+	public FilterPanel(final FilterPanelController controller, IconManager iconManager, final ViewUpdater viewUpdater) {
 		this.controller = controller;
+		this.iconManager = iconManager;
+		
+		viewUpdater.setView(this);
+		
 		filterComboBoxModel = controller.getFilterComboBoxModel();
 		
 		createSelectionPanel();
@@ -87,28 +96,68 @@ public class FilterPanel extends JPanel {
 		menu.add(exportMenu);
 		menu.add(importMenu);
 
-		JLabel arrowLabel = new JLabel("▼");
-		Font arrowFont = arrowLabel.getFont().deriveFont(10.0f);
-		arrowLabel.setFont(arrowFont);
-		arrowLabel.addMouseListener(new MouseAdapter() {
+		JLabel optionsLabel = new JLabel(IconManager.ICON_COG);
+		Font iconFont = iconManager.getIconFont(17.0f);
+		optionsLabel.setFont(iconFont);
+		optionsLabel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent event) {
 				handleShowMenu(event);
 			}
 		});
 		
+		applyAutomaticallyCheckBox = new JCheckBox("Apply Automatically"); 
+		applyAutomaticallyCheckBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				controller.setInteractive(applyAutomaticallyCheckBox.isSelected(), FilterPanel.this);
+			}
+		});
+		
+		applyFilterButton = new JButton("Apply Filter");
+		applyFilterButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				controller.handleApplyFilter(FilterPanel.this);
+			}
+		});
+		
+		cancelApplyButton = new JButton("Cancel");
+		cancelApplyButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				controller.handleCancelApply(FilterPanel.this);
+			}
+		});
+		cancelApplyButton.setEnabled(false);
+		
+		JPanel applyPanel = createApplyPanel();
+		
 		setLayout(new GridBagLayout());
 		int row = 0;
-		add(selectionPanel, new GridBagConstraints(0, row, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		add(arrowLabel, new GridBagConstraints(1, row++, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
+		add(selectionPanel, new GridBagConstraints(0, row, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(applyAutomaticallyCheckBox, new GridBagConstraints(1, row, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(optionsLabel, new GridBagConstraints(2, row++, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
 		
 		Component editPanel = createEditPanel();
-		add(editPanel, new GridBagConstraints(0, row++, 2, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		add(editPanel, new GridBagConstraints(0, row++, 3, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		
+		add(applyPanel, new GridBagConstraints(0, row++, 3, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 		
 		FilterElement element = (FilterElement) filterComboBox.getSelectedItem();
 		createView(element.filter);
+		
+		controller.synchronize(this);
 	}
 	
+	private JPanel createApplyPanel() {
+		JPanel applyPanel = new JPanel();
+		applyPanel.setLayout(new GridBagLayout());
+		applyPanel.add(applyFilterButton, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		applyPanel.add(cancelApplyButton, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		return applyPanel;
+	}
+
 	private void createView(CompositeFilter<CyNetwork, CyIdentifiable> filter) {
 		if (filter == null) {
 			setRootPanel(null);
@@ -164,8 +213,10 @@ public class FilterPanel extends JPanel {
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 	
-		outdentButton = new JButton("◀");
-		Font arrowFont = outdentButton.getFont().deriveFont(10.0f);
+		Font arrowFont = iconManager.getIconFont(11.0f);
+		Font iconFont = iconManager.getIconFont(17.0f);
+
+		outdentButton = new JButton(IconManager.ICON_STEP_BACKWARD);
 		outdentButton.setFont(arrowFont);
 		outdentButton.addActionListener(new ActionListener() {
 			@Override
@@ -174,7 +225,7 @@ public class FilterPanel extends JPanel {
 			}
 		});
 		
-		JButton indentButton = new JButton("▶");
+		JButton indentButton = new JButton(IconManager.ICON_STEP_FORWARD);
 		indentButton.setFont(arrowFont);
 		indentButton.addActionListener(new ActionListener() {
 			@Override
@@ -183,7 +234,8 @@ public class FilterPanel extends JPanel {
 			}
 		});
 		
-		JButton deleteButton = new JButton("Delete");
+		JButton deleteButton = new JButton(IconManager.ICON_TRASH);
+		deleteButton.setFont(iconFont);
 		deleteButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -229,5 +281,25 @@ public class FilterPanel extends JPanel {
 
 	public Component getEditPanel() {
 		return editControlPanel;
+	}
+
+	public JComboBox getFilterComboBox() {
+		return filterComboBox;
+	}
+	
+	public void setStatus(String status) {
+		applyFilterButton.setText(status);
+	}
+
+	public JButton getApplyFilterButton() {
+		return applyFilterButton;
+	}
+
+	public Component getCancelApplyButton() {
+		return cancelApplyButton;
+	}
+
+	public JCheckBox getApplyAutomaticallyCheckBox() {
+		return applyAutomaticallyCheckBox;
 	}
 }

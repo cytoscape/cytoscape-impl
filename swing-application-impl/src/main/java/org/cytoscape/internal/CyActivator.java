@@ -25,7 +25,7 @@ package org.cytoscape.internal;
  */
 
 import static org.cytoscape.application.swing.CytoPanelName.*;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.*;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
 import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
@@ -40,8 +40,10 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelComponentName;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
@@ -69,10 +71,12 @@ import org.cytoscape.internal.util.undo.UndoMonitor;
 import org.cytoscape.internal.view.BirdsEyeViewHandler;
 import org.cytoscape.internal.view.CyHelpBrokerImpl;
 import org.cytoscape.internal.view.CytoscapeDesktop;
+import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
+import org.cytoscape.internal.view.IconManagerImpl;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
@@ -215,13 +219,18 @@ public class CyActivator extends AbstractCyActivator {
 		                                             dynamicTaskFactoryProvisionerServiceRef,
 		                                             editNetworkTitleTFServiceRef);
 
+		final IconManagerImpl iconManager = new IconManagerImpl();
+		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
-		                                                         networkViewManager, networkPanel,
+		                                                         networkViewManager,
 		                                                         cytoscapeShutdownServiceRef,
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
 		                                                         dialogTaskManagerServiceRef,
-		                                                         taskStatusPanelFactoryRef);
+		                                                         taskStatusPanelFactoryRef,
+		                                                         iconManager);
+
+		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, networkViewManager);
 
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
 
@@ -275,12 +284,12 @@ public class CyActivator extends AbstractCyActivator {
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
 		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef, cyVersionServiceRef);
 		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersionServiceRef, cytoscapeDesktop);
-		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop, GRID);
-		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
+		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory(cyDesktopManager, GRID);
+		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
 		                                                                      CASCADE);
-		ArrangeTaskFactory arrangeHorizontalTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
+		ArrangeTaskFactory arrangeHorizontalTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
 		                                                                         HORIZONTAL);
-		ArrangeTaskFactory arrangeVerticalTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
+		ArrangeTaskFactory arrangeVerticalTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
 		                                                                       VERTICAL);
 		CytoPanelAction cytoPanelWestAction = new CytoPanelAction(WEST, true, cytoscapeDesktop, 1.0f);
 		CytoPanelAction cytoPanelSouthAction = new CytoPanelAction(SOUTH, true, cytoscapeDesktop, 1.1f);
@@ -319,6 +328,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
+		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class, new Properties());
 
 		Properties helpContentsTaskFactoryProps = new Properties();
 		helpContentsTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
@@ -377,7 +387,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
 		                arrangeVerticalTaskFactoryProps);
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
-		registerAllServices(bc, networkPanel, new Properties());
+		
+		Properties networkPanelProps = new Properties();
+		networkPanelProps.setProperty("cytoPanelComponentName", CytoPanelComponentName.NETWORK.toString());
+		registerAllServices(bc, networkPanel, networkPanelProps);
+		
 		registerAllServices(bc, networkViewManager, new Properties());
 		registerAllServices(bc, birdsEyeViewHandler, new Properties());
 		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class, new Properties());

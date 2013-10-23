@@ -214,6 +214,8 @@ public class TextAnnotationPanel extends javax.swing.JPanel {
 	}
 
 	public String getText(){
+		// Make sure text is updated
+		preview.setText(annotationText.getText());	   
 		return preview.getText();
 	}
 

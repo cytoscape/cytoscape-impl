@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -270,6 +271,19 @@ public class AppParser {
 					+ " key " + APP_COMPATIBLE_TAG + " does not match the form of a comma-delimited list of versions of the form"
 					+ " major[.minor] (eg. 1 or 1.0) with variable whitespace around versions");
 		}
+
+		List<App.Dependency> deps = null;
+		final String depsStr = manifest.getMainAttributes().getValue("Cytoscape-App-Dependencies");
+		if (depsStr != null && depsStr.trim().length() != 0) {
+			deps = new ArrayList<App.Dependency>();
+			final String[] depsPieces = splitSmart(',', depsStr);
+			for (final String depPiece : depsPieces) {
+				final String[] depPieces = splitSmart(';', depPiece);
+				if (depPieces.length < 2)
+					throw new AppParsingException("Each dependency must have a name and version");
+				deps.add(new App.Dependency(depPieces[0], depPieces[1]));
+			}
+		}	
 		
 		String fileHash;
 		try {
@@ -285,6 +299,7 @@ public class AppParser {
 		parsedApp.setVersion(appVersion);
 		parsedApp.setCompatibleVersions(compatibleVersions);
 		parsedApp.setAppValidated(true);
+		parsedApp.setDependencies(deps);
 		
 		return parsedApp;
 	}
@@ -443,4 +458,45 @@ public class AppParser {
 		
 		return "sha512:" + result;
 	}
+
+	private static int findChar(final char lookForThis, final String inThis, final int startingAt) {
+		final int len = inThis.length();
+		for (int i = startingAt; i < len; i++) {
+			char c = inThis.charAt(i);
+			if (c == '\"') {
+				for (++i /* skip over first quote */; i < len; i++) {
+					c = inThis.charAt(i);
+          if (c == '\"') // break at next quote
+            break;
+        }
+      } else if (lookForThis == c) {
+      	return i;
+      }
+    }
+    return len;
+  }
+
+  private static String[] splitSmart(final char splitBy, final String whatToSplit) {
+  	final int len = whatToSplit.length();
+  	int numPieces = 0;
+  	for (int i = 0; i < len;) {
+  		i = findChar(splitBy, whatToSplit, i) + 1;
+  		numPieces++;
+  	}
+
+  	final String[] pieces = new String[numPieces];
+  	int pi = 0;
+  	for (int i = 0; i < len;) {
+  		final int j = findChar(splitBy, whatToSplit, i);
+  		String piece = whatToSplit.substring(i, j);
+  		piece = piece.trim();
+  		if (piece.charAt(0) == '"' && piece.charAt(piece.length() - 1) == '"') {
+  			piece = piece.substring(1, piece.length() - 1);
+  			piece = piece.trim();
+  		}
+  		pieces[pi++] = piece;
+  		i = j + 1;
+  	}
+  	return pieces;
+  }
 }

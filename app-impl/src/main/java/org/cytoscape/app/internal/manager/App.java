@@ -100,6 +100,30 @@ public abstract class App {
 	 * The SHA-512 checksum of the app file, in format sha512:0a516c..
 	 */
 	private String sha512Checksum;
+
+	public static class Dependency {
+		final String name;
+		final String version;
+
+		public Dependency(final String name, final String version) {
+			this.name = name;
+			this.version = version;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getVersion() {
+			return version;
+		}
+
+		public String toString() {
+			return name + " " + version;
+		}
+	}
+
+	private List<Dependency> dependencies = null;
 	
 	private AppStatus status;
 	
@@ -124,7 +148,7 @@ public abstract class App {
 			return readableStatus;
 		}
 	}
-	
+
 	public App() {	
 		this.appName = "";
 		this.version = "";
@@ -620,6 +644,10 @@ public abstract class App {
 	public AppStatus getStatus() {
 		return status;
 	}
+
+	public List<Dependency> getDependencies() {
+		return dependencies;
+	}
 	
 	public void setAppName(String appName) {
 		this.appName = appName;
@@ -675,6 +703,10 @@ public abstract class App {
 	
 	public void setStatus(AppStatus status) {
 		this.status = status;
+	}
+
+	public void setDependencies(List<Dependency> deps) {
+		this.dependencies = deps;
 	}
 	
 	public static boolean delete( File f )  

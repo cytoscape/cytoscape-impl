@@ -3,15 +3,18 @@
   "style" : [ {
     "selector" : "node",
     "css" : {
-      "font-size" : 12,
-      "shape" : "roundrectangle",
+      "font-size" : 18,
       "height" : 30.0,
-      "color" : "rgb(0,0,255)",
-      "font-family" : "SansSerif",
-      "width" : 40.0,
-      "border-width" : 2.0,
+      "text-opacity" : 0.47843137254901963,
+      "font-family" : "Dialog",
       "border-color" : "rgb(0,0,255)",
+      "shape" : "roundrectangle",
+      "border-width" : 2.0,
       "background-color" : "rgb(255,255,255)",
+      "opacity" : 0.7843137254901961,
+      "border-opacity" : 0.5882352941176471,
+      "color" : "rgb(0,0,255)",
+      "width" : 40.0,
       "content" : "data(name)"
     }
   }, {
@@ -116,22 +119,38 @@
     }
   }, {
     "selector" : "node:selected",
-    "css" : { }
+    "css" : {
+      "background-color" : "rgb(255,0,0)"
+    }
   }, {
     "selector" : "edge",
     "css" : {
-      "line-style" : "dotted",
-      "width" : 2.0,
-      "color" : "rgb(255,0,0)",
-      "target-arrow-shape" : "diamond",
+      "width" : 3.0,
+      "text-opacity" : 0.8627450980392157,
       "source-arrow-shape" : "tee",
-      "line-color" : "rgb(64,64,64)",
-      "font-size" : 10,
+      "target-arrow-shape" : "diamond",
+      "font-size" : 11,
+      "color" : "rgb(255,0,0)",
       "font-family" : "SansSerif",
+      "line-style" : "dotted",
+      "opacity" : 0.39215686274509803,
+      "line-color" : "rgb(64,64,64)",
       "content" : "data(interaction)"
     }
   }, {
+    "selector" : "edge[interaction = 'pd']",
+    "css" : {
+      "line-color" : "rgb(255,0,0)"
+    }
+  }, {
+    "selector" : "edge[interaction = 'pp']",
+    "css" : {
+      "line-color" : "rgb(0,255,0)"
+    }
+  }, {
     "selector" : "edge:selected",
-    "css" : { }
+    "css" : {
+      "line-color" : "rgb(255,175,175)"
+    }
   } ]
 } ]

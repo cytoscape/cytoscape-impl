@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Paint;
 import java.io.BufferedReader;
 import java.io.File;
@@ -111,22 +112,48 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	private final void setDefaults() {
 		// Node default values
 		style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
+		style.setDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY, 200);
+
 		style.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, 40d);
 		style.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, 30d);
+		style.setDefaultValue(BasicVisualLexicon.NODE_SIZE, 60d);
+
 		style.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ROUND_RECTANGLE);
+
 		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, Color.BLUE);
 		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 2d);
-		style.setDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY, 200);
+		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_TRANSPARENCY, 150);
+
 		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, Color.BLUE);
+		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_SIZE, 18);
+		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_FACE, new Font("HelvaticaNeu", Font.PLAIN, 12));
+		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY, 122);
+
+		// For Selected
+		style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, Color.RED);
+
 
 		// Edge default values
 		style.setDefaultValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, Color.GREEN);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, Color.DARK_GRAY);
+
+		style.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 100);
+
 		style.setDefaultValue(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DOT);
-		style.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 2d);
+
+		style.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 3d);
+
 		style.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_COLOR, Color.red);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_FONT_FACE, new Font("SansSerif", Font.BOLD, 12));
+		style.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_FONT_SIZE, 11);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY, 220);
+
 		style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.DIAMOND);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, ArrowShapeVisualProperty.T);
-		style.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 100);
+		
+		// For Selected
+		style.setDefaultValue(BasicVisualLexicon.EDGE_SELECTED_PAINT, Color.PINK);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT, Color.ORANGE);
 	}
 
 	private final void setMappings() {
@@ -189,7 +216,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 
 		final DiscreteMapping<String, Paint> edgeColorMapping = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction("interaction", String.class,
-						BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+						BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
 		edgeColorMapping.putMapValue("pp", Color.green);
 		edgeColorMapping.putMapValue("pd", Color.red);
 
@@ -212,7 +239,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		File temp = new File("src/test/resources/site/app/data/vs1.json");
 
 		OutputStream os = new FileOutputStream(temp);
-		JSONVisualStyleWriter writer = new JSONVisualStyleWriter(os, jsMapper, styles);
+		CytoscapeJsVisualStyleWriter writer = new CytoscapeJsVisualStyleWriter(os, jsMapper, styles, lexicon);
 		writer.run(tm);
 		testGeneratedJSONFile(temp);
 	}
@@ -240,8 +267,41 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		final JsonNode style1 = root.get(0);
 		assertEquals("vs1", style1.get("title").asText());
 		final JsonNode styleObject = style1.get("style");
-		
 		assertNotNull(styleObject);
 
+		int elementSize = styleObject.size();
+//		final JsonNode nodeSelector = styleObject.get("node");
+//		assertNotNull(nodeSelector);
+		
+		JsonNode nodes = null;
+		JsonNode edges = null;
+		
+		for(JsonNode jNode: styleObject) {
+			final JsonNode css = jNode.get("css");
+			final JsonNode selectorType = jNode.get("selector");
+			System.out.println(selectorType.asText());
+			if(selectorType.asText().equals("node")) {
+				nodes = jNode;
+			} else if(selectorType.asText().equals("edge")) {
+				edges = jNode;
+			}
+		}
+	
+		assertNotNull(nodes);
+		assertNotNull(edges);
+		
+		final JsonNode nodeCSS = nodes.get("css");
+		final JsonNode edgeCSS = edges.get("css");
+	
+		testNodeDefaults(nodeCSS);
+		testEdgeDefaults(edgeCSS);
+	}
+	
+	private void testNodeDefaults(JsonNode nodeCSS) throws Exception {
+		assertEquals("rgb(0,0,255)", nodeCSS.get("border-color").asText());
+	}
+	
+	private void testEdgeDefaults(JsonNode edgeCSS) throws Exception {
+		
 	}
 }

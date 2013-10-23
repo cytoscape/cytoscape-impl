@@ -19,11 +19,17 @@ import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
 import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
+import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
+import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
+import org.cytoscape.filter.internal.view.IconManager;
+import org.cytoscape.filter.internal.view.IconManagerImpl;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
+import org.cytoscape.filter.internal.view.ViewUpdater;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.mockito.Mock;
@@ -39,13 +45,17 @@ public class UiScaffold {
 	void start() {
 		MockitoAnnotations.initMocks(this);
 		
+		Random random = new Random(0);
+
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
 		CyNetwork network = networkTestSupport.getNetwork();
+		CyTable nodeTable = network.getDefaultNodeTable();
+		nodeTable.createColumn("Score", Double.class, false);
 		for (int i = 0; i < TOTAL_NODES; i++) {
-			network.addNode();
+			CyNode node = network.addNode();
+			network.getRow(node).set("Score", random.nextGaussian());
 		}
 		
-		Random random = new Random(0);
 		List<CyNode> nodes = network.getNodeList();
 		for (int i = 0; i < TOTAL_EDGES; i++) {
 			CyNode source = nodes.get(random.nextInt(nodes.size()));
@@ -63,16 +73,21 @@ public class UiScaffold {
 		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
 		transformerManager.registerTransformerFactory(new AttributeFilterFactory(), properties);
 		transformerManager.registerTransformerFactory(new DegreeFilterFactory(), properties);
+		transformerManager.registerTransformerFactory(new TopologyFilterFactory(), properties);
 
 		ModelMonitor modelMonitor = new ModelMonitor();
 		modelMonitor.handleEvent(new SetCurrentNetworkEvent(applicationManager, network));
 		
+		IconManager iconManager = new IconManagerImpl();
+
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
-		transformerViewManager.registerTransformerViewFactory(new AttributeFilterViewFactory(modelMonitor), properties);
+		transformerViewManager.registerTransformerViewFactory(new AttributeFilterViewFactory(modelMonitor, iconManager), properties);
 		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);
-		
-		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, applicationManager);
-		FilterPanel panel = new FilterPanel(controller);
+		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(), properties);
+
+		ViewUpdater viewUpdater = new ViewUpdater(applicationManager);
+		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, viewUpdater, modelMonitor);
+		FilterPanel panel = new FilterPanel(controller, iconManager, viewUpdater);
 		
 		JRootPane root = frame.getRootPane();
 		root.setLayout(new GridBagLayout());

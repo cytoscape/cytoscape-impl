@@ -1,7 +1,6 @@
 package org.cytoscape.filter.internal.attribute;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -17,25 +16,27 @@ import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.attribute.AttributeFilterView.AttributeComboBoxElement;
 import org.cytoscape.filter.internal.attribute.AttributeFilterView.PredicateElement;
-import org.cytoscape.filter.internal.prefuse.JRangeSlider;
-import org.cytoscape.filter.internal.prefuse.JRangeSliderExtended;
 import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
+import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.Matcher;
+import org.cytoscape.filter.internal.view.RangeChooser;
+import org.cytoscape.filter.internal.view.RangeChooserController;
+import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
+import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -46,11 +47,11 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 	ModelMonitor modelMonitor;
 	List<AttributeComboBoxElement> nameComboBoxModel;
 	List<PredicateElement> predicateComboBoxModel;
-	private boolean interactive;
+	private IconManager iconManager;
 	
-	public AttributeFilterViewFactory(ModelMonitor modelMonitor) {
+	public AttributeFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
 		this.modelMonitor = modelMonitor;
-		interactive = true;
+		this.iconManager = iconManager;
 		
 		nameComboBoxModel = modelMonitor.getAttributeComboBoxModel();
 		
@@ -68,38 +69,34 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 	}
 
 	@Override
-	public Component createView(Transformer<?, ?> transformer) {
+	public JComponent createView(Transformer<?, ?> transformer) {
 		AttributeFilter filter = (AttributeFilter) transformer;
 		Controller controller = new Controller(filter);
-		View view = new View(controller);
+		View view = new View(controller, iconManager);
 		modelMonitor.registerAttributeFilterView(view, controller);
 		return view;
 	}
 
 	class Controller implements AttributeFilterController {
 		private AttributeFilter filter;
-		private NumberRangeModel sliderModel;
-		private Number[] range;
+		private RangeChooserController chooserController;
 		
-		private boolean sliderActive;
-		
-		public Controller(AttributeFilter filter) {
+		public Controller(final AttributeFilter filter) {
 			this.filter = filter;
 
 			if (filter.getPredicate() == null) {
 				filter.setPredicate(Predicate.CONTAINS);
 			}
 			
-			sliderModel = new NumberRangeModel(0, 0, 0, 0);
-			
-			// Reuse range object during notifications to
-			// minimize heap allocations
-			range = new Number[2];
-		}
-		
-		@Override
-		public NumberRangeModel getSliderModel() {
-			return sliderModel;
+			final Number[] range = new Number[2];
+			chooserController = new RangeChooserController() {
+				@Override
+				public void handleRangeChanged(Number low, Number high) {
+					range[0] = low;
+					range[1] = high;
+					filter.setCriterion(range);
+				}
+			};
 		}
 		
 		@Override
@@ -128,37 +125,25 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			filter.setCriterion(text);
 		}
 		
-		public void sliderChanged() {
-			range[0] = (Number) sliderModel.getLowValue();
-			range[1] = (Number) sliderModel.getHighValue();
-			filter.setCriterion(range);
-		}
-
 		public void setAttributeName(String name) {
 			filter.setAttributeName(name);
 		}
 		
-		public void updateSliderModel() {
-			if (!sliderActive) {
-				return;
-			}
-			
+		public void updateRange() {
 			String name = filter.getAttributeName();
 			Class<? extends CyIdentifiable> type = filter.getAttributeType();
 			if (name == null || type == null) {
-				sliderModel.setMinValue(0);
-				sliderModel.setMaxValue(0);
+				chooserController.setRange(0, 0, 0, 0);
 				return;
 			}
+			modelMonitor.recomputeAttributeRange(name, type);
 			Number[] range = modelMonitor.getAttributeRange(name, type);
 			if (range == null) {
-				sliderModel.setMinValue(0);
-				sliderModel.setMaxValue(0);
+				chooserController.setRange(0, 0, 0, 0);
 				return;
 			}
 			
-			sliderModel.setMinValue(range[0]);
-			sliderModel.setMaxValue(range[1]);
+			chooserController.setBounds(range[0], range[1]);
 		}
 		
 		public void setMatchType(Class<?> type) {
@@ -183,15 +168,17 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		}
 
 		void handleAttributeSelected(View view, JComboBox nameComboBox) {
+			RangeChooser rangeChooser = view.rangeChooser;
 			if (nameComboBox.getSelectedIndex() == 0) {
 				view.handleNoAttributeSelected();
-				sliderActive = false; 
+				chooserController.setInteractive(false, rangeChooser);
 				return;
 			}
 
 			nameComboBox.setForeground(Color.black);
 			
 			AttributeComboBoxElement selected = (AttributeComboBoxElement) nameComboBox.getSelectedItem();
+			String currentName = getModel().getAttributeName();
 			setAttributeName(selected.name);
 			setMatchType(selected.attributeType);
 			
@@ -202,12 +189,12 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				}
 				
 				view.handleStringAttributeSelected();
-				sliderActive = false;
+				chooserController.setInteractive(false, rangeChooser);
 			} else {
 				filter.setPredicate(Predicate.BETWEEN);
 				view.handleNumericAttributeSelected();
-				sliderActive = true;
-				updateSliderModel();
+				chooserController.setInteractive(view.isInteractive, rangeChooser);
+				updateRange();
 			}
 		}
 
@@ -219,7 +206,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			}
 			if (criterion instanceof Number[]) {
 				Number[] range = (Number[]) criterion;
-				NumberRangeModel model = (NumberRangeModel) view.getSlider().getModel();
+				NumberRangeModel model = (NumberRangeModel) chooserController.getSliderModel();
 				model.setLowValue(range[0]);
 				model.setHighValue(range[1]);
 			}
@@ -240,69 +227,88 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			updateSliderModel();
+			updateRange();
+		}
+
+		public void setInteractive(boolean isInteractive, View view) {
+			view.isInteractive = isInteractive;
+			switch (view.selectedAttribute) {
+			case NONE:
+				view.handleNoAttributeSelected();
+				break;
+			case NUMERIC:
+				view.handleNumericAttributeSelected();
+				chooserController.setInteractive(isInteractive, view.rangeChooser);
+				break;
+			case STRING:
+				view.handleStringAttributeSelected();
+				break;
+			}
+		}
+		
+		@Override
+		public RangeChooserController getRangeChooserController() {
+			return chooserController;
 		}
 	}
 	
 	@SuppressWarnings("serial")
-	class View extends JPanel implements AttributeFilterView {
+	class View extends JPanel implements AttributeFilterView, InteractivityChangedListener {
 		boolean optionsExpanded;
-		private JRangeSliderExtended slider;
-		private JTextField field;
+		private JTextField textField;
 		private JLabel arrowLabel;
 		private JCheckBox caseSensitiveCheckBox;
 		private JComboBox predicateComboBox;
 		private JComboBox nameComboBox;
 		private JPanel spacerPanel;
 		private JPanel predicatePanel;
+		private boolean isInteractive;
+		private SelectedAttributeType selectedAttribute;
+		private Controller controller;
+		private RangeChooser rangeChooser;
 		
-		public View(final Controller controller) {
-			slider = new JRangeSliderExtended(controller.getSliderModel(), JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
-			slider.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent event) {
-					controller.sliderChanged();
-				}
-			});
+		public View(final Controller controller, IconManager iconManager) {
+			this.controller = controller;
+			selectedAttribute = SelectedAttributeType.NONE;
 			
-			field = new JTextField();
-			field.addFocusListener(new FocusListener() {
+			ViewUtil.configureFilterView(this);
+			
+			textField = new JTextField();
+			textField.addFocusListener(new FocusListener() {
 
 				@Override
 				public void focusLost(FocusEvent event) {
-					if (!interactive) {
-						controller.setCriterion(View.this, field.getText());
-					}
+					controller.setCriterion(View.this, textField.getText());
 				}
 				
 				@Override
 				public void focusGained(FocusEvent event) {
 				}
 			});
-			field.getDocument().addDocumentListener(new DocumentListener() {
+			textField.getDocument().addDocumentListener(new DocumentListener() {
 				@Override
 				public void removeUpdate(DocumentEvent event) {
-					handleInteractiveUpdate(controller);
+					handleInteractiveUpdate();
 				}
 				
 				@Override
 				public void insertUpdate(DocumentEvent event) {
-					handleInteractiveUpdate(controller);
+					handleInteractiveUpdate();
 				}
 				
 				@Override
 				public void changedUpdate(DocumentEvent event) {
-					handleInteractiveUpdate(controller);
+					handleInteractiveUpdate();
 				}
 			});
 			
-			arrowLabel = new JLabel("◀");
-			Font arrowFont = arrowLabel.getFont().deriveFont(10.0f);
+			arrowLabel = new JLabel(IconManager.ICON_CARET_LEFT);
+			Font arrowFont = iconManager.getIconFont(16.0f);
 			arrowLabel.setFont(arrowFont);
 			arrowLabel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent event) {
-					handleArrowClicked(controller);
+					handleArrowClicked();
 				}
 			});
 			
@@ -332,45 +338,53 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			});
 			
 			spacerPanel = new JPanel();
+			spacerPanel.setOpaque(false);
+			
 			predicatePanel = new JPanel();
+			predicatePanel.setOpaque(false);
 			predicatePanel.setLayout(new GridBagLayout());
 			
-			arrowLabel.setBackground(Color.red);
+			rangeChooser = new RangeChooser(controller.chooserController);
+			
 			setLayout(new GridBagLayout());
 			controller.synchronize(this);
 		}
 
-		void handleInteractiveUpdate(Controller controller) {
-			if (!interactive) {
+		void handleInteractiveUpdate() {
+			String text = textField.getText();
+			if (text == null || text.length() == 0) {
 				return;
 			}
-			controller.setCriterion(View.this, field.getText());
+			controller.setCriterion(View.this, text);
 		}
 
 		public JLabel getArrowLabel() {
 			return arrowLabel;
 		}
 
-		protected void handleArrowClicked(Controller controller) {
+		protected void handleArrowClicked() {
 			optionsExpanded = !optionsExpanded;
 			if (optionsExpanded) {
-				arrowLabel.setText("▼");				
+				arrowLabel.setText(IconManager.ICON_CARET_DOWN);
 			} else {
-				arrowLabel.setText("◀");				
+				arrowLabel.setText(IconManager.ICON_CARET_LEFT);
 			}
-			controller.handleAttributeSelected(this, nameComboBox);
+			handleStringAttributeSelected();
 		}
 
 		void handleNumericAttributeSelected() {
+			selectedAttribute = SelectedAttributeType.NUMERIC;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(slider, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-
-			slider.invalidate();
+			add(rangeChooser, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			controller.chooserController.setInteractive(isInteractive, rangeChooser);
+			revalidate();
 			validate();
+			repaint();
 		}
 
 		void handleStringAttributeSelected() {
+			selectedAttribute = SelectedAttributeType.STRING;
 			removeAll();
 			if (optionsExpanded) {
 				predicatePanel.removeAll();
@@ -380,24 +394,27 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				predicatePanel.add(arrowLabel, new GridBagConstraints(3, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
 				
 				add(predicatePanel, new GridBagConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				add(field, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+				add(textField, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 				add(caseSensitiveCheckBox, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			} else {
 				predicatePanel.removeAll();
 				predicatePanel.add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 				predicatePanel.add(spacerPanel, new GridBagConstraints(1, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 				predicatePanel.add(arrowLabel, new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
-				predicatePanel.add(field, new GridBagConstraints(0, 1, 3, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+				predicatePanel.add(textField, new GridBagConstraints(0, 1, 3, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 				
 				add(predicatePanel, new GridBagConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			}
+			predicatePanel.invalidate();
 			validate();
 		}
 
 		private void handleNoAttributeSelected() {
+			selectedAttribute = SelectedAttributeType.NONE;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(spacerPanel, new GridBagConstraints(1, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			invalidate();
 			validate();
 		}
 		
@@ -408,7 +425,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		
 		@Override
 		public JTextField getField() {
-			return field;
+			return textField;
 		}
 		
 		@Override
@@ -422,8 +439,14 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		}
 		
 		@Override
-		public JRangeSliderExtended getSlider() {
-			return slider;
+		public void handleInteractivityChanged(boolean isInteractive) {
+			controller.setInteractive(isInteractive, this);
 		}
+	}
+	
+	private enum SelectedAttributeType {
+		NONE,
+		NUMERIC,
+		STRING,
 	}
 }

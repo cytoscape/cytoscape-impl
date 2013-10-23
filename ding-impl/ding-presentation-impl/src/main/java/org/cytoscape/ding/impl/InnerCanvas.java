@@ -1077,7 +1077,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					chosenEdge = getChosenEdge();
 				}
 	
-				if ((!e.isShiftDown()) // If shift is down never unselect.
+				if ((!e.isShiftDown() && !e.isMetaDown()) // If shift is down never unselect.
 				    && (((chosenNode < 0) && (chosenEdge < 0) && (chosenAnchor < 0)) // Mouse missed all.
 				       // Not [we hit something but it was already selected].
 				       || !( ((chosenNode >= 0) && m_view.getDNodeView(chosenNode).isSelected())

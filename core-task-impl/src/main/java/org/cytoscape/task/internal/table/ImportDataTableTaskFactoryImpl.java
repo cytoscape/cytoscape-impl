@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -63,6 +64,10 @@ public class ImportDataTableTaskFactoryImpl extends AbstractTableTaskFactory imp
 		return new TaskIterator(new ImportDataTableTask(table, rootNetMgr, networkManager));
 	}
 
+	@Override
+	public TaskIterator createTaskIterator(CyTableReader reader){
+		return new TaskIterator(new ImportDataTableTask(reader, rootNetMgr, networkManager));
+	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTable globalTable,
@@ -110,8 +115,8 @@ public class ImportDataTableTaskFactoryImpl extends AbstractTableTaskFactory imp
 			chooser.setSelectedValue("To a Network Collection");
 		m.put("ImportTypeChooser", chooser);
 		m.put("NetworkList", networksListTunable);
-		m.put("ColumnList", columnNamesList);
-		m.put("RootNetworkList", rootNetworkList);
+		m.put("KeyColumnForMapping", columnNamesList);
+		m.put("NetworkCollectionsList", rootNetworkList);
 		
 		return tunableSetter.createTaskIterator(createTaskIterator(globalTable), m);
 		

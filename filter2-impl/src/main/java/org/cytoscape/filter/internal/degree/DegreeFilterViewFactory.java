@@ -1,6 +1,5 @@
 package org.cytoscape.filter.internal.degree;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -8,21 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.degree.DegreeFilterView.EdgeTypeElement;
-import org.cytoscape.filter.internal.prefuse.JRangeSlider;
-import org.cytoscape.filter.internal.prefuse.JRangeSliderExtended;
-import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
+import org.cytoscape.filter.internal.view.RangeChooser;
+import org.cytoscape.filter.internal.view.RangeChooserController;
+import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
+import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.model.CyEdge.Type;
 
@@ -46,7 +45,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 	}
 
 	@Override
-	public Component createView(Transformer<?, ?> transformer) {
+	public JComponent createView(Transformer<?, ?> transformer) {
 		DegreeFilter filter = (DegreeFilter) transformer;
 		Controller controller = new Controller(filter);
 		View view = new View(controller);
@@ -56,10 +55,10 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 
 	class Controller implements DegreeFilterController {
 		private DegreeFilter filter;
-		private NumberRangeModel sliderModel;
-		private Number[] range;
+		private RangeChooserController chooserController;
+		private boolean isInteractive;
 
-		public Controller(DegreeFilter filter) {
+		public Controller(final DegreeFilter filter) {
 			this.filter = filter;
 			
 			int minimum = modelMonitor.getMinimumDegree();
@@ -85,19 +84,16 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				highValue = maximum;
 			}
 			
-			sliderModel = new NumberRangeModel(lowValue, highValue, minimum, maximum);
-			range = new Number[2];
-		}
-
-		@Override
-		public NumberRangeModel getSliderModel() {
-			return sliderModel;
-		}
-
-		public void sliderChanged() {
-			range[0] = (Number) sliderModel.getLowValue();
-			range[1] = (Number) sliderModel.getHighValue();
-			filter.setCriterion(range);
+			final Number[] range = new Number[2];
+			chooserController = new RangeChooserController() {
+				@Override
+				protected void handleRangeChanged(Number low, Number high) {
+					range[0] = low;
+					range[1] = high;
+					filter.setCriterion(range);
+				}
+			};
+			chooserController.setRange(lowValue, highValue, minimum, maximum);
 		}
 
 		public void synchronize(View view) {
@@ -111,8 +107,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			Object criterion = filter.getCriterion();
 			if (criterion instanceof Number[]) {
 				Number[] range = (Number[]) criterion;
-				sliderModel.setLowValue(range[0]);
-				sliderModel.setHighValue(range[1]);
+				chooserController.setSelection(range[0], range[1]);
 			}
 			
 			DynamicComboBoxModel.select(view.edgeTypeComboBox, 0, new Matcher<EdgeTypeElement>() {
@@ -121,30 +116,47 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 					return filter.getEdgeType().equals(item.type);
 				}
 			});
+			
+			setInteractive(isInteractive, view);
+		}
+
+		public void setInteractive(boolean isInteractive, View view) {
+			this.isInteractive = isInteractive;
+			chooserController.setInteractive(isInteractive, view.chooser);
+		}
+		
+		@Override
+		public RangeChooserController getRangeChooserController() {
+			return chooserController;
 		}
 	}
 	
 	@SuppressWarnings("serial")
-	class View extends JPanel implements DegreeFilterView {
+	class View extends JPanel implements DegreeFilterView, InteractivityChangedListener {
 		private JComboBox edgeTypeComboBox;
+		private Controller controller;
+		private RangeChooser chooser;
 
 		public View(final Controller controller) {
+			this.controller = controller;
+			
+			ViewUtil.configureFilterView(this);
+			
 			edgeTypeComboBox = new JComboBox(new DynamicComboBoxModel<EdgeTypeElement>(edgeTypeComboBoxModel));
 			
-			JRangeSliderExtended slider = new JRangeSliderExtended(controller.getSliderModel(), JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
-			slider.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent event) {
-					controller.sliderChanged();
-				}
-			});
+			chooser = new RangeChooser(controller.chooserController);
 			
 			setLayout(new GridBagLayout());
 			add(new JLabel("Degree"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(edgeTypeComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(slider, new GridBagConstraints(2, 0, 1, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(chooser, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
 			
 			controller.synchronize(this);
+		}
+		
+		@Override
+		public void handleInteractivityChanged(boolean isInteractive) {
+			controller.setInteractive(isInteractive, this);
 		}
 	}
 }

@@ -2,8 +2,12 @@ package org.cytoscape.view.vizmap.gui.internal.util;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Iterator;
+import java.util.List;
 
 import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 
 public final class VisualPropertyUtil {
 
@@ -25,6 +29,56 @@ public final class VisualPropertyUtil {
 		}
 		
 		return s;
+	}
+	
+	public static Double getMaxValue(final ContinuousMapping<?, ?> mapping) {
+		Double max = null;
+		
+		if (mapping != null) {
+			final List<?> points = mapping.getAllPoints();
+			
+			if (!points.isEmpty()) {
+				max = Double.NEGATIVE_INFINITY;
+				final Iterator<?> iterator = points.iterator();
+				
+				while (iterator.hasNext()) {
+					final ContinuousMappingPoint<?, ?> p = (ContinuousMappingPoint<?, ?>) iterator.next();
+					final Object value = p.getValue();
+					
+					 if (value instanceof Number) {
+						 final double v = ((Number)value).doubleValue();
+						 max = Math.max(v, max);
+					 }
+				}
+			}
+		}
+		
+		return max;
+	}
+	
+	public static Double getMinValue(final ContinuousMapping<?, ?> mapping) {
+		Double min = null;
+		
+		if (mapping != null) {
+			final List<?> points = mapping.getAllPoints();
+			
+			if (!points.isEmpty()) {
+				min = Double.POSITIVE_INFINITY;
+				final Iterator<?> iterator = points.iterator();
+				
+				while (iterator.hasNext()) {
+					final ContinuousMappingPoint<?, ?> p = (ContinuousMappingPoint<?, ?>) iterator.next();
+					final Object value = p.getValue();
+					
+					if (value instanceof Number) {
+						final double v = ((Number)value).doubleValue();
+						min = Math.min(v, min);
+					}
+				}
+			}
+		}
+		
+		return min;
 	}
 	
 	private VisualPropertyUtil() {

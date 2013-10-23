@@ -339,6 +339,23 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			final CyNetwork curNet = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
 			
 			if (curNet != null) {
+				final ContinuousMapping cm1 = (ContinuousMapping<?, ?>) source;
+				final ContinuousMapping cm2 = (ContinuousMapping<?, ?>) target;
+				final List<ContinuousMappingPoint<?, ?>> points1 = cm1.getAllPoints();
+				
+				if (points1 == null || points1.isEmpty())
+					return;
+				
+				// Check if source point values are valid
+				for (final ContinuousMappingPoint<?, ?> p : points1) {
+					final Object v = p.getValue();
+					
+					if (!(v instanceof Number)
+							|| Double.isInfinite(((Number) v).doubleValue())
+							|| Double.isNaN(((Number) v).doubleValue()))
+						return; // Do not copy!
+				}
+				
 				final VisualProperty<?> vp = source.getVisualProperty();
 				final CyTable dataTable = curNet.getTable(vp.getTargetDataType(), CyNetwork.DEFAULT_ATTRS);
 				final CyColumn col = dataTable.getColumn(target.getMappingColumnName());
@@ -358,13 +375,6 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 						minTgtVal = Math.min(minTgtVal, val);
 					}
 				}
-				
-				final ContinuousMapping cm1 = (ContinuousMapping<?, ?>) source;
-				final ContinuousMapping cm2 = (ContinuousMapping<?, ?>) target;
-				final List<ContinuousMappingPoint<?, ?>> points1 = cm1.getAllPoints();
-				
-				if (points1 == null || points1.isEmpty())
-					return;
 				
 				// Make sure the source points are sorted by their values
 				final TreeSet<ContinuousMappingPoint<?, ?>> srcPoints = new TreeSet<ContinuousMappingPoint<?, ?>>(
@@ -401,7 +411,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 					final double f = MathUtil.invLinearInterp(srcVal, minSrcVal, maxSrcVal);
 					final double tgtVal = MathUtil.linearInterp(f, minTgtVal, maxTgtVal);
 					
-					cm2.addPoint(tgtVal, mp.getRange());
+					if (!Double.isNaN(tgtVal) && !Double.isInfinite(tgtVal))
+						cm2.addPoint(tgtVal, mp.getRange());
 				}
 			}
 		} else if (source instanceof DiscreteMapping && target instanceof DiscreteMapping) {

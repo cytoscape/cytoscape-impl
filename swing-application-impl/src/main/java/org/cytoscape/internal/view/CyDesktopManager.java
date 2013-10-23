@@ -25,55 +25,60 @@ package org.cytoscape.internal.view;
  */
 
 
-
 import javax.swing.*;
 import java.awt.*;
+import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
+import org.cytoscape.view.model.CyNetworkView;
 
 /**
  *
   */
-public class CyDesktopManager  {
+public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	
-	public static enum Arrange {
-		GRID,CASCADE,HORIZONTAL,VERTICAL
-	}
 	public static int MINIMUM_WIN_WIDTH = 200;
 	public static int MINIMUM_WIN_HEIGHT = 200;
+	public final CytoscapeDesktop desk;
+	public final NetworkViewManager viewManager;
 		
-	private CyDesktopManager() { }
-			
-	//Closes all open windows
-	public  void closeAllWindows(CytoscapeDesktop desk) {
+	public CyDesktopManager(final CytoscapeDesktop desk, final NetworkViewManager viewManager) { 
+		this.desk = desk;
+		this.viewManager = viewManager;
+	}
+
+	@Override
+	public Dimension getDesktopViewAreaSize() {
 		JDesktopPane desktop = desk.getNetworkViewManager().getDesktopPane();
-		JInternalFrame[] allFrames = desktop.getAllFrames();
-		for (int i= allFrames.length -1; i>=0; i--) {
-			allFrames[i].dispose();			
-		}
-	}
 		
-	// Implementation of grid layout algorithm
-	// gridLayout -- an int array-- int[i] holds the number of row for column i 
-	private static void getGridLayout(final int pTotal, final int pCol, final int pRow, int[] gridLayout) {
-		if (pTotal > pRow) {
-			int row = -1;
-			if (pTotal%pCol == 0) {
-				row = pTotal/pCol;
-				gridLayout[pCol-1] = row;
-			}
-			else {
-				row = pRow;				
-				gridLayout[pCol-1] = pRow;
-			}
-			getGridLayout(pTotal-row, pCol-1,row, gridLayout);
-		}
-		else {
-			gridLayout[0] = pTotal;
-		}		
+		return desktop.getSize();
 	}
-	
+
+	@Override
+	public Rectangle getBounds (CyNetworkView view) {
+		try {
+			JInternalFrame frame = viewManager.getInternalFrame(view);
+			if (frame != null)
+				return frame.getBounds();
+		} catch (Exception e) {
+			// Fall through
+		}
+		return null;
+	}
+
+	@Override
+	public void setBounds (CyNetworkView view, Rectangle bounds) {
+		try {
+			JInternalFrame frame = viewManager.getInternalFrame(view);
+			if (frame == null)
+				return;
+			frame.setBounds(bounds);
+		} catch (Exception e) {
+			return;
+		}	
+	}
 	
 	// Arrange all windows in the desktop according to the given style
-	public static void arrangeFrames(CytoscapeDesktop desk, Arrange pStyle) {
+	@Override
+	public void arrangeWindows(ArrangeType pStyle) {
 		JDesktopPane desktop = desk.getNetworkViewManager().getDesktopPane();
 		
 		final Dimension desktopSize = desktop.getSize();
@@ -84,7 +89,7 @@ public class CyDesktopManager  {
 		if ( frameCount == 0)
 			return;
 
-		if (pStyle == Arrange.CASCADE) {
+		if (pStyle == ArrangeType.CASCADE) {
 			int delta_x = 20;
 			int delta_y = 20;
 			int delta_block = 50;
@@ -169,7 +174,7 @@ public class CyDesktopManager  {
 				allFrames[frameCount-1-i].setBounds(x[i], y[i], w[i], h[i]);
 			}
 		}
-		else if (pStyle == Arrange.GRID) {
+		else if (pStyle == ArrangeType.GRID) {
 			// Determine the max_col and max_row for grid layout 
 			int maxCol = (new Double(Math.ceil(Math.sqrt(frameCount)))).intValue();
 			int maxRow = maxCol;
@@ -198,7 +203,7 @@ public class CyDesktopManager  {
 				}				
 			}
 		}
-		else if (pStyle == Arrange.HORIZONTAL) {
+		else if (pStyle == ArrangeType.HORIZONTAL) {
 			int x = 0;
 			int y = 0;
 			int w = desktopSize.width;
@@ -225,7 +230,7 @@ public class CyDesktopManager  {
 				allFrames[frameCount-i-1].setBounds(x, y, w, h);
 			}
 		}
-		else if (pStyle == Arrange.VERTICAL) {
+		else if (pStyle == ArrangeType.VERTICAL) {
 			int x = 0;
 			int y = 0;
 			int w = desktopSize.width/frameCount;
@@ -256,6 +261,35 @@ public class CyDesktopManager  {
 		
 		// Clean up.
 		System.gc();
+	}
+			
+	//Closes all open windows
+	public  void closeAllWindows() {
+		JDesktopPane desktop = desk.getNetworkViewManager().getDesktopPane();
+		JInternalFrame[] allFrames = desktop.getAllFrames();
+		for (int i= allFrames.length -1; i>=0; i--) {
+			allFrames[i].dispose();			
+		}
+	}
+		
+	// Implementation of grid layout algorithm
+	// gridLayout -- an int array-- int[i] holds the number of row for column i 
+	private void getGridLayout(final int pTotal, final int pCol, final int pRow, int[] gridLayout) {
+		if (pTotal > pRow) {
+			int row = -1;
+			if (pTotal%pCol == 0) {
+				row = pTotal/pCol;
+				gridLayout[pCol-1] = row;
+			}
+			else {
+				row = pRow;				
+				gridLayout[pCol-1] = pRow;
+			}
+			getGridLayout(pTotal-row, pCol-1,row, gridLayout);
+		}
+		else {
+			gridLayout[0] = pTotal;
+		}		
 	}
 	
 }

@@ -28,11 +28,16 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelComponentName;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
 import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
+import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
+import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
+import org.cytoscape.filter.internal.view.IconManager;
+import org.cytoscape.filter.internal.view.IconManagerImpl;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
 import org.cytoscape.filter.model.TransformerFactory;
 import org.cytoscape.filter.model.TransformerSource;
@@ -55,16 +60,22 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(context, new DegreeFilterFactory(), TransformerFactory.class, new Properties());
 		registerService(context, new AttributeFilterFactory(), TransformerFactory.class, new Properties());
+		registerService(context, new TopologyFilterFactory(), TransformerFactory.class, new Properties());
 		
 		ModelMonitor modelMonitor = new ModelMonitor();
 		registerAllServices(context, modelMonitor, new Properties());
 		
+		IconManager iconManager = new IconManagerImpl();
+		
 		registerService(context, new DegreeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
-		registerService(context, new AttributeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
+		registerService(context, new AttributeFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
+		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, new Properties());
 
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
-		CytoPanelComponent filterPanel = new FilterCytoPanelComponent(transformerManager, transformerViewManager, applicationManager);
-		registerService(context, filterPanel, CytoPanelComponent.class, new Properties());
+		CytoPanelComponent filterPanel = new FilterCytoPanelComponent(transformerManager, transformerViewManager, applicationManager, iconManager, modelMonitor);
+		Properties filterPanelProps = new Properties();
+		filterPanelProps.setProperty("cytoPanelComponentName", CytoPanelComponentName.FILTER.toString());
+		registerService(context, filterPanel, CytoPanelComponent.class, filterPanelProps);
 	}
 }
 

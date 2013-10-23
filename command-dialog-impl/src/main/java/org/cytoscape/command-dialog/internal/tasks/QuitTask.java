@@ -15,6 +15,6 @@ public class QuitTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		shutdown.exit(0);
+		shutdown.exit(0, true);
 	}
 }

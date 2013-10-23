@@ -104,12 +104,12 @@ public class CyActivator extends AbstractCyActivator {
 		visualStyleUtil.getBinarySifVisualStyle(); //initialize
 			
 		// create the biopax reader object
-		BioPaxReader biopaxReaderFactory = new BioPaxReader(bioPaxFilter, cyServices, visualStyleUtil);		
+		BioPaxReader biopaxReader = new BioPaxReader(bioPaxFilter, cyServices, visualStyleUtil);		
 		// register/export osgi services
 		Properties props = new Properties();
 		props.setProperty("readerDescription","BioPAX reader");
 		props.setProperty("readerId","biopaxNetworkReader");
-		registerAllServices(bc, biopaxReaderFactory, props);		
+		registerAllServices(bc, biopaxReader, props);		
 	}
 }
 

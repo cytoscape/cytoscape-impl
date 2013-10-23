@@ -251,6 +251,12 @@ public class VizMapPropertyBuilder {
 					}
 				}
 			}
+			
+			// Also keep current mapping entries that have non-null values
+			for (final Map.Entry<K, V> entry : ((DiscreteMapping<K, V>)visualMapping).getAll().entrySet()) {
+				if (entry.getValue() != null)
+					attrSet.add(entry.getKey());
+			}
 
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, propertySheetPanel);
 		} else if (visualMapping instanceof ContinuousMapping) {
@@ -418,15 +424,14 @@ public class VizMapPropertyBuilder {
 
 			// TODO: Is there a way to fix it when opening 2.x sessions?
 			// Even if the CyColumn type is a List of Numbers or Booleans, the
-			// Visual Style Serializer might have built the discrete mapping
-			// with keys as Strings!
-			// In 2.x the session_vizmap.props format does not specify the type
-			// of the List-type attributes.
+			// Visual Style Serializer might have built the discrete mapping with keys as Strings!
+			// In 2.x the session_vizmap.props format does not specify the type of the List-type attributes.
 			// Example:
-			// "nodeLabelColor.MyStyle-Node Label Color-Discrete Mapper.mapping.controllerType=-2"
-			// In that case "controllerType=-2" means that the attribute type is
-			// List, but we don't know the
-			// type of the list items.
+			// 
+			//     nodeLabelColor.MyStyle-Node Label Color-Discrete Mapper.mapping.controllerType=-2
+			//
+			// In that case "controllerType=-2" means that the attribute type is List,
+			// but we don't know the type of the list items.
 			if (mapping.getMappingColumnType() == String.class && !(key instanceof String))
 				val = discMapping.get(key.toString());
 			else
