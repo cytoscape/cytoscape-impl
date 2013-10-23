@@ -66,18 +66,16 @@ public class ValidatedObjectAndEditString implements Comparable{
     @Override
     public int compareTo(Object o) {
         ValidatedObjectAndEditString v = (ValidatedObjectAndEditString)o;
-        try
+        if( validatedObject instanceof Comparable && v.validatedObject instanceof Comparable)
         {
-            Double d1 = Double.parseDouble(getEditString());
-            Double d2 = Double.parseDouble(v.getEditString());
-            return d1.compareTo(d2);
-
+            Comparable c1 = (Comparable)validatedObject;
+            Comparable c2 = (Comparable)v.validatedObject;
+            return c1.compareTo(c2);
         }
-        catch(NumberFormatException nfe)
+        else
         {
             return getEditString().compareTo(v.getEditString());
         }
-
     }
 
 
