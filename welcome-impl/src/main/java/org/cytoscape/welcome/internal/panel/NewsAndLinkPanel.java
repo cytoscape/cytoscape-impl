@@ -33,10 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.CyVersion;
@@ -119,7 +116,8 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 				"Latest News", TitledBorder.LEFT, TitledBorder.CENTER, REGULAR_FONT, REGULAR_FONT_COLOR));
 		
 		add(linkPanel);
-		add(statusPanel);
+        JScrollPane statusScrollPane = new JScrollPane(statusPanel);
+		add(statusScrollPane);
 		
 	}
 
