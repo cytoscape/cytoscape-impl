@@ -371,8 +371,11 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				for (final Object o : valueList) {
 					if (o instanceof Number) {
 						double val = ((Number) o).doubleValue();
-						maxTgtVal = Math.max(maxTgtVal, val);
-						minTgtVal = Math.min(minTgtVal, val);
+						
+						if (!Double.isNaN(val)) {
+							maxTgtVal = Math.max(maxTgtVal, val);
+							minTgtVal = Math.min(minTgtVal, val);
+						}
 					}
 				}
 				

@@ -29,22 +29,23 @@ public final class NumberConverter {
 	@SuppressWarnings("unchecked")
 	public static final <T> T convert(final Class<T> type, final Number value) {
 		T converted = null;
-		if(type == Double.class) {
+		
+		if (type == Double.class || type == Number.class) {
 			Double doubleValue = value.doubleValue();
 			converted = (T) doubleValue;
-		} else if(type == Integer.class) {
+		} else if (type == Integer.class) {
 			Integer intValue = value.intValue();
 			converted = (T) intValue;
-		} else if(type == Float.class) {
+		} else if (type == Float.class) {
 			Float floatValue = value.floatValue();
 			converted = (T) floatValue;
-		} else if(type == Byte.class) {
+		} else if (type == Byte.class) {
 			Byte byteValue = value.byteValue();
 			converted = (T) byteValue;
-		} else if(type == Long.class){
+		} else if (type == Long.class){
 			Long longValue = value.longValue();
 			converted = (T) longValue;
-		} else if(type == Short.class) {
+		} else if (type == Short.class) {
 			Short shortValue = value.shortValue();
 			converted = (T) shortValue;
 		} else {
