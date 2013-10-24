@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelComponentName;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
 import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
@@ -73,9 +72,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
 		CytoPanelComponent filterPanel = new FilterCytoPanelComponent(transformerManager, transformerViewManager, applicationManager, iconManager, modelMonitor);
-		Properties filterPanelProps = new Properties();
-		filterPanelProps.setProperty("cytoPanelComponentName", CytoPanelComponentName.FILTER.toString());
-		registerService(context, filterPanel, CytoPanelComponent.class, filterPanelProps);
+		registerService(context, filterPanel, CytoPanelComponent.class, new Properties());
 	}
 }
 

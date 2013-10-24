@@ -52,7 +52,6 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelComponentName;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
@@ -400,22 +399,12 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	public void addCytoPanelComponent(CytoPanelComponent cp, Dictionary<?, ?> props) {
 		CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
-		CytoPanelComponentName cpCompName = getCytoPanelComponentName(props);
-		
-		if (cpCompName != null)
-			impl.add(cp, (CytoPanelComponentName) cpCompName);
-		else
-			impl.add(cp);
+		impl.add(cp);
 	}
 
 	public void removeCytoPanelComponent(CytoPanelComponent cp, Dictionary<?, ?> props) {
 		CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
-		CytoPanelComponentName cpCompName = getCytoPanelComponentName(props);
-		
-		if (cpCompName != null)
-			impl.remove(cp, (CytoPanelComponentName) cpCompName);
-		else
-			impl.remove(cp);
+		impl.remove(cp);
 	}
 
 	@Override
@@ -469,18 +458,5 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				setTitle(TITLE_PREFIX_STRING + sessionName);
 			}
 		});
-	}
-	
-	private CytoPanelComponentName getCytoPanelComponentName(Dictionary<?, ?> props) {
-		String name = (String) props.get("cytoPanelComponentName");
-		CytoPanelComponentName cpCompName = null;
-		
-		try {
-			cpCompName = name != null ? CytoPanelComponentName.valueOf(name) : null;
-		} catch (IllegalArgumentException e) {
-			logger.error("Invalid CytoPanelComponentName: " + name);
-		}
-		
-		return cpCompName;
 	}
 }

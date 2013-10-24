@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelComponentName;
+import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -49,19 +49,14 @@ public class CytoscapeDesktopTest {
 	
 	@Test
 	public void testAddCytoPanelComponent() {
-		Properties props = new Properties();
-		
-		DummyCytoPanelComponent c1 = new DummyCytoPanelComponent();
-		props.put("cytoPanelComponentName", CytoPanelComponentName.NETWORK.toString());
-		desktop.addCytoPanelComponent(c1, props);
+		DummyCytoPanelComponent2 c1 = new DummyCytoPanelComponent2("org.cytoscape.Comp1");
+		desktop.addCytoPanelComponent(c1, new Properties());
 		
 		DummyCytoPanelComponent c2 = new DummyCytoPanelComponent();
-		props.put("cytoPanelComponentName", CytoPanelComponentName.STYLE.toString());
-		desktop.addCytoPanelComponent(c2, props);
+		desktop.addCytoPanelComponent(c2, new Properties());
 		
-		DummyCytoPanelComponent c3 = new DummyCytoPanelComponent();
-		props.put("cytoPanelComponentName", CytoPanelComponentName.FILTER.toString());
-		desktop.addCytoPanelComponent(c3, props);
+		DummyCytoPanelComponent2 c3 = new DummyCytoPanelComponent2("org.cytoscape.Comp2");
+		desktop.addCytoPanelComponent(c3, new Properties());
 		
 		// Test:
 		CytoPanel cp = desktop.getCytoPanel(CytoPanelName.WEST);
@@ -71,17 +66,23 @@ public class CytoscapeDesktopTest {
 		assertEquals(1, cp.indexOfComponent(c2.getComponent()));
 		assertEquals(2, cp.indexOfComponent(c3.getComponent()));
 		
-		assertEquals(0, cp.indexOfComponent(CytoPanelComponentName.NETWORK));
-		assertEquals(1, cp.indexOfComponent(CytoPanelComponentName.STYLE));
-		assertEquals(2, cp.indexOfComponent(CytoPanelComponentName.FILTER));
+		assertEquals(0, cp.indexOfComponent(c1.getIdentifier()));
+		assertEquals(1, cp.indexOfComponent(c2.getComponent()));
+		assertEquals(2, cp.indexOfComponent(c3.getIdentifier()));
 		
 		// The other CytoPanels should not be affected
 		cp = desktop.getCytoPanel(CytoPanelName.EAST);
 		assertEquals(0, cp.getCytoPanelComponentCount());
-		assertEquals(-1, cp.indexOfComponent(CytoPanelComponentName.NETWORK));
+		assertEquals(-1, cp.indexOfComponent(c1.getIdentifier()));
 		
 		cp = desktop.getCytoPanel(CytoPanelName.SOUTH);
 		assertEquals(0, cp.getCytoPanelComponentCount());
+	}
+	
+	@Test(expected=NullPointerException.class)
+	public void testAddCytoPanelComponent2_NullIdentifier() {
+		DummyCytoPanelComponent2 c = new DummyCytoPanelComponent2(null);
+		desktop.addCytoPanelComponent(c, new Properties());
 	}
 	
 	@SuppressWarnings("serial")
@@ -105,6 +106,21 @@ public class CytoscapeDesktopTest {
 		@Override
 		public Icon getIcon() {
 			return null;
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	static class DummyCytoPanelComponent2 extends DummyCytoPanelComponent implements CytoPanelComponent2 {
+		
+		private final String identifier;
+		
+		public DummyCytoPanelComponent2(String identifier) {
+			this.identifier = identifier;
+		}
+		
+		@Override
+		public String getIdentifier() {
+			return identifier;
 		}
 	}
 }
