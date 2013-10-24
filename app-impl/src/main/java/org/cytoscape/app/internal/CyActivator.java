@@ -31,6 +31,7 @@ import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.app.internal.action.CitationsAction;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.manager.StartupMonitor;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.server.AddAccessControlAllowOriginHeaderAfterResponse;
 import org.cytoscape.app.internal.net.server.AppGetResponder;
@@ -144,6 +145,7 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
 
 public class CyActivator extends AbstractCyActivator {
@@ -384,9 +386,13 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		StartLevel startLevel = getService(bc, StartLevel.class);
+		PackageAdmin packageAdmin = getService(bc, PackageAdmin.class);
+		StartupMonitor startupMonitor = new StartupMonitor(bc, packageAdmin, cyEventHelperRef);
+		bc.addBundleListener(startupMonitor);
+		
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, 
-				cyApplicationConfigurationServiceRef, webQuerier, startLevel);
+				cyApplicationConfigurationServiceRef, webQuerier, startLevel, startupMonitor);
 		registerService(bc, appManager, AppManager.class, new Properties());
 		bc.addFrameworkListener(appManager);
 		

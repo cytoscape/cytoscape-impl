@@ -25,7 +25,6 @@ package org.cytoscape.app.internal.manager;
  */
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
@@ -40,6 +39,7 @@ import org.cytoscape.app.internal.exception.AppDisableException;
 import org.cytoscape.app.internal.exception.AppInstallException;
 import org.cytoscape.app.internal.exception.AppInstanceException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
+import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.slf4j.Logger;
@@ -135,7 +135,8 @@ public abstract class App {
 		DISABLED("Disabled"),
 		UNINSTALLED("Uninstalled"),
 		TO_BE_INSTALLED("Install on Restart"),
-		FILE_MOVED("File Moved (Uninstalled)");
+		FILE_MOVED("File Moved (Uninstalled)"),
+		FAILED_TO_START("Failed to Start");
 		
 		String readableStatus;
 		
@@ -542,7 +543,7 @@ public abstract class App {
 		
 		// Return false if different app names
 		if (appName.equalsIgnoreCase(other.appName)
-				&& version.equalsIgnoreCase(other.version)) {
+				&& WebQuerier.compareVersions(version, other.version) == 0) {
 
 			if (sha512Checksum != null && other.sha512Checksum != null) {
 				return (sha512Checksum.equalsIgnoreCase(other.sha512Checksum));
