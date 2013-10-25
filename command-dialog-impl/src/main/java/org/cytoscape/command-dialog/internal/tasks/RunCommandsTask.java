@@ -15,7 +15,9 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import org.cytoscape.commandDialog.internal.handlers.CommandHandler;
+import org.cytoscape.commandDialog.internal.handlers.MessageHandler;
 import org.cytoscape.commandDialog.internal.ui.CommandToolDialog;
+import org.cytoscape.commandDialog.internal.ui.ConsoleCommandHandler;
 
 public class RunCommandsTask extends AbstractTask {
 	CommandToolDialog dialog;
@@ -34,31 +36,47 @@ public class RunCommandsTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		BufferedReader reader;
 		try {
-			reader = new BufferedReader(new FileReader(file));
+			executeCommandScript(dialog, new ConsoleCommandHandler());
 		} catch (FileNotFoundException fnfe) {
 			arg0.showMessage(TaskMonitor.Level.ERROR, "No such file or directory: "+file.getPath());
 			return;
-		} 
+		} catch (IOException ioe) {
+			arg0.showMessage(TaskMonitor.Level.ERROR, "Unexpected I/O error: "+ioe.getMessage());
+		}
+	}
+
+	public void executeCommandScript(String fileName, CommandToolDialog dialog) {
+		file = new File(fileName);
+		ConsoleCommandHandler consoleHandler = new ConsoleCommandHandler();
+		try {
+			executeCommandScript(dialog, consoleHandler);
+		} catch (FileNotFoundException fnfe) {
+			System.err.println( "No such file or directory: "+file.getPath());
+		} catch (IOException ioe) {
+			System.err.println( "Unexpected I/O error: "+ioe.getMessage());
+		}
+	}
+
+	public void executeCommandScript(CommandToolDialog dialog, ConsoleCommandHandler consoleHandler) 
+	       throws FileNotFoundException, IOException {
+		BufferedReader reader;
+		reader = new BufferedReader(new FileReader(file));
 
 		if (dialog != null) {
 			// We have a GUI
 			dialog.pack();
 			dialog.setVisible(true);
-			
-		} else {
-			// Pure command line
 		}
-
-		try {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (dialog != null)
-					dialog.executeCommand(line);
+			
+		String line;
+		while ((line = reader.readLine()) != null) {
+			if (dialog != null) {
+				dialog.executeCommand(line);
+			} else {
+				consoleHandler.appendCommand(line);
+				handler.handleCommand((MessageHandler) consoleHandler, line);
 			}
-		} catch (IOException ioe) {
-			arg0.showMessage(TaskMonitor.Level.ERROR, "Unexpected I/O error: "+ioe.getMessage());
 		}
 	}
 }
