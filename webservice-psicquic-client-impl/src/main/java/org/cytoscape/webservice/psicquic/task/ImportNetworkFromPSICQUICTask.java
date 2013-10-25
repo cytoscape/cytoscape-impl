@@ -42,18 +42,20 @@ import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ImportNetworkFromPSICQUICTask extends AbstractTask {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ImportNetworkFromPSICQUICTask.class);
 
 	private final PSICQUICRestClient client;
 	private final CyNetworkManager manager;
 	private final RegistryManager registryManager;
-	
+
 	// TaskFactory for creating view
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 
@@ -62,27 +64,27 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 
 	private Set<String> searchResult;
 	private Map<String, CyNetwork> result;
-	
+
 	private SearchRecoredsTask searchTask;
-	
+
 	private final SearchMode mode;
 	private final boolean mergeNetworks;
-	
+
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
-	
+
 	private volatile boolean canceled = false;
-	
+
 	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
 			final CyNetworkManager manager, final RegistryManager registryManager, final Set<String> searchResult,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm, final boolean toCluster) {
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
+			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final boolean toCluster) {
 		this.client = client;
 		this.manager = manager;
 		this.registryManager = registryManager;
 		this.query = query;
 		this.mergeNetworks = toCluster;
-		
+
 		this.searchResult = searchResult;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
@@ -92,9 +94,9 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 
 	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
 			final CyNetworkManager manager, final RegistryManager registryManager, final SearchRecoredsTask searchTask,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm) {
-		
+			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
+			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
+
 		this.client = client;
 		this.manager = manager;
 		this.registryManager = registryManager;
@@ -103,7 +105,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		this.searchTask = searchTask;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
-		
+
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
 	}
@@ -113,13 +115,13 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 		taskMonitor.setTitle("Importing Interacitons from PSICQUIC Services");
 		taskMonitor.setStatusMessage("Loading interaction from remote service...");
 		taskMonitor.setProgress(0.01d);
-		
-		if(searchResult == null)
+
+		if (searchResult == null)
 			processSearchResult();
 		else
 			targetServices = searchResult;
-		
-		if(searchResult == null)
+
+		if (searchResult == null)
 			throw new NullPointerException("Could not find search result");
 		if (query == null)
 			throw new NullPointerException("Query is null");
@@ -127,12 +129,12 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			throw new NullPointerException("Target service set is null");
 
 		// Switch task type based on the user option.
-		
+
 		final Date date = new Date();
 		final SimpleDateFormat timestamp = new SimpleDateFormat("yyyy/MM/dd K:mm:ss a, z");
 		final String suffix = "(" + timestamp.format(date) + ")";
 		result = new HashMap<String, CyNetwork>();
-		if(mergeNetworks) {
+		if (mergeNetworks) {
 			final CyNetwork network = client.importMergedNetwork(query, targetServices, mode, taskMonitor);
 			network.getRow(network).set(CyNetwork.NAME, "Merged Network " + suffix);
 			addNetworkData(network);
@@ -140,7 +142,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 			result.put("clustered", network);
 		} else {
 			final Collection<CyNetwork> networks = client.importNetworks(query, targetServices, mode, taskMonitor);
-			for(CyNetwork network: networks) {
+			for (CyNetwork network : networks) {
 				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class) + " " + suffix;
 				network.getRow(network).set(CyNetwork.NAME, networkName);
 				addNetworkData(network);
@@ -148,38 +150,30 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 				result.put(networkName, network);
 			}
 		}
-		if(canceled) {
-			result.clear();
-			result = null;
-			return;
-		}
-		
-		if (!canceled) {
-			// Check Visual Style exists or not
-			VisualStyle psiStyle = null;
-			for(VisualStyle style: vmm.getAllVisualStyles()) {
-				if(style.getTitle().equals(PSIMI25VisualStyleBuilder.DEF_VS_NAME)) {
-					psiStyle = style;
-					break;
-				}
+
+		// Check Visual Style exists or not
+		VisualStyle psiStyle = null;
+		for (VisualStyle style : vmm.getAllVisualStyles()) {
+			if (style.getTitle().equals(PSIMI25VisualStyleBuilder.DEF_VS_NAME)) {
+				psiStyle = style;
+				break;
 			}
-			
-			if(psiStyle == null) {
-				psiStyle = vsBuilder.getVisualStyle();
-				vmm.addVisualStyle(psiStyle);
-			}
-			vmm.setCurrentVisualStyle(psiStyle);
-			
-			insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(result.values()));
 		}
+		if (psiStyle == null) {
+			psiStyle = vsBuilder.getVisualStyle();
+			vmm.addVisualStyle(psiStyle);
+		}
+		vmm.setCurrentVisualStyle(psiStyle);
+
+		insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(result.values()));
 	}
-	
+
 	@Override
 	public void cancel() {
 		this.canceled = true;
 		client.cancel();
 	}
-	
+
 	private void addNetworkData(final CyNetwork network) {
 		network.getRow(network).getTable().createColumn("created by", String.class, true);
 		network.getRow(network).set("created by", "PSICQUIC Web Service");
@@ -188,12 +182,12 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	private void processSearchResult() {
 		Map<String, Long> rs = searchTask.getResult();
 		targetServices = new HashSet<String>();
-		
-		for(final String sourceURL: rs.keySet()) {
+
+		for (final String sourceURL : rs.keySet()) {
 			final Long interactionCount = rs.get(sourceURL);
-			if(interactionCount == 0)
+			if (interactionCount == 0)
 				continue;
-			
+
 			targetServices.add(sourceURL);
 		}
 	}
@@ -201,5 +195,4 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 	public Set<CyNetwork> getNetworks() {
 		return new HashSet<CyNetwork>(result.values());
 	}
-
 }

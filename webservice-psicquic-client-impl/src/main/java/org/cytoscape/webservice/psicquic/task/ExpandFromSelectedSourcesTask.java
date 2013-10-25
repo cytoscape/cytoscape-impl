@@ -44,7 +44,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -59,7 +59,7 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 	public ListMultipleSelection<String> services;
 	
 	private final PSICQUICRestClient client;
-	private final MergedNetworkBuilder builder;
+	private final CyNetworkBuilder builder;
 
 	private final String query;
 
@@ -77,7 +77,7 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 
 	public ExpandFromSelectedSourcesTask(final String query, final PSICQUICRestClient client, final Map<String, String> sourceMap,
 			final CyNetworkView parentNetworkView, final View<CyNode> nodeView, final CyEventHelper eh,
-			final VisualMappingManager vmm, final CyLayoutAlgorithmManager layouts, final MergedNetworkBuilder builder) {
+			final VisualMappingManager vmm, final CyLayoutAlgorithmManager layouts, final CyNetworkBuilder builder) {
 		this.client = client;
 		this.query = query;
 		this.netView = parentNetworkView;

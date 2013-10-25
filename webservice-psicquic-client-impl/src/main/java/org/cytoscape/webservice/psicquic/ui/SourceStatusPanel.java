@@ -303,24 +303,7 @@ public class SourceStatusPanel extends JPanel {
 		clearSelectionButton = new JButton();
 		selectAllButton = new JButton();
 		clusterResultCheckBox = new JCheckBox("Merge results into one network");
-		clusterResultCheckBox.setSelected(true);
-
-		// titlePanel.setBackground(java.awt.Color.white);
-		//
-		// titleLabel.setFont(new java.awt.Font("SansSerif", Font.BOLD, 14)); //
-		// NOI18N
-		// titleLabel.setEnabled(false);
-		// titleLabel.setText("Binary Interactions Found: -");
-
-		// GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
-		// titlePanel.setLayout(titlePanelLayout);
-		// titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-		// .addGroup(
-		// titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
-		// .addContainerGap(40, Short.MAX_VALUE)));
-		// titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-		// titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
-		// .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+		clusterResultCheckBox.setSelected(false);
 
 		resultScrollPane.setBackground(java.awt.Color.white);
 		resultScrollPane.setViewportView(resultTable);
@@ -328,8 +311,8 @@ public class SourceStatusPanel extends JPanel {
 		buttonPanel.setBackground(java.awt.Color.white);
 
 		importNetworkButton.setText("Import");
-		importNetworkButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-		importNetworkButton.setForeground(Color.green);
+		importNetworkButton.setFont(new Font("SansSerif", Font.PLAIN, 13));
+		importNetworkButton.setForeground(new Color(255,0,55));
 		importNetworkButton.setPreferredSize(new java.awt.Dimension(70, 28));
 		importNetworkButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {

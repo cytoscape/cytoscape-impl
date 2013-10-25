@@ -36,7 +36,7 @@ import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
 import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
 import org.cytoscape.webservice.psicquic.ui.PSICQUICSearchUI;
@@ -70,7 +70,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
 			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager,
 			final TaskManager<?, ?> tManager, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final OpenBrowser openBrowser, final MergedNetworkBuilder builder, PSIMI25VisualStyleBuilder vsBuilder, VisualMappingManager vmm, final PSIMITagManager tagManager) {
+			final OpenBrowser openBrowser, final CyNetworkBuilder builder, PSIMI25VisualStyleBuilder vsBuilder, VisualMappingManager vmm, final PSIMITagManager tagManager) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;

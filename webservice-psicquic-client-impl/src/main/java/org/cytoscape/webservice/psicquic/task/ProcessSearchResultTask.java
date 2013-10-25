@@ -35,7 +35,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.RegistryManager;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -56,11 +56,11 @@ public class ProcessSearchResultTask extends AbstractTask {
 	private volatile boolean canceled = false;
 
 	private final RegistryManager registryManager;
-	private final MergedNetworkBuilder builder;
+	private final CyNetworkBuilder builder;
 
 	public ProcessSearchResultTask(final String query, final PSICQUICRestClient client, final SearchRecoredsTask searchTask,
 			final CyNetworkView parentNetworkView, final View<CyNode> nodeView, final CyEventHelper eh,
-			final VisualMappingManager vmm, final CyLayoutAlgorithmManager layouts, final RegistryManager registryManager, final MergedNetworkBuilder builder) {
+			final VisualMappingManager vmm, final CyLayoutAlgorithmManager layouts, final RegistryManager registryManager, final CyNetworkBuilder builder) {
 		this.client = client;
 		this.query = query;
 		this.netView = parentNetworkView;
