@@ -302,6 +302,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		if (enabled == isEnabled())
 			return;
 		
+		getTitleLbl().setEnabled(enabled);
+		
 		if (model.getVisualPropertyDependency() != null) {
 			getDependencyCkb().setEnabled(enabled);
 		} else {
@@ -320,7 +322,6 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			}
 		}
 		
-		getTitleLbl().setForeground(UIManager.getColor(enabled ? "Label.foreground" : "Label.disabledForeground"));
 		super.setEnabled(enabled);
 	}
 	
@@ -542,7 +543,6 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			expandCollapseBtn.setMaximumSize(d);
 			expandCollapseBtn.setBorder(
 					BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD, BUTTON_H_PAD));
-			expandCollapseBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			
 			getMappingPnl().addComponentListener(new ComponentAdapter() {
 				@Override
@@ -886,7 +886,6 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			setOpaque(false);
 			setFocusPainted(false);
 			setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
-			setForeground(Color.DARK_GRAY);
 			
 			addActionListener(al);
 			setSelected(selected);
