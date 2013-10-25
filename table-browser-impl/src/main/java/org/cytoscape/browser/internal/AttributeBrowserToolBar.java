@@ -64,6 +64,8 @@ import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -183,13 +185,26 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	public void setBrowserTable(final BrowserTable browserTable) {
 		this.browserTable = browserTable;
-		if (browserTable != null) {
-			browserTableModel = (BrowserTableModel) browserTable.getModel();
-		} else {
-			browserTableModel = null;
-		}
+		browserTableModel = browserTable != null ? (BrowserTableModel) browserTable.getModel() : null;
 		attrListModel.setBrowserTableModel(browserTableModel);
 		updateEnableState();
+		
+		if (browserTable != null) {
+			browserTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(final ListSelectionEvent e) {
+					if (!e.getValueIsAdjusting())
+						updateEnableState(formulaBuilderButton);
+				}
+			});
+			browserTable.getColumnModel().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(final ListSelectionEvent e) {
+					if (!e.getValueIsAdjusting())
+						updateEnableState(formulaBuilderButton);
+				}
+			});
+		}
 	}
 
 	@Override
@@ -220,12 +235,20 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	}
 
 	protected void updateEnableState() {
-		for (final JComponent comp : components) {
-			boolean enabled = browserTableModel != null;
-			
+		for (final JComponent comp : components)
+			updateEnableState(comp);
+	}
+	
+	protected void updateEnableState(final JComponent comp) {
+		if (comp == null)
+			return;
+		
+		boolean enabled = browserTableModel != null;
+		
+		if (enabled) {
 			if (comp == deleteTableButton /*|| comp == mapGlobalTableButton*/) {
-				enabled &= objType == null;
-			} else if (enabled && comp == deleteAttributeButton) {
+				enabled = objType == null;
+			} else if (comp == deleteAttributeButton) {
 				final CyTable attrs = browserTableModel.getAttributes();
 				
 				for (final CyColumn column : attrs.getColumns()) {
@@ -234,10 +257,14 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 					if (enabled)
 						break;
 				}
+			} else if (comp == formulaBuilderButton) {
+				final int row = browserTable.getSelectedRow();
+				final int column = browserTable.getSelectedColumn();
+				enabled = row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
 			}
-			
-			comp.setEnabled(enabled);
 		}
+		
+		comp.setEnabled(enabled);
 	}
 	
 	protected void addComponent(final JComponent component, final ComponentPlacement placement) {
@@ -617,24 +644,26 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(this);
 
 			formulaBuilderButton.addMouseListener(new MouseAdapter() {
+				@Override
 				public void mouseClicked(MouseEvent e) {
-					if (browserTableModel == null)
+					if (!formulaBuilderButton.isEnabled())
 						return;
 
-					// Do not allow opening of the formula builder dialog
-					// while a cell is being edited!
-					if (browserTable.getCellEditor() != null)
+					// Do not allow opening of the formula builder dialog while a cell is being edited!
+					if (browserTableModel == null || browserTable.getCellEditor() != null)
 						return;
 
 					final int cellRow = browserTable.getSelectedRow();
 					final int cellColumn = browserTable.getSelectedColumn();
+					int colIndex = -1;
 
 					// Map the screen index of column to internal index of the table model
-					String colName = browserTable.getColumnName(cellColumn);
-					int colIndex = browserTableModel.mapColumnNameToColumnIndex(colName);
+					if (cellRow >=0 && cellColumn >=0) {
+						String colName = browserTable.getColumnName(cellColumn);
+						colIndex = browserTableModel.mapColumnNameToColumnIndex(colName);
+					}
 					
 					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, colIndex)) {
-						
 						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
 								"Information", JOptionPane.INFORMATION_MESSAGE);
 					} else {
