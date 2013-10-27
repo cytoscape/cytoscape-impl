@@ -236,7 +236,6 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 			anotherReader =  cyServices.networkViewReaderManager.getReader(sifEdgesFile.toURI(), networkName);		
 			if(anotherReader != null) {
 				insertTasksAfterCurrentTask(
-//				cyServices.taskManager.execute( new TaskIterator(	
 					anotherReader, 
 					new AbstractTask() {
 					@Override
@@ -248,8 +247,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 							//set the network name attr.!
 							AttributeUtil.set(net, net, CyNetwork.NAME, networkName, String.class);
 							//register the network
-							networks.add(net);
-							
+							networks.add(net);						
 							//create attributes from biopax properties
 							createBiopaxSifAttributes(model, net, sifNodesFile, taskMonitor);
 							// set the biopax network mapping type for other plugins
@@ -258,7 +256,6 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 						}
 					}
 				})
-//				)
 				;				
 			} else {
 				//fail with a message
@@ -277,7 +274,6 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 			anotherReader =  cyServices.networkViewReaderManager.getReader(sbgnFile.toURI(), networkName);
 			if(anotherReader != null) {				
 				insertTasksAfterCurrentTask(
-//				cyServices.taskManager.execute( new TaskIterator(	
 					anotherReader, 
 					new AbstractTask() {
 					@Override
@@ -298,7 +294,6 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 						taskMonitor.setProgress(1.0);
 					}
 				})
-//				)
 				;
 			} else {
 				//fail with a message
