@@ -117,7 +117,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		selectionModeButton.setToolTipText("Change Table Mode");
 		AttributeBrowserToolBar.styleButton(selectionModeButton,
 				iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
-		selectionModeButton.addActionListener(this);
 		
 		selectionModeButton.addActionListener(new ActionListener() {
 			@Override
