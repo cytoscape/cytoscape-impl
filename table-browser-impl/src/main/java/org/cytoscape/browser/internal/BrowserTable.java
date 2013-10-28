@@ -46,6 +46,7 @@ import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -146,6 +148,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		getHeaderPopupMenu();
 		setKeyStroke();
 		setTransferHandler(new BrowserTableTransferHandler());
+		setSelectionModel(new BrowserTableListSelectionModel());
 	}
 
 	@Override
@@ -165,7 +168,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			tableColumn.setHeaderValue(model.getColumnName(i));
 			columnModel.addColumn(tableColumn);
 		}
-		
 	}
 
 	/**
@@ -178,11 +180,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	protected void initHeader() {
-		this.setBackground(Color.white);
-
 		final JTableHeader header = getTableHeader();
 		header.addMouseMotionListener(this);
-		header.setBackground(Color.white);
 		header.setOpaque(false);
 		header.setDefaultRenderer(new CustomHeaderRenderer());
 		header.addMouseListener(this);
@@ -200,10 +199,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				final int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
 				final int viewRow = e.getY() / getRowHeight();
 
-				final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
-
 				int modelColumn = convertColumnIndexToModel(viewColumn);
 				int modelRow = convertRowIndexToModel(viewRow);
+				
+				final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
 				
 				// Bail out if we're at the ID column:
 				if (tableModel.isPrimaryKey(modelColumn))
@@ -216,6 +215,16 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 				// If action is right click, then show edit pop-up menu
 				if ((SwingUtilities.isRightMouseButton(e)) || (isMacPlatform() && e.isControlDown())) {
+					final int[] selectedRows = table.getSelectedRows();
+					int binarySearch = Arrays.binarySearch(selectedRows, viewRow);
+					
+					// Select clicked cell, if not selected yet
+					if (binarySearch < 0) {
+						// Clicked row not selected: Select only the right-clicked row/cell
+						table.changeSelection(viewRow, viewColumn, false, false);
+					}
+
+					// Show context menu
 					final CyColumn cyColumn = tableModel.getColumn(modelColumn);
 					final Object primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(modelRow,
 							tableModel.getDataTable().getPrimaryKey().getName())).getValidatedObject();
@@ -226,6 +235,16 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				}
 			}
 
+			@Override
+			public void mousePressed(MouseEvent e) {
+				final int row = e.getY() / getRowHeight();
+				final int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
+				
+				// So the last clicked cell is highlighted properly
+				((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(row);
+				table.setColumnSelectionInterval(viewColumn, viewColumn);
+			}
+			
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {
@@ -372,6 +391,24 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		return false;
 	}
 
+	@Override
+	public void addRowSelectionInterval(int index0, int index1) {
+		super.addRowSelectionInterval(index0, index1);
+		// Make sure this is set, so the selected cell is correctly rendered when there is more than one selected rows
+		((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(index1);
+	}
+	
+	@Override
+	public int getSelectedRow() {
+		// Try the last selected row first
+		int row = ((BrowserTableListSelectionModel) selectionModel).getLastSelectedRow();
+		
+		if (row < 0 || !isRowSelected(row))
+			row = selectionModel.getMinSelectionIndex();
+		
+		return row;
+	}
+	
 	public void showListContents(int modelRow, int modelColumn, MouseEvent e) {
 		final BrowserTableModel model = (BrowserTableModel) getModel();
 		final Class<?> columnType = model.getColumn(modelColumn).getType();
@@ -593,6 +630,21 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	public void mouseMoved(MouseEvent e) {
 	}
 
+	private class BrowserTableListSelectionModel extends DefaultListSelectionModel {
+		
+		private static final long serialVersionUID = 7119443698611148406L;
+		
+		private int lastSelectedRow = -1;
+		
+		int getLastSelectedRow() {
+			return lastSelectedRow;
+		}
+		
+		public void setLastSelectedRow(int lastSelectedRow) {
+			this.lastSelectedRow = lastSelectedRow;
+		}
+	}
+	
 	private class CellEditorRemover implements PropertyChangeListener {
 		private final KeyboardFocusManager focusManager;
 		private BrowserTableModel model;
