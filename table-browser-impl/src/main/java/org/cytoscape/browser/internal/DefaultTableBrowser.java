@@ -119,9 +119,11 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
 		selectionModeButton.addActionListener(this);
 		
-		selectionModeButton.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				displayMode.show(e.getComponent(), e.getX(), e.getY());
+		selectionModeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				DefaultTableBrowser.this.actionPerformed(e);
+				displayMode.show(selectionModeButton, 0, selectionModeButton.getHeight());
 			}
 		});
 		
