@@ -15,6 +15,9 @@ public class ViewUpdater extends LazyWorker implements TransformerListener {
 	private FilterPanelController controller;
 	private FilterPanel panel;
 	
+	private volatile boolean isCancelled;
+	private boolean isInteractive;
+	
 	public ViewUpdater(CyApplicationManager applicationManager) {
 		this.applicationManager = applicationManager;
 	}
@@ -25,11 +28,25 @@ public class ViewUpdater extends LazyWorker implements TransformerListener {
 	
 	@Override
 	public void handleSettingsChanged() {
+		if (!isInteractive) {
+			return;
+		}
 		requestWork();
 	}
 
 	public void handleFilterStructureChanged() {
+		if (!isInteractive) {
+			return;
+		}
 		requestWork();
+	}
+	
+	public void cancel() {
+		isCancelled = true;
+	}
+	
+	public void setInteractive(boolean isInteractive) {
+		this.isInteractive = isInteractive;
 	}
 	
 	@Override
@@ -53,16 +70,23 @@ public class ViewUpdater extends LazyWorker implements TransformerListener {
 			Filter<CyNetwork, CyIdentifiable> filter = controller.getFilter();
 			
 			for (CyNode node : network.getNodeList()) {
+				if (isCancelled) {
+					return;
+				}
 				CyRow row = network.getRow(node);
 				row.set(CyNetwork.SELECTED, filter.accepts(network, node));
 			}
 			for (CyEdge edge : network.getEdgeList()) {
+				if (isCancelled) {
+					return;
+				}
 				CyRow row = network.getRow(edge);
 				row.set(CyNetwork.SELECTED, filter.accepts(network, edge));
 			}
 			networkView.updateView();
 		} finally {
 			controller.setUpdating(false, panel);
+			isCancelled = false;
 		}
 	}
 

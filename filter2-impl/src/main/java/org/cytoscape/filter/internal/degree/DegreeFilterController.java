@@ -1,9 +1,7 @@
 package org.cytoscape.filter.internal.degree;
 
-import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
+import org.cytoscape.filter.internal.view.RangeChooserController;
 
 public interface DegreeFilterController {
-
-	NumberRangeModel getSliderModel();
-
+	RangeChooserController getRangeChooserController();
 }

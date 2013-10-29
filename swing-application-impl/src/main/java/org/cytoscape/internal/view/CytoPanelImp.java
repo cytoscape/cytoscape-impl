@@ -61,7 +61,7 @@ import javax.swing.event.ChangeListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelComponentName;
+import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
@@ -187,7 +187,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private final IconManager iconManager;
 	private final JFrame parent;
 	
-	private final Map<CytoPanelComponentName, CytoPanelComponent> coreComponents;
+	private final Map<String, CytoPanelComponent2> componentsById;
 
 	/**
 	 * Constructor.
@@ -204,7 +204,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 						final IconManager iconManager) {
 		this.cyEventHelper = eh;
 		this.parent = cySwingApp.getJFrame();
-		coreComponents = new HashMap<CytoPanelComponentName, CytoPanelComponent>();
+		componentsById = new HashMap<String, CytoPanelComponent2>();
 		
 		// setup our tabbed pane
 		tabbedPane = new JTabbedPane(tabPlacement);
@@ -245,20 +245,22 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		return compassDirection;
 	}
 
-	public void add(CytoPanelComponent comp) {
+	public void add(final CytoPanelComponent comp) {
+		if (comp instanceof CytoPanelComponent2) {
+			final CytoPanelComponent2 comp2 = (CytoPanelComponent2) comp;
+			
+			if (comp2.getIdentifier() == null)
+				throw new NullPointerException("'CytoPanelComponent2.identifier' must not be null");
+			
+			componentsById.put(comp2.getIdentifier(), comp2);
+		}
+		
 		// Check our sizes, and override, if necessary
 		checkSizes(comp.getComponent());
 		// add tab to JTabbedPane
 		tabbedPane.addTab(comp.getTitle(), comp.getIcon(), comp.getComponent());
 		// send out a notification
 		notifyListeners(NOTIFICATION_COMPONENT_ADDED);
-	}
-	
-	public void add(CytoPanelComponent cp, CytoPanelComponentName cpCompName) {
-		if (cpCompName != null)
-			coreComponents.put(cpCompName, cp);
-		
-		add(cp);
 	}
 
 	/**
@@ -317,8 +319,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	}
 	
 	@Override
-	public int indexOfComponent(CytoPanelComponentName name) {
-		final CytoPanelComponent cpComp = coreComponents.get(name);
+	public int indexOfComponent(String identifier) {
+		final CytoPanelComponent cpComp = componentsById.get(identifier);
 		
 		return cpComp != null ? indexOfComponent(cpComp.getComponent()) : -1;
 	}
@@ -339,13 +341,9 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 	public void remove(CytoPanelComponent comp) {
 		tabbedPane.remove(comp.getComponent());
-	}
-	
-	public void remove(CytoPanelComponent comp, CytoPanelComponentName cpCompName) {
-		remove(comp);
 		
-		if (cpCompName != null)
-			coreComponents.remove(cpCompName);
+		if (comp instanceof CytoPanelComponent2)
+			componentsById.remove(((CytoPanelComponent2)comp).getIdentifier());
 	}
 
 	/**
@@ -369,7 +367,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	public void removeAll() {
 		// remove all tabs and components from JTabbedPane
 		tabbedPane.removeAll();
-		coreComponents.clear();
+		componentsById.clear();
 
 		// send out a notification
 		notifyListeners(NOTIFICATION_COMPONENT_REMOVED);

@@ -17,10 +17,13 @@ import org.cytoscape.commandDialog.internal.handlers.CommandHandler;
 import org.cytoscape.commandDialog.internal.tasks.CommandDialogTaskFactory;
 import org.cytoscape.commandDialog.internal.tasks.PauseCommandTaskFactory;
 import org.cytoscape.commandDialog.internal.tasks.RunCommandsTaskFactory;
+import org.cytoscape.commandDialog.internal.tasks.RunCommandsTask;
 import org.cytoscape.commandDialog.internal.tasks.QuitTaskFactory;
 import org.cytoscape.commandDialog.internal.tasks.SleepCommandTaskFactory;
 import org.cytoscape.commandDialog.internal.ui.CommandToolDialog;
 
+import org.cytoscape.app.event.AppsFinishedStartingEvent;
+import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.command.AvailableCommands;
@@ -127,20 +130,37 @@ public class CyActivator extends AbstractCyActivator {
 		sleepProperties.setProperty(COMMAND, "sleep");
 		registerService(bc, sleepCommand, TaskFactory.class, sleepProperties);
 
-		// TODO:  need to delay so all other bundles can get registered!
-		// If the user specified a script file, execute it now.
-		if (dialog != null && scriptFile != null) {
-			javax.swing.SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					// TODO: need a non-gui approach to this!
-					dialog.executeCommand("command run commands file="+scriptFile);
-				}
-			});
-		} else if (dialog == null && scriptFile != null) {
-			// Execute without a dialog
+		if (scriptFile != null) {
+			registerService(bc, new StartScript(scriptFile, commandHandler, dialog), 
+			                AppsFinishedStartingListener.class, new Properties());
 		}
 
 	}
 
+	class StartScript implements AppsFinishedStartingListener {
+		String scriptFile;
+		CommandToolDialog dialog;
+		RunCommandsTask runTask;
+		CommandHandler commandHandler;
 
+		protected StartScript(String scriptFile, CommandHandler commandHandler, CommandToolDialog dialog)  {
+			this.scriptFile = scriptFile;
+			this.dialog = dialog;
+			this.commandHandler = commandHandler;
+			runTask = new RunCommandsTask(dialog, commandHandler);
+		}
+
+		public void handleEvent(AppsFinishedStartingEvent event) {
+			if (dialog != null && scriptFile != null) {
+				javax.swing.SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						// TODO: need a non-gui approach to this!
+						dialog.executeCommand("command run commands file="+scriptFile);
+					}
+				});
+			} else if (dialog == null) {
+				runTask.executeCommandScript(scriptFile, null);
+			}
+		}
+	}
 }

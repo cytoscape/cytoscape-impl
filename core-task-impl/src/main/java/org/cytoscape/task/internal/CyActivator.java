@@ -461,7 +461,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties loadVizmapFileTaskFactoryProps = new Properties();
 		loadVizmapFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import");
 		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
-		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Vizmap File...");
+		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Visual Style File...");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		registerService(bc,loadVizmapFileTaskFactory,TaskFactory.class, loadVizmapFileTaskFactoryProps);
@@ -952,7 +952,7 @@ public class CyActivator extends AbstractCyActivator {
 		exportVizmapTaskFactoryProps.setProperty(ENABLE_FOR,"vizmap");
 		exportVizmapTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
 		exportVizmapTaskFactoryProps.setProperty(MENU_GRAVITY,"1.4");
-		exportVizmapTaskFactoryProps.setProperty(TITLE,"Vizmap...");
+		exportVizmapTaskFactoryProps.setProperty(TITLE,"Visual Style...");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND,"export");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		registerService(bc,exportVizmapTaskFactory,TaskFactory.class, exportVizmapTaskFactoryProps);

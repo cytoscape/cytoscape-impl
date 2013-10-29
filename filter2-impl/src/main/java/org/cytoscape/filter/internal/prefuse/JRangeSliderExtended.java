@@ -170,7 +170,7 @@ public class JRangeSliderExtended extends JRangeSlider implements ChangeListener
             highStr = format.format(high);
         }
  
-		if (isVisible()) {
+		if (isDisplayable()) {
 			if (popup == null) {
 				PopupFactory popupFactory = PopupFactory.getSharedInstance();
 				JPanel panel = new JPanel();

@@ -30,8 +30,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -117,11 +115,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		selectionModeButton.setToolTipText("Change Table Mode");
 		AttributeBrowserToolBar.styleButton(selectionModeButton,
 				iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
-		selectionModeButton.addActionListener(this);
 		
-		selectionModeButton.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				displayMode.show(e.getComponent(), e.getX(), e.getY());
+		selectionModeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				DefaultTableBrowser.this.actionPerformed(e);
+				displayMode.show(selectionModeButton, 0, selectionModeButton.getHeight());
 			}
 		});
 		

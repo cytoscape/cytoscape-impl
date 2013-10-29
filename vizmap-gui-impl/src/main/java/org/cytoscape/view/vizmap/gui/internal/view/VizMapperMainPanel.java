@@ -71,7 +71,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -91,9 +91,10 @@ import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
  */
 @SuppressWarnings("serial")
 public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultViewPanel, DefaultViewEditor,
-														  CytoPanelComponent {
+														  CytoPanelComponent2 {
 
 	private static final String TITLE = "Style";
+	private static final String ID = "org.cytoscape.Style";
 
 	private DropDownMenuButton optionsBtn;
 	private JPanel stylesPnl;
@@ -143,6 +144,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return TITLE;
 	}
 
+	@Override
+	public String getIdentifier() {
+		return ID;
+	}
+	
 	@Override
 	public CytoPanelName getCytoPanelName() {
 		return CytoPanelName.WEST;

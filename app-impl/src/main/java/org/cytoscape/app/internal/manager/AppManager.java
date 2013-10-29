@@ -40,6 +40,7 @@ import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.cytoscape.app.AbstractCyApp;
+import org.cytoscape.app.internal.event.AppStatusChangedListener;
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.exception.AppDisableException;
@@ -51,8 +52,11 @@ import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.Version;
 import org.osgi.service.startlevel.StartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * This class represents an App Manager, which is capable of maintaining a list of all currently installed and available apps. The class
  * also provides functionalities for installing and uninstalling apps.
  */
-public class AppManager implements FrameworkListener {
+public class AppManager implements FrameworkListener, AppStatusChangedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AppManager.class);
 	
@@ -131,6 +135,8 @@ public class AppManager implements FrameworkListener {
 	private StartLevel startLevel;
 
 	private boolean isInitialized;
+
+	private StartupMonitor startupMonitor;
 	
 	/**
 	 * A {@link FileFilter} that accepts only files in the first depth level of a given directory
@@ -156,11 +162,14 @@ public class AppManager implements FrameworkListener {
 	}
 	
 	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration, 
-			final WebQuerier webQuerier, StartLevel startLevel) {
+			final WebQuerier webQuerier, StartLevel startLevel, StartupMonitor startupMonitor) {
 		this.applicationConfiguration = applicationConfiguration;
 		this.swingAppAdapter = swingAppAdapter;
 		this.webQuerier = webQuerier;
 		this.startLevel = startLevel;
+		this.startupMonitor = startupMonitor;
+		
+		startupMonitor.addAppStatusChangedListener(this);
 		
 		apps = new HashSet<App>();
 		appParser = new AppParser();
@@ -174,6 +183,17 @@ public class AppManager implements FrameworkListener {
 	}
 	
 	@Override
+	public void handleAppStatusChanged(String symbolicName, String version, AppStatus status) {
+		for (App app : apps) {
+			if (app.getAppName().equals(symbolicName) && WebQuerier.compareVersions(app.getVersion(), version) == 0) {
+				app.setStatus(status);
+				fireAppsChangedEvent();
+				break;
+			}
+		}
+	}
+	
+	@Override
 	public void frameworkEvent(FrameworkEvent event) {
 		// Defer initialization until we reach the right start level.
 		if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
@@ -184,6 +204,7 @@ public class AppManager implements FrameworkListener {
 	void attemptInitialization() {
 		synchronized (this) {
 			if (!isInitialized && startLevel.getStartLevel() >= APP_START_LEVEL) {
+				startupMonitor.setActive(true);
 				initializeApps();
 				isInitialized = true;
 			}

@@ -292,7 +292,7 @@ public class PSICQUICSearchUI extends JPanel {
 		final Object selectedItem = this.speciesSelector.getSelectedItem();
 		final Species species = (Species) selectedItem;
 
-		return "species:\"" + species.toString() + "\"";
+		return "taxidA:\"" + species.toString() + "\" AND taxidB:\"" + species.toString() + "\"";
 	}
 
 	private final class SetTableTask extends AbstractTask {

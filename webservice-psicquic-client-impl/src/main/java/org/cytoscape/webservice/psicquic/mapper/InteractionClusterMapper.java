@@ -42,7 +42,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.webservice.psicquic.miriam.Miriam;
 import org.cytoscape.webservice.psicquic.miriam.Miriam.Datatype;
@@ -50,21 +52,29 @@ import org.cytoscape.webservice.psicquic.miriam.Synonyms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import psidev.psi.mi.tab.model.BinaryInteraction;
 import psidev.psi.mi.tab.model.Confidence;
 import psidev.psi.mi.tab.model.CrossReference;
+import psidev.psi.mi.tab.model.Interactor;
 import uk.ac.ebi.enfin.mi.cluster.EncoreInteraction;
 
 public class InteractionClusterMapper {
 
 	private static final Logger logger = LoggerFactory.getLogger(InteractionClusterMapper.class);
 
+	private static final Pattern SPLITTER = Pattern.compile("\\|");
+	private static final Pattern SPLITTER_NAME_SPACE = Pattern.compile("\\:");
+	private static final Pattern SPLITTER_TYPE = Pattern.compile("\\(");
+
 	private static final String SCHEMA_NAMESPACE = "org.cytoscape.webservice.psicquic.miriam";
 
 	public static final String PREDICTED_GENE_NAME = "Human Readable Gene Name";
 	public static final String CROSS_SPECIES_EDGE = "Cross Species Interaction";
-	
+
 	static final String PUB_ID = "publication id";
 	static final String PUB_DB = "publication db";
+
+	static final String SOURCE_DB = "Source Database";
 
 	static final String EXPERIMENT = "experiment";
 
@@ -82,10 +92,14 @@ public class InteractionClusterMapper {
 
 	static final String TAXNOMY = "taxonomy";
 	static final String TAXNOMY_NAME = "taxonomy.name";
-	static final String TAXNOMY_DB = "taxonomy.db";
 
 	boolean isInitialized = false;
-	
+
+	private String currentGeneName = null;
+
+	// Flag to indicates edge is self-interaction or not.
+	private boolean isSelfEdge = false;
+
 	public InteractionClusterMapper() {
 		namespaceSet = new HashSet<String>();
 		this.name2ns = new HashMap<String, String>();
@@ -106,7 +120,151 @@ public class InteractionClusterMapper {
 			isInitialized = true;
 		}
 	}
-	
+
+	/**
+	 * Process one entry in MITAB cell.
+	 * 
+	 * 
+	 * @return String array of result. 1: namespace, 2: value, and 3:
+	 *         description.
+	 */
+	public final String[] parseValues(final String entry) {
+		final String[] values = new String[3];
+
+		// Extract name space
+		final String[] parts = SPLITTER_NAME_SPACE.split(entry);
+		values[0] = parts[0];
+
+		// Parse ID value
+		if (parts.length >= 2) {
+			final String others = entry.substring(values[0].length() + 1, entry.length());
+			final String[] valParts = SPLITTER_TYPE.split(others);
+			final String newVal = valParts[0].replaceAll("\"", "");
+			values[1] = newVal;
+			if (valParts.length >= 2) {
+				// Parse description
+				values[2] = valParts[1].substring(0, valParts[1].length() - 1).replaceAll("\"", "");
+			}
+		} else {
+			return values;
+		}
+
+		return values;
+	}
+
+	private Map<String, String> createNames(String nameText) {
+		final Map<String, String> map = new HashMap<String, String>();
+		final String[] names = SPLITTER.split(nameText);
+
+		for (final String name : names) {
+			// Ignore invalid line
+			if (name.equals("-")) {
+				this.isSelfEdge = true;
+				continue;
+			}
+			final String[] parts = SPLITTER_NAME_SPACE.split(name);
+			map.put(parts[0], parts[1]);
+		}
+
+		return map;
+	}
+
+	private Map<String, List<String>> createOtherNames(final String nameText, final String aliases) {
+		currentGeneName = null;
+
+		final Map<String, List<String>> map = new HashMap<String, List<String>>();
+		final String[] names = SPLITTER.split(nameText);
+		final String[] others = SPLITTER.split(aliases);
+
+		final List<String[]> entries = new ArrayList<String[]>();
+		entries.add(names);
+		entries.add(others);
+
+		for (String[] entry : entries) {
+			for (String name : entry) {
+
+				final String[] parsed = parseValues(name);
+				List<String> list = map.get(parsed[0]);
+				if (list == null) {
+					list = new ArrayList<String>();
+				}
+				if (parsed[1] != null) {
+					list.add(parsed[1]);
+
+					if (parsed[2] != null && parsed[2].equals("gene name")) {
+						currentGeneName = parsed[1];
+					}
+				} else {
+					continue;
+				}
+				map.put(parsed[0], list);
+			}
+		}
+
+		return map;
+	}
+
+	public void mapNodeColumn(final String[] entries, final CyRow sourceRow, final CyRow targetRow) {
+		this.isSelfEdge = false;
+
+		// for (int i = 0; i < entries.length; i++) {
+		// String[] oneEntry = SPLITTER.split(entries[i]);
+		// for (String entry : oneEntry) {
+		// final String[] vals = parseValues(entry);
+		// System.out.println(i + ")   " + vals[0] + " --- " + vals[1] + " --- "
+		// + vals[2]);
+		// }
+		// }
+		//
+		// System.out.print("\n\n");
+
+		final Map<String, String> accsSource = createNames(entries[0]);
+		processNames(sourceRow, accsSource);
+
+		final Map<String, List<String>> otherSource = createOtherNames(entries[2], entries[4]);
+		processOtherNames(sourceRow, otherSource);
+		if (currentGeneName != null)
+			sourceRow.set(PREDICTED_GENE_NAME, currentGeneName);
+		else {
+			guessHumanReadableName(sourceRow);
+		}
+		setSpecies(entries[9], sourceRow);
+
+		if (!isSelfEdge) {
+			final Map<String, String> accsTarget = createNames(entries[1]);
+			processNames(targetRow, accsTarget);
+			final Map<String, List<String>> otherTarget = createOtherNames(entries[3], entries[5]);
+			processOtherNames(targetRow, otherTarget);
+			if (currentGeneName != null)
+				targetRow.set(PREDICTED_GENE_NAME, currentGeneName);
+			else {
+				guessHumanReadableName(targetRow);
+			}
+			setSpecies(entries[10], targetRow);
+		}
+		
+		// For 2.7 data
+		parse27Entries();
+	}
+
+	private final void parse27Entries() {
+
+	}
+
+	private final void setSpecies(final String speciesText, CyRow row) {
+		// Pick first entry only.
+		final String[] entries = SPLITTER.split(speciesText);
+		final String[] values = parseValues(entries[0]);
+
+		if (values[1] != null) {
+			row.set(TAXNOMY, values[1]);
+		}
+
+		if (values[2] != null) {
+			row.set(TAXNOMY_NAME, values[2]);
+		}
+	}
+
 	public void mapNodeColumn(final EncoreInteraction interaction, final CyRow sourceRow, final CyRow targetRow) {
 
 		final Map<String, String> accsSource = interaction.getInteractorAccsA();
@@ -154,7 +312,7 @@ public class InteractionClusterMapper {
 		if (pubDBList.isEmpty() == false)
 			row.set(PUB_DB, pubDBList);
 
-		// Interaction (use DB names)
+		// Interaction (use UniqueID)
 		row.set(CyEdge.INTERACTION, interaction.getMappingIdDbNames());
 
 		final List<Confidence> scores = interaction.getConfidenceValues();
@@ -220,17 +378,15 @@ public class InteractionClusterMapper {
 		if (ref != null) {
 			final String name = ref.getText();
 			final String speciesID = ref.getIdentifier();
-			final String db = ref.getDatabase();
 
 			row.set(TAXNOMY, speciesID);
 			row.set(TAXNOMY_NAME, name);
-			row.set(TAXNOMY_DB, db);
 		}
 	}
 
 	private Miriam parseXml() throws IOException {
 
-		final URL xml = MergedNetworkBuilder.class.getClassLoader().getResource("MiriamResources_all.xml");
+		final URL xml = CyNetworkBuilder.class.getClassLoader().getResource("MiriamResources_all.xml");
 		final BufferedReader reader = new BufferedReader(new InputStreamReader(xml.openStream()));
 
 		JAXBContext jc = null;
@@ -292,7 +448,7 @@ public class InteractionClusterMapper {
 	private void guessHumanReadableName(final CyRow row) {
 		boolean found = false;
 
-		// Special handler for STRING. This is a hack... 
+		// Special handler for STRING. This is a hack...
 		if (row.getTable().getColumn(STRING_ATTR_NAME) != null) {
 			final List<String> stringList = row.getList(STRING_ATTR_NAME, String.class);
 			if (stringList != null)
@@ -326,7 +482,7 @@ public class InteractionClusterMapper {
 
 		if (found)
 			return;
-		
+
 		// Unknown
 		if (row.getTable().getColumn("unknown") != null) {
 			final List<String> unknownList = row.getList("unknown", String.class);
@@ -335,7 +491,7 @@ public class InteractionClusterMapper {
 		}
 		if (found)
 			return;
-		
+
 		if (found == false) {
 			// Give up. Use primary key
 			row.set(PREDICTED_GENE_NAME, row.get(CyNetwork.NAME, String.class));
@@ -351,20 +507,85 @@ public class InteractionClusterMapper {
 			}
 		}
 		if (candidateString != null) {
-			if(candidateString.contains("_")) {
+			if (candidateString.contains("_")) {
 				final String firstPart = candidateString.split("_")[0];
-				for(String candidate: attrList) {
-					if(candidate.equalsIgnoreCase(firstPart)) {
+				for (String candidate : attrList) {
+					if (candidate.equalsIgnoreCase(firstPart)) {
 						candidateString = firstPart;
 						break;
 					}
 				}
-					
+
 			}
 			row.set(PREDICTED_GENE_NAME, candidateString);
 			return true;
 		}
 
 		return false;
+	}
+
+	public void mapEdgeColumn(final String[] entries, final CyRow row, final CyEdge edge, final String sourceName,
+			final String targetName) {
+		final String[] detectionMethods = SPLITTER.split(entries[6]);
+		final List<String> methods = new ArrayList<String>();
+		for (final String entry : detectionMethods) {
+			final String method = parseValues(entry)[1];
+			if (method != null)
+				methods.add(method);
+		}
+		if (!methods.isEmpty())
+			row.set(EXPERIMENT, methods);
+
+		final List<String> pubIdList = new ArrayList<String>();
+		final List<String> pubDBList = new ArrayList<String>();
+
+		final String[] pubID = SPLITTER.split(entries[8]);
+		for (final String entry : pubID) {
+			String id = parseValues(entry)[1];
+			String db = parseValues(entry)[0];
+			if (id != null && db != null) {
+				pubDBList.add(db);
+				pubIdList.add(id);
+			}
+		}
+
+		if (!pubIdList.isEmpty())
+			row.set(PUB_ID, pubIdList);
+		if (!pubDBList.isEmpty())
+			row.set(PUB_DB, pubDBList);
+
+		// Interaction (use DB names)
+		final String[] dbNames = SPLITTER.split(entries[12]);
+		row.set(SOURCE_DB, parseValues(dbNames[0])[0]);
+
+		// Set interaction: this is an ID.
+		final String[] interactionID = SPLITTER.split(entries[13]);
+		final String interaction = parseValues(interactionID[0])[1];
+		row.set(CyEdge.INTERACTION, interaction);
+
+		// Create name
+		row.set(CyNetwork.NAME, sourceName + " (" + interaction + ") " + targetName);
+
+		final String[] scores = SPLITTER.split(entries[14]);
+		for (String score : scores) {
+			final String[] scoreArray = parseValues(score);
+			String scoreType = "Confidence-Score-" + scoreArray[0];
+			String value = scoreArray[1];
+			if (value == null) {
+				continue;
+			}
+
+			if (row.getTable().getColumn(scoreType) == null)
+				row.getTable().createColumn(scoreType, Double.class, true);
+
+			try {
+				double doubleVal = Double.parseDouble(value);
+				row.set(scoreType, doubleVal);
+			} catch (NumberFormatException e) {
+				// logger.warn("Invalid number string: " + value);
+				// Ignore invalid number
+			}
+
+		}
 	}
 }

@@ -42,7 +42,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -70,7 +70,7 @@ public class BuildQueryTask extends AbstractTask {
 	private final VisualMappingManager vmm;
 
 	private final CyLayoutAlgorithmManager layouts;
-	private final MergedNetworkBuilder builder;
+	private final CyNetworkBuilder builder;
 
 	private final CyNetworkView netView;
 
@@ -78,7 +78,7 @@ public class BuildQueryTask extends AbstractTask {
 
 	BuildQueryTask(final CyNetworkView netView, final View<CyNode> nodeView, CyEventHelper eh,
 			VisualMappingManager vmm, final PSICQUICRestClient client, final RegistryManager manager,
-			final CyLayoutAlgorithmManager layouts, final MergedNetworkBuilder builder) {
+			final CyLayoutAlgorithmManager layouts, final CyNetworkBuilder builder) {
 		this.table = netView.getModel().getDefaultNodeTable();
 		this.nodeView = nodeView;
 		this.manager = manager;

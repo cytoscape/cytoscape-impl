@@ -81,6 +81,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>app-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>command-executor-api</artifactId>
 			<version>${cytoscape.api.version}</version>
 		</dependency>

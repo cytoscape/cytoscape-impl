@@ -71,7 +71,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
@@ -106,7 +106,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NetworkPanel extends JPanel implements CytoPanelComponent,
+public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		TreeSelectionListener, SetSelectedNetworksListener,
 		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener,
 		NetworkViewAboutToBeDestroyedListener, RowsSetListener {
@@ -116,6 +116,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent,
 	private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
 
 	private static final String TITLE = "Network";
+	private static final String ID = "org.cytoscape.Network";
 	
 	static final Color FONT_COLOR = new Color(20, 20, 20);
 	private static final int TABLE_ROW_HEIGHT = 16;
@@ -250,6 +251,11 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent,
 	@Override
 	public String getTitle() {
 		return TITLE;
+	}
+	
+	@Override
+	public String getIdentifier() {
+		return ID;
 	}
 
 	@Override

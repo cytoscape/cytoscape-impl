@@ -335,7 +335,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	 * Switch view mode.
 	 * 
 	 * 
-	 * @param showAll
+	 * @param viewMode
 	 */
 	void setViewMode(ViewMode viewMode) {
 		selectedRows = null;

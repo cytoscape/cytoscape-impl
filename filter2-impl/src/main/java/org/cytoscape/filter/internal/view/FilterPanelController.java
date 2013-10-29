@@ -16,11 +16,13 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
 import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager.FilterComboBoxElement;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.TransformerFactory;
+import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 
@@ -34,11 +36,16 @@ public class FilterPanelController {
 	
 	int filtersCreated = 0;
 	private ViewUpdater viewUpdater;
+	private ModelMonitor modelMonitor;
+
+	private boolean isInteractive;
+
 	
-	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, ViewUpdater viewUpdater) {
+	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, ViewUpdater viewUpdater, ModelMonitor modelMonitor) {
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
 		this.viewUpdater = viewUpdater;
+		this.modelMonitor = modelMonitor;
 		
 		viewUpdater.setController(this);
 		
@@ -184,7 +191,11 @@ public class FilterPanelController {
 		if (filter instanceof CompositeFilter) {
 			return new CompositeFilterPanel(parent, this, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth);
 		}
-		return transformerViewManager.createView(filter);
+		JComponent view = transformerViewManager.createView(filter);
+		if (view instanceof InteractivityChangedListener) {
+			((InteractivityChangedListener) view).handleInteractivityChanged(isInteractive);
+		}
+		return view;
 	}
 
 	public void handleAddFilter(JComboBox comboBox, CompositeFilterPanel panel) {
@@ -332,9 +343,49 @@ public class FilterPanelController {
 
 	public void setUpdating(boolean updating, FilterPanel panel) {
 		if (updating) {
-			panel.setStatus("Applying filter...");
+			panel.setStatus("Applying...");
 		} else {
-			panel.setStatus("");
+			panel.setStatus("Apply Filter");
 		}
+		panel.getApplyFilterButton().setEnabled(!updating && !isInteractive);
+		panel.getCancelApplyButton().setEnabled(updating);
+	}
+
+	public void setInteractive(boolean isInteractive, FilterPanel panel) {
+		modelMonitor.setInteractive(isInteractive);
+		viewUpdater.setInteractive(isInteractive);
+		if (this.isInteractive == isInteractive) {
+			return;
+		}
+		
+		panel.getApplyAutomaticallyCheckBox().setSelected(isInteractive);
+		
+		this.isInteractive = isInteractive;
+		CompositeFilterPanel root = panel.getRootPanel();
+		setInteractive(isInteractive, root);
+		setUpdating(false, panel);
+	}
+
+	private void setInteractive(boolean isInteractive, CompositeFilterPanel panel) {
+		for (FilterViewModel viewModel : panel.getViewModels()) {
+			if (viewModel.view instanceof InteractivityChangedListener) {
+				((InteractivityChangedListener) viewModel.view).handleInteractivityChanged(isInteractive);
+			}
+			if (viewModel.view instanceof CompositeFilterPanel) {
+				setInteractive(isInteractive, (CompositeFilterPanel) viewModel.view);
+			}
+		}
+	}
+
+	public void synchronize(FilterPanel panel) {
+		setInteractive(panel.getApplyAutomaticallyCheckBox().isSelected(), panel);
+	}
+
+	public void handleCancelApply(FilterPanel filterPanel) {
+		viewUpdater.cancel();
+	}
+
+	public void handleApplyFilter(FilterPanel filterPanel) {
+		viewUpdater.requestWork();
 	}
 }

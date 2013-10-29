@@ -44,7 +44,6 @@ import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.CytoPanelComponentName;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -564,11 +563,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private void initView() {
 		createPreviewNetworkView();
-		
-		Properties props = new Properties();
-		props.setProperty("cytoPanelComponentName", CytoPanelComponentName.STYLE.toString());
-		servicesUtil.registerAllServices(vizMapperMainPanel, props);
-		
+		servicesUtil.registerAllServices(vizMapperMainPanel, new Properties());
 		addViewListeners();
 	}
 	

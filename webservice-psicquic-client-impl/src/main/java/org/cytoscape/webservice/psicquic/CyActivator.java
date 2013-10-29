@@ -42,7 +42,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ExpandNodeContextMenuFactory;
 import org.cytoscape.webservice.psicquic.ui.PSIMITagManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -86,7 +86,7 @@ public class CyActivator extends AbstractCyActivator {
 		PSIMI25VisualStyleBuilder vsBuilder = new PSIMI25VisualStyleBuilder(vsFactoryServiceRef,
 				discreteMappingFactoryRef, passthroughMappingFactoryRef);
 
-		final MergedNetworkBuilder builder = new MergedNetworkBuilder(cyNetworkFactoryServiceRef);
+		final CyNetworkBuilder builder = new CyNetworkBuilder(cyNetworkFactoryServiceRef);
 
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "Interaction Database Universal Client",

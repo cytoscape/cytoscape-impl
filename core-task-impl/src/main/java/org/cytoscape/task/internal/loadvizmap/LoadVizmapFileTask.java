@@ -43,10 +43,10 @@ public class LoadVizmapFileTask extends AbstractTask {
 
 	@ProvidesTitle
 	public String getTitle() {
-		return "Import Vizmap";
+		return "Import Visual Style";
 	}
 	
-	@Tunable(description = "Vizmap file", params = "fileCategory=vizmap;input=true")
+	@Tunable(description = "Visual Style file", params = "fileCategory=vizmap;input=true")
 	public File file;
 
 	private final VisualMappingManager vmMgr;

@@ -34,7 +34,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.RegistryManager;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.work.TaskIterator;
 
 public class ExpandNodeContextMenuFactory extends AbstractNodeViewTaskFactory {
@@ -45,10 +45,10 @@ public class ExpandNodeContextMenuFactory extends AbstractNodeViewTaskFactory {
 	private final PSICQUICRestClient client;
 
 	private final CyLayoutAlgorithmManager layouts;
-	private final MergedNetworkBuilder builder;
+	private final CyNetworkBuilder builder;
 
 	public ExpandNodeContextMenuFactory(CyEventHelper eh, VisualMappingManager vmm, final PSICQUICRestClient client,
-			final RegistryManager manager, final CyLayoutAlgorithmManager layouts, final MergedNetworkBuilder builder) {
+			final RegistryManager manager, final CyLayoutAlgorithmManager layouts, final CyNetworkBuilder builder) {
 		this.eh = eh;
 		this.vmm = vmm;
 		this.client = client;

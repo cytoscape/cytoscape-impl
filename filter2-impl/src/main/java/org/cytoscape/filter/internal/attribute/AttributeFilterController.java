@@ -1,9 +1,9 @@
 package org.cytoscape.filter.internal.attribute;
 
-import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
+import org.cytoscape.filter.internal.view.RangeChooserController;
 
 public interface AttributeFilterController {
 	AttributeFilter getFilter();
-	NumberRangeModel getSliderModel();
+	RangeChooserController getRangeChooserController();
 	void synchronize(AttributeFilterView view);
 }

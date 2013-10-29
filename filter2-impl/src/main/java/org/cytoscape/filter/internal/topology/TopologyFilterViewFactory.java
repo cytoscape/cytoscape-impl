@@ -2,7 +2,6 @@ package org.cytoscape.filter.internal.topology;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.NumberFormat;
 
 import javax.swing.GroupLayout;
 import javax.swing.JComponent;
@@ -10,7 +9,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.text.NumberFormatter;
 
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.Transformer;
@@ -66,7 +64,7 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 		public View(final Controller controller) {
 			ViewUtil.configureFilterView(this);
 			
-			thresholdField = new JFormattedTextField(createFormatter(0, Integer.MAX_VALUE));
+			thresholdField = new JFormattedTextField(ViewUtil.createIntegerFormatter(0, Integer.MAX_VALUE));
 			thresholdField.setHorizontalAlignment(JTextField.TRAILING);
 			thresholdField.setColumns(3);
 			thresholdField.addPropertyChangeListener("value", new PropertyChangeListener() {
@@ -77,7 +75,7 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			distanceField = new JFormattedTextField(createFormatter(1, Integer.MAX_VALUE));
+			distanceField = new JFormattedTextField(ViewUtil.createIntegerFormatter(1, Integer.MAX_VALUE));
 			distanceField.setHorizontalAlignment(JTextField.TRAILING);
 			distanceField.setColumns(3);
 			distanceField.addPropertyChangeListener("value", new PropertyChangeListener() {
@@ -118,16 +116,6 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 			controller.synchronize(this);
 		}
 		
-		NumberFormatter createFormatter(int minimum, int maximum) {
-			NumberFormat format = NumberFormat.getIntegerInstance();
-			NumberFormatter formatter = new NumberFormatter(format);
-			formatter.setMinimum(minimum);
-			formatter.setMaximum(maximum);
-			formatter.setValueClass(Integer.class);
-			formatter.setCommitsOnValidEdit(true);
-			return formatter;
-		}
-
 		@Override
 		public JFormattedTextField getThresholdField() {
 			return thresholdField;

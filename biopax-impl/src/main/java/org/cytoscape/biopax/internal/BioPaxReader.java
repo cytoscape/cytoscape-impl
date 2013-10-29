@@ -62,9 +62,7 @@ public class BioPaxReader extends AbstractInputStreamTaskFactory implements Netw
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream is, String inputName) {
-		if(inputName == null)
-			inputName = "BioPAX_Network"; //default fall-back
-		
+		LOG.info("createTaskIterator: input stream name: " + inputName);
 		return new TaskIterator(
 			new BioPaxReaderTask(is, inputName, cyServices, visualStyleUtil)
 		);

@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ public class PSIMITagManager {
 	}
 
 	private final void createMap() throws IOException {
-		final URL tableURL = MergedNetworkBuilder.class.getClassLoader().getResource("psimi_terms.txt");
+		final URL tableURL = CyNetworkBuilder.class.getClassLoader().getResource("psimi_terms.txt");
 		final BufferedReader reader = new BufferedReader(new InputStreamReader(tableURL.openStream()));
 
 		String line;
