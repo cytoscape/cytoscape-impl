@@ -58,17 +58,18 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JPopupMenu.Separator;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.application.swing.CytoPanelComponent2;
@@ -164,15 +165,16 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return null;
 	}
 
+	private JPanel defViewPanel = new JPanel();
+	
 	@Override
-	public JPanel getDefaultViewPanel() { // TODO: deprecate it?
-//		return this.defaultViewImagePanel;
-		return new JPanel();
+	public JPanel getDefaultViewPanel() {
+		return defViewPanel; // TODO ???
 	}
 	
 	@Override
 	public DefaultViewEditor getDefaultViewEditor() {
-		return this; // TODO: remove interface implementation???
+		return this;
 	}
 	
 	@Override
@@ -187,7 +189,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	@Override
 	public void showEditor(Component parent) {
-		// TODO deprecate it?
+		// TODO ???
 	}
 	
 	public VisualStyle getSelectedVisualStyle() {
@@ -377,11 +379,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		final int MAX_COLUMNS = 3;
 		final int MAX_ROWS = 5;
 		
-		final Color BG_COLOR = Color.WHITE;
-		final Color FG_COLOR = UIManager.getColor("Label.foreground");
-		final Color SEL_BG_COLOR = UIManager.getColor("List.selectionBackground");
-		final Color SEL_FG_COLOR = UIManager.getColor("List.selectionForeground");
-		final Color BORDER_COLOR = new Color(212, 212, 212);
+		final Color BG_COLOR;
+		final Color FG_COLOR;
+		final Color SEL_BG_COLOR;
+		final Color SEL_FG_COLOR;
+		final Color BORDER_COLOR;
 		
 		private int cols;
 		
@@ -400,6 +402,14 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			engineMap = new HashMap<String, RenderingEngine<CyNetwork>>();
 			
 			setHorizontalAlignment(LEFT);
+			
+			final JList list = new JList();
+			BG_COLOR = list.getBackground();
+			FG_COLOR = list.getForeground();
+			SEL_BG_COLOR = list.getSelectionBackground();
+			SEL_FG_COLOR = list.getSelectionForeground();
+			Separator sep = new Separator();
+			BORDER_COLOR = sep.getForeground();
 			
 			addActionListener(new ActionListener() {
 				@Override
