@@ -26,6 +26,7 @@ package org.cytoscape.welcome.internal.panel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -87,6 +88,12 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private static final Icon DATABASE_ICON;
 	private static final Icon OPEN_ICON;
 	
+	private static final Map<String, Icon> SPECIES_ICON = new HashMap<String, Icon>();
+
+	
+	private static final Font PRESET_FONT = new Font("SansSerif", Font.PLAIN, 12);
+	private static final Font PRESET_FONT_ITALIC = new Font("SansSerif", Font.ITALIC, 12);
+	
 	private static final Pattern METATAG = Pattern.compile("(.*?)<meta>(.+?)</meta>(.*?)");
 
 	static {
@@ -138,6 +145,24 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 			PRESET_ICON = new ImageIcon(presetImage);
 		else
 			PRESET_ICON = null;
+
+		// Species ICON
+		try {
+			SPECIES_ICON.put("Human", new ImageIcon(ImageIO.read(
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Homo_sapiens_NS.png"))));
+			SPECIES_ICON.put("Yeast", new ImageIcon(ImageIO.read(
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Saccharomyces_cerevisiae_NS.png"))));
+			SPECIES_ICON.put("Fly", new ImageIcon(ImageIO.read(
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Drosophila_melanogaster_NS.png"))));
+			SPECIES_ICON.put("Mouse", new ImageIcon(ImageIO.read(
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Mus_musculus_NS.png"))));
+			SPECIES_ICON.put("C. Elegans", new ImageIcon(ImageIO.read(
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Caenorhabditis_elegans_NS.png"))));
+			SPECIES_ICON.put("Arabidopsis", new ImageIcon(ImageIO.read(
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Arabidopsis_thaliana_NS.png"))));
+		} catch (IOException e) {
+			logger.warn("Could not create Icon.", e);
+		}
 	}
 	
 	public static final String WORKFLOW_ID = "welcomeScreenWorkflowID";
@@ -155,7 +180,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private final Map<ButtonModel, TaskFactory> button2taskMap = new HashMap<ButtonModel, TaskFactory>();
 	private JRadioButton noOptionTaskButton;
 
-	private List<JRadioButton> buttonList;
+	private List<JButton> buttonList;
 	private JPanel sourceButtons;
 	private ButtonGroup bGroup;
 
@@ -176,7 +201,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	}
 	
 	private void setFromDataSource() {
-		buttonList = new ArrayList<JRadioButton>();
+		buttonList = new ArrayList<JButton>();
 		
 		// Extract the URL entries
 		final Collection<DataSource> dataSources = dsManager.getDataSources(DataCategory.NETWORK);
@@ -203,10 +228,25 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 						final String sourceLabel = sourceName;
 						dataSourceMap.put(sourceLabel, link);
 
-						final JRadioButton button = new JRadioButton(sourceLabel);
+						final JButton button = new JButton(sourceLabel);
 						button.setToolTipText(tooltip);
+						if(sourceLabel.contains(".")) {
+							button.setFont(PRESET_FONT_ITALIC);
+						} else {
+							button.setFont(PRESET_FONT);
+						}
+						final Icon icon = SPECIES_ICON.get(sourceLabel);
+						if(icon != null) {
+							button.setIcon(icon);
+						}
 						buttonList.add(button);
 						labelSet.add(sourceLabel);
+						button.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent arg0) {
+								loadPreset(button);
+							}
+						});
 					}
 				}
 			}
@@ -220,7 +260,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		int rowCount = buttonList.size()/2;
 		int mod = buttonList.size()%2;
 		sourceButtons.setLayout(new GridLayout(rowCount+mod, 2));
-		for(JRadioButton rb: buttonList) {
+		for(JButton rb: buttonList) {
 			sourceButtons.add(rb);
 			sourceButtons.setOpaque(false);
 			bGroup.add(rb);
@@ -289,23 +329,12 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		this.add(buttonPanel);
 
 		final JPanel presetPanel = new JPanel();
-		presetPanel.setBorder(BorderFactory.createTitledBorder("From Preset Network"));
+		presetPanel.setBorder(BorderFactory.createTitledBorder("From Organism Network"));
 		presetPanel.setOpaque(false);
 		presetPanel.setLayout(new BorderLayout());
 		JScrollPane buttonScrollPane = new JScrollPane();
 		buttonScrollPane.setViewportView(sourceButtons);
 		presetPanel.add(buttonScrollPane, BorderLayout.CENTER);
-		final JButton importPresetButton = new JButton("Load Preset Network");
-		importPresetButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				loadPreset();
-			}
-			
-		});
-		presetPanel.add(importPresetButton, BorderLayout.SOUTH);
-
 		this.add(presetPanel);
 		
 		createPresetTasks();
@@ -316,15 +345,11 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		importNetwork(itr);
 	}
 
-	private void loadPreset() {
+	private void loadPreset(JButton button) {
 		// Get selected file from the combo box
 		Object file = null;
-		for(JRadioButton button: buttonList) {
-			if(button.isSelected()) {
-				file = button.getText();
-				break;
-			}
-		}
+		
+		file = button.getText();
 		
 		if (file == null)
 			return;
