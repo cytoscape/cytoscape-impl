@@ -104,7 +104,7 @@ public class WebServiceImportDialog<T> extends JDialog {
 	boolean readyToShow;
 	
 	public WebServiceImportDialog(final Class<T> type, final String title, final CySwingApplication cySwingApplicationServiceRef, final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser) {
-		super(cySwingApplicationServiceRef.getJFrame(), true);
+		super(cySwingApplicationServiceRef.getJFrame(), false);
 		if (taskManager == null)
 			throw new NullPointerException("TaskManager is null.");
 
