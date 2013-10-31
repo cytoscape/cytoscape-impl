@@ -29,8 +29,11 @@ import static org.cytoscape.webservice.psicquic.mapper.InteractionClusterMapper.
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.cytoscape.model.CyEdge;
@@ -41,6 +44,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +107,7 @@ public class CyNetworkBuilder {
 		String line;
 		int i = 0;
 		while ((line = reader.readLine()) != null) {
+			
 			if (cancel) {
 				logger.warn("Network bulilder interrupted.");
 				network.getRow(network).set(CyNetwork.NAME, "<Incomplete!> " + networkTitle);
@@ -114,21 +119,33 @@ public class CyNetworkBuilder {
 
 			// Skip invalid lines
 			if (parts.length < MINIMUM_COLUMN_COUNT) {
+				logger.error("Invalid line found: required columns are missing: " + line);
 				continue;
 			}
-
-			// Extract unique ID
 
 			// Bad entry check
 			if (parts[0] == null || parts[1] == null) {
+				logger.warn("Invalid line found: ID is empty: " + line);
 				continue;
 			}
 
-			final String sourceFirst = SPLITTER.split(parts[0])[0];
-			final String targetFirst = SPLITTER.split(parts[1])[0];
-			final String[] sourceParts = SPLITTER_NAME_SPACE.split(sourceFirst);
-			final String[] targetParts = SPLITTER_NAME_SPACE.split(targetFirst);
-			if (sourceParts.length < 2 || targetParts.length < 2) {
+			String sourceFirst = SPLITTER.split(parts[0])[0];
+			String targetFirst = SPLITTER.split(parts[1])[0];
+			
+			if(sourceFirst.equals("-") && targetFirst.equals("-")) {
+				logger.warn("Invalid line: both SOURCE/TARGET IDs are missing: " + line + "\n");
+				continue;
+			} else if(targetFirst.equals("-")) {
+				// This is for self-interaction
+				targetFirst = sourceFirst;
+			} else if(sourceFirst.equals("-")) {
+				sourceFirst = targetFirst;
+			}
+
+			final String[] sourceParts = mapper.parseValues(sourceFirst);
+			final String[] targetParts = mapper.parseValues(targetFirst);
+			if (sourceParts[1] == null || targetParts[1] == null) {
+				logger.warn("INVALID ID: SOURCE/TARGET: " + sourceFirst + ", " + targetFirst + "\n");
 				continue;
 			}
 			final String sourceID = sourceParts[1];
@@ -138,10 +155,10 @@ public class CyNetworkBuilder {
 			final CyNode targetNode = addNode(nodes, targetID, network);
 
 			mapper.mapNodeColumn(parts, network.getRow(sourceNode), network.getRow(targetNode));
-
 			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
-			mapper.mapEdgeColumn(parts, network.getRow(newEdge));
+			mapper.mapEdgeColumn(parts, network.getRow(newEdge), newEdge, sourceID, targetID);
 
+//			network.getRow(newEdge).set(CyEdge.INTERACTION, Integer.toString(i));
 			// Create new attribute if cross species
 			// processCrossSpeciesEdge(network.getRow(newEdge),
 			// network.getRow(sourceNode), network.getRow(targetNode));
@@ -261,6 +278,8 @@ public class CyNetworkBuilder {
 			edgeTable.createListColumn(InteractionClusterMapper.EXPERIMENT, String.class, false);
 		if (edgeTable.getColumn(InteractionClusterMapper.CROSS_SPECIES_EDGE) == null)
 			edgeTable.createColumn(InteractionClusterMapper.CROSS_SPECIES_EDGE, Boolean.class, false);
+		if (edgeTable.getColumn(InteractionClusterMapper.SOURCE_DB) == null)
+			edgeTable.createColumn(InteractionClusterMapper.SOURCE_DB, String.class, false);
 
 	}
 

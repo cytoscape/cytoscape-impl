@@ -45,15 +45,11 @@ class ButtonDelegator {
 		isMacPlatform = os.regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
 	}
 
-	final void delegateMouseEvent(MouseEvent e) {
+	void delegateMouseEvent(MouseEvent e) {
 		// single click or release (i.e. no clicks)
 		if ( e.getClickCount() <= 1 ) {
 			if ( isLeftClick(e) ) {
-				if ( e.isControlDown() ) {
-					singleLeftControlClick(e);
-				} else {
-					singleLeftClick(e);
-				}
+				singleLeftClick(e);
 			} else if ( isMiddleClick(e) ) {
 				singleMiddleClick(e);
 			} else if ( isRightClick(e) ) {
@@ -68,7 +64,6 @@ class ButtonDelegator {
 	}
 
 	void singleLeftClick(MouseEvent e) {}; 
-	void singleLeftControlClick(MouseEvent e) {};
 	void singleMiddleClick(MouseEvent e) {};
 	void singleRightClick(MouseEvent e) {}; 
 	void doubleLeftClick(MouseEvent e) {}; 
@@ -76,7 +71,7 @@ class ButtonDelegator {
 	private boolean isLeftClick(MouseEvent e) {
 		boolean b1 = (e.getButton() == MouseEvent.BUTTON1);
 		if ( isMacPlatform ) {
-			return (!e.isControlDown() && !e.isAltDown() && b1);
+			return (!e.isControlDown() && !e.isMetaDown() && b1);
 		}
 		return b1;
 	}
@@ -84,8 +79,8 @@ class ButtonDelegator {
 	private boolean isRightClick(MouseEvent e) {
 		boolean b3 = (e.getButton() == MouseEvent.BUTTON3); 
 		if ( !b3 && isMacPlatform ) {
-			// meta - left click
-			return (e.isControlDown() && !e.isAltDown() && (e.getButton() == MouseEvent.BUTTON1));
+			// control - right click
+			return (e.isControlDown() && !e.isMetaDown() && (e.getButton() == MouseEvent.BUTTON1));
 		}
 		return b3;
 	}
@@ -93,8 +88,8 @@ class ButtonDelegator {
 	private boolean isMiddleClick(MouseEvent e) {
 		boolean b2 = (e.getButton() == MouseEvent.BUTTON2); 
 		if ( !b2 && isMacPlatform ) {
-			// alt - left click
-			return (!e.isControlDown() && e.isAltDown() && (e.getButton() == MouseEvent.BUTTON1));
+			// meta - left click
+			return (!e.isControlDown() && e.isMetaDown() && (e.getButton() == MouseEvent.BUTTON1));
 		}
 		return b2;
 	}

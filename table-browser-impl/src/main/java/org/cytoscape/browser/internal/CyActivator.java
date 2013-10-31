@@ -71,7 +71,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 
-		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(guiTaskManagerServiceRef, openBrowserServiceRef);
+		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(guiTaskManagerServiceRef, openBrowserServiceRef, cyApplicationManagerServiceRef, cyEventHelperServiceRef);
 		
 		IconManagerImpl iconManager = new IconManagerImpl();
 		

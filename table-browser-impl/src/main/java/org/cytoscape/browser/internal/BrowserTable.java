@@ -111,6 +111,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private static final TableCellRenderer cellRenderer = new BrowserTableCellRenderer();
 	private static final String MAC_OS_ID = "mac";
+	private static final String WIN_OS_ID = "Windows";
 
 	private Clipboard systemClipboard;
 	private CellEditorRemover editorRemover = null;
@@ -174,9 +175,11 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	 * Routine which determines if we are running on mac platform
 	 */
 	private boolean isMacPlatform() {
-		String os = System.getProperty("os.name");
-
-		return os.regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
+		return System.getProperty("os.name").regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
+	}
+	
+	private boolean isWinPlatform() {
+		return System.getProperty("os.name").startsWith(WIN_OS_ID);
 	}
 
 	protected void initHeader() {
@@ -195,7 +198,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		addMouseListener(new MouseAdapter() {
 
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void mouseClicked(final MouseEvent e) {
 				final int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
 				final int viewRow = e.getY() / getRowHeight();
 
@@ -215,15 +218,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 				// If action is right click, then show edit pop-up menu
 				if ((SwingUtilities.isRightMouseButton(e)) || (isMacPlatform() && e.isControlDown())) {
-					final int[] selectedRows = table.getSelectedRows();
-					int binarySearch = Arrays.binarySearch(selectedRows, viewRow);
+					if (isWinPlatform())
+						selectFocusedCell(e);
 					
-					// Select clicked cell, if not selected yet
-					if (binarySearch < 0) {
-						// Clicked row not selected: Select only the right-clicked row/cell
-						table.changeSelection(viewRow, viewColumn, false, false);
-					}
-
 					// Show context menu
 					final CyColumn cyColumn = tableModel.getColumn(modelColumn);
 					final Object primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(modelRow,
@@ -236,17 +233,12 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 
 			@Override
-			public void mousePressed(MouseEvent e) {
-				final int row = e.getY() / getRowHeight();
-				final int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
-				
-				// So the last clicked cell is highlighted properly
-				((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(row);
-				table.setColumnSelectionInterval(viewColumn, viewColumn);
+			public void mousePressed(final MouseEvent e) {
+				selectFocusedCell(e);
 			}
 			
 			@Override
-			public void mouseReleased(MouseEvent e) {
+			public void mouseReleased(final MouseEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -254,11 +246,31 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 					}
 				});
 			}
+			
+			private void selectFocusedCell(final MouseEvent e) {
+				final int row = e.getY() / getRowHeight();
+				final int column = getColumnModel().getColumnIndexAtX(e.getX());
+				
+				final int[] selectedRows = table.getSelectedRows();
+				int binarySearch = Arrays.binarySearch(selectedRows, row);
+				
+				// Select clicked cell, if not selected yet
+				if (binarySearch < 0) {
+					// Clicked row not selected: Select only the right-clicked row/cell
+					table.changeSelection(row, column, false, false);
+				} else {
+					// Row is already selected: Just guarantee the last clicked cell is highlighted properly
+					((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(row);
+					table.setColumnSelectionInterval(column, column);
+					
+					final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
+					tableModel.fireTableRowsUpdated(selectedRows[0], selectedRows[selectedRows.length-1]);
+				}
+			}
 		});
 	}
 
 	private void selectFromTable() {
-
 		final TableModel model = this.getModel();
 		if (model instanceof BrowserTableModel == false)
 			return;

@@ -111,7 +111,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setZoom(double zoom) {
 		font=font.deriveFont(((float)(zoom/getZoom()))*font.getSize2D());
 
-		setSize(getAnnotationWidth(), getAnnotationHeight());
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 		super.setZoom(zoom);
 	}
 
@@ -119,13 +120,16 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setSpecificZoom(double zoom) {
 		font=font.deriveFont(((float)(zoom/getSpecificZoom()))*font.getSize2D());
 				
-		setSize(getAnnotationWidth(), getAnnotationHeight());
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 		super.setSpecificZoom(zoom);
 	}
 
 	@Override
 	public void setText(String text) {
 		this.text = text;
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	@Override
@@ -144,6 +148,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	@Override
@@ -154,6 +160,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontStyle(int style) {
 		font = font.deriveFont(style, fontSize);
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	@Override
@@ -165,6 +173,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	@Override
@@ -176,6 +186,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	public void setFont(Font font) { 
 		this.font = font; 
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	public JDialog getModifyDialog() {

@@ -806,11 +806,15 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkTaskFactoryProps.setProperty(TITLE,"Destroy Network");
 		destroyNetworkTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkTaskFactoryProps.setProperty(MENU_GRAVITY,"3.2");
-		destroyNetworkTaskFactoryProps.setProperty(COMMAND,"destroy");
-		destroyNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		//destroyNetworkTaskFactoryProps.setProperty(COMMAND,"destroy");
+		//destroyNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
 		registerService(bc,destroyNetworkTaskFactory,NetworkCollectionTaskFactory.class, destroyNetworkTaskFactoryProps);
 		registerService(bc,destroyNetworkTaskFactory,DestroyNetworkTaskFactory.class, destroyNetworkTaskFactoryProps);
-		registerService(bc,destroyNetworkTaskFactory,TaskFactory.class, destroyNetworkTaskFactoryProps);
+		Properties destroyNetworkTaskFactoryProps2 = new Properties();
+		destroyNetworkTaskFactoryProps2.setProperty(ENABLE_FOR,"network");
+		destroyNetworkTaskFactoryProps2.setProperty(COMMAND,"destroy");
+		destroyNetworkTaskFactoryProps2.setProperty(COMMAND_NAMESPACE,"network");
+		registerService(bc,destroyNetworkTaskFactory,TaskFactory.class, destroyNetworkTaskFactoryProps2);
 
 
 		Properties destroyNetworkViewTaskFactoryProps = new Properties();

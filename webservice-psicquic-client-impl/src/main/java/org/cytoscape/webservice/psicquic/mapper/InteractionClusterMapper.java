@@ -74,6 +74,8 @@ public class InteractionClusterMapper {
 	static final String PUB_ID = "publication id";
 	static final String PUB_DB = "publication db";
 
+	static final String SOURCE_DB = "Source Database";
+
 	static final String EXPERIMENT = "experiment";
 
 	private final static Pattern exact1Pattern = Pattern.compile("^[A-Z][A-Z][A-Z]\\d");
@@ -94,6 +96,9 @@ public class InteractionClusterMapper {
 	boolean isInitialized = false;
 
 	private String currentGeneName = null;
+
+	// Flag to indicates edge is self-interaction or not.
+	private boolean isSelfEdge = false;
 
 	public InteractionClusterMapper() {
 		namespaceSet = new HashSet<String>();
@@ -123,7 +128,7 @@ public class InteractionClusterMapper {
 	 * @return String array of result. 1: namespace, 2: value, and 3:
 	 *         description.
 	 */
-	private final String[] parseValues(final String entry) {
+	public final String[] parseValues(final String entry) {
 		final String[] values = new String[3];
 
 		// Extract name space
@@ -151,7 +156,12 @@ public class InteractionClusterMapper {
 		final Map<String, String> map = new HashMap<String, String>();
 		final String[] names = SPLITTER.split(nameText);
 
-		for (String name : names) {
+		for (final String name : names) {
+			// Ignore invalid line
+			if (name.equals("-")) {
+				this.isSelfEdge = true;
+				continue;
+			}
 			final String[] parts = SPLITTER_NAME_SPACE.split(name);
 			map.put(parts[0], parts[1]);
 		}
@@ -172,6 +182,7 @@ public class InteractionClusterMapper {
 
 		for (String[] entry : entries) {
 			for (String name : entry) {
+
 				final String[] parsed = parseValues(name);
 				List<String> list = map.get(parsed[0]);
 				if (list == null) {
@@ -194,6 +205,7 @@ public class InteractionClusterMapper {
 	}
 
 	public void mapNodeColumn(final String[] entries, final CyRow sourceRow, final CyRow targetRow) {
+		this.isSelfEdge = false;
 
 		// for (int i = 0; i < entries.length; i++) {
 		// String[] oneEntry = SPLITTER.split(entries[i]);
@@ -207,9 +219,7 @@ public class InteractionClusterMapper {
 		// System.out.print("\n\n");
 
 		final Map<String, String> accsSource = createNames(entries[0]);
-		final Map<String, String> accsTarget = createNames(entries[1]);
 		processNames(sourceRow, accsSource);
-		processNames(targetRow, accsTarget);
 
 		final Map<String, List<String>> otherSource = createOtherNames(entries[2], entries[4]);
 		processOtherNames(sourceRow, otherSource);
@@ -218,21 +228,26 @@ public class InteractionClusterMapper {
 		else {
 			guessHumanReadableName(sourceRow);
 		}
-
-		final Map<String, List<String>> otherTarget = createOtherNames(entries[3], entries[5]);
-		processOtherNames(targetRow, otherTarget);
-		if (currentGeneName != null)
-			targetRow.set(PREDICTED_GENE_NAME, currentGeneName);
-		else {
-			guessHumanReadableName(targetRow);
-		}
-
 		setSpecies(entries[9], sourceRow);
-		setSpecies(entries[10], targetRow);
 
-		// For 2.6 data
-
+		if (!isSelfEdge) {
+			final Map<String, String> accsTarget = createNames(entries[1]);
+			processNames(targetRow, accsTarget);
+			final Map<String, List<String>> otherTarget = createOtherNames(entries[3], entries[5]);
+			processOtherNames(targetRow, otherTarget);
+			if (currentGeneName != null)
+				targetRow.set(PREDICTED_GENE_NAME, currentGeneName);
+			else {
+				guessHumanReadableName(targetRow);
+			}
+			setSpecies(entries[10], targetRow);
+		}
+		
 		// For 2.7 data
+		parse27Entries();
+	}
+
+	private final void parse27Entries() {
 
 	}
 
@@ -297,7 +312,7 @@ public class InteractionClusterMapper {
 		if (pubDBList.isEmpty() == false)
 			row.set(PUB_DB, pubDBList);
 
-		// Interaction (use DB names)
+		// Interaction (use UniqueID)
 		row.set(CyEdge.INTERACTION, interaction.getMappingIdDbNames());
 
 		final List<Confidence> scores = interaction.getConfidenceValues();
@@ -509,7 +524,8 @@ public class InteractionClusterMapper {
 		return false;
 	}
 
-	public void mapEdgeColumn(final String[] entries, final CyRow row) {
+	public void mapEdgeColumn(final String[] entries, final CyRow row, final CyEdge edge, final String sourceName,
+			final String targetName) {
 		final String[] detectionMethods = SPLITTER.split(entries[6]);
 		final List<String> methods = new ArrayList<String>();
 		for (final String entry : detectionMethods) {
@@ -527,7 +543,6 @@ public class InteractionClusterMapper {
 		for (final String entry : pubID) {
 			String id = parseValues(entry)[1];
 			String db = parseValues(entry)[0];
-
 			if (id != null && db != null) {
 				pubDBList.add(db);
 				pubIdList.add(id);
@@ -541,17 +556,25 @@ public class InteractionClusterMapper {
 
 		// Interaction (use DB names)
 		final String[] dbNames = SPLITTER.split(entries[12]);
-		row.set(CyEdge.INTERACTION, parseValues(dbNames[0])[0]);
+		row.set(SOURCE_DB, parseValues(dbNames[0])[0]);
+
+		// Set interaction: this is an ID.
+		final String[] interactionID = SPLITTER.split(entries[13]);
+		final String interaction = parseValues(interactionID[0])[1];
+		row.set(CyEdge.INTERACTION, interaction);
+
+		// Create name
+		row.set(CyNetwork.NAME, sourceName + " (" + interaction + ") " + targetName);
 
 		final String[] scores = SPLITTER.split(entries[14]);
 		for (String score : scores) {
 			final String[] scoreArray = parseValues(score);
 			String scoreType = "Confidence-Score-" + scoreArray[0];
 			String value = scoreArray[1];
-			if(value == null) {
+			if (value == null) {
 				continue;
 			}
-			
+
 			if (row.getTable().getColumn(scoreType) == null)
 				row.getTable().createColumn(scoreType, Double.class, true);
 

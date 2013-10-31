@@ -75,7 +75,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			setText("");
 		} else {
 			final String displayText = (objEditStr.getErrorText() != null)
-				? objEditStr.getErrorText()
+				? "#ERR: " + objEditStr.getErrorText()
 				: objEditStr.getValidatedObject().toString();
 			setText(displayText);
 			String tooltipText = displayText;
