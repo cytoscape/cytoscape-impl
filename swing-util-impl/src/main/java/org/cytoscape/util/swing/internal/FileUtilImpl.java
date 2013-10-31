@@ -31,10 +31,7 @@ import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -236,7 +233,7 @@ class FileUtilImpl implements FileUtil {
 							for (final FileChooserFilter filter : filters) {
 								String []filterExtensions = filter.getExtensions();
 								for (int t = 0; t < filterExtensions.length; ++t) {
-									if(path.endsWith("."+filterExtensions[t]))
+									if(filterExtensions[t].equals("") || path.endsWith("."+filterExtensions[t]))
 										extensionFound = true;
 								}
 							}
