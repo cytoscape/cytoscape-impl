@@ -279,7 +279,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		mouseDraggedDelegator.delegateMouseDragEvent(e);
+		mouseDraggedDelegator.delegateMouseEvent(e);
 	}
 
 	@Override
@@ -415,8 +415,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private int toggleSelectedNode(long chosenNode, MouseEvent e) {
 		int chosenNodeSelected = 0;
 		final boolean wasSelected = m_view.getDNodeView(chosenNode).isSelected();
-
-		if (wasSelected && e.isShiftDown()) {
+		//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+		if (wasSelected && (e.isShiftDown() || (e.isControlDown() && !e.isAltDown()))) {
 			((DNodeView) m_view.getDNodeView(chosenNode)).unselectInternal();
 			chosenNodeSelected = -1;
 		} else if (!wasSelected) {
@@ -430,8 +430,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 	
-	private void toggleChosenAnchor (long chosenAnchor, MouseEvent e) {		
-		if (e.isAltDown() || e.isMetaDown()) {
+	private void toggleChosenAnchor (long chosenAnchor, MouseEvent e) {
+		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
+		if (e.isAltDown()) {
 			// Remove handle
 			final long edge = chosenAnchor >>> 6;
 			final int anchorInx = (int)(chosenAnchor & 0x000000000000003f);
@@ -441,11 +442,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_button1NodeDrag = false;
 		} else {
 			final boolean wasSelected = m_view.m_selectedAnchors.count(chosenAnchor) > 0;
-
-			if (wasSelected && e.isShiftDown())
+			//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+			if (wasSelected && (e.isShiftDown() || (e.isControlDown() && !e.isAltDown())))
 				m_view.m_selectedAnchors.delete(chosenAnchor);
 			else if (!wasSelected) {
-				if (!e.isShiftDown())
+				if (!e.isShiftDown() && !(e.isControlDown() && !e.isAltDown()))
 					m_view.m_selectedAnchors.empty();
 
 				m_view.m_selectedAnchors.insert(chosenAnchor);
@@ -461,7 +462,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		int chosenEdgeSelected = 0;
 		
 		// Add new Handle for Edge Bend.
-		if ((e.isAltDown() || e.isMetaDown()) && ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
+		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
+		if ((e.isAltDown()) && ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
 			
 			m_view.m_selectedAnchors.empty();
 			m_ptBuff[0] = m_lastXMousePos;
@@ -476,8 +478,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 
 		final boolean wasSelected = m_view.getDEdgeView(chosenEdge).isSelected();
-
-		if (wasSelected && e.isShiftDown()) {
+		
+		//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+		if (wasSelected && (e.isShiftDown() || (e.isControlDown() && !e.isAltDown()))) {
 			((DEdgeView) m_view.getDEdgeView(chosenEdge)).unselectInternal();
 			chosenEdgeSelected = -1;
 		} else if (!wasSelected) {
@@ -1076,8 +1079,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				if (m_view.m_edgeSelection && (chosenNode < 0) && (chosenAnchor < 0)) {
 					chosenEdge = getChosenEdge();
 				}
-	
-				if ((!e.isShiftDown() && !e.isMetaDown()) // If shift is down never unselect.
+				//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+				if ((!e.isShiftDown() && !(e.isControlDown() && !e.isAltDown()) && !e.isMetaDown()) // If shift is down never unselect.
 				    && (((chosenNode < 0) && (chosenEdge < 0) && (chosenAnchor < 0)) // Mouse missed all.
 				       // Not [we hit something but it was already selected].
 				       || !( ((chosenNode >= 0) && m_view.getDNodeView(chosenNode).isSelected())
@@ -1143,12 +1146,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			// Repaint after listener events are fired because listeners may change
 			// something in the graph view.
 			repaint();
-		}
-	
-		@Override
-		void singleLeftControlClick(MouseEvent e) {
-			// Cascade
-			this.singleLeftClick(e);
 		}
 	
 		@Override
@@ -1243,6 +1240,21 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 
 	private final class MouseReleasedDelegator extends ButtonDelegator {
+		@Override
+		// delegate based on the originally-pressed button so as not to change actions mid-click
+		public void delegateMouseEvent(MouseEvent e) {
+			switch(m_currMouseButton) {
+				case 1:
+					singleLeftClick(e);
+					break;
+				case 2:
+					singleMiddleClick(e);
+					break;
+				case 3:
+					singleRightClick(e);
+					break;
+			}
+		}
 
 		@Override
 		void singleLeftClick(MouseEvent e) {
@@ -1320,11 +1332,19 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 
 	private final class MouseDraggedDelegator extends ButtonDelegator {
-
-		// emulate right click and middle click with a left clic and a modifier
-		// TODO: make sure to be consistent with other emulation inside cytoscape and on Mac OSX
-		static final int FAKEMIDDLECLIC = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.META_DOWN_MASK;
-		static final int FAKERIGHTCLIC  = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK;
+		
+		// delegate based on the originally-pressed button so as not to change actions mid-click
+		@Override
+		public void delegateMouseEvent(MouseEvent e) {
+			switch(m_currMouseButton) {
+				case 1:
+					singleLeftClick(e);
+					break;
+				case 2:
+					singleMiddleClick(e);
+					break;
+			}
+		}
 		
 		@Override
 		void singleLeftClick(MouseEvent e) {
@@ -1415,28 +1435,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			repaint();
 		}
 
-		public void delegateMouseDragEvent(MouseEvent e) {
-			// Note: the fake clicks are here for OSX but I do not see a reason to disable them on other systems
-			switch (e.getModifiersEx()) {
-			case MouseEvent.BUTTON1_DOWN_MASK:
-				singleLeftClick(e);
-				break;
-			// The above case isn't sufficient to allow extended selection
-			// via drags
-			case (MouseEvent.BUTTON1_DOWN_MASK|MouseEvent.SHIFT_DOWN_MASK):
-				singleLeftClick(e);
-				break;
-			case MouseEvent.BUTTON2_DOWN_MASK:
-			case FAKEMIDDLECLIC:
-				singleMiddleClick(e);
-				break;
-			case MouseEvent.BUTTON3_DOWN_MASK:
-			case FAKERIGHTCLIC:
-				singleRightClick(e);
-				break;
-			}
-		}
-
 		@Override
 		void singleMiddleClick(MouseEvent e) {
 			double deltaX = e.getX() - m_lastXMousePos;
@@ -1454,21 +1452,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_xCenter);
 			m_view.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_yCenter);
 			
-			repaint();
-		}
-
-		@Override
-		void singleRightClick(MouseEvent e) {
-			//System.out.println("MouseDragged ----> singleRightClick");
-			double deltaY = e.getY() - m_lastYMousePos;
-	
-			synchronized (m_lock) {
-				m_lastXMousePos = e.getX();
-				m_lastYMousePos = e.getY();
-				m_scaleFactor *= Math.pow(2, -deltaY / 300.0d);
-			}
-	
-			m_view.m_viewportChanged = true;
 			repaint();
 		}
 	}
