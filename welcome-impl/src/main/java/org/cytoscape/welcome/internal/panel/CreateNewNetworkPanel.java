@@ -91,8 +91,8 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private static final Map<String, Icon> SPECIES_ICON = new HashMap<String, Icon>();
 
 	
-	private static final Font PRESET_FONT = new Font("SansSerif", Font.PLAIN, 12);
-	private static final Font PRESET_FONT_ITALIC = new Font("SansSerif", Font.ITALIC, 12);
+	private static final Font PRESET_FONT = new Font("SansSerif", Font.PLAIN, 11);
+	private static final Font PRESET_FONT_ITALIC = new Font("SansSerif", Font.ITALIC, 11);
 	
 	private static final Pattern METATAG = Pattern.compile("(.*?)<meta>(.+?)</meta>(.*?)");
 
@@ -156,10 +156,14 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Drosophila_melanogaster_NS.png"))));
 			SPECIES_ICON.put("Mouse", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Mus_musculus_NS.png"))));
-			SPECIES_ICON.put("C. Elegans", new ImageIcon(ImageIO.read(
+			SPECIES_ICON.put("C. elegans", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Caenorhabditis_elegans_NS.png"))));
 			SPECIES_ICON.put("Arabidopsis", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Arabidopsis_thaliana_NS.png"))));
+			SPECIES_ICON.put("Zebrafish", new ImageIcon(ImageIO.read(
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Danio_rerio_NS.png"))));
+			SPECIES_ICON.put("E. coli", new ImageIcon(ImageIO.read(
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Escherichia_coli_NS.png"))));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
