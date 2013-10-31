@@ -66,7 +66,8 @@ public class BrowserTableTest {
 	
 	public BrowserTableTest(){
 		EquationCompiler equationCompiler = mock(EquationCompiler.class);
-		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(mock(TaskManager.class), mock(OpenBrowser.class));
+		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(mock(TaskManager.class), mock(OpenBrowser.class),
+				mock(CyApplicationManager.class), mock(CyEventHelper.class));
 		tableManager = mock(CyTableManager.class);
 		eventHelper = new DummyCyEventHelper();
 		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, mock(CyApplicationManager.class), eventHelper, tableManager );

@@ -29,24 +29,32 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 
@@ -57,38 +65,47 @@ import org.cytoscape.work.TaskManager;
 public class PopupMenuHelper {
 
 	private final TaskManager<?, ?> taskManager;
-	private final Map<TableCellTaskFactory, Map> tableCellFactoryMap;
-	private final Map<TableColumnTaskFactory, Map> tableColumnFactoryMap;
+	private final CyApplicationManager applicationManager;
+	private final CyEventHelper eventHelper;
+	private final Map<TableCellTaskFactory, Map<?, ?>> tableCellFactoryMap;
+	private final Map<TableColumnTaskFactory, Map<?, ?>> tableColumnFactoryMap;
 	private final StaticTaskFactoryProvisioner factoryProvisioner;
 	
 	private final OpenBrowser openBrowser;
 
-	public PopupMenuHelper(final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser) {
+	public PopupMenuHelper(final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser,
+			final CyApplicationManager applicationManager, final CyEventHelper eventHelper) {
 		this.taskManager = taskManager;
 		this.openBrowser = openBrowser;
+		this.applicationManager = applicationManager;
+		this.eventHelper = eventHelper;
 		
-		tableCellFactoryMap = new HashMap<TableCellTaskFactory, Map>();
-		tableColumnFactoryMap = new HashMap<TableColumnTaskFactory, Map>();
+		tableCellFactoryMap = new HashMap<TableCellTaskFactory, Map<?, ?>>();
+		tableColumnFactoryMap = new HashMap<TableColumnTaskFactory, Map<?, ?>>();
 		factoryProvisioner = new StaticTaskFactoryProvisioner();
 	}
 
-	public void createColumnHeaderMenu(final CyColumn column, final Class<? extends CyIdentifiable> tableType, final Component invoker, final int x, final int y) {
+	public void createColumnHeaderMenu(final CyColumn column, final Class<? extends CyIdentifiable> tableType,
+			final Component invoker, final int x, final int y) {
 		if (tableColumnFactoryMap.isEmpty())
 			return;
 
 		final JPopupMenu menu = new JPopupMenu();
 		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
 
-		for (final Map.Entry<TableColumnTaskFactory, Map> mapEntry : tableColumnFactoryMap.entrySet()) {
+		for (final Map.Entry<TableColumnTaskFactory, Map<?, ?>> mapEntry : tableColumnFactoryMap.entrySet()) {
 			TableColumnTaskFactory taskFactory = mapEntry.getKey();
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column);
 			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
 		}
-		if(menu.getSubElements().length > 0)
+		
+		if (menu.getSubElements().length > 0)
 			menu.show(invoker, x, y);
 	}
 
-	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue, final Class<? extends CyIdentifiable> tableType, final Component invoker,
+	@SuppressWarnings("serial")
+	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue,
+			final Class<? extends CyIdentifiable> tableType, final Component invoker,
 			final int x, final int y, final JTable table) {
 		final JPopupMenu menu = new JPopupMenu();
 		
@@ -103,18 +120,41 @@ public class PopupMenuHelper {
 				table.transferFocus();
 			}
 		}));
+		
 		final Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
+		
 		if (value != null)
 			menu.add(getOpenLinkMenu(value.toString()));
 		
 		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
 
-		for (final Map.Entry<TableCellTaskFactory, Map> mapEntry : tableCellFactoryMap.entrySet()) {
+		for (final Map.Entry<TableCellTaskFactory, Map<?, ?>> mapEntry : tableCellFactoryMap.entrySet()) {
 			TableCellTaskFactory taskFactory = mapEntry.getKey();
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
 			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
 		}
-		if(menu.getSubElements().length > 0)
+		
+		if (tableType == CyNode.class || tableType == CyEdge.class) {
+			menu.add(new JSeparator());
+			
+			final String name = String.format("Select %s from selected rows", 
+					tableType == CyNode.class ? "nodes" : "edges");
+			
+			final JMenuItem mi = new JMenuItem(new AbstractAction(name) {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					selectElementsFromSelectedRows(table, tableType);
+				}
+				
+				@Override
+				public boolean isEnabled() {
+					return table.getSelectedRowCount() > 0 && applicationManager.getCurrentNetwork() != null;
+				}
+			});
+			menu.add(mi);
+		}
+		
+		if (menu.getSubElements().length > 0)
 			menu.show(invoker, x, y);
 	}
 
@@ -123,7 +163,8 @@ public class PopupMenuHelper {
 	 * "title" and "preferredMenu" keywords, depending on which are present in
 	 * the service properties.
 	 */
-	private void createMenuItem(final TaskFactory tf, final PopupMenuGravityTracker tracker, final Map props, final Class<? extends CyIdentifiable> tableType) {
+	private void createMenuItem(final TaskFactory tf, final PopupMenuGravityTracker tracker, final Map<?, ?> props,
+			final Class<? extends CyIdentifiable> tableType) {
 		if (!enabledFor(tableType, props))
 			return;
 		
@@ -135,7 +176,7 @@ public class PopupMenuHelper {
 			tracker.addMenuItem(new JMenuItem(new PopupAction(tf, menuLabel)), GravityTracker.USE_ALPHABETIC_ORDER);
 	}
 
-	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map props) {
+	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map<?, ?> props) {
 		String types = (String) props.get("tableTypes");
 		if (types == null) {
 			return true;
@@ -162,19 +203,19 @@ public class PopupMenuHelper {
 		return false;
 	}
 
-	public void addTableColumnTaskFactory(final TableColumnTaskFactory newFactory, final Map properties) {
+	public void addTableColumnTaskFactory(final TableColumnTaskFactory newFactory, final Map<?, ?> properties) {
 		tableColumnFactoryMap.put(newFactory, properties);
 	}
 
-	public void removeTableColumnTaskFactory(final TableColumnTaskFactory factory, final Map properties) {
+	public void removeTableColumnTaskFactory(final TableColumnTaskFactory factory, final Map<?, ?> properties) {
 		tableColumnFactoryMap.remove(factory);
 	}
 
-	public void addTableCellTaskFactory(final TableCellTaskFactory newFactory, final Map properties) {
+	public void addTableCellTaskFactory(final TableCellTaskFactory newFactory, final Map<?, ?> properties) {
 		tableCellFactoryMap.put(newFactory, properties);
 	}
 
-	public void removeTableCellTaskFactory(final TableCellTaskFactory factory, final Map properties) {
+	public void removeTableCellTaskFactory(final TableCellTaskFactory factory, final Map<?, ?> properties) {
 		tableCellFactoryMap.remove(factory);
 	}
 
@@ -212,5 +253,42 @@ public class PopupMenuHelper {
 		}
 
 		return openLinkItem;
+	}
+	
+	private void selectElementsFromSelectedRows(final JTable table, final Class<? extends CyIdentifiable> tableType) {
+		final Thread t = new Thread() {
+			@Override
+			public void run() {
+				final CyNetwork net = applicationManager.getCurrentNetwork();
+				
+				if (net != null) {
+					final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
+					final int[] selectedRows = table.getSelectedRows();
+					final Set<CyRow> targetRows = new HashSet<CyRow>();
+					
+					for (final int rowIndex : selectedRows) {
+						// Getting the row from data table solves the problem with hidden or moved SUID column.
+						// However, since the rows might be sorted we need to convert the index to model.
+						final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) 
+								tableModel.getValueAt(table.convertRowIndexToModel(rowIndex), CyNetwork.SUID);
+						targetRows.add(tableModel.getRow(selected.getValidatedObject()));
+					}
+					
+					final CyTable cyTable = 
+							tableType == CyNode.class ? net.getDefaultNodeTable() : net.getDefaultEdgeTable();
+							
+					for (final CyRow cyRow : cyTable.getAllRows())
+						cyRow.set(CyNetwork.SELECTED, targetRows.contains(cyRow));
+					
+					final CyNetworkView view = applicationManager.getCurrentNetworkView();
+					
+					if (view != null) {
+						eventHelper.flushPayloadEvents();
+						view.updateView();
+					}
+				}
+			}
+		};
+		t.start();
 	}
 }
