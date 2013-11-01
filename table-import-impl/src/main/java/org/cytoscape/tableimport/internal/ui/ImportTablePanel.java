@@ -25,27 +25,37 @@ package org.cytoscape.tableimport.internal.ui;
  */
 
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.model.*;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
+import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
+import org.cytoscape.tableimport.internal.reader.SupportedFileType;
+import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
+import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.tableimport.internal.util.URLUtil;
+import org.cytoscape.util.swing.ColumnResizer;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.JStatusBar;
+import org.cytoscape.work.TaskManager;
+import org.jdesktop.layout.GroupLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.EDGE;
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.NETWORK;
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.NODE;
-import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.DB_OBJECT_SYMBOL;
-import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.DB_OBJECT_SYNONYM;
-import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.GO_ID;
-import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.TAXON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogFontTheme.TITLE_FONT;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.BOOLEAN_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.FLOAT_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.ID_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.INT_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.LIST_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.RIGHT_ARROW_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.SPREADSHEET_ICON_LARGE;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.STRING_ICON;
-
-import java.awt.Color;
-import java.awt.Component;
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import javax.xml.bind.JAXBException;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -53,86 +63,17 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
 
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
-import javax.xml.bind.JAXBException;
-
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
-import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
-import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
-import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
-import org.cytoscape.tableimport.internal.reader.GraphReader;
-import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
-import org.cytoscape.tableimport.internal.reader.NetworkTableReader;
-import org.cytoscape.tableimport.internal.reader.SupportedFileType;
-import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
-import org.cytoscape.tableimport.internal.reader.TextTableReader;
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.tableimport.internal.util.URLUtil;
-import org.cytoscape.util.swing.ColumnResizer;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.JStatusBar;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskManager;
-import org.jdesktop.layout.GroupLayout;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
+import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.*;
+import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.*;
+import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogFontTheme.TITLE_FONT;
+import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.*;
 
 
 /**
@@ -345,7 +286,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		this.helpButton.setVisible(false);
 
-		setPreviewPanel(null);
+		boolean useFirstRow = dialogType == NETWORK_IMPORT;
+		setPreviewPanel(null, useFirstRow);
 		
 		// Hide the alias Panel, we will do the table join somewhere else, not in this GUI
 		aliasScrollPane.setVisible(false);
@@ -697,7 +639,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			selectAttributeFileButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent evt) {
 						try {
-							setPreviewPanel(evt);
+							setPreviewPanel(evt,false);
 						} catch (IOException e) {
 
 							JOptionPane.showMessageDialog(ImportTablePanel.this, "<html>Could not read selected file.<p>See <b>Help->Error Dialog</b> for further details.</html>", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -1476,7 +1418,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	/**
 	 * Load from the data source.<br>
 	 *
-	 * @param evt
 	 * @throws Exception
 	 */
 	public void importTable() throws Exception {
@@ -1570,12 +1511,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				
 	}
 
-	private void setPreviewPanel(ActionEvent evt) throws IOException {
+	private void setPreviewPanel(ActionEvent evt, boolean useFirstRow) throws IOException {
 
 		readAnnotationForPreview( checkDelimiter());
 		transferNameCheckBox.setEnabled(true);
 		transferNameCheckBox.setSelected(true);
-		useFirstRow(true);
+		if( useFirstRow )
+			useFirstRow(true);
 
 		if (previewPanel.getPreviewTable() == null) {
 			return;
@@ -1893,7 +1835,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	/**
 	 * Display preview table
 	 *
-	 * @param sourceURL
 	 * @param delimiters
 	 * @throws IOException
 	 */
