@@ -201,9 +201,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		this.tableFactory  = tableFactory;
 		this.tableManager  = tableManager;
         this.fileUtil = fileUtil;
+		this.fileType = fileType;
 
 		if (dialogType != ONTOLOGY_AND_ANNOTATION_IMPORT) {
 
+			//Before, this.fileType was always null.
 			tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
@@ -231,7 +233,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		}
 		
-		this.fileType = fileType;
+
 		selectedAttributes = null;
 
 		network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
