@@ -70,6 +70,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -124,10 +126,11 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
-
 	private final CyApplicationManager applicationManager;
 	private final CyEventHelper eventHelper;
 	private final CyTableManager tableManager;
+	
+	private boolean ignoreRowSelectionEvents;
 
 	private JPopupMenu cellMenu;
 
@@ -140,7 +143,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		this.eventHelper = eventHelper;
 		this.tableManager = tableManager;
 		
-		initHeader();
+		init();
 		setAutoCreateColumnsFromModel(false);
 		setAutoCreateRowSorter(true);
 		setCellSelectionEnabled(true);
@@ -149,7 +152,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		getHeaderPopupMenu();
 		setKeyStroke();
 		setTransferHandler(new BrowserTableTransferHandler());
-		setSelectionModel(new BrowserTableListSelectionModel());
 	}
 
 	@Override
@@ -159,15 +161,14 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
  		BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
 		setColumnModel(columnModel);
 
-		if (!(dataModel instanceof BrowserTableModel)) {
-			return;
-		}
-		
-		BrowserTableModel model = (BrowserTableModel) dataModel;
-		for (int i = 0; i < model.getColumnCount(); i++) {
-			TableColumn tableColumn = new TableColumn(i);
-			tableColumn.setHeaderValue(model.getColumnName(i));
-			columnModel.addColumn(tableColumn);
+		if (dataModel instanceof BrowserTableModel) {
+			BrowserTableModel model = (BrowserTableModel) dataModel;
+			
+			for (int i = 0; i < model.getColumnCount(); i++) {
+				TableColumn tableColumn = new TableColumn(i);
+				tableColumn.setHeaderValue(model.getColumnName(i));
+				columnModel.addColumn(tableColumn);
+			}
 		}
 	}
 
@@ -181,8 +182,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	private boolean isWinPlatform() {
 		return System.getProperty("os.name").startsWith(WIN_OS_ID);
 	}
-
-	protected void initHeader() {
+	
+	protected void init() {
 		final JTableHeader header = getTableHeader();
 		header.addMouseMotionListener(this);
 		header.setOpaque(false);
@@ -190,6 +191,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		header.addMouseListener(this);
 		header.getColumnModel().setColumnSelectionAllowed(true);
 
+		setSelectionModel(new BrowserTableListSelectionModel());
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
 		final BrowserTable table = this;
@@ -237,16 +239,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				selectFocusedCell(e);
 			}
 			
-			@Override
-			public void mouseReleased(final MouseEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						selectFromTable();
-					}
-				});
-			}
-			
 			private void selectFocusedCell(final MouseEvent e) {
 				final int row = e.getY() / getRowHeight();
 				final int column = getColumnModel().getColumnIndexAtX(e.getX());
@@ -268,6 +260,14 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				}
 			}
 		});
+		
+		getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(final ListSelectionEvent e) {
+				if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents)
+					selectFromTable();
+			}
+		});
 	}
 
 	private void selectFromTable() {
@@ -277,7 +277,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		final BrowserTableModel btModel = (BrowserTableModel) model;
 
-		//if (btModel.isShowAll() == false)
 		if (btModel.getViewMode() != BrowserTableModel.ViewMode.ALL)
 			return;
 
@@ -905,34 +904,40 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		if (e.getSource() != dataTable)
 			return;		
 
-		//if (!model.isShowAll()) {
-		if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED || model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
-			model.clearSelectedRows();
-			boolean foundANonSelectedColumnName = false;
-			for (final RowSetRecord rowSet : e.getPayloadCollection()) {
-				if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
-					foundANonSelectedColumnName = true;
-					break;
+		try {
+			ignoreRowSelectionEvents = true;
+			
+			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
+					|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
+				model.clearSelectedRows();
+				boolean foundANonSelectedColumnName = false;
+				
+				for (final RowSetRecord rowSet : e.getPayloadCollection()) {
+					if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
+						foundANonSelectedColumnName = true;
+						break;
+					}
+				}
+				
+				if (!foundANonSelectedColumnName) {
+					model.fireTableDataChanged();
+					return;
 				}
 			}
-			if (!foundANonSelectedColumnName) {
-				model.fireTableDataChanged();
-				return;
+	
+			final Collection<RowSetRecord> rows = e.getPayloadCollection();
+	
+			synchronized (this) {
+				if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
+						|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
+					model.fireTableDataChanged();
+				} else {
+					if (!tableManager.getGlobalTables().contains(dataTable))
+						bulkUpdate(rows);
+				}
 			}
-		}
-
-		final Collection<RowSetRecord> rows = e.getPayloadCollection();
-
-		synchronized (this) {
-			//if (!model.isShowAll()) {
-			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED || model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
-				model.fireTableDataChanged();
-			} else {
-				//table.clearSelection();
-				//fireTableDataChanged();
-				if(tableManager.getGlobalTables().contains(dataTable) == false)
-					bulkUpdate(rows);
-			}
+		} finally {
+			ignoreRowSelectionEvents = false;
 		}
 	}
 	

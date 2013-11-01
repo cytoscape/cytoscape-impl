@@ -70,12 +70,12 @@ public class BrowserTableTest {
 				mock(CyApplicationManager.class), mock(CyEventHelper.class));
 		tableManager = mock(CyTableManager.class);
 		eventHelper = new DummyCyEventHelper();
-		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, mock(CyApplicationManager.class), eventHelper, tableManager );
+		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, mock(CyApplicationManager.class), eventHelper, tableManager);
 		
 		createTable();
 		assertEquals(4, table.getColumns().size());
 		
-		btm = new BrowserTableModel(table, CyNode.class, equationCompiler, tableManager);
+		btm = new BrowserTableModel(table, CyNode.class, equationCompiler);
 		browserTable.setModel(btm);
 		btcm = (BrowserTableColumnModel) browserTable.getColumnModel();
 		btcm.setAllColumnsVisible();

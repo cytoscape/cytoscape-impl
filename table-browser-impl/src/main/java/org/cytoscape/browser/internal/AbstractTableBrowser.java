@@ -247,7 +247,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		if (table == null && currentTable != null) {
 			table = new BrowserTable(compiler, popupMenuHelper,
 					applicationManager, eventHelper, tableManager);
-			BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler, tableManager);
+			BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler);
 			table.setModel(model);
 			browserTables.put(currentTable, table);
 			return table;
