@@ -467,7 +467,9 @@ public class CyActivator extends AbstractCyActivator {
 		} else {
 			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
 		}
-		registerService(bc, fullScreenAction, CyAction.class, new Properties());
+        //Do not display the full screen option on Mac if Java 7 or higher is used.
+        if( !isMac() || !isJava7orHigher() )
+		    registerService(bc, fullScreenAction, CyAction.class, new Properties());
 		
 	}
 
@@ -499,4 +501,17 @@ public class CyActivator extends AbstractCyActivator {
 	private boolean isMac() {
 		return System.getProperty("os.name").startsWith("Mac OS X");
 	}
+
+    private boolean isJava7orHigher()
+    {
+        //An example java.version would be 1.6.0_65
+        //Assumed to be in this format: [major].[minor].[revision]_[build]
+        //In this case, we need the minor version number, since Java 7
+        //is 1.7.x_y
+        String javaVersion = System.getProperty("java.version");
+        String[] versionParts = javaVersion.split("\\.");
+        String minorVersion = versionParts[1];
+        int javaRelease = Integer.parseInt(minorVersion);
+        return javaRelease >= 7;
+    }
 }
