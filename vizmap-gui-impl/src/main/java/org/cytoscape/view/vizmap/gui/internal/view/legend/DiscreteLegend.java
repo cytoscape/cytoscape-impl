@@ -30,6 +30,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -45,12 +46,12 @@ public class DiscreteLegend extends JPanel {
 
 	private static final long serialVersionUID = -1111346616155939909L;
 
-	private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 14);
-	private static final Font TITLE_FONT2 = new Font("SansSerif", Font.BOLD, 18);
+	private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 18);
 	private static final Color TITLE_COLOR = new Color(10, 200, 255);
 	private static final Border BORDER = new MatteBorder(0, 6, 3, 0, Color.DARK_GRAY);
 
 	
+	@SuppressWarnings("unchecked")
 	public DiscreteLegend(DiscreteMapping<?, ?> discMapping, final ServicesUtil servicesUtil) {
 		final String columnName = discMapping.getMappingColumnName();
 		final VisualProperty<Object> vp = (VisualProperty<Object>) discMapping.getVisualProperty();
@@ -59,7 +60,7 @@ public class DiscreteLegend extends JPanel {
 		setBorder(BORDER);
 
 		final JLabel title = new JLabel(" " + vp.getDisplayName() + " Mapping");
-		title.setFont(TITLE_FONT2);
+		title.setFont(TITLE_FONT);
 		title.setForeground(TITLE_COLOR);
 		title.setBorder(new MatteBorder(0, 10, 1, 0, TITLE_COLOR));
 		// title.setHorizontalAlignment(SwingConstants.CENTER);
@@ -70,12 +71,13 @@ public class DiscreteLegend extends JPanel {
 		title.setPreferredSize(new Dimension(1, 50));
 		add(title, BorderLayout.NORTH);
 
-		final Map<?, ?> legendMap = discMapping.getAll();
+		final Map<?, ?> legendMap = new TreeMap<Object, Object>(discMapping.getAll());
+		
 		/*
 		 * Build Key array.
 		 */
 		final Object[][] data = new Object[legendMap.keySet().size()][2];
-		final Iterator it = legendMap.keySet().iterator();
+		final Iterator<?> it = legendMap.keySet().iterator();
 
 		for (int i = 0; i < legendMap.keySet().size(); i++) {
 			Object key = it.next();
