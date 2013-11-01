@@ -27,8 +27,10 @@ package org.cytoscape.browser.internal;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
@@ -44,7 +46,9 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 	// Define fonts & colors for the cells
 	private static final Color SELECTED_ROW_BG_COLOR = new Color(0, 100, 255, 40);
 	private static final Color ERROR_FG_COLOR = Color.RED;
-	private static final int H_PAD = 4;
+	private static final int H_PAD = 8;
+	private static final int V_PAD = 2;
+	private static EquationIcon EQUATION_ICON = new EquationIcon();
 
 	public BrowserTableCellRenderer() {
 		setOpaque(true);
@@ -53,9 +57,10 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		Border border = getBorder();
 		
 		if (border == null)
-			border = BorderFactory.createEmptyBorder(0, H_PAD, 0, H_PAD);
+			border = BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD);
 		else
-			border = BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(0, H_PAD, 0, H_PAD));
+			border = BorderFactory.createCompoundBorder(border,
+					BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD));
 		
 		setBorder(border);
 	}
@@ -63,15 +68,23 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected,
 	                                               final boolean hasFocus, final int row, final int column) {
-		setHorizontalAlignment(JLabel.LEFT);
-		setBackground(table.getBackground());
+		final ValidatedObjectAndEditString objEditStr = (ValidatedObjectAndEditString) value;
+		final Object validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
 		
-		final ValidatedObjectAndEditString objEditStr = (ValidatedObjectAndEditString)value;
+		setBackground(table.getBackground());
+		setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
+		setVerticalTextPosition(JLabel.CENTER);
+		setHorizontalTextPosition(JLabel.CENTER);
+		
+		if (validatedObj instanceof Boolean)
+			setHorizontalAlignment(JLabel.CENTER);
+		else
+			setHorizontalAlignment(validatedObj instanceof Number ? JLabel.RIGHT : JLabel.LEFT);
+		
 		final boolean isError = objEditStr != null && objEditStr.getErrorText() != null;
 		
 		// First, set values
-		if (objEditStr == null
-		    || (objEditStr.getValidatedObject() == null && objEditStr.getErrorText() == null)) {
+		if (objEditStr == null || (objEditStr.getValidatedObject() == null && objEditStr.getErrorText() == null)) {
 			setText("");
 		} else {
 			final String displayText = (objEditStr.getErrorText() != null)
@@ -79,7 +92,8 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 				: objEditStr.getValidatedObject().toString();
 			setText(displayText);
 			String tooltipText = displayText;
-			if (tooltipText.length() > 100 )
+			
+			if (tooltipText.length() > 100)
 				setToolTipText(tooltipText.substring(0, 100) + "...");
 			else
 				setToolTipText(tooltipText);
@@ -103,5 +117,31 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		}
 		
 		return this;
+	}
+	
+	private static class EquationIcon implements Icon {
+
+		static final int HEIGHT = 8;
+		static final int WIDTH = 8;
+		static final Color COLOR = new Color(1, 128, 0);
+		
+		@Override
+		public int getIconHeight() {
+			return HEIGHT;
+		}
+
+		@Override
+		public int getIconWidth() {
+			return WIDTH;
+		}
+
+		@Override
+		public void paintIcon(final Component c, final Graphics g, final int x, final int y) {
+			g.setColor(COLOR);
+			
+			final int[] xPoints = new int[] { 0,      0, WIDTH };
+			final int[] yPoints = new int[] { HEIGHT, 0, 0 };
+			g.fillPolygon(xPoints, yPoints, 3);
+		}
 	}
 }

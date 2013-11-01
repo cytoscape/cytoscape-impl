@@ -191,36 +191,33 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		return null;
 	}
 
-	private ValidatedObjectAndEditString getValidatedObjectAndEditString(final CyRow row,
-			final String columnName)
-	{
+	private ValidatedObjectAndEditString getValidatedObjectAndEditString(final CyRow row, final String columnName) {
 		if (row == null)
 			return null;
 
 		Object raw = row.getRaw(columnName);
+		
 		if (raw == null) {
 			CyColumn column = row.getTable().getColumn(columnName);
-			if(column != null)
+			
+			if (column != null)
 				raw = column.getDefaultValue();
 		}
+		
 		if (raw == null)
 			return null;
 
 		// Optimisation hack:
+		final boolean isEquation = raw instanceof Equation;
+		final Object cooked = !isEquation ? raw : getColumnValue(row, columnName);
+		final String editString = createEditString(raw);
 		
-		Object cooked;
-		if (!(raw instanceof Equation))
-			cooked = raw;
-		else {
-			cooked = getColumnValue(row, columnName);
-		}
-
-		String editString = createEditString(raw);
 		if (cooked != null)
-			return new ValidatedObjectAndEditString(cooked, editString);
+			return new ValidatedObjectAndEditString(cooked, editString, isEquation);
 
 		final String lastInternalError = dataTable.getLastInternalError();
-		return new ValidatedObjectAndEditString(cooked, editString, lastInternalError);
+		
+		return new ValidatedObjectAndEditString(cooked, editString, lastInternalError, isEquation);
 	}
 
 	private String createEditString(Object raw) {
@@ -435,14 +432,14 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 				row.set(columnName, errorEqn);
 			}
 		} else { // Not an equation!
-
-			ArrayList parsedData = TableBrowserUtil.parseCellInput(dataTable, columnName, value);
+			final List<Object> parsedData = TableBrowserUtil.parseCellInput(dataTable, columnName, value);
+			
 			if (parsedData.get(0) != null)
 				row.set(columnName, parsedData.get(0));
 			else {
-				//Error!
+				// Error!
 				showErrorWindow(parsedData.get(1).toString());
-				//+ " should be an Integer (or the number is too big/small).");
+				// + " should be an Integer (or the number is too big/small).");
 			}
 		}
 
