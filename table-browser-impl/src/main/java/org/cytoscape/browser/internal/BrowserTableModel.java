@@ -73,7 +73,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	private int maxRowIndex;
 
 
-
 	public BrowserTableModel(final CyTable dataTable, final Class<? extends CyIdentifiable> tableType,
 			final EquationCompiler compiler) {
 		this.dataTable = dataTable;
@@ -97,6 +96,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		for (CyColumn column : table.getColumns()) {
 			names.add(column.getName());
 		}
+		
 		return names;
 	}
 
@@ -146,7 +146,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		return attrNames.size();
 	}
 
-
 	public Object getValueAt(final int rowIndex, final String columnName) {
 		final CyRow row = getCyRow(rowIndex);
 		return getValidatedObjectAndEditString(row, columnName);
@@ -192,7 +191,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		return null;
 	}
 
-
 	private ValidatedObjectAndEditString getValidatedObjectAndEditString(final CyRow row,
 			final String columnName)
 	{
@@ -209,7 +207,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			return null;
 
 		// Optimisation hack:
-		
 		
 		Object cooked;
 		if (!(raw instanceof Equation))
@@ -332,7 +329,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	/**
 	 * Switch view mode.
 	 * 
-	 * 
 	 * @param viewMode
 	 */
 	void setViewMode(ViewMode viewMode) {
@@ -374,7 +370,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	}
 	*/
 
-
 	public String getCyColumnName( final int column){
 		return (String) dataTable.getColumns().toArray()[column];
 	}
@@ -383,13 +378,11 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	public String getColumnName(final int column) {
 		return mapColumnIndexToColumnName(column);
 	}
-	
-	
 
 	int mapColumnNameToColumnIndex(final String columnName) {
-		
-		if(attrNames.contains(columnName))
+		if (attrNames.contains(columnName))
 			return attrNames.indexOf(columnName);
+		
 		return -1;
 	}
 
@@ -398,14 +391,11 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			return attrNames.get(index);
 
 		throw new ArrayIndexOutOfBoundsException();
-
 	}
 
 	CyRow getRow(final Object suid) {
 		return dataTable.getRow(suid);
 	}
-
-
 
 	@Override
 	public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
@@ -467,7 +457,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 				JOptionPane.ERROR_MESSAGE);
 	}
 
-
 	private boolean eqnTypeIsCompatible(final Class<?> columnType, final Class<?> eqnType) {
 		if (columnType == eqnType)
 			return true;
@@ -510,7 +499,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 						+ "\".");
 		}
 	}
-
 
 	@Override
 	public boolean isCellEditable(final int rowIndex, final int columnIndex) {
