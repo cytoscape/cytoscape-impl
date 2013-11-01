@@ -44,21 +44,27 @@ import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DefaultDataSource;
 import org.cytoscape.property.CyProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BiogridDataLoader {
+
+	private static final Logger logger = LoggerFactory.getLogger(BiogridDataLoader.class);
 
 	private static final String FILE_LOCATION = "biogrid.file.url";
 	private static final String TAG = "<meta>preset,interactome</meta>"; 
 	
 	// Default resource file location.
-	private static final String DEF_RESOURCE = "biogrid/BIOGRID-ORGANISM-3.2.95.mitab.zip";
+	private static final String DEF_RESOURCE = "biogrid/BIOGRID-ORGANISM-LATEST.mitab.zip";
+	
+	// Remote URL for the latest release
 
 	public final static int BUF_SIZE = 1024;
 	private static final String LOCAL = "biogrid";
 	private URL source;
 	private File localFile;
 	
-	private String version;
+	private String version = null;
 
 	private static final Map<String, String[]> FILTER = new HashMap<String, String[]>();
 	private final Set<DataSource> sources;
@@ -68,21 +74,22 @@ public class BiogridDataLoader {
 		FILTER.put("Saccharomyces_cerevisiae", new String[]{"Yeast", "BioGRID", "Yeast Interactome from BioGRID database"});
 		FILTER.put("Drosophila_melanogaster", new String[]{"Fly", "BioGRID","Fly Interactome from BioGRID database"} );
 		FILTER.put("Mus_musculus", new String[]{"Mouse", "BioGRID", "Mouse Interactome from BioGRID database"});
-		FILTER.put("Arabidopsis_thaliana", new String[]{"Arabidopsis", "BioGRID", "Arabidopsis from BioGRID database"});
-		FILTER.put("Caenorhabditis_elegans", new String[]{"C. Elegans", "BioGRID", "Caenorhabditis Elegans from BioGRID database"});
+		FILTER.put("Arabidopsis_thaliana", new String[]{"Arabidopsis", "BioGRID", "Arabidopsis Interactome from BioGRID database"});
+		FILTER.put("Caenorhabditis_elegans", new String[]{"C. elegans", "BioGRID", "Caenorhabditis elegans Interactome from BioGRID database"});
+		FILTER.put("Escherichia_coli", new String[]{"E. coli", "BioGRID", "Escherichia coli Interactome from BioGRID database"});
+		FILTER.put("Danio_rerio", new String[]{"Zebrafish", "BioGRID", "Zebrafish Interactome from BioGRID database"});
 	}
 
-	public BiogridDataLoader(final CyProperty props, final File settingFileLocation) {
+	public BiogridDataLoader(final CyProperty<?> props, final File settingFileLocation) {
 		this(props, null, settingFileLocation);
 	}
 
 
-	public BiogridDataLoader(final CyProperty props, final URL dataSource, final File settingFileLocation) {
-		
+	public BiogridDataLoader(final CyProperty<?> props, final URL dataSource, final File settingFileLocation) {
 		// First priority: optional URL props.
 		final Properties propObject = (Properties) props.getProperties();
 		final String locationString = propObject.getProperty(FILE_LOCATION);
-		
+
 		if(locationString != null && dataSource == null) {
 			try {
 				source = new URL(locationString);
@@ -95,22 +102,26 @@ public class BiogridDataLoader {
 			this.source = dataSource;
 		}
 		
-		String[] parts = source.toString().split("BIOGRID-ORGANISM-");
-		if(parts == null || parts.length != 2)
+		this.sources = new HashSet<DataSource>();
+		
+		localFile = new File(settingFileLocation, LOCAL);
+		if (localFile.exists() == false)
+			localFile.mkdir();
+	}
+
+	public void extractVersionNumber(final String fileName) {
+		final String[] parts = fileName.split("-");
+		if(parts == null || parts.length < 3)
 			version = "Unknown";
 		else {
-			String[] nextPart = parts[1].split(".mitab.zip");
+			final String[] nextPart = parts[parts.length-1].split(".mitab");
 			if(nextPart == null || nextPart.length != 1)
 				version = "Unknown";
 			else
 				version = nextPart[0];
 		}
 		
-		this.sources = new HashSet<DataSource>();
-		
-		localFile = new File(settingFileLocation, LOCAL);
-		if (localFile.exists() == false)
-			localFile.mkdir();
+		logger.info("BioGRID relese version is: " + version);
 	}
 	
 	/**
@@ -136,21 +147,23 @@ public class BiogridDataLoader {
 		return false;
 	}
 
-	
+
+	public void extract() throws IOException {
+		this.extract(false);
+	}
 	/**
 	 * Extract list of files from resource (local or remote)
 	 * 
 	 * @throws IOException
 	 */
-	void extract() throws IOException {
-		
-		if(isExist()) {
+	public void extract(final boolean forceUpdate) throws IOException {
+		if(isExist() && forceUpdate == false) {
+			logger.info("Local network data file exists.  Processing local files...");
 			processExistingFiles();
 			return;
 		}
 		
 		ZipInputStream zis = new ZipInputStream(source.openStream());
-
 		try {
 			// Extract list of entries
 			ZipEntry zen = null;
@@ -160,12 +173,17 @@ public class BiogridDataLoader {
 				entryName = zen.getName();
 				// Remove .txt
 				String newName = entryName.replace(".txt", "");
+				logger.info("* Processing new organism data file: " + newName);
+				
 				final String[] data = createName(newName);
 				if (data==null)
 					continue;
 
 				File outFile = new File(localFile, newName);
-
+				if(version == null) {
+					extractVersionNumber(newName);
+				}
+				
 				processOneEntry(outFile, zis);
 				zis.closeEntry();
 				
@@ -179,18 +197,22 @@ public class BiogridDataLoader {
 			zis = null;
 		}
 	}
-	
+
+
 	private void processExistingFiles() throws IOException {
 		// Just need to create from existing files.
 		final File[] dataFiles = localFile.listFiles();
 
 		for (File file : dataFiles) {
+			logger.info("* Processing local organism network file: " + file.getName());
+			if(version == null) {
+				extractVersionNumber(file.getName());
+			}
 			final String[] data = createName(file.getName());
-			final DataSource ds = new DefaultDataSource(data[0], data[1], TAG + data[2] + " Release " + version, DataCategory.NETWORK, file.toURI()
-					.toURL());
+			final DataSource ds = new DefaultDataSource(
+					data[0], data[1], TAG + data[2] + " Release " + version, DataCategory.NETWORK, file.toURI().toURL());
 			sources.add(ds);
 		}
-
 		return;
 	}
 
@@ -223,5 +245,9 @@ public class BiogridDataLoader {
 	
 	public Set<DataSource> getDataSources() {
 		return this.sources;
+	}
+	
+	public String getVersion() {
+		return this.version;
 	}
 }

@@ -1,0 +1,26 @@
+License for Taxonomy Icons
+
+Last updated : 2013/06/19
+You may use this database in compliance with the terms and conditions of the license described below. The license specifies the license terms regarding the use of this database and the requirements you must follow in using this database.
+
+Creative Commons License
+The license for this database is specified in the Creative Commons Attribution 2.1 Japan.
+If you use data from this database, please be sure attribute this database as follows: "Taxonomy Icon © Database Center for Life Science licensed under CC Attribution 2.1 Japan".
+
+The summary of the Creative Commons Attribution 2.1 Japan is found here.
+
+With regard to this database, you are licensed to:
+
+freely access part or whole of this database, and acquire data;
+freely redistribute part or whole of the data from this database; and
+freely create and distribute database and other derivative works based on part or whole of the data from this database,
+under the license, as long as you comply with the following conditions:
+
+You must attribute this database in the manner specified by the author or licensor when distributing part or whole of this database or any derivative work.
+You need to contact the Licensor shown below to request a license for use of this database or any part thereof not licensed under the license.
+National Bioscience Database Center
+Japan Science and Technology Agency
+5-3, Yonbancho, Chiyoda-ku, Tokyo 102-8666 Japan
+Tel: +81-3-5214-8491
+Fax: +81-3-5214-8470
+Email: support[at]biosciencedbc[dot]jp
