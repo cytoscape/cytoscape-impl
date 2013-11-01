@@ -50,7 +50,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
-import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
@@ -178,28 +177,25 @@ public class PopupMenuHelper {
 
 	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map<?, ?> props) {
 		String types = (String) props.get("tableTypes");
-		if (types == null) {
+		
+		if (types == null)
 			return true;
-		}
 		
 		for (String type : types.split(",")) {
 			type = type.trim();
-			if ("all".equals(type)) {
+			
+			if ("all".equals(type))
 				return true;
-			}
-			if ("node".equals(type) && CyNode.class.equals(tableType)) {
+			if ("node".equals(type) && CyNode.class.equals(tableType))
 				return true;
-			}
-			if ("edge".equals(type) && CyEdge.class.equals(tableType)) {
+			if ("edge".equals(type) && CyEdge.class.equals(tableType))
 				return true;
-			}
-			if ("network".equals(type) && CyNetwork.class.equals(tableType)) {
+			if ("network".equals(type) && CyNetwork.class.equals(tableType))
 				return true;
-			}
-			if ("unassigned".equals(type) && tableType == null) {
+			if ("unassigned".equals(type) && tableType == null)
 				return true;
-			}
 		}
+		
 		return false;
 	}
 
@@ -233,6 +229,7 @@ public class PopupMenuHelper {
 			this.tf = tf;
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent ae) {
 			taskManager.execute(tf.createTaskIterator());
 		}
@@ -242,6 +239,7 @@ public class PopupMenuHelper {
 	protected JMenuItem getOpenLinkMenu(final Object urlString) {
 		final JMenuItem openLinkItem = new JMenuItem();
 		openLinkItem.setText("Open URL in web browser...");
+		
 		if (urlString == null || urlString.toString().startsWith("http:") == false) {
 			openLinkItem.setEnabled(false);
 		} else {

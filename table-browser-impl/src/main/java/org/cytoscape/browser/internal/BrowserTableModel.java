@@ -43,14 +43,14 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
-import org.cytoscape.model.events.RowsDeletedListener;
 import org.cytoscape.model.events.RowsDeletedEvent;
+import org.cytoscape.model.events.RowsDeletedListener;
 
 
 public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener,RowsDeletedListener {
+	
 	public static enum ViewMode {
 		ALL,
 		SELECTED,
@@ -63,7 +63,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	private final Class<? extends CyIdentifiable> tableType;
 	private final EquationCompiler compiler;
 
-	private final CyTableManager tableManager;
 	private ViewMode viewMode;
 
 	private List<String> attrNames;
@@ -74,13 +73,11 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	private int maxRowIndex;
 
 
-
-	public BrowserTableModel(final CyTable dataTable, final Class<? extends CyIdentifiable> tableType, final EquationCompiler compiler,
-			final CyTableManager tableManager) {
+	public BrowserTableModel(final CyTable dataTable, final Class<? extends CyIdentifiable> tableType,
+			final EquationCompiler compiler) {
 		this.dataTable = dataTable;
 		this.compiler = compiler;
 		this.viewMode = ViewMode.ALL; 
-		this.tableManager = tableManager;
 		this.tableType = tableType;
 
 		attrNames = getAttributeNames(dataTable);
@@ -99,6 +96,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		for (CyColumn column : table.getColumns()) {
 			names.add(column.getName());
 		}
+		
 		return names;
 	}
 
@@ -138,8 +136,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 					count = dataTable.getRowCount();
 				break;
 		}
-		//System.out.println("getRowCount: " + viewMode + " " + Integer.toString(count));
-		//dumpTable(dataTable);
+		
 		return count;
 	}
 
@@ -148,7 +145,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	public int getColumnCount() {
 		return attrNames.size();
 	}
-
 
 	public Object getValueAt(final int rowIndex, final String columnName) {
 		final CyRow row = getCyRow(rowIndex);
@@ -191,9 +187,9 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 				else
 					return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 		}
+		
 		return null;
 	}
-
 
 	private ValidatedObjectAndEditString getValidatedObjectAndEditString(final CyRow row,
 			final String columnName)
@@ -211,7 +207,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			return null;
 
 		// Optimisation hack:
-		
 		
 		Object cooked;
 		if (!(raw instanceof Equation))
@@ -334,7 +329,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	/**
 	 * Switch view mode.
 	 * 
-	 * 
 	 * @param viewMode
 	 */
 	void setViewMode(ViewMode viewMode) {
@@ -376,7 +370,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	}
 	*/
 
-
 	public String getCyColumnName( final int column){
 		return (String) dataTable.getColumns().toArray()[column];
 	}
@@ -385,13 +378,11 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	public String getColumnName(final int column) {
 		return mapColumnIndexToColumnName(column);
 	}
-	
-	
 
 	int mapColumnNameToColumnIndex(final String columnName) {
-		
-		if(attrNames.contains(columnName))
+		if (attrNames.contains(columnName))
 			return attrNames.indexOf(columnName);
+		
 		return -1;
 	}
 
@@ -400,14 +391,11 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 			return attrNames.get(index);
 
 		throw new ArrayIndexOutOfBoundsException();
-
 	}
 
 	CyRow getRow(final Object suid) {
 		return dataTable.getRow(suid);
 	}
-
-
 
 	@Override
 	public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
@@ -469,7 +457,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 				JOptionPane.ERROR_MESSAGE);
 	}
 
-
 	private boolean eqnTypeIsCompatible(final Class<?> columnType, final Class<?> eqnType) {
 		if (columnType == eqnType)
 			return true;
@@ -512,7 +499,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 						+ "\".");
 		}
 	}
-
 
 	@Override
 	public boolean isCellEditable(final int rowIndex, final int columnIndex) {

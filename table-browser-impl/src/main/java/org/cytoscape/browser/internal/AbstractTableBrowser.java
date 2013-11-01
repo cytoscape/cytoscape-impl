@@ -69,7 +69,9 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Base class for all Table Browsers.
  *
  */
-public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent, ActionListener , SessionLoadedListener, SessionAboutToBeSavedListener{
+public abstract class AbstractTableBrowser extends JPanel
+										   implements CytoPanelComponent, ActionListener, SessionLoadedListener,
+										   			  SessionAboutToBeSavedListener{
 
 	private static final long serialVersionUID = 1968196123280466989L;
 	
@@ -162,12 +164,16 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	@Override
 	public Icon getIcon() { return null; }
 	
-	// Delete the given table from the JTable
-	public void deleteTable(CyTable cyTable){
-		BrowserTable table = browserTables.remove(cyTable);
-		if (table == null) {
+	/**
+	 * Delete the given table from the JTable
+	 * @param cyTable
+	 */
+	public void deleteTable(final CyTable cyTable){
+		final BrowserTable table = browserTables.remove(cyTable);
+		
+		if (table == null)
 			return;
-		}
+		
 		scrollPanes.remove(table);
 		TableModel model = table.getModel();
 		serviceRegistrar.unregisterAllServices(table);
@@ -197,7 +203,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		applicationManager.setCurrentTable(currentTable);
 		attributeBrowserToolBar.setBrowserTable(currentBrowserTable);
 	
-		
 		/* 
 		// Never resize columns as they would reset the columns each time the view is changed
 		if (currentBrowserTableModel != null)
@@ -224,10 +229,13 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 				BrowserTableColumnModel columnModel = (BrowserTableColumnModel) browserTable.getColumnModel();
 				
-				if(attrList.contains(CyNetwork.SUID))
-					columnModel.moveColumn(browserTable.convertColumnIndexToView(browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
-				if(attrList.contains(CyNetwork.SELECTED))
-					columnModel.moveColumn(browserTable.convertColumnIndexToView(browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
+				if (attrList.contains(CyNetwork.SUID))
+					columnModel.moveColumn(browserTable.convertColumnIndexToView(
+							browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
+				
+				if (attrList.contains(CyNetwork.SELECTED))
+					columnModel.moveColumn(browserTable.convertColumnIndexToView(
+							browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
 				
 				attrList.remove(CyNetwork.SUID);
 				attrList.remove( CyNetwork.SELECTED);
@@ -247,9 +255,10 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		if (table == null && currentTable != null) {
 			table = new BrowserTable(compiler, popupMenuHelper,
 					applicationManager, eventHelper, tableManager);
-			BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler, tableManager);
+			BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler);
 			table.setModel(model);
 			browserTables.put(currentTable, table);
+			
 			return table;
 		}
 		return table;
@@ -259,12 +268,10 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		return browserTables;
 	}
 
-
 	@Override
 	public String toString() {
 		return "AbstractTableBrowser [tabTitle=" + tabTitle + ", currentTable=" + currentTable + "]";
 	}
-	
 	
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
@@ -287,24 +294,21 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 			colM.setAllColumnsVisible();
 			final List<String> orderedCols = tcs.getOrderedCol();
 			
-			for (int i =0; i< orderedCols.size(); i++){
+			for (int i = 0; i < orderedCols.size(); i++){
 				final String colName = orderedCols.get(i);
-				colM.moveColumn( browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(colName))  , i);
+				colM.moveColumn(browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(colName)), i);
 			}
-			browserTable.setVisibleAttributeNames(tcs.getVisibleCols());
 			
+			browserTable.setVisibleAttributeNames(tcs.getVisibleCols());
 		}
-		
 	}
 
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-
 		Map<CyTable, BrowserTable>  browserTables = getAllBrowserTablesMap();
 		List< TableColumnStat> tableColumnStatList = new ArrayList<TableColumnStat>();
 
 		for (CyTable table :  browserTables.keySet()){
-
 			TableColumnStat tcs = new TableColumnStat(table.getTitle());
 
 			BrowserTable browserTable = browserTables.get(table);
@@ -322,7 +326,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 			browserTable.setVisibleAttributeNames(visAttrs);
 			tableColumnStatList.add(tcs);
 		}
+		
 		TableColumnStatFileIO.write(tableColumnStatList, e, this.appFileName );	
-
 	}
 }
