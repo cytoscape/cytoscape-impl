@@ -134,6 +134,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private JPopupMenu cellMenu;
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public BrowserTable(final EquationCompiler compiler, final PopupMenuHelper popupMenuHelper,
 			final CyApplicationManager applicationManager, final CyEventHelper eventHelper,
 			final CyTableManager tableManager) {
@@ -154,8 +156,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		setTransferHandler(new BrowserTableTransferHandler());
 	}
 
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
 	@Override
-	public void setModel(TableModel dataModel) {
+	public void setModel(final TableModel dataModel) {
 		super.setModel(dataModel);
 		
  		BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
@@ -172,106 +176,13 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		}
 	}
 	
-	protected void init() {
-		final JTableHeader header = getTableHeader();
-		header.setOpaque(false);
-		header.setDefaultRenderer(new CustomHeaderRenderer());
-		header.getColumnModel().setColumnSelectionAllowed(true);
-		header.addMouseMotionListener(this);
-		header.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(final MouseEvent e) {
-				maybeShowHeaderPopup(e);
-			}
-			@Override
-			public void mouseReleased(final MouseEvent e) {
-				maybeShowHeaderPopup(e);
-			}
-		});
-
-		setSelectionModel(new BrowserTableListSelectionModel());
-		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		addMouseListener(this);
-		
-		getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(final ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents)
-					selectFromTable();
-			}
-		});
-	}
-	
 	@Override
 	public synchronized void addMouseListener(final MouseListener listener) {
+		// Hack to prevent selected rows from being deselected when the user
+		// CONTROL-clicks one of those rows on Mac (popup trigger).
 		super.addMouseListener(new ProxyMouseListener(listener));
 	}
 	
-	private void selectFromTable() {
-		final TableModel model = this.getModel();
-		
-		if (model instanceof BrowserTableModel == false)
-			return;
-
-		final BrowserTableModel btModel = (BrowserTableModel) model;
-
-		if (btModel.getViewMode() != BrowserTableModel.ViewMode.ALL)
-			return;
-
-		final CyTable table = btModel.getDataTable();
-		final CyColumn pKey = table.getPrimaryKey();
-		final String pKeyName = pKey.getName();
-
-		final int[] rowsSelected = getSelectedRows();
-		
-		if (rowsSelected.length == 0)
-			return;
-
-		final int selectedRowCount = getSelectedRowCount();
-
-		final Set<CyRow> targetRows = new HashSet<CyRow>();
-		
-		for (int i = 0; i < selectedRowCount; i++) {
-			// getting the row from data table solves the problem with hidden or
-			// moved SUID column. However, since the rows might be sorted we
-			// need to convert the index to model
-			final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) btModel.getValueAt(
-					convertRowIndexToModel(rowsSelected[i]), pKeyName);
-			targetRows.add(btModel.getRow(selected.getValidatedObject()));
-		}
-
-		// Clear selection for non-global table
-		if (tableManager.getGlobalTables().contains(table) == false) {
-			List<CyRow> allRows = btModel.getDataTable().getAllRows();
-			
-			for (CyRow row : allRows) {
-				final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
-				
-				if (targetRows.contains(row)) {
-					row.set(CyNetwork.SELECTED, true);
-					continue;
-				}
-
-				if (val != null && (val == true))
-					row.set(CyNetwork.SELECTED, false);
-			}
-			
-			final CyNetworkView curView = applicationManager.getCurrentNetworkView();
-			
-			if (curView != null) {
-				eventHelper.flushPayloadEvents();
-				curView.updateView();
-			}
-		}
-	}
-
-	private void setKeyStroke() {
-		final KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK, false);
-		// Identifying the copy KeyStroke user can modify this to copy on some other Key combination.
-		this.registerKeyboardAction(this, "Copy", copy, JComponent.WHEN_FOCUSED);
-		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-	}
-
 	@Override
 	public TableCellRenderer getCellRenderer(int row, int column) {
 		return cellRenderer;
@@ -379,60 +290,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		}
 	}
 
-	private void getCellContentView(final Class<?> type, final List<?> listItems, final String borderTitle,
-			final MouseEvent e) {
-
-		JMenu curItem = null;
-		String dispName;
-
-		for (final Object item : listItems) {
-			dispName = item.toString();
-
-			if (dispName.length() > 60) {
-				dispName = dispName.substring(0, 59) + " ...";
-			}
-
-			curItem = new JMenu(dispName);
-			curItem.setBackground(Color.white);
-			curItem.add(getPopupMenu());
-
-			JMenuItem copyAll = new JMenuItem("Copy all");
-			copyAll.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final StringBuilder builder = new StringBuilder();
-					for (Object oneEntry : listItems)
-						builder.append(oneEntry.toString() + "\t");
-
-					final StringSelection selection = new StringSelection(builder.toString());
-					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					systemClipboard.setContents(selection, selection);
-				}
-			});
-			curItem.add(copyAll);
-
-			JMenuItem copy = new JMenuItem("Copy one entry");
-			copy.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final StringSelection selection = new StringSelection(item.toString());
-					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					systemClipboard.setContents(selection, selection);
-				}
-			});
-
-			curItem.add(copy);
-			curItem.add(popupMenuHelper.getOpenLinkMenu(dispName));
-			cellMenu.add(curItem);
-		}
-
-		final Border popupBorder = BorderFactory.createTitledBorder(null, borderTitle,
-				TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, BORDER_FONT, Color.BLUE);
-		cellMenu.setBorder(popupBorder);
-		cellMenu.setBackground(Color.WHITE);
-		cellMenu.show(e.getComponent(), e.getX(), e.getY());
-	}
-
 	/**
 	 * This method initializes rightClickPopupMenu
 	 * 
@@ -469,15 +326,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		});
 
 		return rightClickPopupMenu;
-	}
-
-	private JPopupMenu getHeaderPopupMenu() {
-		if (rightClickHeaderPopupMenu != null)
-			return rightClickHeaderPopupMenu;
-
-		rightClickHeaderPopupMenu = new JPopupMenu();
-
-		return rightClickHeaderPopupMenu;
 	}
 
 	@Override
@@ -545,7 +393,261 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			copyToClipBoard();
 	}
 
-	protected void maybeShowHeaderPopup(final MouseEvent e) {
+	@Override
+	public void paint(Graphics graphics) {
+		synchronized (getModel()) {
+			super.paint(graphics);
+		}
+	}
+	
+	public void setVisibleAttributeNames(Collection<String> visibleAttributes) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		
+		for (final String name : model.getAllAttributeNames()) {
+			int col = model.mapColumnNameToColumnIndex(name);
+			TableColumn column = columnModel.getColumnByModelIndex(col);
+			columnModel.setColumnVisible(column, visibleAttributes.contains(name));
+		}
+		
+		// Don't fire this, it will reset all the columns based on model
+		// fireTableStructureChanged();
+	}
+
+	public List<String> getVisibleAttributeNames() {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		final List<String> visibleAttrNames = new ArrayList<String>();
+		
+		for (final String name : model.getAllAttributeNames()) {
+			if (isColumnVisible(name))
+				visibleAttrNames.add(name);
+		}
+		
+		return visibleAttrNames;
+	}
+
+	public boolean isColumnVisible(String name) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		TableColumn column = columnModel.getColumnByModelIndex(model.mapColumnNameToColumnIndex(name));
+		
+		return columnModel.isColumnVisible(column);
+	}
+
+	@Override
+	public void handleEvent(final ColumnCreatedEvent e) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+		
+		if (e.getSource() != dataTable)
+			return;
+
+		model.fireTableStructureChanged();
+		
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+
+		model.addColumn(e.getColumnName());
+		
+		int colIndex = columnModel.getColumnCount(false);
+		TableColumn newCol = new TableColumn(colIndex);
+		newCol.setHeaderValue(e.getColumnName());
+		addColumn(newCol);
+	}
+
+	@Override
+	public void handleEvent(final ColumnDeletedEvent e) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+		
+		if (e.getSource() != dataTable)
+			return;
+
+		model.fireTableStructureChanged();
+
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		final String columnName = e.getColumnName();
+		boolean columnFound = false;
+		int removedColIndex = -1;
+		
+		List<String> attrNames = model.getAllAttributeNames();
+		
+		for (int i = 0; i < attrNames.size(); ++i) {
+			if (attrNames.get(i).equals(columnName)) {
+				removedColIndex = i;
+				columnModel.removeColumn (columnModel.getColumn(convertColumnIndexToView(i)));
+				columnFound = true;
+			} else if (columnFound){ //need to push back the model indexes for all of the columns after this
+				
+				TableColumn nextCol = columnModel.getColumnByModelIndex(i); 
+				nextCol.setModelIndex(i- 1);
+			}
+		}
+		
+		if (removedColIndex != -1){ //remove the item after the loop is done
+			model.removeColumn(removedColIndex);
+		}
+	}
+
+	@Override
+	public void handleEvent(final ColumnNameChangedEvent e) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+
+		if (e.getSource() != dataTable)
+			return;
+		
+		renameColumnName(e.getOldColumnName(), e.getNewColumnName());
+		tableHeader.repaint();
+	}
+	
+	@Override
+	public void handleEvent(final RowsSetEvent e) {
+		final BrowserTableModel model = (BrowserTableModel) getModel();
+		final CyTable dataTable = model.getDataTable();
+
+		if (e.getSource() != dataTable)
+			return;		
+
+		try {
+			ignoreRowSelectionEvents = true;
+			
+			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
+					|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
+				model.clearSelectedRows();
+				boolean foundANonSelectedColumnName = false;
+				
+				for (final RowSetRecord rowSet : e.getPayloadCollection()) {
+					if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
+						foundANonSelectedColumnName = true;
+						break;
+					}
+				}
+				
+				if (!foundANonSelectedColumnName) {
+					model.fireTableDataChanged();
+					return;
+				}
+			}
+	
+			final Collection<RowSetRecord> rows = e.getPayloadCollection();
+	
+			synchronized (this) {
+				if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
+						|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
+					model.fireTableDataChanged();
+				} else {
+					if (!tableManager.getGlobalTables().contains(dataTable))
+						bulkUpdate(rows);
+				}
+			}
+		} finally {
+			ignoreRowSelectionEvents = false;
+		}
+	}
+
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	protected void init() {
+		final JTableHeader header = getTableHeader();
+		header.setOpaque(false);
+		header.setDefaultRenderer(new CustomHeaderRenderer());
+		header.getColumnModel().setColumnSelectionAllowed(true);
+		header.addMouseMotionListener(this);
+		header.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(final MouseEvent e) {
+				maybeShowHeaderPopup(e);
+			}
+			@Override
+			public void mouseReleased(final MouseEvent e) {
+				maybeShowHeaderPopup(e);
+			}
+		});
+
+		setSelectionModel(new BrowserTableListSelectionModel());
+		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		addMouseListener(this);
+		
+		getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(final ListSelectionEvent e) {
+				if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents)
+					selectFromTable();
+			}
+		});
+	}
+	
+	private void setKeyStroke() {
+		final KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK, false);
+		// Identifying the copy KeyStroke user can modify this to copy on some other Key combination.
+		this.registerKeyboardAction(this, "Copy", copy, JComponent.WHEN_FOCUSED);
+		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	}
+	
+	private JPopupMenu getHeaderPopupMenu() {
+		if (rightClickHeaderPopupMenu != null)
+			return rightClickHeaderPopupMenu;
+
+		rightClickHeaderPopupMenu = new JPopupMenu();
+
+		return rightClickHeaderPopupMenu;
+	}
+	
+	private void getCellContentView(final Class<?> type, final List<?> listItems, final String borderTitle,
+			final MouseEvent e) {
+
+		JMenu curItem = null;
+		String dispName;
+
+		for (final Object item : listItems) {
+			dispName = item.toString();
+
+			if (dispName.length() > 60) {
+				dispName = dispName.substring(0, 59) + " ...";
+			}
+
+			curItem = new JMenu(dispName);
+			curItem.setBackground(Color.white);
+			curItem.add(getPopupMenu());
+
+			JMenuItem copyAll = new JMenuItem("Copy all");
+			copyAll.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final StringBuilder builder = new StringBuilder();
+					for (Object oneEntry : listItems)
+						builder.append(oneEntry.toString() + "\t");
+
+					final StringSelection selection = new StringSelection(builder.toString());
+					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					systemClipboard.setContents(selection, selection);
+				}
+			});
+			curItem.add(copyAll);
+
+			JMenuItem copy = new JMenuItem("Copy one entry");
+			copy.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final StringSelection selection = new StringSelection(item.toString());
+					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					systemClipboard.setContents(selection, selection);
+				}
+			});
+
+			curItem.add(copy);
+			curItem.add(popupMenuHelper.getOpenLinkMenu(dispName));
+			cellMenu.add(curItem);
+		}
+
+		final Border popupBorder = BorderFactory.createTitledBorder(null, borderTitle,
+				TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, BORDER_FONT, Color.BLUE);
+		cellMenu.setBorder(popupBorder);
+		cellMenu.setBackground(Color.WHITE);
+		cellMenu.show(e.getComponent(), e.getX(), e.getY());
+	}
+	
+	private void maybeShowHeaderPopup(final MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			final int column = getColumnModel().getColumnIndexAtX(e.getX());
 			final BrowserTableModel tableModel = (BrowserTableModel) getModel();
@@ -662,7 +764,142 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		return sbf.toString();
 	}
+	
+	private void renameColumnName(final String oldName, final String newName) {
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		
+		int index = model.mapColumnNameToColumnIndex(oldName);
+		if (index >= 0){
+			model.setColumnName(index, newName);
+			columnModel.getColumn(convertColumnIndexToView(index)).setHeaderValue(newName);
+			return;
+		}
+	
+		throw new IllegalStateException("The specified column " + oldName +" does not exist in the model.");
+	}
 
+	/**
+	 * Select rows in the table when something selected in the network view.
+	 * @param rows
+	 */
+	private void bulkUpdate(final Collection<RowSetRecord> rows) {
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		CyTable dataTable = model.getDataTable();
+
+		final Map<Long, Boolean> suidMapSelected = new HashMap<Long, Boolean>();
+		final Map<Long, Boolean> suidMapUnselected = new HashMap<Long, Boolean>();
+
+		for (RowSetRecord rowSetRecord : rows) {
+			if (rowSetRecord.getColumn().equals(CyNetwork.SELECTED)){
+				if (((Boolean)rowSetRecord.getValue()) == true){
+					suidMapSelected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class),
+							(Boolean) rowSetRecord.getValue());
+				} else{
+					suidMapUnselected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class),
+							(Boolean) rowSetRecord.getValue());
+				}
+			}
+		}
+
+		final String pKeyName = dataTable.getPrimaryKey().getName();
+		final int rowCount = getRowCount();
+		
+		for (int i = 0; i< rowCount; i++) {
+			// Getting the row from data table solves the problem with hidden or moved SUID column.
+			// However, since the rows might be sorted we need to convert the index to model
+			int modelRow = convertRowIndexToModel(i);
+			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) model.getValueAt(modelRow, pKeyName);
+			Long pk = null;
+			
+			try{
+				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
+				pk = Long.parseLong(tableKey.getEditString());
+			} catch (NumberFormatException nfe) {
+				logger.error("Error parsing long from table " + getName(), nfe);
+			}
+			
+			if (pk != null) {
+				if (suidMapSelected.keySet().contains(pk)){
+					addRowSelectionInterval(i, i);
+				} else if (suidMapUnselected.keySet().contains(pk)){
+					removeRowSelectionInterval(i, i);
+				}
+			}
+		}
+	}
+	
+	private void selectFromTable() {
+		final TableModel model = this.getModel();
+		
+		if (model instanceof BrowserTableModel == false)
+			return;
+
+		final BrowserTableModel btModel = (BrowserTableModel) model;
+
+		if (btModel.getViewMode() != BrowserTableModel.ViewMode.ALL)
+			return;
+
+		final CyTable table = btModel.getDataTable();
+		final CyColumn pKey = table.getPrimaryKey();
+		final String pKeyName = pKey.getName();
+
+		final int[] rowsSelected = getSelectedRows();
+		
+		if (rowsSelected.length == 0)
+			return;
+
+		final int selectedRowCount = getSelectedRowCount();
+
+		final Set<CyRow> targetRows = new HashSet<CyRow>();
+		
+		for (int i = 0; i < selectedRowCount; i++) {
+			// getting the row from data table solves the problem with hidden or
+			// moved SUID column. However, since the rows might be sorted we
+			// need to convert the index to model
+			final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) btModel.getValueAt(
+					convertRowIndexToModel(rowsSelected[i]), pKeyName);
+			targetRows.add(btModel.getRow(selected.getValidatedObject()));
+		}
+
+		// Clear selection for non-global table
+		if (tableManager.getGlobalTables().contains(table) == false) {
+			List<CyRow> allRows = btModel.getDataTable().getAllRows();
+			
+			for (CyRow row : allRows) {
+				final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
+				
+				if (targetRows.contains(row)) {
+					row.set(CyNetwork.SELECTED, true);
+					continue;
+				}
+
+				if (val != null && (val == true))
+					row.set(CyNetwork.SELECTED, false);
+			}
+			
+			final CyNetworkView curView = applicationManager.getCurrentNetworkView();
+			
+			if (curView != null) {
+				eventHelper.flushPayloadEvents();
+				curView.updateView();
+			}
+		}
+	}
+	
+	/**
+	 * Routine which determines if we are running on mac platform
+	 */
+	private boolean isMacPlatform() {
+		return System.getProperty("os.name").regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
+	}
+	
+	private boolean isWinPlatform() {
+		return System.getProperty("os.name").startsWith(WIN_OS_ID);
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
 	private class ProxyMouseListener extends MouseAdapter {
 		
 		private final MouseListener listener;
@@ -673,6 +910,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+			// In order to prevent selected rows from being deselected when the user
+			// CONTROL-clicks one of those rows on Mac.
 			if (listener instanceof BrowserTable || !e.isPopupTrigger())
 				listener.mouseClicked(e);
 		}
@@ -689,6 +928,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		@Override
 		public void mousePressed(MouseEvent e) {
+			// In order to prevent selected rows from being deselected when the user
+			// CONTROL-clicks one of those rows on Mac.
 			if (listener instanceof BrowserTable || !e.isPopupTrigger())
 				listener.mousePressed(e);
 		}
@@ -779,24 +1020,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 		}
 	}
-
-	@Override
-	public void paint(Graphics graphics) {
-		synchronized (getModel()) {
-			super.paint(graphics);
-		}
-	}
-	
-	/**
-	 * Routine which determines if we are running on mac platform
-	 */
-	private boolean isMacPlatform() {
-		return System.getProperty("os.name").regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
-	}
-	
-	private boolean isWinPlatform() {
-		return System.getProperty("os.name").startsWith(WIN_OS_ID);
-	}
 	
 	private static class BrowserTableTransferHandler extends TransferHandler {
 		
@@ -855,215 +1078,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		@Override
 		public int getSourceActions(JComponent c) {
 			return TransferHandler.COPY;
-		}
-	}
-	
-	public void setVisibleAttributeNames(Collection<String> visibleAttributes) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
-		
-		for (final String name : model.getAllAttributeNames()) {
-			int col = model.mapColumnNameToColumnIndex(name);
-			TableColumn column = columnModel.getColumnByModelIndex(col);
-			columnModel.setColumnVisible(column, visibleAttributes.contains(name));
-		}
-		
-		// Don't fire this, it will reset all the columns based on model
-		// fireTableStructureChanged();
-	}
-
-	public List<String> getVisibleAttributeNames() {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		final List<String> visibleAttrNames = new ArrayList<String>();
-		
-		for (final String name : model.getAllAttributeNames()) {
-			if (isColumnVisible(name))
-				visibleAttrNames.add(name);
-		}
-		
-		return visibleAttrNames;
-	}
-
-	public boolean isColumnVisible(String name) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
-		TableColumn column = columnModel.getColumnByModelIndex(model.mapColumnNameToColumnIndex(name));
-		
-		return columnModel.isColumnVisible(column);
-	}
-
-	@Override
-	public void handleEvent(final ColumnCreatedEvent e) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTable dataTable = model.getDataTable();
-		
-		if (e.getSource() != dataTable)
-			return;
-
-		model.fireTableStructureChanged();
-		
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
-
-		model.addColumn(e.getColumnName());
-		
-		int colIndex = columnModel.getColumnCount(false);
-		TableColumn newCol = new TableColumn(colIndex);
-		newCol.setHeaderValue(e.getColumnName());
-		addColumn(newCol);
-	}
-
-	@Override
-	public void handleEvent(final ColumnDeletedEvent e) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTable dataTable = model.getDataTable();
-		
-		if (e.getSource() != dataTable)
-			return;
-
-		model.fireTableStructureChanged();
-
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
-		final String columnName = e.getColumnName();
-		boolean columnFound = false;
-		int removedColIndex = -1;
-		
-		List<String> attrNames = model.getAllAttributeNames();
-		
-		for (int i = 0; i < attrNames.size(); ++i) {
-			if (attrNames.get(i).equals(columnName)) {
-				removedColIndex = i;
-				columnModel.removeColumn (columnModel.getColumn(convertColumnIndexToView(i)));
-				columnFound = true;
-			} else if (columnFound){ //need to push back the model indexes for all of the columns after this
-				
-				TableColumn nextCol = columnModel.getColumnByModelIndex(i); 
-				nextCol.setModelIndex(i- 1);
-			}
-		}
-		
-		if (removedColIndex != -1){ //remove the item after the loop is done
-			model.removeColumn(removedColIndex);
-		}
-	}
-
-	@Override
-	public void handleEvent(final ColumnNameChangedEvent e) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTable dataTable = model.getDataTable();
-
-		if (e.getSource() != dataTable)
-			return;
-		
-		renameColumnName(e.getOldColumnName(), e.getNewColumnName());
-		tableHeader.repaint();
-	}
-
-	private void renameColumnName(final String oldName, final String newName) {
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		
-		int index = model.mapColumnNameToColumnIndex(oldName);
-		if (index >= 0){
-			model.setColumnName(index, newName);
-			columnModel.getColumn(convertColumnIndexToView(index)).setHeaderValue(newName);
-			return;
-		}
-	
-		throw new IllegalStateException("The specified column " + oldName +" does not exist in the model.");
-	}
-
-	@Override
-	public void handleEvent(final RowsSetEvent e) {
-		final BrowserTableModel model = (BrowserTableModel) getModel();
-		final CyTable dataTable = model.getDataTable();
-
-		if (e.getSource() != dataTable)
-			return;		
-
-		try {
-			ignoreRowSelectionEvents = true;
-			
-			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
-					|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
-				model.clearSelectedRows();
-				boolean foundANonSelectedColumnName = false;
-				
-				for (final RowSetRecord rowSet : e.getPayloadCollection()) {
-					if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
-						foundANonSelectedColumnName = true;
-						break;
-					}
-				}
-				
-				if (!foundANonSelectedColumnName) {
-					model.fireTableDataChanged();
-					return;
-				}
-			}
-	
-			final Collection<RowSetRecord> rows = e.getPayloadCollection();
-	
-			synchronized (this) {
-				if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
-						|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
-					model.fireTableDataChanged();
-				} else {
-					if (!tableManager.getGlobalTables().contains(dataTable))
-						bulkUpdate(rows);
-				}
-			}
-		} finally {
-			ignoreRowSelectionEvents = false;
-		}
-	}
-	
-	/**
-	 * Select rows in the table when something selected in the network view.
-	 * @param rows
-	 */
-	private void bulkUpdate(final Collection<RowSetRecord> rows) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTable dataTable = model.getDataTable();
-
-		final Map<Long, Boolean> suidMapSelected = new HashMap<Long, Boolean>();
-		final Map<Long, Boolean> suidMapUnselected = new HashMap<Long, Boolean>();
-
-		for (RowSetRecord rowSetRecord : rows) {
-			if (rowSetRecord.getColumn().equals(CyNetwork.SELECTED)){
-				if (((Boolean)rowSetRecord.getValue()) == true){
-					suidMapSelected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class),
-							(Boolean) rowSetRecord.getValue());
-				} else{
-					suidMapUnselected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class),
-							(Boolean) rowSetRecord.getValue());
-				}
-			}
-		}
-
-		final String pKeyName = dataTable.getPrimaryKey().getName();
-		final int rowCount = getRowCount();
-		
-		for (int i = 0; i< rowCount; i++) {
-			// Getting the row from data table solves the problem with hidden or moved SUID column.
-			// However, since the rows might be sorted we need to convert the index to model
-			int modelRow = convertRowIndexToModel(i);
-			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) model.getValueAt(modelRow, pKeyName);
-			Long pk = null;
-			
-			try{
-				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
-				pk = Long.parseLong(tableKey.getEditString());
-			} catch (NumberFormatException nfe) {
-				logger.error("Error parsing long from table " + getName(), nfe);
-			}
-			
-			if (pk != null) {
-				if (suidMapSelected.keySet().contains(pk)){
-					addRowSelectionInterval(i, i);
-				} else if (suidMapUnselected.keySet().contains(pk)){
-					removeRowSelectionInterval(i, i);
-				}
-			}
 		}
 	}
 }
