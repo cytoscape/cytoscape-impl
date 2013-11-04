@@ -171,83 +171,27 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 		}
 	}
-
+	
 	protected void init() {
 		final JTableHeader header = getTableHeader();
-		header.addMouseMotionListener(this);
 		header.setOpaque(false);
 		header.setDefaultRenderer(new CustomHeaderRenderer());
-		header.addMouseListener(this);
 		header.getColumnModel().setColumnSelectionAllowed(true);
+		header.addMouseMotionListener(this);
+		header.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(final MouseEvent e) {
+				maybeShowHeaderPopup(e);
+			}
+			@Override
+			public void mouseReleased(final MouseEvent e) {
+				maybeShowHeaderPopup(e);
+			}
+		});
 
 		setSelectionModel(new BrowserTableListSelectionModel());
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-		final BrowserTable table = this;
-
-		// Event handler. Define actions when mouse is clicked.
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(final MouseEvent e) {
-				final int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
-				final int viewRow = e.getY() / getRowHeight();
-
-				int modelColumn = convertColumnIndexToModel(viewColumn);
-				int modelRow = convertRowIndexToModel(viewRow);
-				
-				final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
-				
-				// Bail out if we're at the ID column:
-				if (tableModel.isPrimaryKey(modelColumn))
-					return;
-
-				// Make sure the column and row we're clicking on actually
-				// exists!
-				if (modelColumn >= tableModel.getColumnCount() || modelRow >= tableModel.getRowCount())
-					return;
-
-				// If action is right click, then show edit pop-up menu
-				if ((SwingUtilities.isRightMouseButton(e)) || (isMacPlatform() && e.isControlDown())) {
-					if (isWinPlatform())
-						selectFocusedCell(e);
-					
-					// Show context menu
-					final CyColumn cyColumn = tableModel.getColumn(modelColumn);
-					final Object primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(modelRow,
-							tableModel.getDataTable().getPrimaryKey().getName())).getValidatedObject();
-					popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, tableModel.getTableType(), table, e.getX(), e.getY(), table);
-				} else if (SwingUtilities.isLeftMouseButton(e) && (getSelectedRows().length != 0)) {
-					// Display List menu.
-					showListContents(modelRow, modelColumn, e);
-				}
-			}
-
-			@Override
-			public void mousePressed(final MouseEvent e) {
-				selectFocusedCell(e);
-			}
-			
-			private void selectFocusedCell(final MouseEvent e) {
-				final int row = e.getY() / getRowHeight();
-				final int column = getColumnModel().getColumnIndexAtX(e.getX());
-				
-				final int[] selectedRows = table.getSelectedRows();
-				int binarySearch = Arrays.binarySearch(selectedRows, row);
-				
-				// Select clicked cell, if not selected yet
-				if (binarySearch < 0) {
-					// Clicked row not selected: Select only the right-clicked row/cell
-					table.changeSelection(row, column, false, false);
-				} else {
-					// Row is already selected: Just guarantee the last clicked cell is highlighted properly
-					((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(row);
-					table.setColumnSelectionInterval(column, column);
-					
-					final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
-					tableModel.fireTableRowsUpdated(selectedRows[0], selectedRows[selectedRows.length-1]);
-				}
-			}
-		});
+		addMouseListener(this);
 		
 		getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -257,7 +201,12 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 		});
 	}
-
+	
+	@Override
+	public synchronized void addMouseListener(final MouseListener listener) {
+		super.addMouseListener(new ProxyMouseListener(listener));
+	}
+	
 	private void selectFromTable() {
 		final TableModel model = this.getModel();
 		
@@ -532,17 +481,73 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent event) {
+	public void mouseReleased(MouseEvent e) {
+		maybeShowPopup(e);
 	}
 
 	@Override
-	public void mousePressed(MouseEvent event) {
+	public void mousePressed(MouseEvent e) {
+		selectFocusedCell(e);
+		maybeShowPopup(e);
 	}
 
 	@Override
-	public void mouseClicked(final MouseEvent event) {
-		if (event.getButton() == MouseEvent.BUTTON3) {
-			final int column = getColumnModel().getColumnIndexAtX(event.getX());
+	public void mouseClicked(final MouseEvent e) {
+		if (SwingUtilities.isLeftMouseButton(e) && (getSelectedRows().length != 0)) {
+			final int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
+			final int viewRow = e.getY() / getRowHeight();
+			final int modelColumn = convertColumnIndexToModel(viewColumn);
+			final int modelRow = convertRowIndexToModel(viewRow);
+			
+			final BrowserTableModel tableModel = (BrowserTableModel) this.getModel();
+			
+			// Bail out if we're at the ID column:
+			if (tableModel.isPrimaryKey(modelColumn))
+				return;
+
+			// Make sure the column and row we're clicking on actually exists!
+			if (modelColumn >= tableModel.getColumnCount() || modelRow >= tableModel.getRowCount())
+				return;
+			
+			// Display List menu.
+			showListContents(modelRow, modelColumn, e);
+		}
+	}
+
+	@Override
+	public void mouseEntered(final MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(final MouseEvent e) {
+	}
+	
+	@Override
+	public void mouseDragged(final MouseEvent e) {
+		// save the column width, if user adjust column width manually
+		if (e.getSource() instanceof JTableHeader) {
+			final int index = getColumnModel().getColumnIndexAtX(e.getX());
+			
+			if (index != -1) {
+				int colWidth = getColumnModel().getColumn(index).getWidth();
+				this.columnWidthMap.put(this.getColumnName(index), new Integer(colWidth));
+			}
+		}
+	}
+
+	@Override
+	public void mouseMoved(final MouseEvent e) {
+	}
+
+	@Override
+	public void actionPerformed(final ActionEvent event) {
+		if (event.getActionCommand().compareTo("Copy") == 0)
+			copyToClipBoard();
+	}
+
+	protected void maybeShowHeaderPopup(final MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			final int column = getColumnModel().getColumnIndexAtX(e.getX());
 			final BrowserTableModel tableModel = (BrowserTableModel) getModel();
 
 			// Make sure the column we're clicking on actually exists!
@@ -554,25 +559,61 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				return;
 
 			final CyColumn cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
-			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableModel.getTableType(), this, event.getX(), event.getY());
+			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableModel.getTableType(), BrowserTable.this,
+					e.getX(), e.getY());
 		}
 	}
+	
+	private void maybeShowPopup(final MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			if (isWinPlatform())
+				selectFocusedCell(e);
+			
+			// Show context menu
+			final int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
+			final int viewRow = e.getY() / getRowHeight();
+			final int modelColumn = convertColumnIndexToModel(viewColumn);
+			final int modelRow = convertRowIndexToModel(viewRow);
+			
+			final BrowserTableModel tableModel = (BrowserTableModel) this.getModel();
+			
+			// Bail out if we're at the ID column:
+			if (tableModel.isPrimaryKey(modelColumn))
+				return;
 
-	@Override
-	public void mouseEntered(MouseEvent event) {
-
+			// Make sure the column and row we're clicking on actually exists!
+			if (modelColumn >= tableModel.getColumnCount() || modelRow >= tableModel.getRowCount())
+				return;
+			
+			final CyColumn cyColumn = tableModel.getColumn(modelColumn);
+			final Object primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(modelRow,
+					tableModel.getDataTable().getPrimaryKey().getName())).getValidatedObject();
+			popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, tableModel.getTableType(), this,
+					e.getX(), e.getY(), this);
+		}
 	}
-
-	@Override
-	public void mouseExited(MouseEvent event) {
+	
+	private void selectFocusedCell(final MouseEvent e) {
+		final int row = e.getY() / getRowHeight();
+		final int column = getColumnModel().getColumnIndexAtX(e.getX());
+		
+		final int[] selectedRows = this.getSelectedRows();
+		int binarySearch = Arrays.binarySearch(selectedRows, row);
+		
+		// Select clicked cell, if not selected yet
+		if (binarySearch < 0) {
+			// Clicked row not selected: Select only the right-clicked row/cell
+			this.changeSelection(row, column, false, false);
+		} else {
+			// Row is already selected: Just guarantee the last clicked cell is highlighted properly
+			((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(row);
+			this.setColumnSelectionInterval(column, column);
+			
+			final BrowserTableModel tableModel = (BrowserTableModel) this.getModel();
+			tableModel.fireTableRowsUpdated(selectedRows[0], selectedRows[selectedRows.length-1]);
+		}
 	}
-
-	@Override
-	public void actionPerformed(ActionEvent event) {
-		if (event.getActionCommand().compareTo("Copy") == 0)
-			copyToClipBoard();
-	}
-
+	
 	private String copyToClipBoard() {
 		final StringBuffer sbf = new StringBuffer();
 
@@ -622,23 +663,42 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		return sbf.toString();
 	}
 
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		// save the column width, if user adjust column width manually
-		if (e.getSource() instanceof JTableHeader) {
-			final int index = getColumnModel().getColumnIndexAtX(e.getX());
-			
-			if (index != -1) {
-				int colWidth = getColumnModel().getColumn(index).getWidth();
-				this.columnWidthMap.put(this.getColumnName(index), new Integer(colWidth));
-			}
+	private class ProxyMouseListener extends MouseAdapter {
+		
+		private final MouseListener listener;
+		
+		public ProxyMouseListener(final MouseListener listener) {
+			this.listener = listener;
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if (listener instanceof BrowserTable || !e.isPopupTrigger())
+				listener.mouseClicked(e);
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			listener.mouseEntered(e);
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			listener.mouseExited(e);
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			if (listener instanceof BrowserTable || !e.isPopupTrigger())
+				listener.mousePressed(e);
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			listener.mouseReleased(e);
 		}
 	}
-
-	@Override
-	public void mouseMoved(MouseEvent e) {
-	}
-
+	
 	private class BrowserTableListSelectionModel extends DefaultListSelectionModel {
 		
 		private static final long serialVersionUID = 7119443698611148406L;
