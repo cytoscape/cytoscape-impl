@@ -210,12 +210,13 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 			// TODO: turn off stupid nested network thing
 			for (CyNode node: group.getNodeList()) {
+				View<CyNode> nView = view.getNodeView(node);
 				if (node.getNetworkPointer() != null && cyGroupManager.isGroup(node, network)) {
 					if (!cyGroupSettings.getUseNestedNetworks(cyGroupManager.getGroup(node, network))) {
-						View<CyNode> nView = view.getNodeView(node);
 						nView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, Boolean.FALSE);
 					}
 				}
+				viewStyle.apply(network.getRow(node), nView);
 			}
 		}
 		
