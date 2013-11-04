@@ -49,15 +49,18 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/**
+ * Create query based on the selected node
+ * 
+ */
 public class BuildQueryTask extends AbstractTask {
-
 	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Extend Network by PSICQUIC Web Services";
 	}
 	
-	@Tunable(description = "Select column send as query:")
+	@Tunable(description = "Select query column:")
 	public ListSingleSelection<String> columnList;
 
 	private PSICQUICRestClient client;
@@ -130,7 +133,5 @@ public class BuildQueryTask extends AbstractTask {
 				nodeView, eh, vmm, layouts, manager, builder);
 
 		insertTasksAfterCurrentTask(searchTask, expandTask);
-
 	}
-
 }

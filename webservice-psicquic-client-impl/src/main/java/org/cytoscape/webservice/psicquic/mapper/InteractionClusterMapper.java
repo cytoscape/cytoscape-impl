@@ -268,30 +268,33 @@ public class InteractionClusterMapper {
 	public void mapNodeColumn(final EncoreInteraction interaction, final CyRow sourceRow, final CyRow targetRow) {
 
 		final Map<String, String> accsSource = interaction.getInteractorAccsA();
-		final Map<String, String> accsTarget = interaction.getInteractorAccsB();
 		processNames(sourceRow, accsSource);
-		processNames(targetRow, accsTarget);
-
 		final Map<String, List<String>> otherSource = interaction.getOtherInteractorAccsA();
-		final Map<String, List<String>> otherTarget = interaction.getOtherInteractorAccsB();
 		processOtherNames(sourceRow, otherSource);
-		processOtherNames(targetRow, otherTarget);
-
 		final Collection<CrossReference> speciesSource = interaction.getOrganismsA();
-		final Collection<CrossReference> speciesTarget = interaction.getOrganismsB();
-
 		// Add Species names
 		if (speciesSource.size() != 0) {
 			CrossReference speciesSourceFirst = speciesSource.iterator().next();
 			processSpecies(sourceRow, speciesSourceFirst);
 		}
+		// Try to find human-readable gene name
+		guessHumanReadableName(sourceRow);
+		
+		
+		if(targetRow == null) {
+			return;
+		}
+		
+		// If target exists...
+		final Map<String, String> accsTarget = interaction.getInteractorAccsB();
+		processNames(targetRow, accsTarget);
+		final Map<String, List<String>> otherTarget = interaction.getOtherInteractorAccsB();
+		processOtherNames(targetRow, otherTarget);
+		final Collection<CrossReference> speciesTarget = interaction.getOrganismsB();
 		if (speciesTarget.size() != 0) {
 			CrossReference speciesTargetFirst = speciesTarget.iterator().next();
 			processSpecies(targetRow, speciesTargetFirst);
 		}
-
-		// Try to find hjuman-readable gene name
-		guessHumanReadableName(sourceRow);
 		guessHumanReadableName(targetRow);
 	}
 

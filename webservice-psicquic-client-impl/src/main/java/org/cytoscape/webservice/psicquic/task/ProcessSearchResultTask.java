@@ -39,6 +39,10 @@ import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
+/**
+ * Add new edges to the existing network
+ *
+ */
 public class ProcessSearchResultTask extends AbstractTask {
 	private final PSICQUICRestClient client;
 

@@ -107,7 +107,7 @@ public class CyNetworkBuilder {
 		String line;
 		int i = 0;
 		while ((line = reader.readLine()) != null) {
-			
+
 			if (cancel) {
 				logger.warn("Network bulilder interrupted.");
 				network.getRow(network).set(CyNetwork.NAME, "<Incomplete!> " + networkTitle);
@@ -131,14 +131,14 @@ public class CyNetworkBuilder {
 
 			String sourceFirst = SPLITTER.split(parts[0])[0];
 			String targetFirst = SPLITTER.split(parts[1])[0];
-			
-			if(sourceFirst.equals("-") && targetFirst.equals("-")) {
+
+			if (sourceFirst.equals("-") && targetFirst.equals("-")) {
 				logger.warn("Invalid line: both SOURCE/TARGET IDs are missing: " + line + "\n");
 				continue;
-			} else if(targetFirst.equals("-")) {
+			} else if (targetFirst.equals("-")) {
 				// This is for self-interaction
 				targetFirst = sourceFirst;
-			} else if(sourceFirst.equals("-")) {
+			} else if (sourceFirst.equals("-")) {
 				sourceFirst = targetFirst;
 			}
 
@@ -158,7 +158,8 @@ public class CyNetworkBuilder {
 			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
 			mapper.mapEdgeColumn(parts, network.getRow(newEdge), newEdge, sourceID, targetID);
 
-//			network.getRow(newEdge).set(CyEdge.INTERACTION, Integer.toString(i));
+			// network.getRow(newEdge).set(CyEdge.INTERACTION,
+			// Integer.toString(i));
 			// Create new attribute if cross species
 			// processCrossSpeciesEdge(network.getRow(newEdge),
 			// network.getRow(sourceNode), network.getRow(targetNode));
@@ -178,10 +179,68 @@ public class CyNetworkBuilder {
 		return node;
 	}
 
-	public Map<String, CyNode> addToNetwork(final InteractionCluster iC, CyNetworkView networkView,
-			final View<CyNode> hubNode) {
-		return process(iC, networkView.getModel(), networkView, hubNode);
+	/**
+	 * Add new edges to the existing network.
+	 * 
+	 * @param iC
+	 * @param networkView
+	 * @param hubNode
+	 * @return
+	 */
+	public void addToNetwork(final InteractionCluster iC, CyNetworkView networkView, final View<CyNode> hubNode) {
+		final CyNetwork network = networkView.getModel();
+
+		// Hub node to be expanded.
+		final CyNode hub = hubNode.getModel();
+		final String hubName = network.getRow(hub).get(CyNetwork.NAME, String.class);
+		mapper.ensureInitialized();
+		nodeMap = new HashMap<String, CyNode>();
+		nodeMap.put(hubName, hub);
+		network.getRow(hub).set(CyNetwork.SELECTED, true);
+
+		for (final CyNode existingNode : network.getNodeList())
+			nodeMap.put(network.getRow(existingNode).get(CyNetwork.NAME, String.class), existingNode);
+
+		// Merged interactions. TODO: Interactive UI for merge?
+		final Map<Integer, EncoreInteraction> interactions = iC.getInteractionMapping();
+
+		prepareColumns(network);
+
+		for (final Integer interactionKey : interactions.keySet()) {
+			if (cancel) {
+				logger.warn("Network bulilder interrupted.");
+			}
+			final EncoreInteraction interaction = interactions.get(interactionKey);
+			final String source = interaction.getInteractorA();
+			final String target = interaction.getInteractorB();
+
+			// Check this is an interaction from the query hub node.
+			if(source.equals(hubName) == false && target.equals(hubName) == false) {
+				// Not the edge from the query node.
+				continue;
+			}
+			
+			final String newNodeName;
+			if(source.equals(hubName)) {
+				newNodeName = target;
+			} else {
+				newNodeName = source;
+			}
+
+			CyNode newNode = nodeMap.get(newNodeName);
+			if (newNode == null) {
+				newNode= network.addNode();
+				network.getRow(newNode).set(CyNetwork.NAME, newNodeName);
+				network.getRow(newNode).set(CyNetwork.SELECTED, true);
+				nodeMap.put(newNodeName, newNode);
+			}
+			mapper.mapNodeColumn(interaction, network.getRow(newNode), null);
+
+			final CyEdge newEdge = network.addEdge(hub, newNode, true);
+			mapper.mapEdgeColumn(interaction, network.getRow(newEdge));
+		}
 	}
+
 
 	private final Map<String, CyNode> process(final InteractionCluster iC, CyNetwork network, CyNetworkView netView,
 			final View<CyNode> hubNode) {

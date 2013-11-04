@@ -37,6 +37,10 @@ import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.work.TaskIterator;
 
+/**
+ * Display "Expand" context menu.
+ *
+ */
 public class ExpandNodeContextMenuFactory extends AbstractNodeViewTaskFactory {
 
 	private final CyEventHelper eh;
