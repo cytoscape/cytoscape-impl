@@ -17,7 +17,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 	
 	<properties>
 		<bundle.namespace>org.cytoscape.biopax.internal</bundle.namespace>
-		<paxtools.version>4.2.1-SNAPSHOT</paxtools.version>
+		<paxtools.version>4.2.1</paxtools.version>
 	</properties>
 
 	<build>
