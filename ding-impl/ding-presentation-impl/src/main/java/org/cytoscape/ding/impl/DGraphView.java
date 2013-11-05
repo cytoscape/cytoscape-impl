@@ -2008,7 +2008,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @return Image
 	 * @throws IllegalArgumentException
 	 */
-	private Image createImage(final int width, final int height, 
+	private Image createImage(int width, final int height, 
 	                          double shrink, final boolean skipBackground) {
 		// Validate arguments
 		if (width < 0 || height < 0) {
@@ -2022,11 +2022,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			shrink = 1.0;
 		}
 
+		// We want the width and height to be the same proportions as our network
+		Dimension originalSize = m_networkCanvas.getSize();
+		if (originalSize.getHeight() > 0.0 && originalSize.getWidth() > 0.0) {
+			double ratio = (double)originalSize.getHeight() / (double) originalSize.getWidth();
+			width = (int)((double)height/ratio);
+		}
+
 		// create image to return
 		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);		
 		final Graphics g = image.getGraphics();
-
-		Dimension originalSize;
 
 		if (!skipBackground) {
 			// paint background canvas into image
@@ -2359,7 +2364,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			latest = true;
 		}
 
-		final Rectangle2D rect = new Rectangle2D.Double(-width / 2, -height / 2, width, height);
+		// Handle non-square images
+		// Get the height and width of the image
+		int imageWidth = snapshotImage.getWidth();
+		int imageHeight = snapshotImage.getHeight();
+		double ratio = (double)imageHeight / (double) imageWidth;
+		int adjustedWidth = (int)((double)width/ratio)+1;
+
+		final Rectangle2D rect = new Rectangle2D.Double(-adjustedWidth / 2, -height / 2, adjustedWidth, height);
 		final TexturePaint texturePaint = new TexturePaint(snapshotImage, rect);
 		return texturePaint;
 	}
