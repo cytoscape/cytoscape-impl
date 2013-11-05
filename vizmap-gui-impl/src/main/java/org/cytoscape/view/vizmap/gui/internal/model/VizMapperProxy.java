@@ -252,7 +252,7 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	@Override
-	public void handleEvent(VisualStyleChangedEvent e) {
+	public void handleEvent(final VisualStyleChangedEvent e) {
 		sendNotification(VISUAL_STYLE_UPDATED, e.getSource());
 	}
 	

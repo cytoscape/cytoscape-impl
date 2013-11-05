@@ -184,4 +184,22 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 			propChangeSupport.firePropertyChange("mappingColumnName", mappingColumnName, name);
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	public void update(final RenderingEngine<CyNetwork> engine) {
+		setRenderingEngine(engine);
+		
+		if (dependency == null) {
+			setDefaultValue(style.getDefaultValue(visualProperty));
+			setVisualMappingFunction(style.getVisualMappingFunction(visualProperty));
+		} else {
+			for (final VisualPropertyDependency<?> dep : style.getAllVisualPropertyDependencies()) {
+				if (dep.getIdString().equals(dependency.getIdString())
+						&& dep.getParentVisualProperty().equals(dependency.getParentVisualProperty())) {
+					dependency = (VisualPropertyDependency<T>) dep;
+					break;
+				}
+			}
+		}
+	}
 }

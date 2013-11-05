@@ -755,36 +755,61 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final VisualPropertySheet curNetSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
 		final VisualPropertySheetModel curModel = curNetSheet != null ? curNetSheet.getModel() : null;
 		final VisualStyle curStyle = curModel != null ? curModel.getVisualStyle() : null;
+		
+		boolean rebuild = !vs.equals(curStyle); // If a different style, rebuild all property sheets
 
-		if (!vs.equals(curStyle)) {
-			// If a different style, rebuild all property sheets
-			final VisualPropertySheet selVpSheet = getSelectedVisualPropertySheet();
-			final Class<? extends CyIdentifiable> curTargetDataType = selVpSheet != null ?
-					selVpSheet.getModel().getTargetDataType() : null;
+		if (!rebuild) {
+			// Also check if dependencies have changed
+			final Map<String, VisualPropertyDependency<?>> map = new HashMap<String, VisualPropertyDependency<?>>();
+			final Set<VisualPropertyDependency<?>> dependencies = vs.getAllVisualPropertyDependencies();
 			
-			createVisualPropertySheets(curTargetDataType);
+			for (final VisualPropertyDependency<?> dep : dependencies) {
+				final Class<? extends CyIdentifiable> type = dep.getParentVisualProperty().getTargetDataType();
+				final VisualPropertySheet sheet = vizMapperMainPanel.getVisualPropertySheet(type);
+				
+				if (sheet.getItem(dep) == null) {
+					// There's a new dependency!
+					rebuild = true;
+					break;
+				}
+				
+				map.put(dep.getIdString(), dep);
+			}
+			
+			if (!rebuild) {
+				final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
+				
+				for (final VisualPropertySheet sheet : vpSheets) {
+					for (final VisualPropertySheetItem<?> item : sheet.getItems()) {
+						final VisualPropertyDependency<?> dep = item.getModel().getVisualPropertyDependency();
+						
+						if (dep != null && !map.containsKey(dep.getIdString())) {
+							// This dependency has been removed from the Visual Style!
+							rebuild = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		if (rebuild) {
+			createVisualPropertySheets();
 		} else {
-			// TODO group by target data type, because the VP id is not guaranteed to be unique among different types
+			// Just update the current Visual Property sheets
 			final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 			
 			for (final VisualPropertySheet sheet : vpSheets) {
-				// If same style, just update the current Visual Property sheets
-				for (VisualPropertySheetItem<?> item : sheet.getItems()) {
+				for (final VisualPropertySheetItem<?> item : sheet.getItems()) {
 					// Update values
 					final VisualPropertySheetItemModel model = item.getModel();
-					final VisualProperty<?> vp = model.getVisualProperty();
-					final RenderingEngine<CyNetwork> engine = vizMapperMainPanel.getRenderingEngine();
-					model.setDefaultValue(vs.getDefaultValue(vp));
-					model.setVisualMappingFunction(vs.getVisualMappingFunction(vp));
-					model.setRenderingEngine(engine);
+					model.update(vizMapperMainPanel.getRenderingEngine());
 				}
 			}
 		}
 	}
 	
-	private void createVisualPropertySheets(final Class<? extends CyIdentifiable> selectedTargetDataType) {
-		final VisualStyle style = vmProxy.getCurrentVisualStyle();
-		final VisualLexicon lexicon = vmProxy.getCurrentVisualLexicon();
+	private void createVisualPropertySheets() {
 		final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 		final Map<Class<? extends CyIdentifiable>, Set<String>> visibleProps = 
 				new HashMap<Class<? extends CyIdentifiable>, Set<String>>();
@@ -808,9 +833,16 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			}
 		}
 		
+		final VisualStyle style = vmProxy.getCurrentVisualStyle();
+		final VisualLexicon lexicon = vmProxy.getCurrentVisualLexicon();
+		
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
+				final VisualPropertySheet selVpSheet = getSelectedVisualPropertySheet();
+				final Class<? extends CyIdentifiable> selectedTargetDataType = selVpSheet != null ?
+						selVpSheet.getModel().getTargetDataType() : null;
+				
 				for (final Class<? extends CyIdentifiable> type : SHEET_TYPES) {
 					// Create Visual Property Sheet
 					final VisualPropertySheetModel model = new VisualPropertySheetModel(type, style, lexicon);

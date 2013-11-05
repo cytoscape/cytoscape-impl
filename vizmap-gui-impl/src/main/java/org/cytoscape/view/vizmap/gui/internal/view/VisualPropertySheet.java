@@ -78,7 +78,7 @@ public class VisualPropertySheet extends JPanel{
 	
 	private final TreeSet<VisualPropertySheetItem<?>> items;
 	private final Map<VisualProperty<?>, VisualPropertySheetItem<?>> vpItemMap;
-	private final Map<VisualPropertyDependency<?>, VisualPropertySheetItem<?>> depItemMap;
+	private final Map<String/*dependency ID*/, VisualPropertySheetItem<?>> depItemMap;
 	private final Map<VisualPropertySheetItem<?>, JCheckBoxMenuItem> menuItemMap;
 	
 	private VisualPropertySheetItem<?> selectionHead;
@@ -98,7 +98,7 @@ public class VisualPropertySheet extends JPanel{
 		
 		items = new TreeSet<VisualPropertySheetItem<?>>();
 		vpItemMap = new HashMap<VisualProperty<?>, VisualPropertySheetItem<?>>();
-		depItemMap = new HashMap<VisualPropertyDependency<?>, VisualPropertySheetItem<?>>();
+		depItemMap = new HashMap<String, VisualPropertySheetItem<?>>();
 		menuItemMap = new HashMap<VisualPropertySheetItem<?>, JCheckBoxMenuItem>();
 		
 		init();
@@ -139,7 +139,7 @@ public class VisualPropertySheet extends JPanel{
 				if (i.getModel().getVisualPropertyDependency() == null)
 					vpItemMap.put(i.getModel().getVisualProperty(), i);
 				else
-					depItemMap.put(i.getModel().getVisualPropertyDependency(), i);
+					depItemMap.put(i.getModel().getVisualPropertyDependency().getIdString(), i);
 				
 				// Add listeners
 				i.addMouseListener(new MouseAdapter() {
@@ -230,7 +230,7 @@ public class VisualPropertySheet extends JPanel{
 	
 	@SuppressWarnings("unchecked")
 	public <T> VisualPropertySheetItem<T> getItem(final VisualPropertyDependency<T> dep) {
-		return (VisualPropertySheetItem<T>) depItemMap.get(dep);
+		return (VisualPropertySheetItem<T>) depItemMap.get(dep.getIdString());
 	}
 	
 	public synchronized Set<VisualPropertySheetItem<?>> getSelectedItems() {

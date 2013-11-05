@@ -46,7 +46,6 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
 import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangeRecord;
@@ -208,11 +207,15 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	@Override
 	public void addVisualPropertyDependency(VisualPropertyDependency<?> dependency) {
 		dependencies.add(dependency);
+		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
+				VisualStyleChangedEvent.class);
 	}
 
 	@Override
 	public void removeVisualPropertyDependency(VisualPropertyDependency<?> dependency) {
 		dependencies.remove(dependency);
+		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
+				VisualStyleChangedEvent.class);
 	}
 
 	/**
