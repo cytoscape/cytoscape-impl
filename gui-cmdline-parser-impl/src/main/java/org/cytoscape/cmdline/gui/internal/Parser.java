@@ -91,7 +91,7 @@ public class Parser {
 		              .create("V"));
 
 		opt.addOption(OptionBuilder
-		              .withLongOpt("command")
+		              .withLongOpt("script")
 		              .withDescription("Execute commands from script file")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("S"));
