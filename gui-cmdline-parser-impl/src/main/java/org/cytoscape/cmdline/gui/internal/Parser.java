@@ -24,19 +24,7 @@ package org.cytoscape.cmdline.gui.internal;
  * #L%
  */
 
-import org.cytoscape.application.CyShutdown;
-import org.cytoscape.application.CyVersion;
-
 import java.util.Properties;
-
-import java.awt.Dimension;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -45,7 +33,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-
+import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,12 +76,6 @@ public class Parser {
 		              .withDescription( "Load a network file (any format).")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("N"));
-		
-		opt.addOption(OptionBuilder
-		              .withLongOpt("table")
-		              .withDescription("Load a data table file (any table format).")
-		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("T"));
 
 		opt.addOption(OptionBuilder
 		              .withLongOpt("props")
@@ -175,9 +158,6 @@ public class Parser {
 
 			if (line.hasOption("V"))
 				startupConfig.setVizMapProps(line.getOptionValues("V"));
-
-			if (line.hasOption("T"))
-				startupConfig.setTables(line.getOptionValues("T"));
 		}
 
 		// Do we have any command scripts requested?
