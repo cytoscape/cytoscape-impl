@@ -144,7 +144,8 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	}
 
 	private V getRangeValue(K domainValue) {
-		if(points.isEmpty())
+		if (points.isEmpty() || 
+				(domainValue instanceof Number && Double.isNaN(((Number)domainValue).doubleValue())))
 			return null;
 		
 		ContinuousMappingPoint<K, V> firstPoint = points.get(0);
