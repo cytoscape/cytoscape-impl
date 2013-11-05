@@ -933,6 +933,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				final double IMAGE_WIDTH = getWidth() * NESTED_IMAGE_SCALE_FACTOR;
 				final double IMAGE_HEIGHT = getHeight() * NESTED_IMAGE_SCALE_FACTOR;
 
+				setNestedNetworkView();
+
 				// Do we have a node w/ a self-reference?
 				if (graphView == nestedNetworkView) {
 					if (RECURSIVE_NESTED_NETWORK_IMAGE == null)
@@ -942,8 +944,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 							IMAGE_HEIGHT);
 					return new TexturePaint(RECURSIVE_NESTED_NETWORK_IMAGE, rect);
 				}
-				
-				setNestedNetworkView();
 				
 				if (nestedNetworkView != null) {					
 					final double scaleFactor = graphView.getGraphLOD().getNestedNetworkImageScaleFactor();
