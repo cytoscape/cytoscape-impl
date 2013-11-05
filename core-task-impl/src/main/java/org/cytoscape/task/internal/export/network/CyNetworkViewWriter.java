@@ -25,17 +25,16 @@ package org.cytoscape.task.internal.export.network;
  */
 
 
-import java.io.File;
-import java.util.Collection;
-
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
+
+import java.io.File;
 
 
 /**
@@ -65,6 +64,32 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 			}
 		}
 	}
+
+	void setDefaultFileFormatUsingFileExt(File file)
+	{
+		String ext = getExtension(file);
+		if( ext == null )
+			return;
+		ext = ext.toLowerCase().trim();
+		String searchDesc = "*." + ext;
+		//Use the EXT to determine the default file format
+		for(String fileTypeDesc: this.getFileFilterDescriptions() )
+			if(fileTypeDesc.contains(searchDesc) )
+			{
+				options.setSelectedValue(fileTypeDesc);
+				break;
+			}
+	}
+
+	private String getExtension(File file)
+	{
+		String filename = file.getName();
+		if( !filename.contains(".") )
+			return null;
+		int lastIndex = filename.lastIndexOf('.');
+		return filename.substring(lastIndex + 1);
+	}
+
 
 	/**
 	 * {@inheritDoc}  
