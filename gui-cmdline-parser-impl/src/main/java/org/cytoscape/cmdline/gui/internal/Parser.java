@@ -95,18 +95,6 @@ public class Parser {
 		              .create("T"));
 
 		opt.addOption(OptionBuilder
-		              .withLongOpt("plugin")
-		              .withDescription("Load a SIMPLIFIED plugin jar file/URL.")
-		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("p"));
-
-		opt.addOption(OptionBuilder
-		              .withLongOpt("bundle")
-		              .withDescription("Load a BUNDLE plugin jar file or URL.")
-		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("b"));
-
-		opt.addOption(OptionBuilder
 		              .withLongOpt("props")
 		              .withDescription(
 		              "Load cytoscape properties file (Java properties format) or individual property: -P name=value.")
@@ -169,14 +157,6 @@ public class Parser {
 		// always load any properties specified
 		if (line.hasOption("P"))
 			startupConfig.setProperties(line.getOptionValues("P"));
-
-		// always load any plugins specified
-		if (line.hasOption("p"))
-			startupConfig.setSimplifiedPlugins(line.getOptionValues("p"));
-
-		// always load any bundle plugins specified
-		if (line.hasOption("b"))
-			startupConfig.setBundlePlugins(line.getOptionValues("b"));
 
 		// it the only argument is a session file, load it
 		if (line.getOptions().length == 0 && line.getArgs().length == 1 && line.getArgs()[0].endsWith(".cys")){

@@ -136,13 +136,6 @@ public class StartupConfig {
 		// We do this so that anything specified on the command line
 		// overrides anything specified in a file.
 		localProps.putAll(argProps);
-	}
-
-	public void setSimplifiedPlugins(String[] args){
-		taskStart = true;
-	}
-
-	public void setBundlePlugins(String[] args){
 		taskStart = true;
 	}
 
@@ -260,10 +253,6 @@ public class StartupConfig {
 
 		ArrayList<TaskIterator> taskIteratorList = new ArrayList<TaskIterator>();
 		
-	/*
-		taskIterator.append( pluginManager.loadSimplifiedPlugins() );
-		taskIterator.append( pluginManager.loadBundlePlugins() );
-	 */			
 		if ( sessionName != null ) 	{
 			taskIteratorList.add( loadSession.createTaskIterator(sessionName));
 
