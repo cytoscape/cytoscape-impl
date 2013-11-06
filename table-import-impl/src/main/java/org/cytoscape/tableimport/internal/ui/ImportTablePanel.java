@@ -288,7 +288,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		this.helpButton.setVisible(false);
 
-		boolean useFirstRow = dialogType == NETWORK_IMPORT;
+		boolean useFirstRow = dialogType == NETWORK_IMPORT || dialogType == SIMPLE_ATTRIBUTE_IMPORT;
 		setPreviewPanel(null, useFirstRow);
 		
 		// Hide the alias Panel, we will do the table join somewhere else, not in this GUI
