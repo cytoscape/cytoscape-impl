@@ -201,9 +201,14 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	public void update() {
 		updateSelection();
-		updateDefaultButton();
-		updateBypassButton();
-		updateMapping();
+		
+		if (model.getVisualPropertyDependency() == null) {
+			updateDefaultButton();
+			updateBypassButton();
+			updateMapping();
+		} else {
+			updateDependencyCkb();
+		}
 	}
 	
 	public void updateDefaultButton() {
@@ -246,6 +251,9 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	public void updateMapping() {
+		if (!model.isVisualMappingAllowed())
+			return;
+		
 		final VisualMappingFunction<?, T> mapping = getModel().getVisualMappingFunction();
 		final VisualMappingFunctionFactory mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
 		
@@ -736,6 +744,9 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	private void updateMappingIcon() {
+		if (!model.isVisualMappingAllowed())
+			return;
+		
 		final JToggleButton btn = getMappingBtn();
 		final VisualMappingFunction<?, T> mapping = model.getVisualMappingFunction();
 		final String colName = mapping != null ? mapping.getMappingColumnName() : null;
@@ -762,10 +773,17 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	private void updateMappingRowHeight() {
-		if (model.getVisualMappingFunction() instanceof ContinuousMapping && getPropSheetTbl().getRowCount() > 2)
-			getPropSheetTbl().setRowHeight(2, MAPPING_IMG_ROW_HEIGHT);
-		else
-			getPropSheetTbl().setRowHeight(PROP_SHEET_ROW_HEIGHT);
+		if (model.isVisualMappingAllowed()) {
+			if (model.getVisualMappingFunction() instanceof ContinuousMapping && getPropSheetTbl().getRowCount() > 2)
+				getPropSheetTbl().setRowHeight(2, MAPPING_IMG_ROW_HEIGHT);
+			else
+				getPropSheetTbl().setRowHeight(PROP_SHEET_ROW_HEIGHT);
+		}
+	}
+	
+	private void updateDependencyCkb() {
+		if (model.getVisualPropertyDependency() != null)
+			getDependencyCkb().setSelected(model.isDependencyEnabled());
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

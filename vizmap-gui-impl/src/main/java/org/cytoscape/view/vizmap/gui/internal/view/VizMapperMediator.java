@@ -804,6 +804,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					// Update values
 					final VisualPropertySheetItemModel model = item.getModel();
 					model.update(vizMapperMainPanel.getRenderingEngine());
+					
+					if (model.getVisualPropertyDependency() != null)
+						item.update();
 				}
 			}
 		}
