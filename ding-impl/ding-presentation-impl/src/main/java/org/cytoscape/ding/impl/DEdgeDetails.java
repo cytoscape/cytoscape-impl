@@ -153,7 +153,8 @@ final class DEdgeDetails extends EdgeDetails {
 		m_colorsLowDetail = new WeakHashMap<CyEdge, Object>();
 		m_selectedColorsLowDetail = new WeakHashMap<CyEdge, Object>();
 		m_lineCurved = new WeakHashMap<CyEdge, Integer>();
-		m_edgeBends = new WeakHashMap<CyEdge, Bend>();
+		// If we clear this map, we lose all of our edge bends
+		// m_edgeBends = new WeakHashMap<CyEdge, Bend>();
 		m_edgeTooltips = new WeakHashMap<CyEdge, String>();
 		m_edgeTansparencies = new WeakHashMap<CyEdge, Integer>();
 		m_edgeLabelTansparencies = new WeakHashMap<CyEdge, Integer>();
@@ -970,7 +971,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * @param edge
 	 * @return edge Bend
 	 */
-	Bend getBend(final CyEdge edge, boolean forceCreate) {
+	synchronized Bend getBend(final CyEdge edge, boolean forceCreate) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		if (dev.isValueLocked(DVisualLexicon.EDGE_BEND))
@@ -1032,7 +1033,7 @@ final class DEdgeDetails extends EdgeDetails {
 			// srcNodeIndex, true, true, true);
 
 			for (final CyEdge selfEdge : selfEdgeList) {
-				// while (selfEdges.hasNext()) {
+				// while (selfEdges.hasNext()) 
 				// final int e2 = selfEdges.nextInt();
 				final long e2 = selfEdge.getSUID();
 
@@ -1087,7 +1088,7 @@ final class DEdgeDetails extends EdgeDetails {
 			m_heap.empty();
 
 			for (final CyEdge conEdge : conEdgeList) {
-				// while (conEdges.hasNext()) {
+				// while (conEdges.hasNext()) 
 				// m_heap.toss(conEdges.nextInt());
 				m_heap.toss(conEdge.getSUID());
 			}
