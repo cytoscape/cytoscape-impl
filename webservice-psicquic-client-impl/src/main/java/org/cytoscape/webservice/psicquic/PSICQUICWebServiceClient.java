@@ -26,12 +26,14 @@ package org.cytoscape.webservice.psicquic;
 
 import java.awt.Container;
 import java.util.Map;
+import java.util.Properties;
 
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.SearchWebServiceClient;
 import org.cytoscape.io.webservice.swing.AbstractWebServiceGUIClient;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -63,14 +65,18 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	private SearchRecoredsTask searchTask;
 
 	private final OpenBrowser openBrowser;
+
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
 	private final PSIMITagManager tagManager;
 
+	private final CyProperty<Properties> props;
+
 	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
 			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager,
 			final TaskManager<?, ?> tManager, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final OpenBrowser openBrowser, final CyNetworkBuilder builder, PSIMI25VisualStyleBuilder vsBuilder, VisualMappingManager vmm, final PSIMITagManager tagManager) {
+			final OpenBrowser openBrowser, final CyNetworkBuilder builder, PSIMI25VisualStyleBuilder vsBuilder,
+			VisualMappingManager vmm, final PSIMITagManager tagManager, final CyProperty<Properties> props) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;
@@ -80,6 +86,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		this.vsBuilder = vsBuilder;
 		this.vmm = vmm;
 		this.tagManager = tagManager;
+		this.props = props;
 
 		regManager = new RegistryManager();
 		client = new PSICQUICRestClient(networkFactory, regManager, builder);
@@ -107,7 +114,8 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	@Override
 	public Container getQueryBuilderGUI() {
-		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, vsBuilder, vmm, tagManager);
+		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, vsBuilder,
+				vmm, tagManager, props);
 	}
 
 	PSICQUICRestClient getRestClient() {

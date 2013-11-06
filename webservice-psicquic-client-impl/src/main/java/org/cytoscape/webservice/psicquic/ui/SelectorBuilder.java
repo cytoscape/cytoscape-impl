@@ -53,5 +53,4 @@ public class SelectorBuilder {
 
 		return speciesBox;
 	}
-
 }

@@ -32,7 +32,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -48,6 +51,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
@@ -61,6 +65,11 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
 
+
+/**
+ * Custom Search UI for PSICQUIC services.
+ * 
+ */
 public class PSICQUICSearchUI extends JPanel {
 
 	private static final long serialVersionUID = 3163269742016489767L;
@@ -72,20 +81,22 @@ public class PSICQUICSearchUI extends JPanel {
 	private static final Border SEARCH_BORDER = BorderFactory.createLineBorder(SEARCH_BORDER_COLOR, 2);
 
 	// Color Scheme
-	private static final Color MIQL_COLOR = new Color(0x7f, 0xff, 0xd4);
-	private static final Color ID_LIST_COLOR = new Color(0xff, 0xa5, 0x00);
 	private static final Font STRONG_FONT = new Font("SansSerif", Font.BOLD, 14);
+
+	// Property name for saving selection
+	static final String PROP_NAME = "psiqcuic.datasource.selection";
 
 	// Fixed messages
 	private static final String MIQL_MODE = "Search by Query Language (MIQL)";
 	private static final String INTERACTOR_ID_LIST = "Search by ID (gene/protein/compound ID)";
-	private static final String BY_SPECIES = "Search Interactome (this may take long time)";
+	private static final String BY_SPECIES = "Import Interactome (this may take long time)";
 
 	private final RegistryManager regManager;
 	private final PSICQUICRestClient client;
 	private final TaskManager<?, ?> taskManager;
 	private final CyNetworkManager networkManager;
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
+	private final CyProperty<Properties> props;
 
 	private JEditorPane queryArea;
 	private SourceStatusPanel statesPanel;
@@ -108,14 +119,17 @@ public class PSICQUICSearchUI extends JPanel {
 
 	private boolean firstClick = true;
 
+	private Set<String> sourceSet = new HashSet<String>();
+	
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
 	private final PSIMITagManager tagManager;
 
+
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
 			final PSICQUICRestClient client, final TaskManager<?, ?> tmManager,
 			final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm, final PSIMITagManager tagManager) {
+			final VisualMappingManager vmm, final PSIMITagManager tagManager, final CyProperty<Properties> props) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;
@@ -124,6 +138,18 @@ public class PSICQUICSearchUI extends JPanel {
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
 		this.tagManager = tagManager;
+		this.props = props;
+
+		// Load Property if available.
+		final Properties cyProp = props.getProperties();
+		final String selectionListProp = cyProp.getProperty(PROP_NAME);
+		
+		if(selectionListProp == null) {
+			// Create new one if there is no defaults.
+			cyProp.setProperty(PROP_NAME, "");
+		} else {
+			setSelected(selectionListProp);
+		}
 
 		init();
 	}
@@ -157,13 +183,27 @@ public class PSICQUICSearchUI extends JPanel {
 
 		this.add(searchConditionPanel);
 		this.add(statesPanel);
+		
+	}
+	
+	private final void setSelected(final String selected) {
+		final String[] sources = selected.split(",");
+		for(String source:sources) {
+			sourceSet.add(source);
+		}
+	}
+
+
+	private final void setSelected() {
+		this.sourceSet = statesPanel.getSelected();
 	}
 
 	private final void createDBlistPanel() {
 		// Source Status - list of remote databases
 		this.statesPanel = new SourceStatusPanel("", client, regManager, networkManager, null, taskManager, mode,
-				createViewTaskFactory, vsBuilder, vmm, tagManager);
+				createViewTaskFactory, vsBuilder, vmm, tagManager, props);
 		statesPanel.enableComponents(false);
+		statesPanel.setSelected(sourceSet);
 	}
 
 	private final void createQueryPanel() {
@@ -280,6 +320,7 @@ public class PSICQUICSearchUI extends JPanel {
 		if (mode == SearchMode.SPECIES)
 			query = buildSpeciesQuery();
 
+		this.setSelected();
 		statesPanel.setQuery(query);
 		searchTask.setQuery(query);
 		searchTask.setTargets(activeSource.values());
@@ -295,6 +336,12 @@ public class PSICQUICSearchUI extends JPanel {
 		return "taxidA:\"" + species.toString() + "\" AND taxidB:\"" + species.toString() + "\"";
 	}
 
+
+
+	/**
+	 * Update table based on returned result
+	 *
+	 */
 	private final class SetTableTask extends AbstractTask {
 
 		final SearchRecoredsTask searchTask;
@@ -316,10 +363,11 @@ public class PSICQUICSearchUI extends JPanel {
 			}
 
 			statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, result, taskManager, mode,
-					createViewTaskFactory, vsBuilder, vmm, tagManager);
+					createViewTaskFactory, vsBuilder, vmm, tagManager, props);
 			statesPanel.sort();
 			updateGUILayout();
 			statesPanel.enableComponents(true);
+			statesPanel.setSelected(sourceSet);
 		}
 	}
 
@@ -376,10 +424,11 @@ public class PSICQUICSearchUI extends JPanel {
 		queryArea.setText("");
 		queryScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, null, taskManager, mode,
-				createViewTaskFactory, vsBuilder, vmm, tagManager);
+				createViewTaskFactory, vsBuilder, vmm, tagManager, props);
 		statesPanel.sort();
 
 		updateGUILayout();
 		statesPanel.enableComponents(false);
+		statesPanel.setSelected(sourceSet);
 	}
 }

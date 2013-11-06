@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -54,6 +55,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
@@ -95,6 +97,8 @@ public class SourceStatusPanel extends JPanel {
 
 	private final PSIMITagManager tagManager;
 
+	private final CyProperty<Properties> props;
+
 	private int interactionsFound = 0;
 
 	/**
@@ -104,13 +108,15 @@ public class SourceStatusPanel extends JPanel {
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
 			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final PSIMITagManager tagManager) {
+			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final PSIMITagManager tagManager, 
+			final CyProperty<Properties> props) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
 		this.networkManager = networkManager;
 		this.taskManager = taskManager;
 		this.tagManager = tagManager;
+		this.props = props;
 
 		if (mode == SearchMode.SPECIES)
 			this.mode = SearchMode.MIQL;
@@ -151,6 +157,7 @@ public class SourceStatusPanel extends JPanel {
 			return null;
 
 		final Set<String> selectedService = new HashSet<String>();
+		final StringBuilder builder = new StringBuilder();
 
 		TableModel model = this.resultTable.getModel();
 		for (int i = 0; i < model.getRowCount(); i++) {
@@ -158,8 +165,18 @@ public class SourceStatusPanel extends JPanel {
 			if (selected == null)
 				selected = false;
 
-			if (selected)
-				selectedService.add(model.getValueAt(i, DB_NAME_COLUMN_INDEX).toString());
+			if (selected) {
+				final String selectedSource = model.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
+				builder.append(selectedSource + ",");
+				selectedService.add(selectedSource);
+			}
+		}
+		
+		// Save selection as property
+		String selectedSourceString = builder.toString();
+		if(selectedSourceString.equals("") == false) {
+			selectedSourceString = selectedSourceString.substring(0, selectedSourceString.length()-1);
+			props.getProperties().setProperty(PSICQUICSearchUI.PROP_NAME, selectedSourceString);
 		}
 		return selectedService;
 	}
@@ -293,8 +310,6 @@ public class SourceStatusPanel extends JPanel {
 	@SuppressWarnings("unchecked")
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
-		// titlePanel = new javax.swing.JPanel();
-		// titleLabel = new javax.swing.JLabel();
 		resultScrollPane = new javax.swing.JScrollPane();
 
 		buttonPanel = new javax.swing.JPanel();
@@ -438,6 +453,21 @@ public class SourceStatusPanel extends JPanel {
 		}
 	}
 
+
+	void setSelected(final Set<String> sources) {
+		for (int i = 0; i < resultTable.getRowCount(); i++) {
+			final String dbName = resultTable.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
+			if (sources.contains(dbName)) {
+//				System.out.println("FOUND hit: " + dbName);
+				resultTable.setValueAt(Boolean.TRUE, i, IMPORT_COLUMN_INDEX);
+			} else {
+//				System.out.println("DISABLE: " + dbName);
+				resultTable.setValueAt(Boolean.FALSE, i, IMPORT_COLUMN_INDEX);
+			}
+		}
+	}
+
+
 	// Variables declaration - do not modify
 	private javax.swing.JPanel buttonPanel;
 	private javax.swing.JButton cancelButton;
@@ -449,10 +479,6 @@ public class SourceStatusPanel extends JPanel {
 	private javax.swing.JScrollPane resultScrollPane;
 	private javax.swing.JTable resultTable;
 
-	// private javax.swing.JLabel titleLabel;
-	// private javax.swing.JPanel titlePanel;
-
-	// End of variables declaration
 
 	private final class StatusTableModel extends DefaultTableModel {
 		private static final long serialVersionUID = -7798626850196524108L;
