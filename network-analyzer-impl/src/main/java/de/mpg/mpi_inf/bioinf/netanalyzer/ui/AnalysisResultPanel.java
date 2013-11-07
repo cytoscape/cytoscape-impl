@@ -26,37 +26,6 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-
 import de.mpg.mpi_inf.bioinf.netanalyzer.CyNetworkUtils;
 import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
 import de.mpg.mpi_inf.bioinf.netanalyzer.NetworkAnalyzer;
@@ -69,13 +38,30 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.StatsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.PluginSettings;
 import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
+import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
 
 /**
  * Dialog presenting results of network analysis.
  * 
  * @author Yassen Assenov
  */
-public class AnalysisResultPanel extends JPanel implements ActionListener {
+public class AnalysisResultPanel extends JPanel implements ActionListener, CytoPanelStateChangedListener {
 
 	private ResultPanel resultPanel;
 	private final ResultPanelFactory resultPanelFactory;
@@ -136,8 +122,11 @@ public class AnalysisResultPanel extends JPanel implements ActionListener {
 		final CyNetwork network = stats.getNetwork();
 		final String networkTitle = network.getRow(network).get(CyNetwork.NAME, String.class);
 		resultPanel = panelFactory.registerPanel(this, "Network Statistics of " + networkTitle);
+
+
 		
 		final CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
+		oldState = cytoPanel.getState();
 		
 		int panelCount = cytoPanel.getCytoPanelComponentCount();
 		for(int i=0; i<panelCount; i++) {
@@ -147,10 +136,16 @@ public class AnalysisResultPanel extends JPanel implements ActionListener {
 				break;
 			}
 		}
-		
-		final CytoPanelState curState = cytoPanel.getState();
-		if (curState == CytoPanelState.HIDE)
+
+		final CytoPanelState currentState = cytoPanel.getState();
+		if( currentState == CytoPanelState.HIDE )
+		{
 			cytoPanel.setState(CytoPanelState.FLOAT);
+			JPanel thisPanel = (JPanel)cytoPanel.getThisComponent();
+			JDialog dialog = (JDialog) thisPanel.getTopLevelAncestor();
+			dialog.setSize(DEFAULT_WIDTH,DEFAULT_HEIGHT);
+		}
+
 	}
 
 	@Override
@@ -255,6 +250,8 @@ public class AnalysisResultPanel extends JPanel implements ActionListener {
 		buttonPane.add(closeButton);
 		this.add(buttonPane);
 		this.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
+
+
 		
 		
 	}
@@ -335,4 +332,50 @@ public class AnalysisResultPanel extends JPanel implements ActionListener {
 	private NetworkStats stats;
 	
 	private JButton closeButton;
+
+
+
+
+
+	private CytoPanelState oldState = null;
+	private static final int DEFAULT_WIDTH = 680;
+	private static final int DEFAULT_HEIGHT = 540;
+	/**
+	 * Handles specified event by resizing the state if the EAST CytoPanel is either undocked or shown for the first
+	 * time.
+	 *
+	 * @param e The event to be handled.
+	 */
+	@Override
+	public void handleEvent(CytoPanelStateChangedEvent e) {
+
+		if( oldState != CytoPanelState.DOCK && e.getNewState() == CytoPanelState.DOCK )
+		{
+			final CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
+			JPanel thisPanel = (JPanel)cytoPanel.getThisComponent();
+			int x = 5;
+		}
+
+
+		//If the oldState was already FLOAT, or the new state is not FLOAT, no need to do anything.
+		if( oldState == CytoPanelState.FLOAT || e.getNewState() != CytoPanelState.FLOAT )
+		{
+			//Don't do anything, but before we leave, record the new state for future reference.
+			oldState = e.getNewState();
+			return;
+		}
+		//Record the new state for future reference.
+	    oldState = e.getNewState();
+
+		//Get the EAST cytoPanel, which we are going to resize below.
+		final CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
+
+		//Check that the resultPanel is currently selected. If it is not, ignore the event.
+		if(!cytoPanel.getSelectedComponent().equals(resultPanel))
+			return;
+
+		JPanel thisPanel = (JPanel)cytoPanel.getThisComponent();
+		JDialog dialog = (JDialog) thisPanel.getTopLevelAncestor();
+		dialog.setSize(DEFAULT_WIDTH,DEFAULT_HEIGHT);
+	}
 }

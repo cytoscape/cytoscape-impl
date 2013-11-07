@@ -24,18 +24,15 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Dimension;
-
-import javax.swing.Icon;
-import javax.swing.JPanel;
-
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class ResultPanel extends JPanel implements CytoPanelComponent {
 	
-	private static final Dimension DEF_PANEL_SIZE = new Dimension(650, 530);
+	private static final Dimension DEF_PANEL_SIZE = new Dimension(680, 520);
 	
 	private final String panelTitle;
 	

@@ -24,10 +24,11 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.Component;
-import java.util.Properties;
-
 import org.cytoscape.service.util.CyServiceRegistrar;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Properties;
 
 public class ResultPanelFactory {
 
@@ -39,7 +40,10 @@ public class ResultPanelFactory {
 
 	public ResultPanel registerPanel(final Component panel, final String panelTitle) {
 		final ResultPanel resPanel = new ResultPanel(panelTitle);
-		resPanel.add(panel);
+		JScrollPane pane = new JScrollPane(panel);
+		//pane.setViewportView(panel);
+		resPanel.setLayout(new BorderLayout());
+		resPanel.add(pane, BorderLayout.CENTER);
 		registrar.registerAllServices(resPanel, new Properties());
 		
 		return resPanel;
