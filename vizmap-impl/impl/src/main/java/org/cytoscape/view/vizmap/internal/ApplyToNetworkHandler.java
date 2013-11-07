@@ -97,9 +97,8 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		for (final VisualProperty<?> vp : vps) {
 			final VisualLexiconNode node = lex.getVisualLexiconNode(vp);
 			
-			if (node == null) {
+			if (node == null)
 				continue;
-			}
 			
 			final Collection<VisualLexiconNode> children = node.getChildren();
 
@@ -110,6 +109,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 					((VisualStyleImpl) style).getStyleDefaults().put(vp, vp.getDefault());
 					defaultValue = style.getDefaultValue(vp);
 				}
+				
 				exe.submit(new ApplyDefaultTask(netView, vp, defaultValue));
 			}
 		}
@@ -148,7 +148,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		private final Collection<? extends View<? extends CyIdentifiable>> views;
 		private final VisualProperty<?> rootVisualProperty;
 		private final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap;
-		private final Set<String> propagated;
+		private final Set<VisualProperty<?>> dependencyChildren; // Children of enabled dependencies
 		private final VisualLexicon lexicon;
 		
 		ApplyMappingsTask(final CyNetworkView netView,
@@ -159,13 +159,24 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 			this.views = views;
 			this.rootVisualProperty = rootVisualProperty;
 			this.lexicon = lexicon;
-			this.dependencyMap = getDependencyMap();
-			propagated = new HashSet<String>();
+			
+			dependencyMap = new HashMap<VisualProperty<?>, VisualPropertyDependency<?>>();
+			dependencyChildren = new HashSet<VisualProperty<?>>();
 		}
 		
 		@Override
 		public void run() {
 			final Class<? extends CyIdentifiable> targetDataType = rootVisualProperty.getTargetDataType();
+			
+			for (final VisualPropertyDependency<?> dep : style.getAllVisualPropertyDependencies()) {
+				if (dep.getParentVisualProperty().getTargetDataType() == targetDataType) {
+					dependencyMap.put(dep.getParentVisualProperty(), dep);
+					
+					if (dep.isDependencyEnabled())
+						dependencyChildren.addAll(dep.getVisualProperties());
+				}
+			}
+			
 			final LinkedList<VisualLexiconNode> descendants = new LinkedList<VisualLexiconNode>();
 			descendants.addAll(lexicon.getVisualLexiconNode(rootVisualProperty).getChildren());
 			
@@ -189,14 +200,11 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 							// If this property has already received a propagated value from a previous
 							// enabled dependency, do not apply this mapping's value over it;
 							// the dependency has a higher priority over children's mappings when enabled.
-							if (!propagated.contains(vp.getIdString())
-									&& (dep == null
-											|| !vp.equals(dep.getParentVisualProperty())
-											|| dep.isDependencyEnabled())) {
+							if (dep == null && !dependencyChildren.contains(vp))
 								view.setVisualProperty(vp, value);
-							}
 							
-							propagateMappedValues(view, node, value);
+							if (dep != null && dep.isDependencyEnabled())
+								propagateMappedValues(view, vp, value, dep.getVisualProperties());
 						}
 					}
 				}
@@ -206,46 +214,14 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		}
 		
 		private void propagateMappedValues(final View<? extends CyIdentifiable> view,
-										   final VisualLexiconNode rootNode,
-										   final Object value) {
-			final LinkedList<VisualLexiconNode> parentNodes = new LinkedList<VisualLexiconNode>();
-			parentNodes.add(rootNode);
-			
-			while (!parentNodes.isEmpty()) {
-				final VisualLexiconNode pn = parentNodes.pop();
-				
-				final VisualPropertyDependency<?> dep = dependencyMap.get(pn.getVisualProperty());
-				final Collection<VisualLexiconNode> children = pn.getChildren();
-				
-				for (final VisualLexiconNode cn : children) {
-					final VisualProperty<?> vp = cn.getVisualProperty();
-					
-					// Prevent ClassCastExceptions (the child property can have a different value type)
-					if (rootNode.getVisualProperty().getClass() == vp.getClass()) {
-						// Do not propagate to this child VisualProperty if it belongs to a disabled Dependency
-						if (dep == null || dep.isDependencyEnabled() || !dep.getVisualProperties().contains(vp)) {
-							view.setVisualProperty(vp, value);
-							propagated.add(vp.getIdString()); // Save the properties that received values from a parent
-						}
-					}
-				}
-				
-				// The current child nodes now become parents, to keep searching down the tree
-				parentNodes.addAll(children);
+										   final VisualProperty<?> parent,
+										   final Object value,
+										   final Set<VisualProperty<?>> children) {
+			for (final VisualProperty<?> vp : children) {
+				// Prevent ClassCastExceptions (the child property can have a different value type)
+				if (parent.getClass() == vp.getClass())
+					view.setVisualProperty(vp, value);
 			}
-		}
-		
-		private Map<VisualProperty<?>, VisualPropertyDependency<?>> getDependencyMap() {
-			final Map<VisualProperty<?>, VisualPropertyDependency<?>> map = 
-					new HashMap<VisualProperty<?>, VisualPropertyDependency<?>>();
-			final Class<? extends CyIdentifiable> targetDataType = rootVisualProperty.getTargetDataType();
-			
-			for (final VisualPropertyDependency<?> dep : style.getAllVisualPropertyDependencies()) {
-				if (dep.getParentVisualProperty().getTargetDataType() == targetDataType)
-					map.put(dep.getParentVisualProperty(), dep);
-			}
-			
-			return map;
 		}
 	}
 	
