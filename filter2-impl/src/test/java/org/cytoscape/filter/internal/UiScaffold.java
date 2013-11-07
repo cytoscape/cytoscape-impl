@@ -19,14 +19,21 @@ import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
 import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
+import org.cytoscape.filter.internal.interaction.InteractionTransformerFactory;
+import org.cytoscape.filter.internal.interaction.InteractionTransformerViewFactory;
 import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
 import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.IconManagerImpl;
+import org.cytoscape.filter.internal.view.LazyWorkQueue;
+import org.cytoscape.filter.internal.view.SelectPanel;
+import org.cytoscape.filter.internal.view.TransformerPanel;
+import org.cytoscape.filter.internal.view.TransformerPanelController;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
-import org.cytoscape.filter.internal.view.ViewUpdater;
+import org.cytoscape.filter.internal.view.FilterWorker;
+import org.cytoscape.filter.internal.view.TransformerWorker;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -68,12 +75,15 @@ public class UiScaffold {
 		when(networkView.getModel()).thenReturn(network);
 		
 		JFrame frame = new JFrame();
+		frame.setTitle("Select");
 		
 		Map<String, String> properties = Collections.emptyMap();
 		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
-		transformerManager.registerTransformerFactory(new AttributeFilterFactory(), properties);
-		transformerManager.registerTransformerFactory(new DegreeFilterFactory(), properties);
-		transformerManager.registerTransformerFactory(new TopologyFilterFactory(), properties);
+		transformerManager.registerFilterFactory(new AttributeFilterFactory(), properties);
+		transformerManager.registerFilterFactory(new DegreeFilterFactory(), properties);
+		transformerManager.registerFilterFactory(new TopologyFilterFactory(), properties);
+		
+		transformerManager.registerElementTransformerFactory(new InteractionTransformerFactory(), properties);
 
 		ModelMonitor modelMonitor = new ModelMonitor();
 		modelMonitor.handleEvent(new SetCurrentNetworkEvent(applicationManager, network));
@@ -84,14 +94,23 @@ public class UiScaffold {
 		transformerViewManager.registerTransformerViewFactory(new AttributeFilterViewFactory(modelMonitor, iconManager), properties);
 		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);
 		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(), properties);
+		transformerViewManager.registerTransformerViewFactory(new InteractionTransformerViewFactory(), properties);
 
-		ViewUpdater viewUpdater = new ViewUpdater(applicationManager);
-		FilterPanelController controller = new FilterPanelController(transformerManager, transformerViewManager, viewUpdater, modelMonitor);
-		FilterPanel panel = new FilterPanel(controller, iconManager, viewUpdater);
+		LazyWorkQueue queue = new LazyWorkQueue();
+		
+		FilterWorker filterWorker = new FilterWorker(queue, applicationManager);
+		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor);
+		FilterPanel filterPanel = new FilterPanel(filterPanelController, iconManager, filterWorker);
+		
+		TransformerWorker transformerWorker = new TransformerWorker(queue, applicationManager, transformerManager);
+		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker);
+		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, iconManager, transformerWorker);
+		
+		SelectPanel selectPanel = new SelectPanel(filterPanel, transformerPanel);
 		
 		JRootPane root = frame.getRootPane();
 		root.setLayout(new GridBagLayout());
-		root.add(panel, new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		root.add(selectPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 		frame.setSize(450, 500);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);

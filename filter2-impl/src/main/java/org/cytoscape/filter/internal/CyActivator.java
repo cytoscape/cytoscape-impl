@@ -33,12 +33,16 @@ import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
 import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
+import org.cytoscape.filter.internal.interaction.InteractionTransformerFactory;
+import org.cytoscape.filter.internal.interaction.InteractionTransformerViewFactory;
 import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
 import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
 import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.IconManagerImpl;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
-import org.cytoscape.filter.model.TransformerFactory;
+import org.cytoscape.filter.model.ElementTransformerFactory;
+import org.cytoscape.filter.model.FilterFactory;
+import org.cytoscape.filter.model.HolisticTransformerFactory;
 import org.cytoscape.filter.model.TransformerSource;
 import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -50,16 +54,22 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(context, transformerManager, TransformerManager.class, new Properties());
 		
 		registerServiceListener(context, transformerManager, "registerTransformerSource", "unregisterTransformerSource", TransformerSource.class);
-		registerServiceListener(context, transformerManager, "registerTransformerFactory", "unregisterTransformerFactory", TransformerFactory.class);
+		registerServiceListener(context, transformerManager, "registerFilterFactory", "unregisterFilterFactory", FilterFactory.class);
+		registerServiceListener(context, transformerManager, "registerElementTransformerFactory", "unregisterElementTransformerFactory", ElementTransformerFactory.class);
+		registerServiceListener(context, transformerManager, "registerHolisticTransformerFactory", "unregisterHolisticTransformerFactory", HolisticTransformerFactory.class);
 		
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
 		registerServiceListener(context, transformerViewManager, "registerTransformerViewFactory", "unregisterTransformerViewFactory", TransformerViewFactory.class);
 		
 		registerService(context, new CyNetworkSource(), TransformerSource.class, new Properties());
 
-		registerService(context, new DegreeFilterFactory(), TransformerFactory.class, new Properties());
-		registerService(context, new AttributeFilterFactory(), TransformerFactory.class, new Properties());
-		registerService(context, new TopologyFilterFactory(), TransformerFactory.class, new Properties());
+		// Filters
+		registerService(context, new DegreeFilterFactory(), FilterFactory.class, new Properties());
+		registerService(context, new AttributeFilterFactory(), FilterFactory.class, new Properties());
+		registerService(context, new TopologyFilterFactory(), FilterFactory.class, new Properties());
+		
+		// Transformers
+		registerService(context, new InteractionTransformerFactory(), ElementTransformerFactory.class, new Properties());
 		
 		ModelMonitor modelMonitor = new ModelMonitor();
 		registerAllServices(context, modelMonitor, new Properties());
@@ -69,6 +79,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(context, new DegreeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
 		registerService(context, new AttributeFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
 		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, new Properties());
+		registerService(context, new InteractionTransformerViewFactory(), TransformerViewFactory.class, new Properties());
 
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
 		CytoPanelComponent filterPanel = new FilterCytoPanelComponent(transformerManager, transformerViewManager, applicationManager, iconManager, modelMonitor);

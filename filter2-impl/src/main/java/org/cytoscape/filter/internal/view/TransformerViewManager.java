@@ -10,8 +10,8 @@ import java.util.Map;
 import javax.swing.JComponent;
 
 import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.Transformer;
-import org.cytoscape.filter.model.TransformerFactory;
 import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -19,14 +19,18 @@ import org.cytoscape.model.CyNetwork;
 public class TransformerViewManager {
 
 	private Map<String, TransformerViewFactory> viewFactories;
-	private List<FilterComboBoxElement> filterComboBoxModel;
+	private List<TransformerComboBoxElement> filterComboBoxModel;
+	private List<TransformerComboBoxElement> chainComboBoxModel;
 	private TransformerManager transformerManager;
 
 	public TransformerViewManager(TransformerManager transformerManager) {
 		this.transformerManager = transformerManager;
 		viewFactories = new HashMap<String, TransformerViewFactory>();
-		filterComboBoxModel = new ArrayList<TransformerViewManager.FilterComboBoxElement>();
-		filterComboBoxModel.add(new FilterComboBoxElement("Add...", null));
+		filterComboBoxModel = new ArrayList<TransformerComboBoxElement>();
+		filterComboBoxModel.add(new TransformerComboBoxElement("Add...", null));
+		
+		chainComboBoxModel = new ArrayList<TransformerComboBoxElement>();
+		chainComboBoxModel.add(new TransformerComboBoxElement("Add...", null));
 	}
 	
 	public JComponent createView(Transformer<CyNetwork, CyIdentifiable> transformer) {
@@ -46,60 +50,69 @@ public class TransformerViewManager {
 			return;
 		}
 		
-		// First item has UX hint.  Keep it at the top.
-		FilterComboBoxElement firstItem = filterComboBoxModel.remove(0);
+		List<TransformerComboBoxElement> model;
+		if (transformer instanceof Filter) {
+			model = filterComboBoxModel;
+		} else {
+			model = chainComboBoxModel;
+		}
 		
+		TransformerComboBoxElement element = new TransformerComboBoxElement(transformer.getName(), factory.getId());
 		viewFactories.put(factory.getId(), factory);
-		FilterComboBoxElement element = new FilterComboBoxElement(transformer.getName(), factory.getId());
-		filterComboBoxModel.add(element);
-		Collections.sort(filterComboBoxModel);
-		
-		filterComboBoxModel.add(0, firstItem);
+		model.add(element);
+		Collections.sort(model);
 	}
 	
 	public void unregisterTransformerViewFactory(TransformerViewFactory factory, Map<String, String> properties) {
 		String id = factory.getId();
 		viewFactories.remove(id);
 		
-		Iterator<FilterComboBoxElement> iterator = filterComboBoxModel.iterator();
+		Iterator<TransformerComboBoxElement> iterator = filterComboBoxModel.iterator();
 		while (iterator.hasNext()) {
-			FilterComboBoxElement element = iterator.next();
+			TransformerComboBoxElement element = iterator.next();
 			if (id.equals(element.getId())) {
 				iterator.remove();
 			}
 		}
 	}
 	
-	List<FilterComboBoxElement> getFilterComboBoxModel() {
+	List<TransformerComboBoxElement> getFilterComboBoxModel() {
 		return filterComboBoxModel;
 	}
 	
-	class FilterComboBoxElement implements TransformerFactory<CyNetwork, CyIdentifiable>, Comparable<FilterComboBoxElement> {
+	List<TransformerComboBoxElement> getChainComboBoxModel() {
+		return chainComboBoxModel;
+	}
+	
+	class TransformerComboBoxElement implements Comparable<TransformerComboBoxElement> {
 		private String name;
 		private String id;
 
-		public FilterComboBoxElement(String name, String id) {
+		public TransformerComboBoxElement(String name, String id) {
 			this.name = name;
 			this.id = id;
 		}
 		
-		@Override
 		public String getId() {
 			return id;
 		}
 
-		@Override
-		public Transformer<CyNetwork, CyIdentifiable> createTransformer() {
-			return transformerManager.createTransformer(id);
-		}
-		
 		@Override
 		public String toString() {
 			return name;
 		}
 		
 		@Override
-		public int compareTo(FilterComboBoxElement other) {
+		public int compareTo(TransformerComboBoxElement other) {
+			if (id == null && other.id == null) {
+				return 0;
+			}
+			if (id == null) {
+				return -1;
+			}
+			if (other.id == null) {
+				return 1;
+			}
 			return name.compareToIgnoreCase(other.name);
 		}
 	}

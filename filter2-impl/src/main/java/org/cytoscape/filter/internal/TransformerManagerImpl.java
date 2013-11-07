@@ -16,20 +16,23 @@ import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.composite.CompositeFilterImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
+import org.cytoscape.filter.model.ElementTransformerFactory;
 import org.cytoscape.filter.model.Filter;
+import org.cytoscape.filter.model.FilterFactory;
 import org.cytoscape.filter.model.HolisticTransformer;
+import org.cytoscape.filter.model.HolisticTransformerFactory;
 import org.cytoscape.filter.model.Transformer;
-import org.cytoscape.filter.model.TransformerFactory;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.model.TransformerSource;
 
 public class TransformerManagerImpl implements TransformerManager {
 	Map<Class<?>, TransformerSource<?, ?>> sources;
-	Map<String, TransformerFactory<?, ?>> transformerFactories;
+	Map<String, FilterFactory<?, ?>> filterFactories;
+	Map<String, ElementTransformerFactory<?, ?>> elementTransformerFactories;
+	Map<String, HolisticTransformerFactory<?, ?>> holisticTransformerFactories;
 	
 	TransformerExecutionStrategy bufferedStrategy;
 	TransformerExecutionStrategy unbufferedStrategy;
-	private boolean interactiveModeEnabled;
 
 	public TransformerManagerImpl() {
 		int maximumThreads = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
@@ -37,7 +40,15 @@ public class TransformerManagerImpl implements TransformerManager {
 		unbufferedStrategy = new UnbufferedExecutionStrategy(maximumThreads);
 		
 		sources = new HashMap<Class<?>, TransformerSource<?,?>>();
-		transformerFactories = new HashMap<String, TransformerFactory<?,?>>();
+		filterFactories = new HashMap<String, FilterFactory<?,?>>();
+		elementTransformerFactories = new HashMap<String, ElementTransformerFactory<?,?>>();
+		holisticTransformerFactories = new HashMap<String, HolisticTransformerFactory<?,?>>();
+	}
+	
+	@Override
+	public <C, E> void execute(C context, TransformerSource<C, E> source, List<Transformer<C, E>> transformers, TransformerSink<E> sink) {
+		TransformerExecutionStrategy strategy = getOptimalStrategy(transformers);
+		strategy.execute(context, transformers, source, sink);
 	}
 	
 	@Override
@@ -46,9 +57,8 @@ public class TransformerManagerImpl implements TransformerManager {
 			return;
 		}
 		Class<C> contextType = transformers.get(0).getContextType();
-		TransformerExecutionStrategy strategy = getOptimalStrategy(transformers);
 		TransformerSource<C, E> source = getTransformerSource(contextType);
-		strategy.execute(context, transformers, source, sink);
+		execute(context, source, transformers, sink);
 	}
 
 	@Override
@@ -121,24 +131,70 @@ public class TransformerManagerImpl implements TransformerManager {
 		return new CompositeFilterImpl<C, E>(contextType, elementType);
 	}
 	
-	public void registerTransformerFactory(TransformerFactory<?, ?> factory, Map<String, String> properties) {
-		transformerFactories.put(factory.getId(), factory);
+	public void registerFilterFactory(FilterFactory<?, ?> factory, Map<String, String> properties) {
+		filterFactories.put(factory.getId(), factory);
 	}
 	
-	public void unregisterTransformerFactory(TransformerFactory<?, ?> factory, Map<String, String> properties) {
-		transformerFactories.remove(factory.getId());
+	public void unregisterFilterFactory(FilterFactory<?, ?> factory, Map<String, String> properties) {
+		filterFactories.remove(factory.getId());
 	}
 
-	@SuppressWarnings("unchecked")
+	public void registerElementTransformerFactory(ElementTransformerFactory<?, ?> factory, Map<String, String> properties) {
+		elementTransformerFactories.put(factory.getId(), factory);
+	}
+	
+	public void unregisterElementTransformerFactory(ElementTransformerFactory<?, ?> factory, Map<String, String> properties) {
+		elementTransformerFactories.remove(factory.getId());
+	}
+
+	public void registerHolisticTransformerFactory(HolisticTransformerFactory<?, ?> factory, Map<String, String> properties) {
+		holisticTransformerFactories.put(factory.getId(), factory);
+	}
+	
+	public void unregisterHolisticTransformerFactory(HolisticTransformerFactory<?, ?> factory, Map<String, String> properties) {
+		holisticTransformerFactories.remove(factory.getId());
+	}
+
 	@Override
 	public <C, E> Transformer<C, E> createTransformer(String id) {
-		TransformerFactory<?, ?> factory = transformerFactories.get(id);
+		Transformer<C, E> transformer = createFilter(id);
+		if (transformer != null) {
+			return transformer;
+		}
+		transformer = createElementTransformer(id);
+		if (transformer != null) {
+			return transformer;
+		}
+		return createHolisticTransformer(id);
+	}
+	
+	@SuppressWarnings("unchecked")
+	<C, E> Filter<C, E> createFilter(String id) {
+		FilterFactory<?, ?> factory = filterFactories.get(id);
 		if (factory == null) {
 			return null;
 		}
-		return (Transformer<C, E>) factory.createTransformer();
+		return (Filter<C, E>) factory.createFilter();
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	<C, E> ElementTransformer<C, E> createElementTransformer(String id) {
+		ElementTransformerFactory<?, ?> factory = elementTransformerFactories.get(id);
+		if (factory == null) {
+			return null;
+		}
+		return (ElementTransformer<C, E>) factory.createElementTransformer();
+	}
+
+	@SuppressWarnings("unchecked")
+	<C, E> HolisticTransformer<C, E> createHolisticTransformer(String id) {
+		HolisticTransformerFactory<?, ?> factory = holisticTransformerFactories.get(id);
+		if (factory == null) {
+			return null;
+		}
+		return (HolisticTransformer<C, E>) factory.createHolisticTransformer();
+	}
+
 	class BufferedExecutionStrategy implements TransformerExecutionStrategy {
 		@Override
 		public <C, E> void execute(C context, List<Transformer<C, E>> transformers, TransformerSource<C, E> source, TransformerSink<E> sink) {
@@ -275,15 +331,5 @@ public class TransformerManagerImpl implements TransformerManager {
 			};
 		}
 		return iterators;
-	}
-	
-	@Override
-	public boolean getInteractiveModeEnabled() {
-		return interactiveModeEnabled;
-	}
-	
-	@Override
-	public void setInteractiveModeEnabled(boolean enabled) {
-		interactiveModeEnabled = enabled;
 	}
 }

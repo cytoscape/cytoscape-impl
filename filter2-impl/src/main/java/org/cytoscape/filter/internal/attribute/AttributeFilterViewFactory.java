@@ -178,7 +178,6 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			nameComboBox.setForeground(Color.black);
 			
 			AttributeComboBoxElement selected = (AttributeComboBoxElement) nameComboBox.getSelectedItem();
-			String currentName = getModel().getAttributeName();
 			setAttributeName(selected.name);
 			setMatchType(selected.attributeType);
 			

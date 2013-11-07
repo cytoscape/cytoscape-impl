@@ -23,7 +23,7 @@ import javax.swing.border.Border;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
-import org.cytoscape.filter.internal.view.FilterViewModel;
+import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.CompositeFilter.Type;
@@ -36,7 +36,7 @@ public class CompositeFilterPanel extends JPanel {
 	private static final Border BORDER = BorderFactory.createMatteBorder(0, 0, 2, 0, Color.DARK_GRAY);
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
 
-	private Map<Filter<CyNetwork, CyIdentifiable>, FilterViewModel> viewModels;
+	private Map<Filter<CyNetwork, CyIdentifiable>, TransformerElementViewModel<FilterPanel>> viewModels;
 	private GroupLayout layout;
 	private int depth;
 	private JComboBox combiningMethodComboBox;
@@ -57,7 +57,7 @@ public class CompositeFilterPanel extends JPanel {
 
 		ViewUtil.configureFilterView(this);
 		
-		viewModels = new WeakHashMap<Filter<CyNetwork,CyIdentifiable>, FilterViewModel>();
+		viewModels = new WeakHashMap<Filter<CyNetwork,CyIdentifiable>, TransformerElementViewModel<FilterPanel>>();
 		layout = new GroupLayout(this);
 		setLayout(layout);
 		updateBorder();
@@ -75,7 +75,7 @@ public class CompositeFilterPanel extends JPanel {
 		for (int i = 0; i < model.getLength(); i++) {
 			Filter<CyNetwork, CyIdentifiable> filter = model.get(i);
 			JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-			FilterViewModel viewModel = new FilterViewModel(component, filterPanelController, parent);
+			TransformerElementViewModel<FilterPanel> viewModel = new TransformerElementViewModel<FilterPanel>(component, filterPanelController, parent);
 			viewModels.put(filter, viewModel);
 		}
 	}
@@ -89,9 +89,10 @@ public class CompositeFilterPanel extends JPanel {
 	}
 
 	public void deselectAll() {
-		for (FilterViewModel viewModel : viewModels.values()) {
+		for (TransformerElementViewModel<FilterPanel> viewModel : viewModels.values()) {
 			if (viewModel.checkBox.isSelected()) {
 				viewModel.checkBox.setSelected(false);
+				viewModel.view.setBackground(Color.white);
 			}
 			if (viewModel.view instanceof CompositeFilterPanel) {
 				CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
@@ -103,7 +104,7 @@ public class CompositeFilterPanel extends JPanel {
 	public void deleteSelected() {
 		int index = 0;
 		while (index < model.getLength()) {
-			FilterViewModel viewModel = getViewModel(model.get(index));
+			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(index));
 			if (viewModel.checkBox.isSelected()) {
 				removeFilter(index--);
 			} else {
@@ -137,7 +138,7 @@ public class CompositeFilterPanel extends JPanel {
 							   .addGroup(viewGroup));
 		
 		for (int i = 0; i < model.getLength(); i++) {
-			FilterViewModel viewModel = getViewModel(model.get(i));
+			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(i));
 			if (viewModel.view instanceof CompositeFilterPanel) {
 				CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
 				panel.updateLayout();
@@ -170,24 +171,24 @@ public class CompositeFilterPanel extends JPanel {
 		return comboBox;
 	}
 
-	public void addViewModel(int index, Filter<CyNetwork, CyIdentifiable> filter, FilterViewModel viewModel) {
+	public void addViewModel(int index, Filter<CyNetwork, CyIdentifiable> filter, TransformerElementViewModel<FilterPanel> viewModel) {
 		model.insert(index, filter);
 		viewModels.put(filter, viewModel);
 	}
 
 
-	public void addViewModel(Filter<CyNetwork, CyIdentifiable> filter, FilterViewModel viewModel) {
+	public void addViewModel(Filter<CyNetwork, CyIdentifiable> filter, TransformerElementViewModel<FilterPanel> viewModel) {
 		model.append(filter);
 		viewModels.put(filter, viewModel);
 	}
 
 	public void addFilter(Filter<CyNetwork, CyIdentifiable> filter) {
 		JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-		final FilterViewModel viewModel = new FilterViewModel(component, filterPanelController, parent);
+		final TransformerElementViewModel<FilterPanel> viewModel = new TransformerElementViewModel<FilterPanel>(component, filterPanelController, parent);
 		addViewModel(filter, viewModel);
 	}
 
-	public FilterViewModel getViewModel(Filter<CyNetwork, CyIdentifiable> filter) {
+	public TransformerElementViewModel<FilterPanel> getViewModel(Filter<CyNetwork, CyIdentifiable> filter) {
 		return viewModels.get(filter);
 	}
 
@@ -202,7 +203,7 @@ public class CompositeFilterPanel extends JPanel {
 	public void setDepth(int depth) {
 		this.depth = depth;
 		updateBorder();
-		for (FilterViewModel viewModel : viewModels.values()) {
+		for (TransformerElementViewModel<FilterPanel> viewModel : viewModels.values()) {
 			if (viewModel.view instanceof CompositeFilterPanel) {
 				CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
 				panel.setDepth(depth + 1);
@@ -215,7 +216,7 @@ public class CompositeFilterPanel extends JPanel {
 		viewModels.remove(filter);
 	}
 
-	public Collection<FilterViewModel> getViewModels() {
+	public Collection<TransformerElementViewModel<FilterPanel>> getViewModels() {
 		return viewModels.values();
 	}
 	

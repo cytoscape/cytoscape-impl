@@ -1,67 +1,55 @@
 package org.cytoscape.filter.internal.view;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
-import org.cytoscape.filter.internal.view.TransformerViewManager.FilterComboBoxElement;
+import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerComboBoxElement;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
-import org.cytoscape.filter.model.TransformerFactory;
+import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 
-public class FilterPanelController {
-	private static final Color SELECTED_BACKGROUND_COLOR = new Color(222, 234, 252);
-
-	private int totalSelected;
+public class FilterPanelController extends AbstractPanelController<FilterElement, FilterPanel> {
 	private TransformerManager transformerManager;
 	private TransformerViewManager transformerViewManager;
-	private DynamicComboBoxModel<FilterElement> filterComboBoxModel;
 	
-	int filtersCreated = 0;
-	private ViewUpdater viewUpdater;
 	private ModelMonitor modelMonitor;
 
-	private boolean isInteractive;
-
-	
-	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, ViewUpdater viewUpdater, ModelMonitor modelMonitor) {
+	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, FilterWorker worker, ModelMonitor modelMonitor) {
+		super(worker);
+		worker.setController(this);
+		
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
-		this.viewUpdater = viewUpdater;
 		this.modelMonitor = modelMonitor;
 		
-		viewUpdater.setController(this);
-		
-		List<FilterElement> modelItems = new ArrayList<FilterElement>();
-		modelItems.add(new FilterElement("(Create New Filter...)", null));
-		filterComboBoxModel = new DynamicComboBoxModel<FilterElement>(modelItems);
-		addNewFilter("Default filter");
+		worker.setController(this);
+		addNewElement("Default filter");
 	}
 
+	@Override
+	protected FilterElement createDefaultElement() {
+		return new FilterElement("(Create New Filter...)", null);
+	}
+	
 	void handleIndent(FilterPanel panel) {
 		CompositeFilterPanel root = panel.getRootPanel();
 		indent(panel, root);
 		root.setDepth(0);
 		root.updateLayout();
 		updateEditPanel(panel);
-		viewUpdater.handleFilterStructureChanged();
+		worker.handleFilterStructureChanged();
 	}
 	
 	private void indent(FilterPanel parent, CompositeFilterPanel panel) {
@@ -71,7 +59,7 @@ public class FilterPanelController {
 		int index = 0;
 		while (index < model.getLength()) {
 			Filter<CyNetwork, CyIdentifiable> filter = model.get(index);
-			FilterViewModel viewModel = panel.getViewModel(filter);
+			TransformerElementViewModel<FilterPanel> viewModel = panel.getViewModel(filter);
 			if (viewModel.view instanceof CompositeFilterPanel) {
 				indent(parent, (CompositeFilterPanel) viewModel.view);
 			}
@@ -81,7 +69,7 @@ public class FilterPanelController {
 				if (view == null) {
 					CompositeFilter<CyNetwork, CyIdentifiable> childModel = transformerManager.createCompositeFilter(CyNetwork.class, CyIdentifiable.class);
 					view = (CompositeFilterPanel) createView(parent, childModel, panel.getDepth() + 1);
-					FilterViewModel groupModel = new FilterViewModel(view, this, parent);
+					TransformerElementViewModel<FilterPanel> groupModel = new TransformerElementViewModel<FilterPanel>(view, this, parent);
 					panel.addViewModel(++index, childModel, groupModel);
 				}
 				view.addViewModel(filter, viewModel);
@@ -98,24 +86,24 @@ public class FilterPanelController {
 		root.setDepth(0);
 		root.updateLayout();
 		updateEditPanel(panel);
-		viewUpdater.handleFilterStructureChanged();
+		worker.handleFilterStructureChanged();
 	}
 	
-	Map<Filter<CyNetwork, CyIdentifiable>, FilterViewModel> outdent(CompositeFilterPanel panel, int depth) {
-		Map<Filter<CyNetwork, CyIdentifiable>, FilterViewModel> outdented = new LinkedHashMap<Filter<CyNetwork,CyIdentifiable>, FilterViewModel>();
+	Map<Filter<CyNetwork, CyIdentifiable>, TransformerElementViewModel<FilterPanel>> outdent(CompositeFilterPanel panel, int depth) {
+		Map<Filter<CyNetwork, CyIdentifiable>, TransformerElementViewModel<FilterPanel>> outdented = new LinkedHashMap<Filter<CyNetwork,CyIdentifiable>, TransformerElementViewModel<FilterPanel>>();
 		CompositeFilter<CyNetwork, CyIdentifiable> model = panel.getModel();
 		int index = 0;
 		while (index < model.getLength()) {
 			Filter<CyNetwork, CyIdentifiable> filter = model.get(index);
-			FilterViewModel viewModel = panel.getViewModel(filter);
+			TransformerElementViewModel<FilterPanel> viewModel = panel.getViewModel(filter);
 			if (filter instanceof CompositeFilter) {
 				CompositeFilter<CyNetwork, CyIdentifiable> child = (CompositeFilter<CyNetwork, CyIdentifiable>) filter;
 				CompositeFilterPanel childPanel = (CompositeFilterPanel) viewModel.view;
-				Map<Filter<CyNetwork, CyIdentifiable>, FilterViewModel> toAdd = outdent(childPanel, depth + 1);
+				Map<Filter<CyNetwork, CyIdentifiable>, TransformerElementViewModel<FilterPanel>> toAdd = outdent(childPanel, depth + 1);
 				if (child.getLength() == 0) {
 					panel.removeFilter(index);
 				}
-				for (Entry<Filter<CyNetwork, CyIdentifiable>, FilterViewModel> entry : toAdd.entrySet()) {
+				for (Entry<Filter<CyNetwork, CyIdentifiable>, TransformerElementViewModel<FilterPanel>> entry : toAdd.entrySet()) {
 					panel.addViewModel(index++, entry.getKey(), entry.getValue());
 				}
 			}
@@ -137,7 +125,7 @@ public class FilterPanelController {
 	}
 	
 	boolean canOutdent(CompositeFilterPanel panel, int depth) {
-		for (FilterViewModel viewModel : panel.getViewModels()) {
+		for (TransformerElementViewModel<FilterPanel> viewModel : panel.getViewModels()) {
 			if (viewModel.view instanceof CompositeFilterPanel) {
 				if (canOutdent((CompositeFilterPanel) viewModel.view, depth + 1)) {
 					return true;
@@ -150,41 +138,29 @@ public class FilterPanelController {
 		return false;
 	}
 	
-	void handleDelete(FilterPanel panel) {
+	@Override
+	protected void handleDelete(FilterPanel panel) {
 		CompositeFilterPanel root = panel.getRootPanel();
 		root.deleteSelected();
 		totalSelected = 0;
 		updateEditPanel(panel);
 		root.updateLayout();
-		viewUpdater.handleFilterStructureChanged();
+		worker.handleFilterStructureChanged();
 	}
 	
-	void handleCancel(FilterPanel panel) {
+	@Override
+	protected void handleCancel(FilterPanel panel) {
 		CompositeFilterPanel root = panel.getRootPanel();
 		root.deselectAll();
 		totalSelected = 0;
 		updateEditPanel(panel);
 	}
 	
-	void handleCheck(FilterPanel panel, JCheckBox checkBox, JComponent view) {
-		if (checkBox.isSelected()) {
-			view.setBackground(SELECTED_BACKGROUND_COLOR);
-			totalSelected += 1;
-		} else {
-			view.setBackground(Color.WHITE);
-			totalSelected -=1;
-		}
-		updateEditPanel(panel);
-	}
-	
-	void updateEditPanel(FilterPanel panel) {
+	@Override
+	protected void validateEditPanel(FilterPanel panel) {
 		CompositeFilterPanel root = panel.getRootPanel();
 		JButton outdentButton = panel.getOutdentButton();
 		outdentButton.setEnabled(canOutdent(root));
-		
-		Component editPanel = panel.getEditPanel();
-		editPanel.setVisible(totalSelected > 0);
-		panel.validate();
 	}
 
 	public JComponent createView(FilterPanel parent, Filter<CyNetwork, CyIdentifiable> filter, int depth) {
@@ -203,157 +179,49 @@ public class FilterPanelController {
 			return;
 		}
 		
-		@SuppressWarnings("unchecked")
-		TransformerFactory<CyNetwork, CyIdentifiable> factory = (TransformerFactory<CyNetwork, CyIdentifiable>) comboBox.getSelectedItem();
+		TransformerComboBoxElement selectedItem = (TransformerComboBoxElement) comboBox.getSelectedItem();
 		
 		// Assume the factory makes filters
-		Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) factory.createTransformer();
+		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(selectedItem.getId());
+		Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
 		panel.addFilter(filter);
 		panel.updateLayout();
 		comboBox.setSelectedIndex(0);
 		
-		filter.addListener(viewUpdater);
-		viewUpdater.handleFilterStructureChanged();
+		filter.addListener(worker);
+		worker.handleFilterStructureChanged();
 	}
 
 	public ComboBoxModel createFilterComboBoxModel() {
-		return new DynamicComboBoxModel<FilterComboBoxElement>(transformerViewManager.getFilterComboBoxModel());
+		return new DynamicComboBoxModel<TransformerComboBoxElement>(transformerViewManager.getFilterComboBoxModel());
 	}
 
-	@SuppressWarnings("unchecked")
-	void handleFilterSelected(JComboBox filterComboBox, FilterPanel panel) {
-		if (filterComboBox.getSelectedIndex() == 0) {
-			String defaultName = String.format("My filter %d", ++filtersCreated);
-			String name;
-			String message = "Please provide a name for your filter.";
-			while (true) {
-				name = (String) JOptionPane.showInputDialog(null, message, "Create New Filter", JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
-				if (name == null) {
-					return;
-				}
-				if (validateFilterName(null, name, (DynamicComboBoxModel<FilterElement>) filterComboBox.getModel())) {
-					break;
-				}
-				message = "The name '" + name + "' is already being used by another filter.  Please provide a different name.";
-			}
-			addNewFilter(name);
-		}
-		FilterElement selected = (FilterElement) filterComboBox.getSelectedItem();
-		if (selected == null) {
-			return;
-		}
+	@Override
+	protected FilterElement createElement(String name) {
+		CompositeFilter<CyNetwork, CyIdentifiable> filter = transformerManager.createCompositeFilter(CyNetwork.class, CyIdentifiable.class);
+		filter.addListener(worker);
+		return new FilterElement(name, filter);
+	}
+
+	@Override
+	protected void handleElementSelected(FilterElement selected, FilterPanel panel) {
 		setFilter(selected.filter, panel);
-		viewUpdater.handleFilterStructureChanged();
+		worker.handleFilterStructureChanged();
 	}
 	
-	private boolean validateFilterName(String oldName, String newName, DynamicComboBoxModel<FilterElement> comboBoxModel) {
-		if (oldName != null && oldName.equalsIgnoreCase(newName)) {
-			// Name didn't change.
-			return true;
-		}
-		
-		for (FilterElement element : comboBoxModel) {
-			if (element.name.equalsIgnoreCase(newName)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private void addNewFilter(String name) {
-		CompositeFilter<CyNetwork, CyIdentifiable> filter = transformerManager.createCompositeFilter(CyNetwork.class, CyIdentifiable.class);
-		filter.addListener(viewUpdater);
-		FilterElement element = new FilterElement(name, filter);
-		filterComboBoxModel.add(element);
-		filterComboBoxModel.setSelectedItem(element);
-	}
-
 	private void setFilter(CompositeFilter<CyNetwork, CyIdentifiable> filter, FilterPanel parent) {
 		CompositeFilterPanel root = (CompositeFilterPanel) createView(parent, filter, 0);
 		parent.setRootPanel(root);
 	}
 
-	void handleImport(FilterPanel panel) {
-		// TODO Auto-generated method stub
-		showComingSoonMessage(panel);
-	}
-
-	void handleExport(FilterPanel panel) {
-		// TODO Auto-generated method stub
-		showComingSoonMessage(panel);
-	}
-
-	private void showComingSoonMessage(Component parent) {
-		JOptionPane.showMessageDialog(parent, "Coming soon!", "Not yet implemented", JOptionPane.INFORMATION_MESSAGE);
-	}
-
-	void handleDelete() {
-		int index = filterComboBoxModel.getSelectedIndex(); 
-		if (index <= 0) {
-			// If nothing or the "create new filter" item is selected, do nothing.
-			return;
-		}
-		
-		filterComboBoxModel.remove(index);
-	}
-
-	@SuppressWarnings("unchecked")
-	void handleRename(FilterPanel panel) {
-		JComboBox comboBox = panel.getFilterComboBox();
-		FilterElement selected = (FilterElement) comboBox.getSelectedItem();
-		String defaultName = selected.name;
-		String name;
-		String message = "Please provide a name for your filter.";
-		while (true) {
-			name = (String) JOptionPane.showInputDialog(null, message, "Rename Filter", JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
-			if (name == null) {
-				return;
-			}
-			if (validateFilterName(defaultName, name, (DynamicComboBoxModel<FilterElement>) comboBox.getModel())) {
-				break;
-			}
-			message = "The name '" + name + "' is already being used by another filter.  Please provide a different name.";
-		}
-		selected.name = name;
-	}
-
-	public DynamicComboBoxModel<FilterElement> getFilterComboBoxModel() {
-		return filterComboBoxModel;
-	}
-	
-	static class FilterElement {
-		public String name;
-		public final CompositeFilter<CyNetwork, CyIdentifiable> filter;
-		
-		public FilterElement(String name, CompositeFilter<CyNetwork, CyIdentifiable> filter) {
-			this.name = name;
-			this.filter = filter;
-		}
-		
-		@Override
-		public String toString() {
-			return name;
-		}
-	}
-
 	public Filter<CyNetwork, CyIdentifiable> getFilter() {
-		FilterElement selected = (FilterElement) filterComboBoxModel.getSelectedItem();
+		FilterElement selected = (FilterElement) namedElementComboBoxModel.getSelectedItem();
 		return selected.filter;
-	}
-
-	public void setUpdating(boolean updating, FilterPanel panel) {
-		if (updating) {
-			panel.setStatus("Applying...");
-		} else {
-			panel.setStatus("Apply Filter");
-		}
-		panel.getApplyFilterButton().setEnabled(!updating && !isInteractive);
-		panel.getCancelApplyButton().setEnabled(updating);
 	}
 
 	public void setInteractive(boolean isInteractive, FilterPanel panel) {
 		modelMonitor.setInteractive(isInteractive);
-		viewUpdater.setInteractive(isInteractive);
+		worker.setInteractive(isInteractive);
 		if (this.isInteractive == isInteractive) {
 			return;
 		}
@@ -363,11 +231,11 @@ public class FilterPanelController {
 		this.isInteractive = isInteractive;
 		CompositeFilterPanel root = panel.getRootPanel();
 		setInteractive(isInteractive, root);
-		setUpdating(false, panel);
+		setProgress(1.0, panel);
 	}
 
 	private void setInteractive(boolean isInteractive, CompositeFilterPanel panel) {
-		for (FilterViewModel viewModel : panel.getViewModels()) {
+		for (TransformerElementViewModel<FilterPanel> viewModel : panel.getViewModels()) {
 			if (viewModel.view instanceof InteractivityChangedListener) {
 				((InteractivityChangedListener) viewModel.view).handleInteractivityChanged(isInteractive);
 			}
@@ -381,11 +249,28 @@ public class FilterPanelController {
 		setInteractive(panel.getApplyAutomaticallyCheckBox().isSelected(), panel);
 	}
 
-	public void handleCancelApply(FilterPanel filterPanel) {
-		viewUpdater.cancel();
+	@Override
+	protected String getPrompt() {
+		return "Please provide a name for your filter.";
 	}
-
-	public void handleApplyFilter(FilterPanel filterPanel) {
-		viewUpdater.requestWork();
+	
+	@Override
+	protected String getCreateElementTitle() {
+		return "Create New Filter";
+	}
+	
+	@Override
+	protected String getRenameElementTitle() {
+		return "Rename Filter";
+	}
+	
+	@Override
+	protected String getElementTemplate() {
+		return "My filter %1$d";
+	}
+	
+	@Override
+	protected String getElementExistsWarningTemplate() {
+		return "The name '%1$s' is already being used by another filter.  Please provide a different name.";
 	}
 }

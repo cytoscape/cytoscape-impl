@@ -152,6 +152,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		
 		lock.writeLock().lock();
 		try {
+			if (model == null) {
+				network = null;
+				return;
+			}
+			
 			// We may not be the first writer, so check again.
 			if (model == network) {
 				return;

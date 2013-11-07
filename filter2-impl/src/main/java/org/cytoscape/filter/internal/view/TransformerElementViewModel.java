@@ -1,17 +1,16 @@
 package org.cytoscape.filter.internal.view;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
-public class FilterViewModel {
+public class TransformerElementViewModel<V extends SelectPanelComponent> {
 	public final JCheckBox checkBox;
-	public final Component view;
+	public final JComponent view;
 	
-	public FilterViewModel(final JComponent view, final FilterPanelController controller, final FilterPanel parent) {
+	public TransformerElementViewModel(final JComponent view, final AbstractPanelController<?, V> controller, final V parent) {
 		this.view = view;
 		this.checkBox = new JCheckBox();
 		

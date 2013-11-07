@@ -7,104 +7,29 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
-import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 
 import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
-import org.cytoscape.filter.internal.view.FilterPanelController.FilterElement;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 
 @SuppressWarnings("serial")
-public class FilterPanel extends JPanel {
-	private Component editControlPanel;
+public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelController> {
 	private CompositeFilterPanel root;
 	private JButton outdentButton;
-	private FilterPanelController controller;
-	private JComboBox filterComboBox;
-	private Component selectionPanel;
-	private JPopupMenu menu;
-	private DynamicComboBoxModel<FilterElement> filterComboBoxModel;
-	private JMenuItem renameMenu;
-	private JMenuItem deleteMenu;
-	private JMenuItem exportMenu;
-	private JMenuItem importMenu;
-	private JScrollPane scrollPane;
-	private IconManager iconManager;
 	private JCheckBox applyAutomaticallyCheckBox;
-	private JButton applyFilterButton;
-	private JButton cancelApplyButton;
 
-	public FilterPanel(final FilterPanelController controller, IconManager iconManager, final ViewUpdater viewUpdater) {
-		this.controller = controller;
-		this.iconManager = iconManager;
+	public FilterPanel(final FilterPanelController controller, IconManager iconManager, final FilterWorker worker) {
+		super(controller, iconManager);
+		setOpaque(false);
 		
-		viewUpdater.setView(this);
-		
-		filterComboBoxModel = controller.getFilterComboBoxModel();
-		
-		createSelectionPanel();
-
-		renameMenu = new JMenuItem("Rename");
-		renameMenu.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleRename(FilterPanel.this);
-			}
-		});
-		
-		deleteMenu = new JMenuItem("Delete");
-		deleteMenu.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleDelete();
-			}
-		});
-
-		exportMenu = new JMenuItem("Export filters...");
-		exportMenu.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleExport(FilterPanel.this);
-			}
-		});
-
-		importMenu = new JMenuItem("Import filters...");
-		importMenu.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleImport(FilterPanel.this);
-			}
-		});
-
-		menu = new JPopupMenu();
-		menu.add(renameMenu);
-		menu.add(deleteMenu);
-		menu.add(exportMenu);
-		menu.add(importMenu);
-
-		JLabel optionsLabel = new JLabel(IconManager.ICON_COG);
-		Font iconFont = iconManager.getIconFont(17.0f);
-		optionsLabel.setFont(iconFont);
-		optionsLabel.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent event) {
-				handleShowMenu(event);
-			}
-		});
+		worker.setView(this);
 		
 		applyAutomaticallyCheckBox = new JCheckBox("Apply Automatically"); 
 		applyAutomaticallyCheckBox.addActionListener(new ActionListener() {
@@ -114,50 +39,27 @@ public class FilterPanel extends JPanel {
 			}
 		});
 		
-		applyFilterButton = new JButton("Apply Filter");
-		applyFilterButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleApplyFilter(FilterPanel.this);
-			}
-		});
-		
-		cancelApplyButton = new JButton("Cancel");
-		cancelApplyButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleCancelApply(FilterPanel.this);
-			}
-		});
-		cancelApplyButton.setEnabled(false);
-		
 		JPanel applyPanel = createApplyPanel();
 		
 		setLayout(new GridBagLayout());
 		int row = 0;
-		add(selectionPanel, new GridBagConstraints(0, row, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		add(applyAutomaticallyCheckBox, new GridBagConstraints(1, row, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		add(optionsLabel, new GridBagConstraints(2, row++, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
+		add(namedElementComboBox, new GridBagConstraints(0, row, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(optionsLabel, new GridBagConstraints(1, row++, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
+
+		add(applyAutomaticallyCheckBox, new GridBagConstraints(0, row++, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+		Component editPanel = createEditPanel(createButtons());
+		add(editPanel, new GridBagConstraints(0, row++, 2, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 		
-		Component editPanel = createEditPanel();
-		add(editPanel, new GridBagConstraints(0, row++, 3, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		add(applyPanel, new GridBagConstraints(0, row++, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 		
-		add(applyPanel, new GridBagConstraints(0, row++, 3, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		
-		FilterElement element = (FilterElement) filterComboBox.getSelectedItem();
+		ComboBoxModel model = controller.getElementComboBoxModel();
+		FilterElement element = (FilterElement) model.getSelectedItem();
 		createView(element.filter);
 		
 		controller.synchronize(this);
 	}
 	
-	private JPanel createApplyPanel() {
-		JPanel applyPanel = new JPanel();
-		applyPanel.setLayout(new GridBagLayout());
-		applyPanel.add(applyFilterButton, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		applyPanel.add(cancelApplyButton, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		return applyPanel;
-	}
-
 	private void createView(CompositeFilter<CyNetwork, CyIdentifiable> filter) {
 		if (filter == null) {
 			setRootPanel(null);
@@ -170,53 +72,11 @@ public class FilterPanel extends JPanel {
 		setRootPanel(panel);
 	}
 
-	protected void handleShowMenu(MouseEvent event) {
-		ComboBoxModel model = filterComboBox.getModel();
-		FilterElement selected = (FilterElement) filterComboBox.getSelectedItem();
-		renameMenu.setEnabled(selected != null && selected.filter != null);
-		deleteMenu.setEnabled(model.getSize() > 2);
-		menu.show(event.getComponent(), event.getX(), event.getY());
-	}
-
-	private Component createEditPanel() {
-		JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createEtchedBorder());
-		
-		createEditControlPanel();
-		editControlPanel.setVisible(false);
-		
-		scrollPane = new JScrollPane();
-		scrollPane.setBorder(BorderFactory.createEmptyBorder());
-		
-		panel.setLayout(new GridBagLayout());
-		
-		int row = 0;
-		panel.add(editControlPanel, new GridBagConstraints(0, row++, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		panel.add(scrollPane, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-		
-		return panel;
-	}
-
-	private void createSelectionPanel() {
-		filterComboBox = new JComboBox(filterComboBoxModel);
-		filterComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleFilterSelected(filterComboBox, FilterPanel.this);
-			}
-		});
-		selectionPanel = filterComboBox;
-	}
-
-	void createEditControlPanel() {
-		JPanel panel = new JPanel();
-		GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-	
-		Font arrowFont = iconManager.getIconFont(11.0f);
+	JButton[] createButtons() {
+		Font arrowFont = iconManager.getIconFont(16.0f);
 		Font iconFont = iconManager.getIconFont(17.0f);
 
-		outdentButton = new JButton(IconManager.ICON_STEP_BACKWARD);
+		outdentButton = new JButton(IconManager.ICON_CARET_LEFT);
 		outdentButton.setFont(arrowFont);
 		outdentButton.addActionListener(new ActionListener() {
 			@Override
@@ -225,7 +85,7 @@ public class FilterPanel extends JPanel {
 			}
 		});
 		
-		JButton indentButton = new JButton(IconManager.ICON_STEP_FORWARD);
+		JButton indentButton = new JButton(IconManager.ICON_CARET_RIGHT);
 		indentButton.setFont(arrowFont);
 		indentButton.addActionListener(new ActionListener() {
 			@Override
@@ -251,18 +111,12 @@ public class FilterPanel extends JPanel {
 			}
 		});
 		
-		layout.setHorizontalGroup(layout.createSequentialGroup()
-										.addComponent(outdentButton)
-										.addComponent(indentButton)
-										.addComponent(deleteButton)
-										.addComponent(cancelButton));
-		layout.setVerticalGroup(layout.createParallelGroup()
-									  .addComponent(outdentButton)
-									  .addComponent(indentButton)
-									  .addComponent(deleteButton)
-									  .addComponent(cancelButton));
-		
-		editControlPanel = panel;
+		return new JButton[] {
+			outdentButton,
+			indentButton,
+			deleteButton,
+			cancelButton,
+		};
 	}
 	
 	CompositeFilterPanel getRootPanel() {
@@ -284,21 +138,9 @@ public class FilterPanel extends JPanel {
 	}
 
 	public JComboBox getFilterComboBox() {
-		return filterComboBox;
+		return namedElementComboBox;
 	}
 	
-	public void setStatus(String status) {
-		applyFilterButton.setText(status);
-	}
-
-	public JButton getApplyFilterButton() {
-		return applyFilterButton;
-	}
-
-	public Component getCancelApplyButton() {
-		return cancelApplyButton;
-	}
-
 	public JCheckBox getApplyAutomaticallyCheckBox() {
 		return applyAutomaticallyCheckBox;
 	}
