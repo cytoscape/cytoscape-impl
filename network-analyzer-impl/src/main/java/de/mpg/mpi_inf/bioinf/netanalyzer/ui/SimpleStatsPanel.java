@@ -26,31 +26,18 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-
-import de.mpg.mpi_inf.bioinf.netanalyzer.OpenBrowser;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStats;
-import de.mpg.mpi_inf.bioinf.netanalyzer.sconnect.HelpConnector;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Panel (group box) displaying the simple network statistics.
  * 
  * @author Yassen Assenov
  */
-public class SimpleStatsPanel extends JPanel
-	implements ActionListener {
+public class SimpleStatsPanel extends JPanel {
 
 	/**
 	 * Initializes a new instance of <code>SimpleStatsPanel</code>.
@@ -84,23 +71,6 @@ public class SimpleStatsPanel extends JPanel
 			addDescrValuePair(aStats, statNames, 0, nameCount, descrCol, valueCol);
 		}
 		add(simpleStatsPanel, BorderLayout.CENTER);
-
-		// Add a help button
-		final int bs = Utils.BORDER_SIZE;
-		JPanel panHelp = new JPanel(new FlowLayout(FlowLayout.TRAILING, bs, bs));
-		panHelp.add(btnHelp = Utils.createButton(Messages.DI_HELP, Messages.TT_ONLHELP, this));
-		add(panHelp, BorderLayout.SOUTH);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == btnHelp) {
-			OpenBrowser.openURL(HelpConnector.getParamURL("simple"));
-		}
 	}
 
 	/**
@@ -163,8 +133,4 @@ public class SimpleStatsPanel extends JPanel
 		return Utils.createLabel("<html><b>" + labelText + "</b></html>", toolTipText);
 	}
 
-	/**
-	 * &quot;Help&quot; button.
-	 */
-	private JButton btnHelp;
 }
