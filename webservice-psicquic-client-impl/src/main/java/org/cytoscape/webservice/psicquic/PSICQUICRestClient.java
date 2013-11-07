@@ -230,16 +230,25 @@ public final class PSICQUICRestClient {
 			try {
 				future = completionService.take();
 				final CyNetwork ret = future.get();
+				String sourceName = null;
 				if (ret != null) {
-					result.put(ret.getRow(ret).get("source", String.class), ret);
+					sourceName = ret.getRow(ret).get("source", String.class);
+					result.put(sourceName, ret);
 				}
 
+				// Update status message
 				completed = completed + increment;
 				tm.setProgress(completed);
-				nameSet.remove(regManager.getSource2NameMap().get(service));
+				nameSet.remove(sourceName);
 
-				tm.setStatusMessage((i + 1) + " / " + targetServices.size() + " tasks finished.\n"
-						+ "Still waiting responses from the following databases:\n\n" + nameSet.toString());
+				final StringBuilder builder = new StringBuilder();
+				for(final String name: nameSet) {
+					builder.append("<li>" + name + "</li>");
+				}
+				
+				tm.setStatusMessage("<html><body style=\"line-height:150%\">" + 
+						(i + 1) + " / " + targetServices.size() + " tasks finished.<br><br>"
+						+ "Waiting results from the following databases:<br><ul>" + builder.toString() + "</ul></body></html>");
 
 			} catch (InterruptedException ie) {
 				for (final ImportNetworkTask t : taskSet)

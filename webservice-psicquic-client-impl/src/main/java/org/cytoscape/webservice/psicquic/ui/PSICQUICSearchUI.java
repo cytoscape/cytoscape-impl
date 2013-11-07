@@ -52,6 +52,7 @@ import javax.swing.border.TitledBorder;
 
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
@@ -124,12 +125,15 @@ public class PSICQUICSearchUI extends JPanel {
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
 	private final PSIMITagManager tagManager;
+	
+	private final CyServiceRegistrar registrar;
 
 
 	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
 			final PSICQUICRestClient client, final TaskManager<?, ?> tmManager,
 			final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm, final PSIMITagManager tagManager, final CyProperty<Properties> props) {
+			final VisualMappingManager vmm, final PSIMITagManager tagManager, final CyProperty<Properties> props, 
+			final CyServiceRegistrar registrar) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;
@@ -139,7 +143,8 @@ public class PSICQUICSearchUI extends JPanel {
 		this.vsBuilder = vsBuilder;
 		this.tagManager = tagManager;
 		this.props = props;
-
+		this.registrar = registrar;
+		
 		// Load Property if available.
 		final Properties cyProp = props.getProperties();
 		final String selectionListProp = cyProp.getProperty(PROP_NAME);
@@ -201,7 +206,7 @@ public class PSICQUICSearchUI extends JPanel {
 	private final void createDBlistPanel() {
 		// Source Status - list of remote databases
 		this.statesPanel = new SourceStatusPanel("", client, regManager, networkManager, null, taskManager, mode,
-				createViewTaskFactory, vsBuilder, vmm, tagManager, props);
+				createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar);
 		statesPanel.enableComponents(false);
 		statesPanel.setSelected(sourceSet);
 	}
@@ -363,7 +368,7 @@ public class PSICQUICSearchUI extends JPanel {
 			}
 
 			statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, result, taskManager, mode,
-					createViewTaskFactory, vsBuilder, vmm, tagManager, props);
+					createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar);
 			statesPanel.sort();
 			updateGUILayout();
 			statesPanel.enableComponents(true);
@@ -424,7 +429,7 @@ public class PSICQUICSearchUI extends JPanel {
 		queryArea.setText("");
 		queryScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, null, taskManager, mode,
-				createViewTaskFactory, vsBuilder, vmm, tagManager, props);
+				createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar);
 		statesPanel.sort();
 
 		updateGUILayout();

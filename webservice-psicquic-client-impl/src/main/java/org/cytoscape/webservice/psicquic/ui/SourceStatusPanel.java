@@ -43,6 +43,7 @@ import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.LayoutStyle;
@@ -54,19 +55,26 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.FinishStatus.Type;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskObserver;
 
-public class SourceStatusPanel extends JPanel {
+public class SourceStatusPanel extends JPanel implements TaskObserver {
 
 	private static final long serialVersionUID = 6996385373168492882L;
 
@@ -99,6 +107,8 @@ public class SourceStatusPanel extends JPanel {
 
 	private final CyProperty<Properties> props;
 
+	private final CyServiceRegistrar registrar;
+
 	private int interactionsFound = 0;
 
 	/**
@@ -108,8 +118,8 @@ public class SourceStatusPanel extends JPanel {
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
 			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final PSIMITagManager tagManager, 
-			final CyProperty<Properties> props) {
+			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
+			final PSIMITagManager tagManager, final CyProperty<Properties> props, final CyServiceRegistrar registrar) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
@@ -117,6 +127,7 @@ public class SourceStatusPanel extends JPanel {
 		this.taskManager = taskManager;
 		this.tagManager = tagManager;
 		this.props = props;
+		this.registrar = registrar;
 
 		if (mode == SearchMode.SPECIES)
 			this.mode = SearchMode.MIQL;
@@ -135,6 +146,8 @@ public class SourceStatusPanel extends JPanel {
 		this.setBorder(titledBorder);
 		this.setOpaque(false);
 		resultTable.setEnabled(false);
+
+		this.registrar.registerService(this, TaskObserver.class, new Properties());
 	}
 
 	private void refreshGUI() {
@@ -171,11 +184,11 @@ public class SourceStatusPanel extends JPanel {
 				selectedService.add(selectedSource);
 			}
 		}
-		
+
 		// Save selection as property
 		String selectedSourceString = builder.toString();
-		if(selectedSourceString.equals("") == false) {
-			selectedSourceString = selectedSourceString.substring(0, selectedSourceString.length()-1);
+		if (selectedSourceString.equals("") == false) {
+			selectedSourceString = selectedSourceString.substring(0, selectedSourceString.length() - 1);
 			props.getProperties().setProperty(PSICQUICSearchUI.PROP_NAME, selectedSourceString);
 		}
 		return selectedService;
@@ -327,7 +340,7 @@ public class SourceStatusPanel extends JPanel {
 
 		importNetworkButton.setText("Import");
 		importNetworkButton.setFont(new Font("SansSerif", Font.PLAIN, 13));
-		importNetworkButton.setForeground(new Color(255,0,55));
+		importNetworkButton.setForeground(new Color(255, 0, 55));
 		importNetworkButton.setPreferredSize(new java.awt.Dimension(70, 28));
 		importNetworkButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -392,7 +405,8 @@ public class SourceStatusPanel extends JPanel {
 
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		layout.setHorizontalGroup(layout
+				.createParallelGroup(GroupLayout.Alignment.LEADING)
 				// .addComponent(titlePanel, GroupLayout.DEFAULT_SIZE,
 				// GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(resultScrollPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
@@ -411,24 +425,27 @@ public class SourceStatusPanel extends JPanel {
 	}
 
 	private void importButtonActionPerformed(ActionEvent evt) {
-
 		final boolean mergeNetwork = clusterResultCheckBox.isSelected();
-
 		final Set<String> targetSources = getSelected();
 		final Set<String> sourceURLs = new HashSet<String>();
-		for (String source : targetSources)
-			sourceURLs.add(manager.getActiveServices().get(source));
+		// Filter out invalid selections:
+		for (int i = 0; i < resultTable.getRowCount(); i++) {
+			final String source = resultTable.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
+			if (((Number) resultTable.getValueAt(i, RECORD_COUNT_COLUMN_INDEX)).intValue() != 0
+					&& targetSources.contains(source)) {
+				sourceURLs.add(manager.getActiveServices().get(source));
+			}
+		}
 
 		// Execute Import Task
 		final ImportNetworkFromPSICQUICTask networkTask = new ImportNetworkFromPSICQUICTask(query, client,
 				networkManager, manager, sourceURLs, mode, createViewTaskFactory, vsBuilder, vmm, mergeNetwork);
 
-		taskManager.execute(new TaskIterator(networkTask));
+		taskManager.execute(new TaskIterator(networkTask), this);
 
 		final Window parentWindow = ((Window) getRootPane().getParent());
 		parentWindow.pack();
 		repaint();
-
 		parentWindow.toFront();
 	}
 
@@ -453,20 +470,18 @@ public class SourceStatusPanel extends JPanel {
 		}
 	}
 
-
 	void setSelected(final Set<String> sources) {
 		for (int i = 0; i < resultTable.getRowCount(); i++) {
 			final String dbName = resultTable.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
 			if (sources.contains(dbName)) {
-//				System.out.println("FOUND hit: " + dbName);
+				// System.out.println("FOUND hit: " + dbName);
 				resultTable.setValueAt(Boolean.TRUE, i, IMPORT_COLUMN_INDEX);
 			} else {
-//				System.out.println("DISABLE: " + dbName);
+				// System.out.println("DISABLE: " + dbName);
 				resultTable.setValueAt(Boolean.FALSE, i, IMPORT_COLUMN_INDEX);
 			}
 		}
 	}
-
 
 	// Variables declaration - do not modify
 	private javax.swing.JPanel buttonPanel;
@@ -478,7 +493,6 @@ public class SourceStatusPanel extends JPanel {
 
 	private javax.swing.JScrollPane resultScrollPane;
 	private javax.swing.JTable resultTable;
-
 
 	private final class StatusTableModel extends DefaultTableModel {
 		private static final long serialVersionUID = -7798626850196524108L;
@@ -616,5 +630,74 @@ public class SourceStatusPanel extends JPanel {
 
 	void setQuery(final String query) {
 		this.query = query;
+	}
+
+	private Set<CyNetwork> results;
+
+	@Override
+	public void taskFinished(ObservableTask task) {
+		if (task.getResults(Object.class) instanceof Set) {
+			results = task.getResults(Set.class);
+		}
+	}
+
+	@Override
+	public void allFinished(FinishStatus finishStatus) {
+		if (finishStatus.getType() == Type.SUCCEEDED) {
+			final StringBuilder builder = new StringBuilder();
+			builder.append("<html><h3>Networks created from the following databases:</h3><ul>");
+			for (final CyNetwork network : results) {
+				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+				final Integer edgeCount = network.getEdgeCount();
+				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
+			}
+			builder.append("</ul></html>");
+
+			JOptionPane.showMessageDialog(this, builder.toString(), "Import Finished", JOptionPane.INFORMATION_MESSAGE,
+					null);
+		} else if (finishStatus.getType() == Type.CANCELLED) {
+			final Set<String> sources = new HashSet<String>();
+			final StringBuilder builder = new StringBuilder();
+			builder.append("<html><h2 style=\"color:red\">Import Canceled</h2>" + 
+					"<h3>Networks imported from the following databases:</h3><ul>");
+			for (final CyNetwork network : results) {
+				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+				final Integer edgeCount = network.getEdgeCount();
+				sources.add(network.getRow(network).get("source", String.class));
+				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
+			}
+		
+			builder.append("<h3 style=\"color:red\">Import canceled for the following databases:</h3><ul style=\"color:red\">");
+			for (int i = 0; i < resultTable.getRowCount(); i++) {
+				final String dbName = resultTable.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
+				final Integer count = ((Number)resultTable.getValueAt(i, RECORD_COUNT_COLUMN_INDEX)).intValue();
+				final Boolean isImport = (Boolean) resultTable.getValueAt(i, IMPORT_COLUMN_INDEX);
+				if (sources.contains(dbName) == false && count != 0 && isImport) {
+					builder.append("<li>" + dbName + "</li>");
+				}
+			}
+			JOptionPane.showMessageDialog(this, builder.toString() + "</ul></html>", "Import Canceled",
+					JOptionPane.ERROR_MESSAGE, null);
+		} else {
+			// Error!
+			JOptionPane.showMessageDialog(this,  "<html>Error: Please try again later.<br><br>" + finishStatus.getException().getLocalizedMessage()
+					+ "</html>", "Import Error",
+					JOptionPane.ERROR_MESSAGE, null);
+		}
+
+		results = null;
+	}
+	
+	private final String generatelist() {
+			final Set<String> sources = new HashSet<String>();
+			final StringBuilder builder = new StringBuilder();
+			builder.append("<html><h3>Networks created from the following databases:</h3><ul>");
+			for (final CyNetwork network : results) {
+				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+				final Integer edgeCount = network.getEdgeCount();
+				sources.add(network.getRow(network).get("source", String.class));
+				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
+			}
+			return builder.toString();
 	}
 }

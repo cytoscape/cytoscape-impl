@@ -36,6 +36,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -67,6 +68,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
 
+		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
+		
 		DialogTaskManager tm = getService(bc, DialogTaskManager.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
@@ -94,7 +97,7 @@ public class CyActivator extends AbstractCyActivator {
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "Interaction Database Universal Client",
 				CLIENT_DISCRIPTION, cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
-				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager, cyPropertyServiceRef);
+				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager, cyPropertyServiceRef, registrar);
 
 		registerAllServices(bc, psicquicClient, new Properties());
 

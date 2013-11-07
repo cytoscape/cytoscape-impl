@@ -42,13 +42,14 @@ import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImportNetworkFromPSICQUICTask extends AbstractTask {
+public class ImportNetworkFromPSICQUICTask extends AbstractTask implements ObservableTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportNetworkFromPSICQUICTask.class);
 
@@ -194,5 +195,10 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask {
 
 	public Set<CyNetwork> getNetworks() {
 		return new HashSet<CyNetwork>(result.values());
+	}
+
+	@Override
+	public <T> T getResults(Class<? extends T> type) {
+		return (T) getNetworks();
 	}
 }

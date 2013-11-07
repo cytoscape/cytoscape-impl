@@ -325,10 +325,8 @@ public class QuickFindImpl implements QuickFind {
 		Iterator<? extends CyIdentifiable> iterator;
 
 		if (indexType == QuickFind.INDEX_NODES) {
-			taskMonitor.setStatusMessage("Indexing node table columns");
 			iterator = network.getNodeList().iterator();
 		} else if (indexType == QuickFind.INDEX_EDGES) {
-			taskMonitor.setStatusMessage("Indexing edge table columns");
 			iterator = network.getEdgeList().iterator();
 		} else {
 			throw new IllegalArgumentException("indexType must be set to: "

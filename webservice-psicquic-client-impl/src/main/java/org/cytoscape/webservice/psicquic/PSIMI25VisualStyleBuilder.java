@@ -27,12 +27,14 @@ package org.cytoscape.webservice.psicquic;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
+import java.util.Set;
 
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -47,7 +49,7 @@ public class PSIMI25VisualStyleBuilder {
 	// Presets
 	private static final Color NODE_COLOR = Color.WHITE;
 	private static final Color NODE_BORDER_COLOR = new Color(180, 180, 180);
-	private static final Color NODE_LABEL_COLOR = new Color(100, 100, 100);
+	private static final Color NODE_LABEL_COLOR = new Color(50, 50, 50);
 	private static final Color EDGE_COLOR = new Color(180, 180, 180);
 	private static final Color EDGE_CROSS_COLOR = new Color(0x1C, 0x86, 0xEE);
 
@@ -84,6 +86,11 @@ public class PSIMI25VisualStyleBuilder {
 	public VisualStyle getVisualStyle() {
 
 		final VisualStyle defStyle = vsFactory.createVisualStyle(DEF_VS_NAME);
+		final Set<VisualPropertyDependency<?>> deps = defStyle.getAllVisualPropertyDependencies();
+		// Disable add deps
+		for(VisualPropertyDependency<?> dep: deps) {
+			dep.setDependency(false);
+		}
 
 		// Network VP
 		final Color backGroundColor = Color.white;
@@ -96,22 +103,21 @@ public class PSIMI25VisualStyleBuilder {
 		defStyle.addVisualMappingFunction(labelPassthrough);
 
 		// Node View Defaults
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+		defStyle.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ROUND_RECTANGLE);
 		defStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, NODE_BORDER_COLOR);
 		defStyle.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
 		defStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, NODE_LABEL_COLOR);
 		defStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_FACE, NODE_LABEL_FONT);
 		defStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY, 210);
 
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0d);
+		defStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 2.0d);
 		defStyle.setDefaultValue(BasicVisualLexicon.NODE_BORDER_TRANSPARENCY, 150);
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, 30d);
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, 30d);
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_SIZE, 30d);
+		defStyle.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, 65d);
+		defStyle.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, 24d);
 		defStyle.setDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY, 190);
 
 		// Edge View Defaults
-		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 80);
+		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 100);
 		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 2.0d);
 		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_PAINT, EDGE_COLOR);
 
