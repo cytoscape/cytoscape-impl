@@ -26,32 +26,14 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.HeadlessException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
-
-import de.mpg.mpi_inf.bioinf.netanalyzer.OpenBrowser;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStatus;
-import de.mpg.mpi_inf.bioinf.netanalyzer.sconnect.HelpConnector;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Generic class for interpretation dialogs.
@@ -123,8 +105,6 @@ public final class InterpretationDialog extends JDialog implements ActionListene
 			userChoice = -1;
 			this.setVisible(false);
 			this.dispose();
-		} else if (source == btnHelp) {
-			OpenBrowser.openURL(HelpConnector.getInterpretURL());
 		} else if (radOptions != null) {
 			for (int i = 0; i < radOptions.length; ++i) {
 				if (source == radOptions[i]) {
@@ -198,12 +178,10 @@ public final class InterpretationDialog extends JDialog implements ActionListene
 		JPanel panButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, Utils.BORDER_SIZE, 0));
 		btnOK = Utils.createButton(Messages.DI_OK, null, this);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		btnHelp = Utils.createButton(Messages.DI_HELP, null, this);
-		Utils.equalizeSize(btnOK, btnCancel, btnHelp);
+		Utils.equalizeSize(btnOK, btnCancel);
 		panButtons.add(btnOK);
 		panButtons.add(btnCancel);
 		panButtons.add(Box.createHorizontalStrut(Utils.BORDER_SIZE * 2));
-		panButtons.add(btnHelp);
 		contentPane.add(panButtons, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -279,11 +257,6 @@ public final class InterpretationDialog extends JDialog implements ActionListene
 	 * &quot;Cancel&quot; button.
 	 */
 	private JButton btnCancel;
-
-	/**
-	 * &quot;Help&quot; button.
-	 */
-	private JButton btnHelp;
 
 	/**
 	 * &quot;OK&quot; button.

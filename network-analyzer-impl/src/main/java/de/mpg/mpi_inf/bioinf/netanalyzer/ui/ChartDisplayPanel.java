@@ -26,8 +26,20 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.Container;
-import java.awt.Dimension;
+import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
+import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.filter.ComplexParamFilter;
+import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.charts.JFreeChartConn;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.filter.ComplexParamFilterDialog;
+import org.jfree.chart.JFreeChart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -36,30 +48,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
-import org.jfree.chart.JFreeChart;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
-import de.mpg.mpi_inf.bioinf.netanalyzer.OpenBrowser;
-import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.filter.ComplexParamFilter;
-import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
-import de.mpg.mpi_inf.bioinf.netanalyzer.sconnect.HelpConnector;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.charts.JFreeChartConn;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.filter.ComplexParamFilterDialog;
 
 /**
  * Panel used to display chart.
@@ -135,8 +123,6 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 				if (changeVisSettings()) {
 					repaint();
 				}
-			} else if (source == btnHelp) {
-				OpenBrowser.openURL(HelpConnector.getParamURL(id));
 			} else if (btnsDec != null) {
 				for (int i = 0; i < btnsDec.length; ++i) {
 					if (source == btnsDec[i]) {
@@ -226,7 +212,6 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 		btnSaveData = Utils.createButton(Messages.DI_EXPORTDATA, Messages.TT_SAVEDATA, this);
 		btnChartSettings = Utils.createButton(Messages.DI_CHARTSETTINGS, Messages.TT_CHARTSETTINGS,
 				this);
-		btnHelp = Utils.createButton(Messages.DI_HELP, Messages.TT_ONLHELP, this);
 
 		buttonPanel.add(btnChartSettings);
 		buttons.add(btnChartSettings);
@@ -252,8 +237,6 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 		buttonPanel.add(btnSaveData);
 		buttons.add(btnSaveData);
 		buttonPanel.add(Box.createVerticalStrut(Utils.BORDER_SIZE * 2));
-		buttonPanel.add(btnHelp);
-		buttons.add(btnHelp);
 		buttonPanel.add(Box.createVerticalGlue());
 		// Ensure buttons are large enough to fit all possible messages
 		final JButton[] btnsArray = new JButton[buttons.size()];
@@ -430,11 +413,6 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 	 * Buttons for the decorators.
 	 */
 	private JButton[] btnsDec;
-
-	/**
-	 * &quot;Help&quot; button.
-	 */
-	private JButton btnHelp;
 
 	/**
 	 * ID of the visualized complex parameter.
