@@ -631,12 +631,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
-			setSelectedPaint((Paint) value);
-			setSourceEdgeEndSelectedPaint((Paint) value);
-			setTargetEdgeEndSelectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
-			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
 			final float w = ((Number) value).floatValue();
 			setStrokeWidth(w);

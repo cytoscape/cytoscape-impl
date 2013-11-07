@@ -60,7 +60,6 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -1053,6 +1052,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		VisualProperty<?> vp = vpOriginal;
 		
@@ -1090,9 +1090,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setWidth(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_HEIGHT) {
 			setHeight(((Number) value).doubleValue());
-//		} else if (vp == BasicVisualLexicon.NODE_SIZE) { // TODO: delete?
-//			setWidth(((Number) value).doubleValue());
-//			setHeight(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
 		}  else if (vp == BasicVisualLexicon.NODE_LABEL_WIDTH) {
@@ -1247,7 +1244,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (vmm.getCurrentVisualStyle() != null) {
 			Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
 		
-			for(VisualPropertyDependency dep:dependencies) {
+			for (VisualPropertyDependency<?> dep:dependencies) {
 				if(dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
 					sync = dep.isDependencyEnabled();
 					break;
