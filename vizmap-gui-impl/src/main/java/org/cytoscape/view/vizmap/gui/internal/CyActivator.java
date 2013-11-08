@@ -24,22 +24,15 @@ package org.cytoscape.view.vizmap.gui.internal;
  * #L%
  */
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Paint;
-import java.util.Properties;
-
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.action.RemoveSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
@@ -48,31 +41,15 @@ import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.PropsProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
-import org.cytoscape.view.vizmap.gui.internal.task.ClearBendTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualMappingsTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.*;
 import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomColorMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.*;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.BooleanVisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.ColorVisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.EditorManagerImpl;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.FontVisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.NumberVisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.StringVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.*;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyColorPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyFontPropertyEditor;
@@ -81,9 +58,11 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorCho
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.StringValueEditor;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
-import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
+
+import java.awt.*;
+import java.util.Properties;
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -132,17 +111,6 @@ public class CyActivator extends AbstractCyActivator {
 		final CyComboBoxPropertyEditor booleanEditor = new CyComboBoxPropertyEditor();
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
 		final BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, continuousMappingCellRendererFactory);
-
-		// Context menu for edge bend
-		final BendFactory bf = getService(bc, BendFactory.class);
-		
-		final Properties clearBendProp = new Properties();
-		clearBendProp.put(ServiceProperties.PREFERRED_MENU, ServiceProperties.EDGE_EDIT_MENU);
-		clearBendProp.put(ServiceProperties.TITLE, "Clear Edge Bends");
-		clearBendProp.put(ServiceProperties.MENU_GRAVITY, "5.0");
-		clearBendProp.put(ServiceProperties.INSERT_SEPARATOR_BEFORE, "true");
-		final ClearBendTaskFactory clearBendTaskFactory = new ClearBendTaskFactory(bf, servicesUtil);
-		registerService(bc, clearBendTaskFactory, EdgeViewTaskFactory.class, clearBendProp);
 		
 		// Register ValueEditors and VisualPropertyEditors
 		// -------------------------------------------------------------------------------------------------------------
