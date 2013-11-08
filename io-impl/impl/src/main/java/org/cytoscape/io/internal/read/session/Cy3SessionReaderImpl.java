@@ -614,16 +614,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			if (columnName.equals(keyName))
 				continue;
 
-			Class<?> type = column.getType();
-
-			if (type.equals(List.class)) {
-				Class<?> elementType = column.getListElementType();
-				List<?> list = sourceRow.getList(columnName, elementType);
-				targetRow.set(columnName, list);
-			} else {
-				Object value = sourceRow.get(columnName, type);
-				targetRow.set(columnName, value);
-			}
+			final Object value = sourceRow.getRaw(columnName);
+			targetRow.set(columnName, value);
 		}
 	}
 	
