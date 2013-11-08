@@ -36,7 +36,7 @@ public class ArrangeTaskFactory extends AbstractTaskFactory {
 	private CyDesktopManager desktopMgr;
 	private ArrangeType arrange;
 
-	public ArrangeTaskFactory(CyDesktopManager desk, ArrangeType arrange) {
+	public ArrangeTaskFactory(CyDesktopManager desktopMgr, ArrangeType arrange) {
 		this.desktopMgr = desktopMgr;
 		this.arrange = arrange;
 	}

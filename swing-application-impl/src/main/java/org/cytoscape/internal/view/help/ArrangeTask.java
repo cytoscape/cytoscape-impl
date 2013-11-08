@@ -25,8 +25,6 @@ package org.cytoscape.internal.view.help;
  */
 
 
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
-
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType;
 import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.work.AbstractTask;
