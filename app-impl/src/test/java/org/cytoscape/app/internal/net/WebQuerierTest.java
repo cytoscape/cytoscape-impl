@@ -44,7 +44,7 @@ public class WebQuerierTest {
 	
 	@Test
 	public void testCompareVersions() {
-		WebQuerier webQuerier = new WebQuerier(null);
+		WebQuerier webQuerier = new WebQuerier(null, null);
 		
 		// <0 = first is newer, >0 = first is older
 		assertTrue(webQuerier.compareVersions("3.0.0", "3.0.0") == 0);

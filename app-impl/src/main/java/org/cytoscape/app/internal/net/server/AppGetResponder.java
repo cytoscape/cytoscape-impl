@@ -40,6 +40,7 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.DownloadStatus;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -53,9 +54,11 @@ public class AppGetResponder {
     private static final CyHttpResponseFactory responseFactory = new CyHttpResponseFactoryImpl();
 
 	private AppManager appManager;
+  private CyVersion cyVersion;
 	
-	public AppGetResponder(AppManager appManager) {
+	public AppGetResponder(AppManager appManager, CyVersion cyVersion) {
 		this.appManager = appManager;
+    this.cyVersion = cyVersion;
 	}
 
     private abstract static class JsonResponder implements CyHttpResponder {
@@ -135,7 +138,7 @@ public class AppGetResponder {
 					}
 				}
 				responseData.put("name", appName);
-				
+
 				if (appFoundInStore) {
 					final File[] result = new File[1];
 					final Semaphore semaphore = new Semaphore(0);
@@ -193,7 +196,7 @@ public class AppGetResponder {
 						}
 					}
 				} else {
-					installStatus = "app-not-found";
+					installStatus = "install failed: this app is incompatible with your version of Cytoscape";
 					installError = "The app " + appName + " is not found in the app store database at "
 						+ appManager.getWebQuerier().getDefaultAppStoreUrl();
 				}

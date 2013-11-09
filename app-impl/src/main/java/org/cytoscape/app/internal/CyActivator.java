@@ -376,7 +376,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,cyAppAdapter,CyAppAdapter.class, new Properties());
 		registerService(bc,cyAppAdapter,CySwingAppAdapter.class, new Properties());
 		
-		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef);
+		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef, cytoscapeVersionService);
 		registerService(bc, webQuerier, WebQuerier.class, new Properties());
 		
 		Properties properties = System.getProperties();
@@ -414,7 +414,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Start local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store
-        final AppGetResponder appGetResponder = new AppGetResponder(appManager);
+        final AppGetResponder appGetResponder = new AppGetResponder(appManager, cytoscapeVersionService);
         final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607));
         httpd.addBeforeResponse(new ScreenOriginsBeforeResponse(WebQuerier.DEFAULT_APP_STORE_URL));
         httpd.addBeforeResponse(new OriginOptionsBeforeResponse("x-csrftoken"));

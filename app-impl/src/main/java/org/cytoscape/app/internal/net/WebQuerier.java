@@ -55,6 +55,7 @@ import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.TaskMonitor;
 import org.json.JSONArray;
@@ -94,6 +95,8 @@ public class WebQuerier {
 	private static final Logger logger = LoggerFactory.getLogger(WebQuerier.class);
 	
 	private StreamUtil streamUtil;
+
+	private CyVersion cyVersion;
 	
 	/** A reference to the result obtained by the last successful query for all available apps. */
 	// private Set<WebApp> apps;
@@ -181,8 +184,9 @@ public class WebQuerier {
 		}
 	}
 	
-	public WebQuerier(StreamUtil streamUtil) {
+	public WebQuerier(StreamUtil streamUtil, CyVersion cyVersion) {
 		this.streamUtil = streamUtil;
+		this.cyVersion = cyVersion;
 		
 		/*
 		// *** Older initialization for previous implementation supporting a single app store page
@@ -381,6 +385,7 @@ public class WebQuerier {
 					if (jsonObject.has("releases")) {
 						JSONArray jsonReleases = jsonObject.getJSONArray("releases");
 						JSONObject jsonRelease;
+						boolean isCompatible = true;
 						
 						for (int releaseIndex = 0; releaseIndex < jsonReleases.length(); releaseIndex++) {
 							jsonRelease = jsonReleases.getJSONObject(releaseIndex);
@@ -396,9 +401,11 @@ public class WebQuerier {
 							keyName = "works_with";
 							if (jsonRelease.has(keyName)) {
 								release.setCompatibleCytoscapeVersions(jsonRelease.get(keyName).toString());
+								isCompatible = release.isCompatible(cyVersion);
 							}
 							
-							releases.add(release);
+							if (isCompatible)
+								releases.add(release);
 						}
 						
 						// Sort releases by version number
