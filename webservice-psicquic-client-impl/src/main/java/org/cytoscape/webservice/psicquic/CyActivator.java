@@ -31,6 +31,7 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
 
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -65,6 +66,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 
 		final CyProperty<Properties> cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
+		final CyAction networkMergeActionServiceRef = getService(bc,CyAction.class,"(id=networkMergeAction)");
 		
 		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
 
@@ -97,7 +99,7 @@ public class CyActivator extends AbstractCyActivator {
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "Interaction Database Universal Client",
 				CLIENT_DISCRIPTION, cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
-				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager, cyPropertyServiceRef, registrar);
+				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager, cyPropertyServiceRef, registrar, networkMergeActionServiceRef);
 
 		registerAllServices(bc, psicquicClient, new Properties());
 

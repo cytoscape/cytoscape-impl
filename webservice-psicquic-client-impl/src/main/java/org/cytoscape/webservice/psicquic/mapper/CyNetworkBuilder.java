@@ -58,9 +58,22 @@ public class CyNetworkBuilder {
 
 	// Required number of columns in MITAB 2.5
 	private static final int MINIMUM_COLUMN_COUNT = 15;
+	
 
+	// Most widly used ID sets.  Pick any of these if available.
+	private static final String UNIPROT_AC = "uniprotkb_accession";
+	private static final String NCBI_GENE = "ncbi_gene_id";
+	private static final String CHEBI = "chebi_id";
+	private static final String REFSEQ= "refseq_id";
+	
+
+	private static final Pattern SPLITTER_TAB = Pattern.compile("\t");
+	
 	private static final Pattern SPLITTER = Pattern.compile("\\|");
 	private static final Pattern SPLITTER_NAME_SPACE = Pattern.compile("\\:");
+	private static final Pattern NCBI = Pattern.compile("^d+$");
+	private static final Pattern UNIPROT_PATTERN = 
+			Pattern.compile("^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(.d+)?$");
 
 	private final InteractionClusterMapper mapper;
 
@@ -76,6 +89,7 @@ public class CyNetworkBuilder {
 	public CyNetworkBuilder(final CyNetworkFactory networkFactory) {
 		this.networkFactory = networkFactory;
 		mapper = new InteractionClusterMapper();
+		mapper.ensureInitialized();
 	}
 
 	public CyNetwork buildNetwork(final InteractionCluster iC) throws IOException {
@@ -102,71 +116,86 @@ public class CyNetworkBuilder {
 		prepareColumns(network);
 
 		final Map<String, CyNode> nodes = new HashMap<String, CyNode>();
-		final Pattern pattern = Pattern.compile("\t");
 
 		String line;
-		int i = 0;
 		while ((line = reader.readLine()) != null) {
-
 			if (cancel) {
 				logger.warn("Network bulilder interrupted.");
 				network.getRow(network).set(CyNetwork.NAME, "<Incomplete!> " + networkTitle);
 				break;
 			}
 
-			i++;
-			final String[] parts = pattern.split(line);
+			// Actual entries for an interaction.
+			final String[] parts = SPLITTER_TAB.split(line);
 
 			// Skip invalid lines
 			if (parts.length < MINIMUM_COLUMN_COUNT) {
-				logger.error("Invalid line found: required columns are missing: " + line);
 				continue;
 			}
-
-			// Bad entry check
-			if (parts[0] == null || parts[1] == null) {
-				logger.warn("Invalid line found: ID is empty: " + line);
-				continue;
-			}
-
-			String sourceFirst = SPLITTER.split(parts[0])[0];
-			String targetFirst = SPLITTER.split(parts[1])[0];
-
-			if (sourceFirst.equals("-") && targetFirst.equals("-")) {
-				logger.warn("Invalid line: both SOURCE/TARGET IDs are missing: " + line + "\n");
-				continue;
-			} else if (targetFirst.equals("-")) {
+			
+			
+			// Find primary ID
+			final String[] sourceIds = SPLITTER.split(parts[0]);
+			final String[] targetIds = SPLITTER.split(parts[1]);
+		
+			String sourceFirst = sourceIds[0];
+			String targetFirst = targetIds[0];
+			// Check self-edge
+			if (targetFirst.equals("-")) {
 				// This is for self-interaction
-				targetFirst = sourceFirst;
+				targetIds[0] = sourceFirst;
 			} else if (sourceFirst.equals("-")) {
-				sourceFirst = targetFirst;
+				sourceIds[0] = targetFirst;
 			}
 
-			final String[] sourceParts = mapper.parseValues(sourceFirst);
-			final String[] targetParts = mapper.parseValues(targetFirst);
-			if (sourceParts[1] == null || targetParts[1] == null) {
-				logger.warn("INVALID ID: SOURCE/TARGET: " + sourceFirst + ", " + targetFirst + "\n");
-				continue;
+			// Priority: Uniprot, NCBI, chebi, and others.
+			final String[] sourceID = getID(sourceIds);
+			final String[] targetID = getID(targetIds);
+			final CyNode sourceNode = addNode(nodes, sourceID[1], network);
+			final CyNode targetNode = addNode(nodes, targetID[1], network);
+			if(network.getDefaultNodeTable().getColumn(sourceID[0]) == null) {
+				network.getDefaultNodeTable().createColumn(sourceID[0], String.class, false);
 			}
-			final String sourceID = sourceParts[1];
-			final String targetID = targetParts[1];
+			network.getRow(sourceNode).set(sourceID[0], sourceID[1]);
 
-			final CyNode sourceNode = addNode(nodes, sourceID, network);
-			final CyNode targetNode = addNode(nodes, targetID, network);
-
+			if(network.getDefaultNodeTable().getColumn(targetID[0]) == null) {
+				network.getDefaultNodeTable().createColumn(targetID[0], String.class, false);
+			}
+			network.getRow(targetNode).set(targetID[0], targetID[1]);
+			
 			mapper.mapNodeColumn(parts, network.getRow(sourceNode), network.getRow(targetNode));
-			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
-			mapper.mapEdgeColumn(parts, network.getRow(newEdge), newEdge, sourceID, targetID);
 
-			// network.getRow(newEdge).set(CyEdge.INTERACTION,
-			// Integer.toString(i));
-			// Create new attribute if cross species
-			// processCrossSpeciesEdge(network.getRow(newEdge),
-			// network.getRow(sourceNode), network.getRow(targetNode));
+			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
+			mapper.mapEdgeColumn(parts, network.getRow(newEdge), newEdge, sourceID[1], targetID[1]);
 		}
 
 		reader.close();
 		return network;
+	}
+	
+	private final String[] getID(final String[] nodeIDs) {
+		final String[] firstParts= mapper.parseValues(nodeIDs[0]);
+		final Map<String, String> nodes = new HashMap<String, String>();
+		for(final String entry: nodeIDs) {
+			final String[] nodeParts= mapper.parseValues(entry);
+			nodes.put(nodeParts[0], nodeParts[1]);
+		}
+		
+		final String[] primaryID = new String[2];
+		if(nodes.get("uniprotkb") != null) {
+			primaryID[0] = UNIPROT_AC;
+			primaryID[1] = nodes.get("uniprotkb");
+		} else if(nodes.get("entrez gene/locuslink") != null) {
+			primaryID[0] = NCBI_GENE;
+			primaryID[1] = nodes.get("entrez gene/locuslink");
+		} else if(nodes.get("chebi") != null) {
+			primaryID[0] = CHEBI;
+			primaryID[1] = nodes.get("chebi");
+		} else {
+			primaryID[0] = firstParts[0] + "_id";
+			primaryID[1] = firstParts[1]; 
+		}
+		return primaryID;
 	}
 
 	private final CyNode addNode(final Map<String, CyNode> nodes, final String id, final CyNetwork network) {
@@ -329,12 +358,20 @@ public class CyNetworkBuilder {
 			nodeTable.createColumn(InteractionClusterMapper.PREDICTED_GENE_NAME, String.class, false);
 
 		// Prepare edge column
+		if (edgeTable.getColumn(InteractionClusterMapper.AUTHOR) == null)
+			edgeTable.createListColumn(InteractionClusterMapper.AUTHOR, String.class, false);
+		if (edgeTable.getColumn(InteractionClusterMapper.PRIMARY_INTERACTION_TYPE) == null)
+			edgeTable.createColumn(InteractionClusterMapper.PRIMARY_INTERACTION_TYPE, String.class, false);
+		if (edgeTable.getColumn(InteractionClusterMapper.INTERACTION_TYPE) == null)
+			edgeTable.createListColumn(InteractionClusterMapper.INTERACTION_TYPE, String.class, false);
 		if (edgeTable.getColumn(InteractionClusterMapper.PUB_DB) == null)
 			edgeTable.createListColumn(InteractionClusterMapper.PUB_DB, String.class, false);
 		if (edgeTable.getColumn(InteractionClusterMapper.PUB_ID) == null)
 			edgeTable.createListColumn(InteractionClusterMapper.PUB_ID, String.class, false);
-		if (edgeTable.getColumn(InteractionClusterMapper.EXPERIMENT) == null)
-			edgeTable.createListColumn(InteractionClusterMapper.EXPERIMENT, String.class, false);
+		if (edgeTable.getColumn(InteractionClusterMapper.DETECTION_METHOD_ID) == null)
+			edgeTable.createListColumn(InteractionClusterMapper.DETECTION_METHOD_ID, String.class, false);
+		if (edgeTable.getColumn(InteractionClusterMapper.DETECTION_METHOD_NAME) == null)
+			edgeTable.createListColumn(InteractionClusterMapper.DETECTION_METHOD_NAME, String.class, false);
 		if (edgeTable.getColumn(InteractionClusterMapper.CROSS_SPECIES_EDGE) == null)
 			edgeTable.createColumn(InteractionClusterMapper.CROSS_SPECIES_EDGE, Boolean.class, false);
 		if (edgeTable.getColumn(InteractionClusterMapper.SOURCE_DB) == null)

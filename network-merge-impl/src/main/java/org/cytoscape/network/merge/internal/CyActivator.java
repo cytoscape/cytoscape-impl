@@ -33,6 +33,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -54,6 +55,8 @@ public class CyActivator extends AbstractCyActivator {
 				cyNetworkManagerServiceRef, cyNetworkFactoryServiceRef, cyNetworkNamingServiceRef,
 				taskManagerServiceRef, netViewCreator);
 
-		registerService(bc, networkMergeAction, CyAction.class, new Properties());
+		final Properties props = new Properties();
+		props.setProperty(ServiceProperties.ID, "networkMergeAction");
+		registerService(bc, networkMergeAction, CyAction.class, props); 
 	}
 }

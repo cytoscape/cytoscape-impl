@@ -55,12 +55,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
@@ -110,6 +110,8 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 	private final CyServiceRegistrar registrar;
 
 	private int interactionsFound = 0;
+	
+	private final CyAction mergeAction;
 
 	/**
 	 * Creates new form PSICQUICResultDialog
@@ -119,7 +121,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
 			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
 			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
-			final PSIMITagManager tagManager, final CyProperty<Properties> props, final CyServiceRegistrar registrar) {
+			final PSIMITagManager tagManager, final CyProperty<Properties> props, final CyServiceRegistrar registrar, final CyAction mergeAction) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
@@ -128,7 +130,8 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		this.tagManager = tagManager;
 		this.props = props;
 		this.registrar = registrar;
-
+		this.mergeAction = mergeAction;
+		
 		if (mode == SearchMode.SPECIES)
 			this.mode = SearchMode.MIQL;
 		else
@@ -651,10 +654,13 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 				final Integer edgeCount = network.getEdgeCount();
 				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
 			}
-			builder.append("</ul></html>");
+			builder.append("</ul><br><h3>Do you want to merge these networks?</h3></html>");
 
-			JOptionPane.showMessageDialog(this, builder.toString(), "Import Finished", JOptionPane.INFORMATION_MESSAGE,
-					null);
+			int selection = JOptionPane.showConfirmDialog(this, builder.toString(), "Import Finished", JOptionPane.YES_NO_OPTION, 
+					JOptionPane.INFORMATION_MESSAGE);
+			if(selection == JOptionPane.YES_OPTION) {
+				mergeAction.actionPerformed(null);
+			}
 		} else if (finishStatus.getType() == Type.CANCELLED) {
 			final Set<String> sources = new HashSet<String>();
 			final StringBuilder builder = new StringBuilder();
@@ -676,8 +682,12 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 					builder.append("<li>" + dbName + "</li>");
 				}
 			}
-			JOptionPane.showMessageDialog(this, builder.toString() + "</ul></html>", "Import Canceled",
-					JOptionPane.ERROR_MESSAGE, null);
+			int selection = JOptionPane.showConfirmDialog(this, 
+					builder.toString() + "</ul><br><h3>Do you want to merge these networks?</h3></html>",
+					"Import Canceled", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null);
+			if(selection == JOptionPane.YES_OPTION) {
+				mergeAction.actionPerformed(null);
+			}
 		} else {
 			// Error!
 			JOptionPane.showMessageDialog(this,  "<html>Error: Please try again later.<br><br>" + finishStatus.getException().getLocalizedMessage()
