@@ -25,27 +25,22 @@ package org.cytoscape.rest.internal;
  */
 
 import java.util.Map;
-import java.util.Properties;
 
+import org.cytoscape.rest.RESTResource;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.model.Resource;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.command.AvailableCommands;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.rest.internal.resources.RESTResource;
 
 public class ResourceManager {
-	ResourceConfig config = null;
 
-	public ResourceManager(ResourceConfig resourceConfig) {
+	private final ResourceConfig config;
+
+	public ResourceManager(final ResourceConfig resourceConfig) {
 		this.config = resourceConfig;
 	}
 
-	public void addResource(RESTResource resource, Map<String,String> props) {
+	public void addResource(final RESTResource resource, Map<String, String> props) {
 		config.registerInstances(resource);
 	}
 
-	public void removeResource(RESTResource resource, Map<String,String> props) {
+	public void removeResource(final RESTResource resource, Map<String, String> props) {
 	}
 }

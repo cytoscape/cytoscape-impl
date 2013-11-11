@@ -24,30 +24,26 @@ package org.cytoscape.rest.internal;
  * #L%
  */
 
+import java.net.URI;
 import java.util.Properties;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.rest.RESTResource;
+import org.cytoscape.rest.internal.resources.NamespacesResource;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.SynchronousTaskManager;
-
-import org.ops4j.pax.logging.spi.PaxAppender;
-import org.osgi.framework.BundleContext;
-
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-
-import java.io.IOException;
-import java.net.URI;
-
-import org.cytoscape.rest.internal.resources.RESTResource;
-import org.cytoscape.rest.internal.resources.NamespacesResource;
+import org.ops4j.pax.logging.spi.PaxAppender;
+import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
+
 	// TODO: pick this up from the command line
 	public static final String BASE_URI = "http://localhost:";
 	public static final String BASE_PATH = "/cytoscape/";
@@ -58,37 +54,40 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
-		CyServiceRegistrar cyServiceRegistrar = getService(bc,CyServiceRegistrar.class);
+		CyServiceRegistrar cyServiceRegistrar = getService(bc, CyServiceRegistrar.class);
 
 		AvailableCommands available = getService(bc, AvailableCommands.class);
 		CommandExecutorTaskFactory ceTaskFactory = getService(bc, CommandExecutorTaskFactory.class);
 		SynchronousTaskManager taskManager = getService(bc, SynchronousTaskManager.class);
 
-    // Get any command line arguments.  The "-R" is ours
-    CyProperty<Properties> commandLineProps = getService(bc, CyProperty.class, "(cyPropertyName=commandline.props)");
-    Properties p = commandLineProps.getProperties();
-    String restPort = null ;
-    if (p.getProperty("restPort") != null)
-    	restPort = p.getProperty("restPort");
+		// Get any command line arguments. The "-R" is ours
+		CyProperty<Properties> commandLineProps = getService(bc, CyProperty.class, "(cyPropertyName=commandline.props)");
+		Properties p = commandLineProps.getProperties();
+		String restPort = null;
+		if (p.getProperty("restPort") != null)
+			restPort = p.getProperty("restPort");
 
 		// Oops, they don't want a rest server
-		if (restPort == null) return;
-    
-		// Create our ResourceConfig and initialize it with our internal resources
+		if (restPort == null)
+			return;
+
+		// Create our ResourceConfig and initialize it with our internal
+		// resources
 		ResourceConfig resourceConfig = new ResourceConfig();
 
-		// At some point, we may want to load resources by registering a Resource listener
+		// At some point, we may want to load resources by registering a
+		// Resource listener
 		ResourceManager resourceManager = new ResourceManager(resourceConfig);
 		registerServiceListener(bc, resourceManager, "addResource", "removeResource", RESTResource.class);
 
-		// Register the namespaces resource handler.  This resource handles
+		// Register the namespaces resource handler. This resource handles
 		// all of the commands
-		NamespacesResource nsResource = 
-			new NamespacesResource(cyServiceRegistrar, available, taskManager, ceTaskFactory); 
+		NamespacesResource nsResource = new NamespacesResource(cyServiceRegistrar, available, taskManager,
+				ceTaskFactory);
 		registerService(bc, nsResource, RESTResource.class, new Properties());
 
-		// Register the NamespacesResource as a listener for the Task Monitor messages
+		// Register the NamespacesResource as a listener for the Task Monitor
+		// messages
 		Properties props = new Properties();
 		props.setProperty("org.ops4j.pax.logging.appender.name", "TaskMonitorShowMessagesAppender");
 		registerService(bc, nsResource, PaxAppender.class, props);
@@ -96,7 +95,9 @@ public class CyActivator extends AbstractCyActivator {
 		// Register network resource handler
 
 		// Register table resource handler
-		startServer(BASE_URI+restPort+BASE_PATH, resourceConfig);
+		startServer(BASE_URI + restPort + BASE_PATH, resourceConfig);
+		
+		System.out.println("SING  = " + resourceConfig.getSingletons());
 
 	}
 
@@ -104,15 +105,11 @@ public class CyActivator extends AbstractCyActivator {
 		// create and start a new instance of grizzly http server
 		// exposing the Jersey application at BASE_URI
 		HttpServer httpServer = GrizzlyHttpServerFactory.createHttpServer(URI.create(uri), resourceConfig);
-		System.out.println(String.format("Jersey app started with WADL available at "
-		                   + "%sapplication.wadl\n", uri));
+		System.out.println(String.format("Jersey app started with WADL available at " + "%sapplication.wadl\n", uri));
 		return httpServer;
 	}
 
-/*
-	public void stop(BundleContext bc) {
-		httpServer.stop();
-	}
-*/
+	/*
+	 * public void stop(BundleContext bc) { httpServer.stop(); }
+	 */
 }
-
