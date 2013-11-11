@@ -698,8 +698,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			deleteAttributeButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					if (deleteAttributeButton.isEnabled())
-						removeAttribute();
+					removeAttribute();
 				}
 			});
 			deleteAttributeButton.setEnabled(false);
@@ -718,8 +717,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			deleteTableButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					if (deleteTableButton.isEnabled())
-						removeTable();
+					removeTable();
 				}
 			});
 			deleteTableButton.setEnabled(false);

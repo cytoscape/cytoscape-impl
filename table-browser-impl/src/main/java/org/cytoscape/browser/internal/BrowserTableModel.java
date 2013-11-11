@@ -53,7 +53,8 @@ import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 
 
-public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener, RowsDeletedListener, TableAboutToBeDeletedListener {
+public final class BrowserTableModel extends AbstractTableModel
+									 implements RowsCreatedListener, RowsDeletedListener, TableAboutToBeDeletedListener {
 	
 	public static enum ViewMode {
 		ALL,
@@ -112,7 +113,9 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		return dataTable;
 	}
 
-	public CyTable getAttributes() { return dataTable; }
+	public CyTable getAttributes() {
+		return dataTable;
+	}
 
 	@Override
 	public Class<?> getColumnClass(final int columnIndex) {
@@ -365,28 +368,13 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	 */
 	void setViewMode(ViewMode viewMode) {
 		selectedRows = null;
-		//System.out.println("setViewMode: " + viewMode);
 		final CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
+		
 		if (viewMode != ViewMode.ALL && selectedColumn != null && selectedColumn.getType() == Boolean.class)
 			this.viewMode = viewMode;
 		else
 			this.viewMode = ViewMode.ALL;
-			//System.out.println("setViewMode excepted; is now: " + viewMode);
-		//dumpTable(dataTable);
 	}
-/*
-	void setShowAll(boolean showAll) {
-		// only set to regular view mode if selected column exists
-		if ( !showAll ) {
-			CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
-			this.regularViewMode = selectedColumn != null && selectedColumn.getType() == Boolean.class;
-
-			// otherwise always display everything
-		} else {
-			regularViewMode = false;
-		}
-	}
-	*/
 
 	void updateViewMode() {
 		fireTableDataChanged();
@@ -395,12 +383,6 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	ViewMode getViewMode() {
 		return viewMode;
 	}
-
-/*
-	boolean isShowAll() {
-		return !regularViewMode;
-	}
-	*/
 
 	public String getCyColumnName( final int column){
 		return (String) dataTable.getColumns().toArray()[column];
