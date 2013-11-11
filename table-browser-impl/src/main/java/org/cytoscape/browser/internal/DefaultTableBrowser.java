@@ -66,7 +66,6 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -80,7 +79,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	private static final long serialVersionUID = 627394119637512735L;
 
-	private final JButton selectionModeButton;
+	private JButton selectionModeButton;
 	private JPopupMenu displayMode;
 	
 	private final JComboBox networkChooser;
@@ -117,22 +116,27 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		networkChooser.setEnabled(false);
 		
 		createPopupMenu();
-		selectionModeButton = new JButton(ICON_COG);
-		selectionModeButton.setToolTipText("Change Table Mode");
-		AttributeBrowserToolBar.styleButton(selectionModeButton,
-				iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
 		
-		selectionModeButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				DefaultTableBrowser.this.actionPerformed(e);
-				displayMode.show(selectionModeButton, 0, selectionModeButton.getHeight());
-			}
-		});
-		
-		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactory, guiTaskManager, networkChooser, selectionModeButton, objType,
-				applicationManager, iconManager);// , mapGlobalTableTaskFactoryService);
+		if (objType != CyNetwork.class) {
+			selectionModeButton = new JButton(ICON_COG);
+			selectionModeButton.setToolTipText("Change Table Mode");
+			AttributeBrowserToolBar.styleButton(selectionModeButton,
+					iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
+			
+			selectionModeButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					DefaultTableBrowser.this.actionPerformed(e);
+					displayMode.show(selectionModeButton, 0, selectionModeButton.getHeight());
+				}
+			});
+			
+			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler, deleteTableTaskFactory,
+					guiTaskManager, networkChooser, selectionModeButton, objType, applicationManager, iconManager);// , mapGlobalTableTaskFactoryService);
+		} else {
+			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler, deleteTableTaskFactory,
+					guiTaskManager, networkChooser, objType, applicationManager, iconManager);
+		}
 		
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
