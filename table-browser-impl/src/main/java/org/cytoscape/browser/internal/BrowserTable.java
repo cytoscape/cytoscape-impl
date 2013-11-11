@@ -792,28 +792,28 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	 * @param rows
 	 */
 	private void bulkUpdate(final Collection<RowSetRecord> rows) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTable dataTable = model.getDataTable();
-
-		final Map<Long, Boolean> suidMapSelected = new HashMap<Long, Boolean>();
-		final Map<Long, Boolean> suidMapUnselected = new HashMap<Long, Boolean>();
+		final Set<Long> suidSelected = new HashSet<Long>();
+		final Set<Long> suidUnselected = new HashSet<Long>();
 
 		for (RowSetRecord rowSetRecord : rows) {
-			if (rowSetRecord.getColumn().equals(CyNetwork.SELECTED)){
-				if (((Boolean)rowSetRecord.getValue()) == true){
-					suidMapSelected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class),
-							(Boolean) rowSetRecord.getValue());
-				} else{
-					suidMapUnselected.put(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class),
-							(Boolean) rowSetRecord.getValue());
-				}
+			if (rowSetRecord.getColumn().equals(CyNetwork.SELECTED)) {
+				if (((Boolean)rowSetRecord.getValue()) == true)
+					suidSelected.add(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class));
+				else
+					suidUnselected.add(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class));
 			}
 		}
 
+		changeRowSelection(suidSelected, suidUnselected);
+	}
+
+	protected void changeRowSelection(final Set<Long> suidSelected, final Set<Long> suidUnselected) {
+		final BrowserTableModel model = (BrowserTableModel) getModel();
+		final CyTable dataTable = model.getDataTable();
 		final String pKeyName = dataTable.getPrimaryKey().getName();
 		final int rowCount = getRowCount();
 		
-		for (int i = 0; i< rowCount; i++) {
+		for (int i = 0; i < rowCount; i++) {
 			// Getting the row from data table solves the problem with hidden or moved SUID column.
 			// However, since the rows might be sorted we need to convert the index to model
 			int modelRow = convertRowIndexToModel(i);
@@ -828,15 +828,14 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 			
 			if (pk != null) {
-				if (suidMapSelected.keySet().contains(pk)){
+				if (suidSelected.contains(pk))
 					addRowSelectionInterval(i, i);
-				} else if (suidMapUnselected.keySet().contains(pk)){
+				else if (suidUnselected.contains(pk))
 					removeRowSelectionInterval(i, i);
-				}
 			}
 		}
 	}
-	
+
 	private void selectFromTable() {
 		final TableModel model = this.getModel();
 		

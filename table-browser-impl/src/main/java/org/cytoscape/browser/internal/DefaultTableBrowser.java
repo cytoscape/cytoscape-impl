@@ -30,6 +30,9 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -43,6 +46,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.browser.internal.BrowserTableModel.ViewMode;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -51,6 +55,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
@@ -61,6 +66,7 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -132,7 +138,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	}
 	
 	private void createPopupMenu() {
-		
 		displayMode = new JPopupMenu();
 		final JCheckBoxMenuItem displayAuto = new JCheckBoxMenuItem("Auto");
 		displayAuto.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.AUTO);
@@ -153,7 +158,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				displaySelect.setSelected(false);
 			}
 		});
-		
 		
 		displayAll.addActionListener(new ActionListener() {
 			
@@ -187,10 +191,24 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	}
 
 	private void changeSelectionMode() {
-		//rowSelectionMode = selectionModeButton.isSelected();
-		BrowserTableModel model = (BrowserTableModel) getCurrentBrowserTable().getModel();
+		final BrowserTable browserTable = getCurrentBrowserTable();
+		final BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
 		model.setViewMode(rowSelectionMode);
 		model.updateViewMode();
+		
+		if (rowSelectionMode == ViewMode.ALL) {
+			// Show the current selected rows
+			final Set<Long> suidSelected = new HashSet<Long>();
+			final Set<Long> suidUnselected = new HashSet<Long>();
+			final Collection<CyRow> selectedRows = currentTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
+	
+			for (final CyRow row : selectedRows) {
+				suidSelected.add(row.get(CyIdentifiable.SUID, Long.class));
+			}
+	
+			if (!suidSelected.isEmpty())
+				browserTable.changeRowSelection(suidSelected, suidUnselected);
+		}
 	}
 	
 	@Override
@@ -264,8 +282,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 		});
 	}
-
-	
 
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
