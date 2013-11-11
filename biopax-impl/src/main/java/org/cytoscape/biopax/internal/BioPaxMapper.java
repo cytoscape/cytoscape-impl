@@ -858,11 +858,11 @@ public class BioPaxMapper {
 		ClassLoaderHack.runWithHack(new Runnable() {
 			@Override
 			public void run() {
-				try {
+//				try {
 					model[0] =  handler.convertFromOWL(stream);	
-				} catch (Throwable e) {
-					log.warn("Import failed: " + e);
-				}
+//				} catch (Throwable e) {
+//					log.warn("Import failed: " + e);
+//				}
 			}
 		}, com.ctc.wstx.stax.WstxInputFactory.class);
 		return model[0];
@@ -1173,31 +1173,6 @@ public class BioPaxMapper {
 	}
 	
 
-	/**
-	 * Converts a BioPAX Model to the SIF format.
-	 * 
-     * @param m
-     * @param out
-	 */
-//	public static void convertToSif(Model m, OutputStream out) 
-//	{
-//		// TODO select SIF rules (currently, it uses all available sif rules)
-//		SimpleInteractionConverter sic = new SimpleInteractionConverter(
-//                new HashMap(),
-//                null, //no blacklist (the list of ubiquitous molecules to ignore, which depends on biopax data source...)
-//                SimpleInteractionConverter.getRules(BioPAXLevel.L3).toArray(new InteractionRule[]{})
-//			);
-//		
-//		//merge interactions with exactly same properties, which dirty the result of the biopax-sif conversion...
-//		ModelUtils.mergeEquivalentInteractions(m);
-//		
-//		try {
-//			sic.writeInteractionsInSIF(m, out);
-//		} catch (IOException e) {
-//			throw new BioPaxIOException("biopax: writeInteractionsInSIF failed.", e);
-//		}
-//	}
-	
 	/**
 	 * Converts a BioPAX Model to the EXTENDED SIF format.
 	 * 

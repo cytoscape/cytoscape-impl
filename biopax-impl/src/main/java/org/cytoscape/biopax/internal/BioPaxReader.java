@@ -26,11 +26,18 @@ package org.cytoscape.biopax.internal;
 
 import java.io.InputStream;
 
+import javax.swing.SwingUtilities;
+
 //import javax.swing.SwingUtilities;
 
 import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
 //import org.cytoscape.model.CyNetwork;
 //import org.cytoscape.model.CyTable;
 //import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -38,6 +45,7 @@ import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 //import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
+import org.cytoscape.view.vizmap.VisualStyle;
 //import org.cytoscape.view.vizmap.VisualStyle;
 //import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -71,49 +79,49 @@ public class BioPaxReader extends AbstractInputStreamTaskFactory implements Netw
 
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
-		//TODO anything? - Currently, except for the first time (when the view is created by the biopax reader), it's up to user or app. to apply a style/layout to new views.
-// disabled, commented out here; see above why		
-//		final CyNetworkView view = e.getNetworkView();
-//		final CyNetwork cyNetwork = view.getModel();	
-//		if(isBioPaxNetwork(cyNetwork)) {	
-//			VisualStyle style = null;		
-//			String kind = cyNetwork.getRow(cyNetwork).get(BioPaxMapper.BIOPAX_NETWORK, String.class);
-//			if ("DEFAULT".equals(kind))
-//				style = visualStyleUtil.getBioPaxVisualStyle();
-//			else if ("SIF".equals(kind))
-//				style = visualStyleUtil.getBinarySifVisualStyle();
-//
-//			//apply style and layout			
-//			if(style != null) {
-//				final VisualStyle vs = style;			
-//				//apply style and layout			
-//				SwingUtilities.invokeLater(new Runnable() {
-//						public void run() {			
-//							layout(view);
-//							cyServices.mappingManager.setVisualStyle(vs, view);
-//							vs.apply(view);		
-//							view.updateView();
-//						}
-//				});
-//			}
-//		}
+		// always apply the style and layout to new BioPAX views;
+		// i.e., not only for the first time when one's created.
+		final CyNetworkView view = e.getNetworkView();
+		final CyNetwork cyNetwork = view.getModel();	
+		if(isBioPaxNetwork(cyNetwork)) {	
+			VisualStyle style = null;		
+			String kind = cyNetwork.getRow(cyNetwork).get(BioPaxMapper.BIOPAX_NETWORK, String.class);
+			if ("DEFAULT".equals(kind))
+				style = visualStyleUtil.getBioPaxVisualStyle();
+			else if ("SIF".equals(kind))
+				style = visualStyleUtil.getBinarySifVisualStyle();
+
+			//apply style and layout			
+			if(style != null) {
+				final VisualStyle vs = style;			
+				//apply style and layout			
+				SwingUtilities.invokeLater(new Runnable() {
+						public void run() {			
+							layout(view);
+							cyServices.mappingManager.setVisualStyle(vs, view);
+							vs.apply(view);		
+							view.updateView();
+						}
+				});
+			}
+		}
 	}
 	
-//	private void layout(CyNetworkView view) {
-//		// do layout
-//		CyLayoutAlgorithm layout = cyServices.layoutManager.getLayout("force-directed");
-//		if (layout == null) {
-//			layout = cyServices.layoutManager.getLayout(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
-//			LOG.warn("'force-directed' layout not found; will use the default one.");
-//		}
-//		cyServices.taskManager.execute(layout.createTaskIterator(view, 
-//				layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
-//	}	
-//	
-//	private boolean isBioPaxNetwork(CyNetwork cyNetwork) {
-//		//true if the attribute column exists
-//		CyTable cyTable = cyNetwork.getDefaultNetworkTable();
-//		return cyTable.getColumn(BioPaxMapper.BIOPAX_NETWORK) != null;
-//	}
+	private void layout(CyNetworkView view) {
+		// do layout
+		CyLayoutAlgorithm layout = cyServices.layoutManager.getLayout("force-directed");
+		if (layout == null) {
+			layout = cyServices.layoutManager.getLayout(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
+			LOG.warn("'force-directed' layout not found; will use the default one.");
+		}
+		cyServices.taskManager.execute(layout.createTaskIterator(view, 
+				layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
+	}	
+	
+	private boolean isBioPaxNetwork(CyNetwork cyNetwork) {
+		//true if the attribute column exists
+		CyTable cyTable = cyNetwork.getDefaultNetworkTable();
+		return cyTable.getColumn(BioPaxMapper.BIOPAX_NETWORK) != null;
+	}
 
 }
