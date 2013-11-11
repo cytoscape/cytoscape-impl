@@ -247,12 +247,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		logger.info("Network view destroyed: " + nvde.getNetworkView());
 		final CyNetworkView view = nvde.getNetworkView();
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				removeView(view);
-			}
-		});
+		removeView(view);
 	}
 
 	/**
@@ -298,17 +293,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				viewUpdateRequired.remove(frame);
 				iFrameMap.remove(frame);
 				
-				frame.getRootPane().getLayeredPane().removeAll();
-				frame.getRootPane().getContentPane().removeAll();
-				frame.setClosed(true);
-				
-				frame.removeInternalFrameListener(this);
-				InternalFrameListener frameListener = frameListeners.remove(frame);
-				if (frameListener != null)
-					frame.removeInternalFrameListener(frameListener);
-				
-				frame.dispose();
-				frame = null;
+				disposeFrame(frame);
 				
 				renderingEngineMgr.removeRenderingEngine(removed);
 			}
@@ -321,6 +306,32 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 		
 		logger.debug("Network View Model removed.");
+	}
+
+	private void disposeFrame(final JInternalFrame frame) throws PropertyVetoException {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						disposeFrame(frame);
+					} catch (PropertyVetoException e) {
+						logger.error("Network View unable to be killed", e);
+					}
+				}
+			});
+			return;
+		}
+		frame.getRootPane().getLayeredPane().removeAll();
+		frame.getRootPane().getContentPane().removeAll();
+		frame.setClosed(true);
+		
+		frame.removeInternalFrameListener(this);
+		InternalFrameListener frameListener = frameListeners.remove(frame);
+		if (frameListener != null)
+			frame.removeInternalFrameListener(frameListener);
+		
+		frame.dispose();
 	}
 
 	/**

@@ -30,6 +30,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelEvent;
@@ -47,9 +49,11 @@ import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
 import org.cytoscape.model.events.RowsDeletedEvent;
 import org.cytoscape.model.events.RowsDeletedListener;
+import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
+import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 
 
-public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener,RowsDeletedListener {
+public final class BrowserTableModel extends AbstractTableModel implements RowsCreatedListener, RowsDeletedListener, TableAboutToBeDeletedListener {
 	
 	public static enum ViewMode {
 		ALL,
@@ -72,6 +76,9 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	private Object[] rowIndexToPrimaryKey;
 	private int maxRowIndex;
 
+	private boolean disposed;
+
+	private ReadWriteLock lock;
 
 	public BrowserTableModel(final CyTable dataTable, final Class<? extends CyIdentifiable> tableType,
 			final EquationCompiler compiler) {
@@ -81,6 +88,7 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 		this.tableType = tableType;
 
 		attrNames = getAttributeNames(dataTable);
+		lock = new ReentrantReadWriteLock(true);
 		
 		// add each row to an array to allow fast lookup from an index
 		final Collection<CyRow> rows = dataTable.getAllRows();
@@ -287,40 +295,67 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	}
 
 	@Override
-	public synchronized void handleEvent(RowsCreatedEvent e) {
-		if(!e.getSource().equals(this.dataTable))
-			return ;
-
-		selectedRows = null;
-
-		// add new rows to rowIndexToPrimaryKey array
-		Object[] newRowIndex = new Object[rowIndexToPrimaryKey.length + e.getPayloadCollection().size()];
-		System.arraycopy(rowIndexToPrimaryKey,0,newRowIndex,0,rowIndexToPrimaryKey.length);
-		rowIndexToPrimaryKey = newRowIndex;
-		for ( Object pk : e.getPayloadCollection() )
-			rowIndexToPrimaryKey[maxRowIndex++] = pk;
-
-		fireTableDataChanged();
+	public void handleEvent(RowsCreatedEvent e) {
+		lock.writeLock().lock();
+		try {
+			if(!e.getSource().equals(this.dataTable))
+				return;
+	
+			selectedRows = null;
+	
+			// add new rows to rowIndexToPrimaryKey array
+			Object[] newRowIndex = new Object[rowIndexToPrimaryKey.length + e.getPayloadCollection().size()];
+			System.arraycopy(rowIndexToPrimaryKey,0,newRowIndex,0,rowIndexToPrimaryKey.length);
+			rowIndexToPrimaryKey = newRowIndex;
+			for ( Object pk : e.getPayloadCollection() )
+				rowIndexToPrimaryKey[maxRowIndex++] = pk;
+	
+			fireTableDataChanged();
+		} finally {
+			lock.writeLock().unlock();
+		}
 	}
 	
 	@Override
-	public synchronized void handleEvent(RowsDeletedEvent e) {
-		if(!e.getSource().equals(this.dataTable))
-			return ;
-
-		int index=0;
-		
-		final Collection<CyRow> rows = dataTable.getAllRows();
-		
-		final String primaryKey = dataTable.getPrimaryKey().getName();
-		
-		for ( CyRow row : rows ) 
-			rowIndexToPrimaryKey[index++] = row.getRaw(primaryKey);
-		maxRowIndex = index;
-		selectedRows = null;
-		
-
-		fireTableDataChanged();
+	public void handleEvent(RowsDeletedEvent e) {
+		lock.writeLock().lock();
+		try {
+			if (!e.getSource().equals(this.dataTable))
+				return;
+	
+			int index=0;
+			
+			final Collection<CyRow> rows = dataTable.getAllRows();
+			
+			final String primaryKey = dataTable.getPrimaryKey().getName();
+			
+			for ( CyRow row : rows ) 
+				rowIndexToPrimaryKey[index++] = row.getRaw(primaryKey);
+			maxRowIndex = index;
+			selectedRows = null;
+			
+	
+			fireTableDataChanged();
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
+	
+	@Override
+	public void handleEvent(TableAboutToBeDeletedEvent e) {
+		lock.writeLock().lock();
+		try {
+			if (!e.getSource().equals(dataTable)) {
+				return;
+			}
+			disposed = true;
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
+	
+	public boolean isDisposed() {
+		return disposed;
 	}
 
 	/**
@@ -500,11 +535,17 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 	@Override
 	public boolean isCellEditable(final int rowIndex, final int columnIndex) {
 		CyColumn column = getColumnByModelIndex(columnIndex);
+		if (column == null) {
+			return false;
+		}
 		return !column.isPrimaryKey();
 	}
 
 	public boolean isPrimaryKey(int columnIndex) {
 		CyColumn column = getColumnByModelIndex(columnIndex);
+		if (column == null) {
+			return false;
+		}
 		return column.isPrimaryKey();
 	}
 
@@ -526,6 +567,10 @@ public final class BrowserTableModel extends AbstractTableModel implements RowsC
 
 	public Class<? extends CyIdentifiable> getTableType() {
 		return tableType;
+	}
+	
+	public ReadWriteLock getLock() {
+		return lock;
 	}
 
 	private static void dumpTable(final CyTable table) {

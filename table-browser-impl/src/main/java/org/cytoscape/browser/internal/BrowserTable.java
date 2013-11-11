@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListSelectionModel;
@@ -395,8 +396,15 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	@Override
 	public void paint(Graphics graphics) {
-		synchronized (getModel()) {
-			super.paint(graphics);
+		BrowserTableModel model = (BrowserTableModel) getModel();
+		ReadWriteLock lock = model.getLock();
+		lock.readLock().lock();
+		try {
+			if (!model.isDisposed()) {
+				super.paint(graphics);
+			}
+		} finally {
+			lock.readLock().unlock();
 		}
 	}
 	

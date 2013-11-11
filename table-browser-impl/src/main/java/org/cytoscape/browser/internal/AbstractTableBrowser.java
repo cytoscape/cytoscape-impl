@@ -41,7 +41,6 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -174,12 +173,12 @@ public abstract class AbstractTableBrowser extends JPanel
 		if (table == null)
 			return;
 		
+		table.setVisible(false);
+		
 		scrollPanes.remove(table);
 		TableModel model = table.getModel();
 		serviceRegistrar.unregisterAllServices(table);
 		serviceRegistrar.unregisterAllServices(model);
-		
-		table.setModel(new DefaultTableModel());
 		
 		if (currentTable == cyTable) {
 			currentTable = null;
