@@ -144,8 +144,8 @@ public class VisualPropertySheet extends JPanel{
 				// Add listeners
 				i.addMouseListener(new MouseAdapter() {
 					@Override
-					public void mouseClicked(final MouseEvent e) {
-						onMouseClickedItem(e, i);
+					public void mousePressed(final MouseEvent e) {
+						onMousePressedItem(e, i);
 					}
 				});
 				
@@ -176,8 +176,8 @@ public class VisualPropertySheet extends JPanel{
 					});
 					i.getPropSheetPnl().getTable().addMouseListener(new MouseAdapter() {
 						@Override
-						public void mouseClicked(final MouseEvent e) {
-							onMouseClickedItem(e, i);
+						public void mousePressed(final MouseEvent e) {
+							onMousePressedItem(e, i);
 						}
 					});
 				}
@@ -650,17 +650,14 @@ public class VisualPropertySheet extends JPanel{
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void onMouseClickedItem(final MouseEvent e, final VisualPropertySheetItem<?> item) {
-		final String os = System.getProperty("os.name").toLowerCase();
-		final boolean isMac = os.indexOf("mac") >= 0;
-		
-		if (SwingUtilities.isRightMouseButton(e) && !(isMac && SwingUtilities.isLeftMouseButton(e) && e.isMetaDown())) {
-			// RIGHT-CLICK...
-			// Note: SwingUtilities.isRightMouseButton also interpret left-click + COMMAND (meta) key down on MacOS
-			//       as a right-click, which is wrong, so let's ignore that action!
+	private void onMousePressedItem(final MouseEvent e, final VisualPropertySheetItem<?> item) {
+		if (e.isPopupTrigger()) {
 			selectionHead = item;
 		} else if (SwingUtilities.isLeftMouseButton(e)) {
 			// LEFT-CLICK...
+			final String os = System.getProperty("os.name").toLowerCase();
+			final boolean isMac = os.indexOf("mac") >= 0;
+			
 			if ((isMac && e.isMetaDown()) || (!isMac && e.isControlDown())) {
 				// COMMAND button down on MacOS or CONTROL button down on another OS.
 				// Toggle this item's selection state
