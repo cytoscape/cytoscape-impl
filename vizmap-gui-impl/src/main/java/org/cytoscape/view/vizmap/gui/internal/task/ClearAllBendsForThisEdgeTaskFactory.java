@@ -1,8 +1,8 @@
-package org.cytoscape.task.internal.vizmap;
+package org.cytoscape.view.vizmap.gui.internal.task;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -24,31 +24,26 @@ package org.cytoscape.task.internal.vizmap;
  * #L%
  */
 
-import java.util.Collection;
-
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.task.AbstractNetworkViewCollectionTask;
+import org.cytoscape.task.AbstractEdgeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.view.presentation.property.values.BendFactory;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.work.TaskIterator;
 
-public class ClearEdgeBendTask extends AbstractNetworkViewCollectionTask {
+public class ClearAllBendsForThisEdgeTaskFactory extends AbstractEdgeViewTaskFactory {
 
-	public ClearEdgeBendTask(Collection<CyNetworkView> networkViews) {
-		super(networkViews);
+	private final BendFactory bendFactory;
+	private final ServicesUtil servicesUtil;
+
+	public ClearAllBendsForThisEdgeTaskFactory(final BendFactory bendFactory, final ServicesUtil servicesUtil) {
+		this.bendFactory = bendFactory;
+		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		for (CyNetworkView networkView : networkViews) {
-			final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
-			for (final View<CyEdge> edgeView : edgeViews) {
-				edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
-				edgeView.clearValueLock(BasicVisualLexicon.EDGE_BEND);
-			}
-			
-			networkView.updateView();
-		}
+	public TaskIterator createTaskIterator(View<CyEdge> edgeView, CyNetworkView netView) {
+		return new TaskIterator(new ClearAllBendsForThisEdgeTask(edgeView, netView, bendFactory, servicesUtil));
 	}
 }

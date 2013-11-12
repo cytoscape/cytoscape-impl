@@ -24,8 +24,6 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
-import javax.swing.SwingUtilities;
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -39,15 +37,17 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class ClearBendTask extends AbstractTask {
+import javax.swing.*;
+
+public class ClearAllBendsForThisEdgeTask extends AbstractTask {
 
 	private final View<CyEdge> edgeView;
 	private final CyNetworkView netView;
 	private final BendFactory bendFactory;
 	private final ServicesUtil servicesUtil;
 
-	ClearBendTask(final View<CyEdge> edgeView, final CyNetworkView netView, final BendFactory bendFactory,
-			final ServicesUtil servicesUtil) {
+	ClearAllBendsForThisEdgeTask(final View<CyEdge> edgeView, final CyNetworkView netView, final BendFactory bendFactory,
+								 final ServicesUtil servicesUtil) {
 		this.edgeView = edgeView;
 		this.netView = netView;
 		this.bendFactory = bendFactory;
