@@ -1378,16 +1378,16 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 
 		@Override
 		public void mousePressed(final MouseEvent e) {
-			handleContextMenuEvent(e, vpSheet, vpSheetItem);
+			maybeShowContextMenu(e, vpSheet, vpSheetItem);
 		}
 
 		@Override
 		public void mouseReleased(final MouseEvent e) {
-			handleContextMenuEvent(e, vpSheet, vpSheetItem);
+			maybeShowContextMenu(e, vpSheet, vpSheetItem);
 		}
 		
 		@SuppressWarnings("rawtypes")
-		private void handleContextMenuEvent(final MouseEvent e, final VisualPropertySheet vpSheet, 
+		private void maybeShowContextMenu(final MouseEvent e, final VisualPropertySheet vpSheet, 
 				final VisualPropertySheetItem<?> vpSheetItem) {
 			if (!e.isPopupTrigger())
 				return;

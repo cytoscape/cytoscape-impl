@@ -1179,18 +1179,23 @@ public class BioPaxMapper {
 	 * @param m
 	 * @param edgeStream
 	 * @param nodeStream
+	 * @param sifRules TODO
 	 * @throws IOException
 	 */
-	public static void convertToExtendedBinarySIF(Model m, OutputStream edgeStream, OutputStream nodeStream) throws IOException 
-	{
+	public static void convertToExtendedBinarySIF(Model m, OutputStream edgeStream, 
+			OutputStream nodeStream, Collection<InteractionRule> sifRules) 
+					throws IOException {
 //		final String edgeColumns = "#PARTICIPANT_A\tINTERACTION_TYPE\tPARTICIPANT_B\tINTERACTION_DATA_SOURCE\tINTERACTION_PUBMED_ID\n";
 //		edgeStream.write(edgeColumns.getBytes());
 //		final String nodeColumns = "#PARTICIPANT\tPARTICIPANT_TYPE\tPARTICIPANT_NAME\tUNIFICATION_XREF\tRELATIONSHIP_XREF\n";	
-//		nodeStream.write(nodeColumns.getBytes());		
+//		nodeStream.write(nodeColumns.getBytes());
+		
 		SimpleInteractionConverter sic = new SimpleInteractionConverter(
                 new HashMap(),
                 null, //no blacklist (the list of ubiquitous molecules to ignore, which depends on biopax data source...)
-                SimpleInteractionConverter.getRules(BioPAXLevel.L3).toArray(new InteractionRule[]{})
+                (sifRules==null || sifRules.isEmpty()) 
+                	? SimpleInteractionConverter.getRules(BioPAXLevel.L3).toArray(new InteractionRule[]{})
+                		: sifRules.toArray(new InteractionRule[]{})
 			);
 		//merge interactions with exactly same properties, which dirty the result of the biopax-sif conversion...
 		ModelUtils.mergeEquivalentInteractions(m);		

@@ -1,8 +1,8 @@
-package org.cytoscape.task.internal.vizmap;
+package org.cytoscape.view.vizmap.gui.internal.task;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -24,31 +24,41 @@ package org.cytoscape.task.internal.vizmap;
  * #L%
  */
 
-import java.util.Collection;
-
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.BendFactory;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class ClearEdgeBendTask extends AbstractNetworkViewCollectionTask {
+import javax.swing.*;
 
-	public ClearEdgeBendTask(Collection<CyNetworkView> networkViews) {
-		super(networkViews);
+public class ClearAllBendsForThisEdgeTask extends AbstractTask {
+
+	private final View<CyEdge> edgeView;
+	private final CyNetworkView netView;
+	private final BendFactory bendFactory;
+	private final ServicesUtil servicesUtil;
+
+	ClearAllBendsForThisEdgeTask(final View<CyEdge> edgeView, final CyNetworkView netView, final BendFactory bendFactory,
+								 final ServicesUtil servicesUtil) {
+		this.edgeView = edgeView;
+		this.netView = netView;
+		this.bendFactory = bendFactory;
+		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		for (CyNetworkView networkView : networkViews) {
-			final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
-			for (final View<CyEdge> edgeView : edgeViews) {
-				edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
-				edgeView.clearValueLock(BasicVisualLexicon.EDGE_BEND);
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
+				netView.updateView();
 			}
-			
-			networkView.updateView();
-		}
+		});
 	}
 }

@@ -25,35 +25,11 @@ package org.cytoscape.ding.impl;
  */
 
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.geom.*;
-import java.awt.image.BufferedImage;
-
-import javax.swing.JComponent;
-
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphViewChangeListener;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
-import org.cytoscape.ding.impl.events.GraphViewEdgesSelectedEvent;
-import org.cytoscape.ding.impl.events.GraphViewEdgesUnselectedEvent;
-import org.cytoscape.ding.impl.events.GraphViewNodesSelectedEvent;
-import org.cytoscape.ding.impl.events.GraphViewNodesUnselectedEvent;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
+import org.cytoscape.ding.impl.events.*;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -70,6 +46,15 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.work.undo.UndoSupport;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 
 /**
  * Canvas to be used for drawing actual network visualization
@@ -472,6 +457,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			// Store current handle list
 			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", m_undo);
 			final Point2D newHandlePoint = new Point2D.Float((float) m_ptBuff[0], (float) m_ptBuff[1]);
+			DEdgeView edgeView = m_view.getDEdgeView(chosenEdge);
+			Bend defaultBend = edgeView.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
+			if( edgeView.getBend() == defaultBend )
+				edgeView.setBend( new BendImpl() );
 			final int chosenInx = m_view.getDEdgeView(chosenEdge).addHandlePoint(newHandlePoint);
 			
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
@@ -1347,7 +1336,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 		
 		@Override
-		void singleLeftClick(MouseEvent e) {
+		void  singleLeftClick(MouseEvent e) {
 			// System.out.println("MouseDragged ----> singleLeftClick");
 			if (m_button1NodeDrag) {
 				// save selected node and edge positions

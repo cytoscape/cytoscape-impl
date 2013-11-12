@@ -24,17 +24,31 @@ package org.cytoscape.task.internal.vizmap;
  * #L%
  */
 
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.task.AbstractNetworkViewCollectionTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.TaskMonitor;
+
 import java.util.Collection;
 
-import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskIterator;
+public class ClearAllEdgeBendsTask extends AbstractNetworkViewCollectionTask {
 
-public class ClearEdgeBendTaskFactory extends AbstractNetworkViewCollectionTaskFactory {
-
-	@Override
-	public TaskIterator createTaskIterator(Collection<CyNetworkView> networkViews) {
-		return new TaskIterator(new ClearEdgeBendTask(networkViews));
+	public ClearAllEdgeBendsTask(Collection<CyNetworkView> networkViews) {
+		super(networkViews);
 	}
 
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		for (CyNetworkView networkView : networkViews) {
+			final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
+			for (final View<CyEdge> edgeView : edgeViews) {
+				edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
+				edgeView.clearValueLock(BasicVisualLexicon.EDGE_BEND);
+			}
+			
+			networkView.updateView();
+		}
+	}
 }

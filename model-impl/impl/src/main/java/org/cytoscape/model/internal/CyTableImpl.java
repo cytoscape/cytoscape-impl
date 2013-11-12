@@ -858,7 +858,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (virtColumn != null)
 			virtualValue = virtColumn.getRawValue(key);
 		
-		if (virtualValue != null && !(virtualValue instanceof Equation))
+		if (virtualValue != null)
 			return virtualValue;
 		
 		final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);

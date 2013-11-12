@@ -25,84 +25,22 @@ package org.cytoscape.ding.impl;
  */
 
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Paint;
-import java.awt.TexturePaint;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.VolatileImage;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
-import javax.swing.JLayeredPane;
-
-import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
-import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphView;
-import org.cytoscape.ding.GraphViewChangeListener;
-import org.cytoscape.ding.GraphViewObject;
-import org.cytoscape.ding.NodeView;
-import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.PrintLOD;
+import org.cytoscape.ding.*;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
-import org.cytoscape.ding.impl.events.GraphViewChangeListenerChain;
-import org.cytoscape.ding.impl.events.GraphViewEdgesHiddenEvent;
-import org.cytoscape.ding.impl.events.GraphViewEdgesRestoredEvent;
-import org.cytoscape.ding.impl.events.GraphViewEdgesUnselectedEvent;
-import org.cytoscape.ding.impl.events.GraphViewNodesHiddenEvent;
-import org.cytoscape.ding.impl.events.GraphViewNodesRestoredEvent;
-import org.cytoscape.ding.impl.events.GraphViewNodesUnselectedEvent;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
-import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.events.*;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
-import org.cytoscape.model.events.AboutToRemoveEdgesListener;
-import org.cytoscape.model.events.AboutToRemoveNodesEvent;
-import org.cytoscape.model.events.AboutToRemoveNodesListener;
-import org.cytoscape.model.events.AddedEdgesEvent;
-import org.cytoscape.model.events.AddedEdgesListener;
-import org.cytoscape.model.events.AddedNodesEvent;
-import org.cytoscape.model.events.AddedNodesListener;
+import org.cytoscape.model.*;
+import org.cytoscape.model.events.*;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -117,20 +55,8 @@ import org.cytoscape.util.intr.LongBTree;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
-import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
-import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
-import org.cytoscape.view.model.events.AddedNodeViewsEvent;
-import org.cytoscape.view.model.events.FitContentEvent;
-import org.cytoscape.view.model.events.FitContentListener;
-import org.cytoscape.view.model.events.FitSelectedEvent;
-import org.cytoscape.view.model.events.FitSelectedListener;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
+import org.cytoscape.view.model.*;
+import org.cytoscape.view.model.events.*;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
@@ -140,6 +66,26 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * DING implementation of Cytoscpae 3.
@@ -388,7 +334,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * 
 	 * @param model
-	 * @param dataFactory
 	 * @param cyRoot
 	 * @param undo
 	 * @param spacialFactory
@@ -396,7 +341,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @param vtfl
 	 * @param manager
 	 * @param cyEventHelper
-	 * @param tableMgr
 	 * @param annMgr
 	 * @param dingGraphLOD
 	 */
@@ -749,7 +693,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Adds a NodeView object to the GraphView. Creates NodeView if one doesn't
 	 * already exist.
 	 *
-	 * @param nodeInx
+	 * @param node
 	 *            The index of the NodeView object to be added.
 	 *
 	 * @return The NodeView object that is added to the GraphView.
@@ -807,7 +751,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * Adds EdgeView to the GraphView.
 	 *
-	 * @param edgeInx
+	 * @param edge
 	 *            The index of EdgeView to be added.
 	 *
 	 * @return The EdgeView that was added.

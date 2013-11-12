@@ -32,18 +32,18 @@ import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.TaskIterator;
 
-public class ClearBendTaskFactory extends AbstractEdgeViewTaskFactory {
+public class ClearAllBendsForThisEdgeTaskFactory extends AbstractEdgeViewTaskFactory {
 
 	private final BendFactory bendFactory;
 	private final ServicesUtil servicesUtil;
 
-	public ClearBendTaskFactory(final BendFactory bendFactory, final ServicesUtil servicesUtil) {
+	public ClearAllBendsForThisEdgeTaskFactory(final BendFactory bendFactory, final ServicesUtil servicesUtil) {
 		this.bendFactory = bendFactory;
 		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyEdge> edgeView, CyNetworkView netView) {
-		return new TaskIterator(new ClearBendTask(edgeView, netView, bendFactory, servicesUtil));
+		return new TaskIterator(new ClearAllBendsForThisEdgeTask(edgeView, netView, bendFactory, servicesUtil));
 	}
 }

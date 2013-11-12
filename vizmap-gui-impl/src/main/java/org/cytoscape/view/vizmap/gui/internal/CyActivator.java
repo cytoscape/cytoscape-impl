@@ -27,7 +27,9 @@ package org.cytoscape.view.vizmap.gui.internal;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
@@ -58,6 +60,7 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorCho
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.StringValueEditor;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
@@ -111,7 +114,18 @@ public class CyActivator extends AbstractCyActivator {
 		final CyComboBoxPropertyEditor booleanEditor = new CyComboBoxPropertyEditor();
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
 		final BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, continuousMappingCellRendererFactory);
-		
+
+		// Context menu for edge bend
+		final BendFactory bf = getService(bc, BendFactory.class);
+
+		final Properties clearAllBendsForThisEdgeProps = new Properties();
+		clearAllBendsForThisEdgeProps.put(ServiceProperties.PREFERRED_MENU, ServiceProperties.EDGE_EDIT_MENU);
+		clearAllBendsForThisEdgeProps.put(ServiceProperties.TITLE, "Clear All Bends For This Edge");
+		clearAllBendsForThisEdgeProps.put(ServiceProperties.MENU_GRAVITY, "5.0");
+		clearAllBendsForThisEdgeProps.put(ServiceProperties.INSERT_SEPARATOR_BEFORE, "true");
+		final ClearAllBendsForThisEdgeTaskFactory clearAllBendsForThisEdgeTaskFactory = new ClearAllBendsForThisEdgeTaskFactory(bf, servicesUtil);
+		registerService(bc, clearAllBendsForThisEdgeTaskFactory, EdgeViewTaskFactory.class, clearAllBendsForThisEdgeProps);
+
 		// Register ValueEditors and VisualPropertyEditors
 		// -------------------------------------------------------------------------------------------------------------
 		registerAllServices(bc, attributeSetProxy, new Properties());

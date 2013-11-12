@@ -28,8 +28,6 @@ import java.io.InputStream;
 
 import javax.swing.SwingUtilities;
 
-//import javax.swing.SwingUtilities;
-
 import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
@@ -38,18 +36,10 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
-//import org.cytoscape.model.CyNetwork;
-//import org.cytoscape.model.CyTable;
-//import org.cytoscape.view.layout.CyLayoutAlgorithm;
-//import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-//import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.vizmap.VisualStyle;
-//import org.cytoscape.view.vizmap.VisualStyle;
-//import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
-//import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
