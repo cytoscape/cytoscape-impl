@@ -28,11 +28,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.BendFactory;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -60,18 +56,7 @@ public class ClearAllBendsForThisEdgeTask extends AbstractTask {
 
 			@Override
 			public void run() {
-				final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-				final VisualStyle style = vmMgr.getCurrentVisualStyle();
-				final VisualMappingFunction<?, Bend> mapping = style
-						.getVisualMappingFunction(BasicVisualLexicon.EDGE_BEND);
-				
-				if (mapping != null) {
-					edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
-				} else {
-					style.setDefaultValue(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
-					vmMgr.getCurrentVisualStyle().apply(netView);
-				}
-				
+				edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
 				netView.updateView();
 			}
 		});
