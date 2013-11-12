@@ -47,8 +47,6 @@ public class CytoscapeMenuBar extends JMenuBar {
 
 	public static final String DEFAULT_MENU_SPECIFIER = "Tools";
 
-	private double largeValue = Double.MAX_VALUE / 2.0;
-
 	/**
 	 * Default constructor.
 	 */
@@ -159,9 +157,8 @@ public class CytoscapeMenuBar extends JMenuBar {
 		if (menu_string == null)
 			menu_string = DEFAULT_MENU_SPECIFIER;
 
-		largeValue *= 1.01;
 		final GravityTracker gravityTracker =
-			menuTracker.getGravityTracker(menu_string + "[" + largeValue + "]");
+			menuTracker.getGravityTracker(menu_string);
 		revalidate();
 		repaint();
 		return (JMenu)gravityTracker.getMenu();
