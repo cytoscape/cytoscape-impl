@@ -95,6 +95,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	private static final int MSG_ICON_HEIGHT = 15;
 	
 	static final Color BG_COLOR = Color.WHITE;
+	static final Color FG_COLOR = Color.DARK_GRAY;
 	static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
 	
 	static final Color BTN_BORDER_COLOR = new Color(200, 200, 200);
@@ -229,7 +230,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 				bypassBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(19.0f));
 				bypassBtn.setText("\uF059"); // icon-question-sign
 			} else {
-				bypassBtn.setForeground(UIManager.getColor("Button.foreground"));
+				bypassBtn.setForeground(FG_COLOR);
 				bypassBtn.setFont(UIManager.getFont("Button.font"));
 				bypassBtn.setText("");
 			}
@@ -835,7 +836,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 				if (prop != null && prop.getValue() != null && prop.getValue().getClass() == Color.class)
 					fontColor = (Color) prop.getValue();
 				else
-					fontColor = Color.DARK_GRAY;
+					fontColor = FG_COLOR;
 
 				final String colorString = Integer.toHexString(fontColor.getRGB());
 
@@ -997,7 +998,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			btn.setHorizontalAlignment(SwingConstants.CENTER);
 			btn.setFocusPainted(false);
 			btn.setBackground(BG_COLOR);
-			btn.setForeground(Color.DARK_GRAY);
+			btn.setForeground(FG_COLOR);
 			btn.setFocusable(false);
 			btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			
