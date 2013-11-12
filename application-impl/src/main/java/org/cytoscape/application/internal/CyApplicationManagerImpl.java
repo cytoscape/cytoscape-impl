@@ -34,6 +34,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -79,6 +81,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	private final CyNetworkManager networkManager;
 	private final CyNetworkViewManager networkViewManager;
 	private final List<CyNetworkView> selectedNetworkViews;
+	private final ReadWriteLock lock;
 
 	// Trackers for current network object
 	private CyNetwork currentNetwork;
@@ -97,7 +100,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		this.cyEventHelper = cyEventHelper;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
-
+		lock = new ReentrantReadWriteLock(true);
+		
 		selectedNetworkViews = new LinkedList<CyNetworkView>();
 		renderers = new LinkedHashMap<String, NetworkViewRenderer>() ;
 	}
@@ -118,12 +122,15 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	public void handleEvent(final NetworkAboutToBeDestroyedEvent event) {
 		final CyNetwork toBeDestroyed = event.getNetwork();
 
-		synchronized (this) {
+		lock.writeLock().lock();
+		try {
 			logger.debug("NetworkAboutToBeDestroyedEvent: " + toBeDestroyed + ". Current: " + currentNetwork);
 			
 			if (toBeDestroyed.equals(currentNetwork)) {
 				setCurrentNetwork(null);
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 
@@ -131,7 +138,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent event) {
 		final CyNetworkView toBeDestroyed = event.getNetworkView();
 
-		synchronized (this) {
+		lock.writeLock().lock();
+		try {
 			logger.debug("NetworkViewAboutToBeDestroyedEvent: " + toBeDestroyed + ". Current: " + currentNetworkView);
 			
 			if (toBeDestroyed.equals(currentNetworkView)) {
@@ -141,6 +149,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			// TODO: Do we need to fire an event?  Most listeners that care
 			// would just listen for NetworkViewAboutToBeDestroyedEvent.
 			selectedNetworkViews.removeAll(Collections.singletonList(toBeDestroyed));
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 
@@ -148,23 +158,32 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	public void handleEvent(RenderingEngineAboutToBeRemovedEvent event) {
 		RenderingEngine<?> renderingEngine = event.getRenderingEngine();
 		
-		synchronized (this) {
+		lock.writeLock().lock();
+		try {
 			if (renderingEngine == currentRenderingEngine) {
 				setCurrentRenderingEngine(null);
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 	
 	@Override
-	public synchronized CyNetwork getCurrentNetwork() {
-		return currentNetwork;
+	public CyNetwork getCurrentNetwork() {
+		lock.readLock().lock();
+		try {
+			return currentNetwork;
+		} finally {
+			lock.readLock().unlock();
+		}
 	}
 
 	@Override
 	public void setCurrentNetwork(final CyNetwork network) {
 		boolean changed = false;
 		
-		synchronized (this) {
+		lock.writeLock().lock();
+		try {
 			if (network != null && !networkManager.networkExists(network.getSUID()))
 				throw new IllegalArgumentException("Network is not registered in this ApplicationManager: " + network);
 
@@ -189,6 +208,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 						setCurrentNetworkView(null);
 				}
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 
 		if (changed) {
@@ -198,15 +219,21 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public synchronized CyNetworkView getCurrentNetworkView() {
-		return currentNetworkView;
+	public CyNetworkView getCurrentNetworkView() {
+		lock.readLock().lock();
+		try {
+			return currentNetworkView;
+		} finally {
+			lock.readLock().unlock();
+		}
 	}
 
 	@Override
 	public void setCurrentNetworkView(final CyNetworkView view) {
 		boolean changed = false;
 		
-		synchronized (this) {
+		lock.writeLock().lock();
+		try {
 			if (view != null && !networkManager.networkExists(view.getModel().getSUID()))
 				throw new IllegalArgumentException("network is not recognized by this ApplicationManager");
 
@@ -226,6 +253,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 						setCurrentNetwork(view.getModel());
 				}
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 
 		if (changed) {
@@ -235,13 +264,19 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public synchronized List<CyNetworkView> getSelectedNetworkViews() {
-		return new ArrayList<CyNetworkView>(selectedNetworkViews);
+	public List<CyNetworkView> getSelectedNetworkViews() {
+		lock.readLock().lock();
+		try {
+			return new ArrayList<CyNetworkView>(selectedNetworkViews);
+		} finally {
+			lock.readLock().unlock();
+		}
 	}
 
 	@Override
 	public void setSelectedNetworkViews(final List<CyNetworkView> networkViews) {
-		synchronized (this) {
+		lock.writeLock().lock();
+		try {
 			selectedNetworkViews.clear();
 			
 			if (networkViews != null)
@@ -249,6 +284,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 			if (currentNetworkView != null && !selectedNetworkViews.contains(currentNetworkView))
 				selectedNetworkViews.add(currentNetworkView);
+		} finally {
+			lock.writeLock().unlock();
 		}
 
 		cyEventHelper.fireEvent(new SetSelectedNetworkViewsEvent(this,
@@ -256,7 +293,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public synchronized List<CyNetwork> getSelectedNetworks() {
+	public List<CyNetwork> getSelectedNetworks() {
 		final Set<CyNetwork> allNetworks = networkManager.getNetworkSet();
 		final List<CyNetwork> selectedNetworks = new ArrayList<CyNetwork>();
 		
@@ -275,11 +312,14 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		Set<CyNetwork> selectedNetworks = networks != null ? new LinkedHashSet<CyNetwork>(networks)
 				: new LinkedHashSet<CyNetwork>();
 		
-		synchronized (this) {
+		lock.writeLock().lock();
+		try {
 			if (currentNetwork != null)
 				selectedNetworks.add(currentNetwork);
 			
 			selectedNetworks = selectNetworks(selectedNetworks);
+		} finally {
+			lock.writeLock().unlock();
 		}
 
 		cyEventHelper.fireEvent(new SetSelectedNetworksEvent(this, new ArrayList<CyNetwork>(selectedNetworks)));
@@ -339,11 +379,16 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void reset() {
-		setCurrentNetwork(null);
-		setCurrentNetworkView(null);
-		setSelectedNetworkViews(null);
-		setCurrentRenderingEngine(null);
-		setCurrentTable(null);
+		lock.writeLock().lock();
+		try {
+			setCurrentNetwork(null);
+			setCurrentNetworkView(null);
+			setSelectedNetworkViews(null);
+			setCurrentRenderingEngine(null);
+			setCurrentTable(null);
+		} finally {
+			lock.writeLock().unlock();
+		}
 	}
 	
 	@Override
