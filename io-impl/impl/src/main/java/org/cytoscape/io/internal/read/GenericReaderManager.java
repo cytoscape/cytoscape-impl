@@ -25,6 +25,13 @@ package org.cytoscape.io.internal.read;
  */
 
 
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.work.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -34,14 +41,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.work.Task;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Task>  {
 
@@ -121,7 +120,12 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
         if( factoryTable.containsKey(extension) )
             chosenFactory = factoryTable.get(extension);
         else
-            chosenFactory = factoryTable.get("");
+		{
+			if( factoryTable.containsKey("") )
+            	chosenFactory = factoryTable.get("");
+			else
+				return null;
+		}
         try {
             logger.info("Successfully found matched factory " + chosenFactory);
             // This returns strean using proxy if it exists.

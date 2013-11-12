@@ -5,6 +5,9 @@ import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -32,6 +35,7 @@ import java.util.Set;
  */
 public class WildCardCyFileFilter extends BasicCyFileFilter {
 
+	private List<String> blackList = new ArrayList<String>();
 
 	/**
 	 * Creates a file filter from the specified arguments. Note that a "."
@@ -63,25 +67,24 @@ public class WildCardCyFileFilter extends BasicCyFileFilter {
 		super(extensions, contentTypes, description, category, streamUtil);
 	}
 
+	public void setBlacklist(String... extensions)
+	{
+		blackList = Arrays.asList(extensions);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean accepts(URI uri, DataCategory category) {
-
 		// Check data category
 		if (category != this.category)
 			return false;
-
-		if (extensionsMatch(uri))
-			return true;
-		else
-			return false;
-
+		return extensionsMatch(uri);
 	}
 
 	private boolean extensionsMatch(URI uri) {
 		final String extension = getExtension(uri.toString());
-		if( extensions == null )
+		if( extensions == null || blackList.contains(extension))
 			return false;
 		return extensions.contains("") || extensions.contains(extension);
 	}
