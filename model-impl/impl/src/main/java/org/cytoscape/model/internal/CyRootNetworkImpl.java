@@ -237,6 +237,9 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 			if (nodes != null && sub instanceof CySubNetworkImpl)
 				((CySubNetworkImpl) sub).removeRows(nodes, CyNode.class);
 		}
+
+		// Do we want to do this?????
+		this.removeRows(nodes, CyNode.class);
 		
 		return removeNodesInternal(nodes);
 	}
