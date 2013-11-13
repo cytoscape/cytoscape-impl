@@ -26,6 +26,7 @@ package org.cytoscape.welcome.internal.panel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -42,7 +43,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -148,19 +151,19 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 		// Species ICON
 		try {
-			SPECIES_ICON.put("Human", new ImageIcon(ImageIO.read(
+			SPECIES_ICON.put("H. sapiens", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Homo_sapiens_NS.png"))));
-			SPECIES_ICON.put("Yeast", new ImageIcon(ImageIO.read(
+			SPECIES_ICON.put("S. cerevisiae", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Saccharomyces_cerevisiae_NS.png"))));
-			SPECIES_ICON.put("Fly", new ImageIcon(ImageIO.read(
+			SPECIES_ICON.put("D. melanogaster", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Drosophila_melanogaster_NS.png"))));
-			SPECIES_ICON.put("Mouse", new ImageIcon(ImageIO.read(
+			SPECIES_ICON.put("M. musculus", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Mus_musculus_NS.png"))));
 			SPECIES_ICON.put("C. elegans", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Caenorhabditis_elegans_NS.png"))));
-			SPECIES_ICON.put("Arabidopsis", new ImageIcon(ImageIO.read(
+			SPECIES_ICON.put("A. thaliana", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Arabidopsis_thaliana_NS.png"))));
-			SPECIES_ICON.put("Zebrafish", new ImageIcon(ImageIO.read(
+			SPECIES_ICON.put("D. rerio", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Danio_rerio_NS.png"))));
 			SPECIES_ICON.put("E. coli", new ImageIcon(ImageIO.read(
 					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Escherichia_coli_NS.png"))));
@@ -184,7 +187,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private final Map<ButtonModel, TaskFactory> button2taskMap = new HashMap<ButtonModel, TaskFactory>();
 	private JRadioButton noOptionTaskButton;
 
-	private List<JButton> buttonList;
 	private JPanel sourceButtons;
 	private ButtonGroup bGroup;
 
@@ -205,11 +207,9 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	}
 	
 	private void setFromDataSource() {
-		buttonList = new ArrayList<JButton>();
-		
+		final SortedMap<String, JButton> buttonMap = new TreeMap<String, JButton>();
 		// Extract the URL entries
 		final Collection<DataSource> dataSources = dsManager.getDataSources(DataCategory.NETWORK);
-		final SortedSet<String> labelSet = new TreeSet<String>();
 		if (dataSources != null) {
 			for (DataSource ds : dataSources) {
 				String link = null;
@@ -227,12 +227,16 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 				final String[] res = tags.split(",");
 
 				if (res != null) {
+					// Add preset buttons
 					final List<String> tagList = Arrays.asList(res);
 					if (tagList.contains("preset")) {
 						final String sourceLabel = sourceName;
 						dataSourceMap.put(sourceLabel, link);
 
 						final JButton button = new JButton(sourceLabel);
+						buttonMap.put(sourceLabel, button);
+						button.setPreferredSize(new Dimension(50, 20));
+						button.setHorizontalAlignment(SwingConstants.LEFT);
 						button.setToolTipText(tooltip);
 						if(sourceLabel.contains(".")) {
 							button.setFont(PRESET_FONT_ITALIC);
@@ -243,8 +247,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 						if(icon != null) {
 							button.setIcon(icon);
 						}
-						buttonList.add(button);
-						labelSet.add(sourceLabel);
 						button.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent arg0) {
@@ -261,6 +263,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		sourceButtons.setOpaque(false);
 		
 		// Determine Size of Grid
+		final List<JButton> buttonList = new ArrayList<JButton>(buttonMap.values());
 		int rowCount = buttonList.size()/2;
 		int mod = buttonList.size()%2;
 		sourceButtons.setLayout(new GridLayout(rowCount+mod, 2));
