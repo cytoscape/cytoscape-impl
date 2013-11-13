@@ -145,18 +145,18 @@ public class MergeDataTableTaskFactoryImpl extends AbstractTaskFactory implement
 		else
 			mapOption.setSelectedValue("New Column");*/
 		
-		m.put("MergeDataType", mergeColumnVirtual);
-		m.put("MergeKey", sourceColumn);
+		m.put("ApplySoftMerge", mergeColumnVirtual);
+		m.put("SourceMergeKey", sourceColumn);
 		m.put("TargetMergeKey", columnNamesList);
-		m.put("GlobalTable", sourceTableList);
-		m.put("UnassignedTables", targetTableList);
-		m.put("MergeColumns", sourceColNames);
-		m.put("ImportTypeChooser", chooser);
-		m.put("NetworkList", networksListTunable);
-		m.put("ColumnList", columnNamesList);
-		m.put("RootNetworkList", rootNetworkList);
-		m.put("DataTypeOptions1", tableTypes);
-		m.put("DataTypeOptions2", tableTypes);
+		m.put("SourceTable", sourceTableList);
+		m.put("UnassignedTable", targetTableList);
+		m.put("SourceMergeColumns", sourceColNames);
+		m.put("WhereMergeTable", chooser);
+		m.put("TargetNetworkList", networksListTunable);
+		m.put("TargetKeyNetworkCollection", columnNamesList);
+		m.put("TargetNetworkCollection", rootNetworkList);
+		m.put("DataTypeTargetForNetworkCollection", tableTypes);
+		m.put("DataTypeTargetForNetworkList", tableTypes);
 		
 		return tunableSetter.createTaskIterator(createTaskIterator(), m);
 		
