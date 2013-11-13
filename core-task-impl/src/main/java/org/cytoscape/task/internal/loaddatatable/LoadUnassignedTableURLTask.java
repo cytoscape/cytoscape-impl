@@ -37,12 +37,12 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 
-public class ImportAttributesURLTask extends AbstractLoadAttributesTask {
+public class LoadUnassignedTableURLTask extends AbstractLoadAttributesTask {
 	
 	@Tunable(description="Data Table URL", params="fileCategory=table;input=true")
 	public URL url;
 
-	public ImportAttributesURLTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tableMgr, 
+	public LoadUnassignedTableURLTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tableMgr, 
 			final CyRootNetworkManager rootNetMgr) {
 		super(mgr, netMgr, tableMgr, rootNetMgr);
 	}
@@ -51,7 +51,7 @@ public class ImportAttributesURLTask extends AbstractLoadAttributesTask {
 	 * Executes Task.
 	 */
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		loadTable(url.toString(), url.toURI(),true, taskMonitor);
+		loadTable(url.toString(), url.toURI(),false, taskMonitor);
 	}
 	
 	@ProvidesTitle
