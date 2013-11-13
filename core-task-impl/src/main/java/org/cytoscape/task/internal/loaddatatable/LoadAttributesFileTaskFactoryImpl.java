@@ -35,13 +35,13 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.read.LoadTableFileTaskFactory;
+import org.cytoscape.task.read.*;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class LoadAttributesFileTaskFactoryImpl extends AbstractTaskFactory implements LoadTableFileTaskFactory{
+public class LoadAttributesFileTaskFactoryImpl extends AbstractTaskFactory implements LoadUnassignedTableFileTaskFactory{
 	private CyTableReaderManager mgr;
 	
 	private final TunableSetter tunableSetter; 

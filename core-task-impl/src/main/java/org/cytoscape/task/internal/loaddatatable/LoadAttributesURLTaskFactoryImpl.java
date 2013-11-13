@@ -37,13 +37,13 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.read.LoadTableURLTaskFactory;
+import org.cytoscape.task.read.*;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implements LoadTableURLTaskFactory {
+public class LoadAttributesURLTaskFactoryImpl extends AbstractTaskFactory implements LoadUnassignedTableURLTaskFactory {
 	
 	private CyTableReaderManager mgr;
 	

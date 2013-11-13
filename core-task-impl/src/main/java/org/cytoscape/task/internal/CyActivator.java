@@ -313,7 +313,7 @@ public class CyActivator extends AbstractCyActivator {
 		importAttrsFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		importAttrsFileTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,importAttrsFileTaskFactory,TaskFactory.class, importAttrsFileTaskFactoryProps);
-		registerService(bc,importAttrsFileTaskFactory,ImportTableFileTaskFactory.class, importAttrsFileTaskFactoryProps);
+		registerService(bc,importAttrsFileTaskFactory,LoadTableFileTaskFactory.class, importAttrsFileTaskFactoryProps);
 
 
 		Properties importAttrsURLTaskFactoryProps = new Properties();
@@ -328,7 +328,7 @@ public class CyActivator extends AbstractCyActivator {
 		//importAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		importAttrsURLTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,importAttrsURLTaskFactory,TaskFactory.class, importAttrsURLTaskFactoryProps);
-		registerService(bc,importAttrsURLTaskFactory,ImportTableURLTaskFactory.class, importAttrsURLTaskFactoryProps);
+		registerService(bc,importAttrsURLTaskFactory,LoadTableURLTaskFactory.class, importAttrsURLTaskFactoryProps);
 
 		Properties proxySettingsTaskFactoryProps = new Properties();
 		proxySettingsTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit.Preferences");
@@ -801,7 +801,7 @@ public class CyActivator extends AbstractCyActivator {
 		//loadDataFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		//loadDataFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		registerService(bc,loadAttrsFileTaskFactory,TaskFactory.class, loadDataFileTaskFactoryProps);
-		registerService(bc,loadAttrsFileTaskFactory,LoadTableFileTaskFactory.class, loadDataFileTaskFactoryProps);
+		registerService(bc,loadAttrsFileTaskFactory,LoadUnassignedTableFileTaskFactory.class, loadDataFileTaskFactoryProps);
 
 
 		Properties loadDataURLTaskFactoryProps = new Properties();
@@ -812,7 +812,7 @@ public class CyActivator extends AbstractCyActivator {
 		//loadDataURLTaskFactoryProps.setProperty(COMMAND,"load url");
 		//loadDataURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
 		registerService(bc,loadAttrsURLTaskFactory,TaskFactory.class, loadDataURLTaskFactoryProps);
-		registerService(bc,loadAttrsURLTaskFactory,LoadTableURLTaskFactory.class, loadDataURLTaskFactoryProps);
+		registerService(bc,loadAttrsURLTaskFactory,LoadUnassignedTableURLTaskFactory.class, loadDataURLTaskFactoryProps);
 		
 		Properties MergeGlobalTaskFactoryProps = new Properties();
 		MergeGlobalTaskFactoryProps.setProperty(ENABLE_FOR,"network");
