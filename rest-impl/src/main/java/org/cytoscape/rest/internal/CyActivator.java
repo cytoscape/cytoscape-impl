@@ -43,14 +43,8 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 
-	// TODO: pick this up from the command line
-	public static final String BASE_URI = "http://localhost:";
-	public static final String BASE_PATH = "/cytoscape/";
 	private static final String REST_PORT_PROP = "restPort";
-	
-	private static final String DEF_REST_PORT_NUMBER_STRING = "3333";
-	
-	private HttpServer httpServer = null;
+
 
 	public CyActivator() {
 		super();
@@ -73,15 +67,12 @@ public class CyActivator extends AbstractCyActivator {
 		if (p.getProperty(REST_PORT_PROP) != null)
 			restPortNumber = p.getProperty(REST_PORT_PROP);
 
-		// Use default port if not specified.
+		// Port not specified.
 		if (restPortNumber == null)
-			restPortNumber = DEF_REST_PORT_NUMBER_STRING;
-
-		// Create our ResourceConfig and initialize it with our internal resources
-		final ResourceConfig resourceConfig = new ResourceConfig();
+			return;
 
 		// At some point, we may want to load resources by registering a Resource listener
-		final ResourceManager resourceManager = new ResourceManager(resourceConfig);
+		final ResourceManager resourceManager = new ResourceManager(restPortNumber);
 		registerServiceListener(bc, resourceManager, "addResource", "removeResource", RESTResource.class);
 
 		// Register the namespaces resource handler. This resource handles all of the commands
@@ -89,27 +80,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, nsResource, RESTResource.class, new Properties());
 
 		// Register the NamespacesResource as a listener for the Task Monitor messages
-		Properties props = new Properties();
+		final Properties props = new Properties();
 		props.setProperty("org.ops4j.pax.logging.appender.name", "TaskMonitorShowMessagesAppender");
 		registerService(bc, nsResource, PaxAppender.class, props);
 
-		// Register network resource handler
-
 		// Register table resource handler
-		startServer(BASE_URI + restPortNumber + BASE_PATH, resourceConfig);
+		resourceManager.startServer();
 	}
-
-	/**
-	 * Create and start a new instance of grizzly http server
-	 * exposing the Jersey application at BASE_URI
-	 * 
-	 * @param uri
-	 * @param resourceConfig
-	 * @return
-	 */
-	private final HttpServer startServer(String uri, ResourceConfig resourceConfig) {
-		HttpServer httpServer = GrizzlyHttpServerFactory.createHttpServer(URI.create(uri), resourceConfig);
-		System.out.println(String.format("Jersey app started with WADL available at " + "%sapplication.wadl\n", uri));
-		return httpServer;
-	}
+	
 }

@@ -24,23 +24,85 @@ package org.cytoscape.rest.internal;
  * #L%
  */
 
+import java.net.URI;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.rest.RESTResource;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResourceManager {
 
-	private final ResourceConfig config;
+	private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
-	public ResourceManager(final ResourceConfig resourceConfig) {
-		this.config = resourceConfig;
+	// TODO: pick this up from the command line
+	public static final String BASE_URI = "http://localhost:";
+	public static final String BASE_PATH = "/cytoscape/";
+	
+	
+	private final Set<Object> resourceSet;
+	
+	private ResourceConfig config;
+	private HttpServer server;
+	
+	private final String uri;
+	
+	public ResourceManager(final String restPortNumber) {
+		// Create our ResourceConfig and initialize it with our internal resources
+
+		this.resourceSet = new HashSet<Object>();
+		this.uri= BASE_URI + restPortNumber + BASE_PATH;
 	}
 
+	/**
+	 * Create and start a new instance of grizzly http server
+	 * exposing the Jersey application at BASE_URI
+	 * 
+	 * @param uri
+	 * @param resourceConfig
+	 * @return
+	 */
+	final void startServer() {
+		if(server!= null && server.isStarted()) {
+			stopServer();
+		}
+		
+		// Create our ResourceConfig and initialize it with our internal resources
+		server = GrizzlyHttpServerFactory.createHttpServer(URI.create(uri), config);
+		System.out.println(String.format("Jersey app started with WADL available at " + "%sapplication.wadl\n", uri));
+	}
+
+	final void stopServer() {
+		if(server != null) {
+			server.stop();
+		}
+	}
+	
 	public void addResource(final RESTResource resource, Map<String, String> props) {
-		config.registerInstances(resource);
+		logger.info("Adding new REST resource (API): " + resource.toString());
+		this.resourceSet.add(resource);
+		logger.info("Restarting API server...");
+		stopServer();
+		this.config = new ResourceConfig();
+		this.config.registerInstances(resourceSet);
+		
+		startServer();
+		
+		Set<Object> insts = config.getInstances();
+		for(Object r: insts) {
+			System.out.println("Registered Resource Object: " + r.toString());
+		}
 	}
 
 	public void removeResource(final RESTResource resource, Map<String, String> props) {
+		logger.info("Removing REST resource: " + resource.toString());
+
+		// TODO: is this possible?
 	}
 }
