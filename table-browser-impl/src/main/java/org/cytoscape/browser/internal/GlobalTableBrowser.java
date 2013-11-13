@@ -41,6 +41,8 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.RowsDeletedEvent;
+import org.cytoscape.model.events.RowsDeletedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
@@ -53,7 +55,9 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-public class GlobalTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener, RowsSetListener, TableAddedListener, TablePrivacyChangedListener {
+public class GlobalTableBrowser extends AbstractTableBrowser 
+                                implements TableAboutToBeDeletedListener, RowsDeletedListener, RowsSetListener, 
+                                           TableAddedListener, TablePrivacyChangedListener {
 
 	private static final long serialVersionUID = 2269984225983802421L;
 
@@ -203,5 +207,20 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TableAbo
 		}
 	}
 
+	
+	@Override
+	public void handleEvent(final RowsDeletedEvent e) {
+		BrowserTable table = getCurrentBrowserTable();
+		if (table == null)
+			return;
+		BrowserTableModel model = (BrowserTableModel) table.getModel();
+		CyTable dataTable = model.getDataTable();
+
+		if (e.getSource() != dataTable)
+			return;		
+		synchronized (this) {
+				model.fireTableDataChanged();
+		}
+	}
 	
 }

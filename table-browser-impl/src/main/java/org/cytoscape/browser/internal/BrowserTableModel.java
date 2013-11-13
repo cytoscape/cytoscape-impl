@@ -331,6 +331,8 @@ public final class BrowserTableModel extends AbstractTableModel
 			final Collection<CyRow> rows = dataTable.getAllRows();
 			
 			final String primaryKey = dataTable.getPrimaryKey().getName();
+
+			rowIndexToPrimaryKey = new Object[rows.size()];
 			
 			for ( CyRow row : rows ) 
 				rowIndexToPrimaryKey[index++] = row.getRaw(primaryKey);

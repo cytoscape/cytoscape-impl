@@ -38,6 +38,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.events.RowsDeletedListener;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.TablePrivacyChangedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -92,6 +93,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, globalTableBrowser, TableAddedListener.class, globalTableProp);
 		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class, globalTableProp);
 		registerService(bc, globalTableBrowser, RowsSetListener.class, globalTableProp);
+		registerService(bc, globalTableBrowser, RowsDeletedListener.class, globalTableProp);
 
 		registerServiceListener(bc,popupMenuHelper,"addTableColumnTaskFactory","removeTableColumnTaskFactory",TableColumnTaskFactory.class);
 		registerServiceListener(bc,popupMenuHelper,"addTableCellTaskFactory","removeTableCellTaskFactory",TableCellTaskFactory.class);
