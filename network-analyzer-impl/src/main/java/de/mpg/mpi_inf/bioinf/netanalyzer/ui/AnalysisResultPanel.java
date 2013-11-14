@@ -119,9 +119,7 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 			saved = true;
 		}
 		initControls(paramMapping);
-		final CyNetwork network = stats.getNetwork();
-		final String networkTitle = network.getRow(network).get(CyNetwork.NAME, String.class);
-		resultPanel = panelFactory.registerPanel(this, "Network Statistics of " + networkTitle);
+		resultPanel = panelFactory.registerPanel(this, "Network Statistics of " + stats.getNetwork());
 
 
 		
@@ -191,7 +189,9 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 	 * </p>
 	 */
 	private void initControls(boolean enableParameterMapping) {
-		final boolean useExpandable = SettingsSerializer.getPluginSettings().getExpandable();
+		// TODO: Enable when fixed
+		// final boolean useExpandable = SettingsSerializer.getPluginSettings().getExpandable();
+		final boolean useExpandable = false;
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		final JTabbedPane tabs = useExpandable ? null : new JTabbedPane();
 
