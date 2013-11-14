@@ -156,9 +156,10 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 
     public R getReader(InputStream stream, String inputName) {
         try {
-
-            if ( !stream.markSupported() )
+            if (!stream.markSupported()) {
                 stream = new BufferedInputStream(stream);
+                stream.mark(1025);
+            }
 
             for (T factory : factories) {
                 CyFileFilter cff = factory.getFileFilter();
