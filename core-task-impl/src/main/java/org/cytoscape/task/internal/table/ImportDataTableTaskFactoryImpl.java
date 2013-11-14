@@ -35,6 +35,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.AbstractTableTaskFactory;
@@ -51,72 +52,88 @@ public class ImportDataTableTaskFactoryImpl extends AbstractTableTaskFactory imp
 	private final CyNetworkManager networkManager;
 	private final TunableSetter tunableSetter; 
 	private final CyRootNetworkManager rootNetMgr;
+	private final CyTableManager tableMgr;
 	
-	public ImportDataTableTaskFactoryImpl( final CyNetworkManager networkManager, final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
+	public ImportDataTableTaskFactoryImpl( final CyNetworkManager networkManager, final CyTableManager tableMgr,final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
 		this.networkManager = networkManager;
 		this.tunableSetter = tunableSetter;
 		this.rootNetMgr = rootNetMgr;
+		this.tableMgr = tableMgr;
 	}
 	
 	
 	@Override
 	public TaskIterator createTaskIterator(CyTable table) {
-		return new TaskIterator(new ImportDataTableTask(table, rootNetMgr, networkManager));
+		return new TaskIterator(new ImportDataTableTask(table,tableMgr, rootNetMgr, networkManager));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTableReader reader){
-		return new TaskIterator(new ImportDataTableTask(reader, rootNetMgr, networkManager));
+		return new TaskIterator(new ImportDataTableTask(reader,tableMgr, rootNetMgr, networkManager));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTable globalTable,
-			boolean selectedNetworksOnly, List<CyNetwork> networkList,
+			boolean selectedNetworksOnly, boolean loadToUnassignedTable,List<CyNetwork> networkList,
 			CyRootNetwork rootNetwork, CyColumn targetJoinColumn,
 			Class<? extends CyIdentifiable> type) {
 		
-		TableType tableType = getTableType(type);
-		if(tableType == null)
-			throw new IllegalArgumentException("The specified type " + type + " is not acceptable.");
-		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<TableType>(tableType);
-		tableTypes.setSelectedValue(tableType);
-		
-		List<String> networkNames = new ArrayList<String>();
-		for(CyNetwork net: networkList){
-			networkNames.add(net.getRow(net).get(CyNetwork.NAME, String.class));
-		}
-	
-		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<String>(networkNames);
-		networksListTunable.setSelectedValues(networkNames);
-		
-		List<String> rootNetworkNames = new ArrayList<String>();
-		ListSingleSelection<String> rootNetworkList = new ListSingleSelection<String>();
-		if (rootNetwork != null){
-			rootNetworkNames.add( rootNetwork.getRow(rootNetwork).get(CyNetwork.NAME, String.class));
-			rootNetworkList = new ListSingleSelection<String>(rootNetworkNames);
-			rootNetworkList.setSelectedValue(rootNetworkNames.get(0));
-		}
+	    ListSingleSelection<String> chooser = new ListSingleSelection<String>(ImportDataTableTask.NETWORK_COLLECTION,ImportDataTableTask.NETWORK_SELECTION,ImportDataTableTask.UNASSIGNED_TABLE);
 
-		List<String> columnNames = new ArrayList<String>();
-		ListSingleSelection<String> columnNamesList = new ListSingleSelection<String>();
-		if (targetJoinColumn != null){
-			columnNames.add(targetJoinColumn.getName());
-			columnNamesList = new ListSingleSelection<String>(columnNames);
-			columnNamesList.setSelectedValue(columnNames.get(0));
+	    final Map<String, Object> m = new HashMap<String, Object>();
+	    
+		if(!loadToUnassignedTable)
+		{
+			TableType tableType = getTableType(type);
+			if(tableType == null)
+				throw new IllegalArgumentException("The specified type " + type + " is not acceptable.");
+			ListSingleSelection<TableType> tableTypes = new ListSingleSelection<TableType>(tableType);
+			tableTypes.setSelectedValue(tableType);
+			
+			List<String> networkNames = new ArrayList<String>();
+			for(CyNetwork net: networkList){
+				networkNames.add(net.getRow(net).get(CyNetwork.NAME, String.class));
+			}
+		
+			ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<String>(networkNames);
+			networksListTunable.setSelectedValues(networkNames);
+			
+			List<String> rootNetworkNames = new ArrayList<String>();
+			ListSingleSelection<String> rootNetworkList = new ListSingleSelection<String>();
+			if (rootNetwork != null){
+				rootNetworkNames.add( rootNetwork.getRow(rootNetwork).get(CyNetwork.NAME, String.class));
+				rootNetworkList = new ListSingleSelection<String>(rootNetworkNames);
+				rootNetworkList.setSelectedValue(rootNetworkNames.get(0));
+			}
+	
+			List<String> columnNames = new ArrayList<String>();
+			ListSingleSelection<String> columnNamesList = new ListSingleSelection<String>();
+			if (targetJoinColumn != null){
+				columnNames.add(targetJoinColumn.getName());
+				columnNamesList = new ListSingleSelection<String>(columnNames);
+				columnNamesList.setSelectedValue(columnNames.get(0));
+			}
+			
+			if(selectedNetworksOnly)
+			{
+				m.put("DataTypeTargetForNetworkList", tableTypes);
+				chooser.setSelectedValue(ImportDataTableTask.NETWORK_SELECTION);
+			}
+			else
+			{
+				m.put("DataTypeTargetForNetworkCollection", tableTypes);
+				chooser.setSelectedValue(ImportDataTableTask.NETWORK_COLLECTION);
+			}
+			m.put("TargetNetworkList", networksListTunable);
+			m.put("KeyColumnForMapping", columnNamesList);
+			m.put("TargetNetworkCollection", rootNetworkList);
+		}
+		else
+		{
+			chooser.setSelectedValue(ImportDataTableTask.UNASSIGNED_TABLE);
 		}
 		
-		final Map<String, Object> m = new HashMap<String, Object>();
-		
-	    ListSingleSelection<String> chooser = new ListSingleSelection<String>("To a Network Collection","To selected networks only");
-		m.put("DataTypeOptions", tableTypes);
-		if(selectedNetworksOnly)
-			chooser.setSelectedValue("To selected networks only");
-		else
-			chooser.setSelectedValue("To a Network Collection");
-		m.put("ImportTypeChooser", chooser);
-		m.put("NetworkList", networksListTunable);
-		m.put("KeyColumnForMapping", columnNamesList);
-		m.put("NetworkCollectionsList", rootNetworkList);
+		m.put("WhereImportTable", chooser);
 		
 		return tunableSetter.createTaskIterator(createTaskIterator(globalTable), m);
 		

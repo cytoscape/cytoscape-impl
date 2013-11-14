@@ -245,11 +245,11 @@ public class MappingIntegrationTest {
 	
 	public void mapping(CyTable table, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
-		ImportDataTableTaskFactoryImpl mappingTF = new ImportDataTableTaskFactoryImpl(netMgr, ts, rootNetMgr);
+		ImportDataTableTaskFactoryImpl mappingTF = new ImportDataTableTaskFactoryImpl(netMgr,tabMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		
-		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, nets ,rootNet,col, CyNode.class);
+		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, false, nets ,rootNet,col, CyNode.class);
 		assertNotNull("task iterator is null", ti);
 		
 		assertTrue(ti.hasNext());

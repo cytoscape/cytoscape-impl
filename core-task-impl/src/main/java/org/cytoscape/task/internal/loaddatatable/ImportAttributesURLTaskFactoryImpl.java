@@ -78,7 +78,7 @@ public class ImportAttributesURLTaskFactoryImpl extends AbstractTaskFactory impl
 		
 		CyTableReader reader = mgr.getReader(uri, uri.toString());
 		
-		return new TaskIterator(new CombineReaderAndMappingTask( reader, netMgr, rootNetMgr));
+		return new TaskIterator(new CombineReaderAndMappingTask( reader,tableMgr, netMgr, rootNetMgr));
 
 		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}

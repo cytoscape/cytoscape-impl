@@ -69,7 +69,7 @@ public class ImportAttributesFileTaskFactoryImpl extends AbstractTaskFactory imp
 		
 		CyTableReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
 		
-		return new TaskIterator(new CombineReaderAndMappingTask( reader, netMgr, rootNetMgr));
+		return new TaskIterator(new CombineReaderAndMappingTask( reader, tableMgr,netMgr, rootNetMgr));
 
 		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}

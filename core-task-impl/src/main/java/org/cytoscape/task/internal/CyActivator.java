@@ -311,7 +311,7 @@ public class CyActivator extends AbstractCyActivator {
 		importAttrsFileTaskFactoryProps.setProperty(TOOLTIP,"Import Table From File");
 		importAttrsFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		importAttrsFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		importAttrsFileTaskFactoryProps.setProperty(ENABLE_FOR,"network");
+		//importAttrsFileTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,importAttrsFileTaskFactory,TaskFactory.class, importAttrsFileTaskFactoryProps);
 		registerService(bc,importAttrsFileTaskFactory,LoadTableFileTaskFactory.class, importAttrsFileTaskFactoryProps);
 
@@ -326,7 +326,7 @@ public class CyActivator extends AbstractCyActivator {
 		importAttrsURLTaskFactoryProps.setProperty(TOOLTIP,"Import Table From URL");
 		//importAttrsURLTaskFactoryProps.setProperty(COMMAND,"load url");
 		//importAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		importAttrsURLTaskFactoryProps.setProperty(ENABLE_FOR,"network");
+		//importAttrsURLTaskFactoryProps.setProperty(ENABLE_FOR,"network");
 		registerService(bc,importAttrsURLTaskFactory,TaskFactory.class, importAttrsURLTaskFactoryProps);
 		registerService(bc,importAttrsURLTaskFactory,LoadTableURLTaskFactory.class, importAttrsURLTaskFactoryProps);
 
@@ -1059,7 +1059,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties mapNetworkToTablesProps = new Properties();
 		registerService(bc, mapNetworkToTables, MapTableToNetworkTablesTaskFactory.class, mapNetworkToTablesProps);
 		
-		ImportDataTableTaskFactoryImpl importTableTaskFactory = new ImportDataTableTaskFactoryImpl(cyNetworkManagerServiceRef,tunableSetterServiceRef,rootNetworkManagerServiceRef);
+		ImportDataTableTaskFactoryImpl importTableTaskFactory = new ImportDataTableTaskFactoryImpl(cyNetworkManagerServiceRef,cyTableManagerServiceRef,tunableSetterServiceRef,rootNetworkManagerServiceRef);
 		Properties importTablesProps = new Properties();
 		registerService(bc, importTableTaskFactory, ImportDataTableTaskFactory.class, importTablesProps);
 		
