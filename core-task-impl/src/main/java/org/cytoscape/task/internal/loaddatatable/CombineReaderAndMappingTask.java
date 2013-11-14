@@ -28,6 +28,7 @@ import static org.cytoscape.work.TunableValidator.ValidationState.OK;
 
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.internal.table.ImportDataTableTask;
 import org.cytoscape.work.AbstractTask;
@@ -57,9 +58,9 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	public CyTableReader readerTask;
 
 	
-	public CombineReaderAndMappingTask(CyTableReader readerTask , CyNetworkManager networkManager, final CyRootNetworkManager rootNetMgr){
+	public CombineReaderAndMappingTask(CyTableReader readerTask ,final CyTableManager tabelMgr, CyNetworkManager networkManager, final CyRootNetworkManager rootNetMgr){
 		this.readerTask = readerTask;
-		this.importTablesTask = new ImportDataTableTask(readerTask, rootNetMgr, networkManager);
+		this.importTablesTask = new ImportDataTableTask(readerTask, tabelMgr,rootNetMgr, networkManager);
 	//	this.mappingTask = new MapTableToNetworkTablesTask(networkManager, readerTask, updateAddedNetworkAttributes, rootNetMgr);
 	}
 

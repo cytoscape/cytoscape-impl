@@ -301,34 +301,34 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,loadVizmapFileTaskFactory,TaskFactory.class, loadVizmapFileTaskFactoryProps);
 		registerService(bc,loadVizmapFileTaskFactory,LoadVizmapFileTaskFactory.class, new Properties());
 
-		Properties loadTableFileTaskFactoryProps = new Properties();
-		loadTableFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table");
-		loadTableFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
-		loadTableFileTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.2");
-		loadTableFileTaskFactoryProps.setProperty(TITLE,"File...");
-		loadTableFileTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_file_import.png").toString());
-		loadTableFileTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		loadTableFileTaskFactoryProps.setProperty(TOOLTIP,"Import Table From File");
-		loadTableFileTaskFactoryProps.setProperty(COMMAND,"load file");
-		loadTableFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		loadTableFileTaskFactoryProps.setProperty(ENABLE_FOR,"network");
-		registerService(bc,loadTableFileTaskFactory,TaskFactory.class, loadTableFileTaskFactoryProps);
-		registerService(bc,loadTableFileTaskFactory,LoadTableFileTaskFactory.class, loadTableFileTaskFactoryProps);
+		Properties importAttrsFileTaskFactoryProps = new Properties();
+		importAttrsFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table");
+		importAttrsFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
+		importAttrsFileTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.2");
+		importAttrsFileTaskFactoryProps.setProperty(TITLE,"File...");
+		importAttrsFileTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_file_import.png").toString());
+		importAttrsFileTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+		importAttrsFileTaskFactoryProps.setProperty(TOOLTIP,"Import Table From File");
+		importAttrsFileTaskFactoryProps.setProperty(COMMAND,"load file");
+		importAttrsFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
+		//importAttrsFileTaskFactoryProps.setProperty(ENABLE_FOR,"network");
+		registerService(bc,loadTableFileTaskFactory,TaskFactory.class, importAttrsFileTaskFactoryProps);
+		registerService(bc,loadTableFileTaskFactory,LoadTableFileTaskFactory.class, importAttrsFileTaskFactoryProps);
 
 
-		Properties loadTableURLTaskFactoryProps = new Properties();
-		loadTableURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table");
-		loadTableURLTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
-		loadTableURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.3");
-		loadTableURLTaskFactoryProps.setProperty(TITLE,"URL...");
-		loadTableURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_url_import.png").toString());
-		loadTableURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		loadTableURLTaskFactoryProps.setProperty(TOOLTIP,"Import Table From URL");
-		//loadTableURLTaskFactoryProps.setProperty(COMMAND,"load url");
-		//loadTableURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		loadTableURLTaskFactoryProps.setProperty(ENABLE_FOR,"network");
-		registerService(bc,loadTableURLTaskFactory,TaskFactory.class, loadTableURLTaskFactoryProps);
-		registerService(bc,loadTableURLTaskFactory,LoadTableURLTaskFactory.class, loadTableURLTaskFactoryProps);
+		Properties importAttrsURLTaskFactoryProps = new Properties();
+		importAttrsURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table");
+		importAttrsURLTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
+		importAttrsURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.3");
+		importAttrsURLTaskFactoryProps.setProperty(TITLE,"URL...");
+		importAttrsURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_url_import.png").toString());
+		importAttrsURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+		importAttrsURLTaskFactoryProps.setProperty(TOOLTIP,"Import Table From URL");
+		//importAttrsURLTaskFactoryProps.setProperty(COMMAND,"load url");
+		//importAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
+		//importAttrsURLTaskFactoryProps.setProperty(ENABLE_FOR,"network");
+		registerService(bc,loadTableURLTaskFactory,TaskFactory.class, importAttrsURLTaskFactoryProps);
+		registerService(bc,loadTableURLTaskFactory,LoadTableURLTaskFactory.class, importAttrsURLTaskFactoryProps);
 
 		Properties proxySettingsTaskFactoryProps = new Properties();
 		proxySettingsTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit.Preferences");
@@ -1059,7 +1059,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties mapNetworkToTablesProps = new Properties();
 		registerService(bc, mapNetworkToTables, MapTableToNetworkTablesTaskFactory.class, mapNetworkToTablesProps);
 		
-		ImportDataTableTaskFactoryImpl importTableTaskFactory = new ImportDataTableTaskFactoryImpl(cyNetworkManagerServiceRef,tunableSetterServiceRef,rootNetworkManagerServiceRef);
+		ImportDataTableTaskFactoryImpl importTableTaskFactory = new ImportDataTableTaskFactoryImpl(cyNetworkManagerServiceRef,cyTableManagerServiceRef,tunableSetterServiceRef,rootNetworkManagerServiceRef);
 		Properties importTablesProps = new Properties();
 		registerService(bc, importTableTaskFactory, ImportDataTableTaskFactory.class, importTablesProps);
 		
