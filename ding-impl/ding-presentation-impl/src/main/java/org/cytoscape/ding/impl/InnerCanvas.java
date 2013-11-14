@@ -995,7 +995,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final long edge = edgeAndAnchor >>> 6;
 				final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 				final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
-				
+
+				Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
+				if( ev.getBend() == defaultBend )
+				{
+					ev.setBend( new BendImpl( (BendImpl)defaultBend) );
+				}
 				final Bend bend = ev.getBend();
 				final Handle handle = bend.getAllHandles().get(anchorInx);
 				final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),ev);
@@ -1405,6 +1410,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						final long edge = edgeAndAnchor >>> 6;
 						final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 						final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
+
+						Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
+						if( ev.getBend() == defaultBend )
+						{
+							ev.setBend( new BendImpl( (BendImpl)defaultBend) );
+						}
 
 						final Bend bend = ev.getBend();
 						final Handle handle = bend.getAllHandles().get(anchorInx);
