@@ -119,7 +119,7 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 			saved = true;
 		}
 		initControls(paramMapping);
-		resultPanel = panelFactory.registerPanel(this, "Network Statistics of " + stats.getNetwork());
+		resultPanel = panelFactory.registerPanel(this, "Network Statistics of " + stats.getTitle());
 
 
 		
