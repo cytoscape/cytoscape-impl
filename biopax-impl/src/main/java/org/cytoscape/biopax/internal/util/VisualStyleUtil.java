@@ -324,9 +324,9 @@ public class VisualStyleUtil {
 				if(vpd.getIdString().equals("nodeSizeLocked")) {
 					vpd.setDependency(false);
 				} 
-//				else if(vpd.getIdString().equals("arrowColorMatchesEdge")) {
-//					vpd.setDependency(true);
-//				} 
+				else if(vpd.getIdString().equals("arrowColorMatchesEdge")) {
+					vpd.setDependency(true);
+				} 
 			}
 
 			//Node shape
