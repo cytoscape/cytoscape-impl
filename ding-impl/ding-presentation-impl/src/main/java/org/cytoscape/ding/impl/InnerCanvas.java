@@ -423,7 +423,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			final int anchorInx = (int)(chosenAnchor & 0x000000000000003f);
 			// Save remove handle
 			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.SELECTED_EDGES,"Remove Edge Handle",m_undo);
-			m_view.getDEdgeView(edge).removeHandle(anchorInx);
+
+			DEdgeView ev = m_view.getDEdgeView(edge);
+			Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
+			if( ev.getBend() == defaultBend )
+			{
+				ev.setBend( new BendImpl( (BendImpl)defaultBend) );
+			}
+			ev.removeHandle(anchorInx);
 			m_button1NodeDrag = false;
 		} else {
 			final boolean wasSelected = m_view.m_selectedAnchors.count(chosenAnchor) > 0;
@@ -460,7 +467,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			DEdgeView edgeView = m_view.getDEdgeView(chosenEdge);
 			Bend defaultBend = edgeView.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
 			if( edgeView.getBend() == defaultBend )
-				edgeView.setBend( new BendImpl() );
+				edgeView.setBend( new BendImpl( (BendImpl)defaultBend) );
 			final int chosenInx = m_view.getDEdgeView(chosenEdge).addHandlePoint(newHandlePoint);
 			
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
@@ -1398,7 +1405,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						final long edge = edgeAndAnchor >>> 6;
 						final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 						final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
-						
+
 						final Bend bend = ev.getBend();
 						final Handle handle = bend.getAllHandles().get(anchorInx);
 						final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),ev);
