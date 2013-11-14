@@ -126,7 +126,14 @@ public class BatchNetworkAnalyzer extends SwingWorker {
 					throw new RuntimeException();
 				}
 				CyNetworkReader reader = cyNetworkViewReaderMgr.getReader(inputFile.toURI(), inputFile.getName());
+				try {
+					// TODO Use the Task's task monitor 
+					reader.run(new SampleTaskMonitor());
+				} catch (Exception ex) {
+					return null;
+				}
 				network = reader.getNetworks()[0];
+				network.getRow(network).set(CyNetwork.NAME, inputFile.getName());
 			} catch (RuntimeException e) {
 				writeLine(Messages.SM_READERROR);
 				reports.add(new NetworkAnalysisReport(inputFile, null, AnalysisError.NETWORK_NOT_OPENED));
