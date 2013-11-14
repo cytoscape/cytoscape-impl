@@ -104,7 +104,7 @@ public class CyActivator extends AbstractCyActivator {
         CyNetworkViewFactory nullNetworkViewFactory = getService(bc, CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
 
 		WildCardCyFileFilter attrsTableFilter_txt = new WildCardCyFileFilter(new String[]{"csv","tsv", "txt", "tab", "net", ""}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
-		attrsTableFilter_txt.setBlacklist("xml","rdf","owl");
+		attrsTableFilter_txt.setBlacklist("xml","rdf","owl","cys");
 		WildCardCyFileFilter attrsTableFilter_xls = new WildCardCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",TABLE,CytoscapeServices.streamUtil);
         BasicCyFileFilter oboFilter = new BasicCyFileFilter(new String[]{"obo"}, new String[]{"text/obo"},"OBO Files",NETWORK,CytoscapeServices.streamUtil);
         final OBONetworkReaderFactory oboReaderFactory = new OBONetworkReaderFactory(oboFilter);
@@ -116,7 +116,7 @@ public class CyActivator extends AbstractCyActivator {
         // Action to add menu item to the Desktop Menu
         ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction();
         WildCardCyFileFilter networkTableFilter_txt = new WildCardCyFileFilter(new String[]{"csv","tsv", "txt",""}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,CytoscapeServices.streamUtil);
-		networkTableFilter_txt.setBlacklist("xml","rdf","owl");
+		networkTableFilter_txt.setBlacklist("xml","rdf","owl","cys");
 		WildCardCyFileFilter networkTableFilter_xls = new WildCardCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",NETWORK,CytoscapeServices.streamUtil);
 		ImportNetworkTableReaderFactory importNetworkTableReaderFactory_txt = new ImportNetworkTableReaderFactory(networkTableFilter_txt);//, "txt");
         ImportNetworkTableReaderFactory importNetworkTableReaderFactory_xls = new ImportNetworkTableReaderFactory(networkTableFilter_xls); //,".xls");
