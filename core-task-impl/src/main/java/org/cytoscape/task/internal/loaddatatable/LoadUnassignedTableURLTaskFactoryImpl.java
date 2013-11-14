@@ -26,7 +26,9 @@ package org.cytoscape.task.internal.loaddatatable;
 
 
 
-import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,16 +43,17 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class LoadAttributesFileTaskFactoryImpl extends AbstractTaskFactory implements LoadUnassignedTableFileTaskFactory{
+public class LoadUnassignedTableURLTaskFactoryImpl extends AbstractTaskFactory implements LoadUnassignedTableURLTaskFactory {
+	
 	private CyTableReaderManager mgr;
 	
 	private final TunableSetter tunableSetter; 
-	private final CyNetworkManager netMgr;
+	private  final CyNetworkManager netMgr;
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	
-	public LoadAttributesFileTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr, 
-			final CyTableManager tabelMgr,final CyRootNetworkManager rootNetMgr) {
+	public LoadUnassignedTableURLTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr,
+			final CyTableManager tabelMgr, final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
 		this.netMgr = netMgr;
@@ -59,15 +62,22 @@ public class LoadAttributesFileTaskFactoryImpl extends AbstractTaskFactory imple
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new LoadAttributesFileTask(mgr, netMgr, tableMgr, rootNetMgr));
+		return new TaskIterator(2, new LoadUnassignedTableURLTask(mgr, netMgr, tableMgr, rootNetMgr));
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(File file) {
+	public TaskIterator createTaskIterator(URL url) {
 		//final Map<String, Object> m = new HashMap<String, Object>();
-		//m.put("file", file);
+		//m.put("url", url);
 		
-		CyTableReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
+		URI uri = null;
+		try {
+			uri = url.toURI();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		
+		CyTableReader reader = mgr.getReader(uri, uri.toString());
 		
 		return new TaskIterator(2,new ReaderTableTask( reader, netMgr, rootNetMgr) , new AddImportedTableTask(tableMgr, reader));
 

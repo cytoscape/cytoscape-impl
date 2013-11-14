@@ -63,7 +63,7 @@ public class WelcomeScreenDialog extends JDialog {
 	private static final String IMAGE_LOCATION = "images/background.png";
 	private BufferedImage bgImage;
 
-	private static final Dimension DEF_SIZE = new Dimension(600, 500);
+	private static final Dimension DEF_SIZE = new Dimension(668, 500);
 
 	private BackgroundImagePanel basePanel;
 	private JPanel mainPanel;

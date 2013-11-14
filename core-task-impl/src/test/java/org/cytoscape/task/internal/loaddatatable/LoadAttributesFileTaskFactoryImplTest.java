@@ -71,7 +71,7 @@ public class LoadAttributesFileTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesFileTaskFactory() throws Exception {
 
-		final LoadAttributesFileTaskFactoryImpl factory = new LoadAttributesFileTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
+		final LoadUnassignedTableFileTaskFactoryImpl factory = new LoadUnassignedTableFileTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 
@@ -79,7 +79,7 @@ public class LoadAttributesFileTaskFactoryImplTest {
 		Task t = ti.next();
 		assertNotNull(t);
 
-		((LoadAttributesFileTask) t).file = new File("./src/test/resources/empty.txt");
+		((LoadUnassignedTableFileTask) t).file = new File("./src/test/resources/empty.txt");
 		
 		// This throws NPE, but it;s normal.
 		t.run(tm);

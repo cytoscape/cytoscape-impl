@@ -26,31 +26,37 @@ package org.cytoscape.task.internal.loaddatatable;
 
 
 
-import java.io.File;
+import java.net.URL;
 
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 
-public class ImportAttributesFileTask extends AbstractLoadAttributesTask {
-	@Tunable(description="Data Table file", params="fileCategory=table;input=true")
-	public File file;
+public class LoadTableURLTask extends AbstractLoadAttributesTask {
+	
+	@Tunable(description="Data Table URL", params="fileCategory=table;input=true")
+	public URL url;
 
-	public ImportAttributesFileTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tabelMgr, 
+	public LoadTableURLTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tableMgr, 
 			final CyRootNetworkManager rootNetMgr) {
-		super(mgr, netMgr, tabelMgr, rootNetMgr);
+		super(mgr, netMgr, tableMgr, rootNetMgr);
 	}
 
 	/**
 	 * Executes Task.
 	 */
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-
-		loadTable(file.getName(), file.toURI(), true,taskMonitor);
+		loadTable(url.toString(), url.toURI(),true, taskMonitor);
+	}
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Import Table";
 	}
 }
 

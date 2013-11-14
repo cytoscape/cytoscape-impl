@@ -70,14 +70,14 @@ public class BiogridDataLoader {
 	private final Set<DataSource> sources;
 
 	static {
-		FILTER.put("Homo_sapiens", new String[]{"Human", "BioGRID", "Human Interactome from BioGRID database"});
-		FILTER.put("Saccharomyces_cerevisiae", new String[]{"Yeast", "BioGRID", "Yeast Interactome from BioGRID database"});
-		FILTER.put("Drosophila_melanogaster", new String[]{"Fly", "BioGRID","Fly Interactome from BioGRID database"} );
-		FILTER.put("Mus_musculus", new String[]{"Mouse", "BioGRID", "Mouse Interactome from BioGRID database"});
-		FILTER.put("Arabidopsis_thaliana", new String[]{"Arabidopsis", "BioGRID", "Arabidopsis Interactome from BioGRID database"});
+		FILTER.put("Homo_sapiens", new String[]{"H. sapiens", "BioGRID", "Human Interactome from BioGRID database"});
+		FILTER.put("Saccharomyces_cerevisiae", new String[]{"S. cerevisiae", "BioGRID", "Yeast Interactome from BioGRID database"});
+		FILTER.put("Drosophila_melanogaster", new String[]{"D. melanogaster", "BioGRID","Fly Interactome from BioGRID database"} );
+		FILTER.put("Mus_musculus", new String[]{"M. musculus", "BioGRID", "Mouse Interactome from BioGRID database"});
+		FILTER.put("Arabidopsis_thaliana", new String[]{"A. thaliana", "BioGRID", "Arabidopsis Interactome from BioGRID database"});
 		FILTER.put("Caenorhabditis_elegans", new String[]{"C. elegans", "BioGRID", "Caenorhabditis elegans Interactome from BioGRID database"});
 		FILTER.put("Escherichia_coli", new String[]{"E. coli", "BioGRID", "Escherichia coli Interactome from BioGRID database"});
-		FILTER.put("Danio_rerio", new String[]{"Zebrafish", "BioGRID", "Zebrafish Interactome from BioGRID database"});
+		FILTER.put("Danio_rerio", new String[]{"D. rerio", "BioGRID", "Zebrafish Interactome from BioGRID database"});
 	}
 
 	public BiogridDataLoader(final CyProperty<?> props, final File settingFileLocation) {

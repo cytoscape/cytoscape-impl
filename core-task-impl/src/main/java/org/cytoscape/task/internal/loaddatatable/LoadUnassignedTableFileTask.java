@@ -36,11 +36,11 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 
-public class LoadAttributesFileTask extends AbstractLoadAttributesTask {
+public class LoadUnassignedTableFileTask extends AbstractLoadAttributesTask {
 	@Tunable(description="Data Table file", params="fileCategory=table;input=true")
 	public File file;
 
-	public LoadAttributesFileTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tabelMgr, 
+	public LoadUnassignedTableFileTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tabelMgr, 
 			final CyRootNetworkManager rootNetMgr) {
 		super(mgr, netMgr, tabelMgr, rootNetMgr);
 	}

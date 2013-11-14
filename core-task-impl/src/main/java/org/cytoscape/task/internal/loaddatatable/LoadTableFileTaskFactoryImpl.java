@@ -41,7 +41,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class ImportAttributesFileTaskFactoryImpl extends AbstractTaskFactory implements LoadTableFileTaskFactory{
+public class LoadTableFileTaskFactoryImpl extends AbstractTaskFactory implements LoadTableFileTaskFactory{
 	private CyTableReaderManager mgr;
 	
 	private final TunableSetter tunableSetter; 
@@ -49,7 +49,7 @@ public class ImportAttributesFileTaskFactoryImpl extends AbstractTaskFactory imp
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	
-	public ImportAttributesFileTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr, 
+	public LoadTableFileTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr, 
 			final CyTableManager tabelMgr,final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
@@ -59,7 +59,7 @@ public class ImportAttributesFileTaskFactoryImpl extends AbstractTaskFactory imp
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new ImportAttributesFileTask(mgr, netMgr, tableMgr, rootNetMgr));
+		return new TaskIterator(2, new LoadTableFileTask(mgr, netMgr, tableMgr, rootNetMgr));
 	}
 
 	@Override
