@@ -24,15 +24,20 @@ package org.cytoscape.application.internal;
  * #L%
  */
 
-import java.io.File;
-import java.util.Dictionary;
-
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.property.CyProperty;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Dictionary;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 public class CyApplicationConfigurationImpl implements CyApplicationConfiguration {
 	
@@ -46,6 +51,7 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 	private static final String APP_CONFIGURATION_DIR = "app-data";
 	
 	private static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName";
+	private static final String BUNDLE_VERSION = "Bundle-Version";
 
 	private final File configFileLocation;
 	
@@ -70,10 +76,39 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 	public File getAppConfigurationDirectoryLocation(Class<?> appClass) {
 		File configurationDirectory = getConfigurationDirectoryLocation();
 		Bundle bundle = FrameworkUtil.getBundle(appClass);
-		Dictionary<String, String> headers = bundle.getHeaders();
-		String basePath = headers.get(BUNDLE_SYMBOLIC_NAME);
-		String path = join(File.separator, configurationDirectory.getPath(), APP_CONFIGURATION_DIR, basePath);
-		return new File(path);
+		if( bundle != null )
+		{
+			Dictionary<String, String> headers = bundle.getHeaders();
+			String basePath = headers.get(BUNDLE_SYMBOLIC_NAME);
+			String version = headers.get(BUNDLE_VERSION);
+			if( version == null )
+				version = "";
+			String path = join(File.separator, configurationDirectory.getPath(), APP_CONFIGURATION_DIR, basePath + "-" + version);
+			return new File(path);
+		}
+		//Bundle is null, we are dealing with a Simple App.
+		URLClassLoader cl = (URLClassLoader)appClass.getClassLoader();
+	    URL url = cl.findResource("META-INF/MANIFEST.MF");
+		try {
+			Manifest manifest = new Manifest(url.openStream());
+			Attributes a = manifest.getMainAttributes();
+			String app = a.getValue("Cytoscape-App");
+			String version = a.getValue("Cytoscape-App-Version");
+			if( version == null )
+				version = "";
+			if( app != null && version != null )
+			{
+				String path = join(File.separator, configurationDirectory.getPath(), APP_CONFIGURATION_DIR, app + "-" + version);
+				return new File(path);
+			}
+			else
+			{
+				return null;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	private static String join(String separator, String... items) {
