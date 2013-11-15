@@ -557,10 +557,12 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		floatDockPanel.setLayout(boxLayout);
 		floatDockPanel.setBackground(FLOAT_PANEL_COLOR);
 		
+		floatDockPanel.add(Box.createHorizontalStrut(8));
 		floatDockPanel.add(floatLabel);
 		floatDockPanel.add(Box.createHorizontalGlue());
 		floatDockPanel.add(floatButton);
 		floatDockPanel.add(closeButton);
+		floatDockPanel.add(Box.createHorizontalStrut(8));
 
 		// set preferred size - we can use float or dock icon dimensions - they are the same
 		final FontMetrics fm = floatLabel.getFontMetrics(floatLabel.getFont());
