@@ -37,14 +37,14 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 
-abstract class AbstractLoadAttributesTask extends AbstractTask {
+abstract class AbstractLoadTableTask extends AbstractTask {
 
 	private final CyTableReaderManager mgr;
 	private final CyNetworkManager netMgr;
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	
-	public AbstractLoadAttributesTask(final CyTableReaderManager mgr, final CyNetworkManager netMgr, final CyTableManager tabelMgr, 
+	public AbstractLoadTableTask(final CyTableReaderManager mgr, final CyNetworkManager netMgr, final CyTableManager tabelMgr, 
 			final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
 		this.netMgr = netMgr;

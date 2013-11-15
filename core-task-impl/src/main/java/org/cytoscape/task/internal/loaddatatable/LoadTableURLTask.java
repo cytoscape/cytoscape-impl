@@ -37,7 +37,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 
-public class LoadTableURLTask extends AbstractLoadAttributesTask {
+public class LoadTableURLTask extends AbstractLoadTableTask {
 	
 	@Tunable(description="Data Table URL", params="fileCategory=table;input=true")
 	public URL url;

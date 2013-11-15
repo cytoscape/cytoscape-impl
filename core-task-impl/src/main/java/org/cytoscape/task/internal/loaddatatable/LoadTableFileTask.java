@@ -36,7 +36,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 
-public class LoadTableFileTask extends AbstractLoadAttributesTask {
+public class LoadTableFileTask extends AbstractLoadTableTask {
 	@Tunable(description="Data Table file", params="fileCategory=table;input=true")
 	public File file;
 
