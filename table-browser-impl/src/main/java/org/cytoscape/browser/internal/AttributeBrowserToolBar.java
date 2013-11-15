@@ -890,70 +890,76 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	*/
 	
 	private void createNewAttribute(final String type, boolean isShared) {
-		
-		final String[] existingAttrs = getAttributeArray();
-		String newAttribName = null;
-		do {
-			newAttribName = JOptionPane.showInputDialog(this, "Please enter new column name: ",
-								    "Create New " + type + " Column",
-								    JOptionPane.QUESTION_MESSAGE);
-			if (newAttribName == null)
-				return;
-
-			if (Arrays.binarySearch(existingAttrs, newAttribName) >= 0) {
-				JOptionPane.showMessageDialog(null,
-							      "Column " + newAttribName + " already exists.",
-							      "Error.", JOptionPane.ERROR_MESSAGE);
-				newAttribName = null;
-			}
-		} while (newAttribName == null);
-
-		final CyTable attrs;
-		if(isShared) {
-			final CyNetwork network = appMgr.getCurrentNetwork();
-						
-			if(network instanceof CySubNetwork) {
-				final CyRootNetwork rootNetwork = ((CySubNetwork) network).getRootNetwork();
-				CyTable sharedTable = null;
-				if(this.objType == CyNode.class)
-					sharedTable = rootNetwork.getSharedNodeTable();
-				else if(this.objType == CyEdge.class)
-					sharedTable = rootNetwork.getSharedEdgeTable();
-				else if(this.objType == CyNetwork.class)
-					sharedTable = rootNetwork.getSharedNetworkTable();
-				else {
-					throw new IllegalStateException("Object type is not valid.  This should not happen.");
+		try {
+			final String[] existingAttrs = getAttributeArray();
+			String newAttribName = null;
+			do {
+				newAttribName = JOptionPane.showInputDialog(this, "Please enter new column name: ",
+									    "Create New " + type + " Column",
+									    JOptionPane.QUESTION_MESSAGE);
+				if (newAttribName == null)
+					return;
+	
+				if (Arrays.binarySearch(existingAttrs, newAttribName) >= 0) {
+					JOptionPane.showMessageDialog(null,
+								      "Column " + newAttribName + " already exists.",
+								      "Error", JOptionPane.ERROR_MESSAGE);
+					newAttribName = null;
 				}
-				attrs = sharedTable;
+			} while (newAttribName == null);
+	
+			final CyTable attrs;
+			if(isShared) {
+				final CyNetwork network = appMgr.getCurrentNetwork();
+							
+				if(network instanceof CySubNetwork) {
+					final CyRootNetwork rootNetwork = ((CySubNetwork) network).getRootNetwork();
+					CyTable sharedTable = null;
+					if(this.objType == CyNode.class)
+						sharedTable = rootNetwork.getSharedNodeTable();
+					else if(this.objType == CyEdge.class)
+						sharedTable = rootNetwork.getSharedEdgeTable();
+					else if(this.objType == CyNetwork.class)
+						sharedTable = rootNetwork.getSharedNetworkTable();
+					else {
+						throw new IllegalStateException("Object type is not valid.  This should not happen.");
+					}
+					attrs = sharedTable;
+				} else {
+					throw new IllegalArgumentException("This is not a CySubNetwork and there is no shared table.");
+				}
+				
 			} else {
-				throw new IllegalArgumentException("This is not a CySubNetwork and there is no shared table.");
+				attrs = browserTableModel.getAttributes();
 			}
-			
-		} else {
-			attrs = browserTableModel.getAttributes();
-		}
 		
-		if (type.equals("String"))
-			attrs.createColumn(newAttribName, String.class, false);
-		else if (type.equals("Floating Point"))
-			attrs.createColumn(newAttribName, Double.class, false);
-		else if (type.equals("Integer"))
-			attrs.createColumn(newAttribName, Integer.class, false);
-		else if (type.equals("Long Integer"))
-			attrs.createColumn(newAttribName, Long.class, false);
-		else if (type.equals("Boolean"))
-			attrs.createColumn(newAttribName, Boolean.class, false);
-		else if (type.equals("String List"))
-			attrs.createListColumn(newAttribName, String.class, false);
-		else if (type.equals("Floating Point List"))
-			attrs.createListColumn(newAttribName, Double.class, false);
-		else if (type.equals("Integer List"))
-			attrs.createListColumn(newAttribName, Integer.class, false);
-		else if (type.equals("Long Integer List"))
-			attrs.createListColumn(newAttribName, Long.class, false);
-		else if (type.equals("Boolean List"))
-			attrs.createListColumn(newAttribName, Boolean.class, false);
-		else
-			throw new IllegalArgumentException("unknown column type \"" + type + "\".");
+			if (type.equals("String"))
+				attrs.createColumn(newAttribName, String.class, false);
+			else if (type.equals("Floating Point"))
+				attrs.createColumn(newAttribName, Double.class, false);
+			else if (type.equals("Integer"))
+				attrs.createColumn(newAttribName, Integer.class, false);
+			else if (type.equals("Long Integer"))
+				attrs.createColumn(newAttribName, Long.class, false);
+			else if (type.equals("Boolean"))
+				attrs.createColumn(newAttribName, Boolean.class, false);
+			else if (type.equals("String List"))
+				attrs.createListColumn(newAttribName, String.class, false);
+			else if (type.equals("Floating Point List"))
+				attrs.createListColumn(newAttribName, Double.class, false);
+			else if (type.equals("Integer List"))
+				attrs.createListColumn(newAttribName, Integer.class, false);
+			else if (type.equals("Long Integer List"))
+				attrs.createListColumn(newAttribName, Long.class, false);
+			else if (type.equals("Boolean List"))
+				attrs.createListColumn(newAttribName, Boolean.class, false);
+			else
+				throw new IllegalArgumentException("unknown column type \"" + type + "\".");
+		}
+		catch(IllegalArgumentException e) {
+			JOptionPane.showMessageDialog(null,
+				      e.getMessage(),
+				      "Error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 }
