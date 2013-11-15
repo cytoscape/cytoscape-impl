@@ -45,7 +45,6 @@ public class ResourceManager {
 	public static final String BASE_URI = "http://localhost:";
 	public static final String BASE_PATH = "/cytoscape/";
 	
-	
 	private final Set<Object> resourceSet;
 	
 	private ResourceConfig config;
@@ -55,7 +54,6 @@ public class ResourceManager {
 	
 	public ResourceManager(final String restPortNumber) {
 		// Create our ResourceConfig and initialize it with our internal resources
-
 		this.resourceSet = new HashSet<Object>();
 		this.uri= BASE_URI + restPortNumber + BASE_PATH;
 	}
@@ -72,18 +70,25 @@ public class ResourceManager {
 		if(server!= null && server.isStarted()) {
 			stopServer();
 		}
-		
 		// Create our ResourceConfig and initialize it with our internal resources
 		server = GrizzlyHttpServerFactory.createHttpServer(URI.create(uri), config);
-		System.out.println(String.format("Jersey app started with WADL available at " + "%sapplication.wadl\n", uri));
+		final String message = String.format("Jersey app started with WADL available at " + "%sapplication.wadl\n", uri);
+		logger.info(message);
+		System.out.println(message);
 	}
 
 	final void stopServer() {
-		if(server != null) {
+		if(server != null && server.isStarted()) {
 			server.stop();
 		}
 	}
 	
+	/**
+	 * Register exported RESTResource (OSGi services)
+	 * 
+	 * @param resource
+	 * @param props
+	 */
 	public void addResource(final RESTResource resource, Map<String, String> props) {
 		logger.info("Adding new REST resource (API): " + resource.toString());
 		this.resourceSet.add(resource);
@@ -93,10 +98,13 @@ public class ResourceManager {
 		this.config.registerInstances(resourceSet);
 		
 		startServer();
-		
 		Set<Object> insts = config.getInstances();
 		for(Object r: insts) {
+			
 			System.out.println("Registered Resource Object: " + r.toString());
+			Class<?>[] inf = r.getClass().getInterfaces();
+			for(Class<?> c: inf)
+				System.out.println("Registered Resource Object INF: " + c.toString());
 		}
 	}
 
