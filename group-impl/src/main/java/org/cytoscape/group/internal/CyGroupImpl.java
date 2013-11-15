@@ -850,9 +850,9 @@ class CyGroupImpl implements CyGroup {
 				recursiveMeta2 += System.currentTimeMillis()-timeStamp;
 			}
 		}
-		System.out.println("Simple Meta processing took: "+simpleMeta+"ms");
-		System.out.println("Recursive (partner edge) processing took: "+recursiveMeta1+"ms");
-		System.out.println("Recursive (partner meta edge) processing took: "+recursiveMeta2+"ms");
+		// System.out.println("Simple Meta processing took: "+simpleMeta+"ms");
+		// System.out.println("Recursive (partner edge) processing took: "+recursiveMeta1+"ms");
+		// System.out.println("Recursive (partner meta edge) processing took: "+recursiveMeta2+"ms");
 	}
 
 	protected int getDescendents(CyNetwork net) {
