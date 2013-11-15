@@ -138,14 +138,9 @@ public class MergeDataTableTaskFactoryImpl extends AbstractTaskFactory implement
 		sourceColNames.setSelectedValues(sourceColumnsList);
 		ListSingleSelection<String> sourceColumn = new ListSingleSelection<String>(sourceKeyColumn);
 		sourceColumn.setSelectedValue(sourceKeyColumn);
-		/*ListSingleSelection<String> mapOption = new ListSingleSelection<String>("New Column","New Virtual Column");
 		
-		if(mergeColumnVirtual)
-			mapOption.setSelectedValue("New Virtual Column");
-		else
-			mapOption.setSelectedValue("New Column");*/
 		
-		m.put("ApplySoftMerge", mergeColumnVirtual);
+		m.put("MergeType", mergeColumnVirtual);
 		m.put("SourceMergeKey", sourceColumn);
 		m.put("TargetMergeKey", columnNamesList);
 		m.put("SourceTable", sourceTableList);

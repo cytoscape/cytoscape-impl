@@ -42,7 +42,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 	private static final long serialVersionUID = -597481727043928800L;
 	
 	private static final String APP_MENU_TITLE ="Merge Networks";
-	private static final String PARENT_MENU ="Tools";
+	private static final String PARENT_MENU ="Tools.Merge Tools";
 	
 	private final CySwingApplication swingApp;
 	private final CyNetworkManager cnm;
@@ -56,6 +56,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 			CreateNetworkViewTaskFactory netViewCreator) {
 		super(APP_MENU_TITLE);
 		setPreferredMenu(PARENT_MENU);
+		setMenuGravity((float)0.0);
 		
 		this.swingApp = swingApp;
 		this.cnm = cnm;

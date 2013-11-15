@@ -44,13 +44,6 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 		return "Import Column From Table";
 	}
 
-
-	
-//	@ContainsTunables
-//	public MapTableToNetworkTablesTask mappingTask;
-
-	
-
 	@ContainsTunables
 	public ImportDataTableTask importTablesTask;
 	
@@ -61,7 +54,6 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	public CombineReaderAndMappingTask(CyTableReader readerTask ,final CyTableManager tabelMgr, CyNetworkManager networkManager, final CyRootNetworkManager rootNetMgr){
 		this.readerTask = readerTask;
 		this.importTablesTask = new ImportDataTableTask(readerTask, tabelMgr,rootNetMgr, networkManager);
-	//	this.mappingTask = new MapTableToNetworkTablesTask(networkManager, readerTask, updateAddedNetworkAttributes, rootNetMgr);
 	}
 
 	@Override
@@ -73,9 +65,12 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 				return readVS;
 		}
 		
-		// If MapTableToNetworkTablesTask implemented TunableValidator, then
-		// this is what we'd do:
-		// return mappingTask.getValidationState(errMsg);
+		if ( importTablesTask instanceof TunableValidator ) {
+			ValidationState readVS = ((TunableValidator)importTablesTask).getValidationState(errMsg);
+
+			if ( readVS != OK )
+				return readVS;
+		}
 		
 		return OK;
 	}
@@ -84,7 +79,6 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		readerTask.run(taskMonitor);
 		this.importTablesTask.run(taskMonitor);
-	//	mappingTask.run(taskMonitor);
 	}
 
 }

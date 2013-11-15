@@ -45,7 +45,6 @@ public class CytoscapeMenus {
 		menuBar.addMenu("File.New.Network", 0.0);
 		menuBar.addMenu("File.Import", 5.0);
 		menuBar.addMenu("File.Export", 5.1);
-		menuBar.addMenu("File.Load Data Table", 5.3);
 		menuBar.addMenu("Edit", 0.0);
 		menuBar.addMenu("View", 0.0);
 		menuBar.addMenu("Select", 0.0);
@@ -58,7 +57,6 @@ public class CytoscapeMenus {
 
 		menuBar.addSeparator("File", 2.0);
 		menuBar.addSeparator("File", 4.0);
-		menuBar.addSeparator("File", 5.2);
 		menuBar.addSeparator("File", 6.0);
 		menuBar.addSeparator("File", 7.0);
 		if (!isMac())

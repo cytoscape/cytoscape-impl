@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.IOException;
 
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
@@ -45,12 +46,13 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImportDataTableTask extends AbstractTask {
+public class ImportDataTableTask extends AbstractTask implements TunableValidator {
 	
 	enum TableType {
 		NODE_ATTR("Node Table Columns", CyNode.class),
@@ -211,6 +213,16 @@ public class ImportDataTableTask extends AbstractTask {
 			whereImportTable = new ListSingleSelection<String>(UNASSIGNED_TABLE);
 			whereImportTable.setSelectedValue(UNASSIGNED_TABLE);
 		}
+		
+		if(byReader)
+		{
+			if( this.reader != null && this.reader.getTables() != null)
+			{
+				newTableName = reader.getTables()[0].getTitle();
+			}
+		}
+		else
+			newTableName = globalTable.getTitle();
 
 		if(networksPresent)
 		{
@@ -491,6 +503,31 @@ public class ImportDataTableTask extends AbstractTask {
 		}
 
 		return true;
+	}
+	
+	@Override
+	public ValidationState getValidationState(Appendable errMsg) {
+		
+		if(!whereImportTable.getSelectedValue().matches(UNASSIGNED_TABLE) || newTableName.isEmpty())
+			return ValidationState.OK;
+			
+		for (CyTable table : tableMgr.getGlobalTables())
+		{
+			try {
+				if (table.getTitle().matches(newTableName))
+				{
+					errMsg.append("There already exists a table with name: " + newTableName + ". Please select another table name.\n");
+					return ValidationState.INVALID;
+				}
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+				return ValidationState.INVALID;
+			}
+		}
+		
+		
+		return ValidationState.OK;
 	}
 
 }
