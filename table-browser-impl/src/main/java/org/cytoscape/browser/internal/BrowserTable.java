@@ -52,7 +52,6 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 
@@ -132,6 +131,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	private final CyTableManager tableManager;
 	
 	private boolean ignoreRowSelectionEvents;
+	private boolean ignoreRowSetEvents;
 
 	private JPopupMenu cellMenu;
 
@@ -258,7 +258,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	@Override
 	public void addRowSelectionInterval(int index0, int index1) {
 		super.addRowSelectionInterval(index0, index1);
-		// Make sure this is set, so the selected cell is correctly rendered when there is more than one selected rows
+		// Make sure this is set, so the selected cell is correctly rendered when there is more than one selected row
 		((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(index1);
 	}
 	
@@ -510,46 +510,43 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
+		if (ignoreRowSetEvents)
+			return;
+		
 		final BrowserTableModel model = (BrowserTableModel) getModel();
 		final CyTable dataTable = model.getDataTable();
 
 		if (e.getSource() != dataTable)
 			return;		
 
-		try {
-			ignoreRowSelectionEvents = true;
+		if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
+				|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
+			model.clearSelectedRows();
+			boolean foundANonSelectedColumnName = false;
 			
+			for (final RowSetRecord rowSet : e.getPayloadCollection()) {
+				if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
+					foundANonSelectedColumnName = true;
+					break;
+				}
+			}
+			
+			if (!foundANonSelectedColumnName) {
+				model.fireTableDataChanged();
+				return;
+			}
+		}
+
+		final Collection<RowSetRecord> rows = e.getPayloadCollection();
+
+		synchronized (this) {
 			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
 					|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
-				model.clearSelectedRows();
-				boolean foundANonSelectedColumnName = false;
-				
-				for (final RowSetRecord rowSet : e.getPayloadCollection()) {
-					if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
-						foundANonSelectedColumnName = true;
-						break;
-					}
-				}
-				
-				if (!foundANonSelectedColumnName) {
-					model.fireTableDataChanged();
-					return;
-				}
+				model.fireTableDataChanged();
+			} else {
+				if (!tableManager.getGlobalTables().contains(dataTable))
+					bulkUpdate(rows);
 			}
-	
-			final Collection<RowSetRecord> rows = e.getPayloadCollection();
-	
-			synchronized (this) {
-				if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
-						|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
-					model.fireTableDataChanged();
-				} else {
-					if (!tableManager.getGlobalTables().contains(dataTable))
-						bulkUpdate(rows);
-				}
-			}
-		} finally {
-			ignoreRowSelectionEvents = false;
 		}
 	}
 
@@ -813,26 +810,33 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		final String pKeyName = dataTable.getPrimaryKey().getName();
 		final int rowCount = getRowCount();
 		
-		for (int i = 0; i < rowCount; i++) {
-			// Getting the row from data table solves the problem with hidden or moved SUID column.
-			// However, since the rows might be sorted we need to convert the index to model
-			int modelRow = convertRowIndexToModel(i);
-			final ValidatedObjectAndEditString tableKey = (ValidatedObjectAndEditString) model.getValueAt(modelRow, pKeyName);
-			Long pk = null;
+		try {
+			ignoreRowSelectionEvents = true;
 			
-			try{
-				// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
-				pk = Long.parseLong(tableKey.getEditString());
-			} catch (NumberFormatException nfe) {
-				logger.error("Error parsing long from table " + getName(), nfe);
+			for (int i = 0; i < rowCount; i++) {
+				// Getting the row from data table solves the problem with hidden or moved SUID column.
+				// However, since the rows might be sorted we need to convert the index to model
+				int modelRow = convertRowIndexToModel(i);
+				final ValidatedObjectAndEditString tableKey =
+						(ValidatedObjectAndEditString) model.getValueAt(modelRow, pKeyName);
+				Long pk = null;
+				
+				try {
+					// TODO: Temp fix: is it a requirement that all CyTables have a Long SUID column as PK?
+					pk = Long.parseLong(tableKey.getEditString());
+				} catch (NumberFormatException nfe) {
+					logger.error("Error parsing long from table " + getName(), nfe);
+				}
+				
+				if (pk != null) {
+					if (suidSelected.contains(pk))
+						addRowSelectionInterval(i, i);
+					else if (suidUnselected.contains(pk))
+						removeRowSelectionInterval(i, i);
+				}
 			}
-			
-			if (pk != null) {
-				if (suidSelected.contains(pk))
-					addRowSelectionInterval(i, i);
-				else if (suidUnselected.contains(pk))
-					removeRowSelectionInterval(i, i);
-			}
+		} finally {
+			ignoreRowSelectionEvents = false;
 		}
 	}
 
@@ -857,7 +861,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			return;
 
 		final int selectedRowCount = getSelectedRowCount();
-
 		final Set<CyRow> targetRows = new HashSet<CyRow>();
 		
 		for (int i = 0; i < selectedRowCount; i++) {
@@ -873,23 +876,29 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		if (tableManager.getGlobalTables().contains(table) == false) {
 			List<CyRow> allRows = btModel.getDataTable().getAllRows();
 			
-			for (CyRow row : allRows) {
-				final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
+			try {
+				ignoreRowSetEvents = true;
 				
-				if (targetRows.contains(row)) {
-					row.set(CyNetwork.SELECTED, true);
-					continue;
+				for (CyRow row : allRows) {
+					final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
+					
+					if (targetRows.contains(row)) {
+						row.set(CyNetwork.SELECTED, true);
+						continue;
+					}
+	
+					if (val != null && (val == true))
+						row.set(CyNetwork.SELECTED, false);
 				}
-
-				if (val != null && (val == true))
-					row.set(CyNetwork.SELECTED, false);
-			}
-			
-			final CyNetworkView curView = applicationManager.getCurrentNetworkView();
-			
-			if (curView != null) {
-				eventHelper.flushPayloadEvents();
-				curView.updateView();
+				
+				final CyNetworkView curView = applicationManager.getCurrentNetworkView();
+				
+				if (curView != null) {
+					eventHelper.flushPayloadEvents();
+					curView.updateView();
+				}
+			} finally {
+				ignoreRowSetEvents = false;
 			}
 		}
 	}

@@ -258,14 +258,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 		});
 		
-		final BrowserTable currentBrowserTable = getCurrentBrowserTable();
-		
-		if (currentBrowserTable != null) {
-			final BrowserTableModel model = (BrowserTableModel) currentBrowserTable.getModel();
-			model.setViewMode(rowSelectionMode);
-		}
-		
 		showSelectedTable();
+		changeSelectionMode();
 	}
 
 	@Override
