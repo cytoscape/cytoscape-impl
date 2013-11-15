@@ -98,14 +98,6 @@ public class ResourceManager {
 		this.config.registerInstances(resourceSet);
 		
 		startServer();
-		Set<Object> insts = config.getInstances();
-		for(Object r: insts) {
-			
-			System.out.println("Registered Resource Object: " + r.toString());
-			Class<?>[] inf = r.getClass().getInterfaces();
-			for(Class<?> c: inf)
-				System.out.println("Registered Resource Object INF: " + c.toString());
-		}
 	}
 
 	public void removeResource(final RESTResource resource, Map<String, String> props) {
