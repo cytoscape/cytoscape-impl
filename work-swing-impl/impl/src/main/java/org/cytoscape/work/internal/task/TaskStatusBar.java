@@ -108,6 +108,14 @@ class TaskStatusBar extends JPanel {
 		if (progressBar.isVisible())
 			progressBar.setVisible(false);
 	}
+	
+	public void waitAndReset(long millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+		}
+		resetStatusBar();
+	}
 
 	public void resetStatusBar() {
 		titleLabel.setIcon(null);

@@ -504,6 +504,7 @@ class TaskMonitorImpl implements TaskMonitor {
 		if (manager.isLatestMonitor(this)) {
 			manager.getStatusBar().setTitleIcon(ICONS.get("finished"));
 			manager.getStatusBar().hideProgress();
+			manager.getStatusBar().waitAndReset(5000);
 		}
 	}
 
@@ -521,6 +522,7 @@ class TaskMonitorImpl implements TaskMonitor {
 		if (manager.isLatestMonitor(this)) {
 			manager.getStatusBar().setTitleIcon(ICONS.get("cancelled"));
 			manager.getStatusBar().hideProgress();
+			manager.getStatusBar().waitAndReset(5000);
 		}
 	}
 
@@ -534,6 +536,7 @@ class TaskMonitorImpl implements TaskMonitor {
 		if (manager.isLatestMonitor(this)) {
 			manager.getStatusBar().setTitleIcon(ICONS.get("error"));
 			manager.getStatusBar().hideProgress();
+			manager.getStatusBar().waitAndReset(5000);
 		}
 	}
 
