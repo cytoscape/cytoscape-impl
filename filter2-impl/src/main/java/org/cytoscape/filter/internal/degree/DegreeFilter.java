@@ -1,5 +1,7 @@
 package org.cytoscape.filter.internal.degree;
 
+import java.util.List;
+
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.model.AbstractTransformer;
@@ -36,21 +38,23 @@ public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		return rawCriterion;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void setCriterion(Object criterion) {
 		rawCriterion = criterion;
 		
 		if (criterion == null) {
 			lowerBound = null;
 			upperBound = null;
-		}
-		
-		if (criterion instanceof Number[]) {
+		} else if (criterion instanceof List) {
+			List<Number> list = (List<Number>) criterion;
+			lowerBound = list.get(0);
+			upperBound = list.get(1);
+			rawCriterion = new Number[] { lowerBound, upperBound };
+		} else if (criterion instanceof Number[]) {
 			Number[] range = (Number[]) criterion;
 			lowerBound = range[0];
 			upperBound = range[1];
-		}
-		
-		if (criterion instanceof Number) {
+		} else if (criterion instanceof Number) {
 			lowerBound = (Number) criterion;
 			upperBound = lowerBound;
 		}

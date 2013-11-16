@@ -218,18 +218,22 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			
 			Class<? extends CyIdentifiable> attributeType = filter.getAttributeType();
 			double[] range;
+			String name = filter.getAttributeName();
+			if (name == null) {
+				continue;
+			}
 			CyTable table;
 			if (CyNode.class.equals(attributeType)) {
-				range = nodeAttributeRanges.get(filter.getAttributeName());
+				range = nodeAttributeRanges.get(name);
 				table = network.getDefaultNodeTable();
 			} else if (CyEdge.class.equals(attributeType)) {
-				range = edgeAttributeRanges.get(filter.getAttributeName());
+				range = edgeAttributeRanges.get(name);
 				table = network.getDefaultEdgeTable();
 			} else {
 				continue;
 			}
 			
-			CyColumn column = table.getColumn(filter.getAttributeName());
+			CyColumn column = table.getColumn(name);
 			if (column == null) {
 				continue;
 			}
@@ -314,6 +318,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 
 	private void addFilterElements(CyTable table, Class<? extends CyIdentifiable> type) {
+		if (table == null) {
+			return;
+		}
 		for (CyColumn column : table.getColumns()) {
 			Class<?> elementType = column.getType();
 			Class<?> listElementType = column.getListElementType();

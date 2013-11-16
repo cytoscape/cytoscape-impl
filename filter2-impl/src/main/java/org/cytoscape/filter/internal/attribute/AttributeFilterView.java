@@ -44,6 +44,10 @@ public interface AttributeFilterView {
 				return -1;
 			}
 			
+			if (other.attributeType == null) {
+				return 1;
+			}
+			
 			if (attributeType.equals(other.attributeType)) {
 				return String.CASE_INSENSITIVE_ORDER.compare(name, other.name);
 			}

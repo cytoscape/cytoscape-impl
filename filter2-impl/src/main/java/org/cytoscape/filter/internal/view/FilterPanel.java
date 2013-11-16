@@ -126,6 +126,10 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 	public void setRootPanel(CompositeFilterPanel panel) {
 		root = panel;
 		scrollPane.setViewportView(root);
+		
+		if (root == null) {
+			return;
+		}
 		root.updateLayout();
 	}
 	

@@ -37,15 +37,27 @@ import org.cytoscape.filter.internal.interaction.InteractionTransformerFactory;
 import org.cytoscape.filter.internal.interaction.InteractionTransformerViewFactory;
 import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
 import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
+import org.cytoscape.filter.internal.view.FilterPanel;
+import org.cytoscape.filter.internal.view.FilterPanelController;
+import org.cytoscape.filter.internal.view.FilterWorker;
 import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.IconManagerImpl;
+import org.cytoscape.filter.internal.view.LazyWorkQueue;
+import org.cytoscape.filter.internal.view.TransformerPanel;
+import org.cytoscape.filter.internal.view.TransformerPanelController;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
+import org.cytoscape.filter.internal.view.TransformerWorker;
 import org.cytoscape.filter.model.ElementTransformerFactory;
 import org.cytoscape.filter.model.FilterFactory;
 import org.cytoscape.filter.model.HolisticTransformerFactory;
 import org.cytoscape.filter.model.TransformerSource;
 import org.cytoscape.filter.view.TransformerViewFactory;
+import org.cytoscape.io.read.CyTransformerReader;
+import org.cytoscape.io.write.CyTransformerWriter;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {	
@@ -80,10 +92,30 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(context, new AttributeFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
 		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, new Properties());
 		registerService(context, new InteractionTransformerViewFactory(), TransformerViewFactory.class, new Properties());
-
+		
+		LazyWorkQueue queue = new LazyWorkQueue();
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
-		CytoPanelComponent filterPanel = new FilterCytoPanelComponent(transformerManager, transformerViewManager, applicationManager, iconManager, modelMonitor);
-		registerService(context, filterPanel, CytoPanelComponent.class, new Properties());
+		
+		CyTransformerReader reader = getService(context, CyTransformerReader.class);
+		CyTransformerWriter writer = getService(context, CyTransformerWriter.class);
+		FilterIO filterIo = new FilterIO(reader, writer);
+
+		TaskManager<?, ?> taskManager = getService(context, TaskManager.class);
+
+		FilterWorker filterWorker = new FilterWorker(queue, applicationManager);
+		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor, filterIo, taskManager);
+		FilterPanel filterPanel = new FilterPanel(filterPanelController, iconManager, filterWorker);
+		
+		TransformerWorker transformerWorker = new TransformerWorker(queue, applicationManager, transformerManager);
+		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker, filterIo, taskManager);
+		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, iconManager, transformerWorker);
+	
+		CytoPanelComponent selectPanel = new FilterCytoPanelComponent(transformerViewManager, applicationManager, iconManager, modelMonitor, filterPanel, transformerPanel);
+		registerService(context, selectPanel, CytoPanelComponent.class, new Properties());
+		
+		FilterSettingsManager settingsManager = new FilterSettingsManager(filterPanel, transformerPanel, filterIo);
+		registerService(context, settingsManager, SessionAboutToBeSavedListener.class, new Properties());
+		registerService(context, settingsManager, SessionLoadedListener.class, new Properties());
 	}
 }
 

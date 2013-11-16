@@ -91,6 +91,7 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 		return rawCriterion;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void setCriterion(Object criterion) {
 		try {
 			if (criterion == null) {
@@ -104,13 +105,16 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 			
 			rawCriterion = criterion;
 			
-			if (criterion instanceof Number[]) {
+			if (criterion instanceof List) {
+				List<Number> list = (List<Number>) criterion;
+				lowerBound = list.get(0);
+				upperBound = list.get(1);
+				rawCriterion = new Number[] { lowerBound, upperBound };
+			} else if (criterion instanceof Number[]) {
 				Number[] range = (Number[]) criterion;
 				lowerBound = range[0];
 				upperBound = range[1];
-			}
-			
-			if (criterion instanceof Number) {
+			} else if (criterion instanceof Number) {
 				lowerBound = (Number) criterion;
 				upperBound = lowerBound;
 			}

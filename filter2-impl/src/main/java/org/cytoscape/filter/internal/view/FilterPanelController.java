@@ -8,17 +8,22 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelMonitor;
+import org.cytoscape.filter.internal.ModelUtil;
 import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerComboBoxElement;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
+import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.TaskManager;
 
 public class FilterPanelController extends AbstractPanelController<FilterElement, FilterPanel> {
 	private TransformerManager transformerManager;
@@ -26,8 +31,8 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	
 	private ModelMonitor modelMonitor;
 
-	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, FilterWorker worker, ModelMonitor modelMonitor) {
-		super(worker);
+	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, FilterWorker worker, ModelMonitor modelMonitor, FilterIO filterIo, TaskManager<?, ?> taskManager) {
+		super(worker, filterIo, taskManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
@@ -272,5 +277,77 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	@Override
 	protected String getElementExistsWarningTemplate() {
 		return "The name '%1$s' is already being used by another filter.  Please provide a different name.";
+	}
+	
+	@Override
+	protected String getExportLabel() {
+		return "Export filters...";
+	}
+	
+	@Override
+	protected String getImportLabel() {
+		return "Import filters...";
+	}
+	
+	@Override
+	public void addNamedTransformers(final FilterPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					addNamedTransformers(panel, namedTransformers);
+				}
+			});
+			return;
+		}
+		
+		for (NamedTransformer<CyNetwork, CyIdentifiable> namedTransformer : namedTransformers) {
+			int validated = 0;
+			for (Transformer<CyNetwork, CyIdentifiable> transformer : namedTransformer.getTransformers()) {
+				if (transformer instanceof Filter) {
+					validated++;
+				}
+			}
+			if (validated == 0) {
+				continue;
+			}
+			
+			String name = findUniqueName(namedTransformer.getName());
+			FilterElement element = addNewElement(name);
+			for (Transformer<CyNetwork, CyIdentifiable> transformer : namedTransformer.getTransformers()) {
+				if (!(transformer instanceof Filter)) {
+					continue;
+				}
+				Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
+				element.filter.append(filter);
+			}
+		}
+		FilterElement selected = (FilterElement) namedElementComboBoxModel.getSelectedItem();
+		if (selected == null) {
+			return;
+		}
+		setFilter(selected.filter, panel);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers() {
+		DynamicComboBoxModel<FilterElement> model = getElementComboBoxModel();
+		
+		NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers = new NamedTransformer[model.getSize() - 1];
+		int i = 0;
+		for (FilterElement element : model) {
+			if (element.filter == null) {
+				continue;
+			}
+			
+			Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[element.filter.getLength()];
+			for (int j = 0; j < transformers.length; j++) {
+				transformers[j] = element.filter.get(j);
+			}
+			namedTransformers[i] = (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
+			i++;
+		}
+		return namedTransformers;
 	}
 }

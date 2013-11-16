@@ -79,6 +79,10 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 	void setRootPanel(CompositeTransformerPanel panel) {
 		root = panel;
 		scrollPane.setViewportView(root);
+		
+		if (root == null) {
+			return;
+		}
 		root.updateLayout();
 	}
 

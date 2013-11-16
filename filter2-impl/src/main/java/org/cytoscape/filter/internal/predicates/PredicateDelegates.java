@@ -7,6 +7,10 @@ import org.cytoscape.filter.predicates.Predicate;
 
 public class PredicateDelegates {
 	public static NumericPredicateDelegate getNumericDelegate(Predicate predicate) {
+		if (predicate == null) {
+			return null;
+		}
+		
 		switch (predicate) {
 		case IS:
 			return IsDelegate.instance;
@@ -28,6 +32,10 @@ public class PredicateDelegates {
 	}
 	
 	public static StringPredicateDelegate getStringDelegate(Predicate predicate) {
+		if (predicate == null) {
+			return null;
+		}
+
 		switch (predicate) {
 		case IS:
 			return IsDelegate.instance;

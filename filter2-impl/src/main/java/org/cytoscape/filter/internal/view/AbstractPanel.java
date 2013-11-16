@@ -74,7 +74,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 			}
 		});
 
-		exportMenu = new JMenuItem("Export filters...");
+		exportMenu = new JMenuItem(controller.getExportLabel());
 		exportMenu.addActionListener(new ActionListener() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -83,7 +83,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 			}
 		});
 
-		importMenu = new JMenuItem("Import filters...");
+		importMenu = new JMenuItem(controller.getImportLabel());
 		importMenu.addActionListener(new ActionListener() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -219,5 +219,9 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	@Override
 	public JProgressBar getProgressBar() {
 		return progressBar;
+	}
+
+	public C getController() {
+		return controller;
 	}
 }
