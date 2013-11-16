@@ -24,14 +24,6 @@ package org.cytoscape.io.datasource.internal.bookmarks;
  * #L%
  */
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DefaultDataSource;
 import org.cytoscape.property.CyProperty;
@@ -41,6 +33,10 @@ import org.cytoscape.property.bookmark.Category;
 import org.cytoscape.property.bookmark.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 public class BookmarkDataSourceBuilder {
 
@@ -52,7 +48,7 @@ public class BookmarkDataSourceBuilder {
 		CONVERSION_MAP = new HashMap<String, DataCategory>();
 		CONVERSION_MAP.put("network", DataCategory.NETWORK);
 		CONVERSION_MAP.put("table", DataCategory.TABLE);
-		CONVERSION_MAP.put("ontology", DataCategory.TABLE);
+		CONVERSION_MAP.put("ontology", DataCategory.UNSPECIFIED);
 		CONVERSION_MAP.put("plugins", DataCategory.UNSPECIFIED);		
 	}
 
