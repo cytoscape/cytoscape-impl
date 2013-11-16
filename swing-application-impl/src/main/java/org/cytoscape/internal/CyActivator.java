@@ -359,6 +359,7 @@ public class CyActivator extends AbstractCyActivator {
 		arrangeGridTaskFactoryProps.setProperty(ACCELERATOR,"cmd g");
 		arrangeGridTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[110]");
 		arrangeGridTaskFactoryProps.setProperty(TITLE, "Grid");
+		arrangeGridTaskFactoryProps.setProperty(MENU_GRAVITY, "1.0");
 		registerService(bc, arrangeGridTaskFactory, TaskFactory.class, arrangeGridTaskFactoryProps);
 
 		Properties arrangeCascadeTaskFactoryProps = new Properties();
@@ -366,6 +367,7 @@ public class CyActivator extends AbstractCyActivator {
 		arrangeCascadeTaskFactoryProps.setProperty(PREFERRED_MENU,
 		                                           "View.Arrange Network Windows[110]");
 		arrangeCascadeTaskFactoryProps.setProperty(TITLE, "Cascade");
+		arrangeCascadeTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
 		registerService(bc, arrangeCascadeTaskFactory, TaskFactory.class,
 		                arrangeCascadeTaskFactoryProps);
 
@@ -374,6 +376,7 @@ public class CyActivator extends AbstractCyActivator {
 		arrangeHorizontalTaskFactoryProps.setProperty(PREFERRED_MENU,
 		                                              "View.Arrange Network Windows[110]");
 		arrangeHorizontalTaskFactoryProps.setProperty(TITLE, "Horizontal");
+		arrangeHorizontalTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");
 		registerService(bc, arrangeHorizontalTaskFactory, TaskFactory.class,
 		                arrangeHorizontalTaskFactoryProps);
 
@@ -382,9 +385,10 @@ public class CyActivator extends AbstractCyActivator {
 		arrangeVerticalTaskFactoryProps.setProperty(PREFERRED_MENU,
 		                                            "View.Arrange Network Windows[110]");
 		arrangeVerticalTaskFactoryProps.setProperty(TITLE, "Vertical");
-		
+		arrangeVerticalTaskFactoryProps.setProperty(MENU_GRAVITY, "4.0");
 		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
 		                arrangeVerticalTaskFactoryProps);
+		
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
 		registerAllServices(bc, networkPanel, new Properties());
 		registerAllServices(bc, networkViewManager, new Properties());
