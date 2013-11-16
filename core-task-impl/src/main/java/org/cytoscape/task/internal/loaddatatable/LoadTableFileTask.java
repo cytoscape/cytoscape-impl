@@ -25,9 +25,6 @@ package org.cytoscape.task.internal.loaddatatable;
  */
 
 
-
-import java.io.File;
-
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
@@ -35,14 +32,16 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+import java.io.File;
+
 
 public class LoadTableFileTask extends AbstractLoadTableTask {
 	@Tunable(description="Data Table file", params="fileCategory=table;input=true")
 	public File file;
 
-	public LoadTableFileTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tabelMgr, 
+	public LoadTableFileTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tableMgr,
 			final CyRootNetworkManager rootNetMgr) {
-		super(mgr, netMgr, tabelMgr, rootNetMgr);
+		super(mgr, netMgr, tableMgr, rootNetMgr);
 	}
 
 	/**
