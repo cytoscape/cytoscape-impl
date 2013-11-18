@@ -70,6 +70,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	public ImportOntologyAndAnnotationAction() {
 		super("Ontology and Annotation...");
 		setPreferredMenu("File.Import");
+		setMenuGravity(3.0f);
 
 		this.bookmarksProp = CytoscapeServices.bookmark;
 		this.bkUtil = CytoscapeServices.bookmarksUtil;

@@ -260,7 +260,7 @@ public class CyActivator extends AbstractCyActivator {
 	
 		Properties loadNetworkFileTaskFactoryProps = new Properties();
 		loadNetworkFileTaskFactoryProps.setProperty(ID,"loadNetworkFileTaskFactory");
-		loadNetworkFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network");
+		loadNetworkFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network[1.0]");
 		loadNetworkFileTaskFactoryProps.setProperty(ACCELERATOR,"cmd l");
 		loadNetworkFileTaskFactoryProps.setProperty(TITLE,"File...");
 		//loadNetworkFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
@@ -275,7 +275,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties loadNetworkURLTaskFactoryProps = new Properties();
 		loadNetworkURLTaskFactoryProps.setProperty(ID,"loadNetworkURLTaskFactory");
-		loadNetworkURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network");
+		loadNetworkURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network[1.0]");
 		loadNetworkURLTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift l");
 		loadNetworkURLTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
 		loadNetworkURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.1");
@@ -290,7 +290,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties loadVizmapFileTaskFactoryProps = new Properties();
 		loadVizmapFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import");
-		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
+		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"4.0");
 		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Visual Style File...");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
@@ -298,8 +298,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,loadVizmapFileTaskFactory,LoadVizmapFileTaskFactory.class, new Properties());
 
 		Properties importAttrsFileTaskFactoryProps = new Properties();
-		importAttrsFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table");
-		importAttrsFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
+		importAttrsFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table[2.0]");
+		importAttrsFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		importAttrsFileTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.2");
 		importAttrsFileTaskFactoryProps.setProperty(TITLE,"File...");
 		importAttrsFileTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_file_import.png").toString());
@@ -313,8 +313,8 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		Properties importAttrsURLTaskFactoryProps = new Properties();
-		importAttrsURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table");
-		importAttrsURLTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
+		importAttrsURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table[2.0]");
+		importAttrsURLTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
 		importAttrsURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.3");
 		importAttrsURLTaskFactoryProps.setProperty(TITLE,"URL...");
 		importAttrsURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_url_import.png").toString());
@@ -328,7 +328,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties proxySettingsTaskFactoryProps = new Properties();
 		proxySettingsTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit.Preferences");
-		proxySettingsTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
+		proxySettingsTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		proxySettingsTaskFactoryProps.setProperty(TITLE,"Proxy Settings...");
 		registerService(bc,proxySettingsTaskFactory,TaskFactory.class, proxySettingsTaskFactoryProps);
 
