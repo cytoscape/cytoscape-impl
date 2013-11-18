@@ -1,0 +1,14 @@
+{
+  "name": "arbor",
+  "homepage": "https://github.com/samizdatco/arbor",
+  "_release": "c5f7ec33c9",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "c5f7ec33c9f4ca28218779ca65e4bdcdec481884"
+  },
+  "_source": "git://github.com/samizdatco/arbor.git",
+  "_target": "*",
+  "_originalSource": "arbor",
+  "_direct": true
+}
