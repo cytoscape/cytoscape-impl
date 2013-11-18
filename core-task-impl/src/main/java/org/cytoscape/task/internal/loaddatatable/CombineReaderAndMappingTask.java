@@ -30,7 +30,7 @@ import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.internal.table.ImportDataTableTask;
+import org.cytoscape.task.internal.table.ImportTableDataTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
@@ -41,11 +41,11 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 
 	@ProvidesTitle
 	public String getTitle() {
-		return "Import Column From Table";
+		return "Import Columns From Table";
 	}
 
 	@ContainsTunables
-	public ImportDataTableTask importTablesTask;
+	public ImportTableDataTask importTableDataTask;
 	
 	@ContainsTunables
 	public CyTableReader readerTask;
@@ -53,7 +53,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	
 	public CombineReaderAndMappingTask(CyTableReader readerTask ,final CyTableManager tabelMgr, CyNetworkManager networkManager, final CyRootNetworkManager rootNetMgr){
 		this.readerTask = readerTask;
-		this.importTablesTask = new ImportDataTableTask(readerTask, tabelMgr,rootNetMgr, networkManager);
+		this.importTableDataTask = new ImportTableDataTask(readerTask, tabelMgr,rootNetMgr, networkManager);
 	}
 
 	@Override
@@ -65,8 +65,8 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 				return readVS;
 		}
 		
-		if ( importTablesTask instanceof TunableValidator ) {
-			ValidationState readVS = ((TunableValidator)importTablesTask).getValidationState(errMsg);
+		if ( importTableDataTask instanceof TunableValidator ) {
+			ValidationState readVS = ((TunableValidator)importTableDataTask).getValidationState(errMsg);
 
 			if ( readVS != OK )
 				return readVS;
@@ -78,7 +78,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		readerTask.run(taskMonitor);
-		this.importTablesTask.run(taskMonitor);
+		this.importTableDataTask.run(taskMonitor);
 	}
 
 }

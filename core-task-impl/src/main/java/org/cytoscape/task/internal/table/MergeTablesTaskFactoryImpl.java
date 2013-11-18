@@ -37,32 +37,30 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.AbstractTableTaskFactory;
-import org.cytoscape.task.edit.MergeDataTableTaskFactory;
+import org.cytoscape.task.edit.MergeTablesTaskFactory;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTask.TableType;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public class MergeDataTableTaskFactoryImpl extends AbstractTaskFactory implements MergeDataTableTaskFactory {
+public class MergeTablesTaskFactoryImpl extends AbstractTaskFactory implements MergeTablesTaskFactory {
 	
 	private final CyNetworkManager networkManager;
 	private final TunableSetter tunableSetter; 
 	private final CyRootNetworkManager rootNetMgr;
-	private final CyTableManager tabelMgr;
+	private final CyTableManager tableMgr;
 	
-	public MergeDataTableTaskFactoryImpl( final CyTableManager tabelMgr,final CyNetworkManager networkManager, final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
+	public MergeTablesTaskFactoryImpl( final CyTableManager tableMgr,final CyNetworkManager networkManager, final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
 		this.networkManager = networkManager;
 		this.tunableSetter = tunableSetter;
 		this.rootNetMgr = rootNetMgr;
-		this.tabelMgr = tabelMgr;
+		this.tableMgr = tableMgr;
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new MergeDataTableTask(tabelMgr, rootNetMgr, networkManager));
+		return new TaskIterator(new MergeTablesTask(tableMgr, rootNetMgr, networkManager));
 	}
 	
 	
@@ -109,17 +107,17 @@ public class MergeDataTableTaskFactoryImpl extends AbstractTaskFactory implement
 		
 		final Map<String, Object> m = new HashMap<String, Object>();
 		
-	    ListSingleSelection<String> chooser = new ListSingleSelection<String>(MergeDataTableTask.NETWORK_COLLECTION,MergeDataTableTask.NETWORK_SELECTION,MergeDataTableTask.UNASSIGNED_TABLE);
+	    ListSingleSelection<String> chooser = new ListSingleSelection<String>(MergeTablesTask.NETWORK_COLLECTION,MergeTablesTask.NETWORK_SELECTION,MergeTablesTask.UNASSIGNED_TABLE);
 		
 	    if(mapToNetworks)
 	    {
 			if(selectedNetworksOnly)
-				chooser.setSelectedValue(MergeDataTableTask.NETWORK_SELECTION);
+				chooser.setSelectedValue(MergeTablesTask.NETWORK_SELECTION);
 			else
-				chooser.setSelectedValue(MergeDataTableTask.NETWORK_COLLECTION);
+				chooser.setSelectedValue(MergeTablesTask.NETWORK_COLLECTION);
 	    }
 	    else
-	    	chooser.setSelectedValue(MergeDataTableTask.UNASSIGNED_TABLE);
+	    	chooser.setSelectedValue(MergeTablesTask.UNASSIGNED_TABLE);
 	    
 		ListSingleSelection<CyTable> sourceTableList = new ListSingleSelection<CyTable> (sourceTable);
 		sourceTableList.setSelectedValue(sourceTable);
@@ -131,8 +129,8 @@ public class MergeDataTableTaskFactoryImpl extends AbstractTaskFactory implement
 		}
 		else
 		{
-			targetTableList = new ListSingleSelection<Object> (MergeDataTableTask.NO_TABLES);
-			targetTableList.setSelectedValue(MergeDataTableTask.NO_TABLES);
+			targetTableList = new ListSingleSelection<Object> (MergeTablesTask.NO_TABLES);
+			targetTableList.setSelectedValue(MergeTablesTask.NO_TABLES);
 		}
 		ListMultipleSelection<String> sourceColNames = new ListMultipleSelection<String>(sourceColumnsList);
 		sourceColNames.setSelectedValues(sourceColumnsList);

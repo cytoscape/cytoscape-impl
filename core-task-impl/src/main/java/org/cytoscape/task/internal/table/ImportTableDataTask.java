@@ -52,7 +52,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImportDataTableTask extends AbstractTask implements TunableValidator {
+public class ImportTableDataTask extends AbstractTask implements TunableValidator {
 	
 	enum TableType {
 		NODE_ATTR("Node Table Columns", CyNode.class),
@@ -171,7 +171,7 @@ public class ImportDataTableTask extends AbstractTask implements TunableValidato
 
 
 
-	public ImportDataTableTask(CyTableReader reader, CyTableManager tableMgr, CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
+	public ImportTableDataTask(CyTableReader reader, CyTableManager tableMgr, CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.reader = reader;
 		this.byReader = true;
 		this.globalTable = null;
@@ -180,7 +180,7 @@ public class ImportDataTableTask extends AbstractTask implements TunableValidato
 		init(rootNetworkManeger, networkManager);
 	}
 
-	public ImportDataTableTask(CyTable globalTable, CyTableManager tableMgr,CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
+	public ImportTableDataTask(CyTable globalTable, CyTableManager tableMgr,CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.reader = null;
 		this.byReader = false;
 		this.globalTable = globalTable;
@@ -332,7 +332,7 @@ public class ImportDataTableTask extends AbstractTask implements TunableValidato
 		if (tableType == TableType.NETWORK_ATTR)
 			return network.getTable(CyNetwork.class, namespace);
 
-		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: "
+		logger.warn("The selected table type is not valid. \nTable needs to be one of these types: "
 				+ TableType.NODE_ATTR + ", " + TableType.EDGE_ATTR + ", " + TableType.NETWORK_ATTR + ".");
 		return null;
 	}

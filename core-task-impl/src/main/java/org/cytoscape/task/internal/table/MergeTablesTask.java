@@ -55,7 +55,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MergeDataTableTask extends AbstractTask implements TunableValidator {
+public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	
 	enum TableType {
 		NODE_ATTR("Node Table Columns", CyNode.class),
@@ -94,7 +94,7 @@ public class MergeDataTableTask extends AbstractTask implements TunableValidator
 	
 	private CyRootNetworkManager rootNetworkManager;
 	private CyNetworkManager networkManager;
-	private CyTableManager tabelMgr;
+	private CyTableManager tableMgr;
 	private Map<String, CyNetwork> name2NetworkMap;
 	private Map<String, CyRootNetwork> name2RootMap;
 	private Map<String, String> source2targetColumnMap;
@@ -274,67 +274,25 @@ public class MergeDataTableTask extends AbstractTask implements TunableValidator
 		return "Merge Data Table";
 	}
 
-
-
-	public MergeDataTableTask( CyTableManager tabelMgr,CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
-		
-
-		init(tabelMgr,rootNetworkManeger, networkManager);
+	public MergeTablesTask( CyTableManager tableMgr,CyRootNetworkManager rootNetworkManager, CyNetworkManager networkManager) {
+		init(tableMgr,rootNetworkManager, networkManager);
 	}
 	
-	private final void init( CyTableManager tabelMgr,CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
+	private final void init( CyTableManager tableMgr,CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.rootNetworkManager = rootNetworkManeger;
 		this.networkManager = networkManager;
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
 		this.name2RootMap = new HashMap<String, CyRootNetwork>();
 		this.source2targetColumnMap = new HashMap<String, String>();
-		this.tabelMgr =  tabelMgr;
+		this.tableMgr =  tableMgr;
 
-		initTunable(tabelMgr,networkManager);
+		initTunable(tableMgr,networkManager);
 	}
 
 	private final void initTunable(CyTableManager tabelMgr,CyNetworkManager networkManager) {
 		
-		whereMergeTable = new ListSingleSelection<String>(NETWORK_COLLECTION,NETWORK_SELECTION, UNASSIGNED_TABLE);
-		whereMergeTable.setSelectedValue(NETWORK_COLLECTION);
-		
 		mergeType = new ListSingleSelection<String>(COPY_COLUMNS,LINK_COLUMNS);
 		mergeType.setSelectedValue(COPY_COLUMNS);
-
-		final List<TableType> options = new ArrayList<TableType>();
-		for (TableType type : TableType.values())
-			options.add(type);
-		dataTypeTargetForNetworkCollection = new ListSingleSelection<TableType>(options);
-		dataTypeTargetForNetworkCollection.setSelectedValue(TableType.NODE_ATTR);
-		dataTypeTargetForNetworkList = new ListSingleSelection<TableType>(options);
-		dataTypeTargetForNetworkList.setSelectedValue(TableType.NODE_ATTR);
-
-		for (CyNetwork net : networkManager.getNetworkSet()) {
-			String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
-			name2NetworkMap.put(netName, net);
-		}
-		List<String> names = new ArrayList<String>();
-		names.addAll(name2NetworkMap.keySet());
-		if (names.isEmpty())
-			targetNetworkList = new ListMultipleSelection<String>(NO_NETWORKS);
-		else
-			targetNetworkList = new ListMultipleSelection<String>(names);
-
-		for (CyNetwork net : networkManager.getNetworkSet()) {
-			final CyRootNetwork rootNet = rootNetworkManager.getRootNetwork(net);
-			if (!name2RootMap.containsValue(rootNet))
-				name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
-		}
-		List<String> rootNames = new ArrayList<String>();
-		rootNames.addAll(name2RootMap.keySet());
-		targetNetworkCollection = new ListSingleSelection<String>(rootNames);
-		if(!rootNames.isEmpty())
-		{
-			targetNetworkCollection.setSelectedValue(rootNames.get(0));
-
-			targetKeyNetworkCollection = getColumns(name2RootMap.get(targetNetworkCollection.getSelectedValue()),
-					dataTypeTargetForNetworkCollection.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
-		}
 		
 		List<CyTable> listOfTables = new ArrayList<CyTable>();
 		List<Object> listOfUTables = new ArrayList<Object>();
@@ -347,11 +305,6 @@ public class MergeDataTableTask extends AbstractTask implements TunableValidator
 			}
 		}
 		
-		for ( CyNetwork network : networkManager.getNetworkSet()) 
-		{
-			listOfTables.add(network.getDefaultNodeTable());
-			listOfTables.add(network.getDefaultEdgeTable());
-		}
 		if(listOfUTables.size()>0)
 		{
 			unassignedTable = new ListSingleSelection<Object>(listOfUTables);
@@ -362,7 +315,57 @@ public class MergeDataTableTask extends AbstractTask implements TunableValidator
 			listOfUTables.add(NO_TABLES);
 			unassignedTable = new ListSingleSelection<Object>(listOfUTables);
 		}
-			
+		
+		if(networkManager.getNetworkSet().size()>0)
+		{
+			whereMergeTable = new ListSingleSelection<String>(NETWORK_COLLECTION,NETWORK_SELECTION,UNASSIGNED_TABLE);
+			whereMergeTable.setSelectedValue(NETWORK_COLLECTION);
+			final List<TableType> options = new ArrayList<TableType>();
+			for (TableType type : TableType.values())
+				options.add(type);
+			dataTypeTargetForNetworkCollection = new ListSingleSelection<TableType>(options);
+			dataTypeTargetForNetworkCollection.setSelectedValue(TableType.NODE_ATTR);
+			dataTypeTargetForNetworkList = new ListSingleSelection<TableType>(options);
+			dataTypeTargetForNetworkList.setSelectedValue(TableType.NODE_ATTR);
+	
+			for (CyNetwork net : networkManager.getNetworkSet()) {
+				String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
+				name2NetworkMap.put(netName, net);
+			}
+			List<String> names = new ArrayList<String>();
+			names.addAll(name2NetworkMap.keySet());
+			if (names.isEmpty())
+				targetNetworkList = new ListMultipleSelection<String>(NO_NETWORKS);
+			else
+				targetNetworkList = new ListMultipleSelection<String>(names);
+	
+			for (CyNetwork net : networkManager.getNetworkSet()) {
+				final CyRootNetwork rootNet = rootNetworkManager.getRootNetwork(net);
+				if (!name2RootMap.containsValue(rootNet))
+					name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
+			}
+			List<String> rootNames = new ArrayList<String>();
+			rootNames.addAll(name2RootMap.keySet());
+			targetNetworkCollection = new ListSingleSelection<String>(rootNames);
+			if(!rootNames.isEmpty())
+			{
+				targetNetworkCollection.setSelectedValue(rootNames.get(0));
+	
+				targetKeyNetworkCollection = getColumns(name2RootMap.get(targetNetworkCollection.getSelectedValue()),
+						dataTypeTargetForNetworkCollection.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+			}
+			for ( CyNetwork network : networkManager.getNetworkSet()) 
+			{
+				listOfTables.add(network.getDefaultNodeTable());
+				listOfTables.add(network.getDefaultEdgeTable());
+			}
+		}
+		else
+		{
+			whereMergeTable = new ListSingleSelection<String>(UNASSIGNED_TABLE);
+			whereMergeTable.setSelectedValue(UNASSIGNED_TABLE);
+		}
+		
 		sourceTable = new ListSingleSelection<CyTable>(listOfTables);
 		sourceMergeColumns = getColumns(sourceTable.getSelectedValue());
 		sourceMergeKey = getColumnsWithNames(sourceTable.getSelectedValue());
@@ -382,8 +385,6 @@ public class MergeDataTableTask extends AbstractTask implements TunableValidator
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-
-		TableType tableType = getDataTypeOptions();
 		
 		//If we are here and there no networks loaded, we could only continue if the merge is on 
 		// an unassigned table
@@ -398,10 +399,10 @@ public class MergeDataTableTask extends AbstractTask implements TunableValidator
 		}
 
 		if(whereMergeTable.getSelectedValue().matches(NETWORK_COLLECTION))
-			mapTableToDefaultAttrs(tableType);
-		if(whereMergeTable.getSelectedValue().matches(NETWORK_SELECTION))
-			mapTableToLocalAttrs(tableType);
-		if(whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE))
+			mapTableToDefaultAttrs(getDataTypeOptions());
+		else if(whereMergeTable.getSelectedValue().matches(NETWORK_SELECTION))
+			mapTableToLocalAttrs(getDataTypeOptions());
+		else if(whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE))
 			mapTableToUnassignedTable();
 
 	}

@@ -302,7 +302,7 @@ public class MergeDataTableTaskTest {
 	
 	public void mapping(CyTable sourceTable,List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
-		MergeDataTableTaskFactoryImpl mappingTF = new MergeDataTableTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
+		MergeTablesTaskFactoryImpl mappingTF = new MergeTablesTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		
@@ -318,7 +318,7 @@ public class MergeDataTableTaskTest {
 	
     public void mappingGlobalTable(CyTable sourceTable,CyTable targetTable,List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
-		MergeDataTableTaskFactoryImpl mappingTF = new MergeDataTableTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
+		MergeTablesTaskFactoryImpl mappingTF = new MergeTablesTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		if(net != null)
 			nets.add(net);

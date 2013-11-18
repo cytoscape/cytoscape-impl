@@ -26,6 +26,7 @@ package org.cytoscape.network.merge.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetworkFactory;
@@ -33,6 +34,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -49,10 +51,12 @@ public class CyActivator extends AbstractCyActivator {
 		CreateNetworkViewTaskFactory netViewCreator = getService(bc, CreateNetworkViewTaskFactory.class);
 		DialogTaskManager taskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
+		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
+		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 
-		NetworkMergeAction networkMergeAction = new NetworkMergeAction(cySwingApplicationServiceRef,
-				cyNetworkManagerServiceRef, cyNetworkFactoryServiceRef, cyNetworkNamingServiceRef,
+		NetworkMergeAction networkMergeAction = new NetworkMergeAction(cySwingApplicationServiceRef, cyApplicationManagerServiceRef,
+				cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyNetworkFactoryServiceRef, cyNetworkNamingServiceRef,
 				taskManagerServiceRef, netViewCreator);
 
 		final Properties props = new Properties();

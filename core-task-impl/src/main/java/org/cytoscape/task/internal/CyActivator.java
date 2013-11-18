@@ -219,7 +219,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		LoadTableFileTaskFactoryImpl loadTableFileTaskFactory = new LoadTableFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef,cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef );
 		LoadTableURLTaskFactoryImpl loadTableURLTaskFactory = new LoadTableURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef);
-		MergeDataTableTaskFactoryImpl mergeTableTaskFactory = new MergeDataTableTaskFactoryImpl( cyTableManagerServiceRef,cyNetworkManagerServiceRef,tunableSetterServiceRef, rootNetworkManagerServiceRef );
+		MergeTablesTaskFactoryImpl mergeTablesTaskFactory = new MergeTablesTaskFactoryImpl( cyTableManagerServiceRef,cyNetworkManagerServiceRef,tunableSetterServiceRef, rootNetworkManagerServiceRef );
 		// Apply Visual Style Task
 		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
 		Properties applyVisualStyleProps = new Properties();
@@ -788,40 +788,18 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,exportVizmapTaskFactory,TaskFactory.class, exportVizmapTaskFactoryProps);
 		registerService(bc,exportVizmapTaskFactory,ExportVizmapTaskFactory.class, exportVizmapTaskFactoryProps);
 		
-		/*Properties loadUnassignedTableFileTaskFactoryProps = new Properties();
-		loadUnassignedTableFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Load Data Table");
-		loadUnassignedTableFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
-		loadUnassignedTableFileTaskFactoryProps.setProperty(TITLE,"File...");
-		//loadUnassignedTableFileTaskFactoryProps.setProperty(ServiceProperties.INSERT_SEPARATOR_BEFORE, "true");
-		loadUnassignedTableFileTaskFactoryProps.setProperty(TOOLTIP,"Load Data Table From File");
-		//loadUnassignedTableFileTaskFactoryProps.setProperty(COMMAND,"load file");
-		//loadUnassignedFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		registerService(bc,loadUnassignedTableFileTaskFactory,TaskFactory.class, loadUnassignedTableFileTaskFactoryProps);
-		registerService(bc,loadUnassignedTableFileTaskFactory,LoadUnassignedTableFileTaskFactory.class, loadUnassignedTableFileTaskFactoryProps);
-
-
-		Properties loadUnassignedTableURLTaskFactoryProps = new Properties();
-		loadUnassignedTableURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Load Data Table");
-		loadUnassignedTableURLTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
-		loadUnassignedTableURLTaskFactoryProps.setProperty(TITLE,"URL...");
-		loadUnassignedTableURLTaskFactoryProps.setProperty(TOOLTIP,"Load Data Table From URL");
-		//loadUnassignedTableURLTaskFactoryProps.setProperty(COMMAND,"load url");
-		//loadUnassignedTableURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		registerService(bc,loadUnassignedTableURLTaskFactory,TaskFactory.class, loadUnassignedTableURLTaskFactoryProps);
-		registerService(bc,loadUnassignedTableURLTaskFactory,LoadUnassignedTableURLTaskFactory.class, loadUnassignedTableURLTaskFactoryProps);*/
-		
-		Properties MergeGlobalTaskFactoryProps = new Properties();
-		MergeGlobalTaskFactoryProps.setProperty(ENABLE_FOR,"network");
-		MergeGlobalTaskFactoryProps.setProperty(PREFERRED_MENU,"Tools.Merge Tools");
-		MergeGlobalTaskFactoryProps.setProperty(TITLE,"Merge Tables");
+		Properties mergeTablesTaskFactoryProps = new Properties();
+		mergeTablesTaskFactoryProps.setProperty(ENABLE_FOR,"table");
+		mergeTablesTaskFactoryProps.setProperty(PREFERRED_MENU,"Tools.Merge");
+		mergeTablesTaskFactoryProps.setProperty(TITLE,"Tables...");
 		//MergeGlobalTaskFactoryProps.setProperty(ServiceProperties.INSERT_SEPARATOR_AFTER, "true");
 		//MergeGlobalTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"1.1");
-		MergeGlobalTaskFactoryProps.setProperty(MENU_GRAVITY,"5.4");
-		MergeGlobalTaskFactoryProps.setProperty(TOOLTIP,"Merge Data Table");
-		MergeGlobalTaskFactoryProps.setProperty(COMMAND,"merge");
-		MergeGlobalTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		registerService(bc,mergeTableTaskFactory,TaskFactory.class, MergeGlobalTaskFactoryProps);
-		registerService(bc,mergeTableTaskFactory,MergeDataTableTaskFactory.class, MergeGlobalTaskFactoryProps);
+		mergeTablesTaskFactoryProps.setProperty(MENU_GRAVITY,"5.4");
+		mergeTablesTaskFactoryProps.setProperty(TOOLTIP,"Merge Tables");
+		mergeTablesTaskFactoryProps.setProperty(COMMAND,"merge");
+		mergeTablesTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
+		registerService(bc,mergeTablesTaskFactory,TaskFactory.class, mergeTablesTaskFactoryProps);
+		registerService(bc,mergeTablesTaskFactory,MergeTablesTaskFactory.class, mergeTablesTaskFactoryProps);
 
 
 		Properties newSessionTaskFactoryProps = new Properties();
@@ -1055,7 +1033,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties mapNetworkToTablesProps = new Properties();
 		registerService(bc, mapNetworkToTables, MapTableToNetworkTablesTaskFactory.class, mapNetworkToTablesProps);
 		
-		ImportDataTableTaskFactoryImpl importTableTaskFactory = new ImportDataTableTaskFactoryImpl(cyNetworkManagerServiceRef,cyTableManagerServiceRef,tunableSetterServiceRef,rootNetworkManagerServiceRef);
+		ImportTableDataTaskFactoryImpl importTableTaskFactory = new ImportTableDataTaskFactoryImpl(cyNetworkManagerServiceRef,cyTableManagerServiceRef,tunableSetterServiceRef,rootNetworkManagerServiceRef);
 		Properties importTablesProps = new Properties();
 		registerService(bc, importTableTaskFactory, ImportDataTableTaskFactory.class, importTablesProps);
 		

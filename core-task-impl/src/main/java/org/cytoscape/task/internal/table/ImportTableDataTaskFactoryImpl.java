@@ -47,14 +47,14 @@ import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public class ImportDataTableTaskFactoryImpl extends AbstractTableTaskFactory implements ImportDataTableTaskFactory {
+public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory implements ImportDataTableTaskFactory {
 	
 	private final CyNetworkManager networkManager;
 	private final TunableSetter tunableSetter; 
 	private final CyRootNetworkManager rootNetMgr;
 	private final CyTableManager tableMgr;
 	
-	public ImportDataTableTaskFactoryImpl( final CyNetworkManager networkManager, final CyTableManager tableMgr,final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
+	public ImportTableDataTaskFactoryImpl( final CyNetworkManager networkManager, final CyTableManager tableMgr,final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
 		this.networkManager = networkManager;
 		this.tunableSetter = tunableSetter;
 		this.rootNetMgr = rootNetMgr;
@@ -64,12 +64,12 @@ public class ImportDataTableTaskFactoryImpl extends AbstractTableTaskFactory imp
 	
 	@Override
 	public TaskIterator createTaskIterator(CyTable table) {
-		return new TaskIterator(new ImportDataTableTask(table,tableMgr, rootNetMgr, networkManager));
+		return new TaskIterator(new ImportTableDataTask(table,tableMgr, rootNetMgr, networkManager));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTableReader reader){
-		return new TaskIterator(new ImportDataTableTask(reader,tableMgr, rootNetMgr, networkManager));
+		return new TaskIterator(new ImportTableDataTask(reader,tableMgr, rootNetMgr, networkManager));
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class ImportDataTableTaskFactoryImpl extends AbstractTableTaskFactory imp
 			CyRootNetwork rootNetwork, CyColumn targetJoinColumn,
 			Class<? extends CyIdentifiable> type) {
 		
-	    ListSingleSelection<String> chooser = new ListSingleSelection<String>(ImportDataTableTask.NETWORK_COLLECTION,ImportDataTableTask.NETWORK_SELECTION,ImportDataTableTask.UNASSIGNED_TABLE);
+	    ListSingleSelection<String> chooser = new ListSingleSelection<String>(ImportTableDataTask.NETWORK_COLLECTION,ImportTableDataTask.NETWORK_SELECTION,ImportTableDataTask.UNASSIGNED_TABLE);
 
 	    final Map<String, Object> m = new HashMap<String, Object>();
 	    
@@ -117,12 +117,12 @@ public class ImportDataTableTaskFactoryImpl extends AbstractTableTaskFactory imp
 			if(selectedNetworksOnly)
 			{
 				m.put("DataTypeTargetForNetworkList", tableTypes);
-				chooser.setSelectedValue(ImportDataTableTask.NETWORK_SELECTION);
+				chooser.setSelectedValue(ImportTableDataTask.NETWORK_SELECTION);
 			}
 			else
 			{
 				m.put("DataTypeTargetForNetworkCollection", tableTypes);
-				chooser.setSelectedValue(ImportDataTableTask.NETWORK_COLLECTION);
+				chooser.setSelectedValue(ImportTableDataTask.NETWORK_COLLECTION);
 			}
 			m.put("TargetNetworkList", networksListTunable);
 			m.put("KeyColumnForMapping", columnNamesList);
@@ -130,7 +130,7 @@ public class ImportDataTableTaskFactoryImpl extends AbstractTableTaskFactory imp
 		}
 		else
 		{
-			chooser.setSelectedValue(ImportDataTableTask.UNASSIGNED_TABLE);
+			chooser.setSelectedValue(ImportTableDataTask.UNASSIGNED_TABLE);
 		}
 		
 		m.put("WhereImportTable", chooser);

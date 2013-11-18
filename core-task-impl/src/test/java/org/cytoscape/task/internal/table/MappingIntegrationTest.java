@@ -245,7 +245,7 @@ public class MappingIntegrationTest {
 	
 	public void mapping(CyTable table, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
-		ImportDataTableTaskFactoryImpl mappingTF = new ImportDataTableTaskFactoryImpl(netMgr,tabMgr, ts, rootNetMgr);
+		ImportTableDataTaskFactoryImpl mappingTF = new ImportTableDataTaskFactoryImpl(netMgr,tabMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		
