@@ -1,0 +1,23 @@
+{
+  "name": "cytoscape.js",
+  "version": "2.0.2",
+  "main": "build/cytoscape.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "homepage": "https://github.com/cytoscape/cytoscape.js",
+  "_release": "2.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.0.2",
+    "commit": "f2a2cb49d4cba03e7dcf3d1f2f7d6957b8d5e1d3"
+  },
+  "_source": "git@github.com:cytoscape/cytoscape.js.git",
+  "_target": "~2.0.2",
+  "_originalSource": "git@github.com:cytoscape/cytoscape.js.git",
+  "_direct": true
+}

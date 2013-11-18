@@ -123,7 +123,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-api</artifactId>
@@ -160,5 +159,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 </project>

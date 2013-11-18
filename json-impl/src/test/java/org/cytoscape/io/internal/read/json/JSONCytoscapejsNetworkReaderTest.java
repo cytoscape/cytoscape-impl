@@ -52,7 +52,7 @@ public class JSONCytoscapejsNetworkReaderTest {
 	@Test
 	public void testNetworkViewReader() throws Exception {
 
-		File cyjs1 = new File("./src/test/resources/testData/galFiltered.cyjs");
+		File cyjs1 = new File("src/test/resources/testData/galFiltered.cyjs");
 
 		InputStream is = new FileInputStream(cyjs1);
 		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(is, viewFactory, networkFactory, networkManager, rootNetworkManager);
