@@ -118,6 +118,34 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 				sourceMergeColumns.setSelectedValues(sourceMergeColumns.getPossibleValues());
 			
 		}
+		
+		List<Object> listOfGlobal = getPublicGlobalTables();
+		if(listOfGlobal.contains(table.getSelectedValue()))
+		{
+			if( listOfGlobal.size()==1)
+			{
+				listOfGlobal.clear();
+				listOfGlobal.add(NO_TABLES);
+				targetMergeKey = new ListSingleSelection<String>(NO_TABLES);
+				unassignedTable = new ListSingleSelection<Object>(listOfGlobal);
+			}
+			else
+			{
+				listOfGlobal.remove(table.getSelectedValue());
+				unassignedTable = new ListSingleSelection<Object>(listOfGlobal);
+				targetMergeKey = getColumnsWithNames((CyTable)unassignedTable.getSelectedValue());
+			}
+		}
+		else
+		{
+			if( listOfGlobal.size()==1 && !(unassignedTable.getSelectedValue() instanceof CyTable) || 
+					((listOfGlobal.size() != unassignedTable.getPossibleValues().size())	&& (listOfGlobal.size() > 0)))
+			{
+				unassignedTable = new ListSingleSelection<Object>(listOfGlobal);
+				targetMergeKey = getColumnsWithNames((CyTable)unassignedTable.getSelectedValue());
+			}
+			
+		}
 		sourceTable = table;
 	}
 	
@@ -239,7 +267,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	
 	
 	public ListSingleSelection<Object> unassignedTable;
-	@Tunable(description = "Unassigned tables", groups = {"Target Data Table","Select Unassigned Table"},gravity=7.0, xorKey=UNASSIGNED_TABLE)
+	@Tunable(description = "Unassigned tables", groups = {"Target Data Table","Select Unassigned Table"},gravity=7.0,listenForChange={"SourceTable"}, xorKey=UNASSIGNED_TABLE)
 	public ListSingleSelection<Object> getUnassignedTable() {
 		return unassignedTable;
 	}
@@ -260,7 +288,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 	
 	public ListSingleSelection<String> targetMergeKey;
-	@Tunable(description = "Key column to merge", groups={"Target Data Table","Select Unassigned Table"},gravity=8.0, listenForChange={"UnassignedTable"})
+	@Tunable(description = "Key column to merge", groups={"Target Data Table","Select Unassigned Table"},gravity=8.0, listenForChange={"UnassignedTable","SourceTable"})
 	public ListSingleSelection<String> getTargetMergeKey() {
 		return targetMergeKey;
 	}
@@ -303,17 +331,6 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 				listOfTables.add(tempTable);
 				listOfUTables.add(tempTable);
 			}
-		}
-		
-		if(listOfUTables.size()>0)
-		{
-			unassignedTable = new ListSingleSelection<Object>(listOfUTables);
-			targetMergeKey = getColumnsWithNames((CyTable)unassignedTable.getSelectedValue());
-		}
-		else
-		{
-			listOfUTables.add(NO_TABLES);
-			unassignedTable = new ListSingleSelection<Object>(listOfUTables);
 		}
 		
 		if(networkManager.getNetworkSet().size()>0)
@@ -369,6 +386,20 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		sourceTable = new ListSingleSelection<CyTable>(listOfTables);
 		sourceMergeColumns = getColumns(sourceTable.getSelectedValue());
 		sourceMergeKey = getColumnsWithNames(sourceTable.getSelectedValue());
+		if(listOfUTables.size()>1)
+		{
+			if(listOfUTables.contains(sourceTable.getSelectedValue()))
+				listOfUTables.remove(sourceTable.getSelectedValue());
+			unassignedTable = new ListSingleSelection<Object>(listOfUTables);
+			targetMergeKey = getColumnsWithNames((CyTable)unassignedTable.getSelectedValue());
+		}
+		else
+		{
+			listOfUTables.clear();
+			listOfUTables.add(NO_TABLES);
+			targetMergeKey = new ListSingleSelection<String>(NO_TABLES);
+			unassignedTable = new ListSingleSelection<Object>(listOfUTables);
+		}
 	}
 
 	public ListSingleSelection<String> getColumns(CyNetwork network, TableType tableType, String namespace) {
@@ -642,6 +673,21 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	private CyColumn getMergeKeyColumn ()
 	{
 		return sourceTable.getSelectedValue().getColumn(sourceMergeKey.getSelectedValue());
+	}
+	
+	private List<Object> getPublicGlobalTables()
+	{
+		List<Object> listTables = new ArrayList<Object>();
+		
+		for ( CyTable tempTable : tableMgr.getGlobalTables()) 
+		{
+			if(tempTable.isPublic())
+			{
+				listTables.add(tempTable);
+			}
+		}
+		
+		return listTables;
 	}
 
 	private TableType getDataTypeOptions()
