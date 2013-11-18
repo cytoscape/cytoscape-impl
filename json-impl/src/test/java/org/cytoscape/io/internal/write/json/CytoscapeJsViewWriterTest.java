@@ -30,7 +30,7 @@ public class CytoscapeJsViewWriterTest extends AbstractJsonNetworkViewWriterTest
 		jsMapper.registerModule(new CytoscapeJsNetworkModule());
 
 		// Generate file to test site directory.
-		File temp = new File("src/test/resources/site/app/data/cytoscapeJsNetwork1.json");
+		File temp = new File("target/cytoscapeJsNetwork1.json");
 
 		OutputStream os = new FileOutputStream(temp);
 		JSONNetworkViewWriter writer = new JSONNetworkViewWriter(os, view, jsMapper);
