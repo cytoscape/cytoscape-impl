@@ -36,7 +36,7 @@ public class JsRowSerializer extends JsonSerializer<CyRow> {
 				type = table.getColumn(columnName).getListElementType();
 				writeList(type, columnName, (List<?>) value, jgen);
 			} else {
-				jgen.writeFieldName(columnName);
+				jgen.writeFieldName(replaceColumnName(columnName));
 				writeValue(type, value, jgen);
 			}
 		}
@@ -44,13 +44,17 @@ public class JsRowSerializer extends JsonSerializer<CyRow> {
 
 	private void writeList(final Class<?> type, String columnName, List<?> values, JsonGenerator jgen)
 			throws JsonGenerationException, IOException {
-		jgen.writeFieldName(columnName);
+		jgen.writeFieldName(replaceColumnName(columnName));
 		jgen.writeStartArray();
 
 		for (Object value : values)
 			writeValue(type, value, jgen);
 		
 		jgen.writeEndArray();
+	}
+	
+	private final String replaceColumnName(final String columnName) {
+		return columnName.replaceAll(" ", "_");
 	}
 
 	private final void writeValue(final Class<?> type, Object value, JsonGenerator jgen)
