@@ -1,13 +1,18 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.CSS;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.SELECTED;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.SELECTOR;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.STYLE;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.TITLE;
 
+import java.awt.Paint;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.cytoscape.model.CyEdge;
@@ -17,8 +22,8 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -328,6 +333,26 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	private void createDefaults(final Collection<VisualProperty<?>> visualProperties, final VisualStyle vs,
 			final JsonGenerator jg) throws IOException {
 
+		// Handle locked values
+		final Set<VisualPropertyDependency<?>> deps = vs.getAllVisualPropertyDependencies();
+
+		// TODO: better way to handle this?
+		boolean useSize = false;
+		boolean useStroke = false;
+		for(VisualPropertyDependency<?> dep: deps) {
+			if(dep.getIdString().equals("nodeSizeLocked")) {
+				if(dep.isDependencyEnabled()) {
+					useSize = true;
+				}
+			}
+			
+			if(dep.getIdString().equals("arrowColorMatchesEdge")) {
+				if(dep.isDependencyEnabled()) {
+					useStroke = true;
+				}
+			}
+		}
+
 		for (final VisualProperty<?> vp : visualProperties) {
 			// If mapping is available, use it instead.
 			final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
@@ -341,7 +366,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			}
 
 			// tag can be null. In that case, use default,
-			if (writeValue(vp, vs, jg)) {
+			if (writeValue(vp, vs, jg, useSize, useStroke)) {
 				final Object defaultValue = getDefaultVisualPropertyValue(vs, vp);
 				jg.writeObjectField(tag.getTag(), defaultValue);
 			}
@@ -356,8 +381,8 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	 * @throws IOException
 	 * @throws JsonProcessingException
 	 */
-	private final boolean writeValue(final VisualProperty<?> vp, final VisualStyle vs, final JsonGenerator jg)
-			throws JsonProcessingException, IOException {
+	private final boolean writeValue(final VisualProperty<?> vp, final VisualStyle vs, final JsonGenerator jg, 
+			final boolean sizeLock, final boolean arrowLock) throws JsonProcessingException, IOException {
 
 		if (vp == BasicVisualLexicon.EDGE_TRANSPARENCY || vp == BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY
 				|| vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY || vp == BasicVisualLexicon.NODE_TRANSPARENCY
@@ -366,6 +391,22 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			double doubleValue = defaultValue/255d;
 			jg.writeNumberField(converter.getTag(vp).getTag(), doubleValue);
 			return false;
+		} else if (vp == BasicVisualLexicon.NODE_WIDTH || vp == BasicVisualLexicon.NODE_HEIGHT ) {
+			if(sizeLock) {
+				final Double size = (Double) getDefaultVisualPropertyValue(vs, BasicVisualLexicon.NODE_SIZE);
+				jg.writeNumberField(converter.getTag(vp).getTag(), size);
+				return false;
+			} else {
+				return true;
+			}
+		} else if (vp == BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
+			if(arrowLock) {
+				final Paint color = (Paint) getDefaultVisualPropertyValue(vs, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+				jg.writeObjectField(converter.getTag(vp).getTag(), color);
+				return false;
+			} else {
+				return true;
+			}
 		} else {
 			return true;
 		}

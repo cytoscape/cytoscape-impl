@@ -1,8 +1,8 @@
 package org.cytoscape.io.internal.read.json;
 
+import static org.cytoscape.model.CyEdge.Type.DIRECTED;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
-import static org.cytoscape.model.CyEdge.Type.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,10 +10,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
-import javax.xml.crypto.NodeSetData;
-
 import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -22,13 +20,14 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.AnnotationIntrospector.ReferenceProperty.Type;
 
 public class JSONCytoscapejsNetworkReaderTest {
 
@@ -52,22 +51,28 @@ public class JSONCytoscapejsNetworkReaderTest {
 	@Test
 	public void testNetworkViewReader() throws Exception {
 
-		File cyjs1 = new File("src/test/resources/testData/galFiltered.cyjs");
+		// Test Cytoscape.js JSON file
+		final File cyjs1 = new File("src/test/resources/testData/galFiltered.cyjs");
 
 		InputStream is = new FileInputStream(cyjs1);
 		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(is, viewFactory, networkFactory, networkManager, rootNetworkManager);
 		reader.run(tm);
 		final CyNetwork[] networks = reader.getNetworks();
-		testLoadedNetwork(networks);
-		is.close();
-	}
-
-	private final void testLoadedNetwork(CyNetwork[] networks) {
 		assertNotNull(networks);
 		assertEquals(1, networks.length);
 		
-		CyNetwork network = networks[0];
+		final CyNetwork network = networks[0];
 		assertNotNull(network);
+		
+		final CyNetworkView view = reader.buildCyNetworkView(network);
+		assertNotNull(view);
+		testLoadedNetwork(view);
+		is.close();
+	}
+
+	private final void testLoadedNetwork(final CyNetworkView view) {
+		final CyNetwork network = view.getModel();
+
 		final int nodeCount = network.getNodeCount();
 		final int edgeCount = network.getEdgeCount();
 		assertEquals(331, nodeCount);
@@ -87,7 +92,6 @@ public class JSONCytoscapejsNetworkReaderTest {
 		Class<?> listType = network.getDefaultNodeTable().getColumn("alias").getListElementType();
 		assertEquals(String.class, listType); 
 	
-		
 		// test nodes
 		final Collection<CyRow> match1 = network.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, "YFL017C");
 		assertEquals(1, match1.size());
@@ -107,11 +111,29 @@ public class JSONCytoscapejsNetworkReaderTest {
 		// Check connection
 		assertEquals(5, network.getAdjacentEdgeList(node1, DIRECTED).size());
 	
-		
-		// TODO: add more tests
 		final Collection<CyRow> match2 = network.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, "YFL017C");
+		assertNotNull(match2);
+		assertEquals(1, match2.size());
+	
+		// Test node view
+		final CyNode node = network.getNode(match2.iterator().next().get(CyIdentifiable.SUID, Long.class));
 		
+		final View<CyNode> nodeView = view.getNodeView(node);
+		assertNotNull(nodeView);
+		Double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+		Double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 		
+		assertTrue(x == 2540.8436768462666);
+		assertTrue(y == 1112.9282691176754);
 		
+		// Test edge view
+		List<CyEdge> edges = network.getAdjacentEdgeList(node, DIRECTED);
+		assertEquals(5, edges.size());
+		final View<CyEdge> edgeView = view.getEdgeView(edges.get(0));
+		assertNotNull(edgeView);
+
+		final Collection<CyRow> match3 = network.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, "foo");
+		assertNotNull(match3);
+		assertEquals(0, match3.size());
 	}
 }

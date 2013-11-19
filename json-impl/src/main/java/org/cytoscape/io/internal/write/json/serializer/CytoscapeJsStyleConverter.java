@@ -36,7 +36,7 @@ public class CytoscapeJsStyleConverter {
 		vp2tag.put(NODE_BORDER_WIDTH, BORDER_WIDTH);
 
 		vp2tag.put(NODE_FILL_COLOR, BACKGROUND_COLOR);
-		vp2tag.put(NODE_TRANSPARENCY, OPACITY);
+		vp2tag.put(NODE_TRANSPARENCY, BACKGROUND_OPACITY);
 
 		vp2tag.put(NODE_LABEL, CONTENT);
 		vp2tag.put(NODE_LABEL_COLOR, COLOR);
@@ -65,7 +65,7 @@ public class CytoscapeJsStyleConverter {
 
 		vp2tag.put(EDGE_LINE_TYPE, LINE_STYLE);
 
-		vp2tag.put(EDGE_UNSELECTED_PAINT, LINE_COLOR);
+		vp2tag.put(EDGE_STROKE_UNSELECTED_PAINT, LINE_COLOR);
 		vp2tag.put(EDGE_TRANSPARENCY, OPACITY);
 
 		vp2tag.put(EDGE_SOURCE_ARROW_SHAPE, SOURCE_ARROW_SHAPE);
@@ -95,6 +95,7 @@ public class CytoscapeJsStyleConverter {
 		tag2nodeVp.put(BORDER_WIDTH, NODE_BORDER_WIDTH);
 		tag2nodeVp.put(BORDER_COLOR, NODE_BORDER_PAINT);
 		tag2nodeVp.put(OPACITY, NODE_TRANSPARENCY);
+		tag2nodeVp.put(BACKGROUND_OPACITY, NODE_TRANSPARENCY);
 		tag2nodeVp.put(BORDER_OPACITY, NODE_BORDER_TRANSPARENCY);
 		tag2nodeVp.put(TEXT_OPACITY, NODE_LABEL_TRANSPARENCY);
 		tag2nodeVp.put(FONT_SIZE, NODE_LABEL_FONT_SIZE);

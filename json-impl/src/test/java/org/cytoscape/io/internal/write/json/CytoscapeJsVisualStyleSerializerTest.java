@@ -11,12 +11,20 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.sql.ResultSet;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.dependency.EdgeColorDependencyFactory;
+import org.cytoscape.ding.dependency.NodeSizeDependencyFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleModule;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleSerializer;
@@ -34,6 +42,7 @@ import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
@@ -48,6 +57,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -65,8 +76,8 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	@Before
 	public void setUp() throws Exception {
 
-		final NullVisualProperty minimalRoot = new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property");
-		lexicon = new BasicVisualLexicon(minimalRoot);
+		final CustomGraphicsManager cgManager = mock(CustomGraphicsManager.class);
+		lexicon = new DVisualLexicon(cgManager);
 		
 		final ValueSerializerManager manager = new ValueSerializerManager();
 		serializer = new CytoscapeJsVisualStyleSerializer(manager, lexicon);
@@ -79,7 +90,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		style = generateVisualStyle(lexicon);
 		setDefaults();
 		setMappings();
-
+		
 		// Simple test to check Visual Style contents
 		assertEquals("vs1", style.getTitle());
 	}
@@ -111,7 +122,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 
 	private final void setDefaults() {
 		// Node default values
-		style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
+		style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, new Color(10, 10, 200));
 		style.setDefaultValue(BasicVisualLexicon.NODE_TRANSPARENCY, 200);
 
 		style.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, 40d);
@@ -126,16 +137,15 @@ public class CytoscapeJsVisualStyleSerializerTest {
 
 		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, Color.BLUE);
 		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_SIZE, 18);
-		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_FACE, new Font("HelvaticaNeu", Font.PLAIN, 12));
+		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_FACE, new Font("Helvetica", Font.PLAIN, 12));
 		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY, 122);
 
 		// For Selected
 		style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, Color.RED);
 
-
 		// Edge default values
-		style.setDefaultValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, Color.GREEN);
-		style.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, Color.DARK_GRAY);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, new Color(12,100,200));
+		style.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, new Color(222, 100, 10));
 
 		style.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 100);
 
@@ -148,7 +158,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		style.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_FONT_SIZE, 11);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY, 220);
 
-		style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.DIAMOND);
+		style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.DELTA);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, ArrowShapeVisualProperty.T);
 		
 		// For Selected
@@ -224,43 +234,96 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	}
 
 	@Test
-	public void testSerialize() throws Exception {
+	public void testSerializeWithoutLock() throws Exception {
+		// Unlock all
+		final Set<VisualPropertyDependency<?>> locks = style.getAllVisualPropertyDependencies();
+		for(VisualPropertyDependency<?> dep: locks) {
+			dep.setDependency(false);
+		}
+		testUnlocked(writeVS("target/vs.json"));
+	}
+
+	@Test
+	public void testSerializeWithLock() throws Exception {
+		// Set Locks
+		final NodeSizeDependencyFactory nodeSizeDefFactory = new NodeSizeDependencyFactory(lexicon);
+		style.addVisualPropertyDependency(nodeSizeDefFactory.createVisualPropertyDependency());
+		final EdgeColorDependencyFactory edgeColorDepFactory = new EdgeColorDependencyFactory(lexicon);
+		style.addVisualPropertyDependency(edgeColorDepFactory.createVisualPropertyDependency());
+		
+		final Set<VisualPropertyDependency<?>> locks = style.getAllVisualPropertyDependencies();
+		for(VisualPropertyDependency<?> dep: locks) {
+			dep.setDependency(true);
+		}
+		testLocked(writeVS("target/vs-locked.json"));
+	}
+
+	
+	private final File writeVS(final String fileName) throws Exception {
 		assertNotNull(serializer);
 		assertNotNull(style);
 
 		TaskMonitor tm = mock(TaskMonitor.class);
-
 		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
 		styles.add(style);
 
 		final ObjectMapper jsMapper = new ObjectMapper();
 		jsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon));
 
-		File temp = new File("target/vs1.json");
-
+		File temp = new File(fileName);
 		OutputStream os = new FileOutputStream(temp);
 		CytoscapeJsVisualStyleWriter writer = new CytoscapeJsVisualStyleWriter(os, jsMapper, styles, lexicon);
 		writer.run(tm);
-		testGeneratedJSONFile(temp);
+
+		return temp;
+	}
+	
+	
+	private final void testUnlocked(File temp) throws Exception {
+		final JsonNode rootNode = read(temp);
+		testDefaultsUnlocked(rootNode);
 	}
 
-	private final void testGeneratedJSONFile(File temp) throws Exception {
-		final FileInputStream fileInputStream = new FileInputStream(temp);
+	private final void testLocked(File temp) throws Exception {
+		final JsonNode rootNode = read(temp);
+		testDefaultsLocked(rootNode);
+	}
+	
+	private final JsonNode read(File generatedJsonFile) throws IOException {
+		final FileInputStream fileInputStream = new FileInputStream(generatedJsonFile);
 		final BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream,
 				EncodingUtil.getDecoder()));
 
 		final ObjectMapper mapper = new ObjectMapper();
-		final JsonNode rootNode = mapper.readValue(reader, JsonNode.class);
 
-		// Perform actual tests
-		assertNotNull(rootNode);
-
-		testDefaults(rootNode);
-
+		final JsonNode root = mapper.readValue(reader, JsonNode.class);
 		reader.close();
+		return root;
+	}
+	
+	private final void testDefaultsUnlocked(final JsonNode root) throws Exception {
+		final Map<String, JsonNode> result = getNodesAndEdges(root);
+		final JsonNode nodeCSS = result.get("node").get("css");
+		final JsonNode edgeCSS = result.get("edge").get("css");
+	
+		testNodeDefaultsUnlocked(nodeCSS);
+		testEdgeDefaultsUnlocked(edgeCSS);
 	}
 
-	private final void testDefaults(final JsonNode root) throws Exception {
+
+	private final void testDefaultsLocked(final JsonNode root) throws Exception {
+		final Map<String, JsonNode> result = getNodesAndEdges(root);
+		final JsonNode nodeCSS = result.get("node").get("css");
+		final JsonNode edgeCSS = result.get("edge").get("css");
+	
+		testNodeDefaultsLocked(nodeCSS);
+		testEdgeDefaultsLocked(edgeCSS);
+	}
+
+
+	private final Map<String,JsonNode> getNodesAndEdges(final JsonNode root) {
+		final Map<String,JsonNode> graphObjects = new HashMap<String, JsonNode>();
+
 		// VS JSON is a array of Visual Styles
 		assertTrue(root.isArray());
 		assertEquals(1, root.size());
@@ -268,10 +331,6 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		assertEquals("vs1", style1.get("title").asText());
 		final JsonNode styleObject = style1.get("style");
 		assertNotNull(styleObject);
-
-		int elementSize = styleObject.size();
-//		final JsonNode nodeSelector = styleObject.get("node");
-//		assertNotNull(nodeSelector);
 		
 		JsonNode nodes = null;
 		JsonNode edges = null;
@@ -286,22 +345,75 @@ public class CytoscapeJsVisualStyleSerializerTest {
 				edges = jNode;
 			}
 		}
-	
 		assertNotNull(nodes);
 		assertNotNull(edges);
-		
-		final JsonNode nodeCSS = nodes.get("css");
-		final JsonNode edgeCSS = edges.get("css");
-	
-		testNodeDefaults(nodeCSS);
-		testEdgeDefaults(edgeCSS);
+
+		graphObjects.put("node", nodes);
+		graphObjects.put("edge", edges);
+
+		return graphObjects;
 	}
 	
-	private void testNodeDefaults(JsonNode nodeCSS) throws Exception {
+	
+	private final String calcOpacity(int opacity) {
+		return Double.toString(opacity/255d);
+		
+	}
+	
+	private final void testNodeDefaultsCommon(final JsonNode nodeCSS) {
+		assertEquals("rgb(10,10,200)", nodeCSS.get("background-color").asText());
+		assertEquals(calcOpacity(200), nodeCSS.get("background-opacity").asText());
+
 		assertEquals("rgb(0,0,255)", nodeCSS.get("border-color").asText());
+		assertEquals(calcOpacity(150), nodeCSS.get("border-opacity").asText());
+		assertTrue(2d == nodeCSS.get("border-width").asDouble());
+		
+		// Font defaults
+		assertEquals("Helvetica-Light", nodeCSS.get("font-family").asText());
+		assertEquals("18", nodeCSS.get("font-size").asText());
+		assertEquals("normal", nodeCSS.get("font-weight").asText());
+		assertEquals("rgb(0,0,255)", nodeCSS.get("color").asText());
+		assertEquals(calcOpacity(122), nodeCSS.get("text-opacity").asText());
+
+		assertEquals("roundrectangle", nodeCSS.get("shape").asText());
 	}
 	
-	private void testEdgeDefaults(JsonNode edgeCSS) throws Exception {
+	private void testEdgeDefaultsCommon(JsonNode edgeCSS) throws Exception {
+		assertTrue(3d == edgeCSS.get("width").asDouble());
 		
+		assertEquals("SansSerif", edgeCSS.get("font-family").asText());
+		assertTrue(11d == edgeCSS.get("font-size").asDouble());
+		assertEquals("bold", edgeCSS.get("font-weight").asText());
+		assertEquals("rgb(255,0,0)", edgeCSS.get("color").asText());
+		assertEquals(calcOpacity(220), edgeCSS.get("text-opacity").asText());
+
+		assertEquals("dotted", edgeCSS.get("line-style").asText());
+
+		assertEquals("triangle", edgeCSS.get("target-arrow-shape").asText());
+		assertEquals("tee", edgeCSS.get("source-arrow-shape").asText());
+	}
+	
+	private void testNodeDefaultsUnlocked(JsonNode nodeCSS) throws Exception {
+		testNodeDefaultsCommon(nodeCSS);
+		assertTrue(40d == nodeCSS.get("width").asDouble());
+		assertTrue(30d == nodeCSS.get("height").asDouble());
+	}
+	
+	private void testEdgeDefaultsUnlocked(JsonNode edgeCSS) throws Exception {
+		testEdgeDefaultsCommon(edgeCSS);
+		assertEquals("rgb(12,100,200)", edgeCSS.get("line-color").asText());
+	}
+	
+	
+	// Tests for Locked Style
+	private void testNodeDefaultsLocked(JsonNode nodeCSS) throws Exception {
+		testNodeDefaultsCommon(nodeCSS);
+		assertTrue(60d == nodeCSS.get("width").asDouble());
+		assertTrue(60d == nodeCSS.get("height").asDouble());
+	}
+	
+	private void testEdgeDefaultsLocked(JsonNode edgeCSS) throws Exception {
+		testEdgeDefaultsCommon(edgeCSS);
+		assertEquals("rgb(222,100,10)", edgeCSS.get("line-color").asText());
 	}
 }
