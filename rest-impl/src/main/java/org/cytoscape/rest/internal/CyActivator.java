@@ -54,13 +54,24 @@ public class CyActivator extends AbstractCyActivator {
 		final CommandExecutorTaskFactory ceTaskFactory = getService(bc, CommandExecutorTaskFactory.class);
 		final SynchronousTaskManager<?> taskManager = getService(bc, SynchronousTaskManager.class);
 
+		String restPortNumber = null;
+
+		// Get the default properties
+		@SuppressWarnings("unchecked")
+		final CyProperty<Properties> cytoscapeProperties = 
+			getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		final Properties cyProps = cytoscapeProperties.getProperties();
+		if (cyProps.getProperty(REST_PORT_PROP) != null) {
+			// The rest port is specified in the properties object
+			restPortNumber = cyProps.getProperty(REST_PORT_PROP);
+		}
+
 		// Get any command line arguments. The "-R" is ours
 		@SuppressWarnings("unchecked")
 		final CyProperty<Properties> commandLineProps = 
 			getService(bc, CyProperty.class, "(cyPropertyName=commandline.props)");
 
 		final Properties p = commandLineProps.getProperties();
-		String restPortNumber = null;
 		if (p.getProperty(REST_PORT_PROP) != null)
 			restPortNumber = p.getProperty(REST_PORT_PROP);
 
