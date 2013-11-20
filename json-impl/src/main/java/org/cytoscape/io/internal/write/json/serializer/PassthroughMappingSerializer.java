@@ -38,6 +38,6 @@ public class PassthroughMappingSerializer implements VisualMappingSerializer<Pas
 			return null;
 		}
 		
-		return "data(" + mapping.getMappingColumnName() + ")";
+		return "data(" + mapping.getMappingColumnName().replaceAll(" ", "_") + ")";
 	}
 }

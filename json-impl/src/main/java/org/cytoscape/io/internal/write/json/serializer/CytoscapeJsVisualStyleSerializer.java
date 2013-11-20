@@ -173,7 +173,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			final JsonGenerator jg) throws IOException {
 
 		final Class<?> type = mapping.getVisualProperty().getRange().getType();
-		final String columnName = mapping.getMappingColumnName();
+		final String columnName = mapping.getMappingColumnName().replaceAll(" ", "_");
 		final List<?> points = mapping.getAllPoints();
 		final String objectType = vp.getIdString().toLowerCase();
 
@@ -300,7 +300,8 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 		final Map<?, ?> mappingPairs = mapping.getAll();
 
-		final String colName = mapping.getMappingColumnName();
+		final String colName = mapping.getMappingColumnName().replaceAll(" ", "_");
+		
 		final Class<?> colType = mapping.getMappingColumnType();
 
 		for (Object key : mappingPairs.keySet()) {
@@ -375,6 +376,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 	/**
 	 * Special case handler which requires value conversion.
+	 * 
 	 * TODO: better way to do this?
 	 * 
 	 * @return
@@ -399,7 +401,9 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			} else {
 				return true;
 			}
-		} else if (vp == BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
+		} else if (vp == BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT || 
+						vp.getIdString().equals("EDGE_TARGET_ARROW_UNSELECTED_PAINT") || 
+						vp.getIdString().equals("EDGE_SOURCE_ARROW_UNSELECTED_PAINT")) {
 			if(arrowLock) {
 				final Paint color = (Paint) getDefaultVisualPropertyValue(vs, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
 				jg.writeObjectField(converter.getTag(vp).getTag(), color);

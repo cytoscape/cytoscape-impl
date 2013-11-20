@@ -1,6 +1,8 @@
 package org.cytoscape.io.internal.write.json;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +39,6 @@ import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -57,8 +57,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -160,6 +158,9 @@ public class CytoscapeJsVisualStyleSerializerTest {
 
 		style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.DELTA);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, ArrowShapeVisualProperty.T);
+		
+		style.setDefaultValue(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, new Color(20, 100, 100));
+		style.setDefaultValue(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT, new Color(10, 100, 100));
 		
 		// For Selected
 		style.setDefaultValue(BasicVisualLexicon.EDGE_SELECTED_PAINT, Color.PINK);
@@ -402,6 +403,8 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	private void testEdgeDefaultsUnlocked(JsonNode edgeCSS) throws Exception {
 		testEdgeDefaultsCommon(edgeCSS);
 		assertEquals("rgb(12,100,200)", edgeCSS.get("line-color").asText());
+		assertEquals("rgb(10,100,100)", edgeCSS.get("source-arrow-color").asText());
+		assertEquals("rgb(20,100,100)", edgeCSS.get("target-arrow-color").asText());
 	}
 	
 	
@@ -415,5 +418,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	private void testEdgeDefaultsLocked(JsonNode edgeCSS) throws Exception {
 		testEdgeDefaultsCommon(edgeCSS);
 		assertEquals("rgb(222,100,10)", edgeCSS.get("line-color").asText());
+		assertEquals("rgb(222,100,10)", edgeCSS.get("source-arrow-color").asText());
+		assertEquals("rgb(222,100,10)", edgeCSS.get("target-arrow-color").asText());
 	}
 }
