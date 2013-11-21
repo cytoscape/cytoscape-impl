@@ -42,12 +42,12 @@ public class ClearAllEdgeBendsTask extends AbstractNetworkViewCollectionTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		for (CyNetworkView networkView : networkViews) {
+			networkView.setViewDefault(BasicVisualLexicon.EDGE_BEND, null);
 			final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
 			for (final View<CyEdge> edgeView : edgeViews) {
 				edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
 				edgeView.clearValueLock(BasicVisualLexicon.EDGE_BEND);
 			}
-			
 			networkView.updateView();
 		}
 	}

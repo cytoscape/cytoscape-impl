@@ -239,7 +239,7 @@ public class CyActivator extends AbstractCyActivator {
 		ClearAllEdgeBendsFactory clearAllEdgeBendsFactory = new ClearAllEdgeBendsFactory();
 		Properties clearAllEdgeBendsProps = new Properties();
 		clearAllEdgeBendsProps.setProperty(ID, "clearAllEdgeBendsFactory");
-		clearAllEdgeBendsProps.setProperty(TITLE, "Clear Edge Bends");
+		clearAllEdgeBendsProps.setProperty(TITLE, "Clear All Edge Bends");
 		clearAllEdgeBendsProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
 		clearAllEdgeBendsProps.setProperty(ENABLE_FOR, "networkAndView");
 		clearAllEdgeBendsProps.setProperty(PREFERRED_MENU, "Layout");

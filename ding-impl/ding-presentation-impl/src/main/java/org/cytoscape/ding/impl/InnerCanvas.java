@@ -425,10 +425,18 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.SELECTED_EDGES,"Remove Edge Handle",m_undo);
 
 			DEdgeView ev = m_view.getDEdgeView(edge);
-			Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
-			if( ev.getBend() == defaultBend )
+
+			if( !ev.isValueLocked(BasicVisualLexicon.EDGE_BEND) )
 			{
-				ev.setBend( new BendImpl( (BendImpl)defaultBend) );
+				Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
+				if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend )
+				{
+					ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)defaultBend) );
+				}
+				else
+				{
+					ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)ev.getBend()) );
+				}
 			}
 			ev.removeHandle(anchorInx);
 			m_button1NodeDrag = false;
@@ -466,8 +474,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			final Point2D newHandlePoint = new Point2D.Float((float) m_ptBuff[0], (float) m_ptBuff[1]);
 			DEdgeView edgeView = m_view.getDEdgeView(chosenEdge);
 			Bend defaultBend = edgeView.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
-			if( edgeView.getBend() == defaultBend )
-				edgeView.setBend( new BendImpl( (BendImpl)defaultBend) );
+			if( edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend )
+			{
+				if( defaultBend instanceof BendImpl )
+					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)defaultBend));
+					//edgeView.setBend( new BendImpl( (BendImpl)defaultBend) );
+				else
+					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
+					//edgeView.setBend( new BendImpl() );
+			}
 			final int chosenInx = m_view.getDEdgeView(chosenEdge).addHandlePoint(newHandlePoint);
 			
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
@@ -996,12 +1011,20 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 				final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
 
-				Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
-				if( ev.getBend() == defaultBend )
+
+				if( !ev.isValueLocked(BasicVisualLexicon.EDGE_BEND) )
 				{
-					ev.setBend( new BendImpl( (BendImpl)defaultBend) );
+					Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
+					if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend )
+					{
+						ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)defaultBend) );
+					}
+					else
+					{
+						ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)ev.getBend()) );
+					}
 				}
-				final Bend bend = ev.getBend();
+				final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
 				final Handle handle = bend.getAllHandles().get(anchorInx);
 				final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),ev);
 				m_floatBuff1[0] = (float) newPoint.getX();
@@ -1411,13 +1434,20 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 						final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
 
-						Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
-						if( ev.getBend() == defaultBend )
-						{
-							ev.setBend( new BendImpl( (BendImpl)defaultBend) );
-						}
 
-						final Bend bend = ev.getBend();
+						if( !ev.isValueLocked(BasicVisualLexicon.EDGE_BEND) )
+						{
+							Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
+							if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend )
+							{
+								ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)defaultBend) );
+							}
+							else
+							{
+								ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)ev.getBend()) );
+							}
+						}
+						final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
 						final Handle handle = bend.getAllHandles().get(anchorInx);
 						final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),ev);
 						m_floatBuff1[0] = (float) newPoint.getX();

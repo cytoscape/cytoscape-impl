@@ -25,27 +25,18 @@ package org.cytoscape.ding.impl;
  */
 
 
-import java.awt.Font;
-import java.awt.Paint;
-import java.awt.Stroke;
-import java.awt.geom.Point2D;
-import java.util.List;
-
-import org.cytoscape.ding.DArrowShape;
-import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphView;
+import org.cytoscape.ding.*;
 import org.cytoscape.ding.Label;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.values.ArrowShape;
-import org.cytoscape.view.presentation.property.values.Bend;
-import org.cytoscape.view.presentation.property.values.Handle;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
-import org.cytoscape.view.presentation.property.values.LineType;
+import org.cytoscape.view.presentation.property.values.*;
+
+import java.awt.*;
+import java.awt.geom.Point2D;
+import java.util.List;
 
 
 /**
@@ -586,8 +577,11 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	
 	@Override
 	public void setBend(final Bend bend) {
-		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.m_edgeBends.put(model, bend);
+		if( !isValueLocked(BasicVisualLexicon.EDGE_BEND) )
+		{
+			synchronized (graphView.m_lock) {
+				graphView.m_edgeDetails.m_edgeBends.put(model, bend);
+			}
 		}
 		graphView.m_contentChanged = true;
 	}

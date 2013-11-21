@@ -24,28 +24,6 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import static org.cytoscape.ding.DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT;
-import static org.cytoscape.ding.DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_FACE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
-
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Paint;
-import java.awt.Stroke;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
@@ -62,6 +40,14 @@ import org.cytoscape.view.presentation.property.EdgeBendVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+
+import static org.cytoscape.ding.DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT;
+import static org.cytoscape.ding.DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 /**
  * Values stored in this object will be used renderer. Be careful to keep these
@@ -153,8 +139,7 @@ final class DEdgeDetails extends EdgeDetails {
 		m_colorsLowDetail = new WeakHashMap<CyEdge, Object>();
 		m_selectedColorsLowDetail = new WeakHashMap<CyEdge, Object>();
 		m_lineCurved = new WeakHashMap<CyEdge, Integer>();
-		// If we clear this map, we lose all of our edge bends
-		// m_edgeBends = new WeakHashMap<CyEdge, Bend>();
+		m_edgeBends = new WeakHashMap<CyEdge, Bend>();
 		m_edgeTooltips = new WeakHashMap<CyEdge, String>();
 		m_edgeTansparencies = new WeakHashMap<CyEdge, Integer>();
 		m_edgeLabelTansparencies = new WeakHashMap<CyEdge, Integer>();
@@ -990,6 +975,9 @@ final class DEdgeDetails extends EdgeDetails {
 			else
 				return m_edgeBendDefault;
 		}
+
+		if( bend == EdgeBendVisualProperty.DEFAULT_EDGE_BEND && m_edgeBendDefault != null )
+			return m_edgeBendDefault;
 
 		return bend;
 	}
