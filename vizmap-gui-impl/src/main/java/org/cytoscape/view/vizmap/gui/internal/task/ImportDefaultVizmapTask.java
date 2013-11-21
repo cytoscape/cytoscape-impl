@@ -94,7 +94,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 
 		@Override
 		public void run(final TaskMonitor taskMonitor) throws Exception {
-			taskMonitor.setTitle("Loading preset Visual Styles...");
+			taskMonitor.setTitle("Loading preset Styles...");
 			final Set<VisualStyle> styles = reader.getVisualStyles();
 
 			if (styles != null) {

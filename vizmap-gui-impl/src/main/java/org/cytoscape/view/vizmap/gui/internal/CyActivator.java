@@ -153,28 +153,28 @@ public class CyActivator extends AbstractCyActivator {
 		final CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(servicesUtil);
 		final Properties createNewVisualStyleTaskFactoryProps = new Properties();
 		createNewVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		createNewVisualStyleTaskFactoryProps.setProperty("title", "Create New Visual Style");
+		createNewVisualStyleTaskFactoryProps.setProperty("title", "Create New Style");
 		createNewVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc,createNewVisualStyleTaskFactory, createNewVisualStyleTaskFactoryProps);
 
 		final RemoveVisualStyleTaskFactory removeVisualStyleTaskFactory = new RemoveVisualStyleTaskFactory(servicesUtil);
 		final Properties removeVisualStyleTaskFactoryProps = new Properties();
 		removeVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		removeVisualStyleTaskFactoryProps.setProperty("title", "Remove Visual Style");
+		removeVisualStyleTaskFactoryProps.setProperty("title", "Remove Style");
 		removeVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc,removeVisualStyleTaskFactory, removeVisualStyleTaskFactoryProps);
 
 		final RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
 		final Properties renameVisualStyleTaskFactoryProps = new Properties();
 		renameVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		renameVisualStyleTaskFactoryProps.setProperty("title", "Rename Visual Style");
+		renameVisualStyleTaskFactoryProps.setProperty("title", "Rename Style");
 		renameVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc, renameVisualStyleTaskFactory, renameVisualStyleTaskFactoryProps);
 
 		final CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(servicesUtil);
 		final Properties copyVisualStyleTaskFactoryProps = new Properties();
 		copyVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		copyVisualStyleTaskFactoryProps.setProperty("title", "Copy Visual Style");
+		copyVisualStyleTaskFactoryProps.setProperty("title", "Copy Style");
 		copyVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc, copyVisualStyleTaskFactory, copyVisualStyleTaskFactoryProps);
 

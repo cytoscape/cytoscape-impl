@@ -88,7 +88,7 @@ public class RemoveVisualStyleTask extends AbstractTask {
 	private class RemoveVisualStyleEdit extends AbstractCyEdit {
 
 		public RemoveVisualStyleEdit() {
-			super("Remove Visual Style");
+			super("Remove Style");
 		}
 
 		@Override

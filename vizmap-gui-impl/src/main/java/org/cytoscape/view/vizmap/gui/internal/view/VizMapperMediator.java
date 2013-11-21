@@ -1300,7 +1300,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			
 			// Undo support
 			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
-			undo.postEdit(new AbstractCyEdit("Set Current Visual Style") {
+			undo.postEdit(new AbstractCyEdit("Set Current Style") {
 				@Override
 				public void undo() {
 					vmProxy.setCurrentVisualStyle(oldStyle);

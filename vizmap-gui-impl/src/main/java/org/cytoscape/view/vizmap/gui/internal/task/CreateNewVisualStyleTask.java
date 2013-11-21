@@ -40,7 +40,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class CreateNewVisualStyleTask extends AbstractTask implements TunableValidator {
 
-	@Tunable(description = "Name of new Visual Style:")
+	@Tunable(description = "Name of new Style:")
 	public String vsName;
 
 	private VisualStyle newStyle;
@@ -57,7 +57,7 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Create New Visual Style";
+		return "Create New Style";
 	}
 	
 	@Override

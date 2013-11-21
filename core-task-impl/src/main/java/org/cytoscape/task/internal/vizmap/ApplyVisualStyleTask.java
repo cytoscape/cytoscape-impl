@@ -43,10 +43,10 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask {
 
 	@ProvidesTitle
 	public String getTitle() {
-		return "Visual Style to be applied";
+		return "Style to be applied";
 	}
 
-	@Tunable(description = "Visual Style")
+	@Tunable(description = "Style")
 	public ListSingleSelection<VisualStyle> styles;
 
 	public ApplyVisualStyleTask(final Collection<CyNetworkView> views, final VisualMappingManager vmm) {

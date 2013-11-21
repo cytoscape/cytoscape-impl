@@ -164,7 +164,7 @@ public class VizMapperMenuMediator extends Mediator {
 	
 	private class BypassContextMenuBuilder {
 		
-		private static final String ROOT = "Bypass Visual Style";
+		private static final String ROOT = "Bypass Style";
 		private static final String REMOVE_ALL_FROM = "Remove All from this ";
 		private static final String REMOVE_ALL_FROM_SELECTED_NODES = "Remove All from Selected Nodes";
 		private static final String REMOVE_ALL_FROM_SELECTED_EDGES = "Remove All from Selected Edges";

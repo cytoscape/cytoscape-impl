@@ -366,7 +366,7 @@ public abstract class Messages {
 
 	public static String AC_REMSELFLOOPS = "Remove Self-Loops";
 
-	public static String AC_MAPPARAM = "Generate Visual Style from Statistics...";
+	public static String AC_MAPPARAM = "Generate Style from Statistics...";
 
 	// Labels of items in dialogs
 
@@ -376,7 +376,7 @@ public abstract class Messages {
 
 	public static String DI_APPLY = "Apply";
 
-	public static String DI_APPLYVS = "Apply visual styles to ";
+	public static String DI_APPLYVS = "Apply styles to ";
 
 	public static String DI_ATTRIBUTE1 = "Table Column 1";
 
