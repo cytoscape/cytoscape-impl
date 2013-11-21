@@ -3,6 +3,8 @@ package org.cytoscape.io.internal.write.json.serializer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -10,6 +12,8 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 public class PassthroughMappingSerializer implements VisualMappingSerializer<PassthroughMapping<?, ?>> {
 	
+	private static final Pattern REPLACE_INVALID_JS_CHAR_PATTERN = Pattern.compile("^[^a-zA-Z_]+|[^a-zA-Z_0-9]+");
+
 	/**
 	 * Map from Visual Property to equivalent cytoscape.js tag.
 	 */
@@ -37,7 +41,10 @@ public class PassthroughMappingSerializer implements VisualMappingSerializer<Pas
 		if(terms.contains(vp) == false) {
 			return null;
 		}
-		
-		return "data(" + mapping.getMappingColumnName() + ")";
+		 
+		String columnName = mapping.getMappingColumnName();
+		final Matcher matcher = REPLACE_INVALID_JS_CHAR_PATTERN.matcher(columnName);
+		columnName = matcher.replaceAll("_");
+		return "data(" + columnName + ")";
 	}
 }
