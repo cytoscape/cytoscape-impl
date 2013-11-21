@@ -1,6 +1,8 @@
 package org.cytoscape.io.internal.write.json;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,9 +23,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.Justification;
+import org.cytoscape.ding.ObjectPosition;
+import org.cytoscape.ding.Position;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.dependency.EdgeColorDependencyFactory;
 import org.cytoscape.ding.dependency.NodeSizeDependencyFactory;
+import org.cytoscape.ding.impl.ObjectPositionImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleModule;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleSerializer;
@@ -38,7 +43,6 @@ import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -57,8 +61,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -139,6 +141,8 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_SIZE, 18);
 		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_FONT_FACE, new Font("Helvetica", Font.PLAIN, 12));
 		style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY, 122);
+		style.setDefaultValue(DVisualLexicon.NODE_LABEL_POSITION,
+				new ObjectPositionImpl(Position.NORTH_EAST, Position.CENTER, Justification.JUSTIFY_CENTER, 0,0));
 
 		// For Selected
 		style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, Color.RED);
@@ -161,6 +165,9 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.DELTA);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, ArrowShapeVisualProperty.T);
 		
+		style.setDefaultValue(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, new Color(20, 100, 100));
+		style.setDefaultValue(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT, new Color(10, 100, 100));
+		
 		// For Selected
 		style.setDefaultValue(BasicVisualLexicon.EDGE_SELECTED_PAINT, Color.PINK);
 		style.setDefaultValue(BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT, Color.ORANGE);
@@ -179,6 +186,9 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		// Simple two points mapping.
 		final ContinuousMapping<Integer, Paint> nodeLabelColorMapping = (ContinuousMapping<Integer, Paint>) continuousFactory
 				.createVisualMappingFunction("Degree", Integer.class, BasicVisualLexicon.NODE_LABEL_COLOR);
+		
+		final ContinuousMapping<Double, Integer> nodeOpacityMapping = (ContinuousMapping<Double, Integer>) continuousFactory
+				.createVisualMappingFunction("Betweenness Centrality", Double.class, BasicVisualLexicon.NODE_TRANSPARENCY);
 		
 		final ContinuousMapping<Integer, Double> nodeWidthMapping = (ContinuousMapping<Integer, Double>) continuousFactory
 				.createVisualMappingFunction("Degree", Integer.class, BasicVisualLexicon.NODE_WIDTH);
@@ -211,7 +221,16 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		nodeHeightMapping.addPoint(1, bv0);
 		nodeHeightMapping.addPoint(20, bv1);
 
+		final BoundaryRangeValues<Integer> trans0 = new BoundaryRangeValues<Integer>(10, 10, 10);
+		final BoundaryRangeValues<Integer> trans1 = new BoundaryRangeValues<Integer>(80, 80, 100);
+		final BoundaryRangeValues<Integer> trans2 = new BoundaryRangeValues<Integer>(222, 222, 250);
+		nodeOpacityMapping.addPoint(0.22, trans0);
+		nodeOpacityMapping.addPoint(0.61, trans1);
+		nodeOpacityMapping.addPoint(0.95, trans2);
+
 		style.addVisualMappingFunction(nodeWidthMapping);
+		style.addVisualMappingFunction(nodeHeightMapping);
+		style.addVisualMappingFunction(nodeOpacityMapping);
 		style.addVisualMappingFunction(nodeColorMapping);
 
 		// Discrete mappings
@@ -224,6 +243,13 @@ public class CytoscapeJsVisualStyleSerializerTest {
 
 		style.addVisualMappingFunction(nodeShapeMapping);
 
+		final DiscreteMapping<String, ObjectPosition> nodeLabelPosMapping = (DiscreteMapping<String, ObjectPosition>) discreteFactory
+				.createVisualMappingFunction("Node Type", String.class, DVisualLexicon.NODE_LABEL_POSITION);
+		nodeLabelPosMapping.putMapValue("gene", new ObjectPositionImpl(Position.SOUTH, Position.NORTH_WEST, Justification.JUSTIFY_CENTER, 0,0));
+		nodeLabelPosMapping.putMapValue("protein", new ObjectPositionImpl(Position.EAST, Position.WEST, Justification.JUSTIFY_CENTER, 0,0));
+
+		style.addVisualMappingFunction(nodeLabelPosMapping);
+
 		final DiscreteMapping<String, Paint> edgeColorMapping = (DiscreteMapping<String, Paint>) discreteFactory
 				.createVisualMappingFunction("interaction", String.class,
 						BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
@@ -231,6 +257,14 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		edgeColorMapping.putMapValue("pd", Color.red);
 
 		style.addVisualMappingFunction(edgeColorMapping);
+		
+		final DiscreteMapping<String, Integer> edgeTransparencyMapping = (DiscreteMapping<String, Integer>) discreteFactory
+				.createVisualMappingFunction("interaction", String.class,
+						BasicVisualLexicon.EDGE_TRANSPARENCY);
+		edgeTransparencyMapping.putMapValue("pp", 222);
+		edgeTransparencyMapping.putMapValue("pd", 123);
+
+		style.addVisualMappingFunction(edgeTransparencyMapping);
 	}
 
 	@Test
@@ -313,11 +347,22 @@ public class CytoscapeJsVisualStyleSerializerTest {
 
 	private final void testDefaultsLocked(final JsonNode root) throws Exception {
 		final Map<String, JsonNode> result = getNodesAndEdges(root);
+		final Map<String, Set<JsonNode>> mappings = getMappings(root);
+		
 		final JsonNode nodeCSS = result.get("node").get("css");
 		final JsonNode edgeCSS = result.get("edge").get("css");
-	
+
 		testNodeDefaultsLocked(nodeCSS);
 		testEdgeDefaultsLocked(edgeCSS);
+		
+		testNodeMappings(mappings.get("node"));
+	}
+	
+	private final void testNodeMappings(final Set<JsonNode> nodeMappings) {
+		for(JsonNode jnode: nodeMappings) {
+			final String mappingName = jnode.get("selector").asText();
+		}
+		
 	}
 
 
@@ -354,6 +399,33 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		return graphObjects;
 	}
 	
+	private final Map<String,Set<JsonNode>> getMappings(final JsonNode root) {
+		final Map<String,Set<JsonNode>> mappings = new HashMap<String, Set<JsonNode>>();
+
+		final JsonNode style1 = root.get(0);
+		final JsonNode styleObject = style1.get("style");
+		
+		final Set<JsonNode> nodes = new HashSet<JsonNode>();
+		final Set<JsonNode> edges = new HashSet<JsonNode>();
+		
+		for(JsonNode jNode: styleObject) {
+			final JsonNode css = jNode.get("css");
+			final JsonNode selectorType = jNode.get("selector");
+			System.out.println(selectorType.asText());
+			if(selectorType.asText().startsWith("node[")) {
+				nodes.add(jNode);
+			} else if(selectorType.asText().startsWith("edge[")) {
+				edges.add(jNode);
+			}
+		}
+		assertEquals(33, nodes.size());
+		assertEquals(2, edges.size());
+
+		mappings.put("node", nodes);
+		mappings.put("edge", edges);
+
+		return mappings;
+	}
 	
 	private final String calcOpacity(int opacity) {
 		return Double.toString(opacity/255d);
@@ -393,6 +465,13 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		assertEquals("tee", edgeCSS.get("source-arrow-shape").asText());
 	}
 	
+	private final void testEdgeMappingsCommon() {
+	
+		// Find selector:
+		
+	}
+	
+	
 	private void testNodeDefaultsUnlocked(JsonNode nodeCSS) throws Exception {
 		testNodeDefaultsCommon(nodeCSS);
 		assertTrue(40d == nodeCSS.get("width").asDouble());
@@ -402,6 +481,8 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	private void testEdgeDefaultsUnlocked(JsonNode edgeCSS) throws Exception {
 		testEdgeDefaultsCommon(edgeCSS);
 		assertEquals("rgb(12,100,200)", edgeCSS.get("line-color").asText());
+		assertEquals("rgb(10,100,100)", edgeCSS.get("source-arrow-color").asText());
+		assertEquals("rgb(20,100,100)", edgeCSS.get("target-arrow-color").asText());
 	}
 	
 	
@@ -415,5 +496,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	private void testEdgeDefaultsLocked(JsonNode edgeCSS) throws Exception {
 		testEdgeDefaultsCommon(edgeCSS);
 		assertEquals("rgb(222,100,10)", edgeCSS.get("line-color").asText());
+		assertEquals("rgb(222,100,10)", edgeCSS.get("source-arrow-color").asText());
+		assertEquals("rgb(222,100,10)", edgeCSS.get("target-arrow-color").asText());
 	}
 }

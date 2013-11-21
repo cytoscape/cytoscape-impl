@@ -3,6 +3,8 @@ package org.cytoscape.io.internal.write.json.serializer;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -18,6 +20,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  * 
  */
 public class JsRowSerializer extends JsonSerializer<CyRow> {
+
+	private static final Pattern REPLACE_INVALID_JS_CHAR_PATTERN = Pattern.compile("^[^a-zA-Z_]+|[^a-zA-Z_0-9]+");
 
 	@Override
 	public void serialize(final CyRow row, JsonGenerator jgen, SerializerProvider provider) throws IOException,
@@ -54,7 +58,8 @@ public class JsRowSerializer extends JsonSerializer<CyRow> {
 	}
 	
 	private final String replaceColumnName(final String columnName) {
-		return columnName.replaceAll(" ", "_");
+		final Matcher matcher = REPLACE_INVALID_JS_CHAR_PATTERN.matcher(columnName);
+		return matcher.replaceAll("_");
 	}
 
 	private final void writeValue(final Class<?> type, Object value, JsonGenerator jgen)
