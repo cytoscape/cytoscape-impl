@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -36,6 +38,8 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
+	
+	private static final Pattern REPLACE_INVALID_JS_CHAR_PATTERN = Pattern.compile("^[^a-zA-Z_]+|[^a-zA-Z_0-9]+");
 
 	private static final Collection<VisualProperty<?>> NODE_SELECTED_PROPERTIES = new ArrayList<VisualProperty<?>>();
 	private static final Collection<VisualProperty<?>> EDGE_SELECTED_PROPERTIES = new ArrayList<VisualProperty<?>>();
@@ -119,7 +123,8 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			visualProperties.remove(removed);
 		}
 		createDefaults(visualProperties, vs, jg);
-		// Mappings
+		
+		// Mappings - Passthrough ONLY, because others needs special selectors.
 		createMappings(visualProperties, vs, jg);
 
 		jg.writeEndObject();
@@ -173,7 +178,11 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			final JsonGenerator jg) throws IOException {
 
 		final Class<?> type = mapping.getVisualProperty().getRange().getType();
-		final String columnName = mapping.getMappingColumnName().replaceAll(" ", "_");
+		final VisualProperty<?> targetVP = mapping.getVisualProperty();
+
+		String columnName = mapping.getMappingColumnName();
+		final Matcher matcher = REPLACE_INVALID_JS_CHAR_PATTERN.matcher(columnName);
+		columnName = matcher.replaceAll("_");
 		final List<?> points = mapping.getAllPoints();
 		final String objectType = vp.getIdString().toLowerCase();
 
@@ -187,9 +196,9 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		if (points.size() == 1) {
 			final ContinuousMappingPoint<?, ?> point = (ContinuousMappingPoint<?, ?>) points.get(0);
 			final Number bound = (Number) point.getValue();
-			writeSelector(jg, point.getRange().lesserValue, "<", objectType, columnName, jsTag.getTag(), bound);
-			writeSelector(jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
-			writeSelector(jg, point.getRange().greaterValue, ">", objectType, columnName, jsTag.getTag(), bound);
+			writeSelector(targetVP, jg, point.getRange().lesserValue, "<", objectType, columnName, jsTag.getTag(), bound);
+			writeSelector(targetVP, jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
+			writeSelector(targetVP, jg, point.getRange().greaterValue, ">", objectType, columnName, jsTag.getTag(), bound);
 			return;
 		}
 
@@ -201,9 +210,6 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			pointMap.put(val, p);
 		}
 
-		System.out.println("LAST: " + pointMap.lastKey());
-		System.out.println("FIRST: " + pointMap.firstKey());
-
 		final ValueSerializer serializer = manager.getSerializer(type);
 		ContinuousMappingPoint<?, ?> prevPoint = null;
 		for (final Number key : pointMap.descendingKeySet()) {
@@ -213,14 +219,14 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			// Largest key
 			if (key.equals(pointMap.lastKey())) {
 				// Highest value. This should be executed first.
-				writeSelector(jg, point.getRange().greaterValue, ">", objectType, columnName, jsTag.getTag(), bound);
-				writeSelector(jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
+				writeSelector(targetVP, jg, point.getRange().greaterValue, ">", objectType, columnName, jsTag.getTag(), bound);
+				writeSelector(targetVP, jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
 				prevPoint = point;
 			} else if (key.equals(pointMap.firstKey())) {
 				// Lowest value. This should be executed LAST.
 				generateMap(jg, columnName, objectType, jsTag.getTag(), point, prevPoint, serializer);
-				writeSelector(jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
-				writeSelector(jg, point.getRange().lesserValue, "<", objectType, columnName, jsTag.getTag(), bound);
+				writeSelector(targetVP, jg, point.getRange().equalValue, "=", objectType, columnName, jsTag.getTag(), bound);
+				writeSelector(targetVP, jg, point.getRange().lesserValue, "<", objectType, columnName, jsTag.getTag(), bound);
 			} else {
 				// Create map
 				generateMap(jg, columnName, objectType, jsTag.getTag(), point, prevPoint, serializer);
@@ -266,7 +272,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeEndObject();
 	}
 
-	private final void writeSelector(final JsonGenerator jg, Object value, String operator, String objectType,
+	private final void writeSelector(final VisualProperty<?> vp, final JsonGenerator jg, Object value, String operator, String objectType,
 			String colName, String jsTag, Number bound) throws IOException {
 
 		jg.writeStartObject();
@@ -277,7 +283,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeStringField(SELECTOR.getTag(), tag);
 		jg.writeObjectFieldStart(CSS.getTag());
 
-		jg.writeObjectField(jsTag, value);
+		jg.writeObjectField(jsTag, convert(vp, value));
 
 		jg.writeEndObject();
 		jg.writeEndObject();
@@ -300,12 +306,13 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 		final Map<?, ?> mappingPairs = mapping.getAll();
 
-		final String colName = mapping.getMappingColumnName().replaceAll(" ", "_");
-		
+		String colName = mapping.getMappingColumnName();
+		final Matcher matcher = REPLACE_INVALID_JS_CHAR_PATTERN.matcher(colName);
+		colName = matcher.replaceAll("_");
 		final Class<?> colType = mapping.getMappingColumnType();
 
 		for (Object key : mappingPairs.keySet()) {
-			final Object value = mappingPairs.get(key);
+			final Object value = convert(mapping.getVisualProperty(), mappingPairs.get(key));
 			jg.writeStartObject();
 
 			String tag = vp.getIdString().toLowerCase() + "[" + colName + " = ";
@@ -411,8 +418,75 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			} else {
 				return true;
 			}
+		} else if (vp.getIdString().equals("NODE_LABEL_POSITION")) {
+			// This is a hack...  We need to implement how to expose other renderer's VP
+			final Object labelPosition = getDefaultVisualPropertyValue(vs, vp);
+			String valText = labelPosition.toString();
+			writeLabelPosition(jg, valText);
+			return false;
 		} else {
 			return true;
+		}
+	}
+	
+	/**
+	 * 
+	 * Temp function to write label position.
+	 * 
+	 *  TODO: replace this.
+	 * 
+	 * @throws IOException 
+	 * @throws JsonGenerationException 
+	 * 
+	 */
+	private final void writeLabelPosition(final JsonGenerator jg, final String valText) throws JsonGenerationException, IOException {
+			String[] parts = valText.split(" ");
+			
+			final String position = parts[1];
+			if(position.equals("North") || position.equals("Northeast") || position.equals("Northwest")) {
+				jg.writeStringField(CytoscapeJsToken.TEXT_VALIGN.getTag(), "top");
+			} else if(position.equals("Center") || position.equals("East") || position.equals("West")) {
+				jg.writeStringField(CytoscapeJsToken.TEXT_VALIGN.getTag(), "center");
+			} else {
+				jg.writeStringField(CytoscapeJsToken.TEXT_VALIGN.getTag(), "bottom");
+			}
+
+			if(position.equals("West") || position.equals("Northwest") || position.equals("Southwest")) {
+				jg.writeStringField(CytoscapeJsToken.TEXT_HALIGN.getTag(), "left");
+			} else if(position.equals("East") || position.equals("Northeast") || position.equals("Southeast")) {
+				jg.writeStringField(CytoscapeJsToken.TEXT_HALIGN.getTag(), "right");
+			} else {
+				jg.writeStringField(CytoscapeJsToken.TEXT_HALIGN.getTag(), "center");
+			}
+	}
+
+	/**
+	 * Special value handlers.
+	 * 
+	 * TODO: find better way to do this!
+	 * 
+	 * @param vp
+	 * @param originalValue
+	 * @return
+	 */
+	private Object convert(VisualProperty<?> vp, Object originalValue) {
+		if (vp == BasicVisualLexicon.EDGE_TRANSPARENCY || vp == BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY
+				|| vp == BasicVisualLexicon.NODE_LABEL_TRANSPARENCY || vp == BasicVisualLexicon.NODE_TRANSPARENCY
+				|| vp == BasicVisualLexicon.NODE_BORDER_TRANSPARENCY) {
+			return ((Integer)originalValue)/255d;
+		} else if (vp.getIdString().equals("NODE_LABEL_POSITION")) {
+			final String valText = originalValue.toString();
+			String[] parts = valText.split(" ");
+			final String position = parts[1];
+			if(position.equals("North") || position.equals("Northeast") || position.equals("Northwest")) {
+				return "top";
+			} else if(position.equals("Center") || position.equals("East") || position.equals("West")) {
+				return "center";
+			} else {
+				return "bottom";
+			}
+		} else {
+			return originalValue;
 		}
 	}
 

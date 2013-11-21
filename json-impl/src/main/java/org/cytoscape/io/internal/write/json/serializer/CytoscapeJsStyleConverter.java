@@ -129,6 +129,8 @@ public class CytoscapeJsStyleConverter {
 			return TARGET_ARROW_COLOR;
 		else if(vp.getIdString().equals("EDGE_SOURCE_ARROW_UNSELECTED_PAINT"))
 			return SOURCE_ARROW_COLOR;
+		else if(vp.getIdString().equals("NODE_LABEL_POSITION"))
+			return TEXT_VALIGN;
 		else
 			return vp2tag.get(vp);
 	}

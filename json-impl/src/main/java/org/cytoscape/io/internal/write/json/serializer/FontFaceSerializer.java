@@ -3,8 +3,6 @@ package org.cytoscape.io.internal.write.json.serializer;
 import java.awt.Font;
 import java.io.IOException;
 
-import javax.jws.soap.SOAPBinding.Style;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;

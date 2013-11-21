@@ -21,6 +21,9 @@ public class ArrowShapeSerializer extends JsonSerializer<ArrowShape> {
 		SHAPE_MAP.put(ArrowShapeVisualProperty.DELTA, "triangle");
 		SHAPE_MAP.put(ArrowShapeVisualProperty.CIRCLE, "circle");
 		SHAPE_MAP.put(ArrowShapeVisualProperty.DIAMOND, "diamond");
+		SHAPE_MAP.put(ArrowShapeVisualProperty.ARROW, "triangle");
+		SHAPE_MAP.put(ArrowShapeVisualProperty.HALF_BOTTOM, "triangle");
+		SHAPE_MAP.put(ArrowShapeVisualProperty.HALF_TOP, "triangle");
 		SHAPE_MAP.put(ArrowShapeVisualProperty.NONE, "none");
 	}
 	
@@ -34,7 +37,7 @@ public class ArrowShapeSerializer extends JsonSerializer<ArrowShape> {
 		} else {
 			String shapeString = SHAPE_MAP.get(value);
 			if(shapeString == null) {
-				shapeString = SHAPE_MAP.get(ArrowShapeVisualProperty.NONE);
+				shapeString = SHAPE_MAP.get(ArrowShapeVisualProperty.ARROW);
 			}
 			jgen.writeString(shapeString);
 		}
