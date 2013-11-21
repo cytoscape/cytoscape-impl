@@ -29,8 +29,8 @@ import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 
@@ -38,27 +38,27 @@ import java.io.File;
 
 
 /**
- * A utility Task implementation specifically for writing a {@link org.cytoscape.view.model.CyNetworkView}.
+ * A utility Task implementation specifically for writing a {@link org.cytoscape.model.CyNetwork}.
  */
-public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetworkViewWriterFactory,CyNetworkViewWriterManager> {
-	// the view to be written
-	private final CyNetworkView view;
+public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkViewWriterFactory,CyNetworkViewWriterManager> {
+	// the network to be written
+	private final CyNetwork network;
 
 	/**
 	 * @param writerManager The {@link org.cytoscape.io.write.CyNetworkViewWriterManager} used to determine which 
 	 * {@link org.cytoscape.io.write.CyNetworkViewWriterFactory} to use to write the file.
-	 * @param view The {@link org.cytoscape.view.model.CyNetworkView} to be written out. 
+	 * @param network The {@link org.cytoscape.model.CyNetwork} to be written out. 
 	 */
-	public CyNetworkViewWriter(final CyNetworkViewWriterManager writerManager, final CyNetworkView view ) {
+	public CyNetworkWriter(final CyNetworkViewWriterManager writerManager, final CyNetwork network ) {
 		super(writerManager);
 		
-		if (view == null)
-			throw new NullPointerException("View is null.");
+		if (network == null)
+			throw new NullPointerException("Network is null.");
 		
-		this.view = view;
-		// Pick XGMML as a default file format
+		this.network = network;
+		// Pick SIF as a default file format
 		for(String fileTypeDesc: this.getFileFilterDescriptions()) {
-			if(fileTypeDesc.contains("XGMML")) {
+			if(fileTypeDesc.contains("SIF")) {
 				this.options.setSelectedValue(fileTypeDesc);
 				break;
 			}
@@ -101,10 +101,10 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 		else
 			file = new File(file.getAbsolutePath());
 
-		return writerManager.getWriter(view,filter,file);
+		return writerManager.getWriter(network,filter,file);
 	}
 	
-	@Tunable(description="Save Network (and View) As:", params="fileCategory=network;input=false", dependsOn="options!=")
+	@Tunable(description="Save Network As:", params="fileCategory=network;input=false", dependsOn="options!=")
 	public  File getOutputFile() {	
 		return outputFile;
 	}

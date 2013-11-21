@@ -51,6 +51,7 @@ import org.cytoscape.task.internal.destruction.DestroyNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.destruction.DestroyNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.edit.ConnectSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactoryImpl;
+import org.cytoscape.task.internal.export.network.ExportNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.export.table.ExportSelectedTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.table.ExportTableTaskFactoryImpl;
@@ -199,6 +200,7 @@ public class CyActivator extends AbstractCyActivator {
 		EditNetworkTitleTaskFactoryImpl editNetworkTitleTaskFactory = new EditNetworkTitleTaskFactoryImpl(undoSupportServiceRef, cyNetworkManagerServiceRef, cyNetworkNamingServiceRef, tunableSetterServiceRef);
 		CreateNetworkViewTaskFactoryImpl createNetworkViewTaskFactory = new CreateNetworkViewTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,cyLayoutsServiceRef,cyEventHelperRef,visualMappingManagerServiceRef,renderingEngineManagerServiceRef,cyApplicationManagerServiceRef);
 		ExportNetworkImageTaskFactoryImpl exportNetworkImageTaskFactory = new ExportNetworkImageTaskFactoryImpl(viewWriterManagerServiceRef,cyApplicationManagerServiceRef);
+		ExportNetworkTaskFactoryImpl exportNetworkTaskFactory = new ExportNetworkTaskFactoryImpl(networkViewWriterManagerServiceRef, tunableSetterServiceRef);
 		ExportNetworkViewTaskFactoryImpl exportNetworkViewTaskFactory = new ExportNetworkViewTaskFactoryImpl(networkViewWriterManagerServiceRef, tunableSetterServiceRef);
 		ExportSelectedTableTaskFactoryImpl exportCurrentTableTaskFactory = new ExportSelectedTableTaskFactoryImpl(cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef);
 		ApplyPreferredLayoutTaskFactoryImpl applyPreferredLayoutTaskFactory = new ApplyPreferredLayoutTaskFactoryImpl(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cyLayoutsServiceRef,cyPropertyServiceRef);
@@ -733,6 +735,32 @@ public class CyActivator extends AbstractCyActivator {
 		// For commands
 		registerService(bc,createNetworkViewTaskFactory,TaskFactory.class, createNetworkViewTaskFactoryProps);
 
+		Properties exportNetworkTaskFactoryProps = new Properties();
+		exportNetworkTaskFactoryProps.setProperty(ENABLE_FOR,"network");
+		exportNetworkTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
+		exportNetworkTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
+		exportNetworkTaskFactoryProps.setProperty(TITLE,"Network...");
+		exportNetworkTaskFactoryProps.setProperty(IN_TOOL_BAR,"false");
+		exportNetworkTaskFactoryProps.setProperty(IN_CONTEXT_MENU,"false");
+		exportNetworkTaskFactoryProps.setProperty(TOOLTIP,"Export Network to File");
+		registerService(bc,exportNetworkTaskFactory,NetworkTaskFactory.class, exportNetworkTaskFactoryProps);
+		registerService(bc,exportNetworkTaskFactory,ExportNetworkTaskFactory.class, exportNetworkTaskFactoryProps);
+
+		Properties exportNetworkViewTaskFactoryProps = new Properties();
+		exportNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
+		exportNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
+		exportNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
+		exportNetworkViewTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.5");
+		exportNetworkViewTaskFactoryProps.setProperty(TITLE,"Network and View ...");
+		exportNetworkViewTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/net_file_export.png").toString());
+		exportNetworkViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+		exportNetworkViewTaskFactoryProps.setProperty(IN_CONTEXT_MENU,"false");
+		exportNetworkViewTaskFactoryProps.setProperty(TOOLTIP,"Export Network and View to File");
+		exportNetworkViewTaskFactoryProps.setProperty(COMMAND,"export");
+		exportNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		registerService(bc,exportNetworkViewTaskFactory,NetworkViewTaskFactory.class, exportNetworkViewTaskFactoryProps);
+		registerService(bc,exportNetworkViewTaskFactory,ExportNetworkViewTaskFactory.class, exportNetworkViewTaskFactoryProps);
+
 		Properties exportNetworkImageTaskFactoryProps = new Properties();
 		exportNetworkImageTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
 		exportNetworkImageTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/img_file_export.png").toString());
@@ -748,22 +776,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,exportNetworkImageTaskFactory,NetworkViewTaskFactory.class, exportNetworkImageTaskFactoryProps);
 		registerService(bc,exportNetworkImageTaskFactory,ExportNetworkImageTaskFactory.class, exportNetworkImageTaskFactoryProps);
 		
-
-		Properties exportNetworkViewTaskFactoryProps = new Properties();
-		exportNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
-		exportNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
-		exportNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
-		exportNetworkViewTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.5");
-		exportNetworkViewTaskFactoryProps.setProperty(TITLE,"Network...");
-		exportNetworkViewTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/net_file_export.png").toString());
-		exportNetworkViewTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		exportNetworkViewTaskFactoryProps.setProperty(IN_CONTEXT_MENU,"false");
-		exportNetworkViewTaskFactoryProps.setProperty(TOOLTIP,"Export Network to File");
-		exportNetworkViewTaskFactoryProps.setProperty(COMMAND,"export");
-		exportNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		registerService(bc,exportNetworkViewTaskFactory,NetworkViewTaskFactory.class, exportNetworkViewTaskFactoryProps);
-		registerService(bc,exportNetworkViewTaskFactory,ExportNetworkViewTaskFactory.class, exportNetworkViewTaskFactoryProps);
-
 		Properties exportCurrentTableTaskFactoryProps = new Properties();
 		exportCurrentTableTaskFactoryProps.setProperty(ENABLE_FOR,"table");
 		exportCurrentTableTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
