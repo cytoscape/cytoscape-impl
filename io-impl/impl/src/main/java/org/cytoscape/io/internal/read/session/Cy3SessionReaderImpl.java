@@ -56,6 +56,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.read.datatable.CyTablesXMLReader;
 import org.cytoscape.io.internal.read.session.CyTableMetadataImpl.CyTableMetadataBuilder;
@@ -116,6 +118,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyNetworkTableManager networkTableMgr;
+	private final EquationCompiler compiler;
 
 	protected final Map<String, CyTable> filenameTableMap;
 	private Map<CyTableMetadataBuilder, String> builderFilenameMap;
@@ -133,7 +136,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 							    final VizmapReaderManager vizmapReaderMgr,
 							    final CSVCyReaderFactory csvCyReaderFactory,
 							    final CyNetworkTableManager networkTableMgr,
-							    final CyRootNetworkManager rootNetworkMgr) {
+							    final CyRootNetworkManager rootNetworkMgr,
+							    final EquationCompiler compiler) {
 		super(sourceInputStream, cache, groupUtil, rootNetworkMgr);
 
 		if (suidUpdater == null) throw new NullPointerException("SUID updater is null.");
@@ -153,6 +157,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 		if (networkTableMgr == null) throw new NullPointerException("network table manager is null.");
 		this.networkTableMgr = networkTableMgr;
+		
+		if (compiler == null) throw new NullPointerException("equation compiler is null.");
+		this.compiler = compiler;
 		
 		virtualColumns = new LinkedList<VirtualColumn>();
 		filenameTableMap = new HashMap<String, CyTable>();
@@ -213,6 +220,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		tm.setTitle("Restore virtual columns");
 		tm.setStatusMessage("Restoring virtual columns...");
 		restoreVirtualColumns();
+		
+		tm.setProgress(0.55);
+		tm.setTitle("Restore equations");
+		tm.setStatusMessage("Restoring equations...");
+		restoreEquations();
 		
 		tm.setProgress(0.6);
 		tm.setTitle("Extract network views");
@@ -642,5 +654,41 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		}
 		
 		return id;
+	}
+	
+	private void restoreEquations() {
+		for (CyNetwork network : networkLookup.values()) {
+			restoreEquations(network.getDefaultNetworkTable());
+			restoreEquations(network.getDefaultNodeTable());
+			restoreEquations(network.getDefaultEdgeTable());
+		}
+	}
+
+	private void restoreEquations(CyTable table) {
+		Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
+		for (CyColumn column : table.getColumns()) {
+			variableNameToTypeMap.put(column.getName(), column.getType());
+		}
+		
+		for (CyRow row : table.getAllRows()) {
+			for (CyColumn column : table.getColumns()) {
+				String name = column.getName();
+				Object value = row.getRaw(name);
+				if (!(value instanceof Equation)) {
+					continue;
+				}
+				Equation equation = (Equation) value;
+
+				final Class<?> type = variableNameToTypeMap.remove(name);
+				try {
+					if (compiler.compile(equation.toString(), variableNameToTypeMap)) {
+						row.set(name, compiler.getEquation());
+					}
+				} catch (Exception e) {
+					logger.error("Unexpected error while restoring equation: " + equation.toString(), e);
+				}
+				variableNameToTypeMap.put(name, type);
+			}
+		}
 	}
 }

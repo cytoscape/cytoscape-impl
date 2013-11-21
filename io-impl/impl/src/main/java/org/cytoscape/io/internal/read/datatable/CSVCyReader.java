@@ -121,13 +121,12 @@ public class CSVCyReader implements CyTableReader {
 				if (handleEquations && values[i].startsWith("=")) {
 					final Class<?> type = variableNameToTypeMap.remove(name);
 					try {
-						if (!compiler.compile(values[i],
-								      variableNameToTypeMap))
-							throw new IOException("Error while reading \""
-									      + info.getTitle()
-									      + "\" cant compile equation because: "
-									      + compiler.getLastErrorMsg());
-						final Equation equation = compiler.getEquation();
+						final Equation equation;
+						if (compiler.compile(values[i], variableNameToTypeMap)) {
+							equation = compiler.getEquation();
+						} else {
+							equation = compiler.getErrorEquation(values[i], type, compiler.getLastErrorMsg());
+						}
 						row.set(name, equation);
 					} catch (final Exception e) {
 						throw new IOException(e.getMessage(), e.getCause());

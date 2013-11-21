@@ -26,6 +26,7 @@ package org.cytoscape.io.internal.read.session;
 
 import java.io.InputStream;
 
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.util.GroupUtil;
@@ -50,6 +51,7 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 	private final CSVCyReaderFactory csvCyReaderFactory;
 	private final CyNetworkTableManager networkTableMgr;
 	private final CyRootNetworkManager rootNetworkMgr;
+	private final EquationCompiler compiler;
 
 	public Cy3SessionReaderFactoryImpl(final CyFileFilter filter,
 									   final ReadCache cache,
@@ -60,7 +62,8 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 									   final VizmapReaderManager vizmapReaderMgr,
 									   final CSVCyReaderFactory csvCyReaderFactory,
 									   final CyNetworkTableManager networkTableMgr,
-									   final CyRootNetworkManager rootNetworkMgr) {
+									   final CyRootNetworkManager rootNetworkMgr,
+									   final EquationCompiler compiler) {
 		super(filter);
 		this.cache = cache;
 		this.groupUtil = groupUtil;
@@ -71,11 +74,12 @@ public class Cy3SessionReaderFactoryImpl extends AbstractInputStreamTaskFactory 
 		this.csvCyReaderFactory = csvCyReaderFactory;
 		this.networkTableMgr = networkTableMgr;
 		this.rootNetworkMgr = rootNetworkMgr;
+		this.compiler = compiler;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new Cy3SessionReaderImpl(inputStream, cache, groupUtil, suidUpdater, networkReaderMgr,
-				propertyReaderMgr, vizmapReaderMgr, csvCyReaderFactory, networkTableMgr, rootNetworkMgr));
+				propertyReaderMgr, vizmapReaderMgr, csvCyReaderFactory, networkTableMgr, rootNetworkMgr, compiler));
 	}
 }
