@@ -193,7 +193,7 @@ public class CyActivator extends AbstractCyActivator {
 		CysessionFileFilter cysessionFilter = new CysessionFileFilter(new String[]{"xml"}, new String[]{}, "Cysession XML files",DataCategory.PROPERTIES, streamUtil);
 		BookmarkFileFilter bookmarksFilter = new BookmarkFileFilter(new String[]{"xml"}, new String[]{}, "Bookmark XML files",DataCategory.PROPERTIES, streamUtil);
 		PropertiesFileFilter propertiesFilter = new PropertiesFileFilter(new String[]{"props","properties"}, new String[]{}, "Java Properties files",DataCategory.PROPERTIES, streamUtil);
-		VizmapXMLFileFilter vizmapXMLFilter = new VizmapXMLFileFilter(new String[]{"xml"}, new String[]{}, "Vizmap XML files",DataCategory.VIZMAP, streamUtil);
+		VizmapXMLFileFilter vizmapXMLFilter = new VizmapXMLFileFilter(new String[]{"xml"}, new String[]{}, "Style XML files",DataCategory.VIZMAP, streamUtil);
 		VizmapPropertiesFileFilter vizmapPropertiesFilter = new VizmapPropertiesFileFilter(new String[]{"props","properties"}, new String[]{}, "Vizmap Java Properties files",DataCategory.VIZMAP, streamUtil);
 
 		CyNetworkReaderManagerImpl cyNetworkReaderManager = new CyNetworkReaderManagerImpl(streamUtil);
