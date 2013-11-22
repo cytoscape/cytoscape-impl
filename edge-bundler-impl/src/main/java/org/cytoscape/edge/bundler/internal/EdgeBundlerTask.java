@@ -79,7 +79,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	public double COMPATABILITY_THRESHOLD = 0.3;
 
 	@Tunable(description = "Maximum iterations")
-	public int maxIterations = 10000;
+	public int maxIterations = 500;
 	
 
 	private boolean animate = false;
