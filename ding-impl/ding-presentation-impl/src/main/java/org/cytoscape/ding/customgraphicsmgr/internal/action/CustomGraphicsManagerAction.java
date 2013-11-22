@@ -43,6 +43,7 @@ public class CustomGraphicsManagerAction extends AbstractCyAction {
 	{
 		super("Open Custom Graphics Manager");
 		setPreferredMenu("View");
+		setMenuGravity(10.0f);
 		
 		this.dialog = new CustomGraphicsManagerDialog(manager, applicationManager, browser);
 	}
