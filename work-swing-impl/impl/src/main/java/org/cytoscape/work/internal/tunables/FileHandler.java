@@ -126,8 +126,9 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 		input = isInput();
 
 		final String fileCategory = getFileCategory();
-		filters = fileTypesManager.getSupportedFileTypes(DataCategory.valueOf(fileCategory.toUpperCase()), input);
-		defaultString = "Please select a " + fileCategory.toLowerCase() + " file...";
+		final DataCategory dataCategory = DataCategory.valueOf(fileCategory.toUpperCase());
+		filters = fileTypesManager.getSupportedFileTypes(dataCategory, input);
+		defaultString = "Please select a " + dataCategory.getDisplayName().toLowerCase() + " file...";
 
 		setGui();
 		setLayout();

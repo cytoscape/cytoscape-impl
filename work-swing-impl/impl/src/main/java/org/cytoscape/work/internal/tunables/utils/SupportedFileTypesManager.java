@@ -111,7 +111,7 @@ public class SupportedFileTypesManager {
 			}
 		});
 
-		String description = String.format("All %1$s files", category.toString().toLowerCase());
+		String description = String.format("All %1$s files", category.getDisplayName().toLowerCase());
 		types.add(new FileChooserFilter(description,
 						new ArrayList<String>(allExtensions).toArray(new String[allExtensions.size()])));
 		return types;
