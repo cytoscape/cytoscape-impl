@@ -41,6 +41,7 @@ public class AppManagerDialog extends javax.swing.JDialog {
     private CurrentlyInstalledAppsPanel currentlyInstalledAppsPanel;
     private InstallAppsPanel installAppsPanel;
     private javax.swing.JTabbedPane mainTabbedPane;
+    private javax.swing.JLabel networkErrorLabel;
 
     private ManageDownloadSitesDialog manageDownloadSitesDialog;
     private DownloadSitesManager downloadSitesManager;
@@ -69,10 +70,14 @@ public class AppManagerDialog extends javax.swing.JDialog {
         manageDownloadSitesDialog.setLocationRelativeTo(this);
         
         this.setLocationRelativeTo(parent);
+        appManager.setAppManagerDialog(this);
     }
    
     private void initComponents() {
     	mainTabbedPane = new javax.swing.JTabbedPane();
+        networkErrorLabel = new javax.swing.JLabel("Cannot access the App Store. Please check your internet connection.", javax.swing.UIManager.getIcon("OptionPane.warningIcon"), javax.swing.SwingConstants.LEFT);
+        networkErrorLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        networkErrorLabel.setVisible(false);
         installAppsPanel = new InstallAppsPanel(appManager, downloadSitesManager, fileUtil, taskManager, this);
         currentlyInstalledAppsPanel = new CurrentlyInstalledAppsPanel(appManager);
         checkForUpdatesPanel = new CheckForUpdatesPanel(appManager, downloadSitesManager, taskManager, this);
@@ -92,13 +97,16 @@ public class AppManagerDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(networkErrorLabel)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createSequentialGroup()
+            .addComponent(networkErrorLabel)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap()))
         );
         
         pack();
@@ -113,5 +121,29 @@ public class AppManagerDialog extends javax.swing.JDialog {
     		manageDownloadSitesDialog.setLocationRelativeTo(this);
     		manageDownloadSitesDialog.setVisible(true);
     	}
+    }
+
+    public void showNetworkError() {
+        if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    showNetworkError();
+                }
+            });
+        } else {
+            networkErrorLabel.setVisible(true);
+        }
+    }
+
+    public void hideNetworkError() {
+        if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    hideNetworkError();
+                }
+            });
+        } else {
+            networkErrorLabel.setVisible(false);
+        }
     }
 }

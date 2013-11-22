@@ -60,6 +60,7 @@ import org.osgi.framework.Version;
 import org.osgi.service.startlevel.StartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.cytoscape.app.internal.ui.AppManagerDialog;
 
 /**
  * This class represents an App Manager, which is capable of maintaining a list of all currently installed and available apps. The class
@@ -137,6 +138,8 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 	private boolean isInitialized;
 
 	private StartupMonitor startupMonitor;
+
+	private AppManagerDialog appManagerDialog = null;
 	
 	/**
 	 * A {@link FileFilter} that accepts only files in the first depth level of a given directory
@@ -166,6 +169,7 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 		this.applicationConfiguration = applicationConfiguration;
 		this.swingAppAdapter = swingAppAdapter;
 		this.webQuerier = webQuerier;
+		webQuerier.setAppManager(this);
 		this.startLevel = startLevel;
 		this.startupMonitor = startupMonitor;
 		
@@ -181,6 +185,15 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 		
 		attemptInitialization();
 	}
+
+	public void setAppManagerDialog(AppManagerDialog dialog) {
+		this.appManagerDialog = dialog;
+	}
+
+	public AppManagerDialog getAppManagerDialog() {
+		return appManagerDialog;
+	}
+	
 	
 	@Override
 	public void handleAppStatusChanged(String symbolicName, String version, AppStatus status) {

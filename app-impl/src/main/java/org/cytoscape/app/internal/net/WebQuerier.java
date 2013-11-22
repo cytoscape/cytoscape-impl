@@ -132,6 +132,8 @@ public class WebQuerier {
 	private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)([.](\\d+)([.](\\d+)([.]([-_a-zA-Z0-9]+))?)?)?");
 	
 	public static final Pattern OUTPUT_FILENAME_DISALLOWED_CHARACTERS = Pattern.compile("[^a-zA-Z0-9.-]");
+
+	private AppManager appManager = null;
 	
 	/**
 	 * A class that represents a tag used for apps, containing information about the tag
@@ -239,6 +241,10 @@ public class WebQuerier {
 		
 		return result;
 	}
+
+	public void setAppManager(AppManager appManager) {
+		this.appManager = appManager;
+	}
 	
 	public String getDefaultAppStoreUrl() {
 		return DEFAULT_APP_STORE_URL;
@@ -315,6 +321,10 @@ public class WebQuerier {
 		try {
 			// Obtain information about the app from the website
 			jsonResult = query(currentAppStoreUrl + "backend/all_apps");
+
+			if (appManager != null && appManager.getAppManagerDialog() != null) {
+				appManager.getAppManagerDialog().hideNetworkError();
+			}
 			
 			// Parse the JSON result
 			JSONArray jsonArray = new JSONArray(jsonResult);
@@ -442,20 +452,9 @@ public class WebQuerier {
 			}
 			
 		} catch (final IOException e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    JOptionPane.showMessageDialog(
-                        null,
-                        "<html>" +
-                        "Unable to connect to the App Store website.<br><br>" +
-                        "<blockquote><tt>" + e.getClass().getName() + ": " + e.getMessage() + "</tt></blockquote><br>" +
-                        "Please make sure your internet connection is working.<br><br>" +
-                        "If you are behind a proxy, make sure the settings are correct by<br>" +
-                        "going to <i>Edit</i> &gt; <i>Settings</i> &gt; <i>Proxy Settings</i>.",
-                        "Unable to connect to the App Store",
-                        JOptionPane.ERROR_MESSAGE);
-                }
-            });
+			if (appManager != null && appManager.getAppManagerDialog() != null) {
+				appManager.getAppManagerDialog().showNetworkError();
+			}
 			e.printStackTrace();
 			result = null;
 		} catch (JSONException e) {
