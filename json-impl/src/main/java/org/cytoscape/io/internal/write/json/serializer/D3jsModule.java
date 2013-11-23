@@ -10,6 +10,7 @@ public class D3jsModule extends SimpleModule {
 	public D3jsModule() {
 		super("D3jsModule", new Version(1, 0, 0, null, null, null));
 		addSerializer(new D3CyNetworkViewSerializer());
+		addSerializer(new D3CyNetworkSerializer());
 		addSerializer(new JsRowSerializer());
 	}
 }

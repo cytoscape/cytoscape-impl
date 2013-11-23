@@ -3,28 +3,24 @@ package org.cytoscape.io.internal.write.json.serializer;
 import java.io.IOException;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkView;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class D3CyNetworkViewSerializer extends JsonSerializer<CyNetworkView> {
-
+public class D3CyNetworkSerializer extends JsonSerializer<CyNetwork> {
 
 	@Override
-	public void serialize(final CyNetworkView networkView, JsonGenerator jgen, SerializerProvider provider)
+	public void serialize(final CyNetwork network, JsonGenerator jgen, SerializerProvider provider)
 			throws IOException, JsonProcessingException {
-
 		final D3JsonBuilder builder = new D3JsonBuilder();
-		final CyNetwork network = networkView.getModel();
 		builder.serializeNetwork(network, jgen, provider);
 	}
 
-
 	@Override
-	public Class<CyNetworkView> handledType() {
-		return CyNetworkView.class;
+	public Class<CyNetwork> handledType() {
+		return CyNetwork.class;
 	}
+
 }

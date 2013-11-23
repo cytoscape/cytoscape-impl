@@ -1,8 +1,9 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -10,60 +11,52 @@ import org.cytoscape.model.CyNode;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-/**
- * Implementation to convert
- * 
- * 
- */
-public class CytoscapeJsNetworkSerializer extends JsonSerializer<CyNetwork> {
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
 
-	@Override
-	public void serialize(CyNetwork network, JsonGenerator jgen, SerializerProvider provider) throws IOException,
-			JsonProcessingException {
-		
-		
-		System.out.println("@@@@@@@@============= start: ");
-		jgen.useDefaultPrettyPrinter();
 
-		jgen.writeStartObject();
-		jgen.writeObjectFieldStart(ELEMENTS.getTag());
+public class D3JsonBuilder {
+	
+	protected final void serializeNetwork(final CyNetwork network, JsonGenerator jgen, SerializerProvider provider)
+			throws IOException, JsonProcessingException {
 
 		// Write array
 		final List<CyNode> nodes = network.getNodeList();
 		final List<CyEdge> edges = network.getEdgeList();
 
+		final Map<CyNode, Long> node2Index = new HashMap<CyNode, Long>();
+
+		jgen.useDefaultPrettyPrinter();
+
+		jgen.writeStartObject();
+
+		long index = 0;
 		jgen.writeArrayFieldStart(NODES.getTag());
 		for (final CyNode node : nodes) {
 			jgen.writeStartObject();
 
-			// Data field
-			jgen.writeObjectFieldStart(DATA.getTag());
 			jgen.writeStringField(ID.getTag(), node.getSUID().toString());
 
 			// Write CyRow in "data" field
 			jgen.writeObject(network.getRow(node));
-			jgen.writeEndObject();
 
 			jgen.writeEndObject();
+			node2Index.put(node, index);
+			index++;
 		}
 		jgen.writeEndArray();
 
-		jgen.writeArrayFieldStart(EDGES.getTag());
+		jgen.writeArrayFieldStart("links");
 		for (final CyEdge edge : edges) {
 			jgen.writeStartObject();
 
-			jgen.writeObjectFieldStart(DATA.getTag());
 			jgen.writeStringField(ID.getTag(), edge.getSUID().toString());
-			jgen.writeStringField(SOURCE.getTag(), edge.getSource().getSUID().toString());
-			jgen.writeStringField(TARGET.getTag(), edge.getTarget().getSUID().toString());
+			jgen.writeNumberField(SOURCE.getTag(), node2Index.get(edge.getSource()));
+			jgen.writeNumberField(TARGET.getTag(), node2Index.get(edge.getTarget()));
 
 			// Write CyRow in "data" field
 			jgen.writeObject(network.getRow(edge));
-
-			jgen.writeEndObject();
 
 			jgen.writeEndObject();
 
@@ -71,10 +64,5 @@ public class CytoscapeJsNetworkSerializer extends JsonSerializer<CyNetwork> {
 		jgen.writeEndArray();
 
 		jgen.writeEndObject();
-	}
-
-	@Override
-	public Class<CyNetwork> handledType() {
-		return CyNetwork.class;
 	}
 }

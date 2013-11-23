@@ -61,11 +61,11 @@ public class CyActivator extends AbstractCyActivator {
 		d3jsMapper.registerModule(new D3jsModule());
 
 		final BasicCyFileFilter cytoscapejsFilter = new BasicCyFileFilter(new String[] { "cyjs" },
-				new String[] { "application/json" }, "Cytoscape.js JSON format", DataCategory.NETWORK, streamUtil);
-		final BasicCyFileFilter d3jsFilter = new BasicCyFileFilter(new String[] { "d3" },
-				new String[] { "application/json" }, "D3.js JSON format", DataCategory.NETWORK, streamUtil);
+				new String[] { "application/json" }, "Cytoscape.js JSON", DataCategory.NETWORK, streamUtil);
+		final BasicCyFileFilter d3jsFilter = new BasicCyFileFilter(new String[] { "json" },
+				new String[] { "application/json" }, "D3.js JSON", DataCategory.NETWORK, streamUtil);
 		final BasicCyFileFilter vizmapJsonFilter = new BasicCyFileFilter(new String[] { "json" },
-				new String[] { "application/json" }, "Cytoscape.js Style JSON format", DataCategory.VIZMAP, streamUtil);
+				new String[] { "application/json" }, "Cytoscape.js Visual Style JSON", DataCategory.VIZMAP, streamUtil);
 
 		// For Cytoscape.js
 		final JSONNetworkWriterFactory cytoscapeJsWriterFactory = new JSONNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
