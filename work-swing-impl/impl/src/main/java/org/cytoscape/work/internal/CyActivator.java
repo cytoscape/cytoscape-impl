@@ -66,6 +66,7 @@ import org.cytoscape.work.util.BoundedLong;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.osgi.framework.BundleContext;
+import org.cytoscape.application.swing.CySwingApplication;
 
 
 
@@ -130,6 +131,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,dialogTaskManager,DialogTaskManager.class, new Properties());
 		registerService(bc,dialogTaskManager,TaskManager.class, new Properties());
 		registerService(bc,dialogTaskManager,TaskStatusPanelFactory.class, new Properties());
+		registerServiceListener(bc, dialogTaskManager, "setCySwingApp", "removeCySwingApp", CySwingApplication.class);
 
 		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
 		

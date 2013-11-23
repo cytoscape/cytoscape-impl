@@ -129,6 +129,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-application-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
 			<scope>provided</scope>
 		</dependency>

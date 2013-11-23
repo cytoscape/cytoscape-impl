@@ -41,6 +41,7 @@ import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
+import org.cytoscape.application.swing.CySwingApplication;
 
 /**
  * Handles execution of tasks, cancellation of tasks,
@@ -199,6 +200,14 @@ public class TaskManagerImpl extends AbstractTaskManager<JDialog,Window> impleme
 	 */
 	public TaskStatusBar getStatusBar() {
 		return statusBar;
+	}
+
+	public void setCySwingApp(CySwingApplication cySwingApp, Map props) {
+		taskWindow.setCySwingApp(cySwingApp);
+	}
+
+	public void removeCySwingApp(CySwingApplication cySwingApp, Map props) {
+		taskWindow.setCySwingApp(null);
 	}
 }
 

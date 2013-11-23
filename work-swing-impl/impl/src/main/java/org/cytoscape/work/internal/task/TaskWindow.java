@@ -36,11 +36,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.reflect.InvocationTargetException;
 
+import org.cytoscape.application.swing.CySwingApplication;
+
 /**
  * Handles the task window's user interface and
  * individual tasks.
  */
 class TaskWindow {
+	protected CySwingApplication cySwingApp = null;
 
 	protected final JDialog dialog;
 	protected final JScrollPane scrollPane;
@@ -74,6 +77,9 @@ class TaskWindow {
 
 	public void show() {
 		dialog.setVisible(true);
+		if (cySwingApp != null) {
+			dialog.setLocationRelativeTo(cySwingApp.getJFrame());
+		}
 	}
 
 	public void hide() {
@@ -108,6 +114,10 @@ class TaskWindow {
 			tasksPanel.revalidate();
 			tasksPanel.repaint();
 		}
+	}
+
+	public void setCySwingApp(CySwingApplication cySwingApp) {
+		this.cySwingApp = cySwingApp;
 	}
 }	
 
