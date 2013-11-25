@@ -45,7 +45,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// ///////////////// Readers ////////////////////////////
 		final BasicCyFileFilter cytoscapejsReaderFilter = new BasicCyFileFilter(new String[] { "cyjs" },
-				new String[] { "application/json" }, "Cytoscape.js JSON format", DataCategory.NETWORK, streamUtil);
+				new String[] { "application/json" }, "Cytoscape.js JSON", DataCategory.NETWORK, streamUtil);
 		final CytoscapeJsNetworkReaderFactory jsReaderFactory = new CytoscapeJsNetworkReaderFactory(
 				cytoscapejsReaderFilter, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		final Properties cytoscapeJsNetworkReaderFactoryProps = new Properties();
@@ -65,7 +65,7 @@ public class CyActivator extends AbstractCyActivator {
 		final BasicCyFileFilter d3jsFilter = new BasicCyFileFilter(new String[] { "json" },
 				new String[] { "application/json" }, "D3.js JSON", DataCategory.NETWORK, streamUtil);
 		final BasicCyFileFilter vizmapJsonFilter = new BasicCyFileFilter(new String[] { "json" },
-				new String[] { "application/json" }, "Cytoscape.js Visual Style JSON", DataCategory.VIZMAP, streamUtil);
+				new String[] { "application/json" }, "Style for cytoscape.js", DataCategory.VIZMAP, streamUtil);
 
 		// For Cytoscape.js
 		final JSONNetworkWriterFactory cytoscapeJsWriterFactory = new JSONNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
