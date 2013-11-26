@@ -56,7 +56,7 @@ public class ClearAllBendsForThisEdgeTask extends AbstractTask {
 
 			@Override
 			public void run() {
-				edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
+				edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
 				netView.updateView();
 			}
 		});

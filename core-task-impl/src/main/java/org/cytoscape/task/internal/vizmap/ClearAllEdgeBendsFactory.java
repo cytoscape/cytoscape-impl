@@ -26,15 +26,23 @@ package org.cytoscape.task.internal.vizmap;
 
 import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 
 import java.util.Collection;
 
 public class ClearAllEdgeBendsFactory extends AbstractNetworkViewCollectionTaskFactory {
 
+	private VisualMappingManager vmm;
+
+	public ClearAllEdgeBendsFactory(VisualMappingManager vmm)
+	{
+		this.vmm = vmm;
+	}
+
 	@Override
 	public TaskIterator createTaskIterator(Collection<CyNetworkView> networkViews) {
-		return new TaskIterator(new ClearAllEdgeBendsTask(networkViews));
+		return new TaskIterator(new ClearAllEdgeBendsTask(networkViews, vmm));
 	}
 
 }
