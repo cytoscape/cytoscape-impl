@@ -222,11 +222,11 @@ public class CyActivator extends AbstractCyActivator {
 		LoadTableFileTaskFactoryImpl loadTableFileTaskFactory = new LoadTableFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef,cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef );
 		LoadTableURLTaskFactoryImpl loadTableURLTaskFactory = new LoadTableURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef);
 		MergeTablesTaskFactoryImpl mergeTablesTaskFactory = new MergeTablesTaskFactoryImpl( cyTableManagerServiceRef,cyNetworkManagerServiceRef,tunableSetterServiceRef, rootNetworkManagerServiceRef );
-		// Apply Style Task
+		// Apply Visual Style Task
 		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
 		Properties applyVisualStyleProps = new Properties();
 		applyVisualStyleProps.setProperty(ID,"applyVisualStyleTaskFactory");
-		applyVisualStyleProps.setProperty(TITLE, "Apply Style");
+		applyVisualStyleProps.setProperty(TITLE, "Apply Visual Style");
 		applyVisualStyleProps.setProperty(COMMAND,"apply");
 		applyVisualStyleProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		applyVisualStyleProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");

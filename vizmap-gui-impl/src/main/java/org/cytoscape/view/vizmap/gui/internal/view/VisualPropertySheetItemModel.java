@@ -5,7 +5,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -26,7 +25,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	private LockedValueState lockedValueState = LockedValueState.DISABLED;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
-
+	
 	public VisualPropertySheetItemModel(final VisualProperty<T> visualProperty,
 										final VisualStyle style,
 										final RenderingEngine<?> engine,
@@ -37,15 +36,15 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 			throw new IllegalArgumentException("'style' must not be null");
 		if (lexicon == null)
 			throw new IllegalArgumentException("'lexicon' must not be null");
-
+		
 		this.visualProperty = visualProperty;
 		this.style = style;
 		this.engine = engine;
 		this.lexicon = lexicon;
-
+		
 		defaultValue = style.getDefaultValue(visualProperty);
 		setVisualMappingFunction(style.getVisualMappingFunction(visualProperty));
-
+		
 		title = createTitle(visualProperty);
 	}
 
@@ -65,60 +64,54 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 		this.style = style;
 		this.engine = engine;
 		this.lexicon = lexicon;
-
+		
 		title = dependency.getDisplayName();
 	}
-
+	
 	// ==[ PUBLIC METHODS ]=============================================================================================
-
+	
 	public VisualProperty<T> getVisualProperty() {
 		return visualProperty;
 	}
-
+	
 	public VisualPropertyDependency<T> getVisualPropertyDependency() {
 		return dependency;
 	}
-
+	
 	public String getTitle() {
 		return title;
 	}
-
+	
 	public String getId() {
 		return dependency != null ? dependency.getIdString() : visualProperty.getIdString();
 	}
-
+	
 	public Class<? extends CyIdentifiable> getTargetDataType() {
 		return getVisualProperty().getTargetDataType();
 	}
-
+	
 	public T getDefaultValue() {
 		return defaultValue;
 	}
-
+	
 	public void setDefaultValue(final T value) {
 		if ((value == null && defaultValue != null) || (value != null && !value.equals(defaultValue)))
 			propChangeSupport.firePropertyChange("defaultValue", defaultValue, defaultValue = value);
 	}
-
+	
 	public T getLockedValue() {
 		return lockedValue;
 	}
-
+	
 	public void setLockedValue(final T value) {
-		if ((value == null && lockedValue != null) || (value != null && (!value.equals(lockedValue)||value instanceof Bend) ))
-		{
-			//TODO: This seems like a sort of hack. To prevent firePropertyChange from being suppressed in the case of a Bend, pretend like the old value was null.
-			if( value instanceof Bend)
-				propChangeSupport.firePropertyChange("lockedValue", null, lockedValue = value);
-			else
-				propChangeSupport.firePropertyChange("lockedValue", lockedValue, lockedValue = value);
-		}
+		if ((value == null && lockedValue != null) || (value != null && !value.equals(lockedValue)))
+			propChangeSupport.firePropertyChange("lockedValue", lockedValue, lockedValue = value);
 	}
-
+	
 	public LockedValueState getLockedValueState() {
 		return lockedValueState;
 	}
-
+	
 	public void setLockedValueState(final LockedValueState state) {
 		if (state != lockedValueState)
 			propChangeSupport.firePropertyChange("lockedValueState", lockedValueState, lockedValueState = state);

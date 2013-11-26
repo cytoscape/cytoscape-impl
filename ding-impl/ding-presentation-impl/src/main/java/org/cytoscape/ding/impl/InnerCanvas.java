@@ -416,14 +416,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 	
 	private void toggleChosenAnchor (long chosenAnchor, MouseEvent e) {
-		final long edge = chosenAnchor >>> 6;
-		DEdgeView ev = m_view.getDEdgeView(edge);
 		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
 		if (e.isAltDown()) {
 			// Remove handle
+			final long edge = chosenAnchor >>> 6;
 			final int anchorInx = (int)(chosenAnchor & 0x000000000000003f);
 			// Save remove handle
 			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.SELECTED_EDGES,"Remove Edge Handle",m_undo);
+
+			DEdgeView ev = m_view.getDEdgeView(edge);
 
 			if( !ev.isValueLocked(BasicVisualLexicon.EDGE_BEND) )
 			{
@@ -436,12 +437,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				{
 					ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)ev.getBend()) );
 				}
-
 			}
 			ev.removeHandle(anchorInx);
 			m_button1NodeDrag = false;
-			final GraphViewChangeListener listener = m_view.m_lis[0];
-			listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 		} else {
 			final boolean wasSelected = m_view.m_selectedAnchors.count(chosenAnchor) > 0;
 			//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
@@ -456,13 +454,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 			m_button1NodeDrag = true;
 		}
+
 		m_view.m_contentChanged = true;	
 	}
 	
 	private int toggleSelectedEdge(long chosenEdge, MouseEvent e) {
 		int chosenEdgeSelected = 0;
-
-		final boolean wasSelected = m_view.getDEdgeView(chosenEdge).isSelected();
 		
 		// Add new Handle for Edge Bend.
 		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
@@ -481,18 +478,17 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			{
 				if( defaultBend instanceof BendImpl )
 					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)defaultBend));
+					//edgeView.setBend( new BendImpl( (BendImpl)defaultBend) );
 				else
 					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
+					//edgeView.setBend( new BendImpl() );
 			}
-			DEdgeView ev = m_view.getDEdgeView(chosenEdge);
-			final int chosenInx = ev.addHandlePoint(newHandlePoint);
+			final int chosenInx = m_view.getDEdgeView(chosenEdge).addHandlePoint(newHandlePoint);
 			
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
-			final GraphViewChangeListener listener = m_view.m_lis[0];
-			listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 		}
 
-
+		final boolean wasSelected = m_view.getDEdgeView(chosenEdge).isSelected();
 		
 		//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
 		if (wasSelected && (e.isShiftDown() || (e.isControlDown() && !e.isAltDown()))) {
@@ -1015,6 +1011,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final int anchorInx = (int)(edgeAndAnchor & 0x000000000000003f);
 				final DEdgeView ev = (DEdgeView) m_view.getDEdgeView(edge);
 
+
 				if( !ev.isValueLocked(BasicVisualLexicon.EDGE_BEND) )
 				{
 					Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
@@ -1026,8 +1023,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					{
 						ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)ev.getBend()) );
 					}
-					final GraphViewChangeListener listener = m_view.m_lis[0];
-					listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 				}
 				final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
 				final Handle handle = bend.getAllHandles().get(anchorInx);
@@ -1044,7 +1039,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				} else if (code == KeyEvent.VK_RIGHT) {
 					ev.moveHandleInternal(anchorInx, m_floatBuff1[0] + move, m_floatBuff1[1]);
 				}
-
 			}
 			repaint();
 		}
@@ -1452,8 +1446,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							{
 								ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)ev.getBend()) );
 							}
-							final GraphViewChangeListener listener = m_view.m_lis[0];
-							listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 						}
 						final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
 						final Handle handle = bend.getAllHandles().get(anchorInx);
@@ -1462,7 +1454,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						m_floatBuff1[1] = (float) newPoint.getY();
 						
 						ev.moveHandleInternal(anchorInx, m_floatBuff1[0] + deltaX, m_floatBuff1[1] + deltaY);
-
 					}
 	
 					if ((selectedNodes.length > 0) || (m_view.m_selectedAnchors.size() > 0))

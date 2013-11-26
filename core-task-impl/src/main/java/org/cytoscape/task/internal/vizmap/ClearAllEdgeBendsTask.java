@@ -29,29 +29,20 @@ import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.EdgeBendVisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 
 import java.util.Collection;
 
 public class ClearAllEdgeBendsTask extends AbstractNetworkViewCollectionTask {
 
-	private VisualMappingManager vmm;
-
-	public ClearAllEdgeBendsTask(Collection<CyNetworkView> networkViews, VisualMappingManager vmm) {
+	public ClearAllEdgeBendsTask(Collection<CyNetworkView> networkViews) {
 		super(networkViews);
-		this.vmm = vmm;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		for (CyNetworkView networkView : networkViews) {
 			networkView.setViewDefault(BasicVisualLexicon.EDGE_BEND, null);
-			VisualStyle vs = vmm.getVisualStyle(networkView);
-			vs.setDefaultValue(BasicVisualLexicon.EDGE_BEND, null);
-			vs.removeVisualMappingFunction(BasicVisualLexicon.EDGE_BEND);
 			final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
 			for (final View<CyEdge> edgeView : edgeViews) {
 				edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
