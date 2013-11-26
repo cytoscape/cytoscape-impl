@@ -1,17 +1,16 @@
 package org.cytoscape.io.internal;
 
-import java.util.Properties;
-
 import static org.cytoscape.work.ServiceProperties.ID;
+
+import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.read.json.CytoscapeJsNetworkReaderFactory;
-import org.cytoscape.io.internal.write.json.JSONNetworkWriterFactory;
 import org.cytoscape.io.internal.write.json.CytoscapeJsVisualStyleWriterFactory;
+import org.cytoscape.io.internal.write.json.JSONNetworkWriterFactory;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
-import org.cytoscape.io.internal.write.json.serializer.D3jsModule;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
@@ -57,26 +56,23 @@ public class CyActivator extends AbstractCyActivator {
 		// ///////////////// Writers ////////////////////////////
 		final ObjectMapper cytoscapeJsMapper = new ObjectMapper();
 		cytoscapeJsMapper.registerModule(new CytoscapeJsNetworkModule());
-		final ObjectMapper d3jsMapper = new ObjectMapper();
-		d3jsMapper.registerModule(new D3jsModule());
 
 		final BasicCyFileFilter cytoscapejsFilter = new BasicCyFileFilter(new String[] { "cyjs" },
 				new String[] { "application/json" }, "Cytoscape.js JSON", DataCategory.NETWORK, streamUtil);
-		final BasicCyFileFilter d3jsFilter = new BasicCyFileFilter(new String[] { "json" },
-				new String[] { "application/json" }, "D3.js JSON", DataCategory.NETWORK, streamUtil);
 		final BasicCyFileFilter vizmapJsonFilter = new BasicCyFileFilter(new String[] { "json" },
 				new String[] { "application/json" }, "Style for cytoscape.js", DataCategory.VIZMAP, streamUtil);
 
 		// For Cytoscape.js
-		final JSONNetworkWriterFactory cytoscapeJsWriterFactory = new JSONNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
-		registerAllServices(bc, cytoscapeJsWriterFactory, new Properties());
+		final JSONNetworkWriterFactory cytoscapejsWriterFactory = new JSONNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
+		final Properties jsWriterFactoryProperties = new Properties();
+		jsWriterFactoryProperties.put(ID, "cytoscapejsWriterFactory");
+		registerAllServices(bc, cytoscapejsWriterFactory, jsWriterFactoryProperties);
 
-		// For D3.js Force layout
-		final JSONNetworkWriterFactory d3jsWriterFactory = new JSONNetworkWriterFactory(d3jsFilter, d3jsMapper);
-		registerAllServices(bc, d3jsWriterFactory, new Properties());
 
 		// For Visual Style
 		final CytoscapeJsVisualStyleWriterFactory jsonVSWriterFactory = new CytoscapeJsVisualStyleWriterFactory(vizmapJsonFilter, applicationManager);
-		registerAllServices(bc, jsonVSWriterFactory, new Properties());
+		final Properties jsVisualStyleWriterFactoryProperties = new Properties();
+		jsWriterFactoryProperties.put(ID, "cytoscapeJsVisualStyleWriterFactory");
+		registerAllServices(bc, jsonVSWriterFactory, jsVisualStyleWriterFactoryProperties);
 	}
 }
