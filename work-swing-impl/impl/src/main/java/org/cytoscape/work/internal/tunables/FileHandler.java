@@ -25,32 +25,6 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -61,6 +35,15 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -146,7 +129,19 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 			if (fileTextField.getText().equals(defaultString) || fileTextField.getText().isEmpty() )
 				setValue(null);
 			else
-				setValue(new File(fileTextField.getText()));
+			{
+				String path = fileTextField.getText();
+				File file = null;
+				if( path.contains(System.getProperty("file.separator")) )
+				{
+					file = new File(path);
+				}
+				else
+				{
+					file = new File(System.getProperty("user.home"), path);
+				}
+				setValue(file);
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
