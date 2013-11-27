@@ -158,16 +158,22 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			if (mapping.getVisualProperty().getTargetDataType() != target) {
 				continue;
 			}
-
+			
 			final VisualProperty<?> mappingVp = mapping.getVisualProperty();
 			final CytoscapeJsToken tag = converter.getTag(mappingVp);
-			if (tag == null) {
+			if (tag == null && mappingVp != BasicVisualLexicon.NODE_SIZE) {
 				continue;
 			} else {
 				if (mapping instanceof DiscreteMapping) {
 					generateDiscreteMappingSection(tag, (DiscreteMapping<?, ?>) mapping, vp, vs, jg);
 				} else if (mapping instanceof ContinuousMapping) {
-					generateContinuousMappingSection(tag, (ContinuousMapping<?, ?>) mapping, vp, vs, jg);
+					if(mappingVp == BasicVisualLexicon.NODE_SIZE) {
+						// Special case: Node Size should create two types of mappings.
+						generateContinuousMappingSection(CytoscapeJsToken.WIDTH, (ContinuousMapping<?, ?>) mapping, vp, vs, jg);
+						generateContinuousMappingSection(CytoscapeJsToken.HEIGHT, (ContinuousMapping<?, ?>) mapping, vp, vs, jg);
+					} else {
+						generateContinuousMappingSection(tag, (ContinuousMapping<?, ?>) mapping, vp, vs, jg);
+					}
 				}
 			}
 		}
@@ -305,6 +311,13 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			final JsonGenerator jg) throws IOException {
 
 		final Map<?, ?> mappingPairs = mapping.getAll();
+		Set<VisualPropertyDependency<?>> locks = vs.getAllVisualPropertyDependencies();
+		
+		boolean sizeLocked = false;
+		for(VisualPropertyDependency<?> lock:locks) {
+			if(lock.getIdString().equals("nodeSizeLocked") )
+				sizeLocked = true;
+		}
 
 		String colName = mapping.getMappingColumnName();
 		final Matcher matcher = REPLACE_INVALID_JS_CHAR_PATTERN.matcher(colName);
@@ -325,8 +338,15 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			jg.writeStringField(SELECTOR.getTag(), tag);
 			jg.writeObjectFieldStart(CSS.getTag());
 
-			jg.writeObjectField(jsTag.getTag(), value);
-
+			// TODO: refactor this special case handlers!
+			// Write actual key-value pair
+			if(sizeLocked && mapping.getVisualProperty() == BasicVisualLexicon.NODE_SIZE) {
+				jg.writeObjectField(CytoscapeJsToken.WIDTH.getTag(), value);
+				jg.writeObjectField(CytoscapeJsToken.HEIGHT.getTag(), value);
+			} else {
+				jg.writeObjectField(jsTag.getTag(), value);
+			}
+			
 			jg.writeEndObject();
 			jg.writeEndObject();
 		}
@@ -510,13 +530,17 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 			// Skip unsupported Visual Properties
 			final CytoscapeJsToken jsTag = converter.getTag(mapping.getVisualProperty());
-			if (jsTag == null) {
+			if (jsTag == null && mapping.getVisualProperty() != BasicVisualLexicon.NODE_SIZE) {
 				continue;
 			}
 
-			final String tag = jsTag.getTag();
 			if (mapping instanceof PassthroughMapping) {
-				jg.writeStringField(tag, passthrough.serialize((PassthroughMapping<?, ?>) mapping));
+				if(mapping.getVisualProperty() == BasicVisualLexicon.NODE_SIZE) {
+					jg.writeStringField(CytoscapeJsToken.WIDTH.getTag(), passthrough.serialize((PassthroughMapping<?, ?>) mapping));
+					jg.writeStringField(CytoscapeJsToken.HEIGHT.getTag(), passthrough.serialize((PassthroughMapping<?, ?>) mapping));
+				} else {
+					jg.writeStringField(jsTag.getTag(), passthrough.serialize((PassthroughMapping<?, ?>) mapping));
+				}
 			}
 		}
 	}
