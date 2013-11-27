@@ -24,11 +24,15 @@ public class CytoscapeJsNetworkSerializer extends JsonSerializer<CyNetwork> {
 	public void serialize(CyNetwork network, JsonGenerator jgen, SerializerProvider provider) throws IOException,
 			JsonProcessingException {
 		
-		
-		System.out.println("@@@@@@@@============= start: ");
 		jgen.useDefaultPrettyPrinter();
 
 		jgen.writeStartObject();
+
+		// Serialize network data table
+		jgen.writeObjectFieldStart(DATA.getTag());
+		jgen.writeObject(network.getRow(network));
+		jgen.writeEndObject();
+
 		jgen.writeObjectFieldStart(ELEMENTS.getTag());
 
 		// Write array

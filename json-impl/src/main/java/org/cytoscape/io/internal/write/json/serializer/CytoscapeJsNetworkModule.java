@@ -14,9 +14,9 @@ public class CytoscapeJsNetworkModule extends SimpleModule {
 
 	public CytoscapeJsNetworkModule() {
 		super("CytoscapeJsModule", new Version(1, 0, 0, null, null, null));
+		addSerializer(new CytoscapeJsViewSerializer());
 		addSerializer(new CytoscapeJsNetworkSerializer());
 		addSerializer(new JsRowSerializer());
 		addSerializer(new JsNodeViewSerializer());
-		addSerializer(new CytoscapeJsViewSerializer());
 	}
 }

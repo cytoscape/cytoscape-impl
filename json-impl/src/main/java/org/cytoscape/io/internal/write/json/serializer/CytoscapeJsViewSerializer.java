@@ -1,12 +1,14 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
+
 import java.io.IOException;
 import java.util.List;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -22,13 +24,20 @@ public class CytoscapeJsViewSerializer extends JsonSerializer<CyNetworkView> {
 		jgen.useDefaultPrettyPrinter();
 
 		jgen.writeStartObject();
+
+		final CyNetwork network = networkView.getModel();
+		
+		// Serialize network data table
+		jgen.writeObjectFieldStart(DATA.getTag());
+		jgen.writeObject(network.getRow(network));
+		jgen.writeEndObject();
+		
 		jgen.writeObjectFieldStart(ELEMENTS.getTag());
 
 		// Write array
-		final List<CyNode> nodes = networkView.getModel().getNodeList();
-		final List<CyEdge> edges = networkView.getModel().getEdgeList();
+		final List<CyNode> nodes = network.getNodeList();
+		final List<CyEdge> edges = network.getEdgeList();
 
-		final CyNetwork network = networkView.getModel();
 
 		jgen.writeArrayFieldStart(NODES.getTag());
 		for (final CyNode node : nodes) {
@@ -38,7 +47,7 @@ public class CytoscapeJsViewSerializer extends JsonSerializer<CyNetworkView> {
 			jgen.writeObjectFieldStart(DATA.getTag());
 			jgen.writeStringField(ID.getTag(), node.getSUID().toString());
 			// Write CyRow in "data" field
-			jgen.writeObject(networkView.getModel().getRow(node));
+			jgen.writeObject(network.getRow(node));
 			jgen.writeEndObject();
 
 			// Position and other visual props
@@ -62,7 +71,7 @@ public class CytoscapeJsViewSerializer extends JsonSerializer<CyNetworkView> {
 			jgen.writeStringField(TARGET.getTag(), edge.getTarget().getSUID().toString());
 
 			// Write CyRow in "data" field
-			jgen.writeObject(networkView.getModel().getRow(edge));
+			jgen.writeObject(network.getRow(edge));
 
 			jgen.writeEndObject();
 

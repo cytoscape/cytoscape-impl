@@ -43,6 +43,16 @@ public abstract class AbstractJsonNetworkViewWriterTest {
 
 	protected CyNetworkView generateNetworkView() throws Exception {
 		final CyNetwork network1 = support.getNetwork();
+
+		network1.getRow(network1).set(CyNetwork.NAME, "Sample Network1");
+		network1.getDefaultNetworkTable().createColumn("description", String.class, false);
+		network1.getDefaultNetworkTable().createColumn("score", Double.class, false);
+		network1.getDefaultNetworkTable().createColumn("Network Column 1", String.class, false);
+		
+		network1.getRow(network1).set("description", "Sample network for testing.");
+		network1.getRow(network1).set("score", 0.123d);
+		network1.getRow(network1).set("Network Column 1", "sample1");
+		
 		CyNode n1 = network1.addNode();
 		CyNode n2 = network1.addNode();
 		CyNode n3 = network1.addNode();

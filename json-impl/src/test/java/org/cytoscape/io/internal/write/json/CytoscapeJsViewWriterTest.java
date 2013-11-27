@@ -11,8 +11,12 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.xml.bind.ValidationEvent;
 
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
 import org.cytoscape.model.CyNetwork;
@@ -50,6 +54,23 @@ public class CytoscapeJsViewWriterTest extends AbstractJsonNetworkViewWriterTest
 		final JsonNode rootNode = mapper.readValue(reader, JsonNode.class);
 
 		assertNotNull(rootNode);
+
+		// Network data table
+		final JsonNode networkData = rootNode.get("data");
+		assertNotNull(networkData);
+		assertTrue(networkData.isObject());
+		Iterator<String> tableColumnNames = networkData.fieldNames();
+
+		final Map<String, String> networkAttrMap = new HashMap<String, String>();
+		while (tableColumnNames.hasNext()) {
+			String name = tableColumnNames.next();
+			String val = networkData.get(name).asText();
+			networkAttrMap.put(name, val);
+		}
+
+		assertEquals("Sample Network1", networkAttrMap.get(CyNetwork.NAME));
+		assertEquals("Sample network for testing.", networkAttrMap.get("description"));
+		assertEquals("sample1", networkAttrMap.get("Network_Column_1"));
 
 		final JsonNode elements = rootNode.get("elements");
 		assertNotNull(elements);
