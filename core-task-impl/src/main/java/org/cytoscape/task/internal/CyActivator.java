@@ -236,7 +236,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, applyVisualStyleTaskFactory, ApplyVisualStyleTaskFactory.class, applyVisualStyleProps);
 		
 		// Clear edge bends
-		ClearAllEdgeBendsFactory clearAllEdgeBendsFactory = new ClearAllEdgeBendsFactory(visualMappingManagerServiceRef);
+		ClearAllEdgeBendsFactory clearAllEdgeBendsFactory = new ClearAllEdgeBendsFactory();
 		Properties clearAllEdgeBendsProps = new Properties();
 		clearAllEdgeBendsProps.setProperty(ID, "clearAllEdgeBendsFactory");
 		clearAllEdgeBendsProps.setProperty(TITLE, "Clear All Edge Bends");
