@@ -222,11 +222,11 @@ public class CyActivator extends AbstractCyActivator {
 		LoadTableFileTaskFactoryImpl loadTableFileTaskFactory = new LoadTableFileTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef,cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef );
 		LoadTableURLTaskFactoryImpl loadTableURLTaskFactory = new LoadTableURLTaskFactoryImpl(cyDataTableReaderManagerServiceRef, tunableSetterServiceRef, cyNetworkManagerServiceRef, cyTableManagerServiceRef, rootNetworkManagerServiceRef);
 		MergeTablesTaskFactoryImpl mergeTablesTaskFactory = new MergeTablesTaskFactoryImpl( cyTableManagerServiceRef,cyNetworkManagerServiceRef,tunableSetterServiceRef, rootNetworkManagerServiceRef );
-		// Apply Visual Style Task
+		// Apply Style Task
 		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
 		Properties applyVisualStyleProps = new Properties();
 		applyVisualStyleProps.setProperty(ID,"applyVisualStyleTaskFactory");
-		applyVisualStyleProps.setProperty(TITLE, "Apply Visual Style");
+		applyVisualStyleProps.setProperty(TITLE, "Apply Style...");
 		applyVisualStyleProps.setProperty(COMMAND,"apply");
 		applyVisualStyleProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		applyVisualStyleProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
@@ -293,7 +293,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties loadVizmapFileTaskFactoryProps = new Properties();
 		loadVizmapFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import");
 		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
-		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Visual Style File...");
+		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Style...");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
 		registerService(bc,loadVizmapFileTaskFactory,TaskFactory.class, loadVizmapFileTaskFactoryProps);
