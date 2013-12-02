@@ -25,20 +25,24 @@ package org.cytoscape.browser.internal;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.browser.internal.TableChooser.GlobalTableComboBoxModel;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.RowsDeletedEvent;
@@ -61,16 +65,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 
 	private static final long serialVersionUID = 2269984225983802421L;
 
-	static final Color GLOBAL_TABLE_COLOR = new Color(0x1E, 0x90, 0xFF);
-	static final Color GLOBAL_TABLE_ENTRY_COLOR = new Color(0x1E, 0x90, 0xFF, 150);
-	static final Color GLOBAL_TABLE_BACKGROUND_COLOR = new Color(0x87, 0xCE, 0xFA, 50);
-	static final Font GLOBAL_FONT = new Font("SansSerif", Font.BOLD, 12);
-	
-	private final TableChooser tableChooser;
+	private final GlobalTableChooser tableChooser;
 
 	public GlobalTableBrowser(final String tabTitle,
 							  final CyTableManager tableManager,
-							  final CyNetworkTableManager networkTableManager,
 							  final CyServiceRegistrar serviceRegistrar,
 							  final EquationCompiler compiler,
 							  final CyNetworkManager networkManager,
@@ -80,17 +78,15 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 							  final CyApplicationManager applicationManager,
 							  final CyEventHelper eventHelper,
 							  final IconManager iconManager){//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, networkManager,
+		super(tabTitle, tableManager, serviceRegistrar, compiler, networkManager,
 				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
 		
-		tableChooser = new TableChooser();
+		tableChooser = new GlobalTableChooser();
 		tableChooser.addActionListener(this);
 		tableChooser.setMaximumSize(SELECTOR_SIZE);
 		tableChooser.setMinimumSize(SELECTOR_SIZE);
 		tableChooser.setPreferredSize(SELECTOR_SIZE);
 		tableChooser.setSize(SELECTOR_SIZE);
-		tableChooser.setFont(GLOBAL_FONT);
-		tableChooser.setForeground(GLOBAL_TABLE_COLOR);
 		tableChooser.setToolTipText("\"Tables\" are data tables not associated with specific networks.");
 		tableChooser.setEnabled(false);
 		
@@ -109,7 +105,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			return;
 
 		currentTable = table;
-		//applicationManager.setCurrentGlobalTable(table);
+		applicationManager.setCurrentTable(table);
 		showSelectedTable();
 	}
 
@@ -120,16 +116,16 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		if (cyTable.isPublic()) {
 			final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 			comboBoxModel.removeItem(cyTable);
+			attributeBrowserToolBar.updateEnableState(tableChooser);
 			
 			if (comboBoxModel.getSize() == 0) {
-				tableChooser.setEnabled(false);
 				// The last table is deleted, refresh the browser table (this is a special case)
 				deleteTable(cyTable);
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
-						//applicationManager.setCurrentGlobalTable(null);
+						applicationManager.setCurrentTable(null);
 						showSelectedTable();
 					}
 				});
@@ -150,29 +146,28 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			if (tableManager.getGlobalTables().contains(newTable)) {
 				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 				comboBoxModel.addAndSetSelectedItem(newTable);
+				attributeBrowserToolBar.updateEnableState(tableChooser);
 			}
 			
 			if (tableChooser.getItemCount() == 1) {
 				SwingUtilities.invokeLater(
 					new Runnable() {
 						public void run() {
-							serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class, new Properties());
+							serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class,
+									new Properties());
 							//applicationManager.setCurrentGlobalTable(newTable);
 						}
 					});
 			}
-			
-			if (tableChooser.getItemCount() != 0)
-				tableChooser.setEnabled(true);
 		}
 	}
 
 	@Override
 	public void handleEvent(TablePrivacyChangedEvent e) {
-
 		final CyTable table = e.getSource();
 		final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
-		if(!table.isPublic()){
+		
+		if (!table.isPublic()){
 			comboBoxModel.removeItem(table);
 
 			if (comboBoxModel.getSize() == 0) {
@@ -187,9 +182,11 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 					}
 				});
 			}
-		}else
+		} else {
 			comboBoxModel.addAndSetSelectedItem(table);
+		}
 		
+		applicationManager.setCurrentTable(currentTable);
 	}
 	
 	@Override
@@ -223,4 +220,83 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		}
 	}
 	
+	private class GlobalTableChooser extends JComboBox {
+
+		private static final long serialVersionUID = 2952839169799310442L;
+		
+		private final Map<CyTable, String> tableToStringMap;
+		
+		GlobalTableChooser() {
+			tableToStringMap = new HashMap<CyTable, String>();
+			setModel(new GlobalTableComboBoxModel(tableToStringMap));
+			setRenderer(new TableChooserCellRenderer(tableToStringMap));
+		}
+	}
+	
+	private class GlobalTableComboBoxModel extends DefaultComboBoxModel {
+
+		private static final long serialVersionUID = -5435833047656563358L;
+
+		private final Comparator<CyTable> tableComparator;
+		private final Map<CyTable, String> tableToStringMap;
+		private final List<CyTable> tables;
+
+		GlobalTableComboBoxModel(final Map<CyTable, String> tableToStringMap) {
+			this.tableToStringMap = tableToStringMap;
+			tables = new ArrayList<CyTable>();
+			tableComparator = new Comparator<CyTable>() {
+				@Override
+				public int compare(final CyTable table1, final CyTable table2) {
+					return table1.getTitle().compareTo(table2.getTitle());
+				}
+			};
+		}
+
+		private void updateTableToStringMap() {
+			tableToStringMap.clear();
+			
+			for (final CyTable table : tables)
+				tableToStringMap.put(table, table.getTitle());
+		}
+
+		@Override
+		public int getSize() {
+			return tables.size();
+		}
+
+		@Override
+		public Object getElementAt(int index) {
+			return tables.get(index);
+		}
+
+		void addAndSetSelectedItem(final CyTable newTable) {
+			if (!tables.contains(newTable)) {
+				tables.add(newTable);
+				Collections.sort(tables, tableComparator);
+				updateTableToStringMap();
+				fireContentsChanged(this, 0, tables.size() - 1);
+			}
+
+			// This is necessary to avoid deadlock!
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					setSelectedItem(newTable);
+				}
+			});
+		}
+
+		void removeItem(final CyTable deletedTable) {
+			if (tables.contains(deletedTable)) {
+				tables.remove(deletedTable);
+				
+				if (tables.size() > 0) {
+					Collections.sort(tables, tableComparator);
+					setSelectedItem(tables.get(0));
+				} else {
+					setSelectedItem(null);
+				}
+			}
+		}
+	}
 }

@@ -97,7 +97,7 @@ public class AttributeListModel
 			return;
 
 		attributeNames = new ArrayList<String>();
-		final CyTable attributes = browserTableModel.getAttributes();
+		final CyTable attributes = browserTableModel.getDataTable();
 		
 		for (final CyColumn col : attributes.getColumns()){
 			attributeNames.add(col.getName());
@@ -144,7 +144,7 @@ public class AttributeListModel
 		if (browserTableModel == null)
 			return;
 
-		if (e.getSource() == browserTableModel.getAttributes())
+		if (e.getSource() == browserTableModel.getDataTable())
 			updateAttributes();
 	}
 
@@ -153,7 +153,7 @@ public class AttributeListModel
 		if (browserTableModel == null)
 			return;
 
-		if (e.getSource() == browserTableModel.getAttributes())
+		if (e.getSource() == browserTableModel.getDataTable())
 			updateAttributes();
 	}
 
@@ -185,7 +185,7 @@ public class AttributeListModel
 		if (browserTableModel == null)
 			return;
 
-		if (e.getSource() != browserTableModel.getAttributes())
+		if (e.getSource() != browserTableModel.getDataTable())
 			return;
 		
 		if (attributeNames.contains(e.getOldColumnName())){

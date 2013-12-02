@@ -27,20 +27,19 @@ package org.cytoscape.browser.internal;
 import static org.cytoscape.browser.internal.IconManager.ICON_COG;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPopupMenu;
-import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -62,32 +61,30 @@ import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 
 public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
-		NetworkAddedListener, NetworkAboutToBeDestroyedListener, TableAboutToBeDeletedListener,
-		ColumnCreatedListener, ColumnDeletedListener {
+		TableAddedListener, TableAboutToBeDeletedListener, ColumnCreatedListener, ColumnDeletedListener {
 
 	private static final long serialVersionUID = 627394119637512735L;
 
 	private JButton selectionModeButton;
 	private JPopupMenu displayMode;
+	private JComboBox tableChooser;
 	
-	private final JComboBox networkChooser;
 	private final Class<? extends CyIdentifiable> objType;
+	private final CyNetworkTableManager networkTableManager;
 
 	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
-	private boolean ignoreSetCurrentNetwork = true;
-	
+	private boolean ignoreSetCurrentTable = true;
+
 	public DefaultTableBrowser(final String tabTitle,
 							   final Class<? extends CyIdentifiable> objType,
 							   final CyTableManager tableManager,
@@ -101,20 +98,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 							   final CyApplicationManager applicationManager,
 							   final CyEventHelper eventHelper,
 							   final IconManager iconManager) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, networkManager,
+		super(tabTitle, tableManager, serviceRegistrar, compiler, networkManager,
 				deleteTableTaskFactory, guiTaskManager, popupMenuHelper, applicationManager, eventHelper);
 
 		this.objType = objType;
+		this.networkTableManager = networkTableManager;
 
-		networkChooser = new JComboBox();
-		networkChooser.setRenderer(new NetworkChooserCustomRenderer());
-		networkChooser.addActionListener(this);
-		networkChooser.setMaximumSize(SELECTOR_SIZE);
-		networkChooser.setMinimumSize(SELECTOR_SIZE);
-		networkChooser.setPreferredSize(SELECTOR_SIZE);
-		networkChooser.setSize(SELECTOR_SIZE);
-		networkChooser.setEnabled(false);
-		
 		createPopupMenu();
 		
 		if (objType != CyNetwork.class) {
@@ -132,10 +121,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			});
 			
 			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler, deleteTableTaskFactory,
-					guiTaskManager, networkChooser, selectionModeButton, objType, applicationManager, iconManager);// , mapGlobalTableTaskFactoryService);
+					guiTaskManager, getTableChooser(), selectionModeButton, objType, applicationManager, iconManager);// , mapGlobalTableTaskFactoryService);
 		} else {
 			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler, deleteTableTaskFactory,
-					guiTaskManager, networkChooser, objType, applicationManager, iconManager);
+					guiTaskManager, getTableChooser(), objType, applicationManager, iconManager);
 		}
 		
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
@@ -196,6 +185,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	private void changeSelectionMode() {
 		final BrowserTable browserTable = getCurrentBrowserTable();
+		
+		if (browserTable == null)
+			return;
+		
 		final BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
 		model.setViewMode(rowSelectionMode);
 		model.updateViewMode();
@@ -217,13 +210,18 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	
 	@Override
 	public void actionPerformed(final ActionEvent e) {
-		if (!ignoreSetCurrentNetwork) {
-			final CyNetwork network = (CyNetwork) networkChooser.getSelectedItem();
-			final CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
+		if (!ignoreSetCurrentTable) {
+			final CyTable table = (CyTable) getTableChooser().getSelectedItem();
+			currentTable = table;
 			
-			if (network != null && !network.equals(currentNetwork) && networkManager.networkExists(network.getSUID())) {
-				applicationManager.setCurrentNetwork(network);
+			if (table != null
+					&& !table.equals(applicationManager.getCurrentTable())
+					&& tableManager.getTable(table.getSUID()) != null) {
+				applicationManager.setCurrentTable(table);
 			}
+			
+			showSelectedTable();
+			changeSelectionMode();
 		}
 	}
 
@@ -245,15 +243,25 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			currentTableType = null;
 		}
 		
+		final Set<CyTable> tables = getPublicTables(currentNetwork);
+		
 		SwingUtilities.invokeLater(new Runnable() {
+			@Override
 			public void run() {
-				final CyNetwork selectedNetwork = (CyNetwork) networkChooser.getSelectedItem();
+				ignoreSetCurrentTable = true;
 				
-				if ((currentNetwork == null && selectedNetwork != null)
-						|| (currentNetwork != null && !currentNetwork.equals(selectedNetwork))) {
-					ignoreSetCurrentNetwork = true;
-					networkChooser.setSelectedItem(currentNetwork);
-					ignoreSetCurrentNetwork = false;
+				try {
+					getTableChooser().removeAllItems();
+					
+					if (currentTable != null) {
+						for (final CyTable tbl : tables)
+							getTableChooser().addItem(tbl);
+						
+						attributeBrowserToolBar.updateEnableState(getTableChooser());
+						getTableChooser().setSelectedItem(currentTable);
+					}
+				} finally {
+					ignoreSetCurrentTable = false;
 				}
 			}
 		});
@@ -261,47 +269,50 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		showSelectedTable();
 		changeSelectionMode();
 	}
-
+	
 	@Override
-	public void handleEvent(NetworkAddedEvent e) {
-		final CyNetwork network = e.getNetwork();
+	public void handleEvent(final TableAddedEvent e) {
+		final CyTable newTable = e.getTable();
 
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				ignoreSetCurrentNetwork = true;
-
-				try {
-					networkChooser.addItem(network);
-				} finally {
-					ignoreSetCurrentNetwork = false;
-				}
-
-				//attributeBrowserToolBar.initializeColumns();
+		if (newTable.isPublic()) {
+			final CyNetwork curNet = applicationManager.getCurrentNetwork();
+			
+			if (curNet != null && networkTableManager.getTables(curNet, objType).containsValue(newTable)) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (((DefaultComboBoxModel)getTableChooser().getModel()).getIndexOf(newTable) < 0) {
+							getTableChooser().addItem(newTable);
+							attributeBrowserToolBar.updateEnableState(getTableChooser());
+						}
+					}
+				});
 			}
-		});
-	}
-
-	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
-		final CyNetwork network = e.getNetwork();
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				ignoreSetCurrentNetwork = true;
-				
-				try {
-					networkChooser.removeItem(network);
-				} finally {
-					ignoreSetCurrentNetwork = false;
-				}
-			}
-		});
+		}
 	}
 	
 	@Override
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
-		deleteTable(cyTable);
+		final BrowserTable table = getAllBrowserTablesMap().get(cyTable);
+		
+		if (table != null) {
+			((DefaultComboBoxModel)getTableChooser().getModel()).removeElement(cyTable);
+			
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					attributeBrowserToolBar.updateEnableState(getTableChooser());
+					deleteTable(cyTable);
+				}
+			});
+			
+			final CyNetwork network = networkTableManager.getNetworkForTable(cyTable);
+			final String namespace = networkTableManager.getTableNamespace(cyTable);
+			
+			if (network != null && namespace != null)
+				networkTableManager.removeTable(network, objType, namespace);
+		}
 	}
 	
 	@Override
@@ -316,39 +327,30 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			attributeBrowserToolBar.updateEnableState();
 	}
 	
-	private static final class NetworkChooserCustomRenderer extends JLabel implements ListCellRenderer {
-
-		private static final long serialVersionUID = 7103666112352192698L;
-
-		@Override
-		public Component getListCellRendererComponent(JList list, Object item, int index, boolean isSelected,
-				boolean hasFocus) {
-			
-			if (item instanceof CyNetwork == false) {
-				this.setText("No Network");
-				return this;
-			}
-			
-			final CyNetwork network = (CyNetwork) item;
-			
-			if (isSelected || hasFocus) {
-				this.setBackground(list.getSelectionBackground());				
-				this.setForeground(list.getSelectionForeground());
-			} else {
-				this.setBackground(list.getBackground());				
-				this.setForeground(list.getForeground());
-			}
-			
-			setOpaque(true);
-			
-			// When a network is deleted, its tables are also deleted, but it's
-			// possible that we still have a reference to a network with no tables.
-			try {
-				this.setText(network.getRow(network).get(CyNetwork.NAME, String.class));
-			} catch (NullPointerException e) {
-			}
-			
-			return this;
+	private JComboBox getTableChooser() {
+		if (tableChooser == null) {
+			tableChooser = new JComboBox(new DefaultComboBoxModel());
+			tableChooser.setRenderer(new TableChooserCellRenderer());
+			tableChooser.addActionListener(this);
+			tableChooser.setMaximumSize(SELECTOR_SIZE);
+			tableChooser.setMinimumSize(SELECTOR_SIZE);
+			tableChooser.setPreferredSize(SELECTOR_SIZE);
+			tableChooser.setSize(SELECTOR_SIZE);
+			tableChooser.setEnabled(false);
 		}
+		
+		return tableChooser;
+	}
+	
+	private Set<CyTable> getPublicTables(CyNetwork currentNetwork) {
+		final Set<CyTable> tables = new LinkedHashSet<CyTable>();
+		final Map<String, CyTable> map = networkTableManager.getTables(currentNetwork, objType);
+		
+		for (final CyTable tbl : map.values()) {
+			if (tbl.isPublic())
+				tables.add(tbl);
+		}
+		
+		return tables;
 	}
 }

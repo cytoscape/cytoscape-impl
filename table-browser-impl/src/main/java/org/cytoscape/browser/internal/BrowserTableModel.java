@@ -83,6 +83,9 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	public BrowserTableModel(final CyTable dataTable, final Class<? extends CyIdentifiable> tableType,
 			final EquationCompiler compiler) {
+		if (dataTable == null)
+			throw new IllegalArgumentException("'dataTable' must not be null");
+		
 		this.dataTable = dataTable;
 		this.compiler = compiler;
 		this.viewMode = ViewMode.ALL; 
@@ -109,11 +112,7 @@ public final class BrowserTableModel extends AbstractTableModel
 		return names;
 	}
 
-	CyTable getDataTable() {
-		return dataTable;
-	}
-
-	public CyTable getAttributes() {
+	public CyTable getDataTable() {
 		return dataTable;
 	}
 
