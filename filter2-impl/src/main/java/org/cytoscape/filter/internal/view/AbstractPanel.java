@@ -1,7 +1,6 @@
 package org.cytoscape.filter.internal.view;
 
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -36,7 +35,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	protected JMenuItem deleteMenu;
 	protected JMenuItem exportMenu;
 	protected JMenuItem importMenu;
-	protected JLabel optionsLabel;
+	protected JButton optionsButton;
 	protected Component editControlPanel;
 	protected JScrollPane scrollPane;
 	protected JButton applyButton;
@@ -98,12 +97,11 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		menu.add(exportMenu);
 		menu.add(importMenu);
 
-		optionsLabel = new JLabel(IconManager.ICON_COG);
-		Font iconFont = iconManager.getIconFont(17.0f);
-		optionsLabel.setFont(iconFont);
-		optionsLabel.addMouseListener(new MouseAdapter() {
+		optionsButton = new JButton(IconManager.ICON_CARET_DOWN);
+		optionsButton.setFont(iconManager.getIconFont(11.0f));
+		optionsButton.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent event) {
+			public void actionPerformed(ActionEvent event) {
 				handleShowMenu(event);
 			}
 		});
@@ -118,7 +116,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		});
 		
 		cancelApplyButton = new JLabel(IconManager.ICON_BAN_CIRCLE);
-		cancelApplyButton.setFont(iconFont);
+		cancelApplyButton.setFont(iconManager.getIconFont(17.0f));
 		cancelApplyButton.addMouseListener(new MouseAdapter() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -134,12 +132,13 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected void handleShowMenu(MouseEvent event) {
+	protected void handleShowMenu(ActionEvent event) {
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		T selected = (T) model.getSelectedItem();
 		renameMenu.setEnabled(selected != null && !selected.isPlaceholder());
 		deleteMenu.setEnabled(model.getSize() > 2);
-		menu.show(event.getComponent(), event.getX(), event.getY());
+		Component c = (Component) event.getSource();
+		menu.show(c, 0, c.getHeight());
 	}
 	
 	private void createEditControlPanel(JButton... buttons) {
