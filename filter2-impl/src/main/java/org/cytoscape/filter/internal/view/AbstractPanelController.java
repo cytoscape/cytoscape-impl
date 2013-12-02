@@ -200,7 +200,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return true;
 	}
 
-	protected T addNewElement(String name) {
+	public T addNewElement(String name) {
 		T element = createElement(name);
 		namedElementComboBoxModel.add(element);
 		namedElementComboBoxModel.setSelectedItem(element);

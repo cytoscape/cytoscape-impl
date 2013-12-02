@@ -54,6 +54,14 @@ public class FilterSettingsManager implements SessionAboutToBeSavedListener, Ses
 				logger.error("Unexpected error", e);
 			}
 		}
+		
+		if (filterPanelController.getElementCount() == 1) {
+			filterPanelController.addNewElement("Default filter");
+		}
+		
+		if (transformerPanelController.getElementCount() == 1) {
+			transformerPanelController.addNewElement("Default chain");
+		}
 	}
 
 	@Override
