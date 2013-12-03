@@ -24,10 +24,14 @@ import org.cytoscape.model.CyNetwork;
 
 @SuppressWarnings("serial")
 public class TransformerPanel extends AbstractPanel<TransformerElement, TransformerPanelController> {
-	CompositeTransformerPanel root;
+	
+	private CompositeTransformerPanel root;
 	private JComboBox startWithComboBox;
-	JButton shiftUpButton;
-	JButton shiftDownButton;
+	private JButton shiftUpButton;
+	private JButton shiftDownButton;
+	private JButton deleteButton;
+	private JButton selectAllButton;
+	private JButton deselectAllButton;
 	
 	public TransformerPanel(final TransformerPanelController controller, IconManager iconManager, TransformerWorker worker) {
 		super(controller, iconManager);
@@ -91,11 +95,14 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 	}
 
 	private JButton[] createButtons() {
-		Font arrowFont = iconManager.getIconFont(16.0f);
-		Font iconFont = iconManager.getIconFont(17.0f);
+		Font arrowFont = iconManager.getIconFont(20.0f);
+		Font iconFont = iconManager.getIconFont(22.0f);
 		
 		shiftUpButton = new JButton(IconManager.ICON_CARET_UP);
+		styleToolBarButton(shiftUpButton);
 		shiftUpButton.setFont(arrowFont);
+		shiftUpButton.setToolTipText("Shift selected chain entries up");
+		shiftUpButton.setEnabled(false);
 		shiftUpButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -104,7 +111,10 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 		});
 		
 		shiftDownButton = new JButton(IconManager.ICON_CARET_DOWN);
+		styleToolBarButton(shiftDownButton);
 		shiftDownButton.setFont(arrowFont);
+		shiftDownButton.setToolTipText("Shift selected chain entries down");
+		shiftDownButton.setEnabled(false);
 		shiftDownButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -112,8 +122,11 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 			}
 		});
 
-		JButton deleteButton = new JButton(IconManager.ICON_TRASH);
+		deleteButton = new JButton(IconManager.ICON_TRASH);
+		styleToolBarButton(deleteButton);
 		deleteButton.setFont(iconFont);
+		deleteButton.setToolTipText("Delete selected chain entries");
+		deleteButton.setEnabled(false);
 		deleteButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -121,23 +134,60 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 			}
 		});
 		
-		JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
+		selectAllButton = new JButton(IconManager.ICON_CHECK + " " + IconManager.ICON_CHECK);
+		selectAllButton.setFont(iconFont.deriveFont(iconFont.getSize()/2.0f));
+		selectAllButton.setToolTipText("Select all chain entries");
+		selectAllButton.setEnabled(false);
+		styleToolBarButton(selectAllButton);
+		selectAllButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				controller.handleCancel(TransformerPanel.this);
+				controller.handleSelectAll(TransformerPanel.this);
+			}
+		});
+		
+		deselectAllButton = new JButton(IconManager.ICON_CHECK_EMPTY + " " + IconManager.ICON_CHECK_EMPTY);
+		deselectAllButton.setFont(iconFont.deriveFont(iconFont.getSize()/2.0f));
+		deselectAllButton.setToolTipText("Deselect all chain entries");
+		deselectAllButton.setEnabled(false);
+		styleToolBarButton(deselectAllButton);
+		deselectAllButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				controller.handleDeselectAll(TransformerPanel.this);
 			}
 		});
 		
 		return new JButton[] {
 			shiftUpButton,
 			shiftDownButton,
+			selectAllButton,
+			deselectAllButton,
 			deleteButton,
-			cancelButton,
 		};
 	}
 
 	public CompositeTransformerPanel getRootPanel() {
 		return root;
+	}
+	
+	public JButton getShiftUpButton() {
+		return shiftUpButton;
+	}
+	
+	public JButton getShiftDownButton() {
+		return shiftDownButton;
+	}
+	
+	public JButton getDeleteButton() {
+		return deleteButton;
+	}
+	
+	public JButton getSelectAllButton() {
+		return selectAllButton;
+	}
+	
+	public JButton getDeselectAllButton() {
+		return deselectAllButton;
 	}
 }

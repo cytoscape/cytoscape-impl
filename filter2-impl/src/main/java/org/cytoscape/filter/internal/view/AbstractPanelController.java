@@ -1,7 +1,5 @@
 package org.cytoscape.filter.internal.view;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -14,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 
 import org.cytoscape.filter.internal.FilterIO;
+import org.cytoscape.filter.internal.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.tasks.ExportNamedTransformersTask;
 import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTask;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -26,10 +25,8 @@ import org.cytoscape.work.TaskManager;
 public abstract class AbstractPanelController<T extends NamedElement, V extends SelectPanelComponent> {
 	public static final int PROGRESS_BAR_MAXIMUM = Integer.MAX_VALUE;
 	
-	static final Color SELECTED_BACKGROUND_COLOR = new Color(222, 234, 252);
 	static final Pattern NAME_PATTERN = Pattern.compile("(.*?)( (\\d+))?");
 	
-	protected int totalSelected;
 	protected boolean isInteractive;
 
 	private List<NamedElementListener<T>> namedElementListeners;
@@ -217,21 +214,15 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected void handleCheck(V panel, JCheckBox checkBox, JComponent view) {
 		if (checkBox.isSelected()) {
-			view.setBackground(SELECTED_BACKGROUND_COLOR);
-			totalSelected += 1;
+			view.setBackground(CompositeTransformerPanel.SELECTED_BACKGROUND_COLOR);
 		} else {
-			view.setBackground(Color.WHITE);
-			totalSelected -=1;
+			view.setBackground(CompositeTransformerPanel.UNSELECTED_BACKGROUND_COLOR);
 		}
 		updateEditPanel(panel);
 	}
 	
 	protected void updateEditPanel(V panel) {
 		validateEditPanel(panel);
-		
-		Component editPanel = panel.getEditPanel();
-		editPanel.setVisible(totalSelected > 0);
-		panel.getComponent().validate();
 	}
 
 	public void setProgress(double progress, V panel) {
@@ -277,7 +268,9 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected abstract void handleDelete(V view);
 
-	protected abstract void handleCancel(V view);
+	protected abstract void handleSelectAll(V view);
+	
+	protected abstract void handleDeselectAll(V view);
 
 	protected abstract void handleElementSelected(T selected, V view);
 

@@ -88,11 +88,24 @@ public class CompositeFilterPanel extends JPanel {
 		}
 	}
 
+	public void selectAll() {
+		for (TransformerElementViewModel<FilterPanel> viewModel : viewModels.values()) {
+			if (!viewModel.checkBox.isSelected()) {
+				viewModel.checkBox.setSelected(true);
+				viewModel.view.setBackground(CompositeTransformerPanel.SELECTED_BACKGROUND_COLOR);
+			}
+			if (viewModel.view instanceof CompositeFilterPanel) {
+				CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
+				panel.selectAll();
+			}
+		}
+	}
+	
 	public void deselectAll() {
 		for (TransformerElementViewModel<FilterPanel> viewModel : viewModels.values()) {
 			if (viewModel.checkBox.isSelected()) {
 				viewModel.checkBox.setSelected(false);
-				viewModel.view.setBackground(Color.white);
+				viewModel.view.setBackground(CompositeTransformerPanel.UNSELECTED_BACKGROUND_COLOR);
 			}
 			if (viewModel.view instanceof CompositeFilterPanel) {
 				CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
@@ -118,6 +131,30 @@ public class CompositeFilterPanel extends JPanel {
 			}
 			index++;
 		}
+	}
+	
+	public int countSelected() {
+		int count = 0, index = 0;
+		while (index < model.getLength()) {
+			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(index));
+			if (viewModel.checkBox.isSelected()) {
+				count++;
+			}
+			index++;
+		}
+		return count;
+	}
+	
+	public int countUnselected() {
+		int count = 0, index = 0;
+		while (index < model.getLength()) {
+			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(index));
+			if (!viewModel.checkBox.isSelected()) {
+				count++;
+			}
+			index++;
+		}
+		return count;
 	}
 
 	public void updateLayout() {
@@ -165,7 +202,7 @@ public class CompositeFilterPanel extends JPanel {
 		comboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				filterPanelController.handleAddFilter(comboBox, CompositeFilterPanel.this);
+				filterPanelController.handleAddFilter(comboBox, CompositeFilterPanel.this, parent);
 			}
 		});
 		return comboBox;

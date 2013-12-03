@@ -10,10 +10,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.ParallelGroup;
-import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -99,6 +98,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 
 		optionsButton = new JButton(IconManager.ICON_CARET_DOWN);
 		optionsButton.setFont(iconManager.getIconFont(11.0f));
+		optionsButton.setToolTipText("Options...");
 		optionsButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -143,17 +143,15 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	
 	private void createEditControlPanel(JButton... buttons) {
 		JPanel panel = new JPanel();
-		GroupLayout layout = new GroupLayout(panel);
+		BoxLayout layout = new BoxLayout(panel, BoxLayout.X_AXIS);
 		panel.setLayout(layout);
 	
-		SequentialGroup horizontalGroup = layout.createSequentialGroup();
-		ParallelGroup verticalGroup = layout.createParallelGroup();
 		for (JButton button : buttons) {
-			horizontalGroup.addComponent(button);
-			verticalGroup.addComponent(button);
+			panel.add(Box.createHorizontalStrut(5));
+			panel.add(button);
+			panel.add(Box.createHorizontalStrut(5));
 		}
-		layout.setHorizontalGroup(horizontalGroup);
-		layout.setVerticalGroup(verticalGroup);
+		
 		editControlPanel = panel;
 	}
 	
@@ -162,7 +160,6 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		panel.setBorder(BorderFactory.createEtchedBorder());
 		
 		createEditControlPanel(buttons);
-		editControlPanel.setVisible(false);
 		
 		scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -222,5 +219,13 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 
 	public C getController() {
 		return controller;
+	}
+	
+	protected void styleToolBarButton(JButton btn) {
+		btn.setBorderPainted(false);
+		btn.setContentAreaFilled(false);
+		btn.setOpaque(false);
+		btn.setFocusPainted(false);
+		btn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 	}
 }

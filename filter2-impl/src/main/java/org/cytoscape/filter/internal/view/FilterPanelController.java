@@ -147,17 +147,22 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	protected void handleDelete(FilterPanel panel) {
 		CompositeFilterPanel root = panel.getRootPanel();
 		root.deleteSelected();
-		totalSelected = 0;
 		updateEditPanel(panel);
 		root.updateLayout();
 		worker.handleFilterStructureChanged();
 	}
 	
 	@Override
-	protected void handleCancel(FilterPanel panel) {
+	protected void handleSelectAll(FilterPanel panel) {
+		CompositeFilterPanel root = panel.getRootPanel();
+		root.selectAll();
+		updateEditPanel(panel);
+	}
+	
+	@Override
+	protected void handleDeselectAll(FilterPanel panel) {
 		CompositeFilterPanel root = panel.getRootPanel();
 		root.deselectAll();
-		totalSelected = 0;
 		updateEditPanel(panel);
 	}
 	
@@ -166,6 +171,14 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		CompositeFilterPanel root = panel.getRootPanel();
 		JButton outdentButton = panel.getOutdentButton();
 		outdentButton.setEnabled(canOutdent(root));
+		
+		int totalSelected = root.countSelected();
+		int totalUnselected = root.countUnselected();
+		
+		panel.getIndentButton().setEnabled(totalSelected > 0);
+		panel.getDeleteButton().setEnabled(totalSelected > 0);
+		panel.getSelectAllButton().setEnabled(totalUnselected > 0);
+		panel.getDeselectAllButton().setEnabled(totalSelected > 0);
 	}
 
 	public JComponent createView(FilterPanel parent, Filter<CyNetwork, CyIdentifiable> filter, int depth) {
@@ -179,7 +192,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		return view;
 	}
 
-	public void handleAddFilter(JComboBox comboBox, CompositeFilterPanel panel) {
+	public void handleAddFilter(JComboBox comboBox, CompositeFilterPanel panel, FilterPanel filterPanel) {
 		if (comboBox.getSelectedIndex() == 0) {
 			return;
 		}
@@ -195,6 +208,8 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		
 		filter.addListener(worker);
 		worker.handleFilterStructureChanged();
+		
+		validateEditPanel(filterPanel);
 	}
 
 	public ComboBoxModel createFilterComboBoxModel() {

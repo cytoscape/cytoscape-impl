@@ -62,16 +62,21 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	protected void handleDelete(TransformerPanel panel) {
 		CompositeTransformerPanel root = panel.getRootPanel();
 		root.deleteSelected();
-		totalSelected = 0;
 		updateEditPanel(panel);
 		root.updateLayout();
 	}
 
 	@Override
-	protected void handleCancel(TransformerPanel panel) {
+	protected void handleSelectAll(TransformerPanel panel) {
+		CompositeTransformerPanel root = panel.getRootPanel();
+		root.selectAll();
+		updateEditPanel(panel);
+	}
+	
+	@Override
+	protected void handleDeselectAll(TransformerPanel panel) {
 		CompositeTransformerPanel root = panel.getRootPanel();
 		root.deselectAll();
-		totalSelected = 0;
 		updateEditPanel(panel);
 	}
 
@@ -163,8 +168,16 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	
 	@Override
 	protected void validateEditPanel(TransformerPanel panel) {
-		panel.shiftUpButton.setEnabled(canShiftUp(panel));
-		panel.shiftDownButton.setEnabled(canShiftDown(panel));
+		panel.getShiftUpButton().setEnabled(canShiftUp(panel));
+		panel.getShiftDownButton().setEnabled(canShiftDown(panel));
+		
+		CompositeTransformerPanel root = panel.getRootPanel();
+		int totalSelected = root.countSelected();
+		int totalUnselected = root.countUnselected();
+		
+		panel.getDeleteButton().setEnabled(totalSelected > 0);
+		panel.getSelectAllButton().setEnabled(totalUnselected > 0);
+		panel.getDeselectAllButton().setEnabled(totalSelected > 0);
 	}
 	
 	@Override
@@ -216,7 +229,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		return startWithComboBoxModel;
 	}
 
-	public void handleAddTransformer(JComboBox comboBox, CompositeTransformerPanel panel) {
+	public void handleAddTransformer(JComboBox comboBox, CompositeTransformerPanel panel, TransformerPanel transformerPanel) {
 		if (comboBox.getSelectedIndex() == 0) {
 			return;
 		}
@@ -227,6 +240,8 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		panel.addTransformer(transformer);
 		panel.updateLayout();
 		comboBox.setSelectedIndex(0);
+		
+		validateEditPanel(transformerPanel);
 	}
 
 	public JComponent createView(TransformerPanel transformerPanel, Transformer<CyNetwork, CyIdentifiable> transformer) {

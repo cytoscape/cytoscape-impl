@@ -28,6 +28,10 @@ import org.cytoscape.model.CyNetwork;
 
 @SuppressWarnings("serial")
 public class CompositeTransformerPanel extends JPanel {
+	
+	public static final Color SELECTED_BACKGROUND_COLOR = new Color(222, 234, 252);
+	public static final Color UNSELECTED_BACKGROUND_COLOR = Color.WHITE;
+	
 	private Map<Transformer<CyNetwork, CyIdentifiable>, TransformerElementViewModel<TransformerPanel>> viewModels;
 	private GroupLayout layout;
 	private final JComboBox addComboBox;
@@ -65,7 +69,7 @@ public class CompositeTransformerPanel extends JPanel {
 		comboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				transformerPanelController.handleAddTransformer(comboBox, CompositeTransformerPanel.this);
+				transformerPanelController.handleAddTransformer(comboBox, CompositeTransformerPanel.this, parent);
 			}
 		});
 		return comboBox;
@@ -119,13 +123,42 @@ public class CompositeTransformerPanel extends JPanel {
 		viewModels.put(transformer, viewModel);
 	}
 
+	public void selectAll() {
+		for (TransformerElementViewModel<TransformerPanel> viewModel : viewModels.values()) {
+			if (!viewModel.checkBox.isSelected()) {
+				viewModel.checkBox.setSelected(true);
+				viewModel.view.setBackground(SELECTED_BACKGROUND_COLOR);
+			}
+		}
+	}
+	
 	public void deselectAll() {
 		for (TransformerElementViewModel<TransformerPanel> viewModel : viewModels.values()) {
 			if (viewModel.checkBox.isSelected()) {
 				viewModel.checkBox.setSelected(false);
-				viewModel.view.setBackground(Color.white);
+				viewModel.view.setBackground(UNSELECTED_BACKGROUND_COLOR);
 			}
 		}
+	}
+	
+	public int countSelected() {
+		int count = 0;
+		for (TransformerElementViewModel<TransformerPanel> viewModel : viewModels.values()) {
+			if (viewModel.checkBox.isSelected()) {
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	public int countUnselected() {
+		int count = 0;
+		for (TransformerElementViewModel<TransformerPanel> viewModel : viewModels.values()) {
+			if (!viewModel.checkBox.isSelected()) {
+				count++;
+			}
+		}
+		return count;
 	}
 
 	public void deleteSelected() {
