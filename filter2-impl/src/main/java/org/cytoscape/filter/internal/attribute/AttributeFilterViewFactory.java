@@ -219,7 +219,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			DynamicComboBoxModel.select(view.getPredicateComboBox(), 0, new Matcher<PredicateElement>() {
+			DynamicComboBoxModel.select(view.getPredicateComboBox(), -1, new Matcher<PredicateElement>() {
 				@Override
 				public boolean matches(PredicateElement item) {
 					return item.predicate.equals(filter.getPredicate());
@@ -324,6 +324,9 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				@Override
 				public void actionPerformed(ActionEvent event) {
 					PredicateElement selected = (PredicateElement) predicateComboBox.getSelectedItem();
+					if (selected == null) {
+						return;
+					}
 					controller.setPredicate(View.this, selected.predicate);
 				}
 			});
