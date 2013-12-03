@@ -316,7 +316,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 					taskMonitor.showDialog(true);
 
 					task.run(taskMonitor);
-					handleObserver(first);
+					handleObserver(task);
 
 					if (taskMonitor.cancelled()) {
                         if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
