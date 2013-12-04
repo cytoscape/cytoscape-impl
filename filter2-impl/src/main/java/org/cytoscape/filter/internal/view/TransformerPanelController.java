@@ -61,11 +61,6 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	}
 	
 	@Override
-	protected TransformerElement createDefaultElement() {
-		return new TransformerElement("(Create New Chain...)", null);
-	}
-
-	@Override
 	protected void handleDelete(TransformerPanel panel) {
 		CompositeTransformerPanel root = panel.getRootPanel();
 		root.deleteSelected();
@@ -218,6 +213,21 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		return "The name '%1$s' is already being used by another filter chain.  Please provide a different name.";
 	}
 
+	@Override
+	protected String getCreateMenuLabel() {
+		return "Create new filter chain";
+	}
+	
+	@Override
+	protected String getDeleteMenuLabel() {
+		return "Remove current filter chain";
+	}
+	
+	@Override
+	protected String getRenameMenuLabel() {
+		return "Rename current filter chain";
+	}
+	
 	@Override
 	protected String getExportLabel() {
 		return "Export filter chains...";

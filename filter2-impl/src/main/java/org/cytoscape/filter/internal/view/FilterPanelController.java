@@ -49,11 +49,6 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		addNewElement("Default filter");
 	}
 
-	@Override
-	protected FilterElement createDefaultElement() {
-		return new FilterElement("(Create New Filter...)", null);
-	}
-	
 	void handleIndent(FilterPanel panel) {
 		CompositeFilterPanel root = panel.getRootPanel();
 		indent(panel, root);
@@ -305,6 +300,21 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	@Override
 	protected String getElementExistsWarningTemplate() {
 		return "The name '%1$s' is already being used by another filter.  Please provide a different name.";
+	}
+	
+	@Override
+	protected String getCreateMenuLabel() {
+		return "Create new filter";
+	}
+	
+	@Override
+	protected String getDeleteMenuLabel() {
+		return "Remove current filter";
+	}
+	
+	@Override
+	protected String getRenameMenuLabel() {
+		return "Rename current filter";
 	}
 	
 	@Override

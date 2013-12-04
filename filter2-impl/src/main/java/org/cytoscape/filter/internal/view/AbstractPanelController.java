@@ -43,7 +43,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		this.taskManager = taskManager;
 		
 		List<T> modelItems = new ArrayList<T>();
-		modelItems.add(createDefaultElement());
 		namedElementComboBoxModel = new DynamicComboBoxModel<T>(modelItems);
 		namedElementListeners = new CopyOnWriteArrayList<NamedElementListener<T>>();
 	}
@@ -66,8 +65,8 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	void handleDelete() {
 		int index = namedElementComboBoxModel.getSelectedIndex(); 
-		if (index <= 0) {
-			// If nothing or the "create new filter" item is selected, do nothing.
+		if (index == -1) {
+			// If nothing is selected, do nothing.
 			return;
 		}
 		
@@ -94,24 +93,26 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		}
 	}
 	
+	protected void createNewElement(V panel) {
+		String defaultName = findUniqueName(String.format(getElementTemplate(), 1));
+		String name;
+		String message = getPrompt();
+		while (true) {
+			name = (String) JOptionPane.showInputDialog(null, message, getCreateElementTitle(), JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
+			if (name == null) {
+				return;
+			}
+			if (validateName(null, name, namedElementComboBoxModel)) {
+				break;
+			}
+			message = String.format(getElementExistsWarningTemplate(), name);
+		}
+		addNewElement(name);
+		handleElementSelected(panel);
+	}
+	
 	@SuppressWarnings("unchecked")
 	protected void handleElementSelected(V panel) {
-		if (namedElementComboBoxModel.getSelectedIndex() == 0) {
-			String defaultName = findUniqueName(String.format(getElementTemplate(), 1));
-			String name;
-			String message = getPrompt();
-			while (true) {
-				name = (String) JOptionPane.showInputDialog(null, message, getCreateElementTitle(), JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
-				if (name == null) {
-					return;
-				}
-				if (validateName(null, name, namedElementComboBoxModel)) {
-					break;
-				}
-				message = String.format(getElementExistsWarningTemplate(), name);
-			}
-			addNewElement(name);
-		}
 		T selected = (T) namedElementComboBoxModel.getSelectedItem();
 		if (selected == null) {
 			return;
@@ -264,8 +265,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 
 	protected abstract T createElement(String name);
 
-	protected abstract T createDefaultElement();
-	
 	protected abstract void handleDelete(V view);
 
 	protected abstract void handleSelectAll(V view);
@@ -284,6 +283,12 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 
 	protected abstract String getElementTemplate();
 	
+	protected abstract String getCreateMenuLabel();
+	
+	protected abstract String getRenameMenuLabel();
+	
+	protected abstract String getDeleteMenuLabel();
+	
 	protected abstract String getExportLabel();
 	
 	protected abstract String getImportLabel();
@@ -296,3 +301,4 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();
 }
+

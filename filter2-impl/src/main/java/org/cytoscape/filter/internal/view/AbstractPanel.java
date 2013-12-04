@@ -30,6 +30,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	protected C controller;
 	protected JComboBox namedElementComboBox;
 	protected JPopupMenu menu;
+	protected JMenuItem createMenu;
 	protected JMenuItem renameMenu;
 	protected JMenuItem deleteMenu;
 	protected JMenuItem exportMenu;
@@ -55,7 +56,16 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 			}
 		});
 		
-		renameMenu = new JMenuItem("Rename");
+		createMenu = new JMenuItem(controller.getCreateMenuLabel());
+		createMenu.addActionListener(new ActionListener() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				controller.createNewElement(AbstractPanel.this);
+			}
+		});
+		
+		renameMenu = new JMenuItem(controller.getRenameMenuLabel());
 		renameMenu.addActionListener(new ActionListener() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -64,7 +74,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 			}
 		});
 		
-		deleteMenu = new JMenuItem("Delete");
+		deleteMenu = new JMenuItem(controller.getDeleteMenuLabel());
 		deleteMenu.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -93,6 +103,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		menu = new JPopupMenu();
 		menu.add(renameMenu);
 		menu.add(deleteMenu);
+		menu.add(createMenu);
 		menu.add(exportMenu);
 		menu.add(importMenu);
 
@@ -135,8 +146,8 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	protected void handleShowMenu(ActionEvent event) {
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		T selected = (T) model.getSelectedItem();
-		renameMenu.setEnabled(selected != null && !selected.isPlaceholder());
-		deleteMenu.setEnabled(model.getSize() > 2);
+		renameMenu.setEnabled(selected != null);
+		deleteMenu.setEnabled(model.getSize() > 1);
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
 	}
