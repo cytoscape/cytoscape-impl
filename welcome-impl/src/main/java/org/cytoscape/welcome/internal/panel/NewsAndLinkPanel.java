@@ -116,8 +116,10 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 				"Latest News", TitledBorder.LEFT, TitledBorder.CENTER, REGULAR_FONT, REGULAR_FONT_COLOR));
 		
 		add(linkPanel);
-        JScrollPane statusScrollPane = new JScrollPane(statusPanel);
-		add(statusScrollPane);
+        JScrollPane sp = new JScrollPane(statusPanel);
+        sp.setOpaque(false);
+        sp.getViewport().setOpaque(false);
+		add(sp);
 		
 	}
 
