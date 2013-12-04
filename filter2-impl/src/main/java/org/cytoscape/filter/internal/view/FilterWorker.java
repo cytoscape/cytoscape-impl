@@ -3,6 +3,7 @@ package org.cytoscape.filter.internal.view;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -35,6 +36,13 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 		controller.setProgress(0, view);
 		try {
 			Filter<CyNetwork, CyIdentifiable> filter = controller.getFilter();
+			if (filter instanceof CompositeFilter) {
+				// If we have an empty CompositeFilter, bail out. 
+				CompositeFilter<CyNetwork, CyIdentifiable> composite = (CompositeFilter<CyNetwork, CyIdentifiable>) filter;
+				if (composite.getLength() == 0) {
+					return;
+				}
+			}
 			
 			List<CyNode> nodeList = network.getNodeList();
 			List<CyEdge> edgeList = network.getEdgeList();
