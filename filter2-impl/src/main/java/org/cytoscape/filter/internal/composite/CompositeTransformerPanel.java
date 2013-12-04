@@ -9,15 +9,16 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.Group;
 import javax.swing.GroupLayout.ParallelGroup;
-import javax.swing.JComboBox;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
+import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
@@ -34,19 +35,23 @@ public class CompositeTransformerPanel extends JPanel {
 	
 	private Map<Transformer<CyNetwork, CyIdentifiable>, TransformerElementViewModel<TransformerPanel>> viewModels;
 	private GroupLayout layout;
-	private final JComboBox addComboBox;
+	private final JButton addButton;
 	private TransformerPanel parent;
 	private TransformerPanelController transformerPanelController;
 	private List<Transformer<CyNetwork, CyIdentifiable>> model;
+	private final IconManager iconManager;
 	
-	public CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController, List<Transformer<CyNetwork, CyIdentifiable>> model) {
-		this(parent, transformerPanelController, new Controller(), model);
+	public CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController, 
+			List<Transformer<CyNetwork, CyIdentifiable>> model, IconManager iconManager) {
+		this(parent, transformerPanelController, new Controller(), model, iconManager);
 	}
 	
-	CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController, final Controller controller, List<Transformer<CyNetwork, CyIdentifiable>> model) {
+	CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController,
+			final Controller controller, List<Transformer<CyNetwork, CyIdentifiable>> model, IconManager iconManager) {
 		this.parent = parent;
 		this.transformerPanelController = transformerPanelController;
 		this.model = model;
+		this.iconManager = iconManager;
 		
 		ViewUtil.configureFilterView(this);
 		setBorder(BorderFactory.createEmptyBorder());
@@ -55,7 +60,7 @@ public class CompositeTransformerPanel extends JPanel {
 		layout = new GroupLayout(this);
 		setLayout(layout);
 
-		addComboBox = createChainComboBox(transformerPanelController.createChainComboBoxModel());
+		addButton = createAddChainEntryButton();
 
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
 			JComponent component = transformerPanelController.createView(parent, transformer);
@@ -64,15 +69,18 @@ public class CompositeTransformerPanel extends JPanel {
 		}
 	}
 	
-	JComboBox createChainComboBox(ComboBoxModel model) {
-		final JComboBox comboBox = new JComboBox(model);
-		comboBox.addActionListener(new ActionListener() {
+	JButton createAddChainEntryButton() {
+		final JButton button = new JButton(IconManager.ICON_PLUS);
+		button.setFont(iconManager.getIconFont(12.0f));
+		button.setToolTipText("Add new chain entry...");
+		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				transformerPanelController.handleAddTransformer(comboBox, CompositeTransformerPanel.this, parent);
+				JPopupMenu menu = transformerPanelController.createAddChainEntryMenu(CompositeTransformerPanel.this, parent);
+				menu.show(button, 0, button.getHeight());
 			}
 		});
-		return comboBox;
+		return button;
 	}
 
 	public void updateLayout() {
@@ -97,8 +105,8 @@ public class CompositeTransformerPanel extends JPanel {
 								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 		}
 		
-		viewGroup.addComponent(addComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
-		rows.addComponent(addComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+		viewGroup.addComponent(addButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+		rows.addComponent(addButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
 		
 		layout.setHorizontalGroup(columns);
 		layout.setVerticalGroup(rows);

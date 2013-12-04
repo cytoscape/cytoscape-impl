@@ -80,7 +80,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 			return;
 		}
 		
-		CompositeTransformerPanel panel = new CompositeTransformerPanel(this, controller, chain);
+		CompositeTransformerPanel panel = new CompositeTransformerPanel(this, controller, chain, iconManager);
 		setRootPanel(panel);
 	}
 

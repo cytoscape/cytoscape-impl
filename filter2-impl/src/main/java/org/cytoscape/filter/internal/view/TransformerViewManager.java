@@ -19,18 +19,15 @@ import org.cytoscape.model.CyNetwork;
 public class TransformerViewManager {
 
 	private Map<String, TransformerViewFactory> viewFactories;
-	private List<TransformerComboBoxElement> filterComboBoxModel;
-	private List<TransformerComboBoxElement> chainComboBoxModel;
+	private List<TransformerViewElement> filterConditionViewElements;
+	private List<TransformerViewElement> chainTransformerViewElements;
 	private TransformerManager transformerManager;
 
 	public TransformerViewManager(TransformerManager transformerManager) {
 		this.transformerManager = transformerManager;
 		viewFactories = new HashMap<String, TransformerViewFactory>();
-		filterComboBoxModel = new ArrayList<TransformerComboBoxElement>();
-		filterComboBoxModel.add(new TransformerComboBoxElement("Add...", null));
-		
-		chainComboBoxModel = new ArrayList<TransformerComboBoxElement>();
-		chainComboBoxModel.add(new TransformerComboBoxElement("Add...", null));
+		filterConditionViewElements = new ArrayList<TransformerViewElement>();
+		chainTransformerViewElements = new ArrayList<TransformerViewElement>();
 	}
 	
 	public JComponent createView(Transformer<CyNetwork, CyIdentifiable> transformer) {
@@ -50,45 +47,45 @@ public class TransformerViewManager {
 			return;
 		}
 		
-		List<TransformerComboBoxElement> model;
+		List<TransformerViewElement> list;
 		if (transformer instanceof Filter) {
-			model = filterComboBoxModel;
+			list = filterConditionViewElements;
 		} else {
-			model = chainComboBoxModel;
+			list = chainTransformerViewElements;
 		}
 		
-		TransformerComboBoxElement element = new TransformerComboBoxElement(transformer.getName(), factory.getId());
+		TransformerViewElement element = new TransformerViewElement(transformer.getName(), factory.getId());
 		viewFactories.put(factory.getId(), factory);
-		model.add(element);
-		Collections.sort(model);
+		list.add(element);
+		Collections.sort(list);
 	}
 	
 	public void unregisterTransformerViewFactory(TransformerViewFactory factory, Map<String, String> properties) {
 		String id = factory.getId();
 		viewFactories.remove(id);
 		
-		Iterator<TransformerComboBoxElement> iterator = filterComboBoxModel.iterator();
+		Iterator<TransformerViewElement> iterator = filterConditionViewElements.iterator();
 		while (iterator.hasNext()) {
-			TransformerComboBoxElement element = iterator.next();
+			TransformerViewElement element = iterator.next();
 			if (id.equals(element.getId())) {
 				iterator.remove();
 			}
 		}
 	}
 	
-	List<TransformerComboBoxElement> getFilterComboBoxModel() {
-		return filterComboBoxModel;
+	List<TransformerViewElement> getFilterConditionViewElements() {
+		return filterConditionViewElements;
 	}
 	
-	List<TransformerComboBoxElement> getChainComboBoxModel() {
-		return chainComboBoxModel;
+	List<TransformerViewElement> getChainTransformerViewElements() {
+		return chainTransformerViewElements;
 	}
 	
-	class TransformerComboBoxElement implements Comparable<TransformerComboBoxElement> {
+	class TransformerViewElement implements Comparable<TransformerViewElement> {
 		private String name;
 		private String id;
 
-		public TransformerComboBoxElement(String name, String id) {
+		public TransformerViewElement(String name, String id) {
 			this.name = name;
 			this.id = id;
 		}
@@ -103,7 +100,7 @@ public class TransformerViewManager {
 		}
 		
 		@Override
-		public int compareTo(TransformerComboBoxElement other) {
+		public int compareTo(TransformerViewElement other) {
 			if (id == null && other.id == null) {
 				return 0;
 			}

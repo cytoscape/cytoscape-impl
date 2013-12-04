@@ -1,13 +1,15 @@
 package org.cytoscape.filter.internal.view;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.filter.TransformerManager;
@@ -15,7 +17,7 @@ import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.ModelUtil;
 import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
-import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerComboBoxElement;
+import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -28,16 +30,20 @@ import org.cytoscape.work.TaskManager;
 public class FilterPanelController extends AbstractPanelController<FilterElement, FilterPanel> {
 	private TransformerManager transformerManager;
 	private TransformerViewManager transformerViewManager;
+	private IconManager iconManager;
 	
 	private ModelMonitor modelMonitor;
 
-	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, FilterWorker worker, ModelMonitor modelMonitor, FilterIO filterIo, TaskManager<?, ?> taskManager) {
+	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager,
+			FilterWorker worker, ModelMonitor modelMonitor, FilterIO filterIo, TaskManager<?, ?> taskManager,
+			IconManager iconManager) {
 		super(worker, filterIo, taskManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
 		this.modelMonitor = modelMonitor;
+		this.iconManager = iconManager;
 		
 		worker.setController(this);
 		addNewElement("Default filter");
@@ -183,7 +189,8 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 
 	public JComponent createView(FilterPanel parent, Filter<CyNetwork, CyIdentifiable> filter, int depth) {
 		if (filter instanceof CompositeFilter) {
-			return new CompositeFilterPanel(parent, this, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth);
+			return new CompositeFilterPanel(parent, this, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth,
+					iconManager);
 		}
 		JComponent view = transformerViewManager.createView(filter);
 		if (view instanceof InteractivityChangedListener) {
@@ -192,28 +199,34 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		return view;
 	}
 
-	public void handleAddFilter(JComboBox comboBox, CompositeFilterPanel panel, FilterPanel filterPanel) {
-		if (comboBox.getSelectedIndex() == 0) {
-			return;
+	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel panel, final FilterPanel filterPanel) {
+		JPopupMenu menu = new JPopupMenu();
+		
+		for (final TransformerViewElement element : transformerViewManager.getFilterConditionViewElements()) {
+			JMenuItem mi = new JMenuItem(element.toString());
+			mi.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					handleAddCondition(element, panel, filterPanel);
+				}
+			});
+			menu.add(mi);
 		}
 		
-		TransformerComboBoxElement selectedItem = (TransformerComboBoxElement) comboBox.getSelectedItem();
-		
+		return menu;
+	}
+	
+	private void handleAddCondition(TransformerViewElement element, CompositeFilterPanel panel, FilterPanel filterPanel) {
 		// Assume the factory makes filters
-		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(selectedItem.getId());
+		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(element.getId());
 		Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
 		panel.addFilter(filter);
 		panel.updateLayout();
-		comboBox.setSelectedIndex(0);
 		
 		filter.addListener(worker);
 		worker.handleFilterStructureChanged();
 		
 		validateEditPanel(filterPanel);
-	}
-
-	public ComboBoxModel createFilterComboBoxModel() {
-		return new DynamicComboBoxModel<TransformerComboBoxElement>(transformerViewManager.getFilterComboBoxModel());
 	}
 
 	@Override

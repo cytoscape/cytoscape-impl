@@ -15,14 +15,17 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.Group;
 import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
 
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
+import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.CompositeFilter;
@@ -41,19 +44,24 @@ public class CompositeFilterPanel extends JPanel {
 	private int depth;
 	private JComboBox combiningMethodComboBox;
 	private FilterPanelController filterPanelController;
-	private final JComboBox addComboBox;
+	private final JButton addButton;
 	private FilterPanel parent;
 	private CompositeFilter<CyNetwork, CyIdentifiable> model;
+	private final IconManager iconManager;
 	
-	public CompositeFilterPanel(FilterPanel parent, FilterPanelController filterPanelController, final CompositeFilter<CyNetwork, CyIdentifiable> model, int depth) {
-		this(parent, filterPanelController, new Controller(), model, depth);
+	public CompositeFilterPanel(FilterPanel parent, FilterPanelController filterPanelController, 
+			final CompositeFilter<CyNetwork, CyIdentifiable> model, int depth, IconManager iconManager) {
+		this(parent, filterPanelController, new Controller(), model, depth, iconManager);
 	}
 	
-	public CompositeFilterPanel(FilterPanel parent, FilterPanelController filterPanelController, final Controller controller, final CompositeFilter<CyNetwork, CyIdentifiable> model, int depth) {
+	public CompositeFilterPanel(FilterPanel parent, FilterPanelController filterPanelController, 
+			final Controller controller, final CompositeFilter<CyNetwork, CyIdentifiable> model, int depth,
+			IconManager iconManager) {
 		this.parent = parent;
 		this.filterPanelController = filterPanelController;
 		this.depth = depth;
 		this.model = model;
+		this.iconManager = iconManager;
 
 		ViewUtil.configureFilterView(this);
 		
@@ -70,7 +78,7 @@ public class CompositeFilterPanel extends JPanel {
 			}
 		});
 		
-		addComboBox = createFilterComboBox(filterPanelController.createFilterComboBoxModel());
+		addButton = createAddConditionButton();
 		
 		for (int i = 0; i < model.getLength(); i++) {
 			Filter<CyNetwork, CyIdentifiable> filter = model.get(i);
@@ -189,23 +197,26 @@ public class CompositeFilterPanel extends JPanel {
 								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 		}
 		
-		viewGroup.addComponent(addComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
-		rows.addComponent(addComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+		viewGroup.addComponent(addButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+		rows.addComponent(addButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
 		
 		layout.setHorizontalGroup(columns);
 		layout.setVerticalGroup(rows);
 	}
 
 	
-	JComboBox createFilterComboBox(ComboBoxModel model) {
-		final JComboBox comboBox = new JComboBox(model);
-		comboBox.addActionListener(new ActionListener() {
+	JButton createAddConditionButton() {
+		final JButton button = new JButton(IconManager.ICON_PLUS);
+		button.setFont(iconManager.getIconFont(12.0f));
+		button.setToolTipText("Add new condition...");
+		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				filterPanelController.handleAddFilter(comboBox, CompositeFilterPanel.this, parent);
+				JPopupMenu menu = filterPanelController.createAddConditionMenu(CompositeFilterPanel.this, parent);
+				menu.show(button, 0, button.getHeight());
 			}
 		});
-		return comboBox;
+		return button;
 	}
 
 	public void addViewModel(int index, Filter<CyNetwork, CyIdentifiable> filter, TransformerElementViewModel<FilterPanel> viewModel) {
