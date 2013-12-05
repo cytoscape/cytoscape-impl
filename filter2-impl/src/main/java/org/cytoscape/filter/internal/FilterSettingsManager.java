@@ -55,11 +55,11 @@ public class FilterSettingsManager implements SessionAboutToBeSavedListener, Ses
 			}
 		}
 		
-		if (filterPanelController.getElementCount() == 1) {
+		if (filterPanelController.getElementCount() == 0) {
 			filterPanelController.addNewElement("Default filter");
 		}
 		
-		if (transformerPanelController.getElementCount() == 1) {
+		if (transformerPanelController.getElementCount() == 0) {
 			transformerPanelController.addNewElement("Default chain");
 		}
 	}
