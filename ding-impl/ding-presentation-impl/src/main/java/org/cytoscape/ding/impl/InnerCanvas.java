@@ -1456,6 +1456,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 						}
 						final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
+						//TODO: Refactor to fix this ordering problem.
+						//This test is necessary because in some instances, an anchor can still be present in the selected
+						//anchor list, even though the anchor has been removed. A better fix would be to remove the
+						//anchor from that list before this code is ever reached. However, this is not currently possible
+						//under the present API, so for now we just detect this situation and continue.
+						if( bend.getAllHandles().isEmpty() )
+							continue;
 						final Handle handle = bend.getAllHandles().get(anchorInx);
 						final Point2D newPoint = handle.calculateHandleLocation(m_view.getViewModel(),ev);
 						m_floatBuff1[0] = (float) newPoint.getX();
