@@ -229,7 +229,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	public void setProgress(double progress, V panel) {
 		boolean done = progress == 1.0;
 		
-		panel.getApplyButton().setEnabled(done && !isInteractive);
+		panel.getApplyButton().setEnabled(done);
 		panel.getCancelApplyButton().setEnabled(!done);
 		
 		JProgressBar progressBar = panel.getProgressBar();
@@ -261,6 +261,10 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	protected void handleImport(V view) {
 		Task task = new ImportNamedTransformersTask(filterIo, (AbstractPanel) view);
 		taskManager.execute(new TaskIterator(task));
+	}
+
+	public void setStatus(V view, String message) {
+		view.setStatus(message);
 	}
 
 	protected abstract T createElement(String name);

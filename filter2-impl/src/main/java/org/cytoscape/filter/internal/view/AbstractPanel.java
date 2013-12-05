@@ -41,6 +41,8 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	protected JButton applyButton;
 	protected JComponent cancelApplyButton;
 	protected JProgressBar progressBar;
+
+	protected JLabel statusLabel;
 	
 	public AbstractPanel(final C controller, IconManager iconManager) {
 		this.controller = controller;
@@ -137,6 +139,8 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		});
 		cancelApplyButton.setEnabled(false);
 		
+		statusLabel = new JLabel(" ");
+		
 		progressBar = new JProgressBar();
 		progressBar.setMinimum(0);
 		progressBar.setMaximum(AbstractPanelController.PROGRESS_BAR_MAXIMUM);
@@ -208,11 +212,12 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		applyPanel.setLayout(new GridBagLayout());
 		applyPanel.add(applyButton, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		applyPanel.add(progressPanel, new GridBagConstraints(1, 0, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		applyPanel.add(statusLabel, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 4, 0, 4), 0, 0));
 		return applyPanel;
 	}
 	
 	public void setStatus(String status) {
-		applyButton.setText(status);
+		statusLabel.setText(status);
 	}
 
 	public JComponent getApplyButton() {
