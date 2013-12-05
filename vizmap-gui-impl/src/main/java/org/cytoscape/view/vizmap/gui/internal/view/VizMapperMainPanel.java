@@ -135,7 +135,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		defViewPanelsMap = new HashMap<String, JPanel>();
 
 		init();
-//		initDefaultEditors(); // TODO
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -165,14 +164,20 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return null;
 	}
 
+	/**
+	 * Dummy panel that is used to prevent NullPointerExceptions for clients of the
+	 * deprecated method {@link #getDefaultViewPanel()}.
+	 */
 	private JPanel defViewPanel = new JPanel();
 	
 	@Override
+	@Deprecated
 	public JPanel getDefaultViewPanel() {
-		return defViewPanel; // TODO ???
+		return defViewPanel;
 	}
 	
 	@Override
+	@Deprecated
 	public DefaultViewEditor getDefaultViewEditor() {
 		return this;
 	}
@@ -182,14 +187,21 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return getStylesBtn().getRenderingEngine(getSelectedVisualStyle());
 	}
 	
+	/**
+	 * @return The correspondent JPanel which was used to create the rendering engine that then generates
+	 * the preview image of the visual style in the Current Style selector.
+	 * This JPanel is never displayed in the UI, though.
+	 */
 	@Override
+	@Deprecated
 	public Component getDefaultView(final VisualStyle vs) {
 		return defViewPanelsMap.get(vs);
 	}
 
 	@Override
+	@Deprecated
 	public void showEditor(Component parent) {
-		// TODO ???
+		// Doesn't do anything anymore, since it has been deprecated.
 	}
 	
 	public VisualStyle getSelectedVisualStyle() {
