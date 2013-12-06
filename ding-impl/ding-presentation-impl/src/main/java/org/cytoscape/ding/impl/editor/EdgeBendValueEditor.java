@@ -76,6 +76,8 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final RenderingEngineFactory<CyNetwork> presentationFactory;
 
+	private boolean editCancelled = false;
+
 	public EdgeBendValueEditor(final CyNetworkFactory cyNetworkFactory,
 			final CyNetworkViewFactory cyNetworkViewFactory, final RenderingEngineFactory<CyNetwork> presentationFactory) {
 		super();
@@ -184,6 +186,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		final JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				editCancelled = true;
 				dispose();
 			}
 		});
@@ -198,12 +201,13 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
 	@Override
 	public <S extends Bend> Bend showEditor(Component parent, S initialValue) {
+		editCancelled = false;
 		initUI(cyNetworkFactory, cyNetworkViewFactory, presentationFactory);
 		EditMode.setMode(true);
 		this.setLocationRelativeTo(parent);
 		this.setVisible(true);
 		EditMode.setMode(false);
-		return edgeView.getBend();
+		return editCancelled ? null : edgeView.getBend();
 	}
 
 	@Override
