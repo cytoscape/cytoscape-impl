@@ -147,6 +147,8 @@ public class CompositeFilterPanel extends JPanel {
 			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(index));
 			if (viewModel.checkBox.isSelected()) {
 				count++;
+			} else if (viewModel.view instanceof CompositeFilterPanel) {
+				count += ((CompositeFilterPanel)viewModel.view).countSelected();
 			}
 			index++;
 		}
@@ -159,6 +161,8 @@ public class CompositeFilterPanel extends JPanel {
 			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(index));
 			if (!viewModel.checkBox.isSelected()) {
 				count++;
+			} else if (viewModel.view instanceof CompositeFilterPanel) {
+				count += ((CompositeFilterPanel)viewModel.view).countUnselected();
 			}
 			index++;
 		}
