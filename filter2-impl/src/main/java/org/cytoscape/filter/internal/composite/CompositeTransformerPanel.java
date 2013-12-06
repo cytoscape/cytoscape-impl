@@ -86,17 +86,18 @@ public class CompositeTransformerPanel extends JPanel {
 	public void updateLayout() {
 		removeAll();
 
-		Group columns = layout.createParallelGroup(Alignment.LEADING, true);
-		Group rows = layout.createSequentialGroup();
+		final ParallelGroup checkBoxGroup = layout.createParallelGroup(Alignment.LEADING);
+		final ParallelGroup viewGroup = layout.createParallelGroup(Alignment.LEADING);
 		
-		ParallelGroup checkBoxGroup = layout.createParallelGroup(Alignment.LEADING);
-		ParallelGroup viewGroup = layout.createParallelGroup(Alignment.LEADING);
-		columns.addGroup(layout.createSequentialGroup()
-							   .addGroup(checkBoxGroup)
-							   .addGroup(viewGroup));
+		final Group columns = layout.createParallelGroup(Alignment.LEADING, true)
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(checkBoxGroup)
+						.addGroup(viewGroup));
+		final Group rows = layout.createSequentialGroup();
 		
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
-			TransformerElementViewModel<TransformerPanel> viewModel = viewModels.get(transformer);
+			final TransformerElementViewModel<TransformerPanel> viewModel = viewModels.get(transformer);
+			
 			checkBoxGroup.addComponent(viewModel.checkBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE);
 			viewGroup.addComponent(viewModel.view, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE);
 			
@@ -105,8 +106,8 @@ public class CompositeTransformerPanel extends JPanel {
 								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 		}
 		
-		viewGroup.addComponent(addButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
-		rows.addComponent(addButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+		columns.addComponent(addButton);
+		rows.addComponent(addButton);
 		
 		layout.setHorizontalGroup(columns);
 		layout.setVerticalGroup(rows);
