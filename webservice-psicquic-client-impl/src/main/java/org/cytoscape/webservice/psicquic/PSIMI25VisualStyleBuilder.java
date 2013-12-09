@@ -240,13 +240,6 @@ public class PSIMI25VisualStyleBuilder {
 		defStyle.addVisualMappingFunction(nodeBorderWidthMapping);
 	
 
-		// Edge Color Mapping.  
-		final DiscreteMapping<Boolean, Paint> edgeColorMapping = (DiscreteMapping<Boolean, Paint>) discreteMappingFactory
-				.createVisualMappingFunction(InteractionClusterMapper.CROSS_SPECIES_EDGE, Boolean.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-		edgeColorMapping.putMapValue(Boolean.TRUE, EDGE_CROSS_COLOR);
-		defStyle.addVisualMappingFunction(edgeColorMapping);
-
-
 		final DiscreteMapping<String, Double> edgeWidthMapping = (DiscreteMapping<String, Double>) discreteMappingFactory
 				.createVisualMappingFunction(InteractionClusterMapper.PRIMARY_INTERACTION_TYPE, String.class, BasicVisualLexicon.EDGE_WIDTH);
 		edgeWidthMapping.putMapValue("colocalization", 3d);

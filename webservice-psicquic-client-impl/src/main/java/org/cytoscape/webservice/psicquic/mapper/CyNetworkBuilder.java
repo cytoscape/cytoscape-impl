@@ -320,25 +320,11 @@ public class CyNetworkBuilder {
 			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
 			mapper.mapEdgeColumn(interaction, network.getRow(newEdge));
 
-			// Create new attribute if cross species
-			processCrossSpeciesEdge(network.getRow(newEdge), network.getRow(sourceNode), network.getRow(targetNode));
-
 		}
 		logger.info("Import Done: " + network.getSUID());
 		return nodeMap;
 	}
 
-	private void processCrossSpeciesEdge(final CyRow row, final CyRow source, final CyRow target) {
-		final String sTax = source.get(TAXNOMY, String.class);
-		final String tTax = target.get(TAXNOMY, String.class);
-
-		if (sTax == null || tTax == null)
-			return;
-
-		if (sTax.equals(tTax) == false) {
-			row.set(InteractionClusterMapper.CROSS_SPECIES_EDGE, true);
-		}
-	}
 
 	/**
 	 * Create minimum set of columns supported by MITAB 2.5.
@@ -372,11 +358,8 @@ public class CyNetworkBuilder {
 			edgeTable.createListColumn(InteractionClusterMapper.DETECTION_METHOD_ID, String.class, false);
 		if (edgeTable.getColumn(InteractionClusterMapper.DETECTION_METHOD_NAME) == null)
 			edgeTable.createListColumn(InteractionClusterMapper.DETECTION_METHOD_NAME, String.class, false);
-		if (edgeTable.getColumn(InteractionClusterMapper.CROSS_SPECIES_EDGE) == null)
-			edgeTable.createColumn(InteractionClusterMapper.CROSS_SPECIES_EDGE, Boolean.class, false);
 		if (edgeTable.getColumn(InteractionClusterMapper.SOURCE_DB) == null)
 			edgeTable.createColumn(InteractionClusterMapper.SOURCE_DB, String.class, false);
-
 	}
 
 	public void cancel() {
