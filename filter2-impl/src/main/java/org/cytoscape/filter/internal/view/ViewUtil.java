@@ -14,10 +14,11 @@ import javax.swing.border.Border;
 import javax.swing.text.NumberFormatter;
 
 public class ViewUtil {
+	public static final int INTERNAL_VERTICAL_PADDING = 4;
 	
 	public static final Border COMPOSITE_PANEL_BORDER = BorderFactory.createCompoundBorder(
 			new DashedBorder(Color.LIGHT_GRAY, 3),
-			BorderFactory.createEmptyBorder(0, 0, 10, 0));
+			BorderFactory.createEmptyBorder(INTERNAL_VERTICAL_PADDING, 0, INTERNAL_VERTICAL_PADDING, 0));
 	
 	public static void configureFilterView(JComponent component) {
 		component.setBackground(Color.WHITE);

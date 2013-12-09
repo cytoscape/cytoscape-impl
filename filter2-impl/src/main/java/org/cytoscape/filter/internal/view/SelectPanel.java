@@ -14,5 +14,7 @@ public class SelectPanel extends JPanel {
 		
 		setLayout(new BorderLayout());
 		add(tabPane, BorderLayout.CENTER);
+		
+		setOpaque(false);
 	}
 }

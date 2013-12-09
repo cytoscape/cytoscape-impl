@@ -197,12 +197,14 @@ public class CompositeFilterPanel extends JPanel {
 			viewGroup.addComponent(viewModel.view, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE);
 			
 			rows.addGroup(layout.createParallelGroup(Alignment.LEADING)
-								.addComponent(viewModel.checkBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+								.addGroup(layout.createSequentialGroup()
+										.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING)
+										.addComponent(viewModel.checkBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE))
 								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 		}
 		
 		columns.addComponent(addButton);
-		rows.addComponent(addButton);
+		rows.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING).addComponent(addButton);
 		
 		layout.setHorizontalGroup(columns);
 		layout.setVerticalGroup(rows);
