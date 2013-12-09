@@ -91,7 +91,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 					bookmarksProp, bkUtil, taskManager, factory, manager, tableFactory, tableManager, fileUtil);
 			dialog.add(ontologyPanel, BorderLayout.CENTER);
 			dialog.pack();
-			dialog.setLocationRelativeTo(null);
+			dialog.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
 		} catch (JAXBException e1) {
 			e1.printStackTrace();
 		} catch (IOException e1) {
@@ -102,9 +102,8 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	}
 
 	private JDialog layout() {
-		final JDialog dialog = new JDialog();
-		dialog.setModal(true);
-
+		final JDialog dialog = new JDialog(CytoscapeServices.cySwingApplication.getJFrame(), true);
+		dialog.setTitle("Import Ontology and Annotation");
 		final JButton importButton = new JButton("Import");
 		importButton.addActionListener(new ActionListener() {
 			@Override
