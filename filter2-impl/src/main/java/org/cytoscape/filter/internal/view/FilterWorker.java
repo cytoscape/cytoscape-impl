@@ -34,6 +34,7 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 		}
 		
 		controller.setProgress(0, view);
+		controller.setStatus(view, null);
 		int nodeCount = 0;
 		int edgeCount = 0;
 		int counter = 0;

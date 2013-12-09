@@ -217,6 +217,9 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	}
 	
 	public void setStatus(String status) {
+		if (status == null || status.isEmpty()) {
+			status = " ";
+		}
 		statusLabel.setText(status);
 	}
 

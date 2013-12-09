@@ -48,6 +48,7 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		
 		sink.resetCounts();
 		controller.setProgress(0, view);
+		controller.setStatus(view, null);
 		long startTime = System.currentTimeMillis();
 		try {
 			List<Transformer<CyNetwork, CyIdentifiable>> transformers = controller.getTransformers(view);
