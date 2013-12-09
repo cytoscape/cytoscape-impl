@@ -301,6 +301,8 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 
 	protected abstract void validateEditPanel(V view);
 	
+	public abstract void unregisterView(JComponent elementView);
+	
 	public abstract void addNamedTransformers(V view, NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();

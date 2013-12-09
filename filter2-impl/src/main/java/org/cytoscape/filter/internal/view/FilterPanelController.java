@@ -388,4 +388,9 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		}
 		return namedTransformers;
 	}
+	
+	@Override
+	public void unregisterView(JComponent elementView) {
+		modelMonitor.unregisterView(elementView);
+	}
 }

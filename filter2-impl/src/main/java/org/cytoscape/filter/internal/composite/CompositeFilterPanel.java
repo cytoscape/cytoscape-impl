@@ -266,7 +266,10 @@ public class CompositeFilterPanel extends JPanel {
 
 	public void removeFilter(int index) {
 		Filter<CyNetwork, CyIdentifiable> filter = model.remove(index);
-		viewModels.remove(filter);
+		TransformerElementViewModel<FilterPanel> model = viewModels.remove(filter);
+		if (model != null && model.view != null) {
+			filterPanelController.unregisterView(model.view);
+		}
 	}
 
 	public Collection<TransformerElementViewModel<FilterPanel>> getViewModels() {

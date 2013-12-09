@@ -338,4 +338,8 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		}
 		return namedTransformers;
 	}
+	
+	@Override
+	public void unregisterView(JComponent elementView) {
+	}
 }

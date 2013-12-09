@@ -185,7 +185,10 @@ public class CompositeTransformerPanel extends JPanel {
 
 	private void removeTransformer(int index) {
 		Transformer<CyNetwork, CyIdentifiable> transformer = model.remove(index);
-		viewModels.remove(transformer);
+		TransformerElementViewModel<TransformerPanel> model = viewModels.remove(transformer);
+		if (model != null && model.view != null) {
+			transformerPanelController.unregisterView(model.view);
+		}
 	}
 	
 	public List<Transformer<CyNetwork, CyIdentifiable>> getModel() {
