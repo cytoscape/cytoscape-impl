@@ -262,7 +262,7 @@ public class CyActivator extends AbstractCyActivator {
 	
 		Properties loadNetworkFileTaskFactoryProps = new Properties();
 		loadNetworkFileTaskFactoryProps.setProperty(ID,"loadNetworkFileTaskFactory");
-		loadNetworkFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network");
+		loadNetworkFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network[1]");
 		loadNetworkFileTaskFactoryProps.setProperty(ACCELERATOR,"cmd l");
 		loadNetworkFileTaskFactoryProps.setProperty(TITLE,"File...");
 		//loadNetworkFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
@@ -277,7 +277,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties loadNetworkURLTaskFactoryProps = new Properties();
 		loadNetworkURLTaskFactoryProps.setProperty(ID,"loadNetworkURLTaskFactory");
-		loadNetworkURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network");
+		loadNetworkURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network[1]");
 		loadNetworkURLTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift l");
 		loadNetworkURLTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
 		loadNetworkURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.1");
@@ -300,7 +300,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,loadVizmapFileTaskFactory,LoadVizmapFileTaskFactory.class, new Properties());
 
 		Properties importAttrsFileTaskFactoryProps = new Properties();
-		importAttrsFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table");
+		importAttrsFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table[2]");
 		importAttrsFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.1");
 		importAttrsFileTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.2");
 		importAttrsFileTaskFactoryProps.setProperty(TITLE,"File...");
@@ -315,7 +315,7 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		Properties importAttrsURLTaskFactoryProps = new Properties();
-		importAttrsURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table");
+		importAttrsURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table[2]");
 		importAttrsURLTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
 		importAttrsURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.3");
 		importAttrsURLTaskFactoryProps.setProperty(TITLE,"URL...");
