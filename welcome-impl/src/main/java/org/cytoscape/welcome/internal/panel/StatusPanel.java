@@ -62,9 +62,10 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 	private void initComponents() {
 		final String versionStr = cyVersion.getVersion();
 
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
 		final JLabel status = new JLabel();
+		status.setAlignmentX(Component.LEFT_ALIGNMENT);
 		status.setOpaque(false);
 		status.setFont(REGULAR_FONT);
 		status.setForeground(REGULAR_FONT_COLOR);
@@ -77,40 +78,21 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 			status.setText("New version is available: " + versionStr);
 		}
         this.add(status);
+		this.add(Box.createRigidArea(new Dimension(0,2)));
 
-        final JLabel news = new JLabel();
+        final JEditorPane news = new JEditorPane();
+		news.setAlignmentX(Component.LEFT_ALIGNMENT);
         news.setOpaque(false);
         news.setFont(REGULAR_FONT);
-        news.setForeground(REGULAR_FONT_COLOR);
-        String newsContent = "";
-        BufferedReader br = null;
-        try {
-            URL newsUrl = new URL(NEWS_URL);
-            br = new BufferedReader( new InputStreamReader( newsUrl.openStream() ));
-            String line = null;
-            while( (line = br.readLine()) != null )
-            {
-                newsContent += line +"\n";
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
-            newsContent = "<html>Cannot access news.<br>Your internet connection may be down.</html>";
-        } catch (IOException e) {
-            e.printStackTrace();
+		news.setPreferredSize( new Dimension(50,5) );
+        try
+		{
+            news.setPage(NEWS_URL);
         }
-        finally
-        {
-            if( br != null )
-            {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        news.setText(newsContent);
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
         this.add(news);
 	}
 	

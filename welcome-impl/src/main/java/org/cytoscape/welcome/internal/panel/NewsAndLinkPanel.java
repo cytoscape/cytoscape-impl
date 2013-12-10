@@ -118,6 +118,8 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 		
 		add(linkPanel);
         JScrollPane sp = new JScrollPane(statusPanel);
+		sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         sp.setOpaque(false);
 		sp.setBorder( BorderFactory.createEmptyBorder() );
 		sp.getViewport().setOpaque(false);
