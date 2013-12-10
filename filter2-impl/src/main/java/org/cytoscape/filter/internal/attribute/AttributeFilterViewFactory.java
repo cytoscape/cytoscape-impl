@@ -219,7 +219,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			DynamicComboBoxModel.select(view.getPredicateComboBox(), 0, new Matcher<PredicateElement>() {
+			DynamicComboBoxModel.select(view.getPredicateComboBox(), -1, new Matcher<PredicateElement>() {
 				@Override
 				public boolean matches(PredicateElement item) {
 					return item.predicate.equals(filter.getPredicate());
@@ -324,6 +324,9 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				@Override
 				public void actionPerformed(ActionEvent event) {
 					PredicateElement selected = (PredicateElement) predicateComboBox.getSelectedItem();
+					if (selected == null) {
+						return;
+					}
 					controller.setPredicate(View.this, selected.predicate);
 				}
 			});
@@ -375,7 +378,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			selectedAttribute = SelectedAttributeType.NUMERIC;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(rangeChooser, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(rangeChooser, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
 			controller.chooserController.setInteractive(isInteractive, rangeChooser);
 			revalidate();
 			validate();

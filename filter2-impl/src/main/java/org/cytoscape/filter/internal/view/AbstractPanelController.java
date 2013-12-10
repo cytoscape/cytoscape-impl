@@ -1,7 +1,5 @@
 package org.cytoscape.filter.internal.view;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -14,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 
 import org.cytoscape.filter.internal.FilterIO;
+import org.cytoscape.filter.internal.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.tasks.ExportNamedTransformersTask;
 import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTask;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -26,10 +25,8 @@ import org.cytoscape.work.TaskManager;
 public abstract class AbstractPanelController<T extends NamedElement, V extends SelectPanelComponent> {
 	public static final int PROGRESS_BAR_MAXIMUM = Integer.MAX_VALUE;
 	
-	static final Color SELECTED_BACKGROUND_COLOR = new Color(222, 234, 252);
 	static final Pattern NAME_PATTERN = Pattern.compile("(.*?)( (\\d+))?");
 	
-	protected int totalSelected;
 	protected boolean isInteractive;
 
 	private List<NamedElementListener<T>> namedElementListeners;
@@ -46,7 +43,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		this.taskManager = taskManager;
 		
 		List<T> modelItems = new ArrayList<T>();
-		modelItems.add(createDefaultElement());
 		namedElementComboBoxModel = new DynamicComboBoxModel<T>(modelItems);
 		namedElementListeners = new CopyOnWriteArrayList<NamedElementListener<T>>();
 	}
@@ -69,8 +65,8 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	void handleDelete() {
 		int index = namedElementComboBoxModel.getSelectedIndex(); 
-		if (index <= 0) {
-			// If nothing or the "create new filter" item is selected, do nothing.
+		if (index == -1) {
+			// If nothing is selected, do nothing.
 			return;
 		}
 		
@@ -97,24 +93,26 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		}
 	}
 	
+	protected void createNewElement(V panel) {
+		String defaultName = findUniqueName(String.format(getElementTemplate(), 1));
+		String name;
+		String message = getPrompt();
+		while (true) {
+			name = (String) JOptionPane.showInputDialog(null, message, getCreateElementTitle(), JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
+			if (name == null) {
+				return;
+			}
+			if (validateName(null, name, namedElementComboBoxModel)) {
+				break;
+			}
+			message = String.format(getElementExistsWarningTemplate(), name);
+		}
+		addNewElement(name);
+		handleElementSelected(panel);
+	}
+	
 	@SuppressWarnings("unchecked")
 	protected void handleElementSelected(V panel) {
-		if (namedElementComboBoxModel.getSelectedIndex() == 0) {
-			String defaultName = findUniqueName(String.format(getElementTemplate(), 1));
-			String name;
-			String message = getPrompt();
-			while (true) {
-				name = (String) JOptionPane.showInputDialog(null, message, getCreateElementTitle(), JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
-				if (name == null) {
-					return;
-				}
-				if (validateName(null, name, namedElementComboBoxModel)) {
-					break;
-				}
-				message = String.format(getElementExistsWarningTemplate(), name);
-			}
-			addNewElement(name);
-		}
 		T selected = (T) namedElementComboBoxModel.getSelectedItem();
 		if (selected == null) {
 			return;
@@ -200,7 +198,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return true;
 	}
 
-	protected T addNewElement(String name) {
+	public T addNewElement(String name) {
 		T element = createElement(name);
 		namedElementComboBoxModel.add(element);
 		namedElementComboBoxModel.setSelectedItem(element);
@@ -217,27 +215,21 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected void handleCheck(V panel, JCheckBox checkBox, JComponent view) {
 		if (checkBox.isSelected()) {
-			view.setBackground(SELECTED_BACKGROUND_COLOR);
-			totalSelected += 1;
+			view.setBackground(CompositeTransformerPanel.SELECTED_BACKGROUND_COLOR);
 		} else {
-			view.setBackground(Color.WHITE);
-			totalSelected -=1;
+			view.setBackground(CompositeTransformerPanel.UNSELECTED_BACKGROUND_COLOR);
 		}
 		updateEditPanel(panel);
 	}
 	
 	protected void updateEditPanel(V panel) {
 		validateEditPanel(panel);
-		
-		Component editPanel = panel.getEditPanel();
-		editPanel.setVisible(totalSelected > 0);
-		panel.getComponent().validate();
 	}
 
 	public void setProgress(double progress, V panel) {
 		boolean done = progress == 1.0;
 		
-		panel.getApplyButton().setEnabled(done && !isInteractive);
+		panel.getApplyButton().setEnabled(done);
 		panel.getCancelApplyButton().setEnabled(!done);
 		
 		JProgressBar progressBar = panel.getProgressBar();
@@ -271,13 +263,17 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		taskManager.execute(new TaskIterator(task));
 	}
 
+	public void setStatus(V view, String message) {
+		view.setStatus(message);
+	}
+
 	protected abstract T createElement(String name);
 
-	protected abstract T createDefaultElement();
-	
 	protected abstract void handleDelete(V view);
 
-	protected abstract void handleCancel(V view);
+	protected abstract void handleSelectAll(V view);
+	
+	protected abstract void handleDeselectAll(V view);
 
 	protected abstract void handleElementSelected(T selected, V view);
 
@@ -291,6 +287,12 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 
 	protected abstract String getElementTemplate();
 	
+	protected abstract String getCreateMenuLabel();
+	
+	protected abstract String getRenameMenuLabel();
+	
+	protected abstract String getDeleteMenuLabel();
+	
 	protected abstract String getExportLabel();
 	
 	protected abstract String getImportLabel();
@@ -299,7 +301,10 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 
 	protected abstract void validateEditPanel(V view);
 	
+	public abstract void unregisterView(JComponent elementView);
+	
 	public abstract void addNamedTransformers(V view, NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();
 }
+

@@ -70,7 +70,6 @@ public class InteractionClusterMapper {
 	private static final String SCHEMA_NAMESPACE = "org.cytoscape.webservice.psicquic.miriam";
 
 	public static final String PREDICTED_GENE_NAME = "Human Readable Label";
-	public static final String CROSS_SPECIES_EDGE = "Cross Species Interaction";
 	public static final String INTERACTOR_TYPE = "Interactor Type";
 	
 	static final String PUB_ID = "Publication ID";
@@ -248,13 +247,12 @@ public class InteractionClusterMapper {
 		}
 
 		// For 2.7 data
-		// 2.7
 		if(entries.length>15) {
-			addListColumn(sourceRow, entries[16], "Biological Role", String.class);
-			addListColumn(targetRow, entries[17], "Biological Role", String.class);
-			
-			addListColumn(sourceRow, entries[18], "Experimental Role", String.class);
-			addListColumn(targetRow, entries[19], "Experimental Role", String.class);
+//			addListColumn(sourceRow, entries[16], "Biological Role", String.class);
+//			addListColumn(targetRow, entries[17], "Biological Role", String.class);
+//			
+//			addListColumn(sourceRow, entries[18], "Experimental Role", String.class);
+//			addListColumn(targetRow, entries[19], "Experimental Role", String.class);
 
 			addListColumn(sourceRow, entries[20], INTERACTOR_TYPE, String.class);
 			addListColumn(targetRow, entries[21], INTERACTOR_TYPE, String.class);
@@ -268,8 +266,8 @@ public class InteractionClusterMapper {
 			addSimpleListColumn(sourceRow, entries[36], "Features");
 			addSimpleListColumn(targetRow, entries[38], "Features");
 			
-			addListColumn(sourceRow, entries[40], "Participant Detection Method", String.class);
-			addListColumn(targetRow, entries[41], "Participant Detection Method", String.class);
+//			addListColumn(sourceRow, entries[40], "Participant Detection Method", String.class);
+//			addListColumn(targetRow, entries[41], "Participant Detection Method", String.class);
 		}
 	}
 
@@ -643,6 +641,13 @@ public class InteractionClusterMapper {
 		
 		// For MITAB 2.7
 		if(entries.length > 15) {
+			addListColumn(row, entries[16], "Source Biological Role", String.class);
+			addListColumn(row, entries[17], "Target Biological Role", String.class);
+			addListColumn(row, entries[18], "Source Experimental Role", String.class);
+			addListColumn(row, entries[19], "Target Experimental Role", String.class);
+			addListColumn(row, entries[40], "Source Participant Detection Method", String.class);
+			addListColumn(row, entries[41], "Target Participant Detection Method", String.class);
+			
 			addListColumn(row, entries[15], "Complex Expansion", String.class);
 			addListColumn(row, entries[24], "Xref", String.class);
 			

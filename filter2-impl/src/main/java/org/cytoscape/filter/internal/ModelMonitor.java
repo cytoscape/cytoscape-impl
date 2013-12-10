@@ -11,6 +11,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.swing.JComponent;
+
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.filter.internal.attribute.AttributeFilter;
@@ -660,5 +662,10 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		} finally {
 			lock.writeLock().unlock();
 		}
+	}
+
+	public void unregisterView(JComponent elementView) {
+		degreeViews.remove(elementView);
+		attributeViews.remove(elementView);
 	}
 }

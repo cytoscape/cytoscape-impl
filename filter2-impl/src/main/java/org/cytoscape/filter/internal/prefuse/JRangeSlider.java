@@ -408,12 +408,12 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		g2.setColor(getBackground());
 		g2.fillRect(0, 0, width, height);
 		g2.setColor(getForeground());
+		g2.setStroke(new BasicStroke(1));
 		g2.drawRect(0, 0, width, height);
 
 		customPaint(g2, width, height);
 
 		// Draw arrow and thumb backgrounds
-		g2.setStroke(new BasicStroke(1));
 
 		if (orientation == VERTICAL) {
 			if (direction == LEFTRIGHT_TOPBOTTOM) {

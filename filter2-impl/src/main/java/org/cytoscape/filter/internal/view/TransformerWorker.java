@@ -46,7 +46,10 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			return;
 		}
 		
+		sink.resetCounts();
 		controller.setProgress(0, view);
+		controller.setStatus(view, null);
+		long startTime = System.currentTimeMillis();
 		try {
 			List<Transformer<CyNetwork, CyIdentifiable>> transformers = controller.getTransformers(view);
 			FilterElement selected = (FilterElement) controller.getStartWithComboBoxModel().getSelectedItem();
@@ -56,7 +59,15 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			transformerManager.execute(network, source, transformers, sink);
 			networkView.updateView();
 		} finally {
+			long duration = System.currentTimeMillis() - startTime;
 			controller.setProgress(1.0, view);
+			controller.setStatus(view, String.format("Selected %d %s and %d %s in %dms",
+					sink.nodeCount,
+					sink.nodeCount == 1 ? "node" : "nodes",
+					sink.edgeCount,
+					sink.edgeCount == 1 ? "edge" : "edges",
+					duration));
+
 			isCancelled = false;
 		}
 	}
@@ -148,10 +159,23 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 	
 	static class Sink implements TransformerSink<CyIdentifiable> {
 		CyNetwork network;
-
+		int nodeCount;
+		int edgeCount;
+		
 		@Override
 		public void collect(CyIdentifiable element) {
+			if (element instanceof CyNode) {
+				nodeCount++;
+			} else if (element instanceof CyEdge) {
+				edgeCount++;
+			}
+			
 			network.getRow(element).set(CyNetwork.SELECTED, true);
+		}
+		
+		void resetCounts() {
+			nodeCount = 0;
+			edgeCount = 0;
 		}
 	}
 }

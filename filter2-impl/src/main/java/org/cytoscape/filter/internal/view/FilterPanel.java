@@ -21,8 +21,13 @@ import org.cytoscape.model.CyNetwork;
 
 @SuppressWarnings("serial")
 public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelController> {
+	
 	private CompositeFilterPanel root;
 	private JButton outdentButton;
+	private JButton indentButton;
+	private JButton deleteButton;
+	private JButton selectAllButton;
+	private JButton deselectAllButton;
 	private JCheckBox applyAutomaticallyCheckBox;
 
 	public FilterPanel(final FilterPanelController controller, IconManager iconManager, final FilterWorker worker) {
@@ -43,15 +48,14 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		
 		setLayout(new GridBagLayout());
 		int row = 0;
-		add(namedElementComboBox, new GridBagConstraints(0, row, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		add(optionsLabel, new GridBagConstraints(1, row++, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
-
-		add(applyAutomaticallyCheckBox, new GridBagConstraints(0, row++, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(namedElementComboBox, new GridBagConstraints(0, row, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		add(optionsButton, new GridBagConstraints(2, row++, 1, 1, 0, 0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
 
 		Component editPanel = createEditPanel(createButtons());
-		add(editPanel, new GridBagConstraints(0, row++, 2, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		add(editPanel, new GridBagConstraints(0, row++, 3, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 		
-		add(applyPanel, new GridBagConstraints(0, row++, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		add(applyAutomaticallyCheckBox, new GridBagConstraints(0, row++, 3, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		add(applyPanel, new GridBagConstraints(0, row++, 3, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 		
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		FilterElement element = (FilterElement) model.getSelectedItem();
@@ -73,11 +77,14 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 	}
 
 	JButton[] createButtons() {
-		Font arrowFont = iconManager.getIconFont(16.0f);
-		Font iconFont = iconManager.getIconFont(17.0f);
+		Font arrowFont = iconManager.getIconFont(20.0f);
+		Font iconFont = iconManager.getIconFont(22.0f);
 
 		outdentButton = new JButton(IconManager.ICON_CARET_LEFT);
+		styleToolBarButton(outdentButton);
 		outdentButton.setFont(arrowFont);
+		outdentButton.setToolTipText("Outdent selected conditions");
+		outdentButton.setEnabled(false);
 		outdentButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -85,8 +92,11 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 			}
 		});
 		
-		JButton indentButton = new JButton(IconManager.ICON_CARET_RIGHT);
+		indentButton = new JButton(IconManager.ICON_CARET_RIGHT);
+		styleToolBarButton(indentButton);
 		indentButton.setFont(arrowFont);
+		indentButton.setToolTipText("Indent selected conditions");
+		indentButton.setEnabled(false);
 		indentButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -94,8 +104,11 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 			}
 		});
 		
-		JButton deleteButton = new JButton(IconManager.ICON_TRASH);
+		deleteButton = new JButton(IconManager.ICON_TRASH);
+		styleToolBarButton(deleteButton);
 		deleteButton.setFont(iconFont);
+		deleteButton.setToolTipText("Delete selected conditions");
+		deleteButton.setEnabled(false);
 		deleteButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -103,19 +116,36 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 			}
 		});
 		
-		JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
+		selectAllButton = new JButton(IconManager.ICON_CHECK + " " + IconManager.ICON_CHECK);
+		styleToolBarButton(selectAllButton);
+		selectAllButton.setFont(iconFont.deriveFont(iconFont.getSize()/2.0f));
+		selectAllButton.setToolTipText("Select all conditions");
+		selectAllButton.setEnabled(false);
+		selectAllButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				controller.handleCancel(FilterPanel.this);
+				controller.handleSelectAll(FilterPanel.this);
+			}
+		});
+		
+		deselectAllButton = new JButton(IconManager.ICON_CHECK_EMPTY + " " + IconManager.ICON_CHECK_EMPTY);
+		styleToolBarButton(deselectAllButton);
+		deselectAllButton.setFont(iconFont.deriveFont(iconFont.getSize()/2.0f));
+		deselectAllButton.setToolTipText("Deselect all conditions");
+		deselectAllButton.setEnabled(false);
+		deselectAllButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				controller.handleDeselectAll(FilterPanel.this);
 			}
 		});
 		
 		return new JButton[] {
 			outdentButton,
 			indentButton,
+			selectAllButton,
+			deselectAllButton,
 			deleteButton,
-			cancelButton,
 		};
 	}
 	
@@ -136,7 +166,24 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 	public JButton getOutdentButton() {
 		return outdentButton;
 	}
+	
+	public JButton getIndentButton() {
+		return indentButton;
+	}
+	
+	public JButton getDeleteButton() {
+		return deleteButton;
+	}
+	
+	public JButton getSelectAllButton() {
+		return selectAllButton;
+	}
+	
+	public JButton getDeselectAllButton() {
+		return deselectAllButton;
+	}
 
+	@Override
 	public Component getEditPanel() {
 		return editControlPanel;
 	}

@@ -1,18 +1,21 @@
 package org.cytoscape.filter.internal.view;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelUtil;
 import org.cytoscape.filter.internal.composite.CompositeTransformerPanel;
-import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerComboBoxElement;
+import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
@@ -23,14 +26,18 @@ import org.cytoscape.work.TaskManager;
 public class TransformerPanelController extends AbstractPanelController<TransformerElement, TransformerPanel> {
 	private TransformerManager transformerManager;
 	private TransformerViewManager transformerViewManager;
+	private IconManager iconManager;
 	private DynamicComboBoxModel<FilterElement> startWithComboBoxModel;
 	
-	public TransformerPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager, FilterPanelController filterPanelController, TransformerWorker worker, FilterIO filterIo, TaskManager<?, ?> taskManager) {
+	public TransformerPanelController(TransformerManager transformerManager, 
+			TransformerViewManager transformerViewManager, FilterPanelController filterPanelController, 
+			TransformerWorker worker, FilterIO filterIo, TaskManager<?, ?> taskManager, IconManager iconManager) {
 		super(worker, filterIo, taskManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
+		this.iconManager = iconManager;
 
 		List<FilterElement> items = new ArrayList<FilterElement>();
 		items.add(new FilterElement("(Current Selection)", null));
@@ -54,30 +61,30 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	}
 	
 	@Override
-	protected TransformerElement createDefaultElement() {
-		return new TransformerElement("(Create New Chain...)", null);
-	}
-
-	@Override
 	protected void handleDelete(TransformerPanel panel) {
 		CompositeTransformerPanel root = panel.getRootPanel();
 		root.deleteSelected();
-		totalSelected = 0;
 		updateEditPanel(panel);
 		root.updateLayout();
 	}
 
 	@Override
-	protected void handleCancel(TransformerPanel panel) {
+	protected void handleSelectAll(TransformerPanel panel) {
+		CompositeTransformerPanel root = panel.getRootPanel();
+		root.selectAll();
+		updateEditPanel(panel);
+	}
+	
+	@Override
+	protected void handleDeselectAll(TransformerPanel panel) {
 		CompositeTransformerPanel root = panel.getRootPanel();
 		root.deselectAll();
-		totalSelected = 0;
 		updateEditPanel(panel);
 	}
 
 	@Override
 	protected void handleElementSelected(TransformerElement selected, TransformerPanel panel) {
-		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.chain);
+		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.chain, iconManager);
 		panel.setRootPanel(root);
 	}
 
@@ -163,8 +170,16 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	
 	@Override
 	protected void validateEditPanel(TransformerPanel panel) {
-		panel.shiftUpButton.setEnabled(canShiftUp(panel));
-		panel.shiftDownButton.setEnabled(canShiftDown(panel));
+		panel.getShiftUpButton().setEnabled(canShiftUp(panel));
+		panel.getShiftDownButton().setEnabled(canShiftDown(panel));
+		
+		CompositeTransformerPanel root = panel.getRootPanel();
+		int totalSelected = root.countSelected();
+		int totalUnselected = root.countUnselected();
+		
+		panel.getDeleteButton().setEnabled(totalSelected > 0);
+		panel.getSelectAllButton().setEnabled(totalUnselected > 0);
+		panel.getDeselectAllButton().setEnabled(totalSelected > 0);
 	}
 	
 	@Override
@@ -199,6 +214,21 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	}
 
 	@Override
+	protected String getCreateMenuLabel() {
+		return "Create new filter chain";
+	}
+	
+	@Override
+	protected String getDeleteMenuLabel() {
+		return "Remove current filter chain";
+	}
+	
+	@Override
+	protected String getRenameMenuLabel() {
+		return "Rename current filter chain";
+	}
+	
+	@Override
 	protected String getExportLabel() {
 		return "Export filter chains...";
 	}
@@ -208,25 +238,33 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		return "Import filter chains...";
 	}
 	
-	public ComboBoxModel createChainComboBoxModel() {
-		return new DynamicComboBoxModel<TransformerComboBoxElement>(transformerViewManager.getChainComboBoxModel());
+	public JPopupMenu createAddChainEntryMenu(final CompositeTransformerPanel panel, final TransformerPanel transformerPanel) {
+		JPopupMenu menu = new JPopupMenu();
+		
+		for (final TransformerViewElement element : transformerViewManager.getChainTransformerViewElements()) {
+			JMenuItem mi = new JMenuItem(element.toString());
+			mi.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					handleAddTransformer(element, panel, transformerPanel);
+				}
+			});
+			menu.add(mi);
+		}
+		
+		return menu;
 	}
 	
 	public ComboBoxModel getStartWithComboBoxModel() {
 		return startWithComboBoxModel;
 	}
 
-	public void handleAddTransformer(JComboBox comboBox, CompositeTransformerPanel panel) {
-		if (comboBox.getSelectedIndex() == 0) {
-			return;
-		}
-		
-		TransformerComboBoxElement selectedItem = (TransformerComboBoxElement) comboBox.getSelectedItem();
-		
-		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(selectedItem.getId());
+	private void handleAddTransformer(TransformerViewElement element, CompositeTransformerPanel panel, TransformerPanel transformerPanel) {
+		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(element.getId());
 		panel.addTransformer(transformer);
 		panel.updateLayout();
-		comboBox.setSelectedIndex(0);
+		
+		validateEditPanel(transformerPanel);
 	}
 
 	public JComponent createView(TransformerPanel transformerPanel, Transformer<CyNetwork, CyIdentifiable> transformer) {
@@ -299,5 +337,9 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 			i++;
 		}
 		return namedTransformers;
+	}
+	
+	@Override
+	public void unregisterView(JComponent elementView) {
 	}
 }

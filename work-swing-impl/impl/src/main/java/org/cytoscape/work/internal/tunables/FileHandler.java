@@ -25,32 +25,6 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -61,6 +35,15 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -81,7 +64,6 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	private JTextField fileTextField;
 	private ImageIcon image;
 	private JLabel titleLabel;
-	private MouseClick mouseClick;
 	private GroupLayout layout;
 	private SupportedFileTypesManager fileTypesManager;
 	private boolean input;
@@ -102,7 +84,7 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	 *
 	 * @param field the field that has been annotated
 	 * @param obj object contained in <code>field</code>
-	 * @param tunable the tunable associated to <code>field</code>
+	 * @param t the tunable associated to <code>field</code>
 	 * @param fileTypesManager
 	 */
 	public FileHandler(final Field field, final Object obj, final Tunable t,
@@ -128,11 +110,19 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 		final String fileCategory = getFileCategory();
 		final DataCategory dataCategory = DataCategory.valueOf(fileCategory.toUpperCase());
 		filters = fileTypesManager.getSupportedFileTypes(dataCategory, input);
-		defaultString = "Please select a " + dataCategory.getDisplayName().toLowerCase() + " file...";
+		String displayName = dataCategory.getDisplayName().toLowerCase();
+		String a = isVowel( displayName.charAt(0) ) ? "an" : "a";
+		defaultString = "Please select " + a + " " + displayName + " file...";
 
 		setGui();
 		setLayout();
 		panel.setLayout(layout);
+	}
+
+	private boolean isVowel(char ch){
+		ch=Character.toLowerCase(ch);
+		return ch=='a' ||ch=='e' ||ch=='i' ||ch=='o' ||ch=='u';
+
 	}
 
 	/**
@@ -146,7 +136,19 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 			if (fileTextField.getText().equals(defaultString) || fileTextField.getText().isEmpty() )
 				setValue(null);
 			else
-				setValue(new File(fileTextField.getText()));
+			{
+				String path = fileTextField.getText();
+				File file = null;
+				if( path.contains(System.getProperty("file.separator")) )
+				{
+					file = new File(path);
+				}
+				else
+				{
+					file = new File(System.getProperty("user.home"), path);
+				}
+				setValue(file);
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -180,12 +182,10 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 1, 5));
 		image = new ImageIcon(getClass().getResource("/images/ximian/stock_open.png"));
 		fileTextField = new JTextField();
-		fileTextField.setName("fileTextField");
-		fileTextField.setEditable(true);
+		fileTextField.setEditable(false);
+		fileTextField.setBackground(Color.LIGHT_GRAY);
 		fileTextField.setFont(new Font(null, Font.ITALIC,12));
-		mouseClick = new MouseClick(fileTextField);
-		fileTextField.addMouseListener(mouseClick);
-		chooseButton = new JButton(input ? "Open a File..." : "Save a File...", image);
+		chooseButton = new JButton(input ? "Open a File..." : "Browse...", image);
 		chooseButton.setActionCommand(input ? "open" : "save");
 		chooseButton.addActionListener(new myFileActionListener());
 
@@ -310,21 +310,7 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 			if (file != null) {
 				fileTextField.setFont(FILE_NAME_FONT);
 				fileTextField.setText(file.getAbsolutePath());
-				fileTextField.removeMouseListener(mouseClick);
 			}
-		}
-	}
-
-	//click on the field : removes its initial text
-	private class MouseClick extends MouseAdapter implements MouseListener{
-		JComponent component;
-
-		public MouseClick(JComponent component) {
-			this.component = component;
-		}
-
-		public void mouseClicked(MouseEvent e) {
-			((JTextField)component).setText("");
 		}
 	}
 

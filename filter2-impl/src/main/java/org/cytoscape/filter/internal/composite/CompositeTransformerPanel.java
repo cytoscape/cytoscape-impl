@@ -9,15 +9,16 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.Group;
 import javax.swing.GroupLayout.ParallelGroup;
-import javax.swing.JComboBox;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
+import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
@@ -28,21 +29,29 @@ import org.cytoscape.model.CyNetwork;
 
 @SuppressWarnings("serial")
 public class CompositeTransformerPanel extends JPanel {
+	
+	public static final Color SELECTED_BACKGROUND_COLOR = new Color(222, 234, 252);
+	public static final Color UNSELECTED_BACKGROUND_COLOR = Color.WHITE;
+	
 	private Map<Transformer<CyNetwork, CyIdentifiable>, TransformerElementViewModel<TransformerPanel>> viewModels;
 	private GroupLayout layout;
-	private final JComboBox addComboBox;
+	private final JButton addButton;
 	private TransformerPanel parent;
 	private TransformerPanelController transformerPanelController;
 	private List<Transformer<CyNetwork, CyIdentifiable>> model;
+	private final IconManager iconManager;
 	
-	public CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController, List<Transformer<CyNetwork, CyIdentifiable>> model) {
-		this(parent, transformerPanelController, new Controller(), model);
+	public CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController, 
+			List<Transformer<CyNetwork, CyIdentifiable>> model, IconManager iconManager) {
+		this(parent, transformerPanelController, new Controller(), model, iconManager);
 	}
 	
-	CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController, final Controller controller, List<Transformer<CyNetwork, CyIdentifiable>> model) {
+	CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController,
+			final Controller controller, List<Transformer<CyNetwork, CyIdentifiable>> model, IconManager iconManager) {
 		this.parent = parent;
 		this.transformerPanelController = transformerPanelController;
 		this.model = model;
+		this.iconManager = iconManager;
 		
 		ViewUtil.configureFilterView(this);
 		setBorder(BorderFactory.createEmptyBorder());
@@ -51,7 +60,7 @@ public class CompositeTransformerPanel extends JPanel {
 		layout = new GroupLayout(this);
 		setLayout(layout);
 
-		addComboBox = createChainComboBox(transformerPanelController.createChainComboBoxModel());
+		addButton = createAddChainEntryButton();
 
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
 			JComponent component = transformerPanelController.createView(parent, transformer);
@@ -60,41 +69,47 @@ public class CompositeTransformerPanel extends JPanel {
 		}
 	}
 	
-	JComboBox createChainComboBox(ComboBoxModel model) {
-		final JComboBox comboBox = new JComboBox(model);
-		comboBox.addActionListener(new ActionListener() {
+	JButton createAddChainEntryButton() {
+		final JButton button = new JButton(IconManager.ICON_PLUS);
+		button.setFont(iconManager.getIconFont(12.0f));
+		button.setToolTipText("Add new chain entry...");
+		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				transformerPanelController.handleAddTransformer(comboBox, CompositeTransformerPanel.this);
+				JPopupMenu menu = transformerPanelController.createAddChainEntryMenu(CompositeTransformerPanel.this, parent);
+				menu.show(button, 0, button.getHeight());
 			}
 		});
-		return comboBox;
+		return button;
 	}
 
 	public void updateLayout() {
 		removeAll();
 
-		Group columns = layout.createParallelGroup(Alignment.LEADING, true);
-		Group rows = layout.createSequentialGroup();
+		final ParallelGroup checkBoxGroup = layout.createParallelGroup(Alignment.LEADING);
+		final ParallelGroup viewGroup = layout.createParallelGroup(Alignment.LEADING);
 		
-		ParallelGroup checkBoxGroup = layout.createParallelGroup(Alignment.LEADING);
-		ParallelGroup viewGroup = layout.createParallelGroup(Alignment.LEADING);
-		columns.addGroup(layout.createSequentialGroup()
-							   .addGroup(checkBoxGroup)
-							   .addGroup(viewGroup));
+		final Group columns = layout.createParallelGroup(Alignment.LEADING, true)
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(checkBoxGroup)
+						.addGroup(viewGroup));
+		final Group rows = layout.createSequentialGroup();
 		
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
-			TransformerElementViewModel<TransformerPanel> viewModel = viewModels.get(transformer);
+			final TransformerElementViewModel<TransformerPanel> viewModel = viewModels.get(transformer);
+			
 			checkBoxGroup.addComponent(viewModel.checkBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE);
 			viewGroup.addComponent(viewModel.view, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE);
 			
 			rows.addGroup(layout.createParallelGroup(Alignment.LEADING)
-								.addComponent(viewModel.checkBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+								.addGroup(layout.createSequentialGroup()
+										.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING)
+										.addComponent(viewModel.checkBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE))
 								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 		}
 		
-		viewGroup.addComponent(addComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
-		rows.addComponent(addComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+		columns.addComponent(addButton);
+		rows.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING).addComponent(addButton);
 		
 		layout.setHorizontalGroup(columns);
 		layout.setVerticalGroup(rows);
@@ -119,13 +134,42 @@ public class CompositeTransformerPanel extends JPanel {
 		viewModels.put(transformer, viewModel);
 	}
 
+	public void selectAll() {
+		for (TransformerElementViewModel<TransformerPanel> viewModel : viewModels.values()) {
+			if (!viewModel.checkBox.isSelected()) {
+				viewModel.checkBox.setSelected(true);
+				viewModel.view.setBackground(SELECTED_BACKGROUND_COLOR);
+			}
+		}
+	}
+	
 	public void deselectAll() {
 		for (TransformerElementViewModel<TransformerPanel> viewModel : viewModels.values()) {
 			if (viewModel.checkBox.isSelected()) {
 				viewModel.checkBox.setSelected(false);
-				viewModel.view.setBackground(Color.white);
+				viewModel.view.setBackground(UNSELECTED_BACKGROUND_COLOR);
 			}
 		}
+	}
+	
+	public int countSelected() {
+		int count = 0;
+		for (TransformerElementViewModel<TransformerPanel> viewModel : viewModels.values()) {
+			if (viewModel.checkBox.isSelected()) {
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	public int countUnselected() {
+		int count = 0;
+		for (TransformerElementViewModel<TransformerPanel> viewModel : viewModels.values()) {
+			if (!viewModel.checkBox.isSelected()) {
+				count++;
+			}
+		}
+		return count;
 	}
 
 	public void deleteSelected() {
@@ -141,7 +185,10 @@ public class CompositeTransformerPanel extends JPanel {
 
 	private void removeTransformer(int index) {
 		Transformer<CyNetwork, CyIdentifiable> transformer = model.remove(index);
-		viewModels.remove(transformer);
+		TransformerElementViewModel<TransformerPanel> model = viewModels.remove(transformer);
+		if (model != null && model.view != null) {
+			transformerPanelController.unregisterView(model.view);
+		}
 	}
 	
 	public List<Transformer<CyNetwork, CyIdentifiable>> getModel() {

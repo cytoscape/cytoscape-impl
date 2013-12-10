@@ -24,41 +24,32 @@ package org.cytoscape.ding.impl.editor;
  * #L%
  */
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendImpl;
 import org.cytoscape.ding.impl.DEdgeView;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.SavePolicy;
+import org.cytoscape.ding.impl.InnerCanvas;
+import org.cytoscape.model.*;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-import org.cytoscape.ding.impl.InnerCanvas;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
 public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
@@ -75,6 +66,8 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 	private final CyNetworkFactory cyNetworkFactory;
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final RenderingEngineFactory<CyNetwork> presentationFactory;
+
+	private boolean editCancelled = false;
 
 	public EdgeBendValueEditor(final CyNetworkFactory cyNetworkFactory,
 			final CyNetworkViewFactory cyNetworkViewFactory, final RenderingEngineFactory<CyNetwork> presentationFactory) {
@@ -94,10 +87,56 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		
 		
 		this.setModal(true);
+
+		this.addWindowListener( new WindowListener()
+		{
+			@Override
+			public void windowOpened(WindowEvent e)
+			{
+
+			}
+
+			@Override
+			public void windowClosing(WindowEvent e)
+			{
+				editCancelled = true;
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e)
+			{
+
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e)
+			{
+
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e)
+			{
+
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e)
+			{
+
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e)
+			{
+
+			}
+		});
 	}
 
 	private void initUI(final CyNetworkFactory cyNetworkFactory,
-			final CyNetworkViewFactory cyNetworkViewFactory, final RenderingEngineFactory<CyNetwork> presentationFactory) {
+			final CyNetworkViewFactory cyNetworkViewFactory, final RenderingEngineFactory<CyNetwork> presentationFactory,
+			Bend startBend) {
 		
 		this.getContentPane().removeAll();
 		
@@ -154,9 +193,11 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		edgeView.setVisualProperty(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_COLOR);
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_CURVED, true);
-		
-		final Bend newBend = new BendImpl();
-		edgeView.setVisualProperty(DVisualLexicon.EDGE_BEND, newBend);
+
+		//TODO: Here is where we can start re-using the existing edge bends and trying to display them properly in the editor.
+//		if( startBend == null )
+        startBend = new BendImpl();
+		edgeView.setVisualProperty(DVisualLexicon.EDGE_BEND, startBend);
 		
 		
 		dummyview.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
@@ -184,6 +225,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		final JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				editCancelled = true;
 				dispose();
 			}
 		});
@@ -198,12 +240,13 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
 	@Override
 	public <S extends Bend> Bend showEditor(Component parent, S initialValue) {
-		initUI(cyNetworkFactory, cyNetworkViewFactory, presentationFactory);
+		editCancelled = false;
+		initUI(cyNetworkFactory, cyNetworkViewFactory, presentationFactory, initialValue);
 		EditMode.setMode(true);
 		this.setLocationRelativeTo(parent);
 		this.setVisible(true);
 		EditMode.setMode(false);
-		return edgeView.getBend();
+		return editCancelled ? null : edgeView.getBend();
 	}
 
 	@Override

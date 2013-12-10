@@ -44,6 +44,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
+import org.cytoscape.event.CyEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -180,44 +181,50 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setCurrentNetwork(final CyNetwork network) {
-		boolean changed = false;
+		List<CyEvent<?>> eventsToFire = new ArrayList<CyEvent<?>>();
 		
 		lock.writeLock().lock();
 		try {
-			if (network != null && !networkManager.networkExists(network.getSUID()))
-				throw new IllegalArgumentException("Network is not registered in this ApplicationManager: " + network);
-
-			logger.info("Set current network called: " + network);
-			changed = (network == null && currentNetwork != null) || (network != null && !network.equals(currentNetwork));
-			
-			if (changed) {
-				currentNetwork = network;
-				
-				if (network != null) {
-					// If the new current network is not selected, reset the selection and select the current one only
-					if (!getSelectedNetworks().contains(network))
-						setSelectedNetworks(Collections.singletonList(network));
-					
-					// Set new current network view, unless the current view's model is already the new current network
-					final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-					
-					if (!views.contains(currentNetworkView))
-						setCurrentNetworkView(views.isEmpty() ? null : views.iterator().next());
-				} else {
-					if (currentNetworkView != null)
-						setCurrentNetworkView(null);
-				}
-			}
+			internalSetCurrentNetwork(network, eventsToFire);
 		} finally {
 			lock.writeLock().unlock();
 		}
 
-		if (changed) {
-			logger.debug("Current network is set. Firing SetCurrentNetworkEvent: " + network);
-			cyEventHelper.fireEvent(new SetCurrentNetworkEvent(this, currentNetwork));
+		for (CyEvent<?> event : eventsToFire) {
+			cyEventHelper.fireEvent(event);
 		}
 	}
 
+	private void internalSetCurrentNetwork(CyNetwork network, List<CyEvent<?>> eventsToFire) {
+		if (network != null && !networkManager.networkExists(network.getSUID()))
+			throw new IllegalArgumentException("Network is not registered in this ApplicationManager: " + network);
+
+		logger.info("Set current network called: " + network);
+		boolean changed = (network == null && currentNetwork != null) || (network != null && !network.equals(currentNetwork));
+		
+		if (changed) {
+			currentNetwork = network;
+			
+			if (network != null) {
+				// If the new current network is not selected, reset the selection and select the current one only
+				if (!getSelectedNetworks().contains(network))
+					internalSetSelectedNetworks(Collections.singletonList(network), eventsToFire);
+				
+				// Set new current network view, unless the current view's model is already the new current network
+				final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+				
+				if (!views.contains(currentNetworkView))
+					internalSetCurrentNetworkView(views.isEmpty() ? null : views.iterator().next(), eventsToFire);
+			} else {
+				if (currentNetworkView != null)
+					internalSetCurrentNetworkView(null, eventsToFire);
+			}
+
+			logger.debug("Current network is set. Firing SetCurrentNetworkEvent: " + network);
+			eventsToFire.add(new SetCurrentNetworkEvent(this, currentNetwork));
+		}
+	}
+	
 	@Override
 	public CyNetworkView getCurrentNetworkView() {
 		lock.readLock().lock();
@@ -230,39 +237,45 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setCurrentNetworkView(final CyNetworkView view) {
-		boolean changed = false;
-		
+		List<CyEvent<?>> eventsToFire = new ArrayList<CyEvent<?>>();
+
 		lock.writeLock().lock();
 		try {
-			if (view != null && !networkManager.networkExists(view.getModel().getSUID()))
-				throw new IllegalArgumentException("network is not recognized by this ApplicationManager");
-
-			logger.debug("Set current network view called: " + view);
-
-			changed = (view == null && currentNetworkView != null) || (view != null && !view.equals(currentNetworkView));
-
-			if (changed) {
-				currentNetworkView = view;
-				
-				if (view != null) {
-					// If the new current view is not selected, reset selected views and select the current one only
-					if (!selectedNetworkViews.contains(view))
-						setSelectedNetworkViews(Collections.singletonList(view));
-					
-					if (!view.getModel().equals(currentNetwork))
-						setCurrentNetwork(view.getModel());
-				}
-			}
+			internalSetCurrentNetworkView(view, eventsToFire);
 		} finally {
 			lock.writeLock().unlock();
 		}
 
-		if (changed) {
-			logger.debug("Current network view is set. Firing SetCurrentNetworkViewEvent: " + view);
-			cyEventHelper.fireEvent(new SetCurrentNetworkViewEvent(this, currentNetworkView));
+		for (CyEvent<?> event : eventsToFire) {
+			cyEventHelper.fireEvent(event);
 		}
 	}
 
+	private void internalSetCurrentNetworkView(final CyNetworkView view, List<CyEvent<?>> eventsToFire) {
+		if (view != null && !networkManager.networkExists(view.getModel().getSUID()))
+			throw new IllegalArgumentException("network is not recognized by this ApplicationManager");
+
+		logger.debug("Set current network view called: " + view);
+
+		boolean changed = (view == null && currentNetworkView != null) || (view != null && !view.equals(currentNetworkView));
+
+		if (changed) {
+			currentNetworkView = view;
+			
+			if (view != null) {
+				// If the new current view is not selected, reset selected views and select the current one only
+				if (!selectedNetworkViews.contains(view))
+					internalSetSelectedNetworkViews(Collections.singletonList(view), eventsToFire);
+				
+				if (!view.getModel().equals(currentNetwork))
+					internalSetCurrentNetwork(view.getModel(), eventsToFire);
+			}
+
+			logger.debug("Current network view is set. Firing SetCurrentNetworkViewEvent: " + view);
+			eventsToFire.add(new SetCurrentNetworkViewEvent(this, currentNetworkView));
+		}
+	}
+	
 	@Override
 	public List<CyNetworkView> getSelectedNetworkViews() {
 		lock.readLock().lock();
@@ -275,23 +288,32 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setSelectedNetworkViews(final List<CyNetworkView> networkViews) {
+		List<CyEvent<?>> eventsToFire = new ArrayList<CyEvent<?>>();
+
 		lock.writeLock().lock();
 		try {
-			selectedNetworkViews.clear();
-			
-			if (networkViews != null)
-				selectedNetworkViews.addAll(networkViews);
-
-			if (currentNetworkView != null && !selectedNetworkViews.contains(currentNetworkView))
-				selectedNetworkViews.add(currentNetworkView);
+			internalSetSelectedNetworkViews(networkViews, eventsToFire);
 		} finally {
 			lock.writeLock().unlock();
 		}
 
-		cyEventHelper.fireEvent(new SetSelectedNetworkViewsEvent(this,
-		                                                         new ArrayList<CyNetworkView>(selectedNetworkViews)));
+		for (CyEvent<?> event : eventsToFire) {
+			cyEventHelper.fireEvent(event);
+		}
 	}
 
+	private void internalSetSelectedNetworkViews(List<CyNetworkView> networkViews, List<CyEvent<?>> eventsToFire) {
+		selectedNetworkViews.clear();
+		
+		if (networkViews != null)
+			selectedNetworkViews.addAll(networkViews);
+
+		if (currentNetworkView != null && !selectedNetworkViews.contains(currentNetworkView))
+			selectedNetworkViews.add(currentNetworkView);
+		
+		eventsToFire.add(new SetSelectedNetworkViewsEvent(this, new ArrayList<CyNetworkView>(selectedNetworkViews)));
+	}
+	
 	@Override
 	public List<CyNetwork> getSelectedNetworks() {
 		final Set<CyNetwork> allNetworks = networkManager.getNetworkSet();
@@ -309,22 +331,31 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setSelectedNetworks(final List<CyNetwork> networks) {
-		Set<CyNetwork> selectedNetworks = networks != null ? new LinkedHashSet<CyNetwork>(networks)
-				: new LinkedHashSet<CyNetwork>();
+		List<CyEvent<?>> eventsToFire = new ArrayList<CyEvent<?>>();
 		
 		lock.writeLock().lock();
 		try {
-			if (currentNetwork != null)
-				selectedNetworks.add(currentNetwork);
-			
-			selectedNetworks = selectNetworks(selectedNetworks);
+			internalSetSelectedNetworks(networks, eventsToFire);
 		} finally {
 			lock.writeLock().unlock();
 		}
 
-		cyEventHelper.fireEvent(new SetSelectedNetworksEvent(this, new ArrayList<CyNetwork>(selectedNetworks)));
+		for (CyEvent<?> event : eventsToFire) {
+			cyEventHelper.fireEvent(event);
+		}
 	}
 
+	private void internalSetSelectedNetworks(List<CyNetwork> networks, List<CyEvent<?>> eventsToFire) {
+		Set<CyNetwork> selectedNetworks = networks != null ? new LinkedHashSet<CyNetwork>(networks)
+				: new LinkedHashSet<CyNetwork>();
+		if (currentNetwork != null)
+			selectedNetworks.add(currentNetwork);
+		
+		selectedNetworks = selectNetworks(selectedNetworks);
+		
+		eventsToFire.add(new SetSelectedNetworksEvent(this, new ArrayList<CyNetwork>(selectedNetworks)));
+	}
+	
 	@Override
 	public RenderingEngine<CyNetwork> getCurrentRenderingEngine() {
 		return currentRenderingEngine;

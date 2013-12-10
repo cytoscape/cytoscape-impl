@@ -333,7 +333,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		cancelButton = new javax.swing.JButton();
 		clearSelectionButton = new JButton();
 		selectAllButton = new JButton();
-		clusterResultCheckBox = new JCheckBox("Merge results into one network");
+		clusterResultCheckBox = new JCheckBox("Automatic Network Merge (Experimental)");
 		clusterResultCheckBox.setSelected(false);
 
 		resultScrollPane.setBackground(java.awt.Color.white);
@@ -372,7 +372,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 			}
 		});
 
-		clusterResultCheckBox.setToolTipText("<html><h3>Cluster to single network</h3></html>");
+		clusterResultCheckBox.setToolTipText("<html><h3>Cluster all networks into single network</h3></html>");
 
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
 		buttonPanel.setLayout(buttonPanelLayout);
@@ -654,7 +654,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 				final Integer edgeCount = network.getEdgeCount();
 				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
 			}
-			builder.append("</ul><br><h3>Do you want to merge these networks?</h3></html>");
+			builder.append("</ul><br><h3>Do you want to manually merge networks?</h3></html>");
 
 			int selection = JOptionPane.showConfirmDialog(this, builder.toString(), "Import Finished", JOptionPane.YES_NO_OPTION, 
 					JOptionPane.INFORMATION_MESSAGE);

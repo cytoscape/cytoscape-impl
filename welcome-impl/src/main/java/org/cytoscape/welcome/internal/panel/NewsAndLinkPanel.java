@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.CyVersion;
@@ -116,9 +117,14 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 				"Latest News", TitledBorder.LEFT, TitledBorder.CENTER, REGULAR_FONT, REGULAR_FONT_COLOR));
 		
 		add(linkPanel);
-        JScrollPane statusScrollPane = new JScrollPane(statusPanel);
-		add(statusScrollPane);
-		
+        JScrollPane sp = new JScrollPane(statusPanel);
+		sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        sp.setOpaque(false);
+		sp.setBorder( BorderFactory.createEmptyBorder() );
+		sp.getViewport().setOpaque(false);
+		sp.setViewportBorder( BorderFactory.createEmptyBorder() );
+		add(sp);
 	}
 
 	private final class LabelMouseListener extends MouseAdapter {
