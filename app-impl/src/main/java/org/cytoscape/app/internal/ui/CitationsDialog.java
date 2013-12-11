@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.Comparator;
 
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.MalformedURLException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -226,7 +227,10 @@ class PubMedParser {
   protected Document xmlRequest(final String url) throws ParserConfigurationException, MalformedURLException, IOException, SAXException {
     if (xmlParser == null)
       xmlParser = newXmlParser();
-    final InputStream inputStream = new URL(url).openConnection().getInputStream();
+    final URLConnection connection = new URL(url).openConnection();
+    connection.setUseCaches(false);
+    connection.connect();
+    final InputStream inputStream = connection.getInputStream();
     final Document doc = xmlParser.parse(inputStream);
     inputStream.close();
     return doc;
