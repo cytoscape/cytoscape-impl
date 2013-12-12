@@ -146,6 +146,19 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 			}
 			
 		}
+		if(!isTableGlobal(table.getSelectedValue()))
+		{
+			if(mergeType.getPossibleValues().size() > 1)
+				mergeType = new ListSingleSelection<String>(COPY_COLUMNS);
+		}
+		else
+		{
+			if(mergeType.getPossibleValues().size() < 2)
+			{
+				mergeType = new ListSingleSelection<String>(COPY_COLUMNS,LINK_COLUMNS);
+				mergeType.setSelectedValue(COPY_COLUMNS);
+			}
+		}
 		sourceTable = table;
 	}
 	
@@ -197,7 +210,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.sourceMergeKey = key;
 	}
 	
-	@Tunable(description="Type of merge",gravity=0.5, groups={"Source Data Table"})
+	@Tunable(description="Type of merge",gravity=0.5, groups={"Source Data Table"}, listenForChange={"SourceTable"})
 	public ListSingleSelection<String> mergeType;
 
 	
@@ -319,9 +332,6 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	private final void initTunable(CyTableManager tabelMgr,CyNetworkManager networkManager) {
 		
-		mergeType = new ListSingleSelection<String>(COPY_COLUMNS,LINK_COLUMNS);
-		mergeType.setSelectedValue(COPY_COLUMNS);
-		
 		List<CyTable> listOfTables = new ArrayList<CyTable>();
 		List<Object> listOfUTables = new ArrayList<Object>();
 		for ( CyTable tempTable : tabelMgr.getGlobalTables()) 
@@ -384,6 +394,13 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		}
 		
 		sourceTable = new ListSingleSelection<CyTable>(listOfTables);
+		if(!isTableGlobal(sourceTable.getSelectedValue()))
+			mergeType = new ListSingleSelection<String>(COPY_COLUMNS);
+		else
+		{
+			mergeType = new ListSingleSelection<String>(COPY_COLUMNS,LINK_COLUMNS);
+			mergeType.setSelectedValue(COPY_COLUMNS);
+		}
 		sourceMergeColumns = getColumns(sourceTable.getSelectedValue());
 		sourceMergeKey = getColumnsWithNames(sourceTable.getSelectedValue());
 		if(listOfUTables.size()>1)
@@ -405,9 +422,14 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListSingleSelection<String> getColumns(CyNetwork network, TableType tableType, String namespace) {
 		CyTable selectedTable = getTable(network, tableType, CyRootNetwork.SHARED_ATTRS);
 
+		String tempName;
 		List<String> colNames = new ArrayList<String>();
 		for (CyColumn col : selectedTable.getColumns())
-			colNames.add(col.getName());
+		{
+			tempName = col.getName();
+			if(!tempName.matches(CyRootNetwork.SUID)  && !tempName.matches(CyRootNetwork.SELECTED))
+				colNames.add(tempName);
+		}
 
 		ListSingleSelection<String> columns = new ListSingleSelection<String>(colNames);
 		columns.setSelectedValue(CyRootNetwork.SHARED_NAME);
@@ -688,6 +710,20 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		}
 		
 		return listTables;
+	}
+	
+	private boolean isTableGlobal(CyTable table)
+	{
+		
+		for ( CyTable tempTable : tableMgr.getGlobalTables()) 
+		{
+			if(tempTable.equals(table))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	private TableType getDataTypeOptions()
