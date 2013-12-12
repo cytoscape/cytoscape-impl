@@ -88,7 +88,7 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 				if ((ns = isNamespace(input)) != null) {
 					handleCommand(input, ns);
 				} else {
-					throw new RuntimeException("Unknown command: "+input);
+					throw new RuntimeException("Failed to find command namespace: '"+input+"'");
 				}
 			}
 		} catch (RuntimeException e) {
@@ -99,8 +99,10 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 
 	private String isNamespace(String input) {
 		String namespace = null;
+		// Namespaces must always be single word
+		String [] splits = input.split(" ");
 		for (String ns: availableCommands.getNamespaces()) {
-			if (input.toLowerCase().startsWith(ns.toLowerCase()) && 
+			if (splits[0].equalsIgnoreCase(ns) && 
 			    (namespace == null || ns.length() > namespace.length()))
 				namespace = ns;
 		}
@@ -123,11 +125,11 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		}
 
 		if (sub == null && (comm != null && comm.length() > 0))
-			throw new IllegalArgumentException("Unknown command: "+comm);
+			throw new RuntimeException("Failed to find command: '" + comm +"' (from namespace: " + ns + ")");
 		
 		Map<String, Object> modifiedSettings = new HashMap<String, Object>();
 		// Now check the arguments
-		List<String> argList = availableCommands.getArguments(ns,  comm);
+		List<String> argList = availableCommands.getArguments(ns,  sub);
 		for (String inputArg: settings.keySet()) {
 			boolean found = false;
 			for (String arg: argList) {
@@ -139,7 +141,7 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 				}
 			}
 			if (!found)
-				throw new IllegalArgumentException("Unknown argument: "+inputArg);
+				throw new RuntimeException("Argument: '"+inputArg+" isn't applicable to command: '"+ns+" "+comm+"'");
 		}
 		
 		processingCommand = true;
@@ -151,7 +153,7 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		*/
 		// CyCommandManager.execute(ns, sub, settings);
 		taskManager.execute(
-			commandExecutor.createTaskIterator(ns, comm, modifiedSettings, this), 
+			commandExecutor.createTaskIterator(ns, sub, modifiedSettings, this), 
 		  this);
 	}
 
