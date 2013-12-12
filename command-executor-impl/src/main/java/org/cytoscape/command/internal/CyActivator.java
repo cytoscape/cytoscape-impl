@@ -76,22 +76,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		CommandTunableInterceptorImpl interceptor = new CommandTunableInterceptorImpl();
 		
-		CommandExecutorImpl commandExecutorImpl = new CommandExecutorImpl(cyApplicationManagerServiceRef, interceptor, dynamicTaskFactoryProvisionerServiceRef);
-		CommandExecutorTaskFactoryImpl commandExecutorTaskFactory = new CommandExecutorTaskFactoryImpl(commandExecutorImpl,tunableSetterServiceRef);
-		
-		
-		Properties commandExecutorTaskFactoryProps = new Properties();
-		commandExecutorTaskFactoryProps.setProperty(ID,"commandExecutorTaskFactory");
-		registerService(bc,commandExecutorTaskFactory,TaskFactory.class, commandExecutorTaskFactoryProps);
-		registerService(bc,commandExecutorTaskFactory,CommandExecutorTaskFactory.class, commandExecutorTaskFactoryProps);
-
-		registerServiceListener(bc,commandExecutorImpl,"addTaskFactory","removeTaskFactory",TaskFactory.class);
-		registerServiceListener(bc,commandExecutorImpl,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
-		registerServiceListener(bc,commandExecutorImpl,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
-		registerServiceListener(bc,commandExecutorImpl,"addNetworkViewCollectionTaskFactory","removeNetworkViewCollectionTaskFactory",NetworkViewCollectionTaskFactory.class);
-		registerServiceListener(bc,commandExecutorImpl,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
-
-		registerServiceListener(bc,interceptor,"addTunableHandlerFactory","removeTunableHandlerFactory",StringTunableHandlerFactory.class);
 
 		StringTunableHandlerFactory<FileTunableHandler> fileTHF = new SimpleStringTunableHandlerFactory<FileTunableHandler>(FileTunableHandler.class, File.class);
 		StringTunableHandlerFactory<IntTunableHandler> intTHF = new SimpleStringTunableHandlerFactory<IntTunableHandler>(IntTunableHandler.class, Integer.class, int.class);
@@ -157,6 +141,23 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,cla,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
 		registerServiceListener(bc,cla,"addNetworkViewCollectionTaskFactory","removeNetworkViewCollectionTaskFactory",NetworkViewCollectionTaskFactory.class);
 		registerServiceListener(bc,cla,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
+
+		CommandExecutorImpl commandExecutorImpl = new CommandExecutorImpl(cyApplicationManagerServiceRef, interceptor, cla, dynamicTaskFactoryProvisionerServiceRef);
+		CommandExecutorTaskFactoryImpl commandExecutorTaskFactory = new CommandExecutorTaskFactoryImpl(commandExecutorImpl,tunableSetterServiceRef);
+		
+		
+		Properties commandExecutorTaskFactoryProps = new Properties();
+		commandExecutorTaskFactoryProps.setProperty(ID,"commandExecutorTaskFactory");
+		registerService(bc,commandExecutorTaskFactory,TaskFactory.class, commandExecutorTaskFactoryProps);
+		registerService(bc,commandExecutorTaskFactory,CommandExecutorTaskFactory.class, commandExecutorTaskFactoryProps);
+
+		registerServiceListener(bc,commandExecutorImpl,"addTaskFactory","removeTaskFactory",TaskFactory.class);
+		registerServiceListener(bc,commandExecutorImpl,"addNetworkTaskFactory","removeNetworkTaskFactory",NetworkTaskFactory.class);
+		registerServiceListener(bc,commandExecutorImpl,"addNetworkViewTaskFactory","removeNetworkViewTaskFactory",NetworkViewTaskFactory.class);
+		registerServiceListener(bc,commandExecutorImpl,"addNetworkViewCollectionTaskFactory","removeNetworkViewCollectionTaskFactory",NetworkViewCollectionTaskFactory.class);
+		registerServiceListener(bc,commandExecutorImpl,"addTableTaskFactory","removeTableTaskFactory",TableTaskFactory.class);
+
+		registerServiceListener(bc,interceptor,"addTunableHandlerFactory","removeTunableHandlerFactory",StringTunableHandlerFactory.class);
 	}
 }
 
