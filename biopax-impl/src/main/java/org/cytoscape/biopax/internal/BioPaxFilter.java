@@ -99,7 +99,7 @@ public class BioPaxFilter extends BasicCyFileFilter {
 	@Override
 	public boolean accepts(URI uri, DataCategory category) {		
 		try {
-			return super.accepts(uri, category) && accepts(streamUtil.getInputStream(uri.toURL()), category);
+			return accepts(streamUtil.getInputStream(uri.toURL()), category);
 		} catch (IOException e) {
 			return false;
 		}
