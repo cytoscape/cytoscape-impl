@@ -53,7 +53,7 @@ public class BioPaxFilter extends BasicCyFileFilter {
 	 */
 	public BioPaxFilter(StreamUtil streamUtil) {
 		super(
-				new String[] { "xml", "owl", "rdf" }, 
+				new String[] { "xml", "owl", "rdf", "" }, 
 				new String[] { "text/xml", "application/rdf+xml", "application/xml", "text/plain" }, 
 				"BioPAX data", 
 				DataCategory.NETWORK, 
@@ -99,7 +99,7 @@ public class BioPaxFilter extends BasicCyFileFilter {
 	@Override
 	public boolean accepts(URI uri, DataCategory category) {		
 		try {
-			return accepts(streamUtil.getInputStream(uri.toURL()), category);
+			return super.accepts(uri, category) && accepts(streamUtil.getInputStream(uri.toURL()), category);
 		} catch (IOException e) {
 			return false;
 		}
