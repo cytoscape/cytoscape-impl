@@ -60,7 +60,7 @@ public class EdgeTunable {
 
 	public List<CyEdge> getEdgeList() {
 		if (edgeList == null || edgeList.getValue() == null) 
-			getNetwork().getEdgeList();
+			return getNetwork().getEdgeList();
 		return edgeList.getValue();
 	}
 }
