@@ -33,7 +33,9 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
+import au.com.bytecode.opencsv.CSVReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,12 +111,15 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	 * @param source
 	 *            Source file URL (can be remote or local)
 	 * @param objectType
-	 * @param delimiter
+	 * @param delimiters
 	 * @param listDelimiter
-	 * @param key
-	 * @param aliases
-	 * @param columnNames
-	 * @param toBeImported
+	 * @param keyIndex
+	 * @param mappingAttribute
+	 * @param aliasIndexList
+	 * @param attributeNames
+	 * @param attributeTypes
+	 * @param importFlag
+	 * @param startLineNumber
 	 * @throws Exception
 	 */
 	public DefaultAttributeTableReader(final URL source, final ObjectType objectType,
@@ -190,39 +195,67 @@ public class DefaultAttributeTableReader implements TextTableReader {
 				is = URLUtil.getInputStream(source);				
 			}
 			try {
-				String line;
+
+				//This data is shared by both the OpenCSV and the old method of reading files.
 				int lineCount = 0;
-				
 				bufRd = new BufferedReader(new InputStreamReader(is,Charset.forName("UTF-8").newDecoder()));
 				/*
 				 * Read & extract one line at a time. The line can be Tab delimited,
 				 */
-				String[] parts = null;
-
 				final String delimiter = mapping.getDelimiterRegEx();
-				while ((line = bufRd.readLine()) != null) {
-					/*
-					 * Ignore Empty & Commnet lines.
-					 */
-					if ((commentChar != null) && line.startsWith(commentChar)) {
-						// Do nothing
-					} else if ((lineCount >= startLineNumber) && (line.trim().length() > 0)) {
-						parts = line.split(delimiter);
+
+				//If the delimiter contains a comma, treat the file as a CSV file.
+				if( delimiter.contains(TextFileDelimiters.COMMA.toString()) )
+				{
+					//Use OpenCSV.. New method...
+					CSVReader reader = new CSVReader(bufRd);
+					String [] rowData; //Note that rowData is roughly equivalent to "parts" in the old code.
+					while ((rowData = reader.readNext()) != null)
+					{
 						// If key dos not exists, ignore the line.
-						if(parts.length>=mapping.getKeyIndex()+1) {
+						if(lineCount >= startLineNumber && rowData.length>=mapping.getKeyIndex()+1) {
 							try {
-							//if(importAll) {
-								parser.parseAll(table, parts);
-							//} else
-							//	parser.parseEntry(table, parts);
+								//if(importAll) {
+								parser.parseAll(table, rowData);
+								//} else
+								//	parser.parseEntry(table, parts);
 							} catch (Exception ex) {
-								logger.warn("Couldn't parse row: "+ lineCount);
+								logger.warn("Couldn't parse row from OpenCSV: "+ lineCount);
 							}
 							globalCounter++;
 						}
+						lineCount++;
 					}
 
-					lineCount++;
+				}
+				else //Use the "old" method for splitting the lines.
+				{
+					String line;
+					String[] parts = null;
+					while ((line = bufRd.readLine()) != null) {
+						/*
+						 * Ignore Empty & Commnet lines.
+						 */
+						if ((commentChar != null) && line.startsWith(commentChar)) {
+							// Do nothing
+						} else if ((lineCount >= startLineNumber) && (line.trim().length() > 0)) {
+							parts = line.split(delimiter);
+							// If key dos not exists, ignore the line.
+							if(parts.length>=mapping.getKeyIndex()+1) {
+								try {
+								//if(importAll) {
+									parser.parseAll(table, parts);
+								//} else
+								//	parser.parseEntry(table, parts);
+								} catch (Exception ex) {
+									logger.warn("Couldn't parse row: "+ lineCount);
+								}
+								globalCounter++;
+							}
+						}
+
+						lineCount++;
+					}
 				}
 			}
 			finally {
