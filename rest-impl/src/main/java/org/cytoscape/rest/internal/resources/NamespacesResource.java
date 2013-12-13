@@ -15,7 +15,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.rest.RESTResource;
+import org.cytoscape.rest.internal.RESTResource;
 import org.cytoscape.rest.internal.handlers.MessageHandler;
 import org.cytoscape.rest.internal.handlers.TextHTMLHandler;
 import org.cytoscape.rest.internal.handlers.TextPlainHandler;

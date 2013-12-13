@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.rest.RESTResource;
+import org.cytoscape.rest.internal.RESTResource;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
