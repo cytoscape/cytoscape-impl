@@ -1,18 +1,17 @@
 package org.cytoscape.filter.internal.view;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 
 import org.cytoscape.filter.internal.FilterIO;
-import org.cytoscape.filter.internal.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.tasks.ExportNamedTransformersTask;
 import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTask;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -36,6 +35,9 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	protected AbstractWorker<?, ?> worker;
 	protected FilterIO filterIo;
 	TaskManager<?, ?> taskManager;
+	JComponent lastHoveredComponent;
+
+	List<Integer> lastSelectedPath;
 
 	public AbstractPanelController(AbstractWorker<?, ?> worker, FilterIO filterIo, TaskManager<?, ?> taskManager) {
 		this.worker = worker;
@@ -213,19 +215,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		namedElementComboBoxModel.notifyChanged(0, 0);
 	}
 	
-	protected void handleCheck(V panel, JCheckBox checkBox, JComponent view) {
-		if (checkBox.isSelected()) {
-			view.setBackground(CompositeTransformerPanel.SELECTED_BACKGROUND_COLOR);
-		} else {
-			view.setBackground(CompositeTransformerPanel.UNSELECTED_BACKGROUND_COLOR);
-		}
-		updateEditPanel(panel);
-	}
-	
-	protected void updateEditPanel(V panel) {
-		validateEditPanel(panel);
-	}
-
 	public void setProgress(double progress, V panel) {
 		boolean done = progress == 1.0;
 		
@@ -267,13 +256,29 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		view.setStatus(message);
 	}
 
-	protected abstract T createElement(String name);
+	public JComponent getLastHoveredComponent() {
+		return lastHoveredComponent;
+	}
 
-	protected abstract void handleDelete(V view);
+	public void setLastHoveredComponent(JComponent component) {
+		lastHoveredComponent = component;
+	}
 
-	protected abstract void handleSelectAll(V view);
+	boolean isParentOrSelf(JComponent source, Component target) {
+		while (target != null) {
+			if (source == target) {
+				return true;
+			}
+			target = target.getParent();
+		}
+		return false;
+	}
+
+	public void setLastSelectedComponent(V view, JComponent component) {
+		lastSelectedPath = getPath(view, component);
+	}
 	
-	protected abstract void handleDeselectAll(V view);
+	protected abstract T createElement(String name);
 
 	protected abstract void handleElementSelected(T selected, V view);
 
@@ -299,12 +304,22 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected abstract void synchronize(V view);
 
-	protected abstract void validateEditPanel(V view);
-	
 	public abstract void unregisterView(JComponent elementView);
 	
 	public abstract void addNamedTransformers(V view, NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();
+	
+	public abstract List<Integer> getPath(V view, JComponent component);
+	
+	public abstract JComponent getChild(V view, List<Integer> path);
+	
+	public abstract boolean supportsDrop(V view, JComponent source, JComponent target);
+	
+	public abstract void handleDrop(V view, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath);
+	
+	public abstract void handleContextMenuDelete(V view);
+	
+	public abstract String getDeleteContextMenuLabel();
 }
 

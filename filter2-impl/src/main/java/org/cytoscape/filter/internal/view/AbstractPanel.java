@@ -10,8 +10,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -24,7 +22,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
 @SuppressWarnings({ "serial", "rawtypes" })
-public class AbstractPanel<T extends NamedElement, C extends AbstractPanelController> extends JPanel implements SelectPanelComponent {
+public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPanelController> extends JPanel implements SelectPanelComponent {
 	protected IconManager iconManager;
 	
 	protected C controller;
@@ -41,6 +39,7 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 	protected JButton applyButton;
 	protected JComponent cancelApplyButton;
 	protected JProgressBar progressBar;
+	protected JPopupMenu handleContextMenu;
 
 	protected JLabel statusLabel;
 	
@@ -144,6 +143,8 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		progressBar = new JProgressBar();
 		progressBar.setMinimum(0);
 		progressBar.setMaximum(AbstractPanelController.PROGRESS_BAR_MAXIMUM);
+		
+		handleContextMenu = createHandleContextMenu();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -156,25 +157,13 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		menu.show(c, 0, c.getHeight());
 	}
 	
-	private void createEditControlPanel(JButton... buttons) {
-		JPanel panel = new JPanel();
-		BoxLayout layout = new BoxLayout(panel, BoxLayout.X_AXIS);
-		panel.setLayout(layout);
-	
-		for (JButton button : buttons) {
-			panel.add(Box.createHorizontalStrut(5));
-			panel.add(button);
-			panel.add(Box.createHorizontalStrut(5));
-		}
-		
-		editControlPanel = panel;
+	public void showHandleContextMenu(Handle handle) {
+		handleContextMenu.show(handle, 0, handle.getHeight());
 	}
 	
-	protected Component createEditPanel(JButton... buttons) {
+	protected Component createEditPanel() {
 		JPanel panel = new JPanel();
 		panel.setBorder(BorderFactory.createEtchedBorder());
-		
-		createEditControlPanel(buttons);
 		
 		scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -182,7 +171,6 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		panel.setLayout(new GridBagLayout());
 		
 		int row = 0;
-		panel.add(editControlPanel, new GridBagConstraints(0, row++, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		panel.add(scrollPane, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 		
 		return panel;
@@ -246,5 +234,20 @@ public class AbstractPanel<T extends NamedElement, C extends AbstractPanelContro
 		btn.setOpaque(false);
 		btn.setFocusPainted(false);
 		btn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+	}
+	
+	JPopupMenu createHandleContextMenu() {
+		JMenuItem deleteMenu = new JMenuItem(controller.getDeleteContextMenuLabel());
+		deleteMenu.addActionListener(new ActionListener() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				controller.handleContextMenuDelete(AbstractPanel.this);
+			}
+		});
+		
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(deleteMenu);
+		return menu;
 	}
 }

@@ -14,6 +14,9 @@ import javax.swing.border.Border;
 import javax.swing.text.NumberFormatter;
 
 public class ViewUtil {
+	public static final Color SELECTED_BACKGROUND_COLOR = new Color(222, 234, 252);
+	public static final Color UNSELECTED_BACKGROUND_COLOR = Color.WHITE;
+	
 	public static final int INTERNAL_VERTICAL_PADDING = 4;
 	
 	public static final Border COMPOSITE_PANEL_BORDER = BorderFactory.createCompoundBorder(
@@ -21,7 +24,7 @@ public class ViewUtil {
 			BorderFactory.createEmptyBorder(INTERNAL_VERTICAL_PADDING, 0, INTERNAL_VERTICAL_PADDING, 0));
 	
 	public static void configureFilterView(JComponent component) {
-		component.setBackground(Color.WHITE);
+		component.setBackground(UNSELECTED_BACKGROUND_COLOR);
 		component.setBorder(COMPOSITE_PANEL_BORDER);
 	}
 	

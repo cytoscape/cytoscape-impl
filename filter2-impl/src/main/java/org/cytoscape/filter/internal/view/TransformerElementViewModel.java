@@ -1,24 +1,25 @@
 package org.cytoscape.filter.internal.view;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.dnd.DropTarget;
 
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
+import org.cytoscape.filter.internal.composite.CompositeSeparator;
+
 public class TransformerElementViewModel<V extends SelectPanelComponent> {
-	public final JCheckBox checkBox;
 	public final JComponent view;
+	public final JComponent handle;
+	public final V parent;
+	public final JComponent separator;
 	
-	public TransformerElementViewModel(final JComponent view, final AbstractPanelController<?, V> controller, final V parent) {
+	public TransformerElementViewModel(final JComponent view, final AbstractPanelController<?, V> controller, final V parent, IconManager iconManager) {
 		this.view = view;
-		this.checkBox = new JCheckBox();
+		this.parent  = parent;
 		
-		checkBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleCheck(parent, checkBox, view);
-			}
-		});
+		handle = new Handle<V>(iconManager, parent, controller);
+		separator = new CompositeSeparator();
+		
+		new DropTarget(view, new DragHandler<V>(view, controller, parent, handle));
+		new DropTarget(separator, new DragHandler<V>(separator, controller, parent, null));
 	}
 }

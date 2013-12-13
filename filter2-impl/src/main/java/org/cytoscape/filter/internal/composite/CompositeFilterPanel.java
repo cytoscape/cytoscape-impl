@@ -1,5 +1,6 @@
 package org.cytoscape.filter.internal.composite;
 
+import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
 
+import org.cytoscape.filter.internal.view.DragHandler;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
@@ -47,6 +49,7 @@ public class CompositeFilterPanel extends JPanel {
 	private FilterPanel parent;
 	private CompositeFilter<CyNetwork, CyIdentifiable> model;
 	private final IconManager iconManager;
+	private JComponent separator; 
 	
 	public CompositeFilterPanel(FilterPanel parent, FilterPanelController filterPanelController, 
 			final CompositeFilter<CyNetwork, CyIdentifiable> model, int depth, IconManager iconManager) {
@@ -61,6 +64,9 @@ public class CompositeFilterPanel extends JPanel {
 		this.depth = depth;
 		this.model = model;
 		this.iconManager = iconManager;
+		
+		separator = new CompositeSeparator();
+		new DropTarget(separator, new DragHandler<FilterPanel>(separator, filterPanelController, parent, null));
 
 		ViewUtil.configureFilterView(this);
 		
@@ -82,7 +88,7 @@ public class CompositeFilterPanel extends JPanel {
 		for (int i = 0; i < model.getLength(); i++) {
 			Filter<CyNetwork, CyIdentifiable> filter = model.get(i);
 			JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-			TransformerElementViewModel<FilterPanel> viewModel = new TransformerElementViewModel<FilterPanel>(component, filterPanelController, parent);
+			TransformerElementViewModel<FilterPanel> viewModel = new TransformerElementViewModel<FilterPanel>(component, filterPanelController, parent, iconManager);
 			viewModels.put(filter, viewModel);
 		}
 	}
@@ -93,79 +99,6 @@ public class CompositeFilterPanel extends JPanel {
 		} else {
 			setBorder(NO_BORDER);
 		}
-	}
-
-	public void selectAll() {
-		for (TransformerElementViewModel<FilterPanel> viewModel : viewModels.values()) {
-			if (!viewModel.checkBox.isSelected()) {
-				viewModel.checkBox.setSelected(true);
-				viewModel.view.setBackground(CompositeTransformerPanel.SELECTED_BACKGROUND_COLOR);
-			}
-			if (viewModel.view instanceof CompositeFilterPanel) {
-				CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
-				panel.selectAll();
-			}
-		}
-	}
-	
-	public void deselectAll() {
-		for (TransformerElementViewModel<FilterPanel> viewModel : viewModels.values()) {
-			if (viewModel.checkBox.isSelected()) {
-				viewModel.checkBox.setSelected(false);
-				viewModel.view.setBackground(CompositeTransformerPanel.UNSELECTED_BACKGROUND_COLOR);
-			}
-			if (viewModel.view instanceof CompositeFilterPanel) {
-				CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
-				panel.deselectAll();
-			}
-		}
-	}
-
-	public void deleteSelected() {
-		int index = 0;
-		while (index < model.getLength()) {
-			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(index));
-			if (viewModel.checkBox.isSelected()) {
-				removeFilter(index--);
-			} else {
-				if (viewModel.view instanceof CompositeFilterPanel) {
-					CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
-					panel.deleteSelected();
-					if (panel.getModel().getLength() == 0) {
-						removeFilter(index--);
-					}
-				}
-			}
-			index++;
-		}
-	}
-	
-	public int countSelected() {
-		int count = 0, index = 0;
-		while (index < model.getLength()) {
-			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(index));
-			if (viewModel.checkBox.isSelected()) {
-				count++;
-			} else if (viewModel.view instanceof CompositeFilterPanel) {
-				count += ((CompositeFilterPanel)viewModel.view).countSelected();
-			}
-			index++;
-		}
-		return count;
-	}
-	
-	public int countUnselected() {
-		int count = 0, index = 0;
-		while (index < model.getLength()) {
-			TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(index));
-			if (!viewModel.checkBox.isSelected()) {
-				count++;
-			} else if (viewModel.view instanceof CompositeFilterPanel) {
-				count += ((CompositeFilterPanel)viewModel.view).countUnselected();
-			}
-			index++;
-		}
-		return count;
 	}
 
 	public void updateLayout() {
@@ -183,8 +116,14 @@ public class CompositeFilterPanel extends JPanel {
 		}
 		
 		columns.addGroup(layout.createSequentialGroup()
+				.addGap(4)
 				.addGroup(checkBoxGroup)
+				.addGap(4)
 				.addGroup(viewGroup));
+		
+		int separatorHeight = 5;
+		viewGroup.addComponent(separator);
+		rows.addComponent(separator, separatorHeight, separatorHeight, separatorHeight);
 		
 		for (int i = 0; i < model.getLength(); i++) {
 			final TransformerElementViewModel<FilterPanel> viewModel = getViewModel(model.get(i));
@@ -192,15 +131,17 @@ public class CompositeFilterPanel extends JPanel {
 				CompositeFilterPanel panel = (CompositeFilterPanel) viewModel.view;
 				panel.updateLayout();
 			}
-			
-			checkBoxGroup.addComponent(viewModel.checkBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE);
-			viewGroup.addComponent(viewModel.view, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE);
+
+			checkBoxGroup.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE);
+			viewGroup.addComponent(viewModel.view, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
+					 .addComponent(viewModel.separator);
 			
 			rows.addGroup(layout.createParallelGroup(Alignment.LEADING)
 								.addGroup(layout.createSequentialGroup()
 										.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING)
-										.addComponent(viewModel.checkBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE))
+										.addComponent(viewModel.handle, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))
 								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
+			rows.addComponent(viewModel.separator, separatorHeight, separatorHeight, separatorHeight);
 		}
 		
 		columns.addComponent(addButton);
@@ -237,7 +178,7 @@ public class CompositeFilterPanel extends JPanel {
 
 	public void addFilter(Filter<CyNetwork, CyIdentifiable> filter) {
 		JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-		final TransformerElementViewModel<FilterPanel> viewModel = new TransformerElementViewModel<FilterPanel>(component, filterPanelController, parent);
+		final TransformerElementViewModel<FilterPanel> viewModel = new TransformerElementViewModel<FilterPanel>(component, filterPanelController, parent, iconManager);
 		addViewModel(filter, viewModel);
 	}
 
@@ -267,11 +208,22 @@ public class CompositeFilterPanel extends JPanel {
 	public void removeFilter(int index) {
 		Filter<CyNetwork, CyIdentifiable> filter = model.remove(index);
 		TransformerElementViewModel<FilterPanel> model = viewModels.remove(filter);
-		if (model != null && model.view != null) {
-			filterPanelController.unregisterView(model.view);
+		if (model == null || model.view == null) {
+			return;
+		}
+		
+		filterPanelController.unregisterView(model.view);
+		if (model.view instanceof CompositeFilterPanel) {
+			((CompositeFilterPanel) model.view).removeAllFilters();
 		}
 	}
 
+	void removeAllFilters() {
+		while (model.getLength() > 0) {
+			removeFilter(0);
+		}
+	}
+	
 	public Collection<TransformerElementViewModel<FilterPanel>> getViewModels() {
 		return viewModels.values();
 	}
@@ -294,6 +246,10 @@ public class CompositeFilterPanel extends JPanel {
 		public ComboBoxModel getCombiningMethodComboBoxModel() {
 			return new DynamicComboBoxModel<CombiningMethodElement>(combiningMethods);
 		}
+	}
+	
+	public JComponent getSeparator() {
+		return separator;
 	}
 	
 	static class CombiningMethodElement {

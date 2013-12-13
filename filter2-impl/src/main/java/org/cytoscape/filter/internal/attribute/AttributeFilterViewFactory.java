@@ -269,6 +269,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		public View(final Controller controller, IconManager iconManager) {
 			this.controller = controller;
 			selectedAttribute = SelectedAttributeType.NONE;
+			optionsExpanded = true;
 			
 			ViewUtil.configureFilterView(this);
 			

@@ -3,6 +3,7 @@ package org.cytoscape.filter.internal.view;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.ComboBoxModel;
@@ -14,6 +15,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelUtil;
+import org.cytoscape.filter.internal.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.model.Filter;
@@ -61,28 +63,6 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	}
 	
 	@Override
-	protected void handleDelete(TransformerPanel panel) {
-		CompositeTransformerPanel root = panel.getRootPanel();
-		root.deleteSelected();
-		updateEditPanel(panel);
-		root.updateLayout();
-	}
-
-	@Override
-	protected void handleSelectAll(TransformerPanel panel) {
-		CompositeTransformerPanel root = panel.getRootPanel();
-		root.selectAll();
-		updateEditPanel(panel);
-	}
-	
-	@Override
-	protected void handleDeselectAll(TransformerPanel panel) {
-		CompositeTransformerPanel root = panel.getRootPanel();
-		root.deselectAll();
-		updateEditPanel(panel);
-	}
-
-	@Override
 	protected void handleElementSelected(TransformerElement selected, TransformerPanel panel) {
 		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.chain, iconManager);
 		panel.setRootPanel(root);
@@ -92,96 +72,6 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	protected void synchronize(TransformerPanel panel) {
 	}
 
-	boolean canShiftUp(TransformerPanel panel) {
-		int totalUnselected = 0;
-		CompositeTransformerPanel root = panel.getRootPanel();
-		for (Transformer<CyNetwork, CyIdentifiable> transformer : root.getModel()) {
-			TransformerElementViewModel<TransformerPanel> viewModel = root.getViewModel(transformer);
-			if (!viewModel.checkBox.isSelected()) {
-				totalUnselected++;
-			} else {
-				if (totalUnselected > 0) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	boolean canShiftDown(TransformerPanel panel) {
-		int totalSelected = 0;
-		CompositeTransformerPanel root = panel.getRootPanel();
-		for (Transformer<CyNetwork, CyIdentifiable> transformer : root.getModel()) {
-			TransformerElementViewModel<TransformerPanel> viewModel = root.getViewModel(transformer);
-			if (viewModel.checkBox.isSelected()) {
-				totalSelected++;
-			} else {
-				if (totalSelected > 0) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	public void handleShiftUp(TransformerPanel panel) {
-		boolean canShift = false;
-		CompositeTransformerPanel root = panel.getRootPanel();
-		List<Transformer<CyNetwork, CyIdentifiable>> model = root.getModel();
-		
-		int index = 0;
-		while (index < model.size()) {
-			Transformer<CyNetwork, CyIdentifiable> transformer = model.get(index);
-			TransformerElementViewModel<TransformerPanel> viewModel = root.getViewModel(transformer);
-			if (viewModel.checkBox.isSelected()) {
-				if (canShift) {
-					model.add(index - 1, model.remove(index));
-				}
-			} else {
-				canShift = true;
-			}
-			index++;
-		}
-		root.updateLayout();
-		updateEditPanel(panel);
-	}
-
-	public void handleShiftDown(TransformerPanel panel) {
-		boolean canShift = false;
-		CompositeTransformerPanel root = panel.getRootPanel();
-		List<Transformer<CyNetwork, CyIdentifiable>> model = root.getModel();
-		
-		int index = model.size() - 1;
-		while (index >= 0) {
-			Transformer<CyNetwork, CyIdentifiable> transformer = model.get(index);
-			TransformerElementViewModel<TransformerPanel> viewModel = root.getViewModel(transformer);
-			if (viewModel.checkBox.isSelected()) {
-				if (canShift) {
-					model.add(index + 1, model.remove(index));
-				}
-			} else {
-				canShift = true;
-			}
-			index--;
-		}
-		root.updateLayout();
-		updateEditPanel(panel);
-	}
-	
-	@Override
-	protected void validateEditPanel(TransformerPanel panel) {
-		panel.getShiftUpButton().setEnabled(canShiftUp(panel));
-		panel.getShiftDownButton().setEnabled(canShiftDown(panel));
-		
-		CompositeTransformerPanel root = panel.getRootPanel();
-		int totalSelected = root.countSelected();
-		int totalUnselected = root.countUnselected();
-		
-		panel.getDeleteButton().setEnabled(totalSelected > 0);
-		panel.getSelectAllButton().setEnabled(totalUnselected > 0);
-		panel.getDeselectAllButton().setEnabled(totalSelected > 0);
-	}
-	
 	@Override
 	protected TransformerElement createElement(String name) {
 		ArrayList<Transformer<CyNetwork, CyIdentifiable>> chain = new ArrayList<Transformer<CyNetwork, CyIdentifiable>>();
@@ -238,6 +128,11 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		return "Import filter chains...";
 	}
 	
+	@Override
+	public String getDeleteContextMenuLabel() {
+		return "Delete this chain entry";
+	}
+	
 	public JPopupMenu createAddChainEntryMenu(final CompositeTransformerPanel panel, final TransformerPanel transformerPanel) {
 		JPopupMenu menu = new JPopupMenu();
 		
@@ -263,8 +158,6 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(element.getId());
 		panel.addTransformer(transformer);
 		panel.updateLayout();
-		
-		validateEditPanel(transformerPanel);
 	}
 
 	public JComponent createView(TransformerPanel transformerPanel, Transformer<CyNetwork, CyIdentifiable> transformer) {
@@ -341,5 +234,84 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	
 	@Override
 	public void unregisterView(JComponent elementView) {
+	}
+	
+	
+	@Override
+	public List<Integer> getPath(TransformerPanel view, JComponent component) {
+		CompositeTransformerPanel root = view.getRootPanel();
+		if (root == component) {
+			return Collections.emptyList();
+		}
+		
+		List<Transformer<CyNetwork, CyIdentifiable>> model = root.getModel();
+		int index = 0;
+		if (root.getSeparator() == component) {
+			return Collections.singletonList(-1);
+		}
+		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
+			TransformerElementViewModel<TransformerPanel> viewModel = root.getViewModel(transformer);
+			if (viewModel.view == component || viewModel.separator == component || viewModel.handle == component) {
+				return Collections.singletonList(index);
+			}
+			index++;
+		}
+		return null;
+	}
+	
+	@Override
+	public JComponent getChild(TransformerPanel view, List<Integer> path) {
+		CompositeTransformerPanel root = view.getRootPanel();
+		if (path.isEmpty()) {
+			return root;
+		}
+		if (path.size() > 1) {
+			return null;
+		}
+		Transformer<CyNetwork, CyIdentifiable> transformer = root.getModel().get(path.get(0));
+		TransformerElementViewModel<TransformerPanel> viewModel = root.getViewModel(transformer);
+		return viewModel.view;
+	}
+	
+	@Override
+	public boolean supportsDrop(TransformerPanel parent, JComponent source, JComponent target) {
+		return target instanceof CompositeSeparator;
+	}
+	
+	@Override
+	public void handleDrop(TransformerPanel parent, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath) {
+		CompositeTransformerPanel root = parent.getRootPanel();
+		try {
+			int sourceIndex = sourcePath.get(sourcePath.size() - 1);
+			List<Transformer<CyNetwork, CyIdentifiable>> model = root.getModel();
+			Transformer<CyNetwork, CyIdentifiable> transformer = model.remove(sourceIndex);
+			
+			int targetIndex = targetPath.get(targetPath.size() - 1) + 1;
+			if (sourceIndex < targetIndex) {
+				targetIndex--;
+			}
+			model.add(targetIndex, transformer);
+		} finally {
+			root.updateLayout();
+		}
+	}
+	
+	@Override
+	public void handleContextMenuDelete(TransformerPanel view) {
+		List<Integer> path = lastSelectedPath;
+		if (path == null) {
+			return;
+		}
+		
+		JComponent component = getChild(view, lastSelectedPath);
+		if (component == null) {
+			return;
+		}
+		
+		CompositeTransformerPanel root = view.getRootPanel();
+		int index = path.get(path.size() - 1);
+		root.removeTransformer(index);
+		
+		root.updateLayout();
 	}
 }
