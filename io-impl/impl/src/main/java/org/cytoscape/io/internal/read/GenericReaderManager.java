@@ -24,7 +24,6 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
-
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -37,147 +36,177 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Task>  {
+public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Task> {
 
-    private static final Logger logger = LoggerFactory.getLogger( GenericReaderManager.class );
+	private static final Logger logger = LoggerFactory.getLogger(GenericReaderManager.class);
 
-    protected final DataCategory category;
-    protected final StreamUtil streamUtil;
+	// This is a HACK! We need re-design this filtering mechanism.
+	private static final String DEFAULT_READER_FACTORY_CLASS = "org.cytoscape.tableimport.internal.ImportNetworkTableReaderFactory";
+	
+	protected final DataCategory category;
+	protected final StreamUtil streamUtil;
 
-    protected final Set<T> factories;
+	protected final Set<T> factories;
 
+	public GenericReaderManager(final DataCategory category, final StreamUtil streamUtil) {
+		this.category = category;
+		this.streamUtil = streamUtil;
 
-    public GenericReaderManager(final DataCategory category, final StreamUtil streamUtil) {
-        this.category = category;
-        this.streamUtil = streamUtil;
+		factories = new HashSet<T>();
+	}
 
-        factories = new HashSet<T>();
-    }
-
-    /**
-     * Listener for OSGi service
-     *
-     * @param factory
-     * @param props
-     */
-    public void addInputStreamTaskFactory(T factory, @SuppressWarnings("rawtypes") Map props) {
-        if (factory == null)
-            logger.warn("Specified factory is null.");
-        else if (factory.getFileFilter().getDataCategory() == category) {
-            logger.debug("adding IO taskFactory (factory = " + factory +
-                    ", category = " + category + ")");
-            factories.add(factory);
-        }
-    }
-
-    /**
-     * Listener for OSGi service
-     *
-     * @param factory
-     * @param props
-     */
-    public void removeInputStreamTaskFactory(T factory, @SuppressWarnings("rawtypes") Map props) {
-        factories.remove(factory);
-    }
-
-    /**
-     * Gets the GraphReader that is capable of reading the specified file.
-     *
-     * @param uri URI of file to be read.
-     * @return GraphReader capable of reading the specified file. Null if file cannot be read.
-     */
-    public R getReader(URI uri, String inputName) {
-
-        if(uri == null) {
-            logger.warn("URI is null");
-            return null;
-        }
-
-        Hashtable<String, T> factoryTable = new Hashtable<String, T>();
-        for (final T factory : factories) {
-            final CyFileFilter cff = factory.getFileFilter();
-            logger.info("4 ### Current Filter = " + cff.getDescription());
-
-            logger.debug("Trying factory: " + factory + " with filter: " + cff);
-
-            if (cff.accepts(uri, category)) {
-                for( String extension : cff.getExtensions() )
-                    factoryTable.put(extension, factory);
-            }
-        }
-        if( factoryTable.isEmpty() )
-        {
-            logger.warn("No reader found for uri: " + uri.toString());
-            return null;
-        }
-        T chosenFactory = null;
-        String extension = getExtension(uri.toString());
-        if( factoryTable.containsKey(extension) )
-            chosenFactory = factoryTable.get(extension);
-        else
-		{
-			if( factoryTable.containsKey("") )
-            	chosenFactory = factoryTable.get("");
-			else
-				return null;
+	/**
+	 * Listener for OSGi service
+	 * 
+	 * @param factory
+	 * @param props
+	 */
+	public void addInputStreamTaskFactory(T factory, @SuppressWarnings("rawtypes") Map props) {
+		if (factory == null)
+			logger.warn("Specified factory is null.");
+		else if (factory.getFileFilter().getDataCategory() == category) {
+			logger.debug("adding IO taskFactory (factory = " + factory + ", category = " + category + ")");
+			factories.add(factory);
 		}
-        try {
-            logger.info("Successfully found matched factory " + chosenFactory);
-            // This returns strean using proxy if it exists.
-            InputStream stream = streamUtil.getInputStream(uri.toURL());
-            if (!stream.markSupported()) {
-                stream = new BufferedInputStream(stream);
-            }
-            return (R) chosenFactory.createTaskIterator(stream, inputName).next();
+	}
 
-        } catch (IOException e) {
-            logger.warn("Error opening stream to URI: " + uri.toString(), e);
-            return null;
-        }
-    }
+	/**
+	 * Listener for OSGi service
+	 * 
+	 * @param factory
+	 * @param props
+	 */
+	public void removeInputStreamTaskFactory(T factory, @SuppressWarnings("rawtypes") Map props) {
+		factories.remove(factory);
+	}
 
-    private final String getExtension(String filename) {
-        if (filename != null) {
-            int i = filename.lastIndexOf('.');
+	/**
+	 * Gets the GraphReader that is capable of reading the specified file.
+	 * 
+	 * @param uri
+	 *            URI of file to be read.
+	 * @return GraphReader capable of reading the specified file. Null if file
+	 *         cannot be read.
+	 */
+	public R getReader(final URI uri, final String inputName) {
 
-            if ((i > 0) && (i < (filename.length() - 1))) {
-                return filename.substring(i + 1).toLowerCase();
-            }
-            if( i == -1 )
-                return "";
-        }
-        return null;
-    }
+		// Data location is always required.
+		if (uri == null) {
+			throw new NullPointerException("Data source URI is null");
+		}
 
-    public R getReader(InputStream stream, String inputName) {
-        try {
-            if (!stream.markSupported()) {
-                stream = new BufferedInputStream(stream);
-                stream.mark(1025);
-            }
+		// This is the default reader, which accepts files with no extension.
+		// Usually, this is ImportNetworkTableReaderFactory (Manual table
+		// import)
+		T defaultFactory = null;
 
-            for (T factory : factories) {
-                CyFileFilter cff = factory.getFileFilter();
-                logger.debug("trying READER: " + factory + " with filter: " + cff);
+		final List<T> factoryList = new ArrayList<T>();
+		final Map<String, T> factoryTable = new HashMap<String, T>();
 
-                // Because we don't know who will provide the file filter or
-                // what they might do with the InputStream, we provide a copy
-                // of the first 2KB rather than the stream itself.
-                if (cff.accepts(CopyInputStream.copyKBytes(stream,1), category)) {
-                    logger.debug("successfully matched READER " + factory);
-                    return (R)factory.createTaskIterator(stream, inputName).next();
-                }
-            }
-        } catch (IOException ioe) {
-            logger.warn("Error setting input stream", ioe);
-        }
+		// Pick compatible reader factories.
+		for (final T factory : factories) {
+			final CyFileFilter cff = factory.getFileFilter();
+			// Got "Accepted" flag. Need to check it's default or not.
+			if (cff.accepts(uri, category)) {
+				logger.info("Filter returns Accepted.  Need to check priority: " + factory);
+				if(factory.getClass().toString().contains(DEFAULT_READER_FACTORY_CLASS)) {
+					defaultFactory = factory;
+				} else {
+					factoryList.add(factory);
+					for (final String extension : cff.getExtensions()) {
+						factoryTable.put(extension, factory);
+					}
+				}
+			}
+		}
 
-        logger.warn("No reader found for input stream");
-        return null;
-    }
+		T chosenFactory = null;
+
+		// No compatible factory is available.
+		if (factoryTable.isEmpty() && defaultFactory == null) {
+			logger.warn("No reader found for uri: " + uri.toString());
+			throw new NullPointerException("Could not find reader.");
+		} else if(factoryList.size() == 1) {
+			// There is only one compatible reader factory.  Use it:
+			chosenFactory = factoryList.get(0);
+		} else {
+			if(factoryList.isEmpty() && defaultFactory != null) {
+				// There is only one factory
+				chosenFactory = defaultFactory;
+			} else {
+				// Well, we cannot decide which one is correct.  Try to use ext...
+				String extension = getExtension(uri.toString());
+				if (factoryTable.containsKey(extension))
+					chosenFactory = factoryTable.get(extension);
+				else {
+					if (factoryTable.containsKey(""))
+						chosenFactory = factoryTable.get("");
+					else
+						throw new NullPointerException("Could not find reader factory.");
+				}
+			}
+		}
+
+		try {
+			logger.info("Successfully found compatible ReaderFactory " + chosenFactory);
+			// This returns strean using proxy if it exists.
+			InputStream stream = streamUtil.getInputStream(uri.toURL());
+			if (!stream.markSupported()) {
+				stream = new BufferedInputStream(stream);
+			}
+			return (R) chosenFactory.createTaskIterator(stream, inputName).next();
+
+		} catch (IOException e) {
+			logger.warn("Error opening stream to URI: " + uri.toString(), e);
+			throw new IllegalStateException("Could not open stream for reader.", e);
+		}
+	}
+
+	private final String getExtension(String filename) {
+		if (filename != null) {
+			int i = filename.lastIndexOf('.');
+
+			if ((i > 0) && (i < (filename.length() - 1))) {
+				return filename.substring(i + 1).toLowerCase();
+			}
+			if (i == -1)
+				return "";
+		}
+		return null;
+	}
+
+	public R getReader(InputStream stream, String inputName) {
+		try {
+			if (!stream.markSupported()) {
+				stream = new BufferedInputStream(stream);
+				stream.mark(1025);
+			}
+
+			for (T factory : factories) {
+				CyFileFilter cff = factory.getFileFilter();
+				logger.debug("trying READER: " + factory + " with filter: " + cff);
+
+				// Because we don't know who will provide the file filter or
+				// what they might do with the InputStream, we provide a copy
+				// of the first 2KB rather than the stream itself.
+				if (cff.accepts(CopyInputStream.copyKBytes(stream, 1), category)) {
+					logger.debug("successfully matched READER " + factory);
+					return (R) factory.createTaskIterator(stream, inputName).next();
+				}
+			}
+		} catch (IOException ioe) {
+			logger.warn("Error setting input stream", ioe);
+		}
+
+		logger.warn("No reader found for input stream");
+		return null;
+	}
 }
