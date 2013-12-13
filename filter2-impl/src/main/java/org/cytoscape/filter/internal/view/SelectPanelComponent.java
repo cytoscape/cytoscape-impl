@@ -12,4 +12,5 @@ public interface SelectPanelComponent {
 	JComponent getCancelApplyButton();
 	JProgressBar getProgressBar();
 	void setStatus(String status);
+	void showHandleContextMenu(Handle<?> handle);
 }
