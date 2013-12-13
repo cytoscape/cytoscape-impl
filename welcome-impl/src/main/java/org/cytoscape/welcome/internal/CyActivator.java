@@ -122,7 +122,7 @@ public class CyActivator extends AbstractCyActivator {
 		final GenerateCustomStyleTaskFactory generateCustomStyleTaskFactory = new GenerateCustomStyleTaskFactory(
 				analyzeNetworkCollectionTaskFactory, applicationManager, vsBuilder, vmm);
 		Properties generateCustomStyleTaskFactoryProps = new Properties();
-		generateCustomStyleTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools.Workflow");
+		generateCustomStyleTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools.Workflow[3.0]");
 		generateCustomStyleTaskFactoryProps.setProperty(MENU_GRAVITY, "20.0");
 		generateCustomStyleTaskFactoryProps.setProperty(TITLE,
 				"Analyze selected networks and create custom styles");

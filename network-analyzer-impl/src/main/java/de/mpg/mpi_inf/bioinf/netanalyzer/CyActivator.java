@@ -87,7 +87,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		Map<String,String> analyzerActionProps = new HashMap<String, String>();
 		analyzerActionProps.put(ID,"analyzeNetworkAction");
-		analyzerActionProps.put(PREFERRED_MENU,"Tools.NetworkAnalyzer.Network Analysis");
 		analyzerActionProps.put(TITLE,"Analyze Network");
 		analyzerActionProps.put(MENU_GRAVITY,"9.0");
 		analyzerActionProps.put(TOOL_BAR_GRAVITY,"9.8");

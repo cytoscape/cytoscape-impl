@@ -351,12 +351,12 @@ public abstract class Messages {
 	/**
 	 * Name of Submenu in Cytoscape's menubar, where network analysis actions are added.
 	 */
-	public static String AC_MENU_ANALYSIS = "Network Analysis";
+	public static String AC_MENU_ANALYSIS = "Network Analysis[1.0]";
 
 	/**
 	 * Name of Submenu in Cytoscape's menubar, where network modification actions are added.
 	 */
-	public static String AC_MENU_MODIFICATION = "Subnetwork Creation";
+	public static String AC_MENU_MODIFICATION = "Subnetwork Creation[2.0]";
 
 	public static String AC_PLOTPARAM = "Plot Parameters";
 
