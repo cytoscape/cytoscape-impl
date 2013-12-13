@@ -44,7 +44,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 	private static final long serialVersionUID = -597481727043928800L;
 	
 	private static final String APP_MENU_TITLE ="Networks...";
-	private static final String PARENT_MENU ="Tools.Merge";
+	private static final String PARENT_MENU ="Tools.Merge[2.0]";
 	
 	private final CySwingApplication swingApp;
 	private final CyNetworkManager cnm;

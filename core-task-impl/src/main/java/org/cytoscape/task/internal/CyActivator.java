@@ -292,7 +292,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties loadVizmapFileTaskFactoryProps = new Properties();
 		loadVizmapFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import");
-		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"4.0");
+		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
 		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Style...");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
@@ -804,7 +804,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		Properties mergeTablesTaskFactoryProps = new Properties();
 		mergeTablesTaskFactoryProps.setProperty(ENABLE_FOR,"table");
-		mergeTablesTaskFactoryProps.setProperty(PREFERRED_MENU,"Tools.Merge");
+		mergeTablesTaskFactoryProps.setProperty(PREFERRED_MENU,"Tools.Merge[2.0]");
 		mergeTablesTaskFactoryProps.setProperty(TITLE,"Tables...");
 		//MergeGlobalTaskFactoryProps.setProperty(ServiceProperties.INSERT_SEPARATOR_AFTER, "true");
 		//MergeGlobalTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"1.1");
