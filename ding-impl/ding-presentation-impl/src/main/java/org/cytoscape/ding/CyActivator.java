@@ -70,6 +70,7 @@ import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 //
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
@@ -78,6 +79,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 // Annotation creation
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.AnnotationManagerImpl;
 import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
@@ -184,6 +186,7 @@ public class CyActivator extends AbstractCyActivator {
 		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);
 
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
+		AnnotationManager annotationManager = new AnnotationManagerImpl(cyNetworkViewManagerServiceRef);
 
 		DingGraphLOD dingGraphLOD = new DingGraphLOD(cyPropertyServiceRef, applicationManagerServiceRef);
 		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class, new Properties());
@@ -268,6 +271,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Annotations
 		registerServiceListener(bc, annotationFactoryManager, "addAnnotationFactory", "removeAnnotationFactory",
 		                        AnnotationFactory.class);
+		registerService(bc, annotationManager, AnnotationManager.class, new Properties());
 
 		// Arrow
 		AnnotationFactory arrowAnnotationFactory = new ArrowAnnotationFactory();
