@@ -55,6 +55,6 @@ public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements S
 		if (sessionFileName == null)
 			return new TaskIterator(new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
 		else
-			return new TaskIterator(new SaveSessionTask(writerMgr, sessionMgr, tracker));
+			return new TaskIterator(new SaveSessionTask(writerMgr, sessionMgr, tracker, cyEventHelper));
 	}
 }
