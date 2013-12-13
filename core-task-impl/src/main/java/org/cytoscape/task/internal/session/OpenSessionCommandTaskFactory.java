@@ -24,11 +24,8 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
@@ -36,7 +33,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -50,6 +46,7 @@ public class OpenSessionCommandTaskFactory extends AbstractTaskFactory {
 	private final CyNetworkTableManager netTableManager;
 	private final CyGroupManager grManager;
 	private final RecentlyOpenedTracker tracker;
+	private final CyEventHelper eventHelper;
 
 	public OpenSessionCommandTaskFactory(final CySessionManager mgr,
 									  final CySessionReaderManager rmgr,
@@ -58,7 +55,8 @@ public class OpenSessionCommandTaskFactory extends AbstractTaskFactory {
 									  final CyTableManager tableManager,
 									  final CyNetworkTableManager netTableManager,
 									  final CyGroupManager grManager,
-									  final RecentlyOpenedTracker tracker) {
+									  final RecentlyOpenedTracker tracker,
+									  final CyEventHelper eventHelper) {
 		this.mgr = mgr;
 		this.rmgr = rmgr;
 		this.appManager = appManager;
@@ -67,11 +65,12 @@ public class OpenSessionCommandTaskFactory extends AbstractTaskFactory {
 		this.netTableManager = netTableManager;
 		this.grManager = grManager;
 		this.tracker = tracker;
+		this.eventHelper = eventHelper;
 	}
 
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
 			new OpenSessionCommandTask(mgr, rmgr, appManager, netManager, 
-			                           tableManager, netTableManager, grManager, tracker));
+			                           tableManager, netTableManager, grManager, tracker, eventHelper));
 	}
 }
