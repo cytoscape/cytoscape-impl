@@ -29,6 +29,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
@@ -56,13 +57,14 @@ public class OpenSessionTaskFactoryTest {
 	@Mock private CyGroupManager grMgr;
 	@Mock private TunableSetter ts;
 	@Mock private RecentlyOpenedTracker tracker;
+	@Mock private CyEventHelper eventHelper;
 	
 	@Test
 	public void testRun() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		
 		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, readerMgr, appMgr, netMgr, tableMgr,
-				netTableMgr, grMgr, tracker, ts);
+				netTableMgr, grMgr, tracker, ts, eventHelper);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

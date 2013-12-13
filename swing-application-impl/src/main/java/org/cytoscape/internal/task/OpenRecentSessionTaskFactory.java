@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReader;
@@ -42,6 +43,8 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
@@ -61,7 +64,7 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 	private final CyGroupManager grManager;
 	private final RecentlyOpenedTracker tracker;
 	private final URL targetSession;
-	
+	private final CyEventHelper eventHelper;
 	
 	public OpenRecentSessionTaskFactory(final CySessionManager sessionManager,
 										final CySessionReaderManager readerManager,
@@ -71,7 +74,8 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 										final CyNetworkTableManager netTableManager,
 										final CyGroupManager grManager,
 										final RecentlyOpenedTracker tracker,
-										final URL targetSession) {
+										final URL targetSession,
+										final CyEventHelper eventHelper) {
 		this.sessionManager = sessionManager;
 		this.readerManager = readerManager;
 		this.appManager = appManager;
@@ -81,6 +85,7 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		this.grManager = grManager;
 		this.tracker = tracker;
 		this.targetSession = targetSession;
+		this.eventHelper = eventHelper;
 	}
 
 	@Override
@@ -125,22 +130,35 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 			
 			@Override
 			public void run(final TaskMonitor taskMonitor) throws Exception {
-				taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
-				taskMonitor.setProgress(0.0);
+				eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
 				
-				// Save the current network and group set, in case loading the new session is cancelled later
-				currentNetworkSet.addAll(netTableManager.getNetworkSet());
+				try {
+					taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
+					taskMonitor.setProgress(0.0);
+					
+					// Save the current network and group set, in case loading the new session is cancelled later
+					currentNetworkSet.addAll(netTableManager.getNetworkSet());
+					
+					for (final CyNetwork n : currentNetworkSet)
+						currentGroupSet.addAll(grManager.getGroupSet(n));
+					
+					reader.run(taskMonitor);
+					taskMonitor.setProgress(0.8);
+				} catch (Exception e) {
+					eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+					throw e;
+				}
 				
-				for (final CyNetwork n : currentNetworkSet)
-					currentGroupSet.addAll(grManager.getGroupSet(n));
-				
-				reader.run(taskMonitor);
-				taskMonitor.setProgress(0.8);
-				
-				if (cancelled)
+				if (cancelled) {
 					disposeCancelledSession();
-				else
-					changeCurrentSession(taskMonitor);
+				} else {
+					try {
+						changeCurrentSession(taskMonitor);
+					} catch (Exception e) {
+						eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+						throw e;
+					}
+				}
 			}
 			
 			@Override
@@ -149,6 +167,8 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 				
 				if (reader != null)
 					reader.cancel(); // Remember to cancel the Session Reader!
+				
+				eventHelper.fireEvent(new SessionLoadCancelledEvent(this));
 			}
 			
 			private void changeCurrentSession(TaskMonitor taskMonitor) throws Exception {

@@ -313,7 +313,8 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cyNetworkManagerServiceRef,
 		                                                                     cyTableManagerServiceRef,
 		                                                                     cyNetworkTableManagerServiceRef,
-		                                                                     cyGroupManagerServiceRef);
+		                                                                     cyGroupManagerServiceRef,
+		                                                                     cyEventHelperServiceRef);
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());

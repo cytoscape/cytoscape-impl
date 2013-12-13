@@ -32,6 +32,7 @@ import java.io.File;
 import java.util.Collections;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.io.read.CySessionReaderManager;
@@ -61,6 +62,7 @@ public class OpenSessionTaskTest {
 	@Mock private CyNetworkTableManager netTableMgr;
 	@Mock private CyGroupManager grMgr;
 	@Mock private RecentlyOpenedTracker tracker;
+	@Mock private CyEventHelper eventHelper;
 	
 	@Mock private CySessionReader reader;
 	private CySession session;
@@ -83,7 +85,7 @@ public class OpenSessionTaskTest {
 	
 	@Test
 	public void testRun() throws Exception {
-		final OpenSessionTask t = new OpenSessionTask(mgr, readerMgr, appMgr, netMgr, tableMgr, netTableMgr, grMgr, tracker);
+		final OpenSessionTask t = new OpenSessionTask(mgr, readerMgr, appMgr, netMgr, tableMgr, netTableMgr, grMgr, tracker, eventHelper);
 		OpenSessionWithoutWarningTask t2 = t.new OpenSessionWithoutWarningTask();
 		t2.file = sampleFile;
 		t2.setTaskIterator(new TaskIterator(t2));

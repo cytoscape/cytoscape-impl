@@ -28,6 +28,7 @@ package org.cytoscape.task.internal.session;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
@@ -39,6 +40,7 @@ public class NewSessionTaskTest {
 
 	@Mock private TaskMonitor tm;
 	@Mock private CySessionManager mgr;
+	@Mock private CyEventHelper eh;
 
 	@Before
 	public void initMocks() {
@@ -47,7 +49,7 @@ public class NewSessionTaskTest {
 
 	@Test
 	public void testRun() throws Exception {
-		final NewSessionTask t = new NewSessionTask(mgr);
+		final NewSessionTask t = new NewSessionTask(mgr, eh);
 
 		t.run(tm);
 		verify(mgr, times(1)).setCurrentSession(null, null);

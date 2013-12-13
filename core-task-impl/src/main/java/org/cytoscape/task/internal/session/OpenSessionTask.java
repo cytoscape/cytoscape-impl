@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReader;
@@ -42,6 +43,8 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
@@ -69,9 +72,9 @@ public class OpenSessionTask extends AbstractTask {
 	private final CyNetworkTableManager netTableManager;
 	private final CyGroupManager grManager;
 	private final RecentlyOpenedTracker tracker;
+	private final CyEventHelper eventHelper;
 	
 	private CySessionReader reader;
-
 
 	/**
 	 * Constructor.<br>
@@ -84,7 +87,8 @@ public class OpenSessionTask extends AbstractTask {
 						   final CyTableManager tableManager,
 						   final CyNetworkTableManager netTableManager,
 						   final CyGroupManager grManager,
-						   final RecentlyOpenedTracker tracker) {
+						   final RecentlyOpenedTracker tracker,
+						   final CyEventHelper eventHelper) {
 		this.sessionMgr = mgr;
 		this.readerMgr = readerManager;
 		this.appManager = appManager;
@@ -93,6 +97,7 @@ public class OpenSessionTask extends AbstractTask {
 		this.netTableManager = netTableManager;
 		this.grManager = grManager;
 		this.tracker = tracker;
+		this.eventHelper = eventHelper;
 	}
 
 	/**
@@ -117,34 +122,47 @@ public class OpenSessionTask extends AbstractTask {
 		
 		private Set<CyNetwork> currentNetworkSet = new HashSet<CyNetwork>();
 		private Set<CyGroup> currentGroupSet = new HashSet<CyGroup>();
-		
+
 		@Override
 		public void run(final TaskMonitor taskMonitor) throws Exception {
-			taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
-			taskMonitor.setProgress(0.0);
-
-			if (file == null)
-				throw new NullPointerException("No file specified.");
+			eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
 			
-			reader = readerMgr.getReader(file.toURI(), file.getName());
+			try {
+				taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
+				taskMonitor.setProgress(0.0);
+	
+				if (file == null)
+					throw new NullPointerException("No file specified.");
+				
+				reader = readerMgr.getReader(file.toURI(), file.getName());
+				
+				if (reader == null)
+					throw new NullPointerException("Failed to find appropriate reader for file: " + file);
+				
+				// Save the current network and group set, in case loading the new session is cancelled later
+				currentNetworkSet.addAll(netTableManager.getNetworkSet());
+				
+				for (final CyNetwork n : currentNetworkSet)
+					currentGroupSet.addAll(grManager.getGroupSet(n));
+				
+				taskMonitor.setProgress(0.2);
+				reader.run(taskMonitor);
+				taskMonitor.setProgress(0.8);
+			} catch (Exception e) {
+				eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+				throw e;
+			}
 			
-			if (reader == null)
-				throw new NullPointerException("Failed to find appropriate reader for file: " + file);
-			
-			// Save the current network and group set, in case loading the new session is cancelled later
-			currentNetworkSet.addAll(netTableManager.getNetworkSet());
-			
-			for (final CyNetwork n : currentNetworkSet)
-				currentGroupSet.addAll(grManager.getGroupSet(n));
-			
-			taskMonitor.setProgress(0.2);
-			reader.run(taskMonitor);
-			taskMonitor.setProgress(0.8);
-			
-			if (cancelled)
+			if (cancelled) {
 				disposeCancelledSession();
-			else
-				changeCurrentSession(taskMonitor);
+			} else {
+				try {
+					changeCurrentSession(taskMonitor);
+				} catch (Exception e) {
+					eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+					throw e;
+				}
+			}
 		}
 		
 		@Override
@@ -153,6 +171,8 @@ public class OpenSessionTask extends AbstractTask {
 			
 			if (reader != null)
 				reader.cancel(); // Remember to cancel the Session Reader!
+			
+			eventHelper.fireEvent(new SessionLoadCancelledEvent(this));
 		}
 		
 		private void changeCurrentSession(final TaskMonitor taskMonitor) throws Exception {

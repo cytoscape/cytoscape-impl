@@ -26,7 +26,10 @@ package org.cytoscape.task.internal.session;
 
 
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -43,16 +46,32 @@ public class NewSessionTask extends AbstractTask {
 	@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true;ForceSetTitle=New Session")
 	public boolean destroyCurrentSession = true;
 
-	private CySessionManager mgr;
+	private final CySessionManager mgr;
+	private final CyEventHelper eventHelper;
 	
 	
-	public NewSessionTask(CySessionManager mgr) {
+	public NewSessionTask(final CySessionManager mgr, final CyEventHelper eventHelper) {
 		this.mgr = mgr;
+		this.eventHelper = eventHelper;
 	}
 
-	public void run(TaskMonitor taskMonitor) {
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (destroyCurrentSession) {
-			mgr.setCurrentSession(null,null);			
+			eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
+			
+			try {
+				mgr.setCurrentSession(null, null);
+			} catch (Exception e) {
+				eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+				throw e;
+			}
 		}
+	}
+	
+	@Override
+	public void cancel() {
+		super.cancel();
+		eventHelper.fireEvent(new SessionLoadCancelledEvent(this));
 	}
 }
