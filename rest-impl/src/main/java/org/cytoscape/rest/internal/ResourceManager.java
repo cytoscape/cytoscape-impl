@@ -74,7 +74,6 @@ public class ResourceManager {
 		server = GrizzlyHttpServerFactory.createHttpServer(URI.create(uri), config);
 		final String message = String.format("Jersey app started with WADL available at " + "%sapplication.wadl\n", uri);
 		logger.info(message);
-		System.out.println(message);
 	}
 
 	final void stopServer() {

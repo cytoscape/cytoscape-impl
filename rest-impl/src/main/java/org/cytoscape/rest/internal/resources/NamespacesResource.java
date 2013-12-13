@@ -8,9 +8,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.cytoscape.command.AvailableCommands;
@@ -38,6 +40,7 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 	CyServiceRegistrar serviceRegistrar = null;
 	MessageHandler messageHandler = null;
 	SynchronousTaskManager taskManager = null;
+	WebApplicationException taskException = null;
 	boolean processingCommand = false;
 
 	public NamespacesResource(CyServiceRegistrar serviceRegistrar, AvailableCommands available,
@@ -96,6 +99,8 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 	public String enumerateCommands(@PathParam("namespace") String namespace) {
 		MessageHandler handler = new TextPlainHandler();
 		List<String> commands = available.getCommands(namespace);
+		if (commands == null || commands.size() == 0)
+			throw new WebApplicationException(404);
 		handler.appendCommand("Available commands for '" + namespace + "':");
 		for (String command : commands) {
 			handler.appendMessage("  " + command);
@@ -115,6 +120,8 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 	public String enumerateHTMLCommands(@PathParam("namespace") String namespace) {
 		MessageHandler handler = new TextHTMLHandler();
 		List<String> commands = available.getCommands(namespace);
+		if (commands == null || commands.size() == 0)
+			throw new WebApplicationException(404);
 		handler.appendCommand("Available commands for '" + namespace + "':");
 		for (String command : commands) {
 			handler.appendMessage("  " + command);
@@ -165,7 +172,7 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 	}
 
 	private String handleCommand(String namespace, String command, MultivaluedMap<String, String> queryParameters,
-			MessageHandler handler) {
+			MessageHandler handler) throws WebApplicationException {
 		List<String> args = available.getArguments(namespace, command);
 
 		if ((queryParameters != null && queryParameters.size() > 0) || (args == null || args.size() == 0)) {
@@ -181,12 +188,11 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 	}
 
 	private String executeCommand(String namespace, String command, MultivaluedMap<String, String> args,
-			MessageHandler handler) {
+			MessageHandler handler) throws WebApplicationException {
 
 		List<String> commands = available.getCommands(namespace);
 		if (commands == null || commands.size() == 0) {
-			handler.appendError("Error: no such namespace: '" + namespace + "'");
-			return handler.getMessages();
+			throw new CustomNotFoundException("Error: no such namespace: '" + namespace + "'");
 		}
 
 		boolean nocom = true;
@@ -197,8 +203,7 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 			}
 		}
 		if (nocom) {
-			handler.appendError("Error: no such command: '" + command + "'");
-			return handler.getMessages();
+			throw new CustomNotFoundException("Error: no such command: '" + command + "'");
 		}
 
 		List<String> argList = available.getArguments(namespace, command);
@@ -215,18 +220,19 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 				}
 			}
 			if (!found) {
-				handler.appendError("Error: can't find argument '" + inputArg + "'");
-				return handler.getMessages();
+				throw new CustomNotFoundException("Error: can't find argument '" + inputArg + "'");
 			}
 		}
 
 		processingCommand = true;
 		messageHandler = handler;
+		taskException = null;
 
 		taskManager.execute(ceTaskFactory.createTaskIterator(namespace, command, modifiedSettings, this), this);
 
 		String messages = messageHandler.getMessages();
-		System.out.println("Returning " + messages);
+		processingCommand = false;
+		if (taskException != null) throw taskException;
 		return messages;
 	}
 
@@ -259,10 +265,13 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 		else if (status.getType().equals(FinishStatus.Type.CANCELLED))
 			messageHandler.appendWarning("Cancelled by user");
 		else if (status.getType().equals(FinishStatus.Type.FAILED)) {
-			if (status.getException() != null)
+			if (status.getException() != null) {
 				messageHandler.appendError("Failed: " + status.getException().getMessage());
-			else
+				taskException = new CustomFailureException("Failed: " + status.getException().getMessage());
+			} else {
 				messageHandler.appendError("Failed");
+				taskException = new CustomFailureException();
+			}
 		}
 	}
 
@@ -271,5 +280,25 @@ public class NamespacesResource implements RESTResource, PaxAppender, TaskObserv
 		if (tqString.startsWith("\"") && tqString.endsWith("\""))
 			return tqString.substring(1, tqString.length() - 1);
 		return tqString;
+	}
+
+	public class CustomNotFoundException extends WebApplicationException {
+		public CustomNotFoundException() {
+			super(404);
+		}
+
+		public CustomNotFoundException(String message) {
+			super(Response.status(Response.Status.NOT_FOUND).entity(message).type("text/plain").build());
+		}
+	}
+
+	public class CustomFailureException extends WebApplicationException {
+		public CustomFailureException() {
+			super(500);
+		}
+
+		public CustomFailureException(String message) {
+			super(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).type("text/plain").build());
+		}
 	}
 }
