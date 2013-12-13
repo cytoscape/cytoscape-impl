@@ -1,4 +1,4 @@
-package org.cytoscape.rest;
+package org.cytoscape.rest.internal;
 
 /**
  * This is a simple marker interface used to register resources

@@ -29,7 +29,7 @@ import java.util.Properties;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.rest.RESTResource;
+import org.cytoscape.rest.internal.RESTResource;
 import org.cytoscape.rest.internal.resources.NamespacesResource;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
