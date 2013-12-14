@@ -205,10 +205,14 @@ public class CompositeFilterPanel extends JPanel {
 		}
 	}
 
-	public void removeFilter(int index) {
+	public void removeFilter(int index, boolean unregister) {
 		Filter<CyNetwork, CyIdentifiable> filter = model.remove(index);
 		TransformerElementViewModel<FilterPanel> model = viewModels.remove(filter);
 		if (model == null || model.view == null) {
+			return;
+		}
+		
+		if (!unregister) {
 			return;
 		}
 		
@@ -220,7 +224,7 @@ public class CompositeFilterPanel extends JPanel {
 
 	void removeAllFilters() {
 		while (model.getLength() > 0) {
-			removeFilter(0);
+			removeFilter(0, true);
 		}
 	}
 	

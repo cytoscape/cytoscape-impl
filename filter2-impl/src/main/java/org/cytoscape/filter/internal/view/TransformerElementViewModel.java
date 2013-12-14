@@ -16,10 +16,11 @@ public class TransformerElementViewModel<V extends SelectPanelComponent> {
 		this.view = view;
 		this.parent  = parent;
 		
-		handle = new Handle<V>(iconManager, parent, controller);
+		handle = new Handle<V>(iconManager, parent, controller, view);
 		separator = new CompositeSeparator();
 		
 		new DropTarget(view, new DragHandler<V>(view, controller, parent, handle));
 		new DropTarget(separator, new DragHandler<V>(separator, controller, parent, null));
+		new DropTarget(handle, new DragHandler<V>(handle, controller, parent, null));
 	}
 }
