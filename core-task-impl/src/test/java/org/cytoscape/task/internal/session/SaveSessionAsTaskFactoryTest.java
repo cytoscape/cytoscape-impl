@@ -33,6 +33,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
@@ -52,7 +53,8 @@ public class SaveSessionAsTaskFactoryTest {
 		RecentlyOpenedTracker tracker = mock(RecentlyOpenedTracker.class);
 		CyEventHelper cyEventHelper = mock(CyEventHelper.class);
 
-		SaveSessionAsTaskFactoryImpl factory = new SaveSessionAsTaskFactoryImpl(wmgr,mgr,tracker, cyEventHelper, ts);
+		SaveSessionAsTaskFactoryImpl factory = new SaveSessionAsTaskFactoryImpl(wmgr,mgr,tracker, cyEventHelper, ts,
+				new SessionUtils());
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

@@ -34,6 +34,7 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -72,7 +73,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesURLTaskFactory() throws Exception {
 
-		final LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
+		final LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr, new SessionUtils());
 		
 		final TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

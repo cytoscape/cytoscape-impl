@@ -34,13 +34,12 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.undo.UndoSupport;
 
 
@@ -57,6 +56,7 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 	private final CyEventHelper eventHelper;
 	private final CyGroupManager groupMgr;
 	private final RenderingEngineManager renderingEngineMgr;
+	private final SessionUtils sessionUtils;
 
 	public NewNetworkSelectedNodesEdgesTaskFactoryImpl(final UndoSupport undoSupport,
 	                                               final CyRootNetworkManager crnf,
@@ -68,7 +68,8 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 	                                               final CyApplicationManager appManager,
 	                                               final CyEventHelper eventHelper,
 	                                               final CyGroupManager groupMgr,
-	                                               final RenderingEngineManager renderingEngineMgr)
+	                                               final RenderingEngineManager renderingEngineMgr,
+	                                               final SessionUtils sessionUtils)
 	{
 		this.undoSupport        = undoSupport;
 		this.netmgr             = netmgr;
@@ -81,8 +82,10 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 		this.eventHelper        = eventHelper;
 		this.groupMgr           = groupMgr;
 		this.renderingEngineMgr = renderingEngineMgr;
+		this.sessionUtils       = sessionUtils;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(3,
 			new NewNetworkSelectedNodesEdgesTask(undoSupport, network, crnf, cnvf,
@@ -90,4 +93,8 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 			                                     appManager, eventHelper, groupMgr, renderingEngineMgr));
 	}
 	
+	@Override
+	public boolean isReady(CyNetwork network) {
+		return super.isReady(network) && sessionUtils.isSessionReady();
+	}
 }

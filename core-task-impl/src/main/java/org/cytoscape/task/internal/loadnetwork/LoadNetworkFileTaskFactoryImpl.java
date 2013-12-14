@@ -26,7 +26,6 @@ package org.cytoscape.task.internal.loadnetwork;
 
 
 import java.io.File;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -35,8 +34,8 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -59,12 +58,13 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 	private final TunableSetter tunableSetter;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private final SessionUtils sessionUtils;
 
 
 	public LoadNetworkFileTaskFactoryImpl(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, CyProperty<Properties> cyProp,
 			CyNetworkNaming cyNetworkNaming, TunableSetter tunableSetter, final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory) {
+			final CyNetworkViewFactory nullNetworkViewFactory, final SessionUtils sessionUtils) {
 		
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -74,8 +74,10 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.tunableSetter = tunableSetter;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.sessionUtils = sessionUtils;
 	}
 	
+	@Override
 	public TaskIterator createTaskIterator() {
 		// Load, visualize, and layout.
 		return new TaskIterator(3, new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
@@ -95,5 +97,10 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		m.put("file", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer); 
+	}
+	
+	@Override
+	public boolean isReady() {
+		return sessionUtils.isSessionReady();
 	}
 }

@@ -29,14 +29,13 @@ package org.cytoscape.task.internal.loaddatatable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.*;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -45,22 +44,24 @@ import org.cytoscape.work.TunableSetter;
 
 public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements LoadTableURLTaskFactory {
 	
-	private CyTableReaderManager mgr;
-	
+	private final CyTableReaderManager mgr;
 	private final TunableSetter tunableSetter; 
 	private  final CyNetworkManager netMgr;
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
+	private final SessionUtils sessionUtils;
 	
 	public LoadTableURLTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr,
-			final CyTableManager tabelMgr, final CyRootNetworkManager rootNetMgr) {
+			final CyTableManager tabelMgr, final CyRootNetworkManager rootNetMgr, final SessionUtils sessionUtils) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
 		this.netMgr = netMgr;
 		this.tableMgr = tabelMgr;
 		this.rootNetMgr = rootNetMgr;
+		this.sessionUtils = sessionUtils;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new LoadTableURLTask(mgr, netMgr, tableMgr, rootNetMgr));
 	}
@@ -81,5 +82,10 @@ public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements 
 		return new TaskIterator(new CombineReaderAndMappingTask( reader,tableMgr, netMgr, rootNetMgr));
 
 		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+	}
+	
+	@Override
+	public boolean isReady() {
+		return sessionUtils.isSessionReady();
 	}
 }

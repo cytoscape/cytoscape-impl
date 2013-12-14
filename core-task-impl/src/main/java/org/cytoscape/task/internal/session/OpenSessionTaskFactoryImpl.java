@@ -37,11 +37,13 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
-public class OpenSessionTaskFactoryImpl extends AbstractSessionTaskFactory implements OpenSessionTaskFactory {
+public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements OpenSessionTaskFactory {
 
 	private final CySessionManager mgr;
 	private final CySessionReaderManager rmgr;
@@ -52,6 +54,7 @@ public class OpenSessionTaskFactoryImpl extends AbstractSessionTaskFactory imple
 	private final CyGroupManager grManager;
 	private final RecentlyOpenedTracker tracker;
 	private final CyEventHelper eventHelper;
+	private final SessionUtils sessionUtils;
 
 	private final TunableSetter tunableSetter; 
 	
@@ -66,7 +69,8 @@ public class OpenSessionTaskFactoryImpl extends AbstractSessionTaskFactory imple
 									  final CyGroupManager grManager,
 									  final RecentlyOpenedTracker tracker,
 									  final TunableSetter tunableSetter,
-									  final CyEventHelper eventHelper) {
+									  final CyEventHelper eventHelper,
+									  final SessionUtils sessionUtils) {
 		this.mgr = mgr;
 		this.rmgr = rmgr;
 		this.appManager = appManager;
@@ -77,6 +81,7 @@ public class OpenSessionTaskFactoryImpl extends AbstractSessionTaskFactory imple
 		this.tracker = tracker;
 		this.tunableSetter = tunableSetter;
 		this.eventHelper = eventHelper;
+		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -93,5 +98,10 @@ public class OpenSessionTaskFactoryImpl extends AbstractSessionTaskFactory imple
 		m.put("file", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+	}
+	
+	@Override
+	public boolean isReady() {
+		return sessionUtils.isSessionReady();
 	}
 }

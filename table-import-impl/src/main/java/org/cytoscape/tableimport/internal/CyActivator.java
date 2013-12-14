@@ -47,6 +47,7 @@ import org.cytoscape.tableimport.internal.tunable.AttributeMappingParametersHand
 import org.cytoscape.tableimport.internal.tunable.NetworkTableMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.tableimport.internal.util.SessionUtils;
 import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
@@ -97,6 +98,9 @@ public class CyActivator extends AbstractCyActivator {
         CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
         CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
         CytoscapeServices.mapGlobalToLocalTableTaskFactory = getService(bc, MapGlobalToLocalTableTaskFactory.class);
+        
+        SessionUtils sessionUtils = new SessionUtils();
+        registerAllServices(bc, sessionUtils, new Properties());
 
         StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
         ImportDataTableTaskFactory importAttrTFServiceRef = getService(bc,ImportDataTableTaskFactory.class);
@@ -114,7 +118,7 @@ public class CyActivator extends AbstractCyActivator {
         ImportAttributeTableReaderFactory importAttributeTableReaderFactory_xls = new ImportAttributeTableReaderFactory(attrsTableFilter_xls); //,".xls");
 
         // Action to add menu item to the Desktop Menu
-        ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction();
+        ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction(sessionUtils);
         WildCardCyFileFilter networkTableFilter_txt = new WildCardCyFileFilter(new String[]{"csv","tsv", "txt",""}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,CytoscapeServices.streamUtil);
 		networkTableFilter_txt.setBlacklist("xml","rdf","owl","cys");
 		WildCardCyFileFilter networkTableFilter_xls = new WildCardCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",NETWORK,CytoscapeServices.streamUtil);

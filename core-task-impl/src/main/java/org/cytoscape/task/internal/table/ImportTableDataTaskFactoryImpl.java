@@ -41,7 +41,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.AbstractTableTaskFactory;
 import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.task.internal.table.MapTableToNetworkTablesTask.TableType;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.util.ListMultipleSelection;
@@ -53,14 +53,16 @@ public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory imp
 	private final TunableSetter tunableSetter; 
 	private final CyRootNetworkManager rootNetMgr;
 	private final CyTableManager tableMgr;
+	private final SessionUtils sessionUtils;
 	
-	public ImportTableDataTaskFactoryImpl( final CyNetworkManager networkManager, final CyTableManager tableMgr,final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
+	public ImportTableDataTaskFactoryImpl(final CyNetworkManager networkManager, final CyTableManager tableMgr,
+			final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr, final SessionUtils sessionUtils){
 		this.networkManager = networkManager;
 		this.tunableSetter = tunableSetter;
 		this.rootNetMgr = rootNetMgr;
 		this.tableMgr = tableMgr;
+		this.sessionUtils = sessionUtils;
 	}
-	
 	
 	@Override
 	public TaskIterator createTaskIterator(CyTable table) {
@@ -138,7 +140,12 @@ public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory imp
 		return tunableSetter.createTaskIterator(createTaskIterator(globalTable), m);
 		
 	}
-
+	
+	@Override
+	public boolean isReady(CyTable table) {
+		return super.isReady(table) && sessionUtils.isSessionReady();
+	}
+	
 	private TableType getTableType( Class<? extends CyIdentifiable> type) {
 		if (type.equals(TableType.GLOBAL.getType()))
 			return TableType.GLOBAL;

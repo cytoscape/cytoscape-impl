@@ -45,6 +45,7 @@ import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.tableimport.internal.util.SessionUtils;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
@@ -66,12 +67,14 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableManager;
 	private final FileUtil fileUtil;
+	private final SessionUtils sessionUtils;
 
-	public ImportOntologyAndAnnotationAction() {
+	public ImportOntologyAndAnnotationAction(final SessionUtils sessionUtils) {
 		super("Ontology and Annotation...");
 		setPreferredMenu("File.Import");
 		setMenuGravity(4.0f);
 
+		this.sessionUtils = sessionUtils;
 		this.bookmarksProp = CytoscapeServices.bookmark;
 		this.bkUtil = CytoscapeServices.bookmarksUtil;
 		this.taskManager = CytoscapeServices.dialogTaskManager;
@@ -146,4 +149,8 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 		return dialog;
 	}
 
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled && sessionUtils.isSessionReady());
+	}
 }

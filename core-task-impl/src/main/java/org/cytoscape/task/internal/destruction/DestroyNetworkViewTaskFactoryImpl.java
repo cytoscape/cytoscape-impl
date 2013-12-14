@@ -30,6 +30,7 @@ import java.util.Collection;
 
 import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
@@ -43,14 +44,22 @@ public class DestroyNetworkViewTaskFactoryImpl extends AbstractNetworkViewCollec
 		DestroyNetworkViewTaskFactory {
 	
 	private final CyNetworkViewManager networkViewManager;
+	private final SessionUtils sessionUtils;
 
-	public DestroyNetworkViewTaskFactoryImpl(final CyNetworkViewManager networkViewManager) {
+	public DestroyNetworkViewTaskFactoryImpl(final CyNetworkViewManager networkViewManager,
+			final SessionUtils sessionUtils) {
 		super();
 		this.networkViewManager = networkViewManager;
+		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(Collection<CyNetworkView> networkViews) {
 		return new TaskIterator(new DestroyNetworkViewTask(networkViews, networkViewManager));
+	}
+	
+	@Override
+	public boolean isReady(Collection<CyNetworkView> networkViews) {
+		return super.isReady(networkViews) && sessionUtils.isSessionReady();
 	}
 }

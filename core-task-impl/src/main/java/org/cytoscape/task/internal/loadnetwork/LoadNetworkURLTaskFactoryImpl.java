@@ -26,7 +26,6 @@ package org.cytoscape.task.internal.loadnetwork;
 
 
 import java.net.URL;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -36,8 +35,8 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -67,6 +66,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 	
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private final SessionUtils sessionUtils;
 
 	public LoadNetworkURLTaskFactoryImpl(CyNetworkReaderManager mgr,
 					     CyNetworkManager netmgr,
@@ -74,7 +74,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 					     CyProperty<Properties> cyProps, CyNetworkNaming cyNetworkNaming,
 					     StreamUtil streamUtil, final SynchronousTaskManager<?> syncTaskManager,
 						 TunableSetter tunableSetter, final VisualMappingManager vmm,
-						 final CyNetworkViewFactory nullNetworkViewFactory)
+						 final CyNetworkViewFactory nullNetworkViewFactory, final SessionUtils sessionUtils)
 	{
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -86,8 +86,10 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		this.syncTaskManager = syncTaskManager;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.sessionUtils = sessionUtils;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		// Usually we need to create view, so expected number is 2.
 		return new TaskIterator(2, new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil, vmm, nullNetworkViewFactory));
@@ -97,6 +99,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		return loadCyNetworks(url);
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(final URL url, TaskObserver observer) {
 		final Map<String,Object> m = new HashMap<String,Object>();
 		m.put("url", url);
@@ -111,5 +114,10 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		m.put("url", url);
 	
 		return tunableSetter.createTaskIterator( this.createTaskIterator(), m);
+	}
+	
+	@Override
+	public boolean isReady() {
+		return sessionUtils.isSessionReady();
 	}
 }

@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.export.network;
 
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -38,13 +39,15 @@ import java.util.Map;
 public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements ExportNetworkViewTaskFactory {
 
 	private CyNetworkViewWriterManager writerManager;
-
 	private final TunableSetter tunableSetter;
+	private final SessionUtils sessionUtils;
 
 	
-	public ExportNetworkViewTaskFactoryImpl(CyNetworkViewWriterManager writerManager, TunableSetter tunableSetter) {
+	public ExportNetworkViewTaskFactoryImpl(CyNetworkViewWriterManager writerManager, TunableSetter tunableSetter,
+			SessionUtils sessionUtils) {
 		this.writerManager = writerManager;
 		this.tunableSetter = tunableSetter;
+		this.sessionUtils = sessionUtils;
 	}
 	
 	@Override
@@ -62,4 +65,8 @@ public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFac
 		return new TaskIterator(2, writer);
 	}
 
+	@Override
+	public boolean isReady(CyNetworkView view) {
+		return super.isReady(view) && !sessionUtils.isLoadingSession();
+	}
 }

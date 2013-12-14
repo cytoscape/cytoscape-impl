@@ -32,6 +32,7 @@ import javax.swing.KeyStroke;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.webservice.internal.ui.WebServiceImportDialog;
+import org.cytoscape.webservice.internal.util.SessionUtils;
 
 /**
  * Display Network Import GUI.
@@ -43,11 +44,12 @@ public class ShowImportDialogAction extends AbstractCyAction {
 
 
 	private WebServiceImportDialog<?> dialog;
-
 	private final Window parent;
+	private final SessionUtils sessionUtils;
 
 	public ShowImportDialogAction(final CySwingApplication app,
-			final WebServiceImportDialog<?> dialog, final String menuLocation, final String menuLabel, final KeyStroke shortcut) {
+			final WebServiceImportDialog<?> dialog, final String menuLocation, final String menuLabel,
+			final KeyStroke shortcut, final SessionUtils sessionUtils) {
 		super(menuLabel);
 
 		if (dialog == null)
@@ -67,6 +69,7 @@ public class ShowImportDialogAction extends AbstractCyAction {
 
 		this.parent = app.getJFrame();
 		this.dialog = dialog;
+		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -75,5 +78,9 @@ public class ShowImportDialogAction extends AbstractCyAction {
 		dialog.setLocationRelativeTo(parent);
 		dialog.setVisible(true);
 	}
-
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled && sessionUtils.isSessionReady());
+	}
 }

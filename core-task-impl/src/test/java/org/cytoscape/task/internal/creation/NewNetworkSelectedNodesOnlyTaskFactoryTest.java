@@ -18,6 +18,7 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -49,7 +50,9 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryTest {
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 		CyGroupManager groupMgr = mock(CyGroupManager.class);
 		RenderingEngineManager renderingEngineMgr = mock(RenderingEngineManager.class);
-		NewNetworkSelectedNodesOnlyTaskFactoryImpl factory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(undoSupport, crnf, cnvf, netmgr, networkViewManager, naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr);
+		NewNetworkSelectedNodesOnlyTaskFactoryImpl factory = 
+				new NewNetworkSelectedNodesOnlyTaskFactoryImpl(undoSupport, crnf, cnvf, netmgr, networkViewManager,
+						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, new SessionUtils());
 		
 		CyNetwork network = networkFactory.createNetwork();
 		CyNode node = network.addNode();

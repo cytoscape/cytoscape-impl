@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -39,7 +40,8 @@ public class LoadVizmapFileTaskFactoryTest {
 		TunableRecorderManager recorderManager = new TunableRecorderManager();
 		TunableSetter tunableSetter = new TunableSetterImpl(mutatorFactory, recorderManager);
 		
-		LoadVizmapFileTaskFactory factory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderMgr, vmMgr, syncTaskManager, tunableSetter);
+		LoadVizmapFileTaskFactory factory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderMgr, vmMgr, syncTaskManager,
+				tunableSetter, new SessionUtils());
 		File file = new File("");
 		TaskObserver observer = mock(TaskObserver.class);
 		TaskIterator iterator = factory.createTaskIterator(file, observer);

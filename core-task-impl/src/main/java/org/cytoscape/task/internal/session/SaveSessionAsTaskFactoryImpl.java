@@ -32,25 +32,30 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
-public class SaveSessionAsTaskFactoryImpl extends AbstractSessionTaskFactory implements SaveSessionAsTaskFactory {
+public class SaveSessionAsTaskFactoryImpl extends AbstractTaskFactory implements SaveSessionAsTaskFactory {
 
 	private CySessionManager sessionMgr;
 	private CySessionWriterManager writerMgr;
 	private final RecentlyOpenedTracker tracker;
 	private final CyEventHelper cyEventHelper;
 	private final TunableSetter tunableSetter;
+	private final SessionUtils sessionUtils;
 
 	public SaveSessionAsTaskFactoryImpl(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper, TunableSetter tunableSetter) {
+			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper, TunableSetter tunableSetter,
+			final SessionUtils sessionUtils) {
 		this.sessionMgr = sessionMgr;
 		this.writerMgr = writerMgr;
 		this.tracker = tracker;
 		this.cyEventHelper = cyEventHelper;
 		this.tunableSetter = tunableSetter;
+		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -64,5 +69,10 @@ public class SaveSessionAsTaskFactoryImpl extends AbstractSessionTaskFactory imp
 		m.put("file", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+	}
+	
+	@Override
+	public boolean isReady() {
+		return sessionUtils.isSessionReady();
 	}
 }

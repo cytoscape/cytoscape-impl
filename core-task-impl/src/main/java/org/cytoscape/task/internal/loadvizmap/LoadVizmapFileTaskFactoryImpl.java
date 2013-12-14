@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.io.read.VizmapReaderManager;
+import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -57,15 +58,16 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final VisualMappingManager vmMgr;
 	private final SynchronousTaskManager<?> syncTaskManager;
-
 	private final TunableSetter tunableSetter;
+	private final SessionUtils sessionUtils;
 
 	public LoadVizmapFileTaskFactoryImpl(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr,
-			SynchronousTaskManager<?> syncTaskManager, TunableSetter tunableSetter) {
+			SynchronousTaskManager<?> syncTaskManager, TunableSetter tunableSetter, SessionUtils sessionUtils) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmMgr = vmMgr;
 		this.syncTaskManager = syncTaskManager;
 		this.tunableSetter = tunableSetter;
+		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -77,6 +79,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		return new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
 	}
 
+	@Override
 	public Set<VisualStyle> loadStyles(File f) {
 		// Set up map containing values to be assigned to tunables.
 		// The name "file" is the name of the tunable field in
@@ -91,6 +94,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		return task.getStyles();
 	}
 
+	@Override
 	public Set<VisualStyle> loadStyles(final InputStream is) {
 		// Save the contents of inputStream in a tmp file
 		File f = null;
@@ -121,6 +125,11 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer);
 	}
 
+	@Override
+	public boolean isReady() {
+		return sessionUtils.isSessionReady();
+	}
+	
 	// Read the inputStream and save the content in a tmp file
 	private File getFileFromStream(final InputStream is) throws IOException {
 
