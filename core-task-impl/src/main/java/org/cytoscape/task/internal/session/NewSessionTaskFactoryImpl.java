@@ -32,17 +32,16 @@ import java.util.Map;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.create.NewSessionTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 
-public class NewSessionTaskFactoryImpl extends AbstractTaskFactory implements NewSessionTaskFactory {
+public class NewSessionTaskFactoryImpl extends AbstractSessionTaskFactory implements NewSessionTaskFactory {
 
 	private final CySessionManager mgr;
 	private final TunableSetter tunableSetter;
 	private final CyEventHelper eventHelper;
-
+	
 	public NewSessionTaskFactoryImpl(CySessionManager mgr, TunableSetter tunableSetter, CyEventHelper eventHelper) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;

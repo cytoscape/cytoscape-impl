@@ -41,6 +41,12 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.session.events.SessionLoadCancelledListener;
+import org.cytoscape.session.events.SessionSaveCancelledListener;
+import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.task.*;
 import org.cytoscape.task.create.*;
 import org.cytoscape.task.destroy.*;
@@ -824,6 +830,12 @@ public class CyActivator extends AbstractCyActivator {
 		newSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
 		registerService(bc,newSessionTaskFactory,TaskFactory.class, newSessionTaskFactoryProps);
 		registerService(bc,newSessionTaskFactory,NewSessionTaskFactory.class, newSessionTaskFactoryProps);
+		registerService(bc,newSessionTaskFactory,SessionAboutToBeLoadedListener.class, newSessionTaskFactoryProps);
+		registerService(bc,newSessionTaskFactory,SessionLoadedListener.class, newSessionTaskFactoryProps);
+		registerService(bc,newSessionTaskFactory,SessionLoadCancelledListener.class, newSessionTaskFactoryProps);
+		registerService(bc,newSessionTaskFactory,SessionAboutToBeSavedListener.class, newSessionTaskFactoryProps);
+		registerService(bc,newSessionTaskFactory,SessionSavedListener.class, newSessionTaskFactoryProps);
+		registerService(bc,newSessionTaskFactory,SessionSaveCancelledListener.class, newSessionTaskFactoryProps);
 
 		Properties openSessionTaskFactoryProps = new Properties();
 		openSessionTaskFactoryProps.setProperty(ID,"openSessionTaskFactory");
@@ -837,6 +849,12 @@ public class CyActivator extends AbstractCyActivator {
 		openSessionTaskFactoryProps.setProperty(TOOLTIP,"Open Session");
 		registerService(bc,openSessionTaskFactory,OpenSessionTaskFactory.class, openSessionTaskFactoryProps);
 		registerService(bc,openSessionTaskFactory,TaskFactory.class, openSessionTaskFactoryProps);
+		registerService(bc,openSessionTaskFactory,SessionAboutToBeLoadedListener.class, new Properties());
+		registerService(bc,openSessionTaskFactory,SessionLoadedListener.class, new Properties());
+		registerService(bc,openSessionTaskFactory,SessionLoadCancelledListener.class, new Properties());
+		registerService(bc,openSessionTaskFactory,SessionAboutToBeSavedListener.class, new Properties());
+		registerService(bc,openSessionTaskFactory,SessionSavedListener.class, new Properties());
+		registerService(bc,openSessionTaskFactory,SessionSaveCancelledListener.class, new Properties());
 
 		// We can't use the "normal" OpenSessionTaskFactory for commands
 		// because it inserts the task with the file tunable in it, so the
@@ -863,6 +881,12 @@ public class CyActivator extends AbstractCyActivator {
 		saveSessionTaskFactoryProps.setProperty(COMMAND,"save");
 		saveSessionTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
 		registerService(bc,saveSessionTaskFactory,TaskFactory.class, saveSessionTaskFactoryProps);
+		registerService(bc,saveSessionTaskFactory,SessionAboutToBeLoadedListener.class, saveSessionTaskFactoryProps);
+		registerService(bc,saveSessionTaskFactory,SessionLoadedListener.class, saveSessionTaskFactoryProps);
+		registerService(bc,saveSessionTaskFactory,SessionLoadCancelledListener.class, saveSessionTaskFactoryProps);
+		registerService(bc,saveSessionTaskFactory,SessionAboutToBeSavedListener.class, saveSessionTaskFactoryProps);
+		registerService(bc,saveSessionTaskFactory,SessionSavedListener.class, saveSessionTaskFactoryProps);
+		registerService(bc,saveSessionTaskFactory,SessionSaveCancelledListener.class, saveSessionTaskFactoryProps);
 
 		Properties saveSessionAsTaskFactoryProps = new Properties();
 		saveSessionAsTaskFactoryProps.setProperty(PREFERRED_MENU,"File");
@@ -873,6 +897,12 @@ public class CyActivator extends AbstractCyActivator {
 		saveSessionAsTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"session");
 		registerService(bc,saveSessionAsTaskFactory,TaskFactory.class, saveSessionAsTaskFactoryProps);
 		registerService(bc,saveSessionAsTaskFactory,SaveSessionAsTaskFactory.class, saveSessionAsTaskFactoryProps);
+		registerService(bc,saveSessionAsTaskFactory,SessionAboutToBeLoadedListener.class, saveSessionAsTaskFactoryProps);
+		registerService(bc,saveSessionAsTaskFactory,SessionLoadedListener.class, saveSessionAsTaskFactoryProps);
+		registerService(bc,saveSessionAsTaskFactory,SessionLoadCancelledListener.class, saveSessionAsTaskFactoryProps);
+		registerService(bc,saveSessionAsTaskFactory,SessionAboutToBeSavedListener.class, saveSessionAsTaskFactoryProps);
+		registerService(bc,saveSessionAsTaskFactory,SessionSavedListener.class, saveSessionAsTaskFactoryProps);
+		registerService(bc,saveSessionAsTaskFactory,SessionSaveCancelledListener.class, saveSessionAsTaskFactoryProps);
 
 
 		Properties applyPreferredLayoutTaskFactoryProps = new Properties();

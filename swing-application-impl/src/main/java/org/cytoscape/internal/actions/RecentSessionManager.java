@@ -49,8 +49,13 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.session.events.SessionLoadCancelledListener;
+import org.cytoscape.session.events.SessionSaveCancelledListener;
+import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.slf4j.Logger;
@@ -68,7 +73,6 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 
 	private final RecentlyOpenedTracker tracker;
 	private final CyServiceRegistrar registrar;
-
 	private final CySessionManager sessionManager;
 	private final CySessionReaderManager readerManager;
 	private final CyApplicationManager appManager;
@@ -134,6 +138,12 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager,
 					appManager, netManager, tableManager, netTableManager, grManager, tracker, url, eventHelper);
 			registrar.registerService(factory, TaskFactory.class, prop);
+			registrar.registerService(factory, SessionAboutToBeLoadedListener.class, prop);
+			registrar.registerService(factory, SessionLoadedListener.class, prop);
+			registrar.registerService(factory, SessionLoadCancelledListener.class, prop);
+			registrar.registerService(factory, SessionAboutToBeSavedListener.class, prop);
+			registrar.registerService(factory, SessionSavedListener.class, prop);
+			registrar.registerService(factory, SessionSaveCancelledListener.class, prop);
 
 			this.currentMenuItems.add(factory);
 		}

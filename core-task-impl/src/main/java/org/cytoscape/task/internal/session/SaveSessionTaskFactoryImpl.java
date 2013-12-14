@@ -29,16 +29,15 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.write.SaveSessionTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements SaveSessionTaskFactory{
+public class SaveSessionTaskFactoryImpl extends AbstractSessionTaskFactory implements SaveSessionTaskFactory {
 
 	private final CySessionManager sessionMgr;
 	private final CySessionWriterManager writerMgr;
 	private final RecentlyOpenedTracker tracker;
 	private final CyEventHelper cyEventHelper;
-
+	
 	public SaveSessionTaskFactoryImpl(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
 			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper) {
 		this.sessionMgr = sessionMgr;
@@ -47,6 +46,7 @@ public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements S
 		this.cyEventHelper = cyEventHelper;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		// Check session file name is set or not.
 		final String sessionFileName = sessionMgr.getCurrentSessionFileName();		

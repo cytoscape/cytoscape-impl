@@ -35,6 +35,18 @@ import org.cytoscape.model.events.NetworkDestroyedEvent;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
+import org.cytoscape.session.events.SessionLoadCancelledListener;
+import org.cytoscape.session.events.SessionSaveCancelledEvent;
+import org.cytoscape.session.events.SessionSaveCancelledListener;
+import org.cytoscape.session.events.SessionSavedEvent;
+import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
@@ -50,7 +62,9 @@ import javax.swing.SwingUtilities;
  */
 public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestroyedListener,
 		NetworkViewAddedListener, NetworkViewDestroyedListener, SetCurrentNetworkListener,
-		SetCurrentNetworkViewListener, RowsSetListener {
+		SetCurrentNetworkViewListener, RowsSetListener, SessionAboutToBeLoadedListener, SessionLoadedListener,
+		SessionAboutToBeSavedListener, SessionSavedListener, SessionLoadCancelledListener,
+		SessionSaveCancelledListener {
 
 	private final CytoscapeToolBar toolbar;
 
@@ -95,6 +109,36 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 	public void handleEvent(RowsSetEvent e) {
 		updateToolbar();
 	}
+	
+	@Override
+	public void handleEvent(SessionAboutToBeLoadedEvent e) {
+		updateToolbar();
+	}
+	
+	@Override
+	public void handleEvent(SessionLoadCancelledEvent e) {
+		updateToolbar();
+	}
+	
+	@Override
+	public void handleEvent(SessionLoadedEvent e) {
+		updateToolbar();
+	}
+	
+	@Override
+	public void handleEvent(SessionAboutToBeSavedEvent e) {
+		updateToolbar();
+	}
+	
+	@Override
+	public void handleEvent(SessionSavedEvent e) {
+		updateToolbar();
+	}
+	
+	@Override
+	public void handleEvent(SessionSaveCancelledEvent e) {
+		updateToolbar();
+	}
 
 	private void updateToolbar() {
 		SwingUtilities.invokeLater( new Runnable() {
@@ -104,5 +148,4 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 			}
 		});
 	}
-
 }

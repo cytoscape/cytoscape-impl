@@ -38,11 +38,10 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
-public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements OpenSessionTaskFactory {
+public class OpenSessionTaskFactoryImpl extends AbstractSessionTaskFactory implements OpenSessionTaskFactory {
 
 	private final CySessionManager mgr;
 	private final CySessionReaderManager rmgr;

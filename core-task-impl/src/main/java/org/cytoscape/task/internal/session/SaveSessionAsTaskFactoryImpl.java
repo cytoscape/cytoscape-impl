@@ -33,17 +33,15 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
-public class SaveSessionAsTaskFactoryImpl extends AbstractTaskFactory implements SaveSessionAsTaskFactory {
+public class SaveSessionAsTaskFactoryImpl extends AbstractSessionTaskFactory implements SaveSessionAsTaskFactory {
 
 	private CySessionManager sessionMgr;
 	private CySessionWriterManager writerMgr;
 	private final RecentlyOpenedTracker tracker;
 	private final CyEventHelper cyEventHelper;
-	
 	private final TunableSetter tunableSetter;
 
 	public SaveSessionAsTaskFactoryImpl(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
@@ -55,6 +53,7 @@ public class SaveSessionAsTaskFactoryImpl extends AbstractTaskFactory implements
 		this.tunableSetter = tunableSetter;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
 	}
