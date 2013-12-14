@@ -1,5 +1,6 @@
 package org.cytoscape.filter.internal.view;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
@@ -23,9 +24,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.composite.CompositeSeparator;
-import org.cytoscape.filter.internal.composite.CompositeTransformerPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +53,19 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 	public void dragExit(DragSourceEvent event) {
 	}
 
+	void setBackground(JComponent view, Color color) {
+		view.setBackground(color);
+		if (view instanceof Handle) {
+			JComponent sibling = ((Handle<?>) view).getSiblingView();
+			sibling.setBackground(color);
+		}
+	}
+	
 	@Override
 	public void dragDropEnd(DragSourceDropEvent event) {
 		JComponent lastComponent = controller.getLastHoveredComponent();
 		if (lastComponent != null) {
-			lastComponent.setBackground(ViewUtil.UNSELECTED_BACKGROUND_COLOR);
+			setBackground(lastComponent, ViewUtil.UNSELECTED_BACKGROUND_COLOR);
 		}
 	}
 
@@ -109,25 +116,34 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 			}
 		};
 	}
+
+	JComponent getPrimaryView(JComponent view) {
+		if (view instanceof Handle) {
+			return ((Handle<?>) view).getSiblingView();
+		} else {
+			return view;
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void dragEnter(DropTargetDragEvent event) {
 		JComponent lastComponent = controller.getLastHoveredComponent();
 		if (lastComponent != null) {
-			lastComponent.setBackground(ViewUtil.UNSELECTED_BACKGROUND_COLOR);
+			setBackground(lastComponent, ViewUtil.UNSELECTED_BACKGROUND_COLOR);
 		}
 
+		JComponent target = getPrimaryView(view);
 		try {
 			List<Integer> path = (List<Integer>) event.getTransferable().getTransferData(PathDataFlavor.instance);
 			JComponent sourceView = controller.getChild(parent, path);
-			List<Integer> targetPath = controller.getPath(parent, view);
-			if (!controller.supportsDrop(parent, sourceView, view) || isEquivalentLocation(path, targetPath, view)) {
+			List<Integer> targetPath = controller.getPath(parent, target);
+			if (!controller.supportsDrop(parent, sourceView, target) || isEquivalentLocation(path, targetPath, target)) {
 				event.rejectDrag();
-				view.setCursor(DragSource.DefaultCopyNoDrop);
+				target.setCursor(DragSource.DefaultCopyNoDrop);
 				return;
 			}
-			if (view instanceof CompositeSeparator || view instanceof CompositeFilterPanel || view instanceof CompositeTransformerPanel) {
+			if (target instanceof CompositeSeparator) {
 				// Move
 				view.setCursor(DragSource.DefaultMoveDrop);
 			} else {
@@ -140,7 +156,7 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 			logger.error("Unexpected error", e);
 		}
 		
-		view.setBackground(ViewUtil.SELECTED_BACKGROUND_COLOR);
+		target.setBackground(ViewUtil.SELECTED_BACKGROUND_COLOR);
 		controller.setLastHoveredComponent(view);
 	}
 	
@@ -163,6 +179,10 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 	public void dragExit(DropTargetEvent event) {
 		view.getParent().setCursor(null);
 		view.setCursor(null);
+		if (view instanceof Handle) {
+			JComponent sibling = ((Handle<?>) view).getSiblingView();
+			sibling.setCursor(null);
+		}
 	}
 	
 	@Override
@@ -172,18 +192,19 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 	@SuppressWarnings("unchecked")
 	@Override
 	public void drop(DropTargetDropEvent event) {
+		JComponent target = getPrimaryView(view);
 		view.setCursor(null);
 		try {
 			List<Integer> path = (List<Integer>) event.getTransferable().getTransferData(PathDataFlavor.instance);
 			JComponent sourceView = controller.getChild(parent, path);
-			if (sourceView == view) {
+			if (sourceView == target) {
 				return;
 			}
-			List<Integer> targetPath = controller.getPath(parent, view);
+			List<Integer> targetPath = controller.getPath(parent, target);
 			if (targetPath == null) {
 				return;
 			}
-			controller.handleDrop(parent, sourceView, path, view, targetPath);
+			controller.handleDrop(parent, sourceView, path, target, targetPath);
 			event.acceptDrop(DnDConstants.ACTION_LINK);
 			event.dropComplete(true);
 		} catch (UnsupportedFlavorException e) {

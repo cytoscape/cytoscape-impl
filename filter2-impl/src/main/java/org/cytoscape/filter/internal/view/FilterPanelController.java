@@ -353,7 +353,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			int sourceIndex = sourcePath.get(sourcePath.size() - 1);
 			Filter<CyNetwork, CyIdentifiable> filter = sourceParent.getModel().get(sourceIndex);
 			TransformerElementViewModel<FilterPanel> viewModel = sourceParent.getViewModel(filter);
-			sourceParent.removeFilter(sourceIndex);
+			sourceParent.removeFilter(sourceIndex, false);
 			
 			if (targetPath.size() == 0) {
 				// Target is end of root
@@ -363,7 +363,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			
 			CompositeFilterPanel targetParent = (CompositeFilterPanel) target.getParent();
 			
-			if (target instanceof CompositeSeparator || target instanceof CompositeFilterPanel) {
+			if (target instanceof CompositeSeparator) {
 				// Drop causes a move
 				int targetIndex = targetPath.get(targetPath.size() - 1) + 1;
 				if (sourcePath.size() == targetPath.size()) {
@@ -374,6 +374,8 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 					}
 				}
 				targetParent.addViewModel(targetIndex, filter, viewModel);
+			} else if (target instanceof CompositeFilterPanel) {
+				((CompositeFilterPanel) target).addViewModel(filter, viewModel);
 			} else {
 				// Drop causes grouping
 				int targetIndex = targetPath.get(targetPath.size() - 1);
@@ -382,7 +384,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 				}
 				Filter<CyNetwork, CyIdentifiable> targetFilter = targetParent.getModel().get(targetIndex);
 				TransformerElementViewModel<FilterPanel> targetViewModel = targetParent.getViewModel(targetFilter);
-				targetParent.removeFilter(targetIndex);
+				targetParent.removeFilter(targetIndex, false);
 				
 				CompositeFilter<CyNetwork, CyIdentifiable> group = transformerManager.createCompositeFilter(CyNetwork.class, CyIdentifiable.class);
 				group.addListener(worker);
@@ -420,7 +422,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		for (int index = 0; index < parentModel.getLength(); index++) {
 			Filter<CyNetwork, CyIdentifiable> filter = parentModel.get(index);
 			if (model == filter) {
-				parentPanel.removeFilter(index);
+				parentPanel.removeFilter(index, true);
 				removeOrphans(parentPanel);
 				return;
 			}
@@ -441,7 +443,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		
 		CompositeFilterPanel parent = (CompositeFilterPanel) component.getParent();
 		int sourceIndex = path.get(path.size() - 1);
-		parent.removeFilter(sourceIndex);
+		parent.removeFilter(sourceIndex, true);
 		
 		CompositeFilterPanel root = view.getRootPanel();
 		root.updateLayout();
