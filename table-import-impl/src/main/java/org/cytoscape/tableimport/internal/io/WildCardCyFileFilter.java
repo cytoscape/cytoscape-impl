@@ -1,6 +1,5 @@
 package org.cytoscape.tableimport.internal.io;
 
-import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
