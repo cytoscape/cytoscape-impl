@@ -1785,7 +1785,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		importTypeButtonGroup.add(counterRadioButton);
 		importTypeButtonGroup.setSelected(counterRadioButton.getModel(), true);
 
-		if ( fileType != null && fileType.equalsIgnoreCase(SupportedFileType.CSV.getExtension()) )
+		if( fileType != null && fileType.equalsIgnoreCase(SupportedFileType.CSV.getExtension()) )
 			commaRadioButton.setSelected(true);
 		else
 			tabRadioButton.setSelected(true);
