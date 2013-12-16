@@ -25,10 +25,16 @@ package org.cytoscape.io.internal.read;
  */
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
 
 public class CopyInputStream {
 	/**
@@ -38,12 +44,12 @@ public class CopyInputStream {
 	 */
 	public static InputStream copyKBytes(InputStream is, int kb ) throws IOException {
 		ByteArrayOutputStream copy = new ByteArrayOutputStream();
-		int read = 0;
+//		int read = 0;
 		int chunk = 0;
 		byte[] data = new byte[1024];
 		
 		while((-1 != (chunk = is.read(data))) && ( kb-- > 0 ) ) {
-			read += data.length;
+//			read += data.length;
 			copy.write(data, 0, chunk);
 		}
 	
@@ -57,4 +63,20 @@ public class CopyInputStream {
 
 		return new ByteArrayInputStream( copy.toByteArray() );
 	}
+	
+	/**
+	 * 
+	 * @param is The InputStream to be copied.
+	 * @throws IOException 
+	 */
+	public static InputStream copy(InputStream is) throws IOException {
+		ReadableByteChannel source = Channels.newChannel(is);   
+		File tmpf = File.createTempFile("cy3_istream_", ".data");
+       	tmpf.deleteOnExit();
+	    FileOutputStream dest = new FileOutputStream(tmpf);        
+	    dest.getChannel().transferFrom(source, 0, 100 * 1024 * 1024 * 1024);
+	    dest.close();
+	    return new FileInputStream(tmpf);
+	}
+	
 }

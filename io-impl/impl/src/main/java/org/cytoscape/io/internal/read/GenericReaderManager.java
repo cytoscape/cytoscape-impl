@@ -24,6 +24,7 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -39,7 +40,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -115,7 +115,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		for (final T factory : factories) {
 			final CyFileFilter cff = factory.getFileFilter();
 			// Got "Accepted" flag. Need to check it's default or not.
-			if (cff.accepts(uri, category)) {
+			if (cff.accepts(uri, category)) { //TODO fix the design flaw: if URI is web URL, it will hit the server multiple times in this loop
 				logger.info("Filter returns Accepted.  Need to check priority: " + factory);
 				if(factory.getClass().toString().contains(DEFAULT_READER_FACTORY_CLASS)) {
 					defaultFactory = factory;
@@ -159,9 +159,15 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 			logger.info("Successfully found compatible ReaderFactory " + chosenFactory);
 			// This returns strean using proxy if it exists.
 			InputStream stream = streamUtil.getInputStream(uri.toURL());
+			
+			//fast copy (via a local tmp file) 
+			//to prevent URL connection timeouts and repeating a web query
+			stream = CopyInputStream.copy(stream);
+			
 			if (!stream.markSupported()) {
 				stream = new BufferedInputStream(stream);
 			}
+
 			return (R) chosenFactory.createTaskIterator(stream, inputName).next();
 
 		} catch (IOException e) {
@@ -172,24 +178,21 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 
 	private final String getExtension(String filename) {
 		if (filename != null) {
-			int i = filename.lastIndexOf('.');
-
-			if ((i > 0) && (i < (filename.length() - 1))) {
-				return filename.substring(i + 1).toLowerCase();
-			}
-			if (i == -1)
-				return "";
+			return FilenameUtils.getExtension(filename).toLowerCase();
 		}
 		return null;
 	}
 
 	public R getReader(InputStream stream, String inputName) {
 		try {
+			//copy all (via a local tmp file)
+			stream = CopyInputStream.copy(stream);
+			
 			if (!stream.markSupported()) {
 				stream = new BufferedInputStream(stream);
 				stream.mark(1025);
 			}
-
+			
 			for (T factory : factories) {
 				CyFileFilter cff = factory.getFileFilter();
 				logger.debug("trying READER: " + factory + " with filter: " + cff);
