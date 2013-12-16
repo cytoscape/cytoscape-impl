@@ -1,5 +1,6 @@
 package org.cytoscape.tableimport.internal.io;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
@@ -83,7 +84,7 @@ public class WildCardCyFileFilter extends BasicCyFileFilter {
 	}
 
 	private boolean extensionsMatch(URI uri) {
-		final String extension = getExtension(uri.toString());
+		final String extension = FilenameUtils.getExtension(uri.toString());
 		if( extensions == null || blackList.contains(extension))
 			return false;
 		return extensions.contains("") || extensions.contains(extension);
