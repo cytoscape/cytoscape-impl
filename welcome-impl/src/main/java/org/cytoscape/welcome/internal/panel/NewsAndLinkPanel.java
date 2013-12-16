@@ -24,8 +24,7 @@ package org.cytoscape.welcome.internal.panel;
  * #L%
  */
 
-import java.awt.Cursor;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -117,14 +116,7 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 				"Latest News", TitledBorder.LEFT, TitledBorder.CENTER, REGULAR_FONT, REGULAR_FONT_COLOR));
 		
 		add(linkPanel);
-        JScrollPane sp = new JScrollPane(statusPanel);
-		sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        sp.setOpaque(false);
-		sp.setBorder( BorderFactory.createEmptyBorder() );
-		sp.getViewport().setOpaque(false);
-		sp.setViewportBorder( BorderFactory.createEmptyBorder() );
-		add(sp);
+		add(statusPanel);
 	}
 
 	private final class LabelMouseListener extends MouseAdapter {

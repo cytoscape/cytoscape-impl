@@ -34,6 +34,7 @@ import java.net.UnknownHostException;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.text.BadLocationException;
 
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.welcome.internal.WelcomeScreenDialog;
@@ -62,8 +63,14 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 	private void initComponents() {
 		final String versionStr = cyVersion.getVersion();
 
-		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		this.setLayout( new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
+		JPanel panel = new JPanel();
+		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		panel.setLayout( new BorderLayout(0,3));
+
+
+		this.setLayout( new BorderLayout(0,3) );
 		final JLabel status = new JLabel();
 		status.setAlignmentX(Component.LEFT_ALIGNMENT);
 		status.setOpaque(false);
@@ -77,14 +84,26 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 			status.setIcon(newVersionAvailableIcon);
 			status.setText("New version is available: " + versionStr);
 		}
-        this.add(status);
-		this.add(Box.createRigidArea(new Dimension(0,2)));
+		panel.add(status, BorderLayout.NORTH);
+//		this.add(status);
+//		this.add(Box.createRigidArea(new Dimension(0, 3)));
 
-        final JEditorPane news = new JEditorPane();
+
+        final JEditorPane news = new JEditorPane()
+		{
+			@Override
+			public boolean getScrollableTracksViewportHeight()
+			{
+				return true;
+			}
+		};
 		news.setAlignmentX(Component.LEFT_ALIGNMENT);
         news.setOpaque(false);
         news.setFont(REGULAR_FONT);
-		news.setPreferredSize( new Dimension(50,5) );
+	    news.setPreferredSize( new Dimension(this.getPreferredSize().width,500) );
+		news.setMinimumSize( new Dimension(10,10));
+		news.setEditable(false);
+		//news.setPreferredSize( new Dimension(50,5) );
         try
 		{
             news.setPage(NEWS_URL);
@@ -93,7 +112,17 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 		{
 			e.printStackTrace();
 		}
-        this.add(news);
+		panel.add(news);
+
+		JScrollPane sp = new JScrollPane(panel);
+		sp.setAlignmentX(Component.LEFT_ALIGNMENT);
+		sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		sp.setOpaque(false);
+		sp.setBorder( BorderFactory.createEmptyBorder() );
+		sp.getViewport().setOpaque(false);
+		sp.setViewportBorder( BorderFactory.createEmptyBorder() );
+		this.add(sp);
 	}
 	
 	private boolean isUpToDate() {
