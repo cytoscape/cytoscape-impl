@@ -113,8 +113,8 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Importing Interacitons from PSICQUIC Services");
-		taskMonitor.setStatusMessage("Loading interaction from remote service...");
+		taskMonitor.setTitle("Importing Interactions from PSICQUIC Services");
+		taskMonitor.setStatusMessage("Loading interactions from remote service...");
 		taskMonitor.setProgress(0.01d);
 
 		if (searchResult == null)
