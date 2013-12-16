@@ -38,16 +38,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.SwingUtilities;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.biopax.paxtools.io.sif.BinaryInteractionType;
-import org.biopax.paxtools.io.sif.InteractionRule;
-import org.biopax.paxtools.io.sif.SimpleInteractionConverter;
 import org.biopax.paxtools.model.BioPAXElement;
-import org.biopax.paxtools.model.BioPAXLevel;
 import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.Entity;
 import org.biopax.paxtools.model.level3.EntityReference;
@@ -61,7 +55,6 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -460,36 +453,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		if(!cyServices.networkViewManager.getNetworkViews(network).contains(view))
 			cyServices.networkViewManager.addNetworkView(view);
 		
-//		if(view != null) {
-//			final VisualStyle vs = style;
-//			if(vs != null) {
-//				final CyNetworkView v = view;
-//				//apply style and layout
-//				SwingUtilities.invokeLater(new Runnable() {
-//					@Override
-//					public void run() {
-//						layout(v); //runs in a separate task/thread
-//						cyServices.mappingManager.setVisualStyle(vs, v);
-//						vs.apply(v);
-//						v.updateView();
-//					}
-//				});
-//			}
-//		}
-		
 		return view;
-	}
-
-
-	private void layout(CyNetworkView view) {
-		// do layout
-		CyLayoutAlgorithm layout = cyServices.layoutManager.getLayout("force-directed");
-		if (layout == null) {
-			layout = cyServices.layoutManager.getLayout(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
-			log.warn("'force-directed' layout not found; will use the default one.");
-		}
-		cyServices.taskManager.execute(layout.createTaskIterator(view, 
-				layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,""));
 	}
 
 }
