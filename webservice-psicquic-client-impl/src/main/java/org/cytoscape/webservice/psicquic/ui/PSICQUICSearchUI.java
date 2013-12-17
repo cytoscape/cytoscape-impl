@@ -25,11 +25,14 @@ package org.cytoscape.webservice.psicquic.ui;
  */
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -49,6 +52,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.model.CyNetworkManager;
@@ -160,6 +167,19 @@ public class PSICQUICSearchUI extends JPanel {
 		}
 
 		init();
+
+		// Set focus to query area.
+		this.addAncestorListener(new AncestorListener() {
+			@Override
+			public void ancestorRemoved(AncestorEvent ae) {}
+			@Override
+			public void ancestorMoved(AncestorEvent ae) {}
+			
+			@Override
+			public void ancestorAdded(AncestorEvent ae) {
+				queryArea.requestFocus();
+			}
+		});
 	}
 
 	private void init() {
@@ -191,6 +211,17 @@ public class PSICQUICSearchUI extends JPanel {
 
 		this.add(searchConditionPanel);
 		this.add(statesPanel);
+		
+		this.queryArea.addCaretListener(new CaretListener() {
+			@Override
+			public void caretUpdate(CaretEvent ce) {
+				if(queryArea.getText().isEmpty()) {
+					searchButton.setEnabled(false);
+				} else {
+					searchButton.setEnabled(true);
+				}
+			}
+		});
 		
 	}
 	
@@ -415,11 +446,13 @@ public class PSICQUICSearchUI extends JPanel {
 			searchAreaTitle = MIQL_MODE;
 			query = queryArea.getText();
 			searchButton.setEnabled(false);
+			queryArea.requestFocus();
 		} else if (modeString.equals(INTERACTOR_ID_LIST)) {
 			mode = SearchMode.INTERACTOR;
 			searchAreaTitle = INTERACTOR_ID_LIST;
 			query = queryArea.getText();
 			searchButton.setEnabled(false);
+			queryArea.requestFocus();
 		} else {
 			mode = SearchMode.SPECIES;
 			searchAreaTitle = BY_SPECIES;
