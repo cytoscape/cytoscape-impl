@@ -53,7 +53,7 @@ public class SelectURLTableTask extends AbstractTask {
 			tableReader = (LoadTableReaderTask)readerTask;
 			networkReader = null;
 		}
-		if(readerTask instanceof CombineReaderAndMappingTask)
+		if(readerTask instanceof LoadNetworkReaderTask)
 		{
 			tableReader = null;
 			networkReader = (LoadNetworkReaderTask) readerTask;
@@ -77,7 +77,7 @@ public class SelectURLTableTask extends AbstractTask {
 		if(tableReader != null)
 			tableReader.setInputFile(stream, fileFormat, url.toURI().toString());
 		if(networkReader != null)
-			networkReader.setInputFile(stream, fileFormat, url.toURI().toString());
+			networkReader.setInputFile(stream, fileFormat, url.toURI().toString(),url.toURI());
 	}
 }
 

@@ -32,10 +32,13 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
@@ -61,6 +64,7 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 	private final CyNetworkNaming namingUtil;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private final CyNetworkReaderManager networkReaderManager;
 	private Properties props;
 
 	/**
@@ -68,7 +72,8 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 	 */
 	public ImportNoGuiNetworkReaderFactory(final StreamUtil streamUtil, boolean fromURL,
 			final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager, CyProperty<Properties> props,
-			final CyNetworkNaming namingUtil, final VisualMappingManager vmm,final CyNetworkViewFactory nullNetworkViewFactory)
+			final CyNetworkNaming namingUtil, final VisualMappingManager vmm,final CyNetworkViewFactory nullNetworkViewFactory,
+			final CyNetworkReaderManager networkReaderManager)
 	{
 		this.streamUtil = streamUtil;
 		this.fromURL = fromURL;
@@ -77,12 +82,13 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 		this.namingUtil = namingUtil;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.networkReaderManager = networkReaderManager;
 		this.props = props.getProperties();
 	}
 
 	public TaskIterator createTaskIterator() {
 		
-		LoadNetworkReaderTask readerTask = new LoadNetworkReaderTask();
+		LoadNetworkReaderTask readerTask = new LoadNetworkReaderTask(networkReaderManager);
 		NetworkCollectionHelper networkCollectionHelperTask = new NetworkCollectionHelper(readerTask);
 		GenerateNetworkViewsTask generateViewTask = new GenerateNetworkViewsTask(readerTask,networkManager,networkViewManager,props,namingUtil,vmm,nullNetworkViewFactory);
 		

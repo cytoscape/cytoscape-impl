@@ -29,7 +29,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.BasicCyFileFilter;
-import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.read.*;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -106,6 +106,7 @@ public class CyActivator extends AbstractCyActivator {
         ImportDataTableTaskFactory importAttrTFServiceRef = getService(bc,ImportDataTableTaskFactory.class);
         VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
         CyNetworkViewFactory nullNetworkViewFactory = getService(bc, CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
+        CyNetworkReaderManager networkReaderManagerServiceRef = getService(bc,CyNetworkReaderManager.class);
 
 		WildCardCyFileFilter attrsTableFilter_txt = new WildCardCyFileFilter(new String[]{"csv","tsv", "txt", "tab", "net", ""}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",TABLE,CytoscapeServices.streamUtil);
 		attrsTableFilter_txt.setBlacklist("xml","rdf","owl","cys");
@@ -195,7 +196,7 @@ public class CyActivator extends AbstractCyActivator {
         importFileNetworksProps.setProperty(COMMAND_NAMESPACE, "network");
         TaskFactory importFileNetworkFactory = new ImportNoGuiNetworkReaderFactory(streamUtilServiceRef,false,CytoscapeServices.cyNetworkManager,
                 CytoscapeServices.cyNetworkViewManager,CytoscapeServices.cyProperties,CytoscapeServices.cyNetworkNaming,
-                visualMappingManagerServiceRef,nullNetworkViewFactory);
+                visualMappingManagerServiceRef,nullNetworkViewFactory,networkReaderManagerServiceRef);
         // Register the service as a TaskFactory for commands
         registerService(bc,importFileNetworkFactory, TaskFactory.class, importFileNetworksProps);
 
@@ -204,7 +205,7 @@ public class CyActivator extends AbstractCyActivator {
         importURLNetworksProps.setProperty(COMMAND_NAMESPACE, "network");
         TaskFactory importURLNetworkFactory = new ImportNoGuiNetworkReaderFactory(streamUtilServiceRef,true,CytoscapeServices.cyNetworkManager,
                 CytoscapeServices.cyNetworkViewManager,CytoscapeServices.cyProperties,CytoscapeServices.cyNetworkNaming,
-                visualMappingManagerServiceRef,nullNetworkViewFactory);
+                visualMappingManagerServiceRef,nullNetworkViewFactory, networkReaderManagerServiceRef);
         // Register the service as a TaskFactory for commands
         registerService(bc,importURLNetworkFactory, TaskFactory.class, importURLNetworksProps);
     }

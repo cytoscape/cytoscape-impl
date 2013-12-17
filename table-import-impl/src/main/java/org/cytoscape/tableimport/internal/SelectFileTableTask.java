@@ -82,7 +82,7 @@ public class SelectFileTableTask extends AbstractTask {
 			tableReader.setInputFile(stream, fileFormat, filePath.toURI().toString());
 		
 		if(networkReader != null)
-			networkReader.setInputFile(stream, fileFormat, filePath.toURI().toString());
+			networkReader.setInputFile(stream, fileFormat, filePath.toURI().toString(),filePath.toURI());
 	}
 }
 
