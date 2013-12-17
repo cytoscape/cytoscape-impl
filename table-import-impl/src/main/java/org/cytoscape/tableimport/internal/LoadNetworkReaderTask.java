@@ -26,14 +26,11 @@ package org.cytoscape.tableimport.internal;
 
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.net.*;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -41,10 +38,13 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.*;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
 import org.cytoscape.tableimport.internal.reader.GraphReader;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
@@ -53,6 +53,7 @@ import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -72,8 +73,11 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private CyNetwork[] networks;
 	private String inputName;
 	private GraphReader reader;
+	private CyNetworkReader netReader = null;
+	private CyNetworkReaderManager networkReaderManager;
 	private PreviewTablePanel previewPanel;
 	private String networkName;
+	private URI uri;
 	private TaskMonitor taskMonitor;
 	
 	private static int numImports = 0;
@@ -106,7 +110,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	
 	private NetworkTableMappingParameters ntmp;
 
-	public LoadNetworkReaderTask()
+	public LoadNetworkReaderTask(final CyNetworkReaderManager networkReaderManager)
 	{
 		List<String> tempList = new ArrayList<String>();
 		tempList.add(TextFileDelimiters.COMMA.toString());
@@ -120,10 +124,12 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tempList.add(TextFileDelimiters.SLASH.toString());
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		delimitersForDataList = new ListSingleSelection<String>(tempList);
+		this.networkReaderManager = networkReaderManager;
 	}
 	
-	public LoadNetworkReaderTask(final InputStream is, final String fileType, final String inputName)
+	/*public LoadNetworkReaderTask(final InputStream is, final String fileType, final String inputName)
 	{
+		super(is,)
 		List<String> tempList = new ArrayList<String>();
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		tempList.add(TextFileDelimiters.SEMICOLON.toString());
@@ -137,13 +143,14 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		delimitersForDataList = new ListSingleSelection<String>(tempList);
 		setInputFile(is,fileType,inputName);
-	}
+	}*/
 	
-	public void setInputFile(final InputStream is, final String fileType,final String inputName)
+	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName)
 	{
 		this.isStart           = is;
 		this.fileType     = fileType;
 		this.inputName    = inputName;
+		this.uri = uriName;
 		
 		previewPanel = new PreviewTablePanel();
 
@@ -190,110 +197,127 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		List<String> attrNameList = new ArrayList<String>();
 		int colCount;
 		String[] attributeNames;
+		
+		
+		if(isEnd != null)
+			netReader = networkReaderManager.getReader(isEnd, inputName);
+		
+		if(netReader == null)				
+			netReader = networkReaderManager.getReader(uri, inputName);
 
-		Workbook workbook = null;
-		// Load Spreadsheet data for preview.
-		if(fileType != null && (fileType.equalsIgnoreCase(
-				SupportedFileType.EXCEL.getExtension())
-				|| fileType.equalsIgnoreCase(
-						SupportedFileType.OOXML.getExtension())) && workbook == null) {
-			try {
-				workbook = WorkbookFactory.create(isStart);
-			} catch (InvalidFormatException e) {
-				//e.printStackTrace();
-				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?" , e);
-			} finally {
-				if (isStart != null) {
-					isStart.close();
-				}
-			}
-		}
-				
-		if(startLoadRow > 0)
-			startLoadRow--;
-		startLoadRowTemp = startLoadRow;
-		if(firstRowAsColumnNames)
-			startLoadRowTemp = 0;
 		
-		previewPanel.setPreviewTable(workbook, fileType, isStart, delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
-		
-		colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
-		importFlag = new boolean[colCount];
-		Object curName = null;
-		
-		if(firstRowAsColumnNames)
+		if(netReader instanceof CombineReaderAndMappingTask)
 		{
-			setFirstRowAsColumnNames();
-			startLoadRow++;
-		}
-
-		for (int i = 0; i < colCount; i++) {
-			importFlag[i] = true;
-			curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
-			
-			if (attrNameList.contains(curName)) {
-				int dupIndex = 0;
-
-				for (int idx = 0; idx < attrNameList.size(); idx++) {
-					if (curName.equals(attrNameList.get(idx))) {
-						dupIndex = idx;
-
-						break;
+			Workbook workbook = null;
+			// Load Spreadsheet data for preview.
+			if(fileType != null && (fileType.equalsIgnoreCase(
+					SupportedFileType.EXCEL.getExtension())
+					|| fileType.equalsIgnoreCase(
+							SupportedFileType.OOXML.getExtension())) && workbook == null) {
+				try {
+					workbook = WorkbookFactory.create(isStart);
+				} catch (InvalidFormatException e) {
+					//e.printStackTrace();
+					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?" , e);
+				} finally {
+					if (isStart != null) {
+						isStart.close();
 					}
 				}
-
-				if (importFlag[i] && importFlag[dupIndex]) {
-//TODO add message to user
-					return;
+			}
+			
+			netReader = null;
+			if(startLoadRow > 0)
+				startLoadRow--;
+			startLoadRowTemp = startLoadRow;
+			if(firstRowAsColumnNames)
+				startLoadRowTemp = 0;
+			
+			previewPanel.setPreviewTable(workbook, fileType, isStart, delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
+			
+			colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
+			importFlag = new boolean[colCount];
+			Object curName = null;
+			
+			if(firstRowAsColumnNames)
+			{
+				setFirstRowAsColumnNames();
+				startLoadRow++;
+			}
+	
+			for (int i = 0; i < colCount; i++) {
+				importFlag[i] = true;
+				curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
+				
+				if (attrNameList.contains(curName)) {
+					int dupIndex = 0;
+	
+					for (int idx = 0; idx < attrNameList.size(); idx++) {
+						if (curName.equals(attrNameList.get(idx))) {
+							dupIndex = idx;
+	
+							break;
+						}
+					}
+	
+					if (importFlag[i] && importFlag[dupIndex]) {
+	//TODO add message to user
+						return;
+					}
+				}
+	
+				if (curName == null) {
+					attrNameList.add("Column " + i);
+				} else {
+					attrNameList.add(curName.toString());
 				}
 			}
-
-			if (curName == null) {
-				attrNameList.add("Column " + i);
-			} else {
-				attrNameList.add(curName.toString());
-			}
-		}
-		
-		attributeNames = attrNameList.toArray(new String[0]);
-		
-		final Byte[] test = previewPanel.getDataTypes(previewPanel.getSelectedSheetName());
-
-		final Byte[] attributeTypes = new Byte[test.length];
-
-		for (int i = 0; i < test.length; i++) {
-			attributeTypes[i] = test[i];
-		}
-		
-		if(indexColumnSourceInteraction >0)
-			indexColumnSourceInteraction--;
-		
-		if(indexColumnTargetInteraction >0)
-			indexColumnTargetInteraction--;
-		
-		if(indexColumnTypeInteraction >0)
-			indexColumnTypeInteraction--;
-		
-		
-		ntmp = new NetworkTableMappingParameters(delimiters.getSelectedValues(),delimitersForDataList.getSelectedValue(),attributeNames,attributeTypes,
-				previewPanel.getCurrentListDataTypes(),importFlag,indexColumnSourceInteraction,indexColumnTargetInteraction,indexColumnTypeInteraction,
-				defaultInteraction,startLoadRow,null);
-		
-
-		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
-		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
-		{
-			Sheet sheet = workbook.getSheetAt(0);
-			networkName = workbook.getSheetName(0);
 			
-			reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, this.nMap, this.rootNetwork);
-		} else {
-			networkName = this.inputName;
-			reader = new NetworkTableReader(networkName, this.isEnd, ntmp, this.nMap, this.rootNetwork);
+			attributeNames = attrNameList.toArray(new String[0]);
+			
+			final Byte[] test = previewPanel.getDataTypes(previewPanel.getSelectedSheetName());
+	
+			final Byte[] attributeTypes = new Byte[test.length];
+	
+			for (int i = 0; i < test.length; i++) {
+				attributeTypes[i] = test[i];
+			}
+			
+			if(indexColumnSourceInteraction >0)
+				indexColumnSourceInteraction--;
+			
+			if(indexColumnTargetInteraction >0)
+				indexColumnTargetInteraction--;
+			
+			if(indexColumnTypeInteraction >0)
+				indexColumnTypeInteraction--;
+			
+			
+			ntmp = new NetworkTableMappingParameters(delimiters.getSelectedValues(),delimitersForDataList.getSelectedValue(),attributeNames,attributeTypes,
+					previewPanel.getCurrentListDataTypes(),importFlag,indexColumnSourceInteraction,indexColumnTargetInteraction,indexColumnTypeInteraction,
+					defaultInteraction,startLoadRow,null);
+			
+			
+			if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
+			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
+			{
+				Sheet sheet = workbook.getSheetAt(0);
+				networkName = workbook.getSheetName(0);
+				
+				reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, this.nMap, this.rootNetwork);
+			} else {
+				networkName = this.inputName;
+				reader = new NetworkTableReader(networkName, this.isEnd, ntmp, this.nMap, this.rootNetwork);
+			}
+			loadNetwork(monitor);
+	
+			monitor.setProgress(1.0);
 		}
-		loadNetwork(monitor);
-
-		monitor.setProgress(1.0);
+		else
+		{
+			networkName = this.inputName;
+			insertTasksAfterCurrentTask(netReader);
+		}
 	}
 	
 	public void setFirstRowAsColumnNames()
@@ -342,23 +366,31 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork arg0) {
-		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.createNetworkView(arg0);
-		final CyLayoutAlgorithm layout = CytoscapeServices.cyLayouts.getDefaultLayout();
-		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
-		Task nextTask = itr.next();
-		try {
-			nextTask.run(taskMonitor);
-		} catch (Exception e) {
-			throw new RuntimeException("Could not finish layout", e);
+		if(netReader != null)
+			return netReader.buildCyNetworkView(arg0);
+		else
+		{
+			final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.createNetworkView(arg0);
+			final CyLayoutAlgorithm layout = CytoscapeServices.cyLayouts.getDefaultLayout();
+			TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
+			Task nextTask = itr.next();
+			try {
+				nextTask.run(taskMonitor);
+			} catch (Exception e) {
+				throw new RuntimeException("Could not finish layout", e);
+			}
+	
+			taskMonitor.setProgress(1.0d);
+			return view;	
 		}
-
-		taskMonitor.setProgress(1.0d);
-		return view;	
 	}
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		return networks;
+		if(netReader != null)
+			return netReader.getNetworks();
+		else
+			return networks;
 	}
 
 	public String getName(){
