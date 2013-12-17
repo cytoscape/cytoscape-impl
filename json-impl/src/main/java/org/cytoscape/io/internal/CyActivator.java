@@ -9,7 +9,7 @@ import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.read.json.CytoscapeJsNetworkReaderFactory;
 import org.cytoscape.io.internal.write.json.CytoscapeJsVisualStyleWriterFactory;
-import org.cytoscape.io.internal.write.json.JSONNetworkWriterFactory;
+import org.cytoscape.io.internal.write.json.CytoscapeJsNetworkWriterFactory;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
@@ -43,13 +43,14 @@ public class CyActivator extends AbstractCyActivator {
 		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
 
 		// ///////////////// Readers ////////////////////////////
-		final BasicCyFileFilter cytoscapejsReaderFilter = new BasicCyFileFilter(new String[] { "cyjs" },
+		final BasicCyFileFilter cytoscapejsReaderFilter = new BasicCyFileFilter(new String[] { "cyjs", "json" },
 				new String[] { "application/json" }, "Cytoscape.js JSON", DataCategory.NETWORK, streamUtil);
 		final CytoscapeJsNetworkReaderFactory jsReaderFactory = new CytoscapeJsNetworkReaderFactory(
 				cytoscapejsReaderFilter, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		final Properties cytoscapeJsNetworkReaderFactoryProps = new Properties();
 
-		cytoscapeJsNetworkReaderFactoryProps.put(ID, "cytoscapeJsNetworkReaderFactory");
+		// This is the unique identifier for this reader.  3rd party developer can use this service by using this ID.
+		cytoscapeJsNetworkReaderFactoryProps.put(ID, "cytoscapejsNetworkReaderFactory");
 		registerService(bc, jsReaderFactory, InputStreamTaskFactory.class, cytoscapeJsNetworkReaderFactoryProps);
 
 
@@ -63,16 +64,15 @@ public class CyActivator extends AbstractCyActivator {
 				new String[] { "application/json" }, "Style for cytoscape.js", DataCategory.VIZMAP, streamUtil);
 
 		// For Cytoscape.js
-		final JSONNetworkWriterFactory cytoscapejsWriterFactory = new JSONNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
+		final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory = new CytoscapeJsNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
 		final Properties jsWriterFactoryProperties = new Properties();
-		jsWriterFactoryProperties.put(ID, "cytoscapejsWriterFactory");
+		jsWriterFactoryProperties.put(ID, "cytoscapejsNetworkWriterFactory");
 		registerAllServices(bc, cytoscapejsWriterFactory, jsWriterFactoryProperties);
-
 
 		// For Visual Style
 		final CytoscapeJsVisualStyleWriterFactory jsonVSWriterFactory = new CytoscapeJsVisualStyleWriterFactory(vizmapJsonFilter, applicationManager);
 		final Properties jsVisualStyleWriterFactoryProperties = new Properties();
-		jsWriterFactoryProperties.put(ID, "cytoscapeJsVisualStyleWriterFactory");
+		jsWriterFactoryProperties.put(ID, "cytoscapejsVisualStyleWriterFactory");
 		registerAllServices(bc, jsonVSWriterFactory, jsVisualStyleWriterFactoryProperties);
 	}
 }

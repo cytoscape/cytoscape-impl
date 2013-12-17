@@ -10,12 +10,12 @@ import org.cytoscape.view.model.CyNetworkView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JSONNetworkWriterFactory implements CyNetworkViewWriterFactory {
+public class CytoscapeJsNetworkWriterFactory implements CyNetworkViewWriterFactory {
 	
 	private final CyFileFilter filter;
 	private final ObjectMapper mapper;
 
-	public JSONNetworkWriterFactory(final CyFileFilter filter, final ObjectMapper mapper) {
+	public CytoscapeJsNetworkWriterFactory(final CyFileFilter filter, final ObjectMapper mapper) {
 		this.filter = filter;
 		this.mapper = mapper;
 	}
