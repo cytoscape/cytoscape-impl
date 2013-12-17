@@ -249,10 +249,16 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 			List<Integer> path = (List<Integer>) event.getTransferable().getTransferData(PathDataFlavor.instance);
 			JComponent sourceView = controller.getChild(parent, path);
 			if (sourceView == target) {
+				event.rejectDrop();
 				return;
 			}
 			List<Integer> targetPath = controller.getPath(parent, target);
 			if (targetPath == null) {
+				event.rejectDrop();
+				return;
+			}
+			if (!controller.supportsDrop(parent, path, sourceView, targetPath, target) || isEquivalentLocation(path, targetPath, target)) {
+				event.rejectDrop();
 				return;
 			}
 			controller.handleDrop(parent, sourceView, path, target, targetPath);
