@@ -665,7 +665,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 			final Set<String> sources = new HashSet<String>();
 			final StringBuilder builder = new StringBuilder();
 			builder.append("<html><h2 style=\"color:red\">Import Canceled</h2>" + 
-					"<h3>Networks imported from the following databases:</h3><ul>");
+					"<h3>Networks imported from the following databases (without view):</h3><ul>");
 			for (final CyNetwork network : results) {
 				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
 				final Integer edgeCount = network.getEdgeCount();
