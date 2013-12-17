@@ -274,7 +274,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	}
 	
 	@Override
-	public boolean supportsDrop(TransformerPanel parent, JComponent source, JComponent target) {
+	public boolean supportsDrop(TransformerPanel parent, List<Integer> sourcePath, JComponent source, List<Integer> targetPath, JComponent target) {
 		return target instanceof CompositeSeparator;
 	}
 	

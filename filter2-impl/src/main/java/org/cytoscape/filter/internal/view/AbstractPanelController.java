@@ -314,7 +314,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	public abstract JComponent getChild(V view, List<Integer> path);
 	
-	public abstract boolean supportsDrop(V view, JComponent source, JComponent target);
+	public abstract boolean supportsDrop(V view, List<Integer> sourcePath, JComponent source, List<Integer> targetPath, JComponent target);
 	
 	public abstract void handleDrop(V view, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath);
 	

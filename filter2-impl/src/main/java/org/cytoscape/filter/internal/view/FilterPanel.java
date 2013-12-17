@@ -36,6 +36,7 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 				controller.setInteractive(applyAutomaticallyCheckBox.isSelected(), FilterPanel.this);
 			}
 		});
+		applyAutomaticallyCheckBox.setOpaque(false);
 		
 		JPanel applyPanel = createApplyPanel();
 		

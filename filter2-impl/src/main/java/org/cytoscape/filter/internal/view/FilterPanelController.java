@@ -341,8 +341,15 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 
 	@Override
-	public boolean supportsDrop(FilterPanel parent, JComponent source, JComponent target) {
-		return !(source.getParent() == target || isParentOrSelf(source, target));
+	public boolean supportsDrop(FilterPanel parent, List<Integer> sourcePath, JComponent source, List<Integer> targetPath, JComponent target) {
+		boolean droppingInParent = source.getParent() == target;
+		boolean droppingAtEnd;
+		if (target instanceof CompositeFilterPanel) {
+			droppingAtEnd = ((CompositeFilterPanel) target).getModel().getLength() - 1 == sourcePath.get(sourcePath.size() - 1);
+		} else {
+			droppingAtEnd = false;
+		}
+		return !((droppingInParent && droppingAtEnd) || isParentOrSelf(source, target));
 	}
 	
 	@Override
