@@ -201,6 +201,11 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 	
 	@Override
+	public String getHandleToolTip() {
+		return "<html><p>Drag this condition to another condition to group them, or drop it in a gap to reorder.</p><br><p>Right-click to delete this condition.</p></html>";
+	}
+	
+	@Override
 	public void addNamedTransformers(final FilterPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {

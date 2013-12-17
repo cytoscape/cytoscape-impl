@@ -321,5 +321,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	public abstract void handleContextMenuDelete(V view);
 	
 	public abstract String getDeleteContextMenuLabel();
+
+	public abstract String getHandleToolTip();
 }
 

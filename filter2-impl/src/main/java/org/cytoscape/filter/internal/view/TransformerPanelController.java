@@ -133,6 +133,11 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		return "Delete this chain entry";
 	}
 	
+	@Override
+	public String getHandleToolTip() {
+		return "Drag this chain entry to reorder, or right-click to delete.";
+	}
+	
 	public JPopupMenu createAddChainEntryMenu(final CompositeTransformerPanel panel, final TransformerPanel transformerPanel) {
 		JPopupMenu menu = new JPopupMenu();
 		
