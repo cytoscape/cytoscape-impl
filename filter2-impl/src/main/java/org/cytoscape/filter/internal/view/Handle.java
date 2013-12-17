@@ -16,6 +16,7 @@ public class Handle<V extends SelectPanelComponent> extends JLabel {
 		super(IconManager.ICON_REORDER + IconManager.ICON_REORDER);
 		this.sibling = sibling;
 		
+		setToolTipText(controller.getHandleToolTip());
 		setFont(iconManager.getIconFont(14));
 		setForeground(Color.lightGray);
 		
