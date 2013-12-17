@@ -1,6 +1,8 @@
 package org.cytoscape.filter.internal.view;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
@@ -24,6 +26,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.composite.CompositeSeparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +40,8 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 	
 	private Transferable transferable;
 
+	private static Cursor nextCursor;
+	
 	public DragHandler(JComponent view, final AbstractPanelController<?, V> controller, final V parent, JComponent handle) {
 		this.view = view;
 		this.controller = controller;
@@ -45,7 +50,7 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 		
 		if (handle != null) {
 			DragSource source = DragSource.getDefaultDragSource();
-			source.createDefaultDragGestureRecognizer(handle, DnDConstants.ACTION_MOVE, this);
+			source.createDefaultDragGestureRecognizer(handle, DnDConstants.ACTION_COPY_OR_MOVE, this);
 		}
 	}
 	
@@ -75,6 +80,19 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 
 	@Override
 	public void dragOver(DragSourceDragEvent event) {
+		if (isMac()) {
+			// DragSourceContext.setCursor() is buggy for the Mac.
+			// It's fixed in JDK 8(b86):
+			// http://bugs.sun.com/view_bug.do?bug_id=7199783
+			return;
+		}
+		
+		if (nextCursor == null) {
+			return;
+		}
+		
+		event.getDragSourceContext().setCursor(nextCursor);
+		nextCursor = null;
 	}
 
 	@Override
@@ -90,10 +108,24 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 		view.setBackground(ViewUtil.UNSELECTED_BACKGROUND_COLOR);
 		view.paint(graphics);
 		
-		Point offset = new Point(0, -height);
-		event.startDrag(DragSource.DefaultLinkDrop, image, offset, transferable, this);
+		Point offset = computeOffset(width, height);
+		event.startDrag(null, image, offset, transferable, this);
 	}
 	
+	private Point computeOffset(int width, int height) {
+		if (isMac()) {
+			// For some weird reason, the default drag image location
+			// on Mac is shifted up.  We need to translate it back
+			// down.
+			return new Point(0, -height);
+		}
+		return new Point(0, 0);
+	}
+
+	private boolean isMac() {
+		return System.getProperty("os.name").startsWith("Mac OS X");
+	}
+
 	Transferable createTransferable() {
 		return new Transferable() {
 			
@@ -138,28 +170,47 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 			List<Integer> path = (List<Integer>) event.getTransferable().getTransferData(PathDataFlavor.instance);
 			JComponent sourceView = controller.getChild(parent, path);
 			List<Integer> targetPath = controller.getPath(parent, target);
-			if (!controller.supportsDrop(parent, sourceView, target) || isEquivalentLocation(path, targetPath, target)) {
-				event.rejectDrag();
-				target.setCursor(DragSource.DefaultCopyNoDrop);
+			if (!controller.supportsDrop(parent, path, sourceView, targetPath, target) || isEquivalentLocation(path, targetPath, target)) {
+				setCursor(DragSource.DefaultCopyNoDrop, target);
 				return;
 			}
-			if (target instanceof CompositeSeparator) {
+			if (target instanceof CompositeSeparator || target instanceof CompositeFilterPanel) {
 				// Move
-				view.setCursor(DragSource.DefaultMoveDrop);
+				event.acceptDrag(DnDConstants.ACTION_MOVE);
+				setCursor(DragSource.DefaultMoveDrop, view);
 			} else {
 				// Group
-				view.setCursor(DragSource.DefaultCopyDrop);
+				event.acceptDrag(DnDConstants.ACTION_COPY);
+				setCursor(DragSource.DefaultCopyDrop, view);
 			}
 		} catch (UnsupportedFlavorException e) {
 			logger.error("Unexpected error", e);
 		} catch (IOException e) {
 			logger.error("Unexpected error", e);
+		} finally {
+			controller.setLastHoveredComponent(view);
 		}
 		
 		target.setBackground(ViewUtil.SELECTED_BACKGROUND_COLOR);
-		controller.setLastHoveredComponent(view);
 	}
 	
+	private void setCursor(Cursor cursor, Component hoveredView) {
+		if (isMac()) {
+			// DragSourceContext.setCursor() is buggy for the Mac.
+			// It's fixed in JDK 8(b86):
+			// http://bugs.sun.com/view_bug.do?bug_id=7199783
+			
+			// Instead, we set the default cursor on the hovered
+			// Component in order to customize the drag-over feedback.
+			hoveredView.setCursor(cursor);
+		} else {
+			if (cursor == null) {
+				cursor = Cursor.getDefaultCursor();
+			}
+			nextCursor = cursor;
+		}
+	}
+
 	private boolean isEquivalentLocation(List<Integer> source, List<Integer> target, JComponent targetComponent) {
 		int size = source.size();
 		if (size != target.size()) {
@@ -177,11 +228,11 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 
 	@Override
 	public void dragExit(DropTargetEvent event) {
-		view.getParent().setCursor(null);
-		view.setCursor(null);
+		setCursor(null, view.getParent());
+		setCursor(null, view);
 		if (view instanceof Handle) {
 			JComponent sibling = ((Handle<?>) view).getSiblingView();
-			sibling.setCursor(null);
+			setCursor(null, sibling);
 		}
 	}
 	
@@ -193,7 +244,7 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 	@Override
 	public void drop(DropTargetDropEvent event) {
 		JComponent target = getPrimaryView(view);
-		view.setCursor(null);
+		setCursor(null, view);
 		try {
 			List<Integer> path = (List<Integer>) event.getTransferable().getTransferData(PathDataFlavor.instance);
 			JComponent sourceView = controller.getChild(parent, path);
