@@ -64,6 +64,7 @@ public class InteractionTransformerViewFactory implements TransformerViewFactory
 					controller.model.selectSource = sourceCheckBox.isSelected();
 				}
 			});
+			sourceCheckBox.setOpaque(false);
 			
 			JLabel label2 = new JLabel("and/or");
 			targetCheckBox = new JCheckBox("target");
@@ -73,6 +74,7 @@ public class InteractionTransformerViewFactory implements TransformerViewFactory
 					controller.model.selectTarget = targetCheckBox.isSelected();
 				}
 			});
+			targetCheckBox.setOpaque(false);
 			
 			JLabel label3 = new JLabel("nodes from upstream edges.");
 			

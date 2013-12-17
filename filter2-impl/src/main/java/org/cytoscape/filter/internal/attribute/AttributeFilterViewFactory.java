@@ -319,6 +319,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 					controller.setCaseSensitive(View.this, caseSensitiveCheckBox.isSelected());
 				}
 			});
+			caseSensitiveCheckBox.setOpaque(false);
 			
 			predicateComboBox = new JComboBox(new DynamicComboBoxModel<PredicateElement>(predicateComboBoxModel));
 			predicateComboBox.addActionListener(new ActionListener() {
