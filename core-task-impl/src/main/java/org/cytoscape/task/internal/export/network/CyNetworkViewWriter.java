@@ -25,6 +25,9 @@ package org.cytoscape.task.internal.export.network;
  */
 
 
+import java.io.File;
+
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
@@ -33,8 +36,6 @@ import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
-
-import java.io.File;
 
 
 /**
@@ -65,9 +66,8 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 		}
 	}
 
-	void setDefaultFileFormatUsingFileExt(File file)
-	{
-		String ext = getExtension(file);
+	void setDefaultFileFormatUsingFileExt(File file) {
+		String ext = FilenameUtils.getExtension(file.getName());
 		if( ext == null )
 			return;
 		ext = ext.toLowerCase().trim();
@@ -79,15 +79,6 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 				options.setSelectedValue(fileTypeDesc);
 				break;
 			}
-	}
-
-	private String getExtension(File file)
-	{
-		String filename = file.getName();
-		if( !filename.contains(".") )
-			return null;
-		int lastIndex = filename.lastIndexOf('.');
-		return filename.substring(lastIndex + 1);
 	}
 
 

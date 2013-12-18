@@ -24,6 +24,7 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -143,7 +144,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 				chosenFactory = defaultFactory;
 			} else {
 				// Well, we cannot decide which one is correct.  Try to use ext...
-				String extension = getExtension(uri.toString());
+				String extension = FilenameUtils.getExtension(uri.toString());
 				if (factoryTable.containsKey(extension))
 					chosenFactory = factoryTable.get(extension);
 				else {
@@ -170,18 +171,6 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		}
 	}
 
-	private final String getExtension(String filename) {
-		if (filename != null) {
-			int i = filename.lastIndexOf('.');
-
-			if ((i > 0) && (i < (filename.length() - 1))) {
-				return filename.substring(i + 1).toLowerCase();
-			}
-			if (i == -1)
-				return "";
-		}
-		return null;
-	}
 
 	public R getReader(InputStream stream, String inputName) {
 		try {
