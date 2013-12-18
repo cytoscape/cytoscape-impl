@@ -39,7 +39,6 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	protected JButton applyButton;
 	protected JComponent cancelApplyButton;
 	protected JProgressBar progressBar;
-	protected JPopupMenu handleContextMenu;
 
 	protected JLabel statusLabel;
 	
@@ -143,8 +142,6 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		progressBar = new JProgressBar();
 		progressBar.setMinimum(0);
 		progressBar.setMaximum(AbstractPanelController.PROGRESS_BAR_MAXIMUM);
-		
-		handleContextMenu = createHandleContextMenu();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -155,10 +152,6 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		deleteMenu.setEnabled(model.getSize() > 1);
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
-	}
-	
-	public void showHandleContextMenu(Handle handle) {
-		handleContextMenu.show(handle, 0, handle.getHeight());
 	}
 	
 	protected Component createEditPanel() {
@@ -234,20 +227,5 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		btn.setOpaque(false);
 		btn.setFocusPainted(false);
 		btn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-	}
-	
-	JPopupMenu createHandleContextMenu() {
-		JMenuItem deleteMenu = new JMenuItem(controller.getDeleteContextMenuLabel());
-		deleteMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				controller.handleContextMenuDelete(AbstractPanel.this);
-			}
-		});
-		
-		JPopupMenu menu = new JPopupMenu();
-		menu.add(deleteMenu);
-		return menu;
 	}
 }

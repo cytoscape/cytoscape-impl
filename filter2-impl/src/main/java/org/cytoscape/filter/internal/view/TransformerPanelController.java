@@ -129,13 +129,8 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	}
 	
 	@Override
-	public String getDeleteContextMenuLabel() {
-		return "Delete this chain entry";
-	}
-	
-	@Override
 	public String getHandleToolTip() {
-		return "Drag this chain entry to reorder, or right-click to delete.";
+		return "Drag this chain entry to reorder.";
 	}
 	
 	public JPopupMenu createAddChainEntryMenu(final CompositeTransformerPanel panel, final TransformerPanel transformerPanel) {
@@ -302,17 +297,8 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	}
 	
 	@Override
-	public void handleContextMenuDelete(TransformerPanel view) {
-		List<Integer> path = lastSelectedPath;
-		if (path == null) {
-			return;
-		}
-		
-		JComponent component = getChild(view, lastSelectedPath);
-		if (component == null) {
-			return;
-		}
-		
+	public void handleDelete(TransformerPanel view, JComponent component) {
+		List<Integer> path = getPath(view, component);
 		CompositeTransformerPanel root = view.getRootPanel();
 		int index = path.get(path.size() - 1);
 		root.removeTransformer(index);

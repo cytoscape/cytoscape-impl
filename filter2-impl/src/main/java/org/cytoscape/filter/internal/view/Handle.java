@@ -1,12 +1,10 @@
 package org.cytoscape.filter.internal.view;
 
 import java.awt.Color;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
 public class Handle<V extends SelectPanelComponent> extends JLabel {
@@ -19,17 +17,7 @@ public class Handle<V extends SelectPanelComponent> extends JLabel {
 		setToolTipText(controller.getHandleToolTip());
 		setFont(iconManager.getIconFont(14));
 		setForeground(Color.lightGray);
-		
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (!SwingUtilities.isRightMouseButton(e)) {
-					return;
-				}
-				controller.setLastSelectedComponent(parent, Handle.this);
-				parent.showHandleContextMenu(Handle.this);
-			}
-		});
+		setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
 	}
 	
 	public JComponent getSiblingView() {
