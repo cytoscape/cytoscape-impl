@@ -26,11 +26,16 @@ package org.cytoscape.tableimport.internal;
 
 
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.net.*;
+import java.net.URI;
+import java.net.URL;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -38,7 +43,8 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.cytoscape.io.read.*;
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -126,24 +132,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		delimitersForDataList = new ListSingleSelection<String>(tempList);
 		this.networkReaderManager = networkReaderManager;
 	}
-	
-	/*public LoadNetworkReaderTask(final InputStream is, final String fileType, final String inputName)
-	{
-		super(is,)
-		List<String> tempList = new ArrayList<String>();
-		tempList.add(TextFileDelimiters.COMMA.toString());
-		tempList.add(TextFileDelimiters.SEMICOLON.toString());
-		tempList.add(TextFileDelimiters.SPACE.toString());
-		tempList.add(TextFileDelimiters.TAB.toString());
-		delimiters = new ListMultipleSelection<String>(tempList);
-	    tempList = new ArrayList<String>();
-		tempList.add(TextFileDelimiters.PIPE.toString());
-		tempList.add(TextFileDelimiters.BACKSLASH.toString());
-		tempList.add(TextFileDelimiters.SLASH.toString());
-		tempList.add(TextFileDelimiters.COMMA.toString());
-		delimitersForDataList = new ListSingleSelection<String>(tempList);
-		setInputFile(is,fileType,inputName);
-	}*/
 	
 	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName)
 	{

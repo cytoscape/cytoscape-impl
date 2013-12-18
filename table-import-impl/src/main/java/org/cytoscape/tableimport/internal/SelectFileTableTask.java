@@ -32,14 +32,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.work.*;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Tunable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class SelectFileTableTask extends AbstractTask {
 	@Tunable(description="Data Table file", params="fileCategory=table;input=true", gravity=0.0)
-	public File filePath;
+	public File file;
 	
 	private LoadTableReaderTask tableReader;
 	private LoadNetworkReaderTask networkReader;
@@ -68,21 +71,21 @@ public class SelectFileTableTask extends AbstractTask {
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		
 		try{
-			stream = streamUtil.getInputStream(filePath.toURI().toURL());
+			stream = streamUtil.getInputStream(file.toURI().toURL());
 			if (!stream.markSupported()) {
 				stream = new BufferedInputStream(stream);
 			}
 		}
 		catch (IOException e) {
-			logger.warn("Error opening stream to URI: " + filePath.toString(), e);
+			logger.warn("Error opening stream to URI: " + file.toString(), e);
 		}
 
-		String fileFormat = filePath.toURI().toString().substring(filePath.toURI().toString().lastIndexOf('.'));
+		String fileFormat = file.toURI().toString().substring(file.toURI().toString().lastIndexOf('.'));
 		if(tableReader != null)
-			tableReader.setInputFile(stream, fileFormat, filePath.toURI().toString());
+			tableReader.setInputFile(stream, fileFormat, file.toURI().toString());
 		
 		if(networkReader != null)
-			networkReader.setInputFile(stream, fileFormat, filePath.toURI().toString(),filePath.toURI());
+			networkReader.setInputFile(stream, fileFormat, file.toURI().toString(),file.toURI());
 	}
 }
 
