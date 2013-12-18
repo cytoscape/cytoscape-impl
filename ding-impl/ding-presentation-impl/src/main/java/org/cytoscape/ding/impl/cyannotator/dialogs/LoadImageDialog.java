@@ -165,7 +165,7 @@ public class LoadImageDialog extends JDialog {
 
 			String extension = FilenameUtils.getExtension(f.getName());
 			
-			if (extension != null) {
+			if (!extension.isEmpty()) {
 				
 				if (extension.equals("tiff") ||
 					extension.equals("tif") ||

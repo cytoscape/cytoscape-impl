@@ -118,7 +118,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 			return true;
 
 		final String extension = FilenameUtils.getExtension(file.getName());
-		if (extension == null)
+		if (extension.isEmpty())
 			return false;
 
 		return filter.getExtensions().contains(extension);
