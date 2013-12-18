@@ -68,7 +68,7 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 
 	void setDefaultFileFormatUsingFileExt(File file) {
 		String ext = FilenameUtils.getExtension(file.getName());
-		if( ext == null )
+		if(ext.isEmpty())
 			return;
 		ext = ext.toLowerCase().trim();
 		String searchDesc = "*." + ext;
