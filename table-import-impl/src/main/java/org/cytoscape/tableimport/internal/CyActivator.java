@@ -163,7 +163,8 @@ public class CyActivator extends AbstractCyActivator {
         NetworkTableMappingParametersHandlerFactory networkTableMappingParametersHandlerFactory = new NetworkTableMappingParametersHandlerFactory(dialogTypeNetwork, tableManagerNetwork);
         registerService(bc,networkTableMappingParametersHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 
-        Properties loadFileTablesProps = new Properties();
+        //Remove load table from command this option should be available in import command. To be removed if everything works as expected
+       /* Properties loadFileTablesProps = new Properties();
         loadFileTablesProps.setProperty(COMMAND, "load file");
         loadFileTablesProps.setProperty(COMMAND_NAMESPACE, "table");
         TaskFactory loadFileTableFactory = new LoadNoGuiTableReaderFactory(streamUtilServiceRef,CytoscapeServices.cyTableManager,false);
@@ -175,7 +176,7 @@ public class CyActivator extends AbstractCyActivator {
         loadURLTablesProps.setProperty(COMMAND_NAMESPACE, "table");
         TaskFactory loadURLTableFactory = new LoadNoGuiTableReaderFactory(streamUtilServiceRef,CytoscapeServices.cyTableManager,true);
         // Register the service as a TaskFactory for commands
-        registerService(bc,loadURLTableFactory, TaskFactory.class, loadURLTablesProps);
+        registerService(bc,loadURLTableFactory, TaskFactory.class, loadURLTablesProps);*/
 
         Properties importFileTablesProps = new Properties();
         importFileTablesProps.setProperty(COMMAND, "import file");
