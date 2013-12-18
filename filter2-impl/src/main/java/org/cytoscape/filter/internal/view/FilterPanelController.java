@@ -196,13 +196,8 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 	
 	@Override
-	public String getDeleteContextMenuLabel() {
-		return "Delete this condition";
-	}
-	
-	@Override
 	public String getHandleToolTip() {
-		return "<html><p>Drag this condition to another condition to group them, or drop it in a gap to reorder.</p><br><p>Right-click to delete this condition.</p></html>";
+		return "Drag this condition to another condition to group them, or drop it in a gap to reorder.";
 	}
 	
 	@Override
@@ -442,17 +437,12 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 	
 	@Override
-	public void handleContextMenuDelete(FilterPanel view) {
-		List<Integer> path = lastSelectedPath;
-		if (path == null) {
-			return;
-		}
-		
-		JComponent component = getChild(view, lastSelectedPath);
+	public void handleDelete(FilterPanel view, JComponent component) {
 		if (component == null) {
 			return;
 		}
 		
+		List<Integer> path = getPath(view, component);
 		CompositeFilterPanel parent = (CompositeFilterPanel) component.getParent();
 		int sourceIndex = path.get(path.size() - 1);
 		parent.removeFilter(sourceIndex, true);

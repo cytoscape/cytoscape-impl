@@ -37,8 +37,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	TaskManager<?, ?> taskManager;
 	JComponent lastHoveredComponent;
 
-	List<Integer> lastSelectedPath;
-
 	public AbstractPanelController(AbstractWorker<?, ?> worker, FilterIO filterIo, TaskManager<?, ?> taskManager) {
 		this.worker = worker;
 		this.filterIo = filterIo;
@@ -274,10 +272,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return false;
 	}
 
-	public void setLastSelectedComponent(V view, JComponent component) {
-		lastSelectedPath = getPath(view, component);
-	}
-	
 	protected abstract T createElement(String name);
 
 	protected abstract void handleElementSelected(T selected, V view);
@@ -318,9 +312,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	public abstract void handleDrop(V view, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath);
 	
-	public abstract void handleContextMenuDelete(V view);
-	
-	public abstract String getDeleteContextMenuLabel();
+	public abstract void handleDelete(V view, JComponent component);
 
 	public abstract String getHandleToolTip();
 }

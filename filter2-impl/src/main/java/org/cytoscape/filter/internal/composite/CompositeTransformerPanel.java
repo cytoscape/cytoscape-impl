@@ -107,14 +107,19 @@ public class CompositeTransformerPanel extends JPanel {
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
 			final TransformerElementViewModel<TransformerPanel> viewModel = viewModels.get(transformer);
 			
-			checkBoxGroup.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE);
+			checkBoxGroup.addGroup(layout.createSequentialGroup()
+				.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+				.addGap(4)
+				.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE));
 			viewGroup.addComponent(viewModel.view, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
 					 .addComponent(viewModel.separator);
 			
 			rows.addGroup(layout.createParallelGroup(Alignment.LEADING)
 								.addGroup(layout.createSequentialGroup()
 										.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING)
-										.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE))
+										.addGroup(layout.createParallelGroup()
+												.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+												.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)))
 								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 			rows.addComponent(viewModel.separator, separatorHeight, separatorHeight, separatorHeight);
 		}
