@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.io.write.CyWriterManager;
@@ -116,19 +117,13 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 		if (filter == null)
 			return true;
 
-		final String extension = getExtension(file.getPath());
+		final String extension = FilenameUtils.getExtension(file.getName());
 		if (extension == null)
 			return false;
 
 		return filter.getExtensions().contains(extension);
 	}
 
-	private static final String getExtension(final String fileName) {
-		final int lastDotPos = fileName.lastIndexOf('.');
-		if (lastDotPos == -1 || lastDotPos == fileName.length() - 1)
-			return null;
-		return fileName.substring(lastDotPos + 1).toLowerCase();
-	}
 
 	protected final File addOrReplaceExtension(final File file) {
 		final CyFileFilter filter = getFileFilter(getExportFileFormat());
@@ -146,7 +141,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 	}
 
 	private static String stripExtension(final String fileName) {
-		final String extension = getExtension(fileName);
+		final String extension = FilenameUtils.getExtension(fileName);
 		if (extension == null)
 			return fileName;
 

@@ -106,6 +106,23 @@
 			<artifactId>work-swing-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>session-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-application-api</artifactId>
+		</dependency>
+
+		<!-- 3rd party library -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>org.swinglabs.swingx</artifactId>
 			<version>1.6.1</version>
@@ -124,16 +141,6 @@
 			<groupId>cytoscape-temp</groupId>
 			<artifactId>l2fprod-common-fontchooser</artifactId>
 			<version>7.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>session-api</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>swing-application-api</artifactId>
 		</dependency>
 
 		<!-- Testing -->

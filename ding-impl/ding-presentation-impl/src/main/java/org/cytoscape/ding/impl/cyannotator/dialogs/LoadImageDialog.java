@@ -37,6 +37,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -150,20 +151,6 @@ public class LoadImageDialog extends JDialog {
 		dispose();
 	}
 
-	public String getExtension(File f) {
-
-		String ext = null;
-		String s = f.getName();
-
-		int i = s.lastIndexOf('.');
-
-		if (i > 0 &&  i < s.length() - 1) {
-			ext = s.substring(i+1).toLowerCase();
-		}
-		
-		return ext;
-	}
-
 
 	//This class provides a FileFilter for the JFileChooser
 
@@ -176,7 +163,7 @@ public class LoadImageDialog extends JDialog {
 				return true;
 			}
 
-			String extension = getExtension(f);
+			String extension = FilenameUtils.getExtension(f.getName());
 			
 			if (extension != null) {
 				
