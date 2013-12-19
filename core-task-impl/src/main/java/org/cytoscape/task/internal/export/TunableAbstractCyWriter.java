@@ -117,11 +117,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 		if (filter == null)
 			return true;
 
-		final String extension = FilenameUtils.getExtension(file.getName());
-		if (extension.isEmpty())
-			return false;
-
-		return filter.getExtensions().contains(extension);
+		return filter.getExtensions().contains(FilenameUtils.getExtension(file.getName()));
 	}
 
 
@@ -142,7 +138,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 
 	private static String stripExtension(final String fileName) {
 		final String extension = FilenameUtils.getExtension(fileName);
-		if (extension == null)
+		if (extension.isEmpty())
 			return fileName;
 
 		return fileName.substring(0, fileName.length() - 1 - extension.length());

@@ -83,12 +83,10 @@ public class WildCardCyFileFilter extends BasicCyFileFilter {
 	}
 
 	private boolean extensionsMatch(URI uri) {
-		//TODO extension CANNOT be null here (may be ""?)
 		final String extension = getExtension(uri.toString());
-		if( extensions.isEmpty() || blackList.contains(extension))
+		if(blackList.contains(extension))
 			return false;
-		//TODO if it were "" above, why to check here?..
+
 		return extensions.contains("") || extensions.contains(extension);
 	}
-
 }
