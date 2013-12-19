@@ -84,9 +84,9 @@ public class WildCardCyFileFilter extends BasicCyFileFilter {
 
 	private boolean extensionsMatch(URI uri) {
 		final String extension = getExtension(uri.toString());
-		if( extensions.isEmpty() || blackList.contains(extension))
+		if(blackList.contains(extension))
 			return false;
+
 		return extensions.contains("") || extensions.contains(extension);
 	}
-
 }
