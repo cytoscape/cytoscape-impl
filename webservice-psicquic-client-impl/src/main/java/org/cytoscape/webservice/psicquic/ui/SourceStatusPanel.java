@@ -50,6 +50,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -644,8 +645,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		}
 	}
 
-	@Override
-	public void allFinished(FinishStatus finishStatus) {
+	private final void showMergeUI(FinishStatus finishStatus) {
 		if (finishStatus.getType() == Type.SUCCEEDED) {
 			final StringBuilder builder = new StringBuilder();
 			builder.append("<html><h3>Networks created from the following databases:</h3><ul>");
@@ -698,16 +698,14 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		results = null;
 	}
 	
-	private final String generatelist() {
-			final Set<String> sources = new HashSet<String>();
-			final StringBuilder builder = new StringBuilder();
-			builder.append("<html><h3>Networks created from the following databases:</h3><ul>");
-			for (final CyNetwork network : results) {
-				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-				final Integer edgeCount = network.getEdgeCount();
-				sources.add(network.getRow(network).get("source", String.class));
-				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
+	
+	@Override
+	public void allFinished(final FinishStatus finishStatus) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				showMergeUI(finishStatus);
 			}
-			return builder.toString();
+		});
 	}
 }
