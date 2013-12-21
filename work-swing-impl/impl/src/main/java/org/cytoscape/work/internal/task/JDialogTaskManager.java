@@ -26,6 +26,7 @@ package org.cytoscape.work.internal.task;
 
 
 import java.awt.Window;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -115,6 +116,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	// Parent component of Task Monitor GUI.
 	private Window parent;
 
+	// this is set with the first setExecutionContext value
+	private Window initialParent;
+
 	private final JDialogTunableMutator dialogTunableMutator;
 
 	/**
@@ -132,6 +136,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		this.cyProperty = cyProperty;
 
 		parent = null;
+		initialParent = null;
 		taskThreadFactory = new TaskThreadFactory();
 		taskExecutorService = Executors.newCachedThreadPool(taskThreadFactory);
 		addShutdownHook(taskExecutorService);
@@ -167,8 +172,10 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	@Override 
 	public void setExecutionContext(final Window parent) {
 		this.parent = parent;
+		if (initialParent == null) {
+			initialParent = parent;
+		}
 	}
-
 
 	@Override 
 	public JDialog getConfiguration(TaskFactory factory, Object tunableContext) {
@@ -290,7 +297,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
 				taskMonitor.setTask(task);
+				System.out.println(task.getClass().getSimpleName() + " task: start");
 				task.run(taskMonitor);
+				System.out.println(task.getClass().getSimpleName() + " task: all done");
 				handleObserver(task);
 
 				if (taskMonitor.cancelled()) {
@@ -315,7 +324,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 
 					taskMonitor.showDialog(true);
 
+					System.out.println(task.getClass().getSimpleName() + " task: start");
 					task.run(taskMonitor);
+					System.out.println(task.getClass().getSimpleName() + " task: all done");
 					handleObserver(task);
 
 					if (taskMonitor.cancelled()) {
@@ -329,7 +340,8 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				taskMonitor.showException(new Exception(exception));
                 if (observer != null) observer.allFinished(FinishStatus.newFailed(task, exception));
 			} finally {
-				parent = null;
+				//parent = null;
+				parent = initialParent;
 				dialogTunableMutator.setConfigurationContext(null,true);
 			}
 

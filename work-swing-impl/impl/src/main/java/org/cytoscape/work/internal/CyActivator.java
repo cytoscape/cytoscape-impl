@@ -128,6 +128,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(bc,jDialogTaskManager,DialogTaskManager.class, new Properties());
 		registerService(bc,jDialogTaskManager,TaskManager.class, new Properties());
+		//registerServiceListener(bc, jDialogTaskManager, "setCySwingApp", "removeCySwingApp", CySwingApplication.class);
 		//registerService(bc,dialogTaskManager,DialogTaskManager.class, new Properties());
 		//registerService(bc,dialogTaskManager,TaskManager.class, new Properties());
 		registerService(bc,dialogTaskManager,TaskStatusPanelFactory.class, new Properties());
