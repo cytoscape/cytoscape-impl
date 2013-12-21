@@ -46,7 +46,8 @@ class SwingTaskMonitor implements TaskMonitor {
 	final private Window parent;
 
 	private volatile boolean cancelled;
-	private TaskDialog dialog;
+	//private TaskDialog dialog;
+	private TaskDialog2 dialog;
 	private Task task;
 	private String title;
 	private String statusMessage;
@@ -106,7 +107,8 @@ class SwingTaskMonitor implements TaskMonitor {
 		if (dialog != null)
 			return;
 
-		dialog = new TaskDialog(parent, this);
+		dialog = new TaskDialog2(parent, this);
+		//dialog = new TaskDialog(parent, this);
 		dialog.setLocationRelativeTo(parent);
 		
 		if (title != null)
@@ -168,17 +170,21 @@ class SwingTaskMonitor implements TaskMonitor {
 		// method takes too long to finish
 		Runnable cancel = new Runnable() {
 			public void run() {
+				System.out.println(task.getClass().getSimpleName() + ": cancel");
 				task.cancel();
+				System.out.println(task.getClass().getSimpleName() + ": cancel all done");
+				/*
 				try { Thread.sleep(1000); } catch (Exception e) {}
 				if ( future != null && !future.isDone() && !future.isCancelled() )
 					future.cancel(true);
+					*/
 			}
 		};
 		cancelExecutorService.submit(cancel);
 		cancelled = true;
 		
 		// Close dialog (if necessary)
-		close();
+		//close();
 	}
 
 	protected boolean cancelled() {
@@ -246,7 +252,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		}
 	}
 
-	public synchronized void showException(final Exception exception) {
+	public void showException(final Exception exception) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
