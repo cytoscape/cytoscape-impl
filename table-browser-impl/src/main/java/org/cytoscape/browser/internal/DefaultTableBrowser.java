@@ -258,6 +258,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 		});
 		
+		if (currentTable != null)
+			applicationManager.setCurrentTable(currentTable);
 		showSelectedTable();
 		changeSelectionMode();
 	}
