@@ -382,9 +382,9 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 				if(cols.length > 2) { //no xrefs is possible for some generic nodes
 					List<String> xrefs = Arrays.asList(cols[2].split(";"));
 					AttributeUtil.set(cyNetwork, node, 
-							BioPaxMapper.BIOPAX_XREF_IDS, xrefs, String.class);
+							BioPaxMapper.BIOPAX_RELATIONSHIP, xrefs, String.class);
 					AttributeUtil.set(cyNetwork, node, CyNetwork.HIDDEN_ATTRS, 
-							BioPaxMapper.BIOPAX_UNIFICATION_REFERENCES, xrefs, String.class);
+							BioPaxMapper.BIOPAX_RELATIONSHIP_REFERENCES, xrefs, String.class);
 				}
 			}
 		}

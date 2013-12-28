@@ -33,7 +33,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 
 import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.biopax.internal.util.BioPaxFilterUtils;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
@@ -104,8 +103,7 @@ public class BioPaxFilter extends BasicCyFileFilter {
 		try {
 			return (category == this.category) 
 				&& extensions.contains(ext) 
-					&& accepts(BioPaxFilterUtils
-						.copyKBytes(streamUtil.getInputStream(uri.toURL()),2), category);
+					&& accepts(streamUtil.getInputStream(uri.toURL()), category);
 		} catch (IOException e) {
 			return false;
 		}
