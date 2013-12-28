@@ -102,8 +102,8 @@ public class BioPaxFilter extends BasicCyFileFilter {
 		String ext = FilenameUtils.getExtension(uri.toString());		
 		try {
 			return (category == this.category) 
-					&& extensions.contains(ext) 
-						&& accepts(streamUtil.getInputStream(uri.toURL()), category);
+				&& extensions.contains(ext) 
+					&& accepts(streamUtil.getInputStream(uri.toURL()), category);
 		} catch (IOException e) {
 			return false;
 		}

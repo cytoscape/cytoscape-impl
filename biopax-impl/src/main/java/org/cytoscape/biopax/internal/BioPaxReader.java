@@ -24,10 +24,14 @@ package org.cytoscape.biopax.internal;
  * #L%
  */
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.biopax.internal.util.BioPaxReaderError;
 import org.cytoscape.biopax.internal.util.VisualStyleUtil;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
@@ -59,11 +63,15 @@ public class BioPaxReader extends AbstractInputStreamTaskFactory implements Netw
 	
 
 	@Override
-	public TaskIterator createTaskIterator(InputStream is, String inputName) {
+	public TaskIterator createTaskIterator(InputStream is, String inputName) {		
 		LOG.info("createTaskIterator: input stream name: " + inputName);
-		return new TaskIterator(
-			new BioPaxReaderTask(is, inputName, cyServices, visualStyleUtil)
-		);
+		try {
+			return new TaskIterator(
+				new BioPaxReaderTask(copy(is), inputName, cyServices, visualStyleUtil)
+			);
+		} catch (IOException e) {
+			throw new BioPaxReaderError(e.toString());
+		}
 	}
 
 
@@ -113,5 +121,17 @@ public class BioPaxReader extends AbstractInputStreamTaskFactory implements Netw
 		CyTable cyTable = cyNetwork.getDefaultNetworkTable();
 		return cyTable.getColumn(BioPaxMapper.BIOPAX_NETWORK) != null;
 	}
+	
+	
+	private InputStream copy(InputStream is) throws IOException {
+		ByteArrayOutputStream copy = new ByteArrayOutputStream();
+		int chunk = 0;
+		byte[] data = new byte[1024*1024];
+		while((-1 != (chunk = is.read(data)))) {
+			copy.write(data, 0, chunk);
+		}
+		is.close();
+		return new ByteArrayInputStream( copy.toByteArray() );
+	}	
 
 }

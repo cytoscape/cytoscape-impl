@@ -49,7 +49,6 @@ import org.biopax.paxtools.model.BioPAXLevel;
 import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.*;
 import org.biopax.paxtools.model.level3.Process;
-import org.biopax.paxtools.util.BioPaxIOException;
 import org.biopax.paxtools.util.ClassFilterSet;
 import org.biopax.paxtools.util.Filter;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
@@ -104,39 +103,31 @@ public class BioPaxMapper {
 	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_LIST = "CHEMICAL_MODIFICATIONS";
 
 	/**
-	 * Node Attribute: UNIFICATION_REFERENCES
+	 * Hidden Node Attribute: unification (id) web links
 	 */
 	public static final String BIOPAX_UNIFICATION_REFERENCES = "UNIFICATION_REFERENCES";
 
 	/**
-	 * Node Attribute: RELATIONSHIP_REFERENCES
+	 * Hidden Node Attribute: relationship web links
 	 */
 	public static final String BIOPAX_RELATIONSHIP_REFERENCES = "RELATIONSHIP_REFERENCES";
 
 	/**
-	 * Node Attribute: PUBLICATION_REFERENCES
+	 * Hidden Node Attribute: web links to publications
 	 */
 	public static final String BIOPAX_PUBLICATION_REFERENCES = "PUBLICATION_REFERENCES";
 
-	/**
-	 * Node Attribute:  XREF_IDs.
-	 */
-	public static final String BIOPAX_XREF_IDS = "IDENTIFIERS";
 
-	/**
-	 * Node Attribute:  BIOPAX_XREF_PREFIX.
-	 */
-	public static final String BIOPAX_XREF_PREFIX = "ID_";
+	public static final String BIOPAX_UNIFICATION = "UNIFICATION";
+	public static final String BIOPAX_RELATIONSHIP = "RELATIONSHIP";
+	public static final String BIOPAX_PUBLICATION = "PUBLICATION";
+
 
 	/**
 	 * Node Attribute: IHOP_LINKS
 	 */
 	public static final String BIOPAX_IHOP_LINKS = "IHOP_LINKS";
 
-	/**
-	 * Node Attribute: AFFYMETRIX_REFERENCES
-	 */
-	public static final String BIOPAX_AFFYMETRIX_REFERENCES_LIST = "AFFYMETRIX_REFERENCES";
 	
 	/**
 	 * BioPAX Class:  phosphorylation site
@@ -533,46 +524,31 @@ public class BioPaxMapper {
 	}
 
 	
-    private static void createExtraXrefAttributes(BioPAXElement resource, CyNetwork network, CyNode node) {
-		// the following code should replace the old way to set
-		// relationship references
-		List<String> xrefList = getXRefList(resource,
-				BIOPAX_AFFYMETRIX_REFERENCES_LIST);
-		if ((xrefList != null) && !xrefList.isEmpty()) {
-			AttributeUtil.set(network, node, BIOPAX_AFFYMETRIX_REFERENCES_LIST,
-					xrefList, String.class);
-		}
-		
+    private static void createExtraXrefAttributes(BioPAXElement resource, CyNetwork network, CyNode node) {		
 		// ihop links
 		String stringRef = ihopLinks(resource);
 		if (stringRef != null) {
 			AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_IHOP_LINKS, stringRef, String.class);
 		}
 
-		List<String> allxList = new ArrayList<String>();
-		List<String> unifxfList = new ArrayList<String>();
-		List<String> relxList = new ArrayList<String>();
-		List<String> pubxList = new ArrayList<String>();
+		List<String> uniXrefList = new ArrayList<String>();
+		List<String> relXrefList = new ArrayList<String>();
+		List<String> pubXrefList = new ArrayList<String>();
+		List<String> uniLinkList = new ArrayList<String>();
+		List<String> relLinkList = new ArrayList<String>();
+		List<String> pubLinkList = new ArrayList<String>();
 		// add xref ids per database and per xref class
 		List<Xref> xList = getXRefs(resource, Xref.class);
 		for (Xref link : xList) {
 			if(link.getDb() == null)
 				continue; // too bad (data issue...); skip it
 			
-			// per db -
-			String key = BIOPAX_XREF_PREFIX + link.getDb().toUpperCase();
-			// Set individual XRefs; Max of 1 per database.
-			String existingId = network.getRow(node).get(key, String.class);
-			if (existingId == null) {
-				AttributeUtil.set(network, node, key, link.getId(), String.class);
-			}
-			
-			StringBuffer temp = new StringBuffer();
-			
+			StringBuffer temp = new StringBuffer();			
 			temp.append(ExternalLinkUtil.createLink(link.getDb(), link.getId()));
 			
 			if(link instanceof UnificationXref) {
-				unifxfList.add(temp.toString());
+				uniLinkList.add(temp.toString());
+				uniXrefList.add(link.toString());
 			}
 			else if(link instanceof PublicationXref) {
 				PublicationXref xl = (PublicationXref) link;
@@ -590,19 +566,21 @@ public class BioPaxMapper {
 					}
 					temp.append(")");
 				}
-				pubxList.add(temp.toString());
+				pubLinkList.add(temp.toString());				
+				pubXrefList.add(link.toString());
 			}
 			else if(link instanceof RelationshipXref) {
-				relxList.add(temp.toString());
+				relLinkList.add(temp.toString());
+				relXrefList.add(link.toString());
 			}
-			
-			allxList.add(link.toString());
 		}
 		
-		AttributeUtil.set(network, node, BIOPAX_XREF_IDS, allxList, String.class);
-		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_UNIFICATION_REFERENCES, unifxfList, String.class);
-		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_RELATIONSHIP_REFERENCES, relxList, String.class);
-		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_PUBLICATION_REFERENCES, pubxList, String.class);	
+		AttributeUtil.set(network, node, BIOPAX_UNIFICATION, uniXrefList, String.class);
+		AttributeUtil.set(network, node, BIOPAX_RELATIONSHIP, relXrefList, String.class);
+		AttributeUtil.set(network, node, BIOPAX_PUBLICATION, pubXrefList, String.class);
+		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_UNIFICATION_REFERENCES, uniLinkList, String.class);
+		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_RELATIONSHIP_REFERENCES, relLinkList, String.class);
+		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_PUBLICATION_REFERENCES, pubLinkList, String.class);	
 	}
 
 
@@ -792,29 +770,6 @@ public class BioPaxMapper {
 
 		return dbList;
 	}	
-	
-
-	private static List<String> getXRefList(BioPAXElement bpe, String xrefType) {
-		List<String> listToReturn = new ArrayList<String>();
-
-		// get the xref list
-		List<ExternalLink> list = xrefToExternalLinks(bpe, RelationshipXref.class);
-		// what type of xref are we interested in ?
-		String type = null;
-		if (xrefType.equals(BIOPAX_AFFYMETRIX_REFERENCES_LIST)) {
-			type = "AFFYMETRIX";
-		}
-
-		if (!list.isEmpty()) {
-			for (ExternalLink link : list) {
-				if (link.getDbName().toUpperCase().startsWith(type)) {
-					listToReturn.add(link.getId());
-				}
-			}
-		}
-
-		return listToReturn;
-	}
 
 	
 	private static String ihopLinks(BioPAXElement bpe) {
