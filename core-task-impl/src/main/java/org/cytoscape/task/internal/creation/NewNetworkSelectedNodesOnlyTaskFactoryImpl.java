@@ -34,7 +34,6 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -56,7 +55,6 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 	private final CyEventHelper eventHelper;
 	private final CyGroupManager groupMgr;
 	private final RenderingEngineManager renderingEngineMgr;
-	private final SessionUtils sessionUtils;
 
 	public NewNetworkSelectedNodesOnlyTaskFactoryImpl(final UndoSupport undoSupport,
 													  final CyRootNetworkManager crnf,
@@ -68,8 +66,7 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 													  final CyApplicationManager appManager,
 													  final CyEventHelper eventHelper,
 													  final CyGroupManager groupMgr,
-													  final RenderingEngineManager renderingEngineMgr,
-													  final SessionUtils sessionUtils)
+													  final RenderingEngineManager renderingEngineMgr)
 	{
 		this.undoSupport        = undoSupport;
 		this.netmgr             = netmgr;
@@ -82,7 +79,6 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 		this.eventHelper        = eventHelper;
 		this.groupMgr           = groupMgr;
 		this.renderingEngineMgr = renderingEngineMgr;
-		this.sessionUtils       = sessionUtils;
 	}
 
 	@Override
@@ -91,10 +87,5 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 			new NewNetworkSelectedNodesOnlyTask(undoSupport, network, crnf, cnvf, netmgr,
 			                                    networkViewManager, naming, vmm,
 			                                    appManager, eventHelper, groupMgr, renderingEngineMgr));
-	}
-	
-	@Override
-	public boolean isReady(CyNetwork network) {
-		return super.isReady(network) && sessionUtils.isSessionReady();
 	}
 }

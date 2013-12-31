@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.io.write.VizmapWriterManager;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -41,15 +40,13 @@ public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements 
 	private final VizmapWriterManager writerManager;
 	private final VisualMappingManager vmMgr;
 	private final TunableSetter tunableSetter; 
-	private final SessionUtils sessionUtils;
 
 	
 	public ExportVizmapTaskFactoryImpl(VizmapWriterManager writerManager, VisualMappingManager vmMgr,
-			TunableSetter tunableSetter, SessionUtils sessionUtils) {
+			TunableSetter tunableSetter) {
 		this.writerManager = writerManager;
 		this.vmMgr = vmMgr;
 		this.tunableSetter = tunableSetter; 
-		this.sessionUtils = sessionUtils; 
 	}
 	
 	@Override
@@ -63,10 +60,5 @@ public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements 
 		m.put("OutputFile", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
-	}
-	
-	@Override
-	public boolean isReady() {
-		return !sessionUtils.isLoadingSession();
 	}
 }

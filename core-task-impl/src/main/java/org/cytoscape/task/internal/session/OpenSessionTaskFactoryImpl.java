@@ -37,7 +37,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -54,7 +53,6 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 	private final CyGroupManager grManager;
 	private final RecentlyOpenedTracker tracker;
 	private final CyEventHelper eventHelper;
-	private final SessionUtils sessionUtils;
 
 	private final TunableSetter tunableSetter; 
 	
@@ -69,8 +67,7 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 									  final CyGroupManager grManager,
 									  final RecentlyOpenedTracker tracker,
 									  final TunableSetter tunableSetter,
-									  final CyEventHelper eventHelper,
-									  final SessionUtils sessionUtils) {
+									  final CyEventHelper eventHelper) {
 		this.mgr = mgr;
 		this.rmgr = rmgr;
 		this.appManager = appManager;
@@ -81,7 +78,6 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 		this.tracker = tracker;
 		this.tunableSetter = tunableSetter;
 		this.eventHelper = eventHelper;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -98,10 +94,5 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 		m.put("file", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
-	}
-	
-	@Override
-	public boolean isReady() {
-		return sessionUtils.isSessionReady();
 	}
 }

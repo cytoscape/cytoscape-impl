@@ -33,7 +33,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -41,12 +40,10 @@ import org.cytoscape.work.TaskIterator;
 public class DestroyNetworkTaskFactoryImpl extends AbstractNetworkCollectionTaskFactory implements DestroyNetworkTaskFactory, TaskFactory {
 	
 	private CyNetworkManager netmgr;
-	private final SessionUtils sessionUtils;
 
-	public DestroyNetworkTaskFactoryImpl(CyNetworkManager netmgr, SessionUtils sessionUtils) {
+	public DestroyNetworkTaskFactoryImpl(CyNetworkManager netmgr) {
 		super();
 		this.netmgr = netmgr;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -58,14 +55,9 @@ public class DestroyNetworkTaskFactoryImpl extends AbstractNetworkCollectionTask
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new DestroyNetworkTask(new ArrayList<CyNetwork>(), netmgr));
 	} 
-
-	@Override
-	public boolean isReady(Collection<CyNetwork> networks) {
-		return super.isReady(networks) && isReady();
-	}
 	
 	@Override
 	public boolean isReady() {
-		return sessionUtils.isSessionReady();
+		return true;
 	}
 }

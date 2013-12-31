@@ -41,7 +41,6 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.webservice.internal.task.ShowImportDialogAction;
 import org.cytoscape.webservice.internal.ui.WebServiceGUIImpl;
 import org.cytoscape.webservice.internal.ui.WebServiceImportDialog;
-import org.cytoscape.webservice.internal.util.SessionUtils;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -56,10 +55,7 @@ public class CyActivator extends AbstractCyActivator {
 		CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
 		DialogTaskManager taskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
-		SessionUtils sessionUtils = new SessionUtils();
 		
-		registerAllServices(bc, sessionUtils, new Properties());
-
 		// UI for Network Import Clients
 		WebServiceImportDialog<NetworkImportWebServiceClient> unifiedNetworkImportDialog = new WebServiceImportDialog<NetworkImportWebServiceClient>(
 				NetworkImportWebServiceClient.class, "Import Network from Web Service", cySwingApplicationServiceRef, taskManagerServiceRef, openBrowser);
@@ -77,9 +73,9 @@ public class CyActivator extends AbstractCyActivator {
 		final KeyStroke tableImportShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_DOWN_MASK);
 		
 		ShowImportDialogAction showImportNetworkFromWebServiceDialogAction = new ShowImportDialogAction(
-				cySwingApplicationServiceRef, unifiedNetworkImportDialog, "File.Import.Network", "Public Databases...", networkImportShortcut, sessionUtils);
+				cySwingApplicationServiceRef, unifiedNetworkImportDialog, "File.Import.Network", "Public Databases...", networkImportShortcut);
 		ShowImportDialogAction showImportTableFromWebServiceDialogAction = new ShowImportDialogAction(
-				cySwingApplicationServiceRef, unifiedTableImportDialog, "File.Import.Table", "Public Databases...", tableImportShortcut, sessionUtils);
+				cySwingApplicationServiceRef, unifiedTableImportDialog, "File.Import.Table", "Public Databases...", tableImportShortcut);
 
 		Properties showImportNetworkFromWebServiceDialogActionProps = new Properties();
 		showImportNetworkFromWebServiceDialogActionProps.setProperty("id",

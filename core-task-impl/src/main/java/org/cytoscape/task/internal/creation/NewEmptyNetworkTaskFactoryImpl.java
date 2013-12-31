@@ -31,7 +31,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -50,13 +49,12 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 	private final VisualMappingManager vmm;
 	private final CyRootNetworkManager cyRootNetworkManager;
 	private final CyApplicationManager cyApplicationManager;
-	private final SessionUtils sessionUtils;
 	
 	public NewEmptyNetworkTaskFactoryImpl(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, 
 			final CyNetworkManager netMgr, final CyNetworkViewManager networkViewManager, 
 			final CyNetworkNaming namingUtil, final SynchronousTaskManager<?> syncTaskMgr,
 			final VisualMappingManager vmm, final CyRootNetworkManager cyRootNetworkManager,
-			final CyApplicationManager cyApplicationManager, final SessionUtils sessionUtils) {
+			final CyApplicationManager cyApplicationManager) {
 		this.cnf = cnf;
 		this.cnvf = cnvf;
 		this.netMgr = netMgr;
@@ -66,7 +64,6 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.vmm = vmm;
 		this.cyRootNetworkManager = cyRootNetworkManager;
 		this.cyApplicationManager = cyApplicationManager;
-		this.sessionUtils = sessionUtils;
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -83,10 +80,5 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 		NewEmptyNetworkTask task = createTask();
 		syncTaskMgr.execute(new TaskIterator(task));	
 		return task.getView(); 
-	}
-	
-	@Override
-	public boolean isReady() {
-		return sessionUtils.isSessionReady();
 	}
 }

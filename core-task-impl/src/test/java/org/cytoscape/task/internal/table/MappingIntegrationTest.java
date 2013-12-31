@@ -62,7 +62,6 @@ import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTask;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -246,7 +245,7 @@ public class MappingIntegrationTest {
 	
 	public void mapping(CyTable table, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
-		ImportTableDataTaskFactoryImpl mappingTF = new ImportTableDataTaskFactoryImpl(netMgr,tabMgr, ts, rootNetMgr, new SessionUtils());
+		ImportTableDataTaskFactoryImpl mappingTF = new ImportTableDataTaskFactoryImpl(netMgr,tabMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		

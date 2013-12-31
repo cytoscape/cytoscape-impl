@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.io.read.VizmapReaderManager;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -59,15 +58,13 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	private final VisualMappingManager vmMgr;
 	private final SynchronousTaskManager<?> syncTaskManager;
 	private final TunableSetter tunableSetter;
-	private final SessionUtils sessionUtils;
 
 	public LoadVizmapFileTaskFactoryImpl(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr,
-			SynchronousTaskManager<?> syncTaskManager, TunableSetter tunableSetter, SessionUtils sessionUtils) {
+			SynchronousTaskManager<?> syncTaskManager, TunableSetter tunableSetter) {
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		this.vmMgr = vmMgr;
 		this.syncTaskManager = syncTaskManager;
 		this.tunableSetter = tunableSetter;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -123,11 +120,6 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		m.put("file", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer);
-	}
-
-	@Override
-	public boolean isReady() {
-		return sessionUtils.isSessionReady();
 	}
 	
 	// Read the inputStream and save the content in a tmp file

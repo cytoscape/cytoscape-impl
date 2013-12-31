@@ -35,7 +35,6 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -66,7 +65,6 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 	
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
-	private final SessionUtils sessionUtils;
 
 	public LoadNetworkURLTaskFactoryImpl(CyNetworkReaderManager mgr,
 					     CyNetworkManager netmgr,
@@ -74,7 +72,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 					     CyProperty<Properties> cyProps, CyNetworkNaming cyNetworkNaming,
 					     StreamUtil streamUtil, final SynchronousTaskManager<?> syncTaskManager,
 						 TunableSetter tunableSetter, final VisualMappingManager vmm,
-						 final CyNetworkViewFactory nullNetworkViewFactory, final SessionUtils sessionUtils)
+						 final CyNetworkViewFactory nullNetworkViewFactory)
 	{
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -86,7 +84,6 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		this.syncTaskManager = syncTaskManager;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -114,10 +111,5 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		m.put("url", url);
 	
 		return tunableSetter.createTaskIterator( this.createTaskIterator(), m);
-	}
-	
-	@Override
-	public boolean isReady() {
-		return sessionUtils.isSessionReady();
 	}
 }

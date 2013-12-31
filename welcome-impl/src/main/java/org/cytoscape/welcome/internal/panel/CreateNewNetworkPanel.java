@@ -31,8 +31,6 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -44,9 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +53,6 @@ import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -290,12 +285,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		createEmptySessionButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if (!((TaskFactory)newEmptyNetworkViewFactory).isReady()) {
-					JOptionPane.showMessageDialog(CreateNewNetworkPanel.this.getTopLevelAncestor(),
-							"Cannot create a new network now, because a session is being loaded or saved.");
-					return;
-				}
-				
 				closeParentWindow();
 				guiTaskManager.execute(((TaskFactory)newEmptyNetworkViewFactory).createTaskIterator());
 			}
@@ -355,23 +344,11 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	}
 
 	private final void loadFromFile() {
-		if (!importNetworkFileTF.isReady()) {
-			JOptionPane.showMessageDialog(CreateNewNetworkPanel.this.getTopLevelAncestor(),
-					"Cannot import a network now, because a session is being loaded or saved.");
-			return;
-		}
-		
 		final TaskIterator itr = importNetworkFileTF.createTaskIterator();
 		importNetwork(itr);
 	}
 
 	private void loadPreset(JButton button) {
-		if (!importNetworkFromURLTF.isReady()) {
-			JOptionPane.showMessageDialog(CreateNewNetworkPanel.this.getTopLevelAncestor(),
-					"Cannot import network now, because a session is being loaded or saved.");
-			return;
-		}
-		
 		// Get selected file from the combo box
 		Object file = null;
 		
@@ -414,14 +391,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 		final ServiceReference ref = actions[0];
 		final CyAction action = (CyAction) bc.getService(ref);
-		action.updateEnableState();
-		
-		if (!action.isEnabled()) {
-			JOptionPane.showMessageDialog(CreateNewNetworkPanel.this.getTopLevelAncestor(),
-					"Cannot import network now, because a session is being loaded or saved.");
-			return;
-		}
-		
 		action.actionPerformed(null);
 	}
 

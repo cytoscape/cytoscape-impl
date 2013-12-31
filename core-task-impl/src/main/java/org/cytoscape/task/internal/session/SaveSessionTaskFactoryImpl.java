@@ -28,7 +28,6 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.write.SaveSessionTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -39,15 +38,13 @@ public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements S
 	private final CySessionWriterManager writerMgr;
 	private final RecentlyOpenedTracker tracker;
 	private final CyEventHelper cyEventHelper;
-	private final SessionUtils sessionUtils;
 	
 	public SaveSessionTaskFactoryImpl(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper, final SessionUtils sessionUtils) {
+			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper) {
 		this.sessionMgr = sessionMgr;
 		this.writerMgr = writerMgr;
 		this.tracker = tracker;
 		this.cyEventHelper = cyEventHelper;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -60,10 +57,5 @@ public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements S
 			return new TaskIterator(new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
 		else
 			return new TaskIterator(new SaveSessionTask(writerMgr, sessionMgr, tracker, cyEventHelper));
-	}
-	
-	@Override
-	public boolean isReady() {
-		return sessionUtils.isSessionReady();
 	}
 }

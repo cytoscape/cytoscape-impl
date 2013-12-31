@@ -1,7 +1,6 @@
 package org.cytoscape.task.internal.loadnetwork;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -9,11 +8,8 @@ import static org.mockito.Mockito.when;
 
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Collection;
 
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.task.internal.utils.SessionUtils;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.internal.NullCyNetworkViewFactory;
 import org.cytoscape.work.ObservableTask;
@@ -49,8 +45,7 @@ public class LoadNetworkURLTaskFactoryTest extends AbstractLoadNetworkTaskTester
 		TunableSetter tunableSetter = new TunableSetterImpl(new SyncTunableMutatorFactory(new SyncTunableHandlerFactory()), new TunableRecorderManager());
 		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
 		LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager,
-				props, namingUtil, streamUtil, synchronousTaskManager, tunableSetter, vmm, nullNetworkViewFactory,
-				new SessionUtils());
+				props, namingUtil, streamUtil, synchronousTaskManager, tunableSetter, vmm, nullNetworkViewFactory);
 
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		TaskObserver observer = mock(TaskObserver.class);

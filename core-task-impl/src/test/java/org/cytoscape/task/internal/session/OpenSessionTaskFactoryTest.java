@@ -37,7 +37,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -65,7 +64,7 @@ public class OpenSessionTaskFactoryTest {
 		MockitoAnnotations.initMocks(this);
 		
 		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, readerMgr, appMgr, netMgr, tableMgr,
-				netTableMgr, grMgr, tracker, ts, eventHelper, new SessionUtils());
+				netTableMgr, grMgr, tracker, ts, eventHelper);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

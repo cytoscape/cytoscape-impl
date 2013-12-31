@@ -24,30 +24,26 @@ package org.cytoscape.task.internal.export.network;
  * #L%
  */
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
 public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements ExportNetworkViewTaskFactory {
 
 	private CyNetworkViewWriterManager writerManager;
 	private final TunableSetter tunableSetter;
-	private final SessionUtils sessionUtils;
 
 	
-	public ExportNetworkViewTaskFactoryImpl(CyNetworkViewWriterManager writerManager, TunableSetter tunableSetter,
-			SessionUtils sessionUtils) {
+	public ExportNetworkViewTaskFactoryImpl(CyNetworkViewWriterManager writerManager, TunableSetter tunableSetter) {
 		this.writerManager = writerManager;
 		this.tunableSetter = tunableSetter;
-		this.sessionUtils = sessionUtils;
 	}
 	
 	@Override
@@ -63,10 +59,5 @@ public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFac
 		CyNetworkViewWriter writer = new CyNetworkViewWriter(writerManager, view);
 		writer.setDefaultFileFormatUsingFileExt(file);
 		return new TaskIterator(2, writer);
-	}
-
-	@Override
-	public boolean isReady(CyNetworkView view) {
-		return super.isReady(view) && !sessionUtils.isLoadingSession();
 	}
 }

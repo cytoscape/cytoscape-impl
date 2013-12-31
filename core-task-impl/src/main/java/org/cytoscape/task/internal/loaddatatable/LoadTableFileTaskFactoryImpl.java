@@ -33,8 +33,7 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.internal.utils.SessionUtils;
-import org.cytoscape.task.read.*;
+import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
@@ -47,16 +46,14 @@ public class LoadTableFileTaskFactoryImpl extends AbstractTaskFactory implements
 	private final CyNetworkManager netMgr;
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
-	private final SessionUtils sessionUtils;
 	
 	public LoadTableFileTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr, 
-			final CyTableManager tabelMgr,final CyRootNetworkManager rootNetMgr, final SessionUtils sessionUtils) {
+			final CyTableManager tabelMgr,final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
 		this.netMgr = netMgr;
 		this.tableMgr = tabelMgr;
 		this.rootNetMgr = rootNetMgr;
-		this.sessionUtils = sessionUtils;
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -73,10 +70,5 @@ public class LoadTableFileTaskFactoryImpl extends AbstractTaskFactory implements
 		return new TaskIterator(new CombineReaderAndMappingTask( reader, tableMgr,netMgr, rootNetMgr));
 
 		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
-	}
-	
-	@Override
-	public boolean isReady() {
-		return sessionUtils.isSessionReady();
 	}
 }

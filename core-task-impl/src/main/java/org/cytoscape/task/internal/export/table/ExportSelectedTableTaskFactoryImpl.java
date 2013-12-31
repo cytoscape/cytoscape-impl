@@ -28,35 +28,26 @@ package org.cytoscape.task.internal.export.table;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 public class ExportSelectedTableTaskFactoryImpl extends AbstractTaskFactory implements ExportSelectedTableTaskFactory{
 
 	private final CyTableWriterManager writerManager;
 	private final CyTableManager cyTableManagerServiceRef;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
-	private final SessionUtils sessionUtils;
 
 	
 	public ExportSelectedTableTaskFactoryImpl(CyTableWriterManager writerManager,
-			CyTableManager cyTableManagerServiceRef, CyNetworkManager cyNetworkManagerServiceRef,
-			SessionUtils sessionUtils) {
+			CyTableManager cyTableManagerServiceRef, CyNetworkManager cyNetworkManagerServiceRef) {
 		this.writerManager = writerManager;
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
-		this.sessionUtils = sessionUtils;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SelectExportTableTask(this.writerManager, this.cyTableManagerServiceRef, this.cyNetworkManagerServiceRef));
-	}
-
-	@Override
-	public boolean isReady() {
-		return !sessionUtils.isLoadingSession();
 	}
 }

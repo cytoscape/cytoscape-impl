@@ -29,7 +29,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.task.internal.export.ViewWriter;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -39,22 +38,15 @@ public class ExportNetworkImageTaskFactoryImpl extends AbstractNetworkViewTaskFa
 	
 	private final PresentationWriterManager presentationWriterMgr; 
 	private final CyApplicationManager applicationManager;
-	private final SessionUtils sessionUtils;
 
 	public ExportNetworkImageTaskFactoryImpl(final PresentationWriterManager presentationWriterMgr,
-			final CyApplicationManager applicationManager, final SessionUtils sessionUtils) {
+			final CyApplicationManager applicationManager) {
 		this.presentationWriterMgr = presentationWriterMgr;
 		this.applicationManager = applicationManager;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
 		return new TaskIterator(2, new ViewWriter( presentationWriterMgr, view, applicationManager.getCurrentRenderingEngine() ) );
-	}
-	
-	@Override
-	public boolean isReady(CyNetworkView view) {
-		return super.isReady(view) && !sessionUtils.isLoadingSession();
 	}
 }

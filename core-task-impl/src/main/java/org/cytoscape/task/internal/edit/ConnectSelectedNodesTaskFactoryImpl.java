@@ -30,7 +30,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -45,15 +44,13 @@ public class ConnectSelectedNodesTaskFactoryImpl extends AbstractNetworkTaskFact
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewManager netViewMgr;
-	private final SessionUtils sessionUtils;
 
 	public ConnectSelectedNodesTaskFactoryImpl(final UndoSupport undoSupport, final CyEventHelper eventHelper,
-			final VisualMappingManager vmm, final CyNetworkViewManager netViewMgr, final SessionUtils sessionUtils) {
+			final VisualMappingManager vmm, final CyNetworkViewManager netViewMgr) {
 		this.undoSupport = undoSupport;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
 		this.netViewMgr = netViewMgr;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -71,6 +68,6 @@ public class ConnectSelectedNodesTaskFactoryImpl extends AbstractNetworkTaskFact
 
 	@Override
 	public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
-		return nodeView != null && networkView != null && sessionUtils.isSessionReady();
+		return nodeView != null && networkView != null;
 	}
 }

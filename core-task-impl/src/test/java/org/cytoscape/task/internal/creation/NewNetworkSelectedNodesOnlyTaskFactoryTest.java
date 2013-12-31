@@ -1,7 +1,6 @@
 package org.cytoscape.task.internal.creation;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -18,8 +17,6 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.internal.utils.SessionUtils;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -52,7 +49,7 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryTest {
 		RenderingEngineManager renderingEngineMgr = mock(RenderingEngineManager.class);
 		NewNetworkSelectedNodesOnlyTaskFactoryImpl factory = 
 				new NewNetworkSelectedNodesOnlyTaskFactoryImpl(undoSupport, crnf, cnvf, netmgr, networkViewManager,
-						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, new SessionUtils());
+						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr);
 		
 		CyNetwork network = networkFactory.createNetwork();
 		CyNode node = network.addNode();

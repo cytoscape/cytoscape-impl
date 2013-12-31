@@ -124,12 +124,6 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 			fileLabel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if (!openSessionTaskFactory.isReady()) {
-						JOptionPane.showMessageDialog(OpenPanel.this.getTopLevelAncestor(),
-								"Cannot open the session file now, because another session is being loaded or saved.");
-						return;
-					}
-					
 					if (targetFile.exists()) {
 						taskManager.execute(openSessionTaskFactory.createTaskIterator(targetFile));
 						closeParentWindow();
@@ -156,12 +150,6 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (!openSessionTaskFactory.isReady()) {
-					JOptionPane.showMessageDialog(OpenPanel.this.getTopLevelAncestor(),
-							"Cannot open a session file now, because another session is being loaded or saved.");
-					return;
-				}
-				
 				closeParentWindow();
 				taskManager.execute(openSessionTaskFactory.createTaskIterator());
 			}

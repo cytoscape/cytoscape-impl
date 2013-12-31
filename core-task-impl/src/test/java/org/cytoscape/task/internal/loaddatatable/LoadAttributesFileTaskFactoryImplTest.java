@@ -34,7 +34,6 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -72,7 +71,7 @@ public class LoadAttributesFileTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesFileTaskFactory() throws Exception {
 
-		final LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr, new SessionUtils());
+		final LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 

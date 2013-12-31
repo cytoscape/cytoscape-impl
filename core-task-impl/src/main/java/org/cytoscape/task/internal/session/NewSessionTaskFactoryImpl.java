@@ -32,7 +32,6 @@ import java.util.Map;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.create.NewSessionTaskFactory;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
@@ -43,14 +42,11 @@ public class NewSessionTaskFactoryImpl extends AbstractTaskFactory implements Ne
 	private final CySessionManager mgr;
 	private final TunableSetter tunableSetter;
 	private final CyEventHelper eventHelper;
-	private final SessionUtils sessionUtils;
 	
-	public NewSessionTaskFactoryImpl(CySessionManager mgr, TunableSetter tunableSetter, CyEventHelper eventHelper,
-			SessionUtils sessionUtils) {
+	public NewSessionTaskFactoryImpl(CySessionManager mgr, TunableSetter tunableSetter, CyEventHelper eventHelper) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
 		this.eventHelper = eventHelper;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -64,10 +60,5 @@ public class NewSessionTaskFactoryImpl extends AbstractTaskFactory implements Ne
 		m.put("destroyCurrentSession", destroyCurrentSession);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
-	}
-	
-	@Override
-	public boolean isReady() {
-		return sessionUtils.isSessionReady();
 	}
 }

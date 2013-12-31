@@ -32,7 +32,6 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.task.internal.utils.SessionUtils;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -53,14 +52,13 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 	private final VisualMappingManager vmm;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyApplicationManager appMgr;
-	private final SessionUtils sessionUtils;
 
 	public CreateNetworkViewTaskFactoryImpl(final UndoSupport undoSupport, 
 			final CyNetworkViewFactory viewFactory,
 			final CyNetworkViewManager netViewMgr, final CyLayoutAlgorithmManager layoutMgr,
 			final CyEventHelper eventHelper, final VisualMappingManager vmm,
 			final RenderingEngineManager renderingEngineMgr,
-			final CyApplicationManager appMgr, final SessionUtils sessionUtils) {
+			final CyApplicationManager appMgr) {
 		this.undoSupport = undoSupport;
 		this.viewFactory = viewFactory;
 		this.netViewMgr = netViewMgr;
@@ -69,7 +67,6 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		this.vmm = vmm;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
-		this.sessionUtils = sessionUtils;
 	}
 
 	@Override
@@ -103,6 +100,6 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 
 	@Override
 	public boolean isReady() {
-		return appMgr.getCurrentNetwork() != null && sessionUtils.isSessionReady();
+		return appMgr.getCurrentNetwork() != null;
 	}
 }
