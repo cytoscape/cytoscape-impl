@@ -54,7 +54,6 @@ class TaskDialog2 extends JDialog {
     final Font defaultFont = UIManager.getFont("Label.font");
     final Font font = new Font(defaultFont == null ? null : defaultFont.getName(), style, size);
     final Color bkgndColor = UIManager.getColor("Panel.background");
-    System.out.println("bkgndColor: " + bkgndColor);
     final JTextField textField = new JTextField(20);
     textField.setFont(font);
     textField.setEditable(false);
