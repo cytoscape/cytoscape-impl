@@ -183,8 +183,8 @@ class SwingTaskMonitor implements TaskMonitor {
 		cancelExecutorService.submit(cancel);
 		cancelled = true;
 		
-		// Close dialog (if necessary)
-		//close();
+		// This is necessary, otherwise, user cannot close this dialog!
+		close();
 	}
 
 	protected boolean cancelled() {

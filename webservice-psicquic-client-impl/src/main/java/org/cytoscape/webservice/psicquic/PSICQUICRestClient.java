@@ -209,7 +209,7 @@ public final class PSICQUICRestClient {
 			if (canceled) {
 				logger.warn("Interrupted by user: network import task");
 				tm.setTitle("Import Canceled");
-				tm.setStatusMessage("Canceled: Partial result will be returned.");
+				tm.setStatusMessage("Import Canceled: Partial result will be returned.");
 				try {
 					exe.shutdownNow();
 					long endTime = System.currentTimeMillis();
@@ -219,10 +219,14 @@ public final class PSICQUICRestClient {
 					logger.warn("Operation timeout", ex);
 					return null;
 				} finally {
+					for(ImportNetworkTask task: taskSet) {
+						task.cancel();
+					}
 					resultMap.clear();
 					taskSet.clear();
 					sourceSet.clear();
 				}
+				tm.setProgress(1.0d);
 				return result;
 			}
 
@@ -604,7 +608,8 @@ public final class PSICQUICRestClient {
 
 		public void cancel() {
 			canceled = true;
-			network.getRow(network).set(CyNetwork.NAME, networkTitle);
+			if(network != null)
+				network.getRow(network).set(CyNetwork.NAME, networkTitle);
 		}
 	}
 
