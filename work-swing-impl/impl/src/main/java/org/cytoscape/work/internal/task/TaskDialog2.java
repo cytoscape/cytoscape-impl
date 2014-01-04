@@ -1,29 +1,33 @@
 package org.cytoscape.work.internal.task;
 
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagLayout;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
+
+import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.SwingUtilities;
+
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Window;
+import java.awt.GridBagLayout;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 class TaskDialog2 extends JDialog {
   public static final Map<String,URL> ICON_URLS = new HashMap<String,URL>();
@@ -37,9 +41,6 @@ class TaskDialog2 extends JDialog {
     ICON_URLS.put("cancel-pressed", TaskDialog.class.getResource("/images/cancel-pressed-icon.png"));
     ICON_URLS.put("cancelled",      TaskDialog.class.getResource("/images/cancelled-icon.png"));
   }
-  
-  private static final int PADDING = 10;
-  private static final int DEFAULT_WIDTH = 600;
 
   public static final Map<String,Icon> ICONS = new HashMap<String,Icon>();
   static {
@@ -48,12 +49,14 @@ class TaskDialog2 extends JDialog {
     }
   }
 
+  static final int DEFAULT_WIDTH = 500;
+
   static JLabel newLabelWithFont(final int style, final int size) {
     final Font defaultFont = UIManager.getFont("Label.font");
     final Font font = new Font(defaultFont == null ? null : defaultFont.getName(), style, size);
     final JLabel label = new JLabel();
     label.setFont(font);
-    label.setPreferredSize(new Dimension(DEFAULT_WIDTH, size + PADDING));
+    label.setPreferredSize(new Dimension(DEFAULT_WIDTH, size));
     return label;
   }
 
@@ -97,7 +100,7 @@ class TaskDialog2 extends JDialog {
   final JLabel titleLabel;
   final JLabel subtitleLabel;
   final RoundedProgressBar progressBar;
-  final JEditorPane msgLabel;
+  final JLabel msgLabel;
   final JButton cancelButton;
   final JButton closeButton;
 
@@ -112,10 +115,9 @@ class TaskDialog2 extends JDialog {
     progressBar   = new RoundedProgressBar();
     progressBar.setIndeterminate();
 
-    msgLabel      = new JEditorPane();
-    msgLabel.setEditable(false);
-    msgLabel.setContentType("text/html");
-    msgLabel.setOpaque(false);
+    msgLabel      = new JLabel();
+    msgLabel.setPreferredSize(new Dimension(DEFAULT_WIDTH, msgLabel.getFont().getSize() * 2 /* show multiline text */));
+
 
     cancelButton  = newLinkButton(ICONS.get("cancel"), ICONS.get("cancel-hover"), ICONS.get("cancel-pressed"));
     cancelButton.setToolTipText("Cancel");
@@ -136,15 +138,15 @@ class TaskDialog2 extends JDialog {
     final EasyGBC c = new EasyGBC();
 
     final JPanel msgPanel = new JPanel(new GridBagLayout());
-    msgPanel.add(msgLabel, c.right().expandHoriz().insets(0, 10, 0, 0));
+    msgPanel.add(msgLabel, c.expandBoth().anchor("northwest").insets(0, 10, 0, 0));
     msgPanel.add(closeButton, c.right().noExpand().insets(0, 10, 0, 0));
 
     super.setLayout(new GridBagLayout());
-    super.add(titleLabel, c.reset().expandBoth().spanHoriz(2).insets(10, 10, 0, 10));
-    super.add(subtitleLabel, c.down().expandBoth().spanHoriz(2).insets(0, 10, 0, 10));
+    super.add(titleLabel, c.reset().expandHoriz().spanHoriz(2).insets(10, 10, 0, 10));
+    super.add(subtitleLabel, c.down().expandHoriz().spanHoriz(2).insets(0, 10, 0, 10));
     super.add(progressBar, c.down().expandHoriz().noSpan().insets(0, 10, 0, 10));
     super.add(cancelButton, c.right().noExpand().insets(0, 0, 0, 10));
-    super.add(msgPanel, c.down().expandBoth().spanHoriz(2).insets(10, 10, 10, 10));
+    super.add(msgPanel, c.down().expandBoth().anchor("northwest").spanHoriz(2).insets(10, 10, 10, 10));
     super.pack();
 
     super.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -182,7 +184,7 @@ class TaskDialog2 extends JDialog {
   public void setException(final Throwable t, final String userErrorMessage) {
     t.printStackTrace();
     this.errorOccurred = true;
-    this.subtitleLabel.setIcon(ICONS.get("error"));
+    msgLabel.setIcon(ICONS.get("error"));
     msgLabel.setText("Error: " + t.getMessage());
     progressBar.setVisible(false);
     closeButton.setVisible(true);
@@ -191,7 +193,6 @@ class TaskDialog2 extends JDialog {
 
   public void setStatus(final String message) {
     msgLabel.setText(message);
-    this.pack();
   }
 
 
