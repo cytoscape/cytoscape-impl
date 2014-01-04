@@ -12,7 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.SwingUtilities;
 
@@ -50,18 +49,13 @@ class TaskDialog2 extends JDialog {
     }
   }
 
-  static JTextField newFieldWithFont(final int style, final int size) {
+  static JLabel newLabelWithFont(final int style, final int size) {
     final Font defaultFont = UIManager.getFont("Label.font");
     final Font font = new Font(defaultFont == null ? null : defaultFont.getName(), style, size);
-    final Color bkgndColor = UIManager.getColor("Panel.background");
-    final JTextField textField = new JTextField(20);
-    textField.setFont(font);
-    textField.setEditable(false);
-    textField.setOpaque(false);
-    textField.setBorder(BorderFactory.createEmptyBorder());
-    if (bkgndColor != null)
-      textField.setBackground(new Color(bkgndColor.getRGB()));
-    return textField;
+    final JLabel label = new JLabel();
+    label.setFont(font);
+    label.setPreferredSize(new Dimension(500, size));
+    return label;
   }
 
   static JButton newLinkButton(final Icon normal, final Icon hover, final Icon clicked) {
@@ -101,11 +95,10 @@ class TaskDialog2 extends JDialog {
   boolean haltRequested = false;
   boolean errorOccurred = false;
 
-  final JTextField titleField;
-  final JTextField subtitleField;
+  final JLabel titleLabel;
+  final JLabel subtitleLabel;
   final RoundedProgressBar progressBar;
-  final JLabel msgIcon;
-  final JTextField msgField;
+  final JLabel msgLabel;
   final JButton cancelButton;
   final JButton closeButton;
 
@@ -114,14 +107,13 @@ class TaskDialog2 extends JDialog {
 
     this.parentTaskMonitor = parentTaskMonitor;
 
-    titleField    = newFieldWithFont(Font.PLAIN, 20);
-    subtitleField = newFieldWithFont(Font.PLAIN, 14);
+    titleLabel    = newLabelWithFont(Font.PLAIN, 20);
+    subtitleLabel = newLabelWithFont(Font.PLAIN, 14);
 
     progressBar   = new RoundedProgressBar();
     progressBar.setIndeterminate();
 
-    msgIcon       = new JLabel();
-    msgField      = newFieldWithFont(Font.PLAIN, 12);
+    msgLabel      = newLabelWithFont(Font.PLAIN, 12);
 
     cancelButton  = newLinkButton(ICONS.get("cancel"), ICONS.get("cancel-hover"), ICONS.get("cancel-pressed"));
     cancelButton.setToolTipText("Cancel");
@@ -142,13 +134,12 @@ class TaskDialog2 extends JDialog {
     final EasyGBC c = new EasyGBC();
 
     final JPanel msgPanel = new JPanel(new GridBagLayout());
-    msgPanel.add(msgIcon, c);
-    msgPanel.add(msgField, c.right().expandHoriz().insets(0, 5, 0, 0));
+    msgPanel.add(msgLabel, c.right().expandHoriz().insets(0, 10, 0, 0));
     msgPanel.add(closeButton, c.right().noExpand().insets(0, 10, 0, 0));
 
     super.setLayout(new GridBagLayout());
-    super.add(titleField, c.reset().expandBoth().spanHoriz(2).insets(10, 10, 0, 10));
-    super.add(subtitleField, c.down().expandBoth().spanHoriz(2).insets(0, 10, 0, 10));
+    super.add(titleLabel, c.reset().expandBoth().spanHoriz(2).insets(10, 10, 0, 10));
+    super.add(subtitleLabel, c.down().expandBoth().spanHoriz(2).insets(0, 10, 0, 10));
     super.add(progressBar, c.down().expandHoriz().noSpan().insets(0, 10, 0, 10));
     super.add(cancelButton, c.right().noExpand().insets(0, 0, 0, 10));
     super.add(msgPanel, c.down().expandBoth().spanHoriz(2).insets(10, 10, 10, 10));
@@ -163,21 +154,19 @@ class TaskDialog2 extends JDialog {
           cancel();
       }
     });
-    super.setMaximumSize(new Dimension(700, 200));
     super.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
     super.setModal(true);
     super.setLocationRelativeTo(parent);
   }
 
   public void setTaskTitle(final String taskTitle) {
-    final String currentTitle = titleField.getText();
+    final String currentTitle = titleLabel.getText();
     if (currentTitle == null || currentTitle.length() == 0) {
-      titleField.setText(taskTitle);
+      titleLabel.setText(taskTitle);
       super.setTitle("Cytoscape Task: " + taskTitle);
     } else {
-      subtitleField.setText(taskTitle);
+      subtitleLabel.setText(taskTitle);
     }
-    super.pack();
   }
 
   public void setPercentCompleted(final int percent) {
@@ -191,17 +180,15 @@ class TaskDialog2 extends JDialog {
   public void setException(final Throwable t, final String userErrorMessage) {
     t.printStackTrace();
     this.errorOccurred = true;
-    msgIcon.setIcon(ICONS.get("error"));
-    msgField.setText("Error: " + t.getMessage());
+    msgLabel.setIcon(ICONS.get("error"));
+    msgLabel.setText("Error: " + t.getMessage());
     progressBar.setVisible(false);
     closeButton.setVisible(true);
     cancelButton.setVisible(false);
-    super.pack();
   }
 
   public void setStatus(final String message) {
-    msgField.setText(message);
-    super.pack();
+    msgLabel.setText(message);
   }
 
 
@@ -218,11 +205,10 @@ class TaskDialog2 extends JDialog {
       return;
 
     haltRequested = true;
-    msgField.setText("Cancelling");
+    msgLabel.setText("Cancelling");
     cancelButton.setVisible(false);
     progressBar.setIndeterminate();
     parentTaskMonitor.cancel();
-    super.pack();
   }
 
   synchronized void close() {
