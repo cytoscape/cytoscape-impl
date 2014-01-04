@@ -1,33 +1,29 @@
 package org.cytoscape.work.internal.task;
 
-import java.util.Map;
-import java.util.HashMap;
-
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagLayout;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
-import javax.swing.SwingUtilities;
-
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Window;
-import java.awt.GridBagLayout;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 class TaskDialog2 extends JDialog {
   public static final Map<String,URL> ICON_URLS = new HashMap<String,URL>();
@@ -41,6 +37,9 @@ class TaskDialog2 extends JDialog {
     ICON_URLS.put("cancel-pressed", TaskDialog.class.getResource("/images/cancel-pressed-icon.png"));
     ICON_URLS.put("cancelled",      TaskDialog.class.getResource("/images/cancelled-icon.png"));
   }
+  
+  private static final int PADDING = 10;
+  private static final int DEFAULT_WIDTH = 600;
 
   public static final Map<String,Icon> ICONS = new HashMap<String,Icon>();
   static {
@@ -54,7 +53,7 @@ class TaskDialog2 extends JDialog {
     final Font font = new Font(defaultFont == null ? null : defaultFont.getName(), style, size);
     final JLabel label = new JLabel();
     label.setFont(font);
-    label.setPreferredSize(new Dimension(500, size));
+    label.setPreferredSize(new Dimension(DEFAULT_WIDTH, size + PADDING));
     return label;
   }
 
@@ -98,7 +97,7 @@ class TaskDialog2 extends JDialog {
   final JLabel titleLabel;
   final JLabel subtitleLabel;
   final RoundedProgressBar progressBar;
-  final JLabel msgLabel;
+  final JEditorPane msgLabel;
   final JButton cancelButton;
   final JButton closeButton;
 
@@ -113,7 +112,10 @@ class TaskDialog2 extends JDialog {
     progressBar   = new RoundedProgressBar();
     progressBar.setIndeterminate();
 
-    msgLabel      = newLabelWithFont(Font.PLAIN, 12);
+    msgLabel      = new JEditorPane();
+    msgLabel.setEditable(false);
+    msgLabel.setContentType("text/html");
+    msgLabel.setOpaque(false);
 
     cancelButton  = newLinkButton(ICONS.get("cancel"), ICONS.get("cancel-hover"), ICONS.get("cancel-pressed"));
     cancelButton.setToolTipText("Cancel");
@@ -180,7 +182,7 @@ class TaskDialog2 extends JDialog {
   public void setException(final Throwable t, final String userErrorMessage) {
     t.printStackTrace();
     this.errorOccurred = true;
-    msgLabel.setIcon(ICONS.get("error"));
+    this.subtitleLabel.setIcon(ICONS.get("error"));
     msgLabel.setText("Error: " + t.getMessage());
     progressBar.setVisible(false);
     closeButton.setVisible(true);
@@ -189,6 +191,7 @@ class TaskDialog2 extends JDialog {
 
   public void setStatus(final String message) {
     msgLabel.setText(message);
+    this.pack();
   }
 
 
