@@ -51,7 +51,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	private Task task;
 	private String title;
 	private String statusMessage;
-	private int progress;
+	private double progress;
 	private Exception exception;
 	private Future<?> future;
 	private int expectedNumTasks = 1;
@@ -118,7 +118,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			if (statusMessage != null)
 				dialog.setStatus(statusMessage);
 			if (progress != 0)
-				dialog.setPercentCompleted(progress);
+				dialog.setPercentCompleted((float) progress);
 		} else {
 			dialog.setException(exception, ERROR_MESSAGE);
 			exception = null;
@@ -218,7 +218,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		showStatusMessage(message);
 	}
 
-	public void setProgress(final double progress) {
+	public void setProgress(final double newProgress) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -228,20 +228,18 @@ class SwingTaskMonitor implements TaskMonitor {
 			});
 			return;
 		}
-		if ( progress < 0 ) {
-			this.progress = -1;
+		if ( newProgress < 0.0 ) {
+			this.progress = -1.0;
 			if (dialog != null)
-				dialog.setPercentCompleted(-1);
+				dialog.setPercentCompleted(-1.0f);
 		} else {
-			double adjustedProgress;
 			if(currentTaskNum < expectedNumTasks) 
-				adjustedProgress = (progress * fractionOfOverall) + 
+				this.progress = (newProgress * fractionOfOverall) + 
 					((double)currentTaskNum/(double)expectedNumTasks);
 			else
-				adjustedProgress = progress;
-			this.progress = (int) Math.floor(100.0 * adjustedProgress);
+				this.progress = newProgress;
 			if (dialog != null)
-				dialog.setPercentCompleted(this.progress);
+				dialog.setPercentCompleted((float) this.progress);
 		}
 	}
 
