@@ -173,11 +173,11 @@ class TaskDialog2 extends JDialog {
     }
   }
 
-  public void setPercentCompleted(final int percent) {
-    if (percent < 0) {
+  public void setPercentCompleted(final float percent) {
+    if (percent < 0.0f) {
       progressBar.setIndeterminate();
     } else {
-      progressBar.setProgress(percent / 100.f);
+      progressBar.setProgress(percent);
     }
   }
 
