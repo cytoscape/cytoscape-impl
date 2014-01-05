@@ -50,6 +50,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	private TaskDialog2 dialog;
 	private Task task;
 	private String title;
+	private TaskMonitor.Level statusMessageLevel;
 	private String statusMessage;
 	private double progress;
 	private Exception exception;
@@ -109,18 +110,22 @@ class SwingTaskMonitor implements TaskMonitor {
 
 		dialog = new TaskDialog2(parent, this);
 		//dialog = new TaskDialog(parent, this);
-		dialog.setLocationRelativeTo(parent);
 		
 		if (title != null)
 			dialog.setTaskTitle(title);
 		
 		if (exception == null) {
-			if (statusMessage != null)
-				dialog.setStatus(statusMessage);
+			if (statusMessage != null) {
+				if (statusMessageLevel == null) {
+					dialog.setStatus(null, statusMessage);
+				} else {
+					dialog.setStatus(statusMessageLevel.name().toLowerCase(), statusMessage);
+				}
+			}
 			if (progress != 0)
 				dialog.setPercentCompleted((float) progress);
 		} else {
-			dialog.setException(exception, ERROR_MESSAGE);
+			dialog.setException(exception);
 			exception = null;
 		}
 		
@@ -183,8 +188,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		cancelExecutorService.submit(cancel);
 		cancelled = true;
 		
-		// This is necessary, otherwise, user cannot close this dialog!
-		close();
+		/* Do NOT close the dialog here; this will be done when the task terminates itself after its cancel method is invoked */
 	}
 
 	protected boolean cancelled() {
@@ -222,7 +226,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			thisLog.info(message);
 			break;
 		}
-		showStatusMessage(message);
+		showStatusMessage(level, message);
 	}
 
 	public void setProgress(final double newProgress) {
@@ -230,7 +234,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					setProgress(progress);
+					setProgress(newProgress);
 				}
 			});
 			return;
@@ -266,7 +270,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			this.exception = exception;
 			open();
 		} else {
-			dialog.setException(exception, ERROR_MESSAGE);
+			dialog.setException(exception);
 		}
 	}
 
@@ -282,18 +286,19 @@ class SwingTaskMonitor implements TaskMonitor {
 		return task == null;
 	}
 
-	private void showStatusMessage(final String statusMessage) {
+	private void showStatusMessage(final TaskMonitor.Level level, final String statusMessage) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					showStatusMessage(statusMessage);
+					showStatusMessage(level, statusMessage);
 				}
 			});
 			return;
 		}
 		this.statusMessage = statusMessage;
+		this.statusMessageLevel = level;
 		if (dialog != null)
-			dialog.setStatus(statusMessage);
+			dialog.setStatus(statusMessageLevel.name().toLowerCase(), statusMessage);
 	}
 }

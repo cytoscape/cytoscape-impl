@@ -181,17 +181,20 @@ class TaskDialog2 extends JDialog {
     }
   }
 
-  public void setException(final Throwable t, final String userErrorMessage) {
+  public void setException(final Throwable t) {
     t.printStackTrace();
     this.errorOccurred = true;
-    msgLabel.setIcon(ICONS.get("error"));
-    msgLabel.setText("Error: " + t.getMessage());
+    setStatus("error", t.getMessage());
     progressBar.setVisible(false);
     closeButton.setVisible(true);
     cancelButton.setVisible(false);
   }
 
-  public void setStatus(final String message) {
+  public void setStatus(final String icon, final String message) {
+    if (icon == null)
+      msgLabel.setIcon(null);
+    else
+      msgLabel.setIcon(ICONS.get(icon));
     msgLabel.setText(message);
   }
 
@@ -209,7 +212,7 @@ class TaskDialog2 extends JDialog {
       return;
 
     haltRequested = true;
-    msgLabel.setText("Cancelling");
+    setStatus(null, "Cancelling");
     cancelButton.setVisible(false);
     progressBar.setIndeterminate();
     parentTaskMonitor.cancel();
