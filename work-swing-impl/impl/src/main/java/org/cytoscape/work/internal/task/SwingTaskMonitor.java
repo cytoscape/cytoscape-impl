@@ -27,7 +27,6 @@ package org.cytoscape.work.internal.task;
 
 import java.awt.Window;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import javax.swing.SwingUtilities;
 
@@ -42,7 +41,14 @@ class SwingTaskMonitor implements TaskMonitor {
 	private static final String ERROR_MESSAGE = "The task could not be completed because an error has occurred.";
 	private static final String LOG_PREFIX = "TaskMonitor";
 	
+	/**
+	 * This is used to execute the task's cancel method.
+	 */
 	final private ExecutorService cancelExecutorService;
+
+	/**
+	 * This is used for the task dialog's constructor.
+	 */
 	final private Window parent;
 
 	private volatile boolean cancelled;
@@ -54,7 +60,6 @@ class SwingTaskMonitor implements TaskMonitor {
 	private String statusMessage;
 	private double progress;
 	private Exception exception;
-	private Future<?> future;
 	private int expectedNumTasks = 1;
 	private int currentTaskNum = -1; // so that the first task is numbered 0
 	private boolean showDialog = true;
@@ -88,10 +93,6 @@ class SwingTaskMonitor implements TaskMonitor {
 		this.currentTaskNum++;	
 		this.task = newTask;
 		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX+"."+newTask.getClass().getName());
-	}
-
-	public void setFuture(final Future<?> future) {
-		this.future = future;
 	}
 
 	public synchronized void open() {
@@ -158,7 +159,6 @@ class SwingTaskMonitor implements TaskMonitor {
 			dialog.dispose();
 			dialog = null;
 		}
-		future = null;
 		task = null;
 	}
 
@@ -171,17 +171,12 @@ class SwingTaskMonitor implements TaskMonitor {
 				System.out.println(task.getClass().getSimpleName() + ": cancel");
 				task.cancel();
 				System.out.println(task.getClass().getSimpleName() + ": cancel all done");
-				/*
-				try { Thread.sleep(1000); } catch (Exception e) {}
-				if ( future != null && !future.isDone() && !future.isCancelled() )
-					future.cancel(true);
-					*/
 			}
 		};
 		cancelExecutorService.submit(cancel);
 		cancelled = true;
 		
-		/* Do NOT close the dialog here; this will be done when the task terminates itself after its cancel method is invoked */
+		/* Do NOT close the dialog here; it will close when the task terminates itself after its cancel method is invoked */
 	}
 
 	protected boolean cancelled() {

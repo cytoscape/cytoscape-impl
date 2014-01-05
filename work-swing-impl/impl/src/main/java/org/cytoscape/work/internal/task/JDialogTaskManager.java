@@ -244,7 +244,6 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		final Runnable timedOpen = new Runnable() {
 			public void run() {
 				if (!(executorFuture.isDone() || executorFuture.isCancelled())) {
-					taskMonitor.setFuture(executorFuture);
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
@@ -262,6 +261,8 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	
 	private class TaskThreadFactory implements ThreadFactory {
 
+		int thread = 1;
+
 		@Override
 		public Thread newThread(Runnable r) {
 			long stackSize;
@@ -271,7 +272,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			} catch (Exception e) {	
 				stackSize = DEFAULT_STACK_SIZE;
 			}
-			return new Thread(null, r, "Task Thread", stackSize);
+			return new Thread(null, r, String.format("Task-Thread-%d-Factory-0x%x", thread++, super.hashCode()), stackSize);
 		}
 
 	}
@@ -317,9 +318,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 					taskMonitor.showDialog(false);
 
 					if (!displayTunables(task)) {
-						taskMonitor.cancel();
-                        if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
-						return;
+						//taskMonitor.cancel();
+						if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
+						break;
 					}
 
 					taskMonitor.showDialog(true);
