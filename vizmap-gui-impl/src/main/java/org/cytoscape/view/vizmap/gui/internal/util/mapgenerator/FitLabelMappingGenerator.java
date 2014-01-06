@@ -74,7 +74,7 @@ public class FitLabelMappingGenerator<V extends Number> extends AbstractDiscrete
 		// This only works with NAME column.
 		final T testName = tableValues.iterator().next();
 		if (testName instanceof String == false)
-			throw new IllegalArgumentException("This generator only works with Name column.");
+			throw new IllegalArgumentException("This generator only works with 'name' column.");
 	
 		final CyNetwork network = networkView.getModel();
 		final CyTable nodeTable = networkView.getModel().getDefaultNodeTable();
