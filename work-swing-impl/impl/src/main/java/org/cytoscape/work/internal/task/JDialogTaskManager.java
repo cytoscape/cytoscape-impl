@@ -292,17 +292,19 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			this.observer = observer;
 		}
 
+		/**
+		 * Loop through each task, show their tunables, execute them, and update the task observer.
+		 * This is in its own method in order to allow cleanly exiting this method when dealing with 
+		 * the first task.
+		 */
 		private void innerRun() throws Exception {
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
 			taskMonitor.setTask(task);
-			System.out.println(task.getClass().getName() + " task: start");
 			task.run(taskMonitor);
-			System.out.println(task.getClass().getName() + " task: all done");
 			handleObserver(task);
 
 			if (taskMonitor.cancelled()) {
-				System.out.println("First task cancellation");
 				if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 				return;
 			}
@@ -312,26 +314,21 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				task = taskIterator.next();
 				taskMonitor.setTask(task);
 
-					// hide the dialog to avoid swing threading issues
-					// while displaying tunables
+				// hide the modal task dialog to prevent
+				// the tunable dialog from being locked
 				taskMonitor.showDialog(false);
 
 				if (!displayTunables(task)) {
-						//taskMonitor.cancel();
-					System.out.println("Tunable cancellation");
 					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 					return;
 				}
 
 				taskMonitor.showDialog(true);
 
-				System.out.println(task.getClass().getSimpleName() + " task: start");
 				task.run(taskMonitor);
-				System.out.println(task.getClass().getSimpleName() + " task: all done");
 				handleObserver(task);
 
 				if (taskMonitor.cancelled()) {
-					System.out.println("Subsequent task cancellation");
 					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 					return;
 				}
@@ -340,10 +337,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		}
 		
 		public void run() {
-			System.out.println("Starting task on thread: " + Thread.currentThread().getName());
 			try {
 				innerRun();
-				System.out.println("innerRun finished successfully");
+				taskMonitor.close();
 			} catch (Exception exception) {
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
@@ -351,12 +347,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			} finally {
 				parent = initialParent;
 				dialogTunableMutator.setConfigurationContext(null,true);
-
-				// clean up the task monitor
-				taskMonitor.autoClose();
 			}
-
-			System.out.println("Task finishing on thread: " + Thread.currentThread().getName());
 		}
 
 		private void handleObserver(Task t) {
