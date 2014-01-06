@@ -102,6 +102,7 @@ class TaskDialog2 extends JDialog {
   final RoundedProgressBar progressBar;
   final JLabel msgLabel;
   final JButton cancelButton;
+  final JLabel cancelLabel;
   final JButton closeButton;
 
   public TaskDialog2(final Window parent, final SwingTaskMonitor parentTaskMonitor) {
@@ -117,7 +118,11 @@ class TaskDialog2 extends JDialog {
 
     msgLabel      = new JLabel();
     msgLabel.setPreferredSize(new Dimension(DEFAULT_WIDTH, msgLabel.getFont().getSize() * 2 /* show multiline text */));
+    msgLabel.setVerticalAlignment(JLabel.TOP);
 
+    cancelLabel   = newLabelWithFont(Font.ITALIC, 12);
+    cancelLabel.setText("Cancelling");
+    cancelLabel.setVisible(false);
 
     cancelButton  = newLinkButton(ICONS.get("cancel"), ICONS.get("cancel-hover"), ICONS.get("cancel-pressed"));
     cancelButton.setToolTipText("Cancel");
@@ -139,7 +144,8 @@ class TaskDialog2 extends JDialog {
 
     final JPanel msgPanel = new JPanel(new GridBagLayout());
     msgPanel.add(msgLabel, c.expandBoth().anchor("northwest").insets(0, 10, 0, 0));
-    msgPanel.add(closeButton, c.right().noExpand().insets(0, 10, 0, 0));
+    msgPanel.add(cancelLabel, c.right().noExpand().insets(0, 10, 0, 10));
+    msgPanel.add(closeButton, c.right().noExpand().insets(0, 10, 0, 10));
 
     super.setLayout(new GridBagLayout());
     super.add(titleLabel, c.reset().expandHoriz().spanHoriz(2).insets(10, 10, 0, 10));
@@ -212,7 +218,7 @@ class TaskDialog2 extends JDialog {
       return;
 
     haltRequested = true;
-    setStatus(null, "Cancelling");
+    cancelLabel.setVisible(true);
     cancelButton.setVisible(false);
     progressBar.setIndeterminate();
     parentTaskMonitor.cancel();

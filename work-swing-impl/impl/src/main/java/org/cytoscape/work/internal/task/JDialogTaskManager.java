@@ -293,19 +293,20 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		}
 		
 		public void run() {
+			System.out.println("Starting task on thread: " + Thread.currentThread().getName());
             Task task = first;
 			try {
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
 				taskMonitor.setTask(task);
-				System.out.println(task.getClass().getSimpleName() + " task: start");
+				System.out.println(task.getClass().getName() + " task: start");
 				task.run(taskMonitor);
-				System.out.println(task.getClass().getSimpleName() + " task: all done");
+				System.out.println(task.getClass().getName() + " task: all done");
 				handleObserver(task);
 
 				if (taskMonitor.cancelled()) {
-                    if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
-					return;
+					System.out.println("First task cancellation");
+					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 				}
 
 				// now execute all subsequent tasks
@@ -319,6 +320,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 
 					if (!displayTunables(task)) {
 						//taskMonitor.cancel();
+						System.out.println("Tunable cancellation");
 						if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 						break;
 					}
@@ -331,11 +333,12 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 					handleObserver(task);
 
 					if (taskMonitor.cancelled()) {
-                        if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
+						System.out.println("Subsequent task cancellation");
+						if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 						break;
-                    }
+					}
 				}
-                if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
+				if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
 			} catch (Exception exception) {
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(new Exception(exception));
@@ -354,6 +357,8 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 						taskMonitor.close();
 				}
 			});
+
+			System.out.println("Task finishing on thread: " + Thread.currentThread().getName());
 		}
 
 		private void handleObserver(Task t) {
