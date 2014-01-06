@@ -244,10 +244,10 @@ public class CyActivator extends AbstractCyActivator {
 		randomNumberGeneratorProps.setProperty("menu", "context");
 		registerService(bc, randomNumberGenerator, DiscreteMappingGenerator.class, randomNumberGeneratorProps);
 		
-		final FitLabelMappingGenerator<Number> fitLabelMappingGenerator = new FitLabelMappingGenerator<Number>(Number.class, servicesUtil);
+		final FitLabelMappingGenerator<Double> fitLabelMappingGenerator = new FitLabelMappingGenerator<Double>(Double.class, servicesUtil);
 		final Properties fitLabelGeneratorProps = new Properties();
 		fitLabelGeneratorProps.setProperty("service.type", "vizmapUI.contextMenu");
-		fitLabelGeneratorProps.setProperty("title", "Fit label width (Only works with NAME column to width)");
+		fitLabelGeneratorProps.setProperty("title", "Fit label width (only works with 'name' column to node size or width)");
 		fitLabelGeneratorProps.setProperty("menu", "context");
 		registerService(bc, fitLabelMappingGenerator, DiscreteMappingGenerator.class, fitLabelGeneratorProps);
 		

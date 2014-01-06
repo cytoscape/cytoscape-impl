@@ -25,8 +25,10 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  */
 
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheet;
@@ -68,6 +70,9 @@ public class GenerateValuesTaskFactory extends AbstractTaskFactory {
 					final VisualProperty<?> vp = item.getModel().getVisualProperty();
 					final Class<?> vpValueType = vp.getRange().getType();
 					final Class<?> generatorType = generator.getDataType();
+					
+					if (generator instanceof FitLabelMappingGenerator)
+						return vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.NODE_WIDTH;
 					
 					if ( vpValueType.isAssignableFrom(generatorType)
 							|| ((generator instanceof NumberSeriesMappingGenerator 
