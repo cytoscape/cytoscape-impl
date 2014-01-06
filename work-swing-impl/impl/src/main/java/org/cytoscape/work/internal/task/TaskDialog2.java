@@ -111,6 +111,7 @@ class TaskDialog2 extends JDialog {
 
     titleLabel    = newLabelWithFont(Font.PLAIN, 20);
     subtitleLabel = newLabelWithFont(Font.PLAIN, 14);
+    subtitleLabel.setVisible(false);
 
     progressBar   = new RoundedProgressBar();
     progressBar.setIndeterminate();
@@ -141,16 +142,19 @@ class TaskDialog2 extends JDialog {
 
     final EasyGBC c = new EasyGBC();
 
+    final JPanel progressPanel = new JPanel(new GridBagLayout());
+    progressPanel.add(progressBar, c.expandHoriz());
+    progressPanel.add(cancelButton, c.right().noExpand().insets(0, 10, 0, 0));
+
     final JPanel msgPanel = new JPanel(new GridBagLayout());
-    msgPanel.add(msgLabel, c.expandBoth().anchor("northwest").insets(0, 10, 0, 0));
+    msgPanel.add(msgLabel, c.reset().expandBoth().anchor("northwest"));
     msgPanel.add(cancelLabel, c.right().noExpand().insets(0, 10, 0, 10));
     msgPanel.add(closeButton, c.right().noExpand().insets(0, 10, 0, 10));
 
     super.setLayout(new GridBagLayout());
-    super.add(titleLabel, c.reset().expandHoriz().spanHoriz(2).insets(10, 10, 0, 10));
-    super.add(subtitleLabel, c.down().expandHoriz().spanHoriz(2).insets(0, 10, 0, 10));
-    super.add(progressBar, c.down().expandHoriz().noSpan().insets(0, 10, 0, 10));
-    super.add(cancelButton, c.right().noExpand().insets(0, 0, 0, 10));
+    super.add(titleLabel, c.reset().expandHoriz().insets(10, 10, 10, 10));
+    super.add(subtitleLabel, c.down().insets(0, 10, 10, 10));
+    super.add(progressPanel, c.down().insets(0, 10, 0, 10));
     super.add(msgPanel, c.down().expandBoth().anchor("northwest").spanHoriz(2).insets(10, 10, 10, 10));
     super.pack();
 
@@ -172,10 +176,27 @@ class TaskDialog2 extends JDialog {
     final String currentTitle = titleLabel.getText();
     if (currentTitle == null || currentTitle.length() == 0) {
       titleLabel.setText(taskTitle);
-      super.setTitle("Cytoscape Task: " + taskTitle);
+      super.setTitle("Cytoscape: " + taskTitle);
     } else {
+      if (!subtitleLabel.isVisible()) {
+        subtitleLabel.setVisible(true);
+        delayedPack();
+      }
       subtitleLabel.setText(taskTitle);
     }
+  }
+
+  /**
+   * Wrap the {@code pack()} invocation in a {@code invokeLater},
+   * so that Swing has time to respond to the changing visibility
+   * of components.
+   */
+  void delayedPack() {
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        pack();
+      }
+    });
   }
 
   public void setPercentCompleted(final float percent) {
@@ -194,6 +215,7 @@ class TaskDialog2 extends JDialog {
     closeButton.setVisible(true);
     cancelButton.setVisible(false);
     cancelLabel.setVisible(false);
+    delayedPack();
   }
 
   public void setStatus(final String icon, final String message) {
