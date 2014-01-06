@@ -55,7 +55,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	private volatile boolean cancelled;
 	//private TaskDialog dialog;
 	private volatile TaskDialog2 dialog;
-	private Task task;
+	private volatile Task task;
 	private String title;
 	private TaskMonitor.Level statusMessageLevel;
 	private String statusMessage;
@@ -178,8 +178,6 @@ class SwingTaskMonitor implements TaskMonitor {
 			return;
 		}
 
-		System.out.println("tm close()");
-
 		synchronized(this) {
 			if (dialog != null) {
 				dialog.dispose();
@@ -193,15 +191,13 @@ class SwingTaskMonitor implements TaskMonitor {
 		// we issue the Task's cancel method in its own thread
 		// to prevent Swing from freezing if the Tasks's cancel
 		// method takes too long to finish
+		cancelled = true;
 		Runnable cancel = new Runnable() {
 			public void run() {
-				System.out.println(task.getClass().getSimpleName() + ": cancel");
 				task.cancel();
-				System.out.println(task.getClass().getSimpleName() + ": cancel all done");
 			}
 		};
 		cancelExecutorService.submit(cancel);
-		cancelled = true;
 		
 		/* Do NOT close the dialog here; dialog closes when the task terminates itself after its cancel method is invoked */
 	}
@@ -289,14 +285,8 @@ class SwingTaskMonitor implements TaskMonitor {
 		}
 	}
 
-	public synchronized boolean isClosed() {
+	public boolean isClosed() {
 		return task == null;
-	}
-
-	public void autoClose() {
-		if (dialog == null || dialog.errorOccurred())
-			return;
-		close();
 	}
 
 	private void showStatusMessage(final TaskMonitor.Level level, final String statusMessage) {
