@@ -30,6 +30,9 @@ import java.util.concurrent.ExecutorService;
 
 import javax.swing.SwingUtilities;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 
@@ -37,8 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class SwingTaskMonitor implements TaskMonitor {
-	
-	private static final String ERROR_MESSAGE = "The task could not be completed because an error has occurred.";
 	private static final String LOG_PREFIX = "TaskMonitor";
 	
 	/**
@@ -53,7 +54,7 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	private volatile boolean cancelled;
 	//private TaskDialog dialog;
-	private TaskDialog2 dialog;
+	private volatile TaskDialog2 dialog;
 	private Task task;
 	private String title;
 	private TaskMonitor.Level statusMessageLevel;
@@ -95,7 +96,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX+"."+newTask.getClass().getName());
 	}
 
-	public synchronized void open() {
+	public void open() {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -106,31 +107,43 @@ class SwingTaskMonitor implements TaskMonitor {
 			return;
 		}
 		
-		if (dialog != null)
-			return;
+		synchronized(this) {
+			if (dialog != null)
+				return;
 
-		dialog = new TaskDialog2(parent, this);
-		//dialog = new TaskDialog(parent, this);
-		
-		if (title != null)
-			dialog.setTaskTitle(title);
-		
-		if (exception == null) {
-			if (statusMessage != null) {
-				if (statusMessageLevel == null) {
-					dialog.setStatus(null, statusMessage);
-				} else {
-					dialog.setStatus(statusMessageLevel.name().toLowerCase(), statusMessage);
+			dialog = new TaskDialog2(parent);
+			//dialog = new TaskDialog(parent, this);
+			dialog.addPropertyChangeListener(TaskDialog2.CLOSE_EVENT, new PropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent e) {
+					close();
 				}
+			});
+			dialog.addPropertyChangeListener(TaskDialog2.CANCEL_EVENT, new PropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent e) {
+					cancel();
+				}
+			});
+			
+			if (title != null)
+				dialog.setTaskTitle(title);
+			
+			if (exception == null) {
+				if (statusMessage != null) {
+					if (statusMessageLevel == null) {
+						dialog.setStatus(null, statusMessage);
+					} else {
+						dialog.setStatus(statusMessageLevel.name().toLowerCase(), statusMessage);
+					}
+				}
+				if (progress != 0)
+					dialog.setPercentCompleted((float) progress);
+			} else {
+				dialog.setException(exception);
+				exception = null;
 			}
-			if (progress != 0)
-				dialog.setPercentCompleted((float) progress);
-		} else {
-			dialog.setException(exception);
-			exception = null;
+			
+			dialog.setVisible(showDialog);
 		}
-		
-		dialog.setVisible(showDialog);
 	}
 
 	/**
@@ -154,12 +167,26 @@ class SwingTaskMonitor implements TaskMonitor {
 		}
 	}
 
-	public synchronized void close() {
-		if (dialog != null) {
-			dialog.dispose();
-			dialog = null;
+	public void close() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					close();
+				}
+			});
+			return;
 		}
-		task = null;
+
+		System.out.println("tm close()");
+
+		synchronized(this) {
+			if (dialog != null) {
+				dialog.dispose();
+				dialog = null;
+			}
+			task = null;
+		}
 	}
 
 	public void cancel() {
@@ -176,7 +203,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		cancelExecutorService.submit(cancel);
 		cancelled = true;
 		
-		/* Do NOT close the dialog here; it will close when the task terminates itself after its cancel method is invoked */
+		/* Do NOT close the dialog here; dialog closes when the task terminates itself after its cancel method is invoked */
 	}
 
 	protected boolean cancelled() {
@@ -262,16 +289,14 @@ class SwingTaskMonitor implements TaskMonitor {
 		}
 	}
 
-	public synchronized boolean isShowingException() {
-		return dialog != null && dialog.errorOccurred();
-	}
-
-	public synchronized boolean isOpened() {
-		return dialog != null;
-	}
-
 	public synchronized boolean isClosed() {
 		return task == null;
+	}
+
+	public void autoClose() {
+		if (dialog == null || dialog.errorOccurred())
+			return;
+		close();
 	}
 
 	private void showStatusMessage(final TaskMonitor.Level level, final String statusMessage) {

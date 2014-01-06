@@ -281,82 +281,80 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		
 		private final SwingTaskMonitor taskMonitor;
 		private final TaskIterator taskIterator;
-		private final Task first;
 		private final TaskObserver observer;
+		private Task task;
 
 		TaskRunnable(final Task first, final SwingTaskMonitor tm, final TaskIterator ti, 
 		             final TaskObserver observer) {
-			this.first = first;
+			this.task = first;
 			this.taskMonitor = tm;
 			this.taskIterator = ti;
 			this.observer = observer;
 		}
-		
-		public void run() {
-			System.out.println("Starting task on thread: " + Thread.currentThread().getName());
-            Task task = first;
-			try {
+
+		private void innerRun() throws Exception {
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
-				taskMonitor.setTask(task);
-				System.out.println(task.getClass().getName() + " task: start");
-				task.run(taskMonitor);
-				System.out.println(task.getClass().getName() + " task: all done");
-				handleObserver(task);
+			taskMonitor.setTask(task);
+			System.out.println(task.getClass().getName() + " task: start");
+			task.run(taskMonitor);
+			System.out.println(task.getClass().getName() + " task: all done");
+			handleObserver(task);
 
-				if (taskMonitor.cancelled()) {
-					System.out.println("First task cancellation");
-					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
-				}
+			if (taskMonitor.cancelled()) {
+				System.out.println("First task cancellation");
+				if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
+				return;
+			}
 
 				// now execute all subsequent tasks
-				while (taskIterator.hasNext()) {
-					task = taskIterator.next();
-					taskMonitor.setTask(task);
+			while (taskIterator.hasNext()) {
+				task = taskIterator.next();
+				taskMonitor.setTask(task);
 
 					// hide the dialog to avoid swing threading issues
 					// while displaying tunables
-					taskMonitor.showDialog(false);
+				taskMonitor.showDialog(false);
 
-					if (!displayTunables(task)) {
+				if (!displayTunables(task)) {
 						//taskMonitor.cancel();
-						System.out.println("Tunable cancellation");
-						if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
-						break;
-					}
-
-					taskMonitor.showDialog(true);
-
-					System.out.println(task.getClass().getSimpleName() + " task: start");
-					task.run(taskMonitor);
-					System.out.println(task.getClass().getSimpleName() + " task: all done");
-					handleObserver(task);
-
-					if (taskMonitor.cancelled()) {
-						System.out.println("Subsequent task cancellation");
-						if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
-						break;
-					}
+					System.out.println("Tunable cancellation");
+					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
+					return;
 				}
-				if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
+
+				taskMonitor.showDialog(true);
+
+				System.out.println(task.getClass().getSimpleName() + " task: start");
+				task.run(taskMonitor);
+				System.out.println(task.getClass().getSimpleName() + " task: all done");
+				handleObserver(task);
+
+				if (taskMonitor.cancelled()) {
+					System.out.println("Subsequent task cancellation");
+					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
+					return;
+				}
+			}
+			if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
+		}
+		
+		public void run() {
+			System.out.println("Starting task on thread: " + Thread.currentThread().getName());
+			try {
+				innerRun();
+				System.out.println("innerRun finished successfully");
 			} catch (Exception exception) {
 				logger.warn("Caught exception executing task. ", exception);
-				taskMonitor.showException(new Exception(exception));
-                if (observer != null) observer.allFinished(FinishStatus.newFailed(task, exception));
+				taskMonitor.showException(exception);
+				if (observer != null) observer.allFinished(FinishStatus.newFailed(task, exception));
 			} finally {
-				//parent = null;
 				parent = initialParent;
 				dialogTunableMutator.setConfigurationContext(null,true);
-			}
 
-			// clean up the task monitor
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					if (taskMonitor.isOpened() && !taskMonitor.isShowingException())
-						taskMonitor.close();
-				}
-			});
+				// clean up the task monitor
+				taskMonitor.autoClose();
+			}
 
 			System.out.println("Task finishing on thread: " + Thread.currentThread().getName());
 		}

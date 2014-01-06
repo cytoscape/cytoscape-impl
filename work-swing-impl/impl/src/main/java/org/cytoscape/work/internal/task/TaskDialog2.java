@@ -30,7 +30,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 class TaskDialog2 extends JDialog {
-  public static final Map<String,URL> ICON_URLS = new HashMap<String,URL>();
+  public static final String CANCEL_EVENT = "task-cancel-event";
+  public static final String CLOSE_EVENT = "task-close-event";
+
+  static final Map<String,URL> ICON_URLS = new HashMap<String,URL>();
   static {
     ICON_URLS.put("info",           TaskDialog.class.getResource("/images/info-icon.png"));
     ICON_URLS.put("warn",           TaskDialog.class.getResource("/images/warn-icon.png"));
@@ -42,7 +45,7 @@ class TaskDialog2 extends JDialog {
     ICON_URLS.put("cancelled",      TaskDialog.class.getResource("/images/cancelled-icon.png"));
   }
 
-  public static final Map<String,Icon> ICONS = new HashMap<String,Icon>();
+  static final Map<String,Icon> ICONS = new HashMap<String,Icon>();
   static {
     for (final Map.Entry<String,URL> icon : ICON_URLS.entrySet()) {
       ICONS.put(icon.getKey(), new ImageIcon(icon.getValue()));
@@ -93,9 +96,7 @@ class TaskDialog2 extends JDialog {
     return button;
   }
 
-  final SwingTaskMonitor parentTaskMonitor;
-  boolean haltRequested = false;
-  boolean errorOccurred = false;
+  volatile boolean errorOccurred = false;
 
   final JLabel titleLabel;
   final JLabel subtitleLabel;
@@ -105,10 +106,8 @@ class TaskDialog2 extends JDialog {
   final JLabel cancelLabel;
   final JButton closeButton;
 
-  public TaskDialog2(final Window parent, final SwingTaskMonitor parentTaskMonitor) {
+  public TaskDialog2(final Window parent) {
     super(parent, "Cytoscape Task", DEFAULT_MODALITY_TYPE);
-
-    this.parentTaskMonitor = parentTaskMonitor;
 
     titleLabel    = newLabelWithFont(Font.PLAIN, 20);
     subtitleLabel = newLabelWithFont(Font.PLAIN, 14);
@@ -194,6 +193,7 @@ class TaskDialog2 extends JDialog {
     progressBar.setVisible(false);
     closeButton.setVisible(true);
     cancelButton.setVisible(false);
+    cancelLabel.setVisible(false);
   }
 
   public void setStatus(final String icon, final String message) {
@@ -204,27 +204,18 @@ class TaskDialog2 extends JDialog {
     msgLabel.setText(message);
   }
 
-
   public boolean errorOccurred() {
     return errorOccurred;
   }
 
-  public boolean haltRequested() {
-    return haltRequested;
-  }
-
-  synchronized void cancel() {
-    if (haltRequested)
-      return;
-
-    haltRequested = true;
+  void cancel() {
     cancelLabel.setVisible(true);
     cancelButton.setVisible(false);
     progressBar.setIndeterminate();
-    parentTaskMonitor.cancel();
+    firePropertyChange(CANCEL_EVENT, null, null);
   }
 
-  synchronized void close() {
-    parentTaskMonitor.close();
+  void close() {
+    firePropertyChange(CLOSE_EVENT, null, null);
   }
 }
