@@ -210,7 +210,8 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 */
 	public void execute(final TaskIterator taskIterator, Object tunableContext, 
 	                    final TaskObserver observer) {
-		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent, taskHistory);
+		final TaskHistory.History history = taskHistory.newHistory();
+		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent, history);
 		
 		final Task first; 
 
@@ -241,7 +242,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		}
 
 		// create the task thread
-		final Runnable tasks = new TaskRunnable(first, taskMonitor, taskIterator, observer); 
+		final Runnable tasks = new TaskRunnable(first, taskMonitor, taskIterator, observer, history); 
 
 		// submit the task thread for execution
 		final Future<?> executorFuture = taskExecutorService.submit(tasks);
@@ -294,14 +295,16 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		private final SwingTaskMonitor taskMonitor;
 		private final TaskIterator taskIterator;
 		private final TaskObserver observer;
+		private final TaskHistory.History history;
 		private Task task;
 
 		TaskRunnable(final Task first, final SwingTaskMonitor tm, final TaskIterator ti, 
-		             final TaskObserver observer) {
+		             final TaskObserver observer, TaskHistory.History history) {
 			this.task = first;
 			this.taskMonitor = tm;
 			this.taskIterator = ti;
 			this.observer = observer;
+			this.history = history;
 		}
 
 		/**
@@ -352,11 +355,14 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			try {
 				innerRun();
 				taskMonitor.close();
-				taskStatusBar.setTitle(TaskDialog2.ICONS.get(taskMonitor.cancelled() ? "cancelled" : "finished"), taskMonitor.getTitle());
+				final boolean cancelled = taskMonitor.cancelled();
+				taskStatusBar.setTitle(TaskDialog2.ICONS.get(cancelled ? "cancelled" : "finished"), taskMonitor.getTitle());
+				history.setCompletionStatus(cancelled ? TaskHistory.TASK_CANCELLED : TaskHistory.TASK_SUCCESS);
 			} catch (Exception exception) {
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
 				taskStatusBar.setTitle(TaskDialog2.ICONS.get("error"), taskMonitor.getTitle());
+				history.setCompletionStatus(TaskHistory.TASK_FAILED);
 				if (observer != null) observer.allFinished(FinishStatus.newFailed(task, exception));
 			} finally {
 				parent = initialParent;

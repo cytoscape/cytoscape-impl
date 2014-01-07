@@ -26,6 +26,9 @@ package org.cytoscape.work.internal;
 
 import java.util.Properties;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyWriterFactory;
@@ -39,6 +42,7 @@ import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.task.TaskStatusBar;
 import org.cytoscape.work.internal.task.TaskHistory;
+import org.cytoscape.work.internal.task.TaskHistoryWindow;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
 import org.cytoscape.work.internal.tunables.DoubleHandler;
@@ -89,7 +93,12 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		TaskStatusBar taskStatusBar = new TaskStatusBar();
-		TaskHistory taskHistory = new TaskHistory();
+		final TaskHistory taskHistory = new TaskHistory();
+		taskStatusBar.addPropertyChangeListener(TaskStatusBar.TASK_HISTORY_CLICK, new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent e) {
+				new TaskHistoryWindow(taskHistory);
+			}
+		});
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 

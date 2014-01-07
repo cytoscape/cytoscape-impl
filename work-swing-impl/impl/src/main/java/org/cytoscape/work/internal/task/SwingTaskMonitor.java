@@ -81,10 +81,10 @@ class SwingTaskMonitor implements TaskMonitor {
  	 */
 	Logger thisLog = null;
 
-	public SwingTaskMonitor(final ExecutorService cancelExecutorService, final Window parent, final TaskHistory taskHistory) {
+	public SwingTaskMonitor(final ExecutorService cancelExecutorService, final Window parent, final TaskHistory.History history) {
 		this.cancelExecutorService = cancelExecutorService;
 		this.parent = parent;
-		this.history = taskHistory.newHistory();
+		this.history = history;
 		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX);
 	}
 

@@ -10,6 +10,8 @@ import org.cytoscape.work.swing.TaskStatusPanelFactory;
  * Manages the task's status bar's UI at the bottom of the Cytoscape desktop.
  */
 public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
+	public static final String TASK_HISTORY_CLICK = "task-history-click";
+
 	static final int CLEAR_DELAY_MS = 5000;
 
 	final JLabel titleLabel = new JLabel();
@@ -21,7 +23,7 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 		final JButton showBtn = new JButton(new ImageIcon(getClass().getResource("/images/tasks-icon.png")));
 		showBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//window.show();
+				firePropertyChange(TASK_HISTORY_CLICK, null, null);
 			}
 		});
 		showBtn.setToolTipText("Show tasks");
