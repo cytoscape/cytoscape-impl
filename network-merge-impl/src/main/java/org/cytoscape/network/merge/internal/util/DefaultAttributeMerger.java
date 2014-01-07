@@ -69,7 +69,7 @@ public class DefaultAttributeMerger implements AttributeMerger {
 				
 				if (o2 == null || o2.length() == 0) { // null or empty attribute
 					cyRow.set(column.getName(), fromValue);
-				} else if (fromValue.equals(o2)) { // TODO: necessary?
+				} else if (fromValue != null && fromValue.equals(o2)) { // TODO: necessary?
 					// the same, do nothing
 				} else { // attribute conflict
 					// add to conflict collector
@@ -113,7 +113,9 @@ public class DefaultAttributeMerger implements AttributeMerger {
 						l2.add(o1);
 					}
 
-					cyRow.set(column.getName(), l2);
+					if(l2.size() != 0) {
+						cyRow.set(column.getName(), l2);
+					}
 				} else { // from list
 					final ColumnType fromPlain = fromColType.toPlain();
 					final List<?> list = fromCyRow.getList(fromColumn.getName(), fromPlain.getType());
@@ -139,7 +141,5 @@ public class DefaultAttributeMerger implements AttributeMerger {
 				cyRow.set(column.getName(), l2);
 			}
 		}
-
 	}
-
 }
