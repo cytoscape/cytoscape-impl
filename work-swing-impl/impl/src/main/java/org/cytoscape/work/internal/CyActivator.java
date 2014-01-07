@@ -36,8 +36,8 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
-import org.cytoscape.work.internal.task.TaskManagerImpl;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
+import org.cytoscape.work.internal.task.TaskStatusBar;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
 import org.cytoscape.work.internal.tunables.DoubleHandler;
@@ -87,9 +87,8 @@ public class CyActivator extends AbstractCyActivator {
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
 
 
+		TaskStatusBar taskStatusBar = new TaskStatusBar();
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef);
-		TaskManagerImpl dialogTaskManager = new TaskManagerImpl(jDialogTunableMutator, cyPropertyServiceRef);
-
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
@@ -131,7 +130,7 @@ public class CyActivator extends AbstractCyActivator {
 		//registerServiceListener(bc, jDialogTaskManager, "setCySwingApp", "removeCySwingApp", CySwingApplication.class);
 		//registerService(bc,dialogTaskManager,DialogTaskManager.class, new Properties());
 		//registerService(bc,dialogTaskManager,TaskManager.class, new Properties());
-		registerService(bc,dialogTaskManager,TaskStatusPanelFactory.class, new Properties());
+		registerService(bc,taskStatusBar,TaskStatusPanelFactory.class, new Properties());
 		//registerServiceListener(bc, dialogTaskManager, "setCySwingApp", "removeCySwingApp", CySwingApplication.class);
 
 		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
