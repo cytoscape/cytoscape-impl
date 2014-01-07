@@ -1446,7 +1446,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
 							if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend )
 							{
-								int x = 5;
 								if( defaultBend instanceof BendImpl )
 									ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)defaultBend) );
 								else
