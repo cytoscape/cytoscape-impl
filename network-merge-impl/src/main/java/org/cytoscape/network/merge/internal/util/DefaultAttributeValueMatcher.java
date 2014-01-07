@@ -56,12 +56,16 @@ public class DefaultAttributeValueMatcher implements AttributeValueMatcher {
 		Class<?> type2 = attr2.getType();
 
 		// only support matching between simple types and simple lists
-		if (!List.class.isAssignableFrom(type1) && !List.class.isAssignableFrom(type2)) { // simple type
+		if (!List.class.isAssignableFrom(type1) && !List.class.isAssignableFrom(type2)) {
+			// simple type
 			final Object val1 = row1.get(attr1.getName(), type1);
 			final Object val2 = row2.get(attr2.getName(), type2);
 			
-			final boolean matched = val1.equals(val2);
-			return matched; // TODO: idmapping
+			if(val1 == null || val2 == null) {
+				return false;
+			} else {
+				return val1.equals(val2);
+			}
 		} else {
 			if (!List.class.isAssignableFrom(type1) || !List.class.isAssignableFrom(type2)) {
 				// then one is simple type the other is simple list
@@ -73,6 +77,11 @@ public class DefaultAttributeValueMatcher implements AttributeValueMatcher {
 				} else { // type1 is simple type and type 2 is simple list
 					l = row2.get(attr2.getName(), List.class);
 					o = row1.get(attr1.getName(), type1);
+				}
+
+				if(l == null || o == null) {
+					// Just return false if any of the two list is null.
+					return false;
 				}
 
 				int nl = l.size();
@@ -88,8 +97,8 @@ public class DefaultAttributeValueMatcher implements AttributeValueMatcher {
 				return false; // if no value match
 			} else { // both of them are simple lists
 				// TODO: use a list comparator?
-				List l1 = row1.get(attr1.getName(), List.class);
-				List l2 = row2.get(attr2.getName(), List.class);
+				List<?> l1 = row1.get(attr1.getName(), List.class);
+				List<?> l2 = row2.get(attr2.getName(), List.class);
 				int nl1 = l1.size();
 				int nl2 = l2.size();
 				for (int il1 = 0; il1 < nl1; il1++) {
