@@ -13,7 +13,7 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 	static final int CLEAR_DELAY_MS = 5000;
 
 	final JLabel titleLabel = new JLabel();
-	final Timer timer;
+	final Timer clearingTimer;
 
 	public TaskStatusBar() {
 		super.setOpaque(false);
@@ -28,12 +28,12 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 		showBtn.setPreferredSize(new Dimension(20, 20));
 		showBtn.setMaximumSize(new Dimension(20, 20));
 
-		timer = new Timer(CLEAR_DELAY_MS, new ActionListener() {
+		clearingTimer = new Timer(CLEAR_DELAY_MS, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				resetStatusBar();
 			}
 		});
-		timer.setRepeats(false);
+		clearingTimer.setRepeats(false);
 
 		final SpringLayout layout = new SpringLayout();
 		super.setLayout(layout);
@@ -61,9 +61,9 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 			return;
 		}
 
-		titleLabel.setIcon(icon);
 		titleLabel.setText(title);
-		timer.restart();
+		titleLabel.setIcon((title == null || title.length() == 0) ? null : icon);
+		clearingTimer.restart();
 	}
 	
 	public void resetStatusBar() {

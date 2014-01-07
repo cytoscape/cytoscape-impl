@@ -311,4 +311,8 @@ class SwingTaskMonitor implements TaskMonitor {
 		if (dialog != null)
 			dialog.setStatus(statusMessageLevel.name().toLowerCase(), statusMessage);
 	}
+
+	public String getTitle() {
+		return title;
+	}
 }
