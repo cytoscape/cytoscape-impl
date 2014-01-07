@@ -88,7 +88,7 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		TaskStatusBar taskStatusBar = new TaskStatusBar();
-		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef);
+		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
