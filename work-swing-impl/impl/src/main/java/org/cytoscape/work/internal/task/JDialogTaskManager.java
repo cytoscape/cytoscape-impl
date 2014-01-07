@@ -91,6 +91,11 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * Display the user of the latest task information
 	 */
 	private final TaskStatusBar taskStatusBar;
+
+	/**
+	 * Record task history
+	 */
+	private final TaskHistory taskHistory;
 	
 	/**
 	 * Used to create Threads for executed tasks.
@@ -135,11 +140,12 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * <li><code>cancelExecutorService</code> is the same as <code>taskExecutorService</code>.</li>
 	 * </ul>
 	 */
-	public JDialogTaskManager(final JDialogTunableMutator tunableMutator, final CyProperty<Properties> cyProperty, final TaskStatusBar taskStatusBar) {
+	public JDialogTaskManager(final JDialogTunableMutator tunableMutator, final CyProperty<Properties> cyProperty, final TaskStatusBar taskStatusBar, final TaskHistory taskHistory) {
 		super(tunableMutator);
 		this.dialogTunableMutator = tunableMutator;
 		this.cyProperty = cyProperty;
 		this.taskStatusBar = taskStatusBar;
+		this.taskHistory = taskHistory;
 
 		parent = null;
 		initialParent = null;
@@ -204,7 +210,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 */
 	public void execute(final TaskIterator taskIterator, Object tunableContext, 
 	                    final TaskObserver observer) {
-		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent);
+		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent, taskHistory);
 		
 		final Task first; 
 

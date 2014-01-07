@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.cytoscape.work.TaskMonitor;
 
-class TaskHistory implements Iterable<TaskHistory.History> {
+public class TaskHistory implements Iterable<TaskHistory.History> {
   public static class Message {
     static final TaskMonitor.Level[] levels = TaskMonitor.Level.values();
 
