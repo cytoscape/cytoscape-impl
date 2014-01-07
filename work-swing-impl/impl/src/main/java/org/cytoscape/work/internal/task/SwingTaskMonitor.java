@@ -52,6 +52,8 @@ class SwingTaskMonitor implements TaskMonitor {
 	 */
 	final private Window parent;
 
+	final private TaskHistory.History history;
+
 	private volatile boolean cancelled;
 	//private TaskDialog dialog;
 	private volatile TaskDialog2 dialog;
@@ -79,9 +81,10 @@ class SwingTaskMonitor implements TaskMonitor {
  	 */
 	Logger thisLog = null;
 
-	public SwingTaskMonitor(final ExecutorService cancelExecutorService, final Window parent) {
+	public SwingTaskMonitor(final ExecutorService cancelExecutorService, final Window parent, final TaskHistory taskHistory) {
 		this.cancelExecutorService = cancelExecutorService;
 		this.parent = parent;
+		this.history = taskHistory.newHistory();
 		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX);
 	}
 
@@ -217,6 +220,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			return;
 		}
 		this.title = title;
+		history.setTitle(title);
 		if (dialog != null)
 			dialog.setTaskTitle(title);
 	}
@@ -303,6 +307,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		this.statusMessageLevel = level;
 		if (dialog != null)
 			dialog.setStatus(statusMessageLevel.name().toLowerCase(), statusMessage);
+		history.addMessage(level, statusMessage);
 	}
 
 	public String getTitle() {

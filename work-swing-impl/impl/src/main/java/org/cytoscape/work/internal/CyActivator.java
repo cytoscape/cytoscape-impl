@@ -38,6 +38,7 @@ import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.task.TaskStatusBar;
+import org.cytoscape.work.internal.task.TaskHistory;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
 import org.cytoscape.work.internal.tunables.DoubleHandler;
@@ -88,7 +89,8 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		TaskStatusBar taskStatusBar = new TaskStatusBar();
-		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar);
+		TaskHistory taskHistory = new TaskHistory();
+		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
