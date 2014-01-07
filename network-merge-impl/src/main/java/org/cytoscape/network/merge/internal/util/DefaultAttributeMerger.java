@@ -103,18 +103,21 @@ public class DefaultAttributeMerger implements AttributeMerger {
 					l2 = new ArrayList<Object>();
 				}
 
-				if (!fromColType.isList()) { // from plain
+				if (!fromColType.isList()) {
+					// Simple data type
 					Object o1 = fromCyRow.get(fromColumn.getName(), fromColType.getType());
-					if (plainType != fromColType) {
-						o1 = plainType.castService(o1);
-					}
+					if (o1 != null) {
+						if (plainType != fromColType) {
+							o1 = plainType.castService(o1);
+						}
 
-					if (!l2.contains(o1)) {
-						l2.add(o1);
-					}
+						if (!l2.contains(o1)) {
+							l2.add(o1);
+						}
 
-					if(l2.size() != 0) {
-						cyRow.set(column.getName(), l2);
+						if (!l2.isEmpty()) {
+							cyRow.set(column.getName(), l2);
+						}
 					}
 				} else { // from list
 					final ColumnType fromPlain = fromColType.toPlain();
@@ -138,7 +141,9 @@ public class DefaultAttributeMerger implements AttributeMerger {
 					}
 				}
 
-				cyRow.set(column.getName(), l2);
+				if(!l2.isEmpty()) {
+					cyRow.set(column.getName(), l2);
+				}
 			}
 		}
 	}
