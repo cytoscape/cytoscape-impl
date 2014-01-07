@@ -346,9 +346,11 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			try {
 				innerRun();
 				taskMonitor.close();
+				taskStatusBar.setTitle(TaskDialog2.ICONS.get(taskMonitor.cancelled() ? "cancelled" : "finished"), taskMonitor.getTitle());
 			} catch (Exception exception) {
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
+				taskStatusBar.setTitle(TaskDialog2.ICONS.get("error"), taskMonitor.getTitle());
 				if (observer != null) observer.allFinished(FinishStatus.newFailed(task, exception));
 			} finally {
 				parent = initialParent;

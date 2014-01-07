@@ -33,7 +33,7 @@ class TaskDialog2 extends JDialog {
   public static final String CANCEL_EVENT = "task-cancel-event";
   public static final String CLOSE_EVENT = "task-close-event";
 
-  static final Map<String,URL> ICON_URLS = new HashMap<String,URL>();
+  public static final Map<String,URL> ICON_URLS = new HashMap<String,URL>();
   static {
     ICON_URLS.put("info",           TaskDialog.class.getResource("/images/info-icon.png"));
     ICON_URLS.put("warn",           TaskDialog.class.getResource("/images/warn-icon.png"));
@@ -45,7 +45,7 @@ class TaskDialog2 extends JDialog {
     ICON_URLS.put("cancelled",      TaskDialog.class.getResource("/images/cancelled-icon.png"));
   }
 
-  static final Map<String,Icon> ICONS = new HashMap<String,Icon>();
+  public static final Map<String,Icon> ICONS = new HashMap<String,Icon>();
   static {
     for (final Map.Entry<String,URL> icon : ICON_URLS.entrySet()) {
       ICONS.put(icon.getKey(), new ImageIcon(icon.getValue()));
