@@ -406,9 +406,14 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 
 				Double attrValue = new Double(0.0);
 				if (attrType == Integer.class)
-					attrValue = network.getRow(entry).get(attr[i][j], Integer.class).doubleValue();
+				{
+					Integer x = network.getRow(entry).get(attr[i][j], Integer.class);
+					attrValue = x == null ? null : x.doubleValue();
+				}
 				else if (attrType == Double.class)
+				{
 					attrValue = network.getRow(entry).get(attr[i][j], Double.class);
+				}
 
 				if (attrValue != null && !attrValue.isNaN()) {
 					final Double oldMinValue = minAttrValue.get(attr[i][j]);
