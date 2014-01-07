@@ -10,7 +10,10 @@ import org.cytoscape.work.swing.TaskStatusPanelFactory;
  * Manages the task's status bar's UI at the bottom of the Cytoscape desktop.
  */
 public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
+	static final int CLEAR_DELAY_MS = 5000;
+
 	final JLabel titleLabel = new JLabel();
+	final Timer timer;
 
 	public TaskStatusBar() {
 		super.setOpaque(false);
@@ -25,6 +28,12 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 		showBtn.setPreferredSize(new Dimension(20, 20));
 		showBtn.setMaximumSize(new Dimension(20, 20));
 
+		timer = new Timer(CLEAR_DELAY_MS, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				resetStatusBar();
+			}
+		});
+		timer.setRepeats(false);
 
 		final SpringLayout layout = new SpringLayout();
 		super.setLayout(layout);
@@ -42,30 +51,19 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 		super.setPreferredSize(new Dimension(100, 40));
 	}
 
-	public void setTitleIcon(final Icon icon) {
+	public void setTitle(final Icon icon, final String title) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					setTitleIcon(icon);
+					setTitle(icon, title);
 				}
 			});
 			return;
 		}
 
 		titleLabel.setIcon(icon);
-	}
-
-	public void setTitle(final String title) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					setTitle(title);
-				}
-			});
-			return;
-		}
-
 		titleLabel.setText(title);
+		timer.restart();
 	}
 	
 	public void resetStatusBar() {

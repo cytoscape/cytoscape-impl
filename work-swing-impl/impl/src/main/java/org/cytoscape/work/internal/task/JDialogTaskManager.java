@@ -86,6 +86,11 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * The default Cytoscape property object.
 	 */
 	private final CyProperty<Properties> cyProperty;
+
+	/**
+	 * Display the user of the latest task information
+	 */
+	private final TaskStatusBar taskStatusBar;
 	
 	/**
 	 * Used to create Threads for executed tasks.
@@ -130,10 +135,11 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * <li><code>cancelExecutorService</code> is the same as <code>taskExecutorService</code>.</li>
 	 * </ul>
 	 */
-	public JDialogTaskManager(final JDialogTunableMutator tunableMutator, final CyProperty<Properties> cyProperty) {
+	public JDialogTaskManager(final JDialogTunableMutator tunableMutator, final CyProperty<Properties> cyProperty, final TaskStatusBar taskStatusBar) {
 		super(tunableMutator);
 		this.dialogTunableMutator = tunableMutator;
 		this.cyProperty = cyProperty;
+		this.taskStatusBar = taskStatusBar;
 
 		parent = null;
 		initialParent = null;
