@@ -212,7 +212,13 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			
 			view.getCaseSensitiveCheckBox().setSelected(filter.getCaseSensitive());
 			
-			DynamicComboBoxModel.select(view.getNameComboBox(), 0, new Matcher<AttributeComboBoxElement>() {
+			JComboBox nameComboBox = view.getNameComboBox();
+			
+			// Ensure model changes propagate to view
+			DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
+			model.notifyChanged(0, model.getSize() - 1);
+			
+			DynamicComboBoxModel.select(nameComboBox, 0, new Matcher<AttributeComboBoxElement>() {
 				@Override
 				public boolean matches(AttributeComboBoxElement item) {
 					return item.name.equals(filter.getAttributeName()) && item.attributeType.equals(filter.getAttributeType());
@@ -302,7 +308,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			arrowLabel = new JLabel(IconManager.ICON_CARET_LEFT);
+			arrowLabel = new JLabel(IconManager.ICON_CARET_DOWN);
 			Font arrowFont = iconManager.getIconFont(16.0f);
 			arrowLabel.setFont(arrowFont);
 			arrowLabel.addMouseListener(new MouseAdapter() {

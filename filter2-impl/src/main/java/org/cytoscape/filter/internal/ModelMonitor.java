@@ -308,17 +308,20 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				addFilterElements(network.getDefaultNodeTable(), CyNode.class);
 				addFilterElements(network.getDefaultEdgeTable(), CyEdge.class);
 				Collections.sort(attributeNames);
-				
-				for (Entry<AttributeFilterView, AttributeFilterController> entry : attributeViews.entrySet()) {
-					AttributeFilterController controller = entry.getValue();
-					controller.synchronize(entry.getKey());
-				}
+				updateAttributeViews();
 			}
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
 
+	private void updateAttributeViews() {
+		for (Entry<AttributeFilterView, AttributeFilterController> entry : attributeViews.entrySet()) {
+			AttributeFilterController controller = entry.getValue();
+			controller.synchronize(entry.getKey());
+		}
+	}
+	
 	private void addFilterElements(CyTable table, Class<? extends CyIdentifiable> type) {
 		if (table == null) {
 			return;
@@ -357,6 +360,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 			attributeNames.add(new AttributeComboBoxElement(type, event.getColumnName()));
 			Collections.sort(attributeNames);
+			updateAttributeViews();
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -389,6 +393,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 					return;
 				}
 			}
+			updateAttributeViews();
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -419,10 +424,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				if (element.name.equals(event.getOldColumnName()) && type.equals(element.attributeType)) {
 					attributeNames.remove(i);
 					attributeNames.add(new AttributeComboBoxElement(element.attributeType, event.getNewColumnName()));
-					return;
+					break;
 				}
 			}
 			Collections.sort(attributeNames);
+			updateAttributeViews();
 		} finally {
 			lock.writeLock().unlock();
 		}
