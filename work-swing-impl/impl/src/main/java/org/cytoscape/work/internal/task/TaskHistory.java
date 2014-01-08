@@ -7,7 +7,8 @@ import org.cytoscape.work.TaskMonitor;
 
 public class TaskHistory implements Iterable<TaskHistory.History> {
   public static final TaskMonitor.Level[] levels = TaskMonitor.Level.values();
-  
+
+  // Use bytes instead of enums to save memory
   public static final byte TASK_SUCCESS = 0;
   public static final byte TASK_FAILED = 1;
   public static final byte TASK_CANCELLED = 2;
@@ -23,7 +24,7 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
     }
 
     public TaskMonitor.Level level() {
-      return levels[this.levelOrdinal];
+      return (this.levelOrdinal < 0) ? null : levels[this.levelOrdinal];
     }
 
     public String message() {
@@ -32,7 +33,7 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
   }
 
   public static class History implements Iterable<Message> {
-    volatile byte completionStatus;
+    volatile byte completionStatus = -1;
     volatile String title = null;
     final ConcurrentLinkedQueue<Message> messages = new ConcurrentLinkedQueue<Message>();
 

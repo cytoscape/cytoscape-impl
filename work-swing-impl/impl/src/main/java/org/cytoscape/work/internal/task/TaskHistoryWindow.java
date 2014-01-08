@@ -15,6 +15,8 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import org.cytoscape.work.TaskMonitor;
+
 public class TaskHistoryWindow {
   final JDialog dialog;
   final JPanel tasksPanel;
@@ -62,10 +64,13 @@ public class TaskHistoryWindow {
       messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
       for (final TaskHistory.Message message : history) {
         final JLabel messageLabel = new JLabel(message.message());
-        switch(message.level()) {
-          case INFO: messageLabel.setIcon(TaskDialog2.ICONS.get("info")); break;
-          case WARN: messageLabel.setIcon(TaskDialog2.ICONS.get("warn")); break;
-          case ERROR: messageLabel.setIcon(TaskDialog2.ICONS.get("error")); break;
+        final TaskMonitor.Level level = message.level();
+        if (level != null) {
+          switch(level) {
+            case INFO: messageLabel.setIcon(TaskDialog2.ICONS.get("info")); break;
+            case WARN: messageLabel.setIcon(TaskDialog2.ICONS.get("warn")); break;
+            case ERROR: messageLabel.setIcon(TaskDialog2.ICONS.get("error")); break;
+          }
         }
         messagesPanel.add(messageLabel);
       }
