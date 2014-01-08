@@ -95,8 +95,12 @@ public class CyActivator extends AbstractCyActivator {
 		TaskStatusBar taskStatusBar = new TaskStatusBar();
 		final TaskHistory taskHistory = new TaskHistory();
 		taskStatusBar.addPropertyChangeListener(TaskStatusBar.TASK_HISTORY_CLICK, new PropertyChangeListener() {
+			TaskHistoryWindow window = null;
 			public void propertyChange(PropertyChangeEvent e) {
-				new TaskHistoryWindow(taskHistory);
+				if (window != null) {
+					window.close();
+				}
+				window = new TaskHistoryWindow(taskHistory);
 			}
 		});
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);

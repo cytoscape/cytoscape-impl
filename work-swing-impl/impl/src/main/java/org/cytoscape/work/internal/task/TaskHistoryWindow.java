@@ -1,38 +1,34 @@
 package org.cytoscape.work.internal.task;
 
 import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.UIManager;
-import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
-import javax.swing.Box;
+import javax.swing.JEditorPane;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 
-import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
+
 import java.awt.Dimension;
-import java.awt.Font;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.GridBagLayout;
 
 import org.cytoscape.work.TaskMonitor;
 
-import javax.swing.BorderFactory;
-import java.awt.Color;
-
 public class TaskHistoryWindow {
   final JDialog dialog;
-  final JPanel tasksPanel;
+  final JEditorPane pane;
 
   public TaskHistoryWindow(final TaskHistory taskHistory) {
     dialog = new JDialog(null, "Cytoscape Task History", JDialog.ModalityType.MODELESS);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     dialog.setPreferredSize(new Dimension(500, 400));
 
-    tasksPanel = new JPanel();
-    tasksPanel.setLayout(new BoxLayout(tasksPanel, BoxLayout.Y_AXIS));
-    final JScrollPane scrollPane = new JScrollPane(tasksPanel);
+    pane = new JEditorPane();
+    pane.setEditable(false);
+    pane.setContentType("text/html");
+    final HTMLEditorKit htmlEditorKit = (HTMLEditorKit) pane.getEditorKit();
+    final StyleSheet styleSheet = htmlEditorKit.getStyleSheet();
+    styleSheet.addRule("ul { list-style-type: none; }");
+
+    final JScrollPane scrollPane = new JScrollPane(pane);
 
     dialog.setLayout(new GridBagLayout());
     final EasyGBC c = new EasyGBC();
@@ -44,67 +40,58 @@ public class TaskHistoryWindow {
     dialog.setVisible(true);
   }
 
-  static JLabel newLabelWithFont(final int style, final int size, final String text) {
-    final Font defaultFont = UIManager.getFont("Label.font");
-    final Font font = new Font(defaultFont == null ? null : defaultFont.getName(), style, size);
-    final JLabel label = new JLabel(text);
-    label.setFont(font);
-    return label;
+  public void close() {
+    dialog.dispose();
   }
 
-  private String safeTitle(final String title) {
-    if (title == null || title.length() == 0)
-      return "<html><i>Untitled</i></html>";
+  static String safeString(final String str, final String alternative) {
+    if (str == null || str.length() == 0)
+      return alternative;
     else
-      return title;
+      return str;
   }
 
   private void populate(final TaskHistory histories) {
-    tasksPanel.removeAll();
+    final StringBuffer buffer = new StringBuffer();
+    buffer.append("<html>");
+
     for (final TaskHistory.History history : histories) {
-      final JPanel taskPanel = new JPanel();
-      taskPanel.setLayout(new BoxLayout(taskPanel, BoxLayout.Y_AXIS));
-
-      final String title = safeTitle(history.getTitle());
-      final JLabel titleLabel = newLabelWithFont(Font.BOLD, 16, title);
+      buffer.append("<p>");
+      buffer.append("<h1>&nbsp;");
+      buffer.append("<img src=\"");
       switch (history.getCompletionStatus()) {
-        case TaskHistory.TASK_SUCCESS:    titleLabel.setIcon(TaskDialog2.ICONS.get("finished")); break;
-        case TaskHistory.TASK_FAILED:     titleLabel.setIcon(TaskDialog2.ICONS.get("error")); break;
-        case TaskHistory.TASK_CANCELLED:  titleLabel.setIcon(TaskDialog2.ICONS.get("cancelled")); break;
+        case TaskHistory.TASK_SUCCESS:    buffer.append(TaskDialog2.ICON_URLS.get("finished").toString()); break;
+        case TaskHistory.TASK_FAILED:     buffer.append(TaskDialog2.ICON_URLS.get("error").toString()); break;
+        case TaskHistory.TASK_CANCELLED:  buffer.append(TaskDialog2.ICON_URLS.get("cancelled").toString()); break;
       }
+      buffer.append("\">&nbsp;");
+      buffer.append(safeString(history.getTitle(), "<i>Untitled</i>"));
+      buffer.append("</h1>");
 
-      final JPanel messagesPanel = new JPanel();
-      messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
+      buffer.append("<ul type=\"none\">");
       for (final TaskHistory.Message message : history) {
-        final JLabel messageLabel = new JLabel(message.message());
+        buffer.append("<li>");
         final TaskMonitor.Level level = message.level();
         if (level != null) {
+          buffer.append("<img src=\"");
           switch(level) {
-            case INFO: messageLabel.setIcon(TaskDialog2.ICONS.get("info")); break;
-            case WARN: messageLabel.setIcon(TaskDialog2.ICONS.get("warn")); break;
-            case ERROR: messageLabel.setIcon(TaskDialog2.ICONS.get("error")); break;
+            case INFO: buffer.append(TaskDialog2.ICONS.get("info").toString()); break;
+            case WARN: buffer.append(TaskDialog2.ICONS.get("warn").toString()); break;
+            case ERROR: buffer.append(TaskDialog2.ICONS.get("error").toString()); break;
           }
+          buffer.append("\">&nbsp;");
+        } else {
+          buffer.append("<b>");
         }
-        messagesPanel.add(messageLabel);
+        buffer.append(message.message());
+        if (level == null) {
+          buffer.append("</b>");
+        }
+        buffer.append("</li>");
       }
-      messagesPanel.setVisible(false);
-      messagesPanel.setBorder(BorderFactory.createDashedBorder(Color.RED));
-
-      final JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-      final DiscloseTriangle triangle = new DiscloseTriangle();
-      triangle.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          messagesPanel.setVisible(triangle.isOpen());
-        }
-      });
-      titlePanel.add(triangle);
-      titlePanel.add(titleLabel);
-      titlePanel.setBorder(BorderFactory.createDashedBorder(Color.GREEN));
-      taskPanel.add(titlePanel);
-      taskPanel.add(messagesPanel);
-      taskPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-      tasksPanel.add(taskPanel);
+      buffer.append("</p>");
     }
-    tasksPanel.add(Box.createVerticalGlue());
+    buffer.append("</html>");
+    pane.setText(buffer.toString());
   }
 }
