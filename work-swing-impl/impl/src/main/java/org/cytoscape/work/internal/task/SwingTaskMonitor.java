@@ -58,6 +58,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	//private TaskDialog dialog;
 	private volatile TaskDialog2 dialog;
 	private volatile Task task;
+	private String firstTitle;
 	private String title;
 	private TaskMonitor.Level statusMessageLevel;
 	private String statusMessage;
@@ -219,6 +220,9 @@ class SwingTaskMonitor implements TaskMonitor {
 			});
 			return;
 		}
+		if (this.firstTitle == null) {
+			this.firstTitle = title;
+		}
 		this.title = title;
 		history.setTitle(title);
 		if (dialog != null)
@@ -310,7 +314,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		history.addMessage(level, statusMessage);
 	}
 
-	public String getTitle() {
-		return title;
+	public String getFirstTitle() {
+		return firstTitle;
 	}
 }
