@@ -54,12 +54,14 @@ public class TaskHistoryWindow {
       System.out.println(String.format("History[%x].setTitle: %s", history.hashCode(), history.getTitle()));
       final JPanel taskPanel = new JPanel();
       taskPanel.setLayout(new BoxLayout(taskPanel, BoxLayout.Y_AXIS));
-      final JLabel title = newLabelWithFont(Font.BOLD, 16, history.getTitle());
+
+      final JLabel titleLabel = newLabelWithFont(Font.BOLD, 16, history.getTitle());
       switch (history.getCompletionStatus()) {
-        case TaskHistory.TASK_SUCCESS:    title.setIcon(TaskDialog2.ICONS.get("finished")); break;
-        case TaskHistory.TASK_FAILED:     title.setIcon(TaskDialog2.ICONS.get("error")); break;
-        case TaskHistory.TASK_CANCELLED:  title.setIcon(TaskDialog2.ICONS.get("cancelled")); break;
+        case TaskHistory.TASK_SUCCESS:    titleLabel.setIcon(TaskDialog2.ICONS.get("finished")); break;
+        case TaskHistory.TASK_FAILED:     titleLabel.setIcon(TaskDialog2.ICONS.get("error")); break;
+        case TaskHistory.TASK_CANCELLED:  titleLabel.setIcon(TaskDialog2.ICONS.get("cancelled")); break;
       }
+
       final JPanel messagesPanel = new JPanel();
       messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
       for (final TaskHistory.Message message : history) {
@@ -83,8 +85,8 @@ public class TaskHistoryWindow {
           messagesPanel.setVisible(triangle.isOpen());
         }
       });
-      titlePanel.add(title);
       titlePanel.add(triangle);
+      titlePanel.add(titleLabel);
       taskPanel.add(titlePanel);
       taskPanel.add(messagesPanel);
       tasksPanel.add(taskPanel);
