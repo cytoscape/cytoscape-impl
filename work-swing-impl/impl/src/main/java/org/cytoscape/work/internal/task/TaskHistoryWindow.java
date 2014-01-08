@@ -6,6 +6,7 @@ import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
+import javax.swing.Box;
 
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
@@ -16,6 +17,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import org.cytoscape.work.TaskMonitor;
+
+import javax.swing.BorderFactory;
+import java.awt.Color;
 
 public class TaskHistoryWindow {
   final JDialog dialog;
@@ -48,14 +52,21 @@ public class TaskHistoryWindow {
     return label;
   }
 
+  private String safeTitle(final String title) {
+    if (title == null || title.length() == 0)
+      return "<html><i>Untitled</i></html>";
+    else
+      return title;
+  }
+
   private void populate(final TaskHistory histories) {
     tasksPanel.removeAll();
     for (final TaskHistory.History history : histories) {
-      System.out.println(String.format("History[%x].setTitle: %s", history.hashCode(), history.getTitle()));
       final JPanel taskPanel = new JPanel();
       taskPanel.setLayout(new BoxLayout(taskPanel, BoxLayout.Y_AXIS));
 
-      final JLabel titleLabel = newLabelWithFont(Font.BOLD, 16, history.getTitle());
+      final String title = safeTitle(history.getTitle());
+      final JLabel titleLabel = newLabelWithFont(Font.BOLD, 16, title);
       switch (history.getCompletionStatus()) {
         case TaskHistory.TASK_SUCCESS:    titleLabel.setIcon(TaskDialog2.ICONS.get("finished")); break;
         case TaskHistory.TASK_FAILED:     titleLabel.setIcon(TaskDialog2.ICONS.get("error")); break;
@@ -77,6 +88,7 @@ public class TaskHistoryWindow {
         messagesPanel.add(messageLabel);
       }
       messagesPanel.setVisible(false);
+      messagesPanel.setBorder(BorderFactory.createDashedBorder(Color.RED));
 
       final JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
       final DiscloseTriangle triangle = new DiscloseTriangle();
@@ -87,9 +99,12 @@ public class TaskHistoryWindow {
       });
       titlePanel.add(triangle);
       titlePanel.add(titleLabel);
+      titlePanel.setBorder(BorderFactory.createDashedBorder(Color.GREEN));
       taskPanel.add(titlePanel);
       taskPanel.add(messagesPanel);
+      taskPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
       tasksPanel.add(taskPanel);
     }
+    tasksPanel.add(Box.createVerticalGlue());
   }
 }
