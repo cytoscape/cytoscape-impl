@@ -15,8 +15,8 @@ import javax.swing.JRootPane;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
-import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
-import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
+import org.cytoscape.filter.internal.column.ColumnFilterFactory;
+import org.cytoscape.filter.internal.column.ColumnFilterViewFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
 import org.cytoscape.filter.internal.interaction.InteractionTransformerFactory;
@@ -80,7 +80,7 @@ public class UiScaffold {
 		
 		Map<String, String> properties = Collections.emptyMap();
 		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
-		transformerManager.registerFilterFactory(new AttributeFilterFactory(), properties);
+		transformerManager.registerFilterFactory(new ColumnFilterFactory(), properties);
 		transformerManager.registerFilterFactory(new DegreeFilterFactory(), properties);
 		transformerManager.registerFilterFactory(new TopologyFilterFactory(), properties);
 		
@@ -92,7 +92,7 @@ public class UiScaffold {
 		IconManager iconManager = new IconManagerImpl();
 
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
-		transformerViewManager.registerTransformerViewFactory(new AttributeFilterViewFactory(modelMonitor, iconManager), properties);
+		transformerViewManager.registerTransformerViewFactory(new ColumnFilterViewFactory(modelMonitor, iconManager), properties);
 		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);
 		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(), properties);
 		transformerViewManager.registerTransformerViewFactory(new InteractionTransformerViewFactory(), properties);

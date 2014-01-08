@@ -15,10 +15,10 @@ import javax.swing.JComponent;
 
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
-import org.cytoscape.filter.internal.attribute.AttributeFilter;
-import org.cytoscape.filter.internal.attribute.AttributeFilterController;
-import org.cytoscape.filter.internal.attribute.AttributeFilterView;
-import org.cytoscape.filter.internal.attribute.AttributeFilterView.AttributeComboBoxElement;
+import org.cytoscape.filter.internal.column.ColumnFilter;
+import org.cytoscape.filter.internal.column.ColumnFilterController;
+import org.cytoscape.filter.internal.column.ColumnFilterView;
+import org.cytoscape.filter.internal.column.ColumnFilterView.ColumnComboBoxElement;
 import org.cytoscape.filter.internal.degree.DegreeFilterController;
 import org.cytoscape.filter.internal.degree.DegreeFilterView;
 import org.cytoscape.filter.internal.view.RangeChooserController;
@@ -54,31 +54,31 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	int[] nodeDegreeRange;
 	boolean enabled;
 	
-	Map<String, double[]> nodeAttributeRanges;
-	Map<String, double[]> edgeAttributeRanges;
-	List<AttributeComboBoxElement> attributeNames;
+	Map<String, double[]> nodeColumnRanges;
+	Map<String, double[]> edgeColumnRanges;
+	List<ColumnComboBoxElement> columnNames;
 	
 	ReadWriteLock lock;
-	private AttributeComboBoxElement defaultAttributeName;
+	private ColumnComboBoxElement defaultColumnName;
 	
 	Map<DegreeFilterView, DegreeFilterController> degreeViews;
-	private Map<AttributeFilterView, AttributeFilterController> attributeViews;
+	private Map<ColumnFilterView, ColumnFilterController> columnViews;
 	private List<InteractivityChangedListener> interactivityChangedListeners;
 	
 	public ModelMonitor() {
 		nodeDegreeRange = new int[] { Integer.MAX_VALUE, Integer.MIN_VALUE };
-		nodeAttributeRanges = new HashMap<String, double[]>();
-		edgeAttributeRanges = new HashMap<String, double[]>();
+		nodeColumnRanges = new HashMap<String, double[]>();
+		edgeColumnRanges = new HashMap<String, double[]>();
 		lock = new ReentrantReadWriteLock(true);
 		
-		attributeNames = new ArrayList<AttributeComboBoxElement>();
-		defaultAttributeName = new AttributeComboBoxElement(null, "Choose attribute...");
-		attributeNames.add(defaultAttributeName);
+		columnNames = new ArrayList<ColumnComboBoxElement>();
+		defaultColumnName = new ColumnComboBoxElement(null, "Choose column...");
+		columnNames.add(defaultColumnName);
 		
 		interactivityChangedListeners = new CopyOnWriteArrayList<InteractivityChangedListener>();
 		
 		degreeViews = new WeakHashMap<DegreeFilterView, DegreeFilterController>();
-		attributeViews = new WeakHashMap<AttributeFilterView, AttributeFilterController>();
+		columnViews = new WeakHashMap<ColumnFilterView, ColumnFilterController>();
 		
 		enabled = true;
 	}
@@ -104,9 +104,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			Map<String, double[]> ranges;
 			// We may not be the first writer, so check again.
 			if (table == network.getDefaultNodeTable()) { 
-				ranges = nodeAttributeRanges;
+				ranges = nodeColumnRanges;
 			} else if (table == network.getDefaultEdgeTable()) {
-				ranges = edgeAttributeRanges;
+				ranges = edgeColumnRanges;
 			} else {
 				return;
 			}
@@ -132,7 +132,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				changed = true;
 			}
 			if (changed) {
-				updateAttributeSliders();
+				updateColumnSliders();
 			}
 		} finally {
 			lock.writeLock().unlock();
@@ -176,11 +176,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	
 	public void setInteractive(boolean isInteractive) {
 		clearNumericData();
-		updateAttributeNames(network);
+		updateColumnNames(network);
 		if (isInteractive) {
 			computeNodeDegreeRange();
 			updateDegreeSliders();
-			updateAttributeSliders();
+			updateColumnSliders();
 		}
 	}
 	
@@ -213,23 +213,23 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 
-	private void updateAttributeSliders() {
-		for (AttributeFilterController controller : attributeViews.values()) {
+	private void updateColumnSliders() {
+		for (ColumnFilterController controller : columnViews.values()) {
 			RangeChooserController chooserController = controller.getRangeChooserController();
-			AttributeFilter filter = controller.getFilter();
+			ColumnFilter filter = controller.getFilter();
 			
-			Class<? extends CyIdentifiable> attributeType = filter.getAttributeType();
+			Class<? extends CyIdentifiable> columnType = filter.getColumnType();
 			double[] range;
-			String name = filter.getAttributeName();
+			String name = filter.getColumnName();
 			if (name == null) {
 				continue;
 			}
 			CyTable table;
-			if (CyNode.class.equals(attributeType)) {
-				range = nodeAttributeRanges.get(name);
+			if (CyNode.class.equals(columnType)) {
+				range = nodeColumnRanges.get(name);
 				table = network.getDefaultNodeTable();
-			} else if (CyEdge.class.equals(attributeType)) {
-				range = edgeAttributeRanges.get(name);
+			} else if (CyEdge.class.equals(columnType)) {
+				range = edgeColumnRanges.get(name);
 				table = network.getDefaultEdgeTable();
 			} else {
 				continue;
@@ -299,25 +299,25 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 
-	private void updateAttributeNames(CyNetwork network) {
+	private void updateColumnNames(CyNetwork network) {
 		lock.writeLock().lock();
 		try {
-			attributeNames.clear();
-			attributeNames.add(defaultAttributeName);
+			columnNames.clear();
+			columnNames.add(defaultColumnName);
 			if (network != null) {
 				addFilterElements(network.getDefaultNodeTable(), CyNode.class);
 				addFilterElements(network.getDefaultEdgeTable(), CyEdge.class);
-				Collections.sort(attributeNames);
-				updateAttributeViews();
+				Collections.sort(columnNames);
+				updateColumnViews();
 			}
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
 
-	private void updateAttributeViews() {
-		for (Entry<AttributeFilterView, AttributeFilterController> entry : attributeViews.entrySet()) {
-			AttributeFilterController controller = entry.getValue();
+	private void updateColumnViews() {
+		for (Entry<ColumnFilterView, ColumnFilterController> entry : columnViews.entrySet()) {
+			ColumnFilterController controller = entry.getValue();
 			controller.synchronize(entry.getKey());
 		}
 	}
@@ -331,9 +331,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			Class<?> listElementType = column.getListElementType();
 			
 			if (List.class.equals(elementType) && (String.class.equals(listElementType) || Number.class.isAssignableFrom(listElementType))) {
-				attributeNames.add(new AttributeComboBoxElement(type, column.getName()));
+				columnNames.add(new ColumnComboBoxElement(type, column.getName()));
 			} else if (String.class.equals(elementType) || Number.class.isAssignableFrom(elementType)) {
-				attributeNames.add(new AttributeComboBoxElement(type, column.getName()));
+				columnNames.add(new ColumnComboBoxElement(type, column.getName()));
 			}
 		}
 	}
@@ -358,9 +358,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			} else {
 				return;
 			}
-			attributeNames.add(new AttributeComboBoxElement(type, event.getColumnName()));
-			Collections.sort(attributeNames);
-			updateAttributeViews();
+			columnNames.add(new ColumnComboBoxElement(type, event.getColumnName()));
+			Collections.sort(columnNames);
+			updateColumnViews();
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -386,14 +386,14 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			} else {
 				return;
 			}
-			for (int i = 0; i < attributeNames.size(); i++) {
-				AttributeComboBoxElement element = attributeNames.get(i);
-				if (element.name.equals(event.getColumnName()) && type.equals(element.attributeType)) {
-					attributeNames.remove(i);
+			for (int i = 0; i < columnNames.size(); i++) {
+				ColumnComboBoxElement element = columnNames.get(i);
+				if (element.name.equals(event.getColumnName()) && type.equals(element.columnType)) {
+					columnNames.remove(i);
 					return;
 				}
 			}
-			updateAttributeViews();
+			updateColumnViews();
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -419,16 +419,16 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			} else {
 				return;
 			}
-			for (int i = 0; i < attributeNames.size(); i++) {
-				AttributeComboBoxElement element = attributeNames.get(i);
-				if (element.name.equals(event.getOldColumnName()) && type.equals(element.attributeType)) {
-					attributeNames.remove(i);
-					attributeNames.add(new AttributeComboBoxElement(element.attributeType, event.getNewColumnName()));
+			for (int i = 0; i < columnNames.size(); i++) {
+				ColumnComboBoxElement element = columnNames.get(i);
+				if (element.name.equals(event.getOldColumnName()) && type.equals(element.columnType)) {
+					columnNames.remove(i);
+					columnNames.add(new ColumnComboBoxElement(element.columnType, event.getNewColumnName()));
 					break;
 				}
 			}
-			Collections.sort(attributeNames);
-			updateAttributeViews();
+			Collections.sort(columnNames);
+			updateColumnViews();
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -437,8 +437,8 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	private void clearNumericData() {
 		// Assume the caller has write lock.
 		clearDegreeData();
-		nodeAttributeRanges.clear();
-		edgeAttributeRanges.clear();
+		nodeColumnRanges.clear();
+		edgeColumnRanges.clear();
 	}
 
 	private void clearDegreeData() {
@@ -527,17 +527,17 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 	
-	public List<AttributeComboBoxElement> getAttributeComboBoxModel() {
-		return attributeNames;
+	public List<ColumnComboBoxElement> getColumnComboBoxModel() {
+		return columnNames;
 	}
 
-	public boolean isString(String name, Class<?> attributeType) {
+	public boolean isString(String name, Class<?> columnType) {
 		lock.readLock().lock();
 		try {
 			if (network == null) {
 				return false;
 			}
-			CyTable table = getTable(attributeType);
+			CyTable table = getTable(columnType);
 			if (table == null) {
 				return false;
 			}
@@ -555,11 +555,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 
-	private CyTable getTable(Class<?> attributeType) {
-		if (CyNode.class.equals(attributeType)) {
+	private CyTable getTable(Class<?> columnType) {
+		if (CyNode.class.equals(columnType)) {
 			return network.getDefaultNodeTable();
 		}
-		if (CyEdge.class.equals(attributeType)) {
+		if (CyEdge.class.equals(columnType)) {
 			return network.getDefaultEdgeTable();
 		}
 		return null;
@@ -574,16 +574,16 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 	
-	public void registerAttributeFilterView(AttributeFilterView view, AttributeFilterController controller) {
+	public void registerColumnFilterView(ColumnFilterView view, ColumnFilterController controller) {
 		lock.writeLock().lock();
 		try {
-			attributeViews.put(view, controller);
+			columnViews.put(view, controller);
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
 	
-	public Number[] getAttributeRange(String name, Class<? extends CyIdentifiable> type) {
+	public Number[] getColumnRange(String name, Class<? extends CyIdentifiable> type) {
 		lock.readLock().lock();
 		try {
 			if (network == null) {
@@ -592,17 +592,17 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			
 			if (CyNode.class.equals(type)) {
 				CyTable table = network.getDefaultNodeTable();
-				return getAttributeRange(table, name, nodeAttributeRanges);
+				return getColumnRange(table, name, nodeColumnRanges);
 			} else {
 				CyTable table = network.getDefaultEdgeTable();
-				return getAttributeRange(table, name, edgeAttributeRanges);
+				return getColumnRange(table, name, edgeColumnRanges);
 			}
 		} finally {
 			lock.readLock().unlock();
 		}
 	}
 
-	private Number[] getAttributeRange(CyTable table, String name, Map<String, double[]> ranges) {
+	private Number[] getColumnRange(CyTable table, String name, Map<String, double[]> ranges) {
 		double[] range = ranges.get(name);
 		CyColumn column = table.getColumn(name);
 		if (range == null) {
@@ -652,7 +652,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		interactivityChangedListeners.remove(listener);
 	}
 
-	public void recomputeAttributeRange(String name, Class<? extends CyIdentifiable> type) {
+	public void recomputeColumnRange(String name, Class<? extends CyIdentifiable> type) {
 		lock.writeLock().lock();
 		try {
 			if (network == null) {
@@ -660,9 +660,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 			Map<String, double[]> ranges;
 			if (type.equals(CyNode.class)) {
-				ranges = nodeAttributeRanges;
+				ranges = nodeColumnRanges;
 			} else {
-				ranges = edgeAttributeRanges;
+				ranges = edgeColumnRanges;
 			}
 			ranges.remove(name);
 		} finally {
@@ -672,6 +672,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 
 	public void unregisterView(JComponent elementView) {
 		degreeViews.remove(elementView);
-		attributeViews.remove(elementView);
+		columnViews.remove(elementView);
 	}
 }

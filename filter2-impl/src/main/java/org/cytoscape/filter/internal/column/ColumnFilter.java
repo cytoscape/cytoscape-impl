@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.attribute;
+package org.cytoscape.filter.internal.column;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable> {
+public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable> {
 	public static final String NODES = "nodes";
 	public static final String EDGES = "edges";
 	public static final String NODES_AND_EDGES = "nodes+edges";
@@ -36,7 +36,7 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 	private StringPredicateDelegate stringDelegate;
 	
 	private boolean caseSensitive;
-	private String attributeName;
+	private String columnName;
 
 	private Object rawCriterion;
 	private Number lowerBound;
@@ -44,7 +44,7 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 	private String stringCriterion;
 	private String lowerCaseCriterion;
 	
-	public AttributeFilter() {
+	public ColumnFilter() {
 		type = new ListSingleSelection<String>(NODES, EDGES, NODES_AND_EDGES);
 		type.addListener(new ListChangeListener<String>() {
 			@Override
@@ -76,13 +76,13 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 		notifyListeners();
 	}
 
-	@Tunable(description="Attribute")
-	public String getAttributeName() {
-		return attributeName;
+	@Tunable
+	public String getColumnName() {
+		return columnName;
 	}
 	
-	public void setAttributeName(String name) {
-		attributeName = name;
+	public void setColumnName(String name) {
+		columnName = name;
 		notifyListeners();
 	}
 
@@ -138,7 +138,7 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 		notifyListeners();
 	}
 
-	public Class<? extends CyIdentifiable> getAttributeType() {
+	public Class<? extends CyIdentifiable> getColumnType() {
 		return elementType;
 	}
 	
@@ -154,18 +154,18 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 	
 	@Override
 	public String getId() {
-		return Transformers.ATTRIBUTE_FILTER;
+		return Transformers.COLUMN_FILTER;
 	}
 	
 	@Override
 	public String getName() {
-		return "Attribute Filter";
+		return "Column Filter";
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean accepts(CyNetwork context, CyIdentifiable element) {
-		if (attributeName == null || rawCriterion == null || predicate == null) {
+		if (columnName == null || rawCriterion == null || predicate == null) {
 			// This filter is incomplete. 
 			return false;
 		}
@@ -176,7 +176,7 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 		
 		CyRow row = context.getRow(element);
 		CyTable table = row.getTable();
-		CyColumn column = table.getColumn(attributeName);
+		CyColumn column = table.getColumn(columnName);
 		
 		if (column == null) {
 			return false;
@@ -186,14 +186,14 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 		if (columnType.equals(List.class)) {
 			Class<?> listElementType = column.getListElementType();
 			if (String.class.equals(listElementType)) {
-				List<String> list = row.getList(attributeName, String.class);
+				List<String> list = row.getList(columnName, String.class);
 				for (String item : list) {
 					if (stringDelegate.accepts(stringCriterion, lowerCaseCriterion, item, caseSensitive)) {
 						return true;
 					}
 				}
 			} else if (Number.class.isAssignableFrom(listElementType)) {
-				List<Number> list = (List<Number>) row.getList(attributeName, listElementType);
+				List<Number> list = (List<Number>) row.getList(columnName, listElementType);
 				for (Number number : list) {
 					if (numericDelegate.accepts(lowerBound, upperBound, number)) {
 						return true;
@@ -201,10 +201,10 @@ public class AttributeFilter extends AbstractTransformer<CyNetwork, CyIdentifiab
 				}
 			}
 		} else if (columnType.equals(String.class)) {
-			String value = row.get(attributeName, String.class);
+			String value = row.get(columnName, String.class);
 			return stringDelegate.accepts(stringCriterion, lowerCaseCriterion, value, caseSensitive);
 		} else if (Number.class.isAssignableFrom(columnType)) {
-			Number value = row.get(attributeName, (Class<Number>) columnType);
+			Number value = row.get(columnName, (Class<Number>) columnType);
 			return numericDelegate.accepts(lowerBound, upperBound, value);
 		}
 		return false;

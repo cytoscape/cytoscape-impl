@@ -29,8 +29,8 @@ import java.util.Properties;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.filter.TransformerManager;
-import org.cytoscape.filter.internal.attribute.AttributeFilterFactory;
-import org.cytoscape.filter.internal.attribute.AttributeFilterViewFactory;
+import org.cytoscape.filter.internal.column.ColumnFilterFactory;
+import org.cytoscape.filter.internal.column.ColumnFilterViewFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
 import org.cytoscape.filter.internal.interaction.InteractionTransformerFactory;
@@ -77,7 +77,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Filters
 		registerService(context, new DegreeFilterFactory(), FilterFactory.class, new Properties());
-		registerService(context, new AttributeFilterFactory(), FilterFactory.class, new Properties());
+		registerService(context, new ColumnFilterFactory(), FilterFactory.class, new Properties());
 		registerService(context, new TopologyFilterFactory(), FilterFactory.class, new Properties());
 		
 		// Transformers
@@ -89,7 +89,7 @@ public class CyActivator extends AbstractCyActivator {
 		IconManager iconManager = new IconManagerImpl();
 		
 		registerService(context, new DegreeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
-		registerService(context, new AttributeFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
+		registerService(context, new ColumnFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
 		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, new Properties());
 		registerService(context, new InteractionTransformerViewFactory(), TransformerViewFactory.class, new Properties());
 		
