@@ -45,7 +45,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
@@ -265,6 +264,7 @@ public class VisualPropertySheet extends JPanel{
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
+		setOpaque(false);
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		
@@ -281,6 +281,7 @@ public class VisualPropertySheet extends JPanel{
 	private JPanel getToolBarPnl() {
 		if (toolBarPnl == null) {
 			toolBarPnl = new JPanel();
+			toolBarPnl.setOpaque(false);
 			toolBarPnl.setLayout(new BoxLayout(toolBarPnl, BoxLayout.X_AXIS));
 			toolBarPnl.add(getVpsBtn());
 			toolBarPnl.add(Box.createHorizontalGlue());
@@ -297,8 +298,6 @@ public class VisualPropertySheet extends JPanel{
 	private JPanel getVpListHeaderPnl() {
 		if (vpListHeaderPnl == null) {
 			vpListHeaderPnl = new JPanel();
-			vpListHeaderPnl.setBorder(
-					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			vpListHeaderPnl.setLayout(new BoxLayout(vpListHeaderPnl, BoxLayout.X_AXIS));
 			
 			vpListHeaderPnl.add(Box.createRigidArea(new Dimension(2, 12)));

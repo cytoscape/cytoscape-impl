@@ -264,6 +264,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	private void init() {
 		setMinimumSize(new Dimension(420, getMinimumSize().height));
+		setOpaque(false);
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		
@@ -280,7 +281,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private JPanel getStylesPnl() {
 		if (stylesPnl == null) {
 			stylesPnl = new JPanel();
-			stylesPnl.setBorder(BorderFactory.createTitledBorder("Current Style"));
+			stylesPnl.setOpaque(false);
 			
 			final GroupLayout stylesPanelLayout = new GroupLayout(stylesPnl);
 			stylesPnl.setLayout(stylesPanelLayout);
@@ -312,6 +313,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	VisualStyleDropDownButton getStylesBtn() {
 		if (stylesBtn == null) {
 			stylesBtn = new VisualStyleDropDownButton();
+			stylesBtn.setToolTipText("Current Style");
 		}
 		
 		return stylesBtn;
@@ -608,8 +610,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 				panel.setBorder(border);
 			} else if (vs.equals(selectedItem)) {
 				final Border border = BorderFactory.createCompoundBorder(
-						BorderFactory.createEmptyBorder(2,  2,  2,  2),
-						BorderFactory.createLineBorder(SEL_BG_COLOR, 1));
+						BorderFactory.createEmptyBorder(1,  1,  1,  1),
+						BorderFactory.createLineBorder(SEL_BG_COLOR, 2));
 				panel.setBorder(border);
 			} else {
 				final Border border = BorderFactory.createCompoundBorder(
