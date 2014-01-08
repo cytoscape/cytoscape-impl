@@ -83,13 +83,13 @@ import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedEvent;
 import org.cytoscape.view.vizmap.gui.event.LexiconStateChangedListener;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
+import org.cytoscape.view.vizmap.gui.internal.action.GenerateDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.PropsProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
-import org.cytoscape.view.vizmap.gui.internal.task.GenerateValuesTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
 import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -522,19 +522,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			return;
 		}
 		
-		// Create mapping generator task factory
-		final GenerateValuesTaskFactory taskFactory = new GenerateValuesTaskFactory(generator, vizMapperMainPanel, 
-				servicesUtil);
-		final HashMap<String, String> config = new HashMap<String, String>();
-		config.put(ServiceProperties.TITLE, title.toString());
-
 		// Add new menu to the pull-down
-		final AbstractCyAction action = new AbstractCyAction(config, taskFactory) {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				servicesUtil.get(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
-			}
-		};
+		final GenerateDiscreteValuesAction action = new GenerateDiscreteValuesAction(title.toString(), generator,
+				servicesUtil);
 		vizMapperMainPanel.getContextMenu().addPopupMenuListener(action);
 		
 		final JMenuItem menuItem = new JMenuItem(action);

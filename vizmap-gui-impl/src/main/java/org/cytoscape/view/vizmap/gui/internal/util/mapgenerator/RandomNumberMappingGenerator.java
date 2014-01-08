@@ -30,51 +30,78 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class RandomNumberMappingGenerator extends AbstractDiscreteMappingGenerator<Number> {
 
+	private static final Logger logger = LoggerFactory.getLogger(RandomNumberMappingGenerator.class);
+	
 	public RandomNumberMappingGenerator() {
 		super(Number.class);
 	}
 
-	/**
-	 * Generate discrete mapping between any attribute values and numbers.
-	 * 
-	 * @param attributeSet
-	 *            set of attribute values. ? can be anything.
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public <T> Map<T, Number> generateMap(Set<T> attributeSet) {
-		
 		final Map<T, Number> valueMap = new HashMap<T, Number>();
 		
 		// Error if attributeSet is empty or null
 		if ((attributeSet == null) || (attributeSet.size() == 0))
 			return valueMap;
 
-		// Ask user to input number range
-		final String range = JOptionPane.showInputDialog(null, "Please enter the value range (example: 30-100)",
-				"Assign Random Numbers", JOptionPane.PLAIN_MESSAGE);
-
-		String[] rangeVals = range.split("-");
-
-		if (rangeVals.length != 2)
-			return valueMap;
-
+		final String[] range = new String[2];
+		
+		if (SwingUtilities.isEventDispatchThread()) {
+			getRange(range);
+		} else {
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					@Override
+					public void run() {
+						getRange(range);
+					}
+				});
+			} catch (Exception e) {
+				logger.error("Error getting range", e);
+				return valueMap;
+			}
+		}
+		
+		final Double min;
+		final Double max;
+		
+		try {
+			min = Double.valueOf(range[0]);
+			max = Double.valueOf(range[1]);
+		} catch (Exception e) {
+			return generateMap(attributeSet);
+		}
+		
+		final Double valueRange = max - min;
 		final long seed = System.currentTimeMillis();
 		final Random rand = new Random(seed);
-		
-		Double min = Double.valueOf(rangeVals[0]);
-		Double max = Double.valueOf(rangeVals[1]);
-		Double valueRange = max - min;
 
 		for (T key : attributeSet)
 			valueMap.put(key, (rand.nextFloat() * valueRange) + min);
 
 		return valueMap;
+	}
+
+	private void getRange(final String[] range) {
+		// Ask user to input number range
+		final String s = JOptionPane.showInputDialog(null, "Please enter the value range (example: 30-100)",
+				"Assign Random Numbers", JOptionPane.PLAIN_MESSAGE);
+		
+		final String[] split = s.split("-");
+		
+		if (split.length == 2) {
+			range[0] = split[0];
+			range[1] = split[1];
+		}
 	}
 }
