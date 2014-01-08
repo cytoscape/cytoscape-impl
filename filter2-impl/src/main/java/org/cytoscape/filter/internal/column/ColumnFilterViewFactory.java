@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.attribute;
+package org.cytoscape.filter.internal.column;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -24,8 +24,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.cytoscape.filter.internal.ModelMonitor;
-import org.cytoscape.filter.internal.attribute.AttributeFilterView.AttributeComboBoxElement;
-import org.cytoscape.filter.internal.attribute.AttributeFilterView.PredicateElement;
+import org.cytoscape.filter.internal.column.ColumnFilterView.ColumnComboBoxElement;
+import org.cytoscape.filter.internal.column.ColumnFilterView.PredicateElement;
 import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.IconManager;
@@ -42,18 +42,18 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 
-public class AttributeFilterViewFactory implements TransformerViewFactory {
+public class ColumnFilterViewFactory implements TransformerViewFactory {
 
 	ModelMonitor modelMonitor;
-	List<AttributeComboBoxElement> nameComboBoxModel;
+	List<ColumnComboBoxElement> nameComboBoxModel;
 	List<PredicateElement> predicateComboBoxModel;
 	private IconManager iconManager;
 	
-	public AttributeFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
+	public ColumnFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
 		this.modelMonitor = modelMonitor;
 		this.iconManager = iconManager;
 		
-		nameComboBoxModel = modelMonitor.getAttributeComboBoxModel();
+		nameComboBoxModel = modelMonitor.getColumnComboBoxModel();
 		
 		predicateComboBoxModel = new ArrayList<PredicateElement>();
 		predicateComboBoxModel.add(new PredicateElement(Predicate.CONTAINS, "contains"));
@@ -65,23 +65,23 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 	
 	@Override
 	public String getId() {
-		return Transformers.ATTRIBUTE_FILTER;
+		return Transformers.COLUMN_FILTER;
 	}
 
 	@Override
 	public JComponent createView(Transformer<?, ?> transformer) {
-		AttributeFilter filter = (AttributeFilter) transformer;
+		ColumnFilter filter = (ColumnFilter) transformer;
 		Controller controller = new Controller(filter);
 		View view = new View(controller, iconManager);
-		modelMonitor.registerAttributeFilterView(view, controller);
+		modelMonitor.registerColumnFilterView(view, controller);
 		return view;
 	}
 
-	class Controller implements AttributeFilterController {
-		private AttributeFilter filter;
+	class Controller implements ColumnFilterController {
+		private ColumnFilter filter;
 		private RangeChooserController chooserController;
 		
-		public Controller(final AttributeFilter filter) {
+		public Controller(final ColumnFilter filter) {
 			this.filter = filter;
 
 			if (filter.getPredicate() == null) {
@@ -100,7 +100,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		}
 		
 		@Override
-		public AttributeFilter getFilter() {
+		public ColumnFilter getFilter() {
 			return filter;
 		}
 
@@ -125,19 +125,19 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			filter.setCriterion(text);
 		}
 		
-		public void setAttributeName(String name) {
-			filter.setAttributeName(name);
+		public void setColumnName(String name) {
+			filter.setColumnName(name);
 		}
 		
 		public void updateRange() {
-			String name = filter.getAttributeName();
-			Class<? extends CyIdentifiable> type = filter.getAttributeType();
+			String name = filter.getColumnName();
+			Class<? extends CyIdentifiable> type = filter.getColumnType();
 			if (name == null || type == null) {
 				chooserController.setRange(0, 0, 0, 0);
 				return;
 			}
-			modelMonitor.recomputeAttributeRange(name, type);
-			Number[] range = modelMonitor.getAttributeRange(name, type);
+			modelMonitor.recomputeColumnRange(name, type);
+			Number[] range = modelMonitor.getColumnRange(name, type);
 			if (range == null) {
 				chooserController.setRange(0, 0, 0, 0);
 				return;
@@ -148,13 +148,13 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		
 		public void setMatchType(Class<?> type) {
 			if (type == null) {
-				filter.type.setSelectedValue(AttributeFilter.NODES_AND_EDGES);
+				filter.type.setSelectedValue(ColumnFilter.NODES_AND_EDGES);
 			}
 			if (CyNode.class.equals(type)) {
-				filter.type.setSelectedValue(AttributeFilter.NODES);
+				filter.type.setSelectedValue(ColumnFilter.NODES);
 			}
 			if (CyEdge.class.equals(type)) {
-				filter.type.setSelectedValue(AttributeFilter.EDGES);
+				filter.type.setSelectedValue(ColumnFilter.EDGES);
 			}
 		}
 		
@@ -163,42 +163,42 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			updateArrowLabel(view.getArrowLabel());
 		}
 
-		public AttributeFilter getModel() {
+		public ColumnFilter getModel() {
 			return filter;
 		}
 
-		void handleAttributeSelected(View view, JComboBox nameComboBox) {
+		void handleColumnSelected(View view, JComboBox nameComboBox) {
 			RangeChooser rangeChooser = view.rangeChooser;
 			if (nameComboBox.getSelectedIndex() == 0) {
-				view.handleNoAttributeSelected();
+				view.handleNoColumnSelected();
 				chooserController.setInteractive(false, rangeChooser);
 				return;
 			}
 
 			nameComboBox.setForeground(Color.black);
 			
-			AttributeComboBoxElement selected = (AttributeComboBoxElement) nameComboBox.getSelectedItem();
-			setAttributeName(selected.name);
-			setMatchType(selected.attributeType);
+			ColumnComboBoxElement selected = (ColumnComboBoxElement) nameComboBox.getSelectedItem();
+			setColumnName(selected.name);
+			setMatchType(selected.columnType);
 			
-			if (modelMonitor.isString(selected.name, selected.attributeType)) {
+			if (modelMonitor.isString(selected.name, selected.columnType)) {
 				Predicate predicate = filter.getPredicate();
 				if (predicate == null || predicate == Predicate.BETWEEN) {
 					filter.setPredicate(Predicate.CONTAINS);
 				}
 				
-				view.handleStringAttributeSelected();
+				view.handleStringColumnSelected();
 				chooserController.setInteractive(false, rangeChooser);
 			} else {
 				filter.setPredicate(Predicate.BETWEEN);
-				view.handleNumericAttributeSelected();
+				view.handleNumericColumnSelected();
 				chooserController.setInteractive(view.isInteractive, rangeChooser);
 				updateRange();
 			}
 		}
 
 		@Override
-		public void synchronize(AttributeFilterView view) {
+		public void synchronize(ColumnFilterView view) {
 			Object criterion = filter.getCriterion();
 			if (criterion instanceof String) {
 				view.getField().setText((String) criterion);
@@ -218,10 +218,10 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
 			model.notifyChanged(0, model.getSize() - 1);
 			
-			DynamicComboBoxModel.select(nameComboBox, 0, new Matcher<AttributeComboBoxElement>() {
+			DynamicComboBoxModel.select(nameComboBox, 0, new Matcher<ColumnComboBoxElement>() {
 				@Override
-				public boolean matches(AttributeComboBoxElement item) {
-					return item.name.equals(filter.getAttributeName()) && item.attributeType.equals(filter.getAttributeType());
+				public boolean matches(ColumnComboBoxElement item) {
+					return item.name.equals(filter.getColumnName()) && item.columnType.equals(filter.getColumnType());
 				}
 			});
 			
@@ -237,16 +237,16 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 
 		public void setInteractive(boolean isInteractive, View view) {
 			view.isInteractive = isInteractive;
-			switch (view.selectedAttribute) {
+			switch (view.selectedColumn) {
 			case NONE:
-				view.handleNoAttributeSelected();
+				view.handleNoColumnSelected();
 				break;
 			case NUMERIC:
-				view.handleNumericAttributeSelected();
+				view.handleNumericColumnSelected();
 				chooserController.setInteractive(isInteractive, view.rangeChooser);
 				break;
 			case STRING:
-				view.handleStringAttributeSelected();
+				view.handleStringColumnSelected();
 				break;
 			}
 		}
@@ -258,7 +258,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 	}
 	
 	@SuppressWarnings("serial")
-	class View extends JPanel implements AttributeFilterView, InteractivityChangedListener {
+	class View extends JPanel implements ColumnFilterView, InteractivityChangedListener {
 		boolean optionsExpanded;
 		private JTextField textField;
 		private JLabel arrowLabel;
@@ -268,13 +268,13 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		private JPanel spacerPanel;
 		private JPanel predicatePanel;
 		private boolean isInteractive;
-		private SelectedAttributeType selectedAttribute;
+		private SelectedColumnType selectedColumn;
 		private Controller controller;
 		private RangeChooser rangeChooser;
 		
 		public View(final Controller controller, IconManager iconManager) {
 			this.controller = controller;
-			selectedAttribute = SelectedAttributeType.NONE;
+			selectedColumn = SelectedColumnType.NONE;
 			optionsExpanded = true;
 			
 			ViewUtil.configureFilterView(this);
@@ -339,11 +339,11 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			nameComboBox = new JComboBox(new DynamicComboBoxModel<AttributeComboBoxElement>(nameComboBoxModel));
+			nameComboBox = new JComboBox(new DynamicComboBoxModel<ColumnComboBoxElement>(nameComboBoxModel));
 			nameComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
-					controller.handleAttributeSelected(View.this, nameComboBox);
+					controller.handleColumnSelected(View.this, nameComboBox);
 				}
 			});
 			
@@ -379,11 +379,11 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			} else {
 				arrowLabel.setText(IconManager.ICON_CARET_LEFT);
 			}
-			handleStringAttributeSelected();
+			handleStringColumnSelected();
 		}
 
-		void handleNumericAttributeSelected() {
-			selectedAttribute = SelectedAttributeType.NUMERIC;
+		void handleNumericColumnSelected() {
+			selectedColumn = SelectedColumnType.NUMERIC;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(rangeChooser, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
@@ -393,8 +393,8 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			repaint();
 		}
 
-		void handleStringAttributeSelected() {
-			selectedAttribute = SelectedAttributeType.STRING;
+		void handleStringColumnSelected() {
+			selectedColumn = SelectedColumnType.STRING;
 			removeAll();
 			if (optionsExpanded) {
 				predicatePanel.removeAll();
@@ -419,8 +419,8 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 			validate();
 		}
 
-		private void handleNoAttributeSelected() {
-			selectedAttribute = SelectedAttributeType.NONE;
+		private void handleNoColumnSelected() {
+			selectedColumn = SelectedColumnType.NONE;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(spacerPanel, new GridBagConstraints(1, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
@@ -454,7 +454,7 @@ public class AttributeFilterViewFactory implements TransformerViewFactory {
 		}
 	}
 	
-	private enum SelectedAttributeType {
+	private enum SelectedColumnType {
 		NONE,
 		NUMERIC,
 		STRING,

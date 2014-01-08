@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.TransformerManager;
-import org.cytoscape.filter.internal.attribute.AttributeFilter;
+import org.cytoscape.filter.internal.column.ColumnFilter;
 import org.cytoscape.filter.internal.degree.DegreeFilter;
 import org.cytoscape.filter.internal.filters.model.AtomicFilter;
 import org.cytoscape.filter.internal.filters.model.CompositeFilter;
@@ -207,8 +207,8 @@ public class PerformanceScaffold {
 			System.out.printf("Index\t%s\t%d\n", filter.getControllingAttribute(), System.currentTimeMillis() - start);
 
 			subjectTransformers = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
-			AttributeFilter filter2 = new AttributeFilter();
-			filter2.setAttributeName(LIST_STRING_COLUMN);
+			ColumnFilter filter2 = new ColumnFilter();
+			filter2.setColumnName(LIST_STRING_COLUMN);
 			filter2.setCriterion(searchTerm);
 			filter2.setPredicate(Predicate.IS);
 			filter2.setCaseSensitive(true);
@@ -276,8 +276,8 @@ public class PerformanceScaffold {
 			System.out.printf("Index\t%s\t%d\n", filter.getControllingAttribute(), System.currentTimeMillis() - start);
 
 			subjectTransformers = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
-			AttributeFilter filter2 = new AttributeFilter();
-			filter2.setAttributeName(INTEGER_COLUMN);
+			ColumnFilter filter2 = new ColumnFilter();
+			filter2.setColumnName(INTEGER_COLUMN);
 			filter2.setCriterion(searchTerm);
 			filter2.setPredicate(Predicate.IS);
 			filter2.type.setSelectedValue("nodes");

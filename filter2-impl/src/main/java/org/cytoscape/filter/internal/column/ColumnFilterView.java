@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.attribute;
+package org.cytoscape.filter.internal.column;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -9,20 +9,20 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 
 
-public interface AttributeFilterView {
-	static class AttributeComboBoxElement implements Comparable<AttributeComboBoxElement> {
-		public final Class<?> attributeType;
+public interface ColumnFilterView {
+	static class ColumnComboBoxElement implements Comparable<ColumnComboBoxElement> {
+		public final Class<?> columnType;
 		public final String name;
 
 		final String description;
 		
-		public AttributeComboBoxElement(Class<?> attributeType, String name) {
-			this.attributeType = attributeType;
+		public ColumnComboBoxElement(Class<?> columnType, String name) {
+			this.columnType = columnType;
 			this.name = name;
 			
-			if (CyNode.class.equals(attributeType)) {
+			if (CyNode.class.equals(columnType)) {
 				description = "Node: " + name;
-			} else if (CyEdge.class.equals(attributeType)) {
+			} else if (CyEdge.class.equals(columnType)) {
 				description = "Edge: " + name;
 			} else {
 				description = name;
@@ -35,24 +35,24 @@ public interface AttributeFilterView {
 		}
 		
 		@Override
-		public int compareTo(AttributeComboBoxElement other) {
-			if (attributeType == null && other.attributeType == null) {
+		public int compareTo(ColumnComboBoxElement other) {
+			if (columnType == null && other.columnType == null) {
 				return String.CASE_INSENSITIVE_ORDER.compare(name, other.name);
 			}
 			
-			if (attributeType == null) {
+			if (columnType == null) {
 				return -1;
 			}
 			
-			if (other.attributeType == null) {
+			if (other.columnType == null) {
 				return 1;
 			}
 			
-			if (attributeType.equals(other.attributeType)) {
+			if (columnType.equals(other.columnType)) {
 				return String.CASE_INSENSITIVE_ORDER.compare(name, other.name);
 			}
 			
-			if (attributeType.equals(CyNode.class)) {
+			if (columnType.equals(CyNode.class)) {
 				return -1;
 			}
 			
