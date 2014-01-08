@@ -2,6 +2,8 @@ package org.cytoscape.work.internal.task;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.cytoscape.work.TaskMonitor;
 
@@ -14,7 +16,7 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
   public static final byte TASK_CANCELLED = 2;
 
   public static class Message {
-
+    // Use a byte to reference TaskMonitor.Level to save memory
     final byte levelOrdinal;
     final String message;
 
@@ -34,15 +36,14 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
 
   public static class History implements Iterable<Message> {
     volatile byte completionStatus = -1;
-    volatile String title = null;
+    final AtomicReference<String> title = new AtomicReference<String>();
     final ConcurrentLinkedQueue<Message> messages = new ConcurrentLinkedQueue<Message>();
+    final AtomicIntegerArray numberOfMessagesByLevel = new AtomicIntegerArray(levels.length);
 
     protected History() {}
 
     public void setTitle(final String newTitle) {
-      if (this.title == null) {
-        this.title = newTitle;
-      } else {
+      if (!title.compareAndSet(null, newTitle)) {
         addMessage(null, newTitle);
       }
     }
@@ -53,6 +54,10 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
 
     public void addMessage(final TaskMonitor.Level level, final String message) {
       messages.add(new Message(level, message));
+      if (level != null) {
+        final int levelOrdinal = level.ordinal();
+        numberOfMessagesByLevel.getAndIncrement(levelOrdinal);
+      }
     }
 
     public Iterator<Message> iterator() {
@@ -60,11 +65,19 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
     }
 
     public String getTitle() {
-      return title;
+      return title.get();
     }
 
     public byte getCompletionStatus() {
       return completionStatus;
+    }
+
+    public boolean hasMessages() {
+      return messages.size() > 0;
+    }
+
+    public int numberOfMessagesWithLevel(final TaskMonitor.Level level) {
+      return numberOfMessagesByLevel.get(level.ordinal());
     }
   }
 
