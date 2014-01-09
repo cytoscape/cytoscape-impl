@@ -205,7 +205,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 				final String delimiter = mapping.getDelimiterRegEx();
 
 				//If the delimiter contains a comma, treat the file as a CSV file.
-				if( delimiter.contains(TextFileDelimiters.COMMA.toString()) )
+				if( delimiter.contains(TextFileDelimiters.COMMA.toString()) && mapping.getDelimiters().size() == 1 )
 				{
 					//Use OpenCSV.. New method...
 					CSVReader reader = new CSVReader(bufRd);

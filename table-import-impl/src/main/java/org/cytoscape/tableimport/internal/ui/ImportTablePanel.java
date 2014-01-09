@@ -49,24 +49,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-import javax.swing.text.MaskFormatter;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
@@ -469,25 +468,12 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		arrowButton2 = new javax.swing.JButton();
 		textImportOptionPanel = new javax.swing.JPanel();
 		delimiterPanel = new javax.swing.JPanel();
-		tabRadioButton = new JRadioButton();
-		commaRadioButton = new JRadioButton();
-		semicolonRadioButton = new JRadioButton();
-		spaceRadioButton = new JRadioButton();
-		otherRadioButton = new JRadioButton();
-		delimiterGroup.add(tabRadioButton);
-		delimiterGroup.add(commaRadioButton);
-		delimiterGroup.add(semicolonRadioButton);
-		delimiterGroup.add(spaceRadioButton);
-		delimiterGroup.add(otherRadioButton);
-		try
-		{
-			otherDelimiterTextField = new JFormattedTextField( new MaskFormatter("*"));
-		} catch (ParseException e)
-		{
-			//Should never happen.
-			e.printStackTrace();
-		}
-
+		tabCheckBox = new JCheckBox();
+		commaCheckBox = new JCheckBox();
+		semicolonCheckBox = new JCheckBox();
+		spaceCheckBox = new JCheckBox();
+		otherCheckBox = new JCheckBox();
+		otherDelimiterTextField = new javax.swing.JTextField();
 		transferNameCheckBox = new javax.swing.JCheckBox();
 
 		attributeNamePanel = new JPanel();
@@ -858,10 +844,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				"Text File Import Options", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
 				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 11)));
 		delimiterPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Delimiter"));
-		tabRadioButton.setText("Tab");
-		tabRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-		tabRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		tabRadioButton.addActionListener(new java.awt.event.ActionListener()
+		tabCheckBox.setText("Tab");
+		tabCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		tabCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+		tabCheckBox.addActionListener(new java.awt.event.ActionListener()
 		{
 			public void actionPerformed(java.awt.event.ActionEvent evt)
 			{
@@ -876,10 +862,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 		});
 
-		commaRadioButton.setText("Comma");
-		commaRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-		commaRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		commaRadioButton.addActionListener(new java.awt.event.ActionListener()
+		commaCheckBox.setText("Comma");
+		commaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		commaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+		commaCheckBox.addActionListener(new java.awt.event.ActionListener()
 		{
 			public void actionPerformed(java.awt.event.ActionEvent evt)
 			{
@@ -894,10 +880,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 		});
 
-		semicolonRadioButton.setText("Semicolon");
-		semicolonRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-		semicolonRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		semicolonRadioButton.addActionListener(new java.awt.event.ActionListener()
+		semicolonCheckBox.setText("Semicolon");
+		semicolonCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		semicolonCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+		semicolonCheckBox.addActionListener(new java.awt.event.ActionListener()
 		{
 			public void actionPerformed(java.awt.event.ActionEvent evt)
 			{
@@ -912,10 +898,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 		});
 
-		spaceRadioButton.setText("Space");
-		spaceRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-		spaceRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		spaceRadioButton.addActionListener(new java.awt.event.ActionListener()
+		spaceCheckBox.setText("Space");
+		spaceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		spaceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+		spaceCheckBox.addActionListener(new java.awt.event.ActionListener()
 		{
 			public void actionPerformed(java.awt.event.ActionEvent evt)
 			{
@@ -930,21 +916,19 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 		});
 
-		otherRadioButton.setText("Other");
-		otherRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-		otherRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		otherRadioButton.addActionListener(new java.awt.event.ActionListener()
+		otherCheckBox.setText("Other");
+		otherCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		otherCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+		otherCheckBox.addActionListener(new ActionListener()
 		{
-			public void actionPerformed(java.awt.event.ActionEvent evt)
+			public void actionPerformed(ActionEvent evt)
 			{
 				try
 				{
 					otherDelimiterTextField.requestFocus();
-//					//This line is a hack that seems necessary to get selectAll() to work.
-					otherDelimiterTextField.setText(otherDelimiterTextField.getText());
-					otherDelimiterTextField.selectAll();
-					//delimiterCheckBoxActionPerformed(evt);
-				} catch (Exception e)
+					delimiterCheckBoxActionPerformed(evt);
+				}
+				catch (Exception e)
 				{
 					e.printStackTrace();
 				}
@@ -964,11 +948,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			{
 				try
 				{
-					if (otherRadioButton.isSelected())
+					if (otherCheckBox.isSelected())
 						displayPreview();
-					otherDelimiterTextField.selectAll();
-
-				} catch (IOException e)
+				}
+				catch (IOException e)
 				{
 					e.printStackTrace();
 				}
@@ -982,11 +965,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		GroupLayout delimiterPanelLayout = new GroupLayout(delimiterPanel);
 		delimiterPanel.setLayout(delimiterPanelLayout);
 		delimiterPanelLayout.setHorizontalGroup(delimiterPanelLayout.createParallelGroup(GroupLayout.LEADING).add(
-				delimiterPanelLayout.createSequentialGroup().add(tabRadioButton)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(commaRadioButton)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(semicolonRadioButton)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(spaceRadioButton)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(otherRadioButton)
+				delimiterPanelLayout.createSequentialGroup().add(tabCheckBox)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(commaCheckBox)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(semicolonCheckBox)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(spaceCheckBox)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(otherCheckBox)
 						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
 						.add(otherDelimiterTextField, GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)));
 		delimiterPanelLayout.setVerticalGroup(delimiterPanelLayout.createParallelGroup(GroupLayout.LEADING).add(
@@ -994,11 +977,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 						.createSequentialGroup()
 						.add(delimiterPanelLayout
 								.createParallelGroup(GroupLayout.BASELINE)
-								.add(tabRadioButton)
-								.add(commaRadioButton)
-								.add(semicolonRadioButton)
-								.add(spaceRadioButton)
-								.add(otherRadioButton)
+								.add(tabCheckBox)
+								.add(commaCheckBox)
+								.add(semicolonCheckBox)
+								.add(spaceCheckBox)
+								.add(otherCheckBox)
 								.add(otherDelimiterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 										GroupLayout.PREFERRED_SIZE))
 						.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
@@ -1786,22 +1769,22 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		importTypeButtonGroup.setSelected(counterRadioButton.getModel(), true);
 
 		if( fileType != null && fileType.equalsIgnoreCase(SupportedFileType.CSV.getExtension()) )
-			commaRadioButton.setSelected(true);
+			commaCheckBox.setSelected(true);
 		else
-			tabRadioButton.setSelected(true);
+			tabCheckBox.setSelected(true);
 
-		tabRadioButton.setEnabled(false);
-		commaRadioButton.setEnabled(false);
-		spaceRadioButton.setEnabled(false);
+		tabCheckBox.setEnabled(false);
+		commaCheckBox.setEnabled(false);
+		spaceCheckBox.setEnabled(false);
 
 		if (dialogType == NETWORK_IMPORT) {
-			spaceRadioButton.setSelected(true);
+			spaceCheckBox.setSelected(true);
 		} else {
-			spaceRadioButton.setSelected(false);
+			spaceCheckBox.setSelected(false);
 		}
 
-		semicolonRadioButton.setEnabled(false);
-		otherRadioButton.setEnabled(false);
+		semicolonCheckBox.setEnabled(false);
+		otherCheckBox.setEnabled(false);
 		otherDelimiterTextField.setEnabled(false);
 	}
 
@@ -2051,27 +2034,27 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		edgeRadioButton.setEnabled(false);
 		networkRadioButton.setEnabled(false);
 
-		tabRadioButton.setEnabled(false);
-		tabRadioButton.setSelected(true);
-		commaRadioButton.setEnabled(false);
-		commaRadioButton.setSelected(false);
-		spaceRadioButton.setEnabled(false);
-		spaceRadioButton.setSelected(false);
-		semicolonRadioButton.setEnabled(false);
-		semicolonRadioButton.setSelected(false);
-		otherRadioButton.setEnabled(false);
-		otherRadioButton.setSelected(false);
+		tabCheckBox.setEnabled(false);
+		tabCheckBox.setSelected(true);
+		commaCheckBox.setEnabled(false);
+		commaCheckBox.setSelected(false);
+		spaceCheckBox.setEnabled(false);
+		spaceCheckBox.setSelected(false);
+		semicolonCheckBox.setEnabled(false);
+		semicolonCheckBox.setSelected(false);
+		otherCheckBox.setEnabled(false);
+		otherCheckBox.setSelected(false);
 		otherDelimiterTextField.setEnabled(false);
 
 		importAllCheckBox.setEnabled(false);
 	}
 
 	private void switchDelimiterCheckBoxes(Boolean state) {
-		tabRadioButton.setEnabled(state);
-		commaRadioButton.setEnabled(state);
-		spaceRadioButton.setEnabled(state);
-		semicolonRadioButton.setEnabled(state);
-		otherRadioButton.setEnabled(state);
+		tabCheckBox.setEnabled(state);
+		commaCheckBox.setEnabled(state);
+		spaceCheckBox.setEnabled(state);
+		semicolonCheckBox.setEnabled(state);
+		otherCheckBox.setEnabled(state);
 		otherDelimiterTextField.setEnabled(state);
 	}
 
@@ -2374,23 +2357,23 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	public List<String> checkDelimiter() {
 		final List<String> delList = new ArrayList<String>();
 
-		if (tabRadioButton.isSelected()) {
+		if (tabCheckBox.isSelected()) {
 			delList.add(TextFileDelimiters.TAB.toString());
 		}
 
-		if (commaRadioButton.isSelected()) {
+		if (commaCheckBox.isSelected()) {
 			delList.add(TextFileDelimiters.COMMA.toString());
 		}
 
-		if (spaceRadioButton.isSelected()) {
+		if (spaceCheckBox.isSelected()) {
 			delList.add(TextFileDelimiters.SPACE.toString());
 		}
 
-		if (semicolonRadioButton.isSelected()) {
+		if (semicolonCheckBox.isSelected()) {
 			delList.add(TextFileDelimiters.SEMICOLON.toString());
 		}
 
-		if (otherRadioButton.isSelected()) {
+		if (otherCheckBox.isSelected() && otherDelimiterTextField.getText().trim().length() > 0) {
 			delList.add(otherDelimiterTextField.getText());
 		}
 
@@ -2958,13 +2941,12 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected JLabel commentLineLabel;
 	protected JTextField commentLineTextField;
 
-	//Delimiter radio buttons
-	ButtonGroup delimiterGroup = new ButtonGroup();
-	protected JRadioButton tabRadioButton;
-	protected JRadioButton commaRadioButton;
-	protected JRadioButton semicolonRadioButton;
-	protected JRadioButton spaceRadioButton;
-	protected JRadioButton otherRadioButton;
+	//Delimiter check boxes
+	protected JCheckBox tabCheckBox;
+	protected JCheckBox commaCheckBox;
+	protected JCheckBox semicolonCheckBox;
+	protected JCheckBox spaceCheckBox;
+	protected JCheckBox otherCheckBox;
 	protected JTextField otherDelimiterTextField;
 
 
