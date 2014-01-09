@@ -60,9 +60,9 @@ public class TaskHistoryWindow {
       buffer.append("<h1>&nbsp;");
       buffer.append("<img src=\"");
       switch (history.getCompletionStatus()) {
-        case TaskHistory.TASK_SUCCESS:    buffer.append(TaskDialog2.ICON_URLS.get("finished").toString()); break;
-        case TaskHistory.TASK_FAILED:     buffer.append(TaskDialog2.ICON_URLS.get("error").toString()); break;
-        case TaskHistory.TASK_CANCELLED:  buffer.append(TaskDialog2.ICON_URLS.get("cancelled").toString()); break;
+        case TaskHistory.TASK_SUCCESS:    buffer.append(TaskDialog.ICON_URLS.get("finished").toString()); break;
+        case TaskHistory.TASK_FAILED:     buffer.append(TaskDialog.ICON_URLS.get("error").toString()); break;
+        case TaskHistory.TASK_CANCELLED:  buffer.append(TaskDialog.ICON_URLS.get("cancelled").toString()); break;
       }
       buffer.append("\">&nbsp;");
       buffer.append(safeString(history.getTitle(), "<i>Untitled</i>"));
@@ -75,9 +75,9 @@ public class TaskHistoryWindow {
         if (level != null) {
           buffer.append("<img src=\"");
           switch(level) {
-            case INFO: buffer.append(TaskDialog2.ICONS.get("info").toString()); break;
-            case WARN: buffer.append(TaskDialog2.ICONS.get("warn").toString()); break;
-            case ERROR: buffer.append(TaskDialog2.ICONS.get("error").toString()); break;
+            case INFO: buffer.append(TaskDialog.ICONS.get("info").toString()); break;
+            case WARN: buffer.append(TaskDialog.ICONS.get("warn").toString()); break;
+            case ERROR: buffer.append(TaskDialog.ICONS.get("error").toString()); break;
           }
           buffer.append("\">&nbsp;");
         } else {

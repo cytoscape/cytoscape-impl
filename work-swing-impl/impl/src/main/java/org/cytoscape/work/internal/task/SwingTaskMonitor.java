@@ -55,8 +55,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	final private TaskHistory.History history;
 
 	private volatile boolean cancelled;
-	//private TaskDialog dialog;
-	private volatile TaskDialog2 dialog;
+	private volatile TaskDialog dialog;
 	private volatile Task task;
 	private String firstTitle;
 	private String title;
@@ -115,14 +114,13 @@ class SwingTaskMonitor implements TaskMonitor {
 			if (dialog != null)
 				return;
 
-			dialog = new TaskDialog2(parent);
-			//dialog = new TaskDialog(parent, this);
-			dialog.addPropertyChangeListener(TaskDialog2.CLOSE_EVENT, new PropertyChangeListener() {
+			dialog = new TaskDialog(parent);
+			dialog.addPropertyChangeListener(TaskDialog.CLOSE_EVENT, new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent e) {
 					close();
 				}
 			});
-			dialog.addPropertyChangeListener(TaskDialog2.CANCEL_EVENT, new PropertyChangeListener() {
+			dialog.addPropertyChangeListener(TaskDialog.CANCEL_EVENT, new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent e) {
 					cancel();
 				}
