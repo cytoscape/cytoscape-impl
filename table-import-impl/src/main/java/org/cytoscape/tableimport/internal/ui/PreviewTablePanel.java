@@ -959,9 +959,11 @@ public class PreviewTablePanel extends JPanel {
 				int counter = 0;
 				maxColumn = 0;
 				data = new Vector();
-				if( delimiters.contains(TextFileDelimiters.COMMA.toString()) )
+				if( delimiters.contains(TextFileDelimiters.COMMA.toString()) && delimiters.size() == 1 )
 				{
-					//Use OpenCSV.. New method...
+					//Only if there is exactly one delimiter and that delimiter is a comma should you read the file
+					//using OpenCSV
+					//New method... Using OpenCSV
 					CSVReader reader = new CSVReader(bufRd);
 					String [] rowData; //Note that rowData is roughly equivalent to "parts" in the old code.
 					while ((rowData = reader.readNext()) != null) {
@@ -980,7 +982,7 @@ public class PreviewTablePanel extends JPanel {
 				}
 		        else
 				{
-					//Use old code.
+					//Old method... Using naive splitting.
 					String[] parts;
 					while ((line = bufRd.readLine()) != null) {
 						if (((commentChar != null) && line.startsWith(commentChar))
