@@ -104,7 +104,7 @@ public class NetworkMergeTask extends AbstractTask {
 
 		// Create new network (merged network)
 		taskMonitor.setStatusMessage("Creating new merged network...");
-		final CyNetwork newNetwork = cnf.createNetwork();
+		CyNetwork newNetwork = cnf.createNetwork();
 		newNetwork.getRow(newNetwork).set(CyNetwork.NAME, networkName);
 
 		// Register merged network
@@ -123,9 +123,19 @@ public class NetworkMergeTask extends AbstractTask {
 
 		taskMonitor.setStatusMessage("Processing conflicts...");
 		// Perform conflict handling if necessary
-		if (!conflictCollector.isEmpty()) {
+		if (!conflictCollector.isEmpty() && !cancelled) {
 			HandleConflictsTask hcTask = new HandleConflictsTask(conflictCollector);
 			insertTasksAfterCurrentTask(hcTask);
+		}
+
+		// Cancellation check...
+		if(cancelled) {
+			taskMonitor.setStatusMessage("Network merge canceled.");
+			taskMonitor.setProgress(1.0d);
+			networkManager.destroyNetwork(newNetwork);
+			newNetwork = null;
+			this.networkMerge = null;
+			return;
 		}
 
 		// Create view
