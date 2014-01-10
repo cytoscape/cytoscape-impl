@@ -1,6 +1,5 @@
 #Linkout Property File
-#08/08/2012 Links updated by Keiichiro Ono (kono@ucsd.edu)
-
+#01/09/2014 Links updated by Keiichiro Ono (kono@ucsd.edu)
 
 ################# Node Links ################
 
@@ -14,8 +13,8 @@ nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.human=http://www.ens
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.fly=http://www.ensembl.org/Drosophila_melanogaster/geneview?gene=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.mouse=http://www.ensembl.org/Mus_musculus/geneview?gene=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.worm=http://www.ensembl.org/Caenorhabditis_elegans/geneview?gene=%ID%
-nodelinkouturl.Sequences\ and\ Proteins.UniProt=http://beta.uniprot.org/uniprot/%ID%
-nodelinkouturl.Sequences\ and\ Proteins.Entrez Protein=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=Protein&term\=%ID%&doptcmdl\=GenPept
+nodelinkouturl.Sequences\ and\ Proteins.UniProt=http://www.uniprot.org/uniprot/%ID%
+nodelinkouturl.Sequences\ and\ Proteins.Entrez\ Protein=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=Protein&term\=%ID%&doptcmdl\=GenPept
 
 nodelinkouturl.Publications.Pubmed=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=PubMed&term\=%ID%&doptcmdl\=Abstract
 nodelinkouturl.Publications.OMIM=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=omim&term\=%ID%&doptcmdl\=Synopsis
