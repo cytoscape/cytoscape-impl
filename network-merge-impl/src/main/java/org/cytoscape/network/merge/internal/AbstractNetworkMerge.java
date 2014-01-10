@@ -51,7 +51,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	protected final TaskMonitor taskMonitor;
 	
 	// For canceling task
-	private boolean interrupted;
+	private volatile boolean interrupted;
 
 	public AbstractNetworkMerge(final TaskMonitor taskMonitor) {
 		this.taskMonitor = taskMonitor;
@@ -155,21 +155,26 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CyNetwork mergeNetwork(final CyNetwork toNetwork, final List<CyNetwork> fromNetworks, final Operation op) {
-		if (toNetwork == null || fromNetworks == null || op == null) {
+	public CyNetwork mergeNetwork(final CyNetwork mergedNetwork, final List<CyNetwork> fromNetworks, final Operation op) {
+		// Null checks for required fields...
+		if (mergedNetwork == null || fromNetworks == null || op == null) {
 			throw new NullPointerException("Required parameter is missing.");
 		}
-
 		if (fromNetworks.isEmpty()) {
-			throw new IllegalArgumentException("No merging network");
+			throw new IllegalArgumentException("No source networks!");
 		}
 
-		proprocess(toNetwork);
+		proprocess(mergedNetwork);
 
 		// get node matching list
-		Set<Set<CyNode>> matchedNodes = new HashSet<Set<CyNode>>();
-		
+		final Set<Set<CyNode>> matchedNodes = new HashSet<Set<CyNode>>();
 		List<Map<CyNetwork, Set<CyNode>>> matchedNodeList = getMatchedList(fromNetworks, true, matchedNodes);
+		
+		// Check cancel status
+		if(interrupted) {
+			return null;
+		}
+		
 		matchedNodeList = selectMatchedGOList(matchedNodeList, op, fromNetworks);
 		final Map<CyNode, CyNode> mapNN = new HashMap<CyNode, CyNode>();
 
@@ -186,8 +191,8 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 			if (mapNetNode == null || mapNetNode.isEmpty())
 				continue;
 
-			CyNode node = toNetwork.addNode();
-			mergeNode(mapNetNode, node, toNetwork);
+			CyNode node = mergedNetwork.addNode();
+			mergeNode(mapNetNode, node, mergedNetwork);
 
 			final Iterator<Set<CyNode>> itNodes = mapNetNode.values().iterator();
 			while (itNodes.hasNext()) {
@@ -203,6 +208,11 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 		// match edges
 		taskMonitor.setStatusMessage("Merging edges...");
 		List<Map<CyNetwork, Set<CyEdge>>> matchedEdgeList = getMatchedList(fromNetworks, false, matchedNodes);
+
+		// Check cancel status
+		if(interrupted) {
+			return null;
+		}
 		matchedEdgeList = selectMatchedGOList(matchedEdgeList, op, fromNetworks);
 
 		// merge edges
@@ -241,20 +251,20 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 					String name = findName(fromNetworks, originalSource);
 					source = differenceNodeMap.get(name);
 					if(source == null) {
-						source = toNetwork.addNode();
+						source = mergedNetwork.addNode();
 						differenceNodeMap.put(name, source);
 					}
-					toNetwork.getRow(source).set(CyNetwork.NAME, name);
+					mergedNetwork.getRow(source).set(CyNetwork.NAME, name);
 				}
 				if(target == null) {
 					CyNode originalTarget = originalEdge.getTarget();
 					String name = findName(fromNetworks, originalTarget);
 					target = differenceNodeMap.get(name);
 					if(target == null) {
-						target = toNetwork.addNode();
+						target = mergedNetwork.addNode();
 						differenceNodeMap.put(name, target);
 					}
-					toNetwork.getRow(target).set(CyNetwork.NAME, name);
+					mergedNetwork.getRow(target).set(CyNetwork.NAME, name);
 				}
 			} else if (source == null || target == null) { // some of the node may be
 													// exluded when intersection
@@ -264,11 +274,11 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 
 			final boolean directed = originalEdge.isDirected();
 
-			CyEdge edge = toNetwork.addEdge(source, target, directed);
-			mergeEdge(mapNetEdge, edge, toNetwork);
+			CyEdge edge = mergedNetwork.addEdge(source, target, directed);
+			mergeEdge(mapNetEdge, edge, mergedNetwork);
 		}
 
-		return toNetwork;
+		return mergedNetwork;
 	}
 	
 	private final String findName(Collection<CyNetwork> fromNetworks, CyNode originalNode) {
