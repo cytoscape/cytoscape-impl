@@ -26,7 +26,7 @@ public class TaskHistoryWindow {
     pane.setContentType("text/html");
     final HTMLEditorKit htmlEditorKit = (HTMLEditorKit) pane.getEditorKit();
     final StyleSheet styleSheet = htmlEditorKit.getStyleSheet();
-    styleSheet.addRule("ul { list-style-type: none; }");
+    styleSheet.addRule("ul {list-style-type: none;}");
 
     final JScrollPane scrollPane = new JScrollPane(pane);
 
@@ -57,7 +57,7 @@ public class TaskHistoryWindow {
 
     for (final TaskHistory.History history : histories) {
       buffer.append("<p>");
-      buffer.append("<h1>&nbsp;");
+      buffer.append("<h1 style=\"margin-top: 0px; margin-bottom: 0px;\">&nbsp;");
       buffer.append("<img src=\"");
       switch (history.getCompletionStatus()) {
         case TaskHistory.TASK_SUCCESS:    buffer.append(TaskDialog.ICON_URLS.get("finished").toString()); break;
@@ -68,11 +68,11 @@ public class TaskHistoryWindow {
       buffer.append(safeString(history.getTitle(), "<i>Untitled</i>"));
       buffer.append("</h1>");
 
-      buffer.append("<ul type=\"none\">");
+      buffer.append("<ul type=\"none\" style=\"margin-top: 0px; margin-bottom: 0px;\">");
       for (final TaskHistory.Message message : history) {
-        buffer.append("<li>");
         final TaskMonitor.Level level = message.level();
         if (level != null) {
+        	buffer.append("<li style=\"margin-top: 5px;\">");
           buffer.append("<img src=\"");
           switch(level) {
             case INFO: buffer.append(TaskDialog.ICONS.get("info").toString()); break;
@@ -81,6 +81,7 @@ public class TaskHistoryWindow {
           }
           buffer.append("\">&nbsp;");
         } else {
+        	buffer.append("<li style=\"margin-top: 10px;\">");
           buffer.append("<b>");
         }
         buffer.append(message.message());
