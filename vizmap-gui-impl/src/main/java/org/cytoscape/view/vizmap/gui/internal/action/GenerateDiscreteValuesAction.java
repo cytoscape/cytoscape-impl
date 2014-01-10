@@ -152,6 +152,10 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 		setEnabled(enabled);
 	}
 	
+	public DiscreteMappingGenerator<?> getGenerator() {
+		return generator;
+	}
+	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })

@@ -21,17 +21,23 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -142,7 +148,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
 	private final ThemeManager themeMgr;
 	
-	private final Map<DiscreteMappingGenerator<?>, JMenuItem> mappingGenerators;
+	private final Map<String, GenerateDiscreteValuesAction> mappingGenerators;
 	private final Map<TaskFactory, JMenuItem> taskFactories;
 	
 	/** IDs of property sheet items that were set visible/invisible by the user */
@@ -174,7 +180,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
 		this.themeMgr = themeMgr;
 		
-		mappingGenerators = new HashMap<DiscreteMappingGenerator<?>, JMenuItem>();
+		final Collator collator = Collator.getInstance(Locale.getDefault());
+		mappingGenerators = new TreeMap<String, GenerateDiscreteValuesAction>(new Comparator<String>() {
+			@Override
+			public int compare(final String s1, final String s2) {
+				return collator.compare(s1, s2);
+			}
+		});
+		
 		taskFactories = new HashMap<TaskFactory, JMenuItem>();
 		userProps = new HashMap<String, Boolean>();
 		defVisibleProps = new HashMap<Class<? extends CyIdentifiable>, Set<String>>();
@@ -527,19 +540,23 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				servicesUtil);
 		vizMapperMainPanel.getContextMenu().addPopupMenuListener(action);
 		
-		final JMenuItem menuItem = new JMenuItem(action);
-		vizMapperMainPanel.getMapValueGeneratorsSubMenu().add(menuItem);
-		mappingGenerators.put(generator, menuItem);
+		// Concatenate the data type with the title when setting the map key, so the generators
+		// can be sorted first by data type and then by title.
+		mappingGenerators.put(generator.getDataType().getSimpleName() + "::" + title.toString(), action);
 	}
 
 	public void onMappingGeneratorUnregistered(final DiscreteMappingGenerator<?> generator, final Map<?, ?> properties) {
-		final JMenuItem menuItem = mappingGenerators.remove(generator);
+		final Iterator<Entry<String, GenerateDiscreteValuesAction>> iter = mappingGenerators.entrySet().iterator();
 		
-		if (menuItem != null) {
-			vizMapperMainPanel.getMapValueGeneratorsSubMenu().remove(menuItem);
+		while (iter.hasNext()) {
+			final Entry<String, GenerateDiscreteValuesAction> entry = iter.next();
+			final GenerateDiscreteValuesAction action = entry.getValue();
 			
-			if (menuItem.getAction() instanceof PopupMenuListener)
-				vizMapperMainPanel.getContextMenu().removePopupMenuListener((PopupMenuListener)menuItem.getAction());
+			if (action.getGenerator().equals(generator)) {
+				vizMapperMainPanel.getContextMenu().removePopupMenuListener(action);
+				iter.remove();
+				break;
+			}
 		}
 	}
 	
@@ -1395,6 +1412,20 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					final JMenu mapValueGeneratorsMenu = vizMapperMainPanel.getMapValueGeneratorsSubMenu();
 					final Class<? extends CyIdentifiable> targetDataType = vpSheet.getModel().getTargetDataType();
 					mapValueGeneratorsMenu.setVisible(targetDataType != CyNetwork.class);
+					
+					if (mapValueGeneratorsMenu.isVisible()) {
+						// Add all mapping generators again, to keep a consistent order
+						mapValueGeneratorsMenu.removeAll();
+						Class<?> dataType = null; // will store the previous generator's data type
+						
+						for (final Entry<String, GenerateDiscreteValuesAction> entry : mappingGenerators.entrySet()) {
+							if (dataType != null && dataType != entry.getValue().getGenerator().getDataType())
+								mapValueGeneratorsMenu.add(new JSeparator());
+							
+							mapValueGeneratorsMenu.add(entry.getValue());
+							dataType = entry.getValue().getGenerator().getDataType();
+						}
+					}
 					
 					// Show context menu
 					final Component parent = (Component) e.getSource();
