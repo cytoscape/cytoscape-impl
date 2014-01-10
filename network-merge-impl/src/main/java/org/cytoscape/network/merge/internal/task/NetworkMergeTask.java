@@ -63,6 +63,8 @@ public class NetworkMergeTask extends AbstractTask {
 	private final CyNetworkFactory cnf;
 	private final CyNetworkManager networkManager;
 	private final String networkName;
+	
+	private AttributeBasedNetworkMerge networkMerge;
 
 	/**
 	 * Constructor.<br>
@@ -90,17 +92,21 @@ public class NetworkMergeTask extends AbstractTask {
 	@Override
 	public void cancel() {
 		cancelled = true;
+		if(networkMerge != null)
+			this.networkMerge.interrupt();
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		
+
 		taskMonitor.setProgress(0.0d);
 		taskMonitor.setTitle("Merging Networks");
+
 		// Create new network (merged network)
 		taskMonitor.setStatusMessage("Creating new merged network...");
 		final CyNetwork newNetwork = cnf.createNetwork();
 		newNetwork.getRow(newNetwork).set(CyNetwork.NAME, networkName);
+
 		// Register merged network
 		networkManager.addNetwork(newNetwork);
 		
@@ -108,7 +114,7 @@ public class NetworkMergeTask extends AbstractTask {
 		final AttributeValueMatcher attributeValueMatcher = new DefaultAttributeValueMatcher();
 		final AttributeMerger attributeMerger = new DefaultAttributeMerger(conflictCollector);
 
-		final AttributeBasedNetworkMerge networkMerge = new AttributeBasedNetworkMerge(matchingAttribute, nodeAttributeMapping, edgeAttributeMapping,
+		this.networkMerge = new AttributeBasedNetworkMerge(matchingAttribute, nodeAttributeMapping, edgeAttributeMapping,
 				attributeMerger, attributeValueMatcher, taskMonitor);
 		networkMerge.setWithinNetworkMerge(inNetworkMerge);
 		
