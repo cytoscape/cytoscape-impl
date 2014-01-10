@@ -130,17 +130,12 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 		if (!extensions.hasNext())
 			return file;
 
-		final String extension = extensions.next();
-		final String pathWithoutExtension = stripExtension(file.getAbsolutePath());
-
-		return new File(pathWithoutExtension + "." + extension);
+		final String filterExtension = extensions.next();
+		String fileName = file.getAbsolutePath();
+		final String fileExtension = FilenameUtils.getExtension(fileName);
+		if( !filterExtension.trim().equals(fileExtension.trim()) )
+			fileName += "." + filterExtension;
+		return new File(fileName);
 	}
 
-	private static String stripExtension(final String fileName) {
-		final String extension = FilenameUtils.getExtension(fileName);
-		if (extension.isEmpty())
-			return fileName;
-
-		return fileName.substring(0, fileName.length() - 1 - extension.length());
-	}
 }
