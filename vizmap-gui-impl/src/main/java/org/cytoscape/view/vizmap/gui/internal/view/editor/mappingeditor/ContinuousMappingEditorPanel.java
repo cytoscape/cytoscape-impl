@@ -727,14 +727,18 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		@Override
 		public void stateChanged(ChangeEvent e) {
 			final Number newVal = spinnerModel.getNumber();
-			if(lastSpinnerNumber == null || newVal.equals(lastSpinnerNumber)) {
+			if( lastSpinnerNumber == null )
+			{
 				lastSpinnerNumber = newVal.doubleValue();
+			}
+			else if ( newVal.equals(lastSpinnerNumber) )
+			{
 				return;
 			}
 		
 			int selectedIndex = slider.getSelectedIndex();
 
-			if ((0 <= selectedIndex) && (slider.getModel().getThumbCount() > 1)) {
+			if ((0 <= selectedIndex) && (slider.getModel().getThumbCount() >= 1)) {
 				if ((newVal.doubleValue() < tracer.getMin(type)) || (newVal.doubleValue() > tracer.getMax(type))) {
 					if ((lastSpinnerNumber > tracer.getMin(type)) && (lastSpinnerNumber < tracer.getMax(type))) {
 						spinnerModel.setValue(lastSpinnerNumber);
