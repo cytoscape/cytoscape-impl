@@ -316,6 +316,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
 			taskMonitor.setTask(task);
+			history.setFirstTaskClass(task.getClass());
 			task.run(taskMonitor);
 			handleObserver(task);
 
