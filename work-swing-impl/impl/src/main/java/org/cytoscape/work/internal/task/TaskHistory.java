@@ -36,6 +36,7 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
 
   public static class History implements Iterable<Message> {
     volatile byte completionStatus = -1;
+    volatile Class<?> firstTaskClass;
     final AtomicReference<String> title = new AtomicReference<String>();
     final ConcurrentLinkedQueue<Message> messages = new ConcurrentLinkedQueue<Message>();
     final AtomicIntegerArray numberOfMessagesByLevel = new AtomicIntegerArray(levels.length);
@@ -78,6 +79,14 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
 
     public int numberOfMessagesWithLevel(final TaskMonitor.Level level) {
       return numberOfMessagesByLevel.get(level.ordinal());
+    }
+
+    public void setFirstTaskClass(final Class<?> klass) {
+      this.firstTaskClass = klass;
+    }
+
+    public Class<?> getFirstTaskClass() {
+      return firstTaskClass;
     }
   }
 

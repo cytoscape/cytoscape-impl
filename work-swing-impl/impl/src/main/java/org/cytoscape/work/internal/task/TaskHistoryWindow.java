@@ -44,13 +44,6 @@ public class TaskHistoryWindow {
     dialog.dispose();
   }
 
-  static String safeString(final String str, final String alternative) {
-    if (str == null || str.length() == 0)
-      return alternative;
-    else
-      return str;
-  }
-
   private void populate(final TaskHistory histories) {
     final StringBuffer buffer = new StringBuffer();
     buffer.append("<html>");
@@ -65,10 +58,21 @@ public class TaskHistoryWindow {
         case TaskHistory.TASK_CANCELLED:  buffer.append(TaskDialog.ICON_URLS.get("cancelled").toString()); break;
       }
       buffer.append("\">&nbsp;");
-      buffer.append(safeString(history.getTitle(), "<i>Untitled</i>"));
+      final String title = history.getTitle();
+      if (title == null || title.length() == 0) {
+        buffer.append("<i>Untitled</i>");
+        final Class<?> klass = history.getFirstTaskClass();
+        if (klass != null) {
+          buffer.append(" <font size=\"-1\">(");
+          buffer.append(klass.getName());
+          buffer.append(")</font>");
+        }
+      } else {
+        buffer.append(title);
+      }
       buffer.append("</h1>");
 
-      buffer.append("<ul type=\"none\" style=\"margin-top: 0px; margin-bottom: 0px;\">");
+      buffer.append("<ul style=\"margin-top: 0px; margin-bottom: 0px;\">");
       for (final TaskHistory.Message message : history) {
         final TaskMonitor.Level level = message.level();
         if (level != null) {
