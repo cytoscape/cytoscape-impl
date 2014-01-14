@@ -65,7 +65,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	private Exception exception;
 	private int expectedNumTasks = 1;
 	private int currentTaskNum = -1; // so that the first task is numbered 0
-	private boolean showDialog = true;
+	private volatile boolean showDialog = true;
 
 	/**
 	 * Based on the expected number of tasks, this is the fraction of the overall
@@ -154,6 +154,14 @@ class SwingTaskMonitor implements TaskMonitor {
 	 * issues.
 	 */
 	public void showDialog(final boolean sd) {
+		if(dialog == null) {
+			return;
+		}
+		
+		if(dialog != null && dialog.isVisible() == sd) {
+			// No need to update the dialog's visibility.
+			return;
+		}
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -161,11 +169,11 @@ class SwingTaskMonitor implements TaskMonitor {
 					showDialog(sd);
 				}
 			});
-			return;
-		}
-		showDialog = sd;
-		if ( dialog != null ) {
-			dialog.setVisible(showDialog);
+		} else {
+			showDialog = sd;
+			if ( dialog != null ) {
+				dialog.setVisible(showDialog);
+			}
 		}
 	}
 

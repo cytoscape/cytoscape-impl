@@ -447,10 +447,10 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 
 		taskManager.execute(new TaskIterator(networkTask), this);
 
-		final Window parentWindow = ((Window) getRootPane().getParent());
-		parentWindow.pack();
-		repaint();
-		parentWindow.toFront();
+//		final Window parentWindow = ((Window) getRootPane().getParent());
+//		parentWindow.pack();
+//		repaint();
+//		parentWindow.toFront();
 	}
 
 	private void cancelButtonActionPerformed(ActionEvent evt) {
