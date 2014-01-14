@@ -687,7 +687,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public void setText(String text) {
-		//synchronized (graphView.m_lock) {
+		synchronized (graphView.m_lock) {
 			graphView.m_nodeDetails.overrideLabelText(model, 0, text);
 
 			if (DEFAULT_LABEL_TEXT.equals(graphView.m_nodeDetails.getLabelText(model, 0)))
@@ -696,7 +696,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				graphView.m_nodeDetails.overrideLabelCount(model, 1);
 
 			graphView.m_contentChanged = true;
-		//}
+		}
 	}
 
 	/**
