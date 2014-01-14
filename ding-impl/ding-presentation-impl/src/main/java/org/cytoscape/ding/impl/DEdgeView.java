@@ -306,7 +306,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	@Override
 	public void setToolTip(String tip) {
-		graphView.m_edgeDetails.m_edgeTooltips.put(model, tip);
+		synchronized (graphView.m_lock) {
+			graphView.m_edgeDetails.m_edgeTooltips.put(model, tip);
+		}
 	}
 
 
