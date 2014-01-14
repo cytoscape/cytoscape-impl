@@ -154,10 +154,14 @@ class SwingTaskMonitor implements TaskMonitor {
 	 * issues.
 	 */
 	public void showDialog(final boolean sd) {
-		if(sd == showDialog) {
+		if(dialog == null) {
 			return;
 		}
 		
+		if(dialog != null && dialog.isVisible() == sd) {
+			// No need to update the dialog's visibility.
+			return;
+		}
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -165,14 +169,11 @@ class SwingTaskMonitor implements TaskMonitor {
 					showDialog(sd);
 				}
 			});
-			return;
-		}
-	
-		synchronized (this) {
+		} else {
 			showDialog = sd;
-		}
-		if (dialog != null && dialog.isVisible() != showDialog) {
-			dialog.setVisible(showDialog);
+			if ( dialog != null ) {
+				dialog.setVisible(showDialog);
+			}
 		}
 	}
 
