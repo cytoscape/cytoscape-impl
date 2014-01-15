@@ -28,7 +28,6 @@ package org.cytoscape.work.internal.task;
 import javax.swing.JPanel;
 
 import org.cytoscape.work.AbstractTaskManager;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;

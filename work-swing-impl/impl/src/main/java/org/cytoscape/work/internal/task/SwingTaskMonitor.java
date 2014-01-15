@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class SwingTaskMonitor implements TaskMonitor {
+
 	private static final String LOG_PREFIX = "TaskMonitor";
 	
 	/**
@@ -61,10 +62,11 @@ class SwingTaskMonitor implements TaskMonitor {
 	private String title;
 	private TaskMonitor.Level statusMessageLevel;
 	private String statusMessage;
-	private double progress;
+	private volatile double progress;
 	private Exception exception;
 	private int expectedNumTasks = 1;
 	private int currentTaskNum = -1; // so that the first task is numbered 0
+
 	private volatile boolean showDialog = true;
 
 	/**
@@ -226,6 +228,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			});
 			return;
 		}
+
 		if (this.firstTitle == null) {
 			this.firstTitle = title;
 		}

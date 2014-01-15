@@ -24,10 +24,11 @@ package org.cytoscape.work.internal;
  * #L%
  */
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -40,9 +41,9 @@ import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
-import org.cytoscape.work.internal.task.TaskStatusBar;
 import org.cytoscape.work.internal.task.TaskHistory;
 import org.cytoscape.work.internal.task.TaskHistoryWindow;
+import org.cytoscape.work.internal.task.TaskStatusBar;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
 import org.cytoscape.work.internal.tunables.DoubleHandler;
@@ -71,7 +72,6 @@ import org.cytoscape.work.util.BoundedLong;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.osgi.framework.BundleContext;
-import org.cytoscape.application.swing.CySwingApplication;
 
 
 
@@ -91,18 +91,23 @@ public class CyActivator extends AbstractCyActivator {
 		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
 
-
 		TaskStatusBar taskStatusBar = new TaskStatusBar();
 		final TaskHistory taskHistory = new TaskHistory();
 		taskStatusBar.addPropertyChangeListener(TaskStatusBar.TASK_HISTORY_CLICK, new PropertyChangeListener() {
 			TaskHistoryWindow window = null;
 			public void propertyChange(PropertyChangeEvent e) {
-				if (window != null) {
-					window.close();
-				}
-				window = new TaskHistoryWindow(taskHistory);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (window != null) {
+							window.close();
+						}
+						window = new TaskHistoryWindow(taskHistory);
+					}
+				});
 			}
 		});
+
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 
@@ -142,14 +147,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(bc,jDialogTaskManager,DialogTaskManager.class, new Properties());
 		registerService(bc,jDialogTaskManager,TaskManager.class, new Properties());
-		//registerServiceListener(bc, jDialogTaskManager, "setCySwingApp", "removeCySwingApp", CySwingApplication.class);
-		//registerService(bc,dialogTaskManager,DialogTaskManager.class, new Properties());
-		//registerService(bc,dialogTaskManager,TaskManager.class, new Properties());
 		registerService(bc,taskStatusBar,TaskStatusPanelFactory.class, new Properties());
-		//registerServiceListener(bc, dialogTaskManager, "setCySwingApp", "removeCySwingApp", CySwingApplication.class);
 
 		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
-		
 
 		registerService(bc,integerHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,floatHandlerFactory,GUITunableHandlerFactory.class, new Properties());
@@ -170,10 +170,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,supportedFileTypesManager,"addCyWriterTaskFactory","removeCyWriterTaskFactory",CyWriterFactory.class);
 
 		registerServiceListener(bc,jDialogTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
-		//registerServiceListener(bc,dialogTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
 
 		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
-
 	}
 }

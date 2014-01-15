@@ -1,8 +1,17 @@
 package org.cytoscape.work.internal.task;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
 
@@ -10,9 +19,10 @@ import org.cytoscape.work.swing.TaskStatusPanelFactory;
  * Manages the task's status bar's UI at the bottom of the Cytoscape desktop.
  */
 public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
+
 	public static final String TASK_HISTORY_CLICK = "task-history-click";
 
-	static final int CLEAR_DELAY_MS = 5000;
+	private static final int CLEAR_DELAY_MS = 5000;
 
 	final JLabel titleLabel = new JLabel();
 	final Timer clearingTimer;
@@ -68,9 +78,14 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 		clearingTimer.restart();
 	}
 	
-	public void resetStatusBar() {
-		titleLabel.setIcon(null);
-		titleLabel.setText("");
+	private void resetStatusBar() {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				titleLabel.setIcon(null);
+				titleLabel.setText("");
+			}
+		});;
 	}
 
 	public JPanel createTaskStatusPanel() {
