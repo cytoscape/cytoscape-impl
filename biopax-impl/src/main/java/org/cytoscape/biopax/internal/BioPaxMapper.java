@@ -524,25 +524,61 @@ public class BioPaxMapper {
 	}
 
 	
-    private static void createExtraXrefAttributes(BioPAXElement resource, CyNetwork network, CyNode node) {		
-		// ihop links
+    private static void createExtraXrefAttributes(BioPAXElement resource, CyNetwork network, CyNode node) {
+		
+		// try getting the primary UniProt ID from the URI
+    	// to create UNIPROT attribute
+    	// (does not work well with generic PRs though)
+    	if(resource instanceof PhysicalEntity || 
+    			resource instanceof EntityReference) 
+    	{
+    		String u = resource.getRDFId(); 
+    		if(resource instanceof SimplePhysicalEntity && 
+    			((SimplePhysicalEntity) resource).getEntityReference() != null)
+    			u = ((SimplePhysicalEntity) resource).getEntityReference().getRDFId();
+			
+    		if(u.startsWith("http://identifiers.org/uniprot")) { 
+				// /uniprot.isoform/ works here as well
+				String id = u.substring(u.lastIndexOf('/')+1);
+				AttributeUtil.set(network, node, "UNIPROT", id, String.class);
+			}
+    	}
+     	
+    	//add special simple (String) uniprot, ncbi gene, gene symbol attributes
+    	// (do not create those for generic ER/PE, - impossible to define a "primary" ID)
+		for (Xref link : getXRefs(resource, Xref.class, false)) {
+			if(link.getDb() == null || link.getDb().isEmpty()
+					|| link.getId() == null || link.getId().isEmpty())
+				continue; // too bad (data issue...); skip it			
+			// try to detect and add several important ID attributes first
+			// (it works better, if at all, when the biopax model was normalized)
+			//chances are, if data were normalized, we get some more primary accession IDs:
+			createSpecialXrefAttribute(resource, network, node, link);
+		}
+    	
+    	// ihop links
 		String stringRef = ihopLinks(resource);
 		if (stringRef != null) {
 			AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_IHOP_LINKS, stringRef, String.class);
 		}
 
+		//these collections, one per xref class, are to store standard IDs only (no db name)
 		List<String> uniXrefList = new ArrayList<String>();
 		List<String> relXrefList = new ArrayList<String>();
 		List<String> pubXrefList = new ArrayList<String>();
+		//next are for (hidden) list attributes that contain more info about the xref
 		List<String> uniLinkList = new ArrayList<String>();
 		List<String> relLinkList = new ArrayList<String>();
 		List<String> pubLinkList = new ArrayList<String>();
-		// add xref ids per database and per xref class
-		List<Xref> xList = getXRefs(resource, Xref.class);
-		for (Xref link : xList) {
-			if(link.getDb() == null)
+		
+		// create several ID-list attributes from xrefs 
+		// (including from members of/if it's a generic ER/PE)
+		for (Xref link : getXRefs(resource, Xref.class, true)) {
+			if(link.getDb() == null || link.getDb().isEmpty()
+					|| link.getId() == null || link.getId().isEmpty())
 				continue; // too bad (data issue...); skip it
 			
+			// then, for any xref, collect IDs
 			StringBuffer temp = new StringBuffer();			
 			temp.append(ExternalLinkUtil.createLink(link.getDb(), link.getId()));
 			
@@ -581,6 +617,43 @@ public class BioPaxMapper {
 		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_UNIFICATION_REFERENCES, uniLinkList, String.class);
 		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_RELATIONSHIP_REFERENCES, relLinkList, String.class);
 		AttributeUtil.set(network, node, CyNetwork.HIDDEN_ATTRS, BIOPAX_PUBLICATION_REFERENCES, pubLinkList, String.class);	
+	}
+
+    
+    /*
+	 * Create special individual String (not List) attributes from specific xref IDs, 
+	 * HGNC Symbol and NCBI Gene; for others, though, including UniProt, unfortunately, 
+	 * it's usually hard to find the "primary" ID among others, 
+	 * without using external databases (it works better, if at all, 
+	 * when the biopax model was normalized). But let's at least have one
+	 * UniProt ID (by chance, if ther're many, unless it's already added).
+     */
+	private static void createSpecialXrefAttribute(BioPAXElement resource, CyNetwork network, CyNode node, Xref link) {
+		final String db = link.getDb().toUpperCase().trim();
+		final String id = link.getId().trim();
+		if(db.equalsIgnoreCase("HGNC SYMBOL") //- official primary db name
+				|| db.startsWith("HGNC") || db.startsWith("HUGO GENE")
+				|| db.startsWith("GENE SYMBOL") || db.startsWith("GENE NAME")) {
+			String exists = network.getRow(node).get("GENE SYMBOL", String.class);
+			//won't replace any existing value (added first)
+			if (exists == null && !id.startsWith("HGNC:")) //ignore HGNC:12345 IDs
+				AttributeUtil.set(network, node, "GENE SYMBOL", id, String.class);
+			
+		} else if(db.equalsIgnoreCase("NCBI GENE") //main (official) db name
+				|| db.equalsIgnoreCase("ENTREZ GENE") || db.equalsIgnoreCase("GENE ID")) {
+			String exists = network.getRow(node).get("NCBI GENE", String.class);
+			//won't replace any existing value (added first)
+			if (exists == null)
+				AttributeUtil.set(network, node, "NCBI GENE", id, String.class);
+			
+		} else if(db.startsWith("UNIPROT") 
+				|| db.startsWith("SWISSPROT") || db.startsWith("SWISS-PROT")) {
+			String exists = network.getRow(node).get("UNIPROT", String.class);
+			//won't replace if found
+			if (exists == null)
+				AttributeUtil.set(network, node, "UNIPROT", id, String.class);
+			
+		}
 	}
 
 
@@ -669,8 +742,7 @@ public class BioPaxMapper {
 		AttributeUtil.set(network, node, BIOPAX_URI, element.getRDFId(), String.class);
 		AttributeUtil.set(network, node, BIOPAX_ENTITY_TYPE, element.getModelInterface().getSimpleName(), String.class);	
 		
-		// add a piece of the BioPAX (RDF/XML without parent|child elements)
-		
+		// add a piece of the BioPAX (RDF/XML without parent|child elements)	
 		
 //		//the following attr. was experimental, not so important for users...
 //		if(network.getNodeCount() < 100) { //- this condition was added for performance/memory...
@@ -752,7 +824,7 @@ public class BioPaxMapper {
 				author = px.getAuthor().toString();
 				title = px.getTitle();
 				source = px.getSource().toString();
-				url =px.getUrl().toString();
+				url = px.getUrl().toString();
 				year = px.getYear() + "";
 			}
 
@@ -954,16 +1026,28 @@ public class BioPaxMapper {
 	}
 	
 	
-	public static <T extends Xref> List<T> getXRefs(BioPAXElement bpe, Class<T> xrefClass) {
+	private static <T extends Xref> List<T> getXRefs(BioPAXElement bpe, Class<T> xrefClass, 
+			boolean withMembersIfGeneric) {
 		if(bpe instanceof XReferrable) {
 			List<T> erefs = new ArrayList<T>();
 			erefs.addAll(new ClassFilterSet<Xref,T>( ((XReferrable)bpe).getXref(), xrefClass) );
 			if(bpe instanceof SimplePhysicalEntity && 
 				((SimplePhysicalEntity)bpe).getEntityReference() != null)
 			{
-				erefs.addAll(new ClassFilterSet<Xref,T>(
-					((SimplePhysicalEntity)bpe).getEntityReference().getXref(), xrefClass) );
+				EntityReference entityReference = ((SimplePhysicalEntity)bpe).getEntityReference();
+				erefs.addAll(new ClassFilterSet<Xref,T>(entityReference.getXref(), xrefClass) );
+				//add xrefs from all member ERs (though, not going into members' members...)
+				if(withMembersIfGeneric)
+					for(EntityReference memberEntityReference : entityReference.getMemberEntityReference())
+						erefs.addAll(new ClassFilterSet<Xref,T>(memberEntityReference.getXref(), xrefClass) );
+			} else if(bpe instanceof EntityReference) {
+				erefs.addAll(new ClassFilterSet<Xref,T>(((EntityReference)bpe).getXref(), xrefClass) );
+				//add xrefs from all member ERs (though, not going into members' members...)
+				if(withMembersIfGeneric)
+					for(EntityReference memberEntityReference : ((EntityReference)bpe).getMemberEntityReference())
+						erefs.addAll(new ClassFilterSet<Xref,T>(memberEntityReference.getXref(), xrefClass) );
 			}
+			
 			return erefs;
 		}
 		return new ArrayList<T>();
