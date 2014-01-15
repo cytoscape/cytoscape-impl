@@ -29,6 +29,7 @@ package org.cytoscape.tableimport.internal;
 import java.io.InputStream;
 
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.io.CyFileFilter;
@@ -46,8 +47,9 @@ public class ImportNetworkTableReaderFactory extends AbstractNetworkReaderFactor
     }
 
     public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-        int lastIndex = inputName.lastIndexOf('.');
-        String fileFormat = lastIndex == -1 ? "" : inputName.substring(lastIndex);
+        String fileFormat = FilenameUtils.getExtension(inputName);
+        if(!fileFormat.isEmpty()) 
+        	fileFormat = "." + fileFormat; //"." is surprisingly required somewhere withing CombineReaderAndMappingTask
         return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat,
                 inputName));
     }
