@@ -392,4 +392,3 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	}
 
 }
-
