@@ -180,7 +180,7 @@ class TaskDialog extends JDialog {
     } else {
       if (!subtitleLabel.isVisible()) {
         subtitleLabel.setVisible(true);
-        delayedPack();
+        delayedPack(); // component visibilities change -- update dialog size to reflect this
       }
       subtitleLabel.setText(taskTitle);
     }
@@ -189,7 +189,11 @@ class TaskDialog extends JDialog {
   /**
    * Wrap the {@code pack()} invocation in a {@code invokeLater},
    * so that Swing has time to respond to the changing visibility
-   * of components.
+   * of components. When a component's visibility changes, we need
+   * to adjust the dialog size to accomodate the component. But Swing
+   * doesn't immediately recognize the changed component's visibility,
+   * so we have to update the dialog's size via {@code pack()} by wrapping
+   * it in {@code invokeLater}.
    */
   void delayedPack() {
     SwingUtilities.invokeLater(new Runnable() {
@@ -215,7 +219,7 @@ class TaskDialog extends JDialog {
     closeButton.setVisible(true);
     cancelButton.setVisible(false);
     cancelLabel.setVisible(false);
-    delayedPack();
+    delayedPack(); // component visibilities change -- update dialog size to reflect this
   }
 
   public void setStatus(final String icon, final String message) {
@@ -233,6 +237,7 @@ class TaskDialog extends JDialog {
   void cancel() {
     cancelLabel.setVisible(true);
     cancelButton.setVisible(false);
+    // don't need to call pack() here, because the dialog will have enough space
     progressBar.setIndeterminate();
     firePropertyChange(CANCEL_EVENT, null, null);
   }
