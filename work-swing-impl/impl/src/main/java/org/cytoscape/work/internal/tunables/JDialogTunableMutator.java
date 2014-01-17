@@ -105,10 +105,17 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 					+ win.getClass());
 	}
 
+	public JPanel buildConfiguration(Object objectWithTunables) {
+		return super.buildConfiguration(objectWithTunables, parent);
+	}
+
 	/** {@inheritDoc} */
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 		final JPanel panel = buildConfiguration(objectWithTunables, parent);
+		return validateAndWriteBack(panel, objectWithTunables);
+	}
 
+	public boolean validateAndWriteBack(JPanel panel, Object objectWithTunables) {
 		// no tunables found, everything OK for task to proceed
 		if (panel == null) {
 			return true;

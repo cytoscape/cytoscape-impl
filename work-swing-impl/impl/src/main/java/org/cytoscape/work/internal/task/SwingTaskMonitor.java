@@ -111,7 +111,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			});
 			return;
 		}
-		
+
 		synchronized(this) {
 			if (dialog != null)
 				return;
@@ -127,10 +127,10 @@ class SwingTaskMonitor implements TaskMonitor {
 					cancel();
 				}
 			});
-			
+
 			if (title != null)
 				dialog.setTaskTitle(title);
-			
+
 			if (exception == null) {
 				if (statusMessage != null) {
 					if (statusMessageLevel == null) {
@@ -145,7 +145,7 @@ class SwingTaskMonitor implements TaskMonitor {
 				dialog.setException(exception);
 				exception = null;
 			}
-			
+
 			dialog.setVisible(showDialog);
 		}
 	}
@@ -156,10 +156,6 @@ class SwingTaskMonitor implements TaskMonitor {
 	 * issues.
 	 */
 	public void showDialog(final boolean sd) {
-		if(sd == showDialog) {
-			return;
-		}
-		
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -169,12 +165,15 @@ class SwingTaskMonitor implements TaskMonitor {
 			});
 			return;
 		}
-	
-		synchronized (this) {
-			showDialog = sd;
-		}
+
+		showDialog = sd;
 		if (dialog != null && dialog.isVisible() != showDialog) {
-			dialog.setVisible(showDialog);
+			if (showDialog == false) {
+				dialog.dispose();
+			} else {
+				dialog.pack();
+				dialog.setVisible(true);
+			}
 		}
 	}
 
