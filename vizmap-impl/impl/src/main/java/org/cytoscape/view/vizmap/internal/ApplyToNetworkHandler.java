@@ -69,6 +69,15 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
 		networkViewSet.add(netView);
 
+		// Clear visual properties from all views first
+		view.clearVisualProperties();
+		
+		for (final View<?> v : nodeViews)
+			v.clearVisualProperties();
+		
+		for (final View<?> v : edgeViews)
+			v.clearVisualProperties();
+		
 		// TODO: what if there is another Lexicon?
 		final VisualLexicon lex = lexManager.getAllVisualLexicon().iterator().next();
 		

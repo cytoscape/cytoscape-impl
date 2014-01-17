@@ -2609,15 +2609,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 		
 		if (targetType == CyNode.class) {
-			applyToAllNodes(vp, null);
 			m_nodeDetails.clear();
 			nodeViewDefaultSupport.setViewDefault((VisualProperty<V>)vp, defaultValue);
 		} else if (targetType == CyEdge.class) {
-			// Need to special case Edge Bends since they won't
-			// get restored when we set the view defaults.  See Bug #2248
-			if ((VisualProperty<?>)vp != BasicVisualLexicon.EDGE_BEND) {
-				applyToAllEdges(vp, null);
-			}
 			// XXX: Why do we have to clear the edge details?
 			m_edgeDetails.clear();
 			edgeViewDefaultSupport.setViewDefault((VisualProperty<V>)vp, defaultValue);

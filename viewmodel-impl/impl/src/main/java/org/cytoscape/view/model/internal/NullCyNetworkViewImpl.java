@@ -90,6 +90,10 @@ public class NullCyNetworkViewImpl implements NullCyNetworkView {
 	}
 
 	@Override
+	public void clearVisualProperties() {
+	}
+	
+	@Override
 	public CyNetwork getModel() {
 		return model;
 	}
