@@ -814,6 +814,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					
 					if (model.getVisualPropertyDependency() != null)
 						item.update();
+					
+					// Also make sure items with mappings are visible
+					if (model.getVisualMappingFunction() != null)
+						item.setVisible(true);
 				}
 			}
 		}
