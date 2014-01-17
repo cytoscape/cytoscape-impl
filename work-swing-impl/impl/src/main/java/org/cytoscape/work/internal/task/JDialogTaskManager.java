@@ -218,7 +218,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		try {
 			dialogTunableMutator.setConfigurationContext(parent,true);
 
-			if ( tunableContext != null && !displayTunables(tunableContext) ) {
+			if ( tunableContext != null && !displayTunables(tunableContext, taskMonitor) ) {
 				taskMonitor.cancel();
 				return;
 			}
@@ -229,9 +229,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			// We do this outside of the thread so that the task monitor only gets
 			// displayed AFTER the first tunables dialog gets displayed.
 			first = taskIterator.next();
-			if (!displayTunables(first)) {
+			if (!displayTunables(first, taskMonitor)) {
 				taskMonitor.cancel();
-                if (observer != null) observer.allFinished(FinishStatus.newCancelled(first));
+				if (observer != null) observer.allFinished(FinishStatus.newCancelled(first));
 				return;
 			}
 
@@ -330,16 +330,10 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				task = taskIterator.next();
 				taskMonitor.setTask(task);
 
-				// hide the modal task dialog to prevent
-				// the tunable dialog from being locked
-				taskMonitor.showDialog(false);
-
-				if (!displayTunables(task)) {
+				if (!displayTunables(task, taskMonitor)) {
 					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 					return;
 				}
-
-				taskMonitor.showDialog(true);
 
 				task.run(taskMonitor);
 				handleObserver(task);
@@ -378,16 +372,23 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		}
 	}
 
-	private boolean displayTunables(final Object task) throws Exception {
+	private boolean displayTunables(final Object task, final SwingTaskMonitor taskMonitor) throws Exception {
 		if (task == null) {
 			return true;
 		}
+		boolean ret = true;
 		
-		boolean ret = dialogTunableMutator.validateAndWriteBack(task);
+		if (dialogTunableMutator.hasTunables(task, "gui")) {
+			taskMonitor.showDialog(false);
 
-		for ( TunableRecorder ti : tunableRecorders ) 
-			ti.recordTunableState(task);
+			ret = dialogTunableMutator.validateAndWriteBack(task);
 
+			for ( TunableRecorder ti : tunableRecorders ) 
+				ti.recordTunableState(task);
+
+			taskMonitor.showDialog(true);
+		}
+	
 		return ret;
 	}
 

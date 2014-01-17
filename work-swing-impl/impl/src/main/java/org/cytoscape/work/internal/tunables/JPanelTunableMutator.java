@@ -117,6 +117,12 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		return super.hasTunables(o);
 	}
 
+	public boolean hasTunables(final Object o, String context) {
+		List<GUITunableHandler> handlers = 
+			getApplicableHandlers(o, context);
+		return (handlers.size() > 0);
+	}
+
 	/** {@inheritDoc} */
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 
@@ -147,18 +153,8 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		else
 			++otherCount;
 
-		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
-
-		if (handlers != null ) {
-			// Remove any tunables that aren't appropriate for a GUI context
-			ListIterator<GUITunableHandler> li = handlers.listIterator();
-			while (li.hasNext()) {
-				GUITunableHandler gh = li.next();
-				String context = gh.getParams().get(AbstractTunableHandler.CONTEXT).toString();
-				if (context.equalsIgnoreCase("nogui"))
-					li.remove();
-			}
-		}
+		List<GUITunableHandler> handlers = 
+			getApplicableHandlers(objectWithTunables, "gui");
 
 		// Sanity check:
 		if (factoryCount > 0) {
@@ -277,6 +273,27 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			tunablePanel = null;
 			return retVal;
 		}
+	}
+
+	public List<GUITunableHandler> getApplicableHandlers(Object objectWithTunables, String desiredContext) {
+		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
+
+		if (handlers != null ) {
+			// Remove any tunables that aren't appropriate for a GUI context
+			ListIterator<GUITunableHandler> li = handlers.listIterator();
+			while (li.hasNext()) {
+				GUITunableHandler gh = li.next();
+				String context = gh.getParams().get(AbstractTunableHandler.CONTEXT).toString();
+				if (desiredContext.equalsIgnoreCase("gui")) {
+					if (context.equalsIgnoreCase("nogui"))
+						li.remove();
+				} else if (desiredContext.equalsIgnoreCase("nogui")) {
+					if (context.equalsIgnoreCase("gui"))
+						li.remove();
+				}
+			}
+		}
+		return handlers;
 	}
 
 	/**
