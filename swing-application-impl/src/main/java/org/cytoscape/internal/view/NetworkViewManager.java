@@ -60,6 +60,12 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
+import org.cytoscape.session.events.SessionLoadCancelledListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -90,7 +96,7 @@ import org.slf4j.LoggerFactory;
 public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
 		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
-		VisualStyleSetListener {
+		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -111,6 +117,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final Map<JInternalFrame, CyNetworkView> iFrameMap;
 	private final Map<JInternalFrame, InternalFrameListener> frameListeners;
 	private final Properties props;
+	
+	private volatile boolean loadingSession;
 
 	private final CyNetworkViewManager netViewMgr;
 	private final CyApplicationManager appMgr;
@@ -583,6 +591,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	@Override
 	public void handleEvent(final VisualStyleChangedEvent e) {
+		if (loadingSession)
+			return;
+		
 		final VisualStyle style= e.getSource();
 		// First, check current view.  If necessary, apply it.
 		final Set<CyNetworkView> networkViews = netViewMgr.getNetworkViewSet();
@@ -603,6 +614,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	@Override
 	public void handleEvent(final SetCurrentVisualStyleEvent e) {
+		if (loadingSession)
+			return;
+		
 		final VisualStyle style = e.getVisualStyle();
 		
 		if (style != null) {
@@ -615,6 +629,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	
 	@Override
 	public void handleEvent(final VisualStyleSetEvent e) {
+		if (loadingSession)
+			return;
+		
 		final CyNetworkView view = e.getNetworkView();
 		
 		if (view == appMgr.getCurrentNetworkView()) {
@@ -638,5 +655,20 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
 		
 		updateNetworkFrameSize(view, w, h, resizable);
+	}
+
+	@Override
+	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
+		loadingSession = true;
+	}
+	
+	@Override
+	public void handleEvent(final SessionLoadCancelledEvent e) {
+		loadingSession = false;
+	}
+	
+	@Override
+	public void handleEvent(final SessionLoadedEvent e) {
+		loadingSession = false;
 	}
 }
