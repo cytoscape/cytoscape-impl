@@ -28,8 +28,10 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
@@ -186,6 +188,21 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	@Override
 	public boolean isSet(final VisualProperty<?> vp) {
 		return visualProperties.get(vp) != null || allLocks.get(vp) != null || getDefaultValue(vp) != null;
+	}
+	
+	@Override
+	public void clearVisualProperties() {
+		final Iterator<Entry<VisualProperty<?>, Object>> it = visualProperties.entrySet().iterator();
+		
+		while (it.hasNext()) {
+			final Entry<VisualProperty<?>, Object> entry = it.next();
+			final VisualProperty<?> vp = entry.getKey();
+			
+			if (!vp.shouldIgnoreDefault()) {
+				it.remove(); // do this first to prevent ConcurrentModificationExceptions later
+				setVisualProperty(vp, null);
+			}
+		}
 	}
 	
 	protected abstract <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vp, V value);
