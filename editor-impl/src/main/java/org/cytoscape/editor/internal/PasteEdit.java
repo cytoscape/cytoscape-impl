@@ -33,6 +33,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
@@ -74,14 +75,26 @@ public class PasteEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
+		List<CyIdentifiable> pastedObjects = null;
 		if (this.xformPt == null)
-			clipboard.paste(view, 0.0, 0.0);
+			pastedObjects = clipboard.paste(view, 0.0, 0.0);
 		else
-			clipboard.paste(view, xformPt.getX(), xformPt.getY());
+			pastedObjects = clipboard.paste(view, xformPt.getX(), xformPt.getY());
 		
 		// Apply visual style
 		VisualStyle vs = vmm.getVisualStyle(view);
-		vs.apply(view);
+		for (CyIdentifiable element: pastedObjects) {
+			View<? extends CyIdentifiable> elementView = null;
+			if (element instanceof CyNode)
+				elementView = view.getNodeView((CyNode)element);
+			else if (element instanceof CyEdge)
+				elementView = view.getEdgeView((CyEdge)element);
+			else
+				continue;
+
+			vs.apply(view.getModel().getRow(element), elementView);
+		}
+
 		view.updateView();
 	}
 }

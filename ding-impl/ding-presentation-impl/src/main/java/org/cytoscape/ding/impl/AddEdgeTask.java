@@ -94,7 +94,9 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 			// Apply visual style
 			eh.flushPayloadEvents(); // To make sure the edge view is created before applying the style
 			VisualStyle vs = vmm.getVisualStyle(netView);
-			vs.apply(netView);
+			View<CyEdge> edgeView = netView.getEdgeView(newEdge);
+			if (edgeView != null)
+				vs.apply(edgeRow, edgeView);
 			netView.updateView();
 		}
 	}

@@ -82,7 +82,7 @@ public class AddNestedNetworkTask extends AbstractNodeViewTask {
 		setNestedNetwork(node, nestedNetwork.getSelectedValue());
 		
 		final VisualStyle style = vmMgr.getVisualStyle(netView);
-		style.apply(netView);
+		style.apply(netView.getModel().getRow(node), nodeView);
 		netView.updateView();
 	}
 	

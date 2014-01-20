@@ -114,7 +114,8 @@ public class ClipboardImpl {
 
 		// We need to do this in two passes.  In pass 1, we'll add all of the nodes
 		// and store their (possibly new) SUID.  In pass 2, we'll reposition the
-		// nodes and add the edges.
+		// nodes and add the edges.  Note that if we add any nodes, we'll only add
+		// edges to nodes that exist.  
 
 		// Pass 1: add the nodes 
 		final Map<CyNode, CyNode> newNodeMap = new HashMap<CyNode, CyNode>();
@@ -129,8 +130,8 @@ public class ClipboardImpl {
 		for (View<CyEdge> edgeView: edgeViews) {
 			CyEdge edge = edgeView.getModel();
 			CyEdge newEdge = pasteEdge(sourceView, targetView, edge, rowMap, newNodeMap);
-
-			pastedObjects.add(newEdge);
+			if (newEdge != null)
+				pastedObjects.add(newEdge);
 		}
 
 		copyRows(rowMap);
@@ -163,14 +164,15 @@ public class ClipboardImpl {
 
 		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
 		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
+		boolean addedNodes = newNodeMap.size() > 0;
 
 		CyEdge newEdge = null;
 		CyNode sourceNode = edge.getSource();
 		CyNode targetNode = edge.getTarget();
 
 		// Same three cases as pasteNode, but we need to be careful to add missing nodes.  If
-		// we paste and edge, but there's no corresponding node, we need to copy the
-		// node in.
+		// we paste an edge, but there's no corresponding node, we need to copy the
+		// node in if we're copying a bare edge.
 		//
 		// Three cases:
 		// 1) We're copying edges to a new network in a different network tree
@@ -180,11 +182,13 @@ public class ClipboardImpl {
 			// Case 1: different root
 
 			if (!newNodeMap.containsKey(sourceNode)) {
+				if (addedNodes) return null;
 				addRows(sourceNode, sourceRoot, sourceNetwork);
 				newNodeMap.put(sourceNode, pasteNode(sourceView, targetView, sourceNode, rowMap));
 			}
 
 			if (!newNodeMap.containsKey(targetNode)) {
+				if (addedNodes) return null;
 				addRows(targetNode, sourceRoot, sourceNetwork);
 				newNodeMap.put(targetNode, pasteNode(sourceView, targetView, targetNode, rowMap));
 			}
@@ -206,21 +210,29 @@ public class ClipboardImpl {
 
 			// First, see if we already have the nodes
 			if (!newNodeMap.containsKey(sourceNode)) {
-				addRows(sourceNode, sourceRoot, sourceNetwork);
 				if (targetNetwork.containsNode(sourceNode)) {
 					newNodeMap.put(sourceNode, sourceNode);
-				} else {
+				} else if (!addedNodes) {
 					newNodeMap.put(sourceNode, pasteNode(sourceView, targetView, sourceNode, rowMap));
+				} else {
+					// If this network doesn't contain this node and we added nodes in our paste,
+					// skip this edge
+					return null;
 				}
+				addRows(sourceNode, sourceRoot, sourceNetwork);
 			}
 
 			if (!newNodeMap.containsKey(targetNode)) {
-				addRows(targetNode, sourceRoot, sourceNetwork);
 				if (targetNetwork.containsNode(targetNode)) {
 					newNodeMap.put(targetNode, targetNode);
-				} else {
+				} else if (!addedNodes) {
 					newNodeMap.put(targetNode, pasteNode(sourceView, targetView, targetNode, rowMap));
+				} else {
+					// If this network doesn't contain this node and we added nodes in our paste,
+					// skip this edge
+					return null;
 				}
+				addRows(targetNode, sourceRoot, sourceNetwork);
 			}
 
 			// We want to create another copy of the edge

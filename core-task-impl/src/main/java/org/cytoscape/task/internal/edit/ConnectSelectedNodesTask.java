@@ -35,6 +35,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -109,7 +110,11 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 
 		for (final CyNetworkView view : netViewMgr.getNetworkViews(network)) {
 			VisualStyle vs = vmm.getVisualStyle(view);
-			vs.apply(view);
+			for (CyEdge edge: newEdges) {
+				View<CyEdge> edgeView = view.getEdgeView(edge);
+				if (edgeView == null) continue;
+				vs.apply(network.getRow(edge), edgeView);
+			}
 			view.updateView();
 		}
 

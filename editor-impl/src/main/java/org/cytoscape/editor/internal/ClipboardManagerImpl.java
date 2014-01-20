@@ -62,6 +62,7 @@ public final class ClipboardManagerImpl {
 	}
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
+		if (currentClipboard == null) return null;
 		return currentClipboard.paste(targetView, x, y);
 	}
 

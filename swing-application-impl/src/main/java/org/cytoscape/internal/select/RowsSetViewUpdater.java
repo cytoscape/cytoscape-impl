@@ -146,10 +146,11 @@ public class RowsSetViewUpdater implements RowsSetListener {
 				if(virtual)
 					refreshOtherViews = true;
 			}
+			vs.apply(record.getRow(), (View<? extends CyIdentifiable>) v);
 		}
 
 		if (refreshView) {
-			vs.apply(networkView);
+			// vs.apply(networkView);
 			networkView.updateView();
 			
 			if (refreshOtherViews) {

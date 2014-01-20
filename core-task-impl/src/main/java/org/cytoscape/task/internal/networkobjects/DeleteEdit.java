@@ -40,6 +40,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.undo.AbstractCyEdit;
 
 
@@ -133,16 +134,17 @@ final class DeleteEdit extends AbstractCyEdit {
 		if(views.size() != 0)
 			netView = views.iterator().next();
 		
+		VisualStyle style = visualMappingManager.getVisualStyle(netView);
 		if (netView != null) {
 			int i = 0;
 			for (final CyNode node : nodes) {
 				View<CyNode> nodeView = netView.getNodeView(node);
 				nodeView.setVisualProperty(NODE_X_LOCATION, xPos[i]);
 				nodeView.setVisualProperty(NODE_Y_LOCATION, yPos[i] );
+				style.apply(net.getRow(node), nodeView);
 				i++;
 			}
 		}
-		visualMappingManager.getVisualStyle(netView).apply(netView);
 
 		netView.updateView();
 	}
