@@ -139,10 +139,16 @@ final class DeleteEdit extends AbstractCyEdit {
 			int i = 0;
 			for (final CyNode node : nodes) {
 				View<CyNode> nodeView = netView.getNodeView(node);
+				if (nodeView == null) continue;
 				nodeView.setVisualProperty(NODE_X_LOCATION, xPos[i]);
 				nodeView.setVisualProperty(NODE_Y_LOCATION, yPos[i] );
 				style.apply(net.getRow(node), nodeView);
 				i++;
+			}
+			for (final CyEdge edge: edges) {
+				View<CyEdge> edgeView = netView.getEdgeView(edge);
+				if (edgeView == null) continue;
+				style.apply(net.getRow(edge), edgeView);
 			}
 		}
 
