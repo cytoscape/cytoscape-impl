@@ -4,7 +4,9 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_NAME_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_REMOVED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
 
@@ -212,6 +214,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	@Override
 	public String[] listNotificationInterests() {
 		return new String[]{ VISUAL_STYLE_SET_CHANGED,
+							 VISUAL_STYLE_ADDED,
+							 VISUAL_STYLE_REMOVED,
 							 CURRENT_VISUAL_STYLE_CHANGED,
 							 VISUAL_STYLE_UPDATED,
 							 CURRENT_NETWORK_VIEW_CHANGED,
@@ -224,7 +228,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final Object body = notification.getBody();
 		
 		if (id.equals(VISUAL_STYLE_SET_CHANGED)) {
-			updateVisualStyleList((SortedSet<VisualStyle>) body);
+			updateVisualStyleList((SortedSet<VisualStyle>) body, true);
+		} else if (id.equals(VISUAL_STYLE_ADDED) || id.equals(VISUAL_STYLE_REMOVED)) {
+			updateVisualStyleList(vmProxy.getVisualStyles(), false);
 		} else if (id.equals(CURRENT_VISUAL_STYLE_CHANGED)) {
 			final Thread thread = new Thread() {
 				// Create a new Thread to prevent invokeAndWait being called from the EventDispatchThread
@@ -239,7 +245,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 							}
 						});
 						
-						updateVisualPropertySheets((VisualStyle) body);
+						updateVisualPropertySheets((VisualStyle) body, false);
 					} catch (InterruptedException e) {
 						logger.error("Error selecting current Visual Style", e);
 					} catch (InvocationTargetException e) {
@@ -249,7 +255,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			};
 			thread.start();
 		} else if (id.equals(VISUAL_STYLE_UPDATED) && body != null && body.equals(vmProxy.getCurrentVisualStyle())) {
-			updateVisualPropertySheets((VisualStyle) body);
+			updateVisualPropertySheets((VisualStyle) body, false);
 		} else if (id.equals(CURRENT_NETWORK_VIEW_CHANGED)) {
 			final CyNetworkView view = (CyNetworkView) body;
 			
@@ -724,7 +730,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, Collections.singleton(vm));
 	}
 
-	private void updateVisualStyleList(final SortedSet<VisualStyle> styles) {
+	private void updateVisualStyleList(final SortedSet<VisualStyle> styles, final boolean resetDefaultVisibleItems) {
 		attrProxy.setCurrentMappingType(null);
 		mappingFactoryProxy.setCurrentColumnName(null);
 		final RenderingEngineFactory<CyNetwork> engineFactory = vmProxy.getCurrentRenderingEngineFactory();
@@ -736,7 +742,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				vizMapperMainPanel.updateVisualStyles(styles, previewNetView, engineFactory);
 				final VisualStyle vs = vmProxy.getCurrentVisualStyle();
 				selectCurrentVisualStyle(vs);
-				updateVisualPropertySheets(vs);
+				updateVisualPropertySheets(vs, resetDefaultVisibleItems);
 				ignoreVisualStyleSelectedEvents = false;
 			}
 		});
@@ -755,7 +761,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private void updateVisualPropertySheets(final VisualStyle vs) {
+	private void updateVisualPropertySheets(final VisualStyle vs, final boolean resetDefaultVisibleItems) {
 		if (vs == null)
 			return;
 		
@@ -801,7 +807,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 		
 		if (rebuild) {
-			createVisualPropertySheets();
+			createVisualPropertySheets(resetDefaultVisibleItems);
 		} else {
 			// Just update the current Visual Property sheets
 			final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
@@ -820,33 +826,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						item.setVisible(true);
 				}
 			}
+			
+			if (resetDefaultVisibleItems)
+				updateVisibleItems(resetDefaultVisibleItems);
 		}
 	}
 	
-	private void createVisualPropertySheets() {
-		final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
-		final Map<Class<? extends CyIdentifiable>, Set<String>> visibleProps = 
-				new HashMap<Class<? extends CyIdentifiable>, Set<String>>();
-		
-		if (vpSheets.isEmpty()) {
-			// First time
-			visibleProps.putAll(defVisibleProps);
-		} else {
-			for (final VisualPropertySheet sheet : vpSheets) {
-				for (VisualPropertySheetItem<?> item : sheet.getItems()) {
-					// Keep the same items visible after updating the sheets
-					if (item.isVisible()) {
-						Set<String> set = visibleProps.get(item.getModel().getTargetDataType());
-						
-						if (set == null)
-							visibleProps.put(item.getModel().getTargetDataType(), set = new HashSet<String>());
-						
-						set.add(item.getModel().getId());
-					}
-				}
-			}
-		}
-		
+	private void createVisualPropertySheets(final boolean resetDefaultVisibleItems) {
 		final VisualStyle style = vmProxy.getCurrentVisualStyle();
 		final VisualLexicon lexicon = vmProxy.getCurrentVisualLexicon();
 		
@@ -884,7 +870,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					vpSheet.getVpsMenu().add(mi);
 				}
 				
-				updateVisibleItems();
+				updateVisibleItems(resetDefaultVisibleItems);
 				updateItemsStatus();
 				
 				// Update panel's width
@@ -1047,7 +1033,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
-	private void updateVisibleItems() {
+	private void updateVisibleItems(final boolean reset) {
+		if (reset)
+			userProps.clear();
+		
 		for (final VisualPropertySheet vpSheet : vizMapperMainPanel.getVisualPropertySheets()) {
 			for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
 				// Items that are set visible by the user should still be visible when the current style changes.
