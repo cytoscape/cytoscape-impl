@@ -4,6 +4,8 @@ import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURR
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_REMOVED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
 
@@ -25,6 +27,10 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
+import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -51,13 +57,16 @@ import org.puremvc.java.multicore.patterns.proxy.Proxy;
 public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
-							  		   SessionLoadedListener, SetCurrentNetworkListener,
-							  		   SetCurrentNetworkViewListener {
+							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener,
+							  		   SessionAboutToBeLoadedListener, SessionLoadCancelledListener,
+							  		   SessionLoadedListener {
 
 	public static final String NAME = "VisualStyleProxy";
 	
 	private final SortedSet<VisualStyle> visualStyles;
 	private final ServicesUtil servicesUtil;
+
+	private volatile boolean loadingSession;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -227,54 +236,72 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final VisualStyleAddedEvent e) {
+		final VisualStyle vs = e.getVisualStyleAdded();
+		boolean changed = false;
+		
 		synchronized (this) {
-			visualStyles.add(e.getVisualStyleAdded());
+			changed = visualStyles.add(vs);
 		}
 		
-		sendNotification(VISUAL_STYLE_SET_CHANGED, getVisualStyles());
+		if (changed && !loadingSession)
+			sendNotification(VISUAL_STYLE_ADDED, vs);
 	}
 	
 	@Override
 	public void handleEvent(final VisualStyleAboutToBeRemovedEvent e) {
 		final VisualStyle vs = e.getVisualStyleToBeRemoved();
 		boolean changed = false;
-		SortedSet<VisualStyle> updatedStyles = null;
 		
 		synchronized (this) {
-			if (visualStyles.remove(vs)) {
-				updatedStyles = getVisualStyles(); 
-				changed = true;
-			}
+			changed = visualStyles.remove(vs);
 		}
 		
-		if (changed)
-			sendNotification(VISUAL_STYLE_SET_CHANGED, updatedStyles);
+		if (changed && !loadingSession)
+			sendNotification(VISUAL_STYLE_REMOVED, vs);
 	}
 	
 	@Override
 	public void handleEvent(final VisualStyleChangedEvent e) {
-		sendNotification(VISUAL_STYLE_UPDATED, e.getSource());
+		if (!loadingSession)
+			sendNotification(VISUAL_STYLE_UPDATED, e.getSource());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentVisualStyleEvent e) {
-		sendNotification(CURRENT_VISUAL_STYLE_CHANGED, e.getVisualStyle());
+		if (!loadingSession)
+			sendNotification(CURRENT_VISUAL_STYLE_CHANGED, e.getVisualStyle());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
-		sendNotification(CURRENT_NETWORK_CHANGED, e.getNetwork());
+		if (!loadingSession)
+			sendNotification(CURRENT_NETWORK_CHANGED, e.getNetwork());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkViewEvent e) {
-		sendNotification(CURRENT_NETWORK_VIEW_CHANGED, e.getNetworkView());
+		if (!loadingSession)
+			sendNotification(CURRENT_NETWORK_VIEW_CHANGED, e.getNetworkView());
+	}
+	
+	@Override
+	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
+		loadingSession = true;
+	}
+	
+	@Override
+	public void handleEvent(final SessionLoadCancelledEvent e) {
+		loadingSession = false;
 	}
 	
 	@Override
 	public void handleEvent(final SessionLoadedEvent e) {
+		loadingSession = false;
+		
 		if (e.getLoadedFileName() == null) // New empty session
 			getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
+		else
+			sendNotification(VISUAL_STYLE_SET_CHANGED, getVisualStyles());
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
