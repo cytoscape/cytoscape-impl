@@ -94,10 +94,18 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 		styleDefaults = new HashMap<VisualProperty<?>, Object>();
 
 		// Init Apply handlers for node, egde and network.
+		final ApplyToNetworkHandler applyToNetworkHandler = new ApplyToNetworkHandler(this, lexManager);
+		final ApplyToNodeHandler applyToNodeHandler = new ApplyToNodeHandler(this, lexManager);
+		final ApplyToEdgeHandler applyToEdgeHandler = new ApplyToEdgeHandler(this, lexManager);
+		
+		serviceRegistrar.registerAllServices(applyToNetworkHandler, new Properties());
+		serviceRegistrar.registerAllServices(applyToNodeHandler, new Properties());
+		serviceRegistrar.registerAllServices(applyToEdgeHandler, new Properties());
+		
 		applyHandlersMap = new HashMap<Class<? extends CyIdentifiable>, ApplyHandler>();
-		applyHandlersMap.put(CyNetwork.class, new ApplyToNetworkHandler(this, lexManager));
-		applyHandlersMap.put(CyNode.class, new ApplyToNodeHandler(this, lexManager));
-		applyHandlersMap.put(CyEdge.class, new ApplyToEdgeHandler(this, lexManager));
+		applyHandlersMap.put(CyNetwork.class, applyToNetworkHandler);
+		applyHandlersMap.put(CyNode.class, applyToNodeHandler);
+		applyHandlersMap.put(CyEdge.class, applyToEdgeHandler);
 
 		dependencies = new HashSet<VisualPropertyDependency<?>>();
 
