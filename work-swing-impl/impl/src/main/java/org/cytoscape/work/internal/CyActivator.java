@@ -95,16 +95,12 @@ public class CyActivator extends AbstractCyActivator {
 		final TaskHistory taskHistory = new TaskHistory();
 		taskStatusBar.addPropertyChangeListener(TaskStatusBar.TASK_HISTORY_CLICK, new PropertyChangeListener() {
 			TaskHistoryWindow window = null;
+			// don't need to wrap this method in a SwingUtilities.invokeLater -- it will only be called on the EDT anyway
 			public void propertyChange(PropertyChangeEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						if (window != null) {
-							window.close();
-						}
-						window = new TaskHistoryWindow(taskHistory);
-					}
-				});
+				if (window == null) {
+					window = new TaskHistoryWindow(taskHistory);
+				}
+				window.open();
 			}
 		});
 

@@ -3,17 +3,27 @@ package org.cytoscape.work.internal.task;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TaskMonitor;
 
+/**
+ * A data structure for representing histories of task iterators.
+ * The {@code TaskHistory} instance can consist of many {@code History} instances,
+ * which represents the history of a single task iterator execution.
+ * {@code History}'s contain the task's title, completion status, and {@code Message}s.
+ *
+ * <p>
+ * This class is thread-safe.
+ * </p>
+ */
 public class TaskHistory implements Iterable<TaskHistory.History> {
-  public static final TaskMonitor.Level[] levels = TaskMonitor.Level.values();
+  public static interface FinishListener {
+    public void taskFinished(History history);
+  }
 
-  // Use bytes instead of enums to save memory
-  public static final byte TASK_SUCCESS = 0;
-  public static final byte TASK_FAILED = 1;
-  public static final byte TASK_CANCELLED = 2;
+  public static final TaskMonitor.Level[] levels = TaskMonitor.Level.values();
+  public static final FinishStatus.Type[] finishTypes = FinishStatus.Type.values();
 
   public static class Message {
     // Use a byte to reference TaskMonitor.Level to save memory
@@ -21,7 +31,7 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
     final String message;
 
     public Message(final TaskMonitor.Level level, final String message) {
-      this.levelOrdinal = level == null ? -1 : (byte) level.ordinal();
+      this.levelOrdinal = (level == null) ? -1 : (byte) level.ordinal();
       this.message = message;
     }
 
@@ -34,12 +44,12 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
     }
   }
 
-  public static class History implements Iterable<Message> {
-    volatile byte completionStatus = -1;
+  public class History implements Iterable<Message> {
+    // Use a byte to reference FinishStatus.Type to save memory
+    volatile byte finishType = -1;
     volatile Class<?> firstTaskClass;
     final AtomicReference<String> title = new AtomicReference<String>();
     final ConcurrentLinkedQueue<Message> messages = new ConcurrentLinkedQueue<Message>();
-    final AtomicIntegerArray numberOfMessagesByLevel = new AtomicIntegerArray(levels.length);
 
     protected History() {}
 
@@ -49,16 +59,15 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
       }
     }
 
-    public void setCompletionStatus(final byte completionStatus) {
-      this.completionStatus = completionStatus;
+    public void setFinishType(final FinishStatus.Type finishType) {
+      this.finishType = (finishType == null) ? -1 : (byte) finishType.ordinal();
+      if (finishListener != null) {
+        finishListener.taskFinished(this);
+      }
     }
 
     public void addMessage(final TaskMonitor.Level level, final String message) {
       messages.add(new Message(level, message));
-      if (level != null) {
-        final int levelOrdinal = level.ordinal();
-        numberOfMessagesByLevel.getAndIncrement(levelOrdinal);
-      }
     }
 
     public Iterator<Message> iterator() {
@@ -69,16 +78,12 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
       return title.get();
     }
 
-    public byte getCompletionStatus() {
-      return completionStatus;
+    public FinishStatus.Type getFinishType() {
+      return finishType < 0 ? null : finishTypes[finishType];
     }
 
     public boolean hasMessages() {
-      return messages.size() > 0;
-    }
-
-    public int numberOfMessagesWithLevel(final TaskMonitor.Level level) {
-      return numberOfMessagesByLevel.get(level.ordinal());
+      return !messages.isEmpty();
     }
 
     public void setFirstTaskClass(final Class<?> klass) {
@@ -91,14 +96,32 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
   }
 
   final ConcurrentLinkedQueue<History> histories = new ConcurrentLinkedQueue<History>();
+  volatile FinishListener finishListener = null;
 
+  /**
+   * Create a new {@code History} for a single task.
+   */
   public History newHistory() {
     final History history = new History();
     histories.add(history);
     return history;
   }
 
+  /**
+   * Return all {@code History}'s contained in this instance.
+   */
   public Iterator<History> iterator() {
     return histories.iterator();
+  }
+
+  /**
+   * Clear out all {@code History}'s contained in this instance.
+   */
+  public void clear() {
+    histories.clear();
+  }
+
+  public void setFinishListener(final FinishListener finishListener) {
+    this.finishListener = finishListener;
   }
 }
