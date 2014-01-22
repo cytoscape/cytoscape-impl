@@ -13,6 +13,7 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
 
 /**
@@ -42,7 +43,7 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 
 		clearingTimer = new Timer(CLEAR_DELAY_MS, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				resetStatusBar();
+				clearStatusBar();
 			}
 		});
 		clearingTimer.setRepeats(false);
@@ -63,6 +64,22 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 		super.setPreferredSize(new Dimension(100, 40));
 	}
 
+	public void setTitle(final FinishStatus.Type finishType, final String title) {
+		String name = null;
+		Icon icon = null;
+    if (finishType != null) {
+	    switch (finishType) {
+	      case SUCCEEDED: name = "finished"; break;
+	      case FAILED:    name = "error"; break;
+	      case CANCELLED: name = "cancelled"; break;
+	    }
+	  }
+	  if (name != null) {
+	  	icon = TaskDialog.ICONS.get(name);
+	  }
+	  this.setTitle(icon, title);
+	}
+
 	public void setTitle(final Icon icon, final String title) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -78,14 +95,9 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 		clearingTimer.restart();
 	}
 	
-	private void resetStatusBar() {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				titleLabel.setIcon(null);
-				titleLabel.setText("");
-			}
-		});;
+	private void clearStatusBar() {
+		titleLabel.setIcon(null);
+		titleLabel.setText("");
 	}
 
 	public JPanel createTaskStatusPanel() {

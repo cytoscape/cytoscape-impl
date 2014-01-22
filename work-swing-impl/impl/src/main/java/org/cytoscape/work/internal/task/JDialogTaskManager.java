@@ -44,6 +44,7 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
@@ -308,11 +309,11 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		}
 
 		/**
-		 * Loop through each task, show their tunables, execute them, and update the task observer.
+		 * Loop through each task, show their tunables, and execute them.
 		 * This is in its own method in order to allow cleanly exiting this method when dealing with 
 		 * the first task.
 		 */
-		private void innerRun() throws Exception {
+		private FinishStatus innerRun() throws Exception {
 				// actually run the first task 
 				// don't dispaly the tunables here - they were handled above. 
 			taskMonitor.setTask(task);
@@ -321,8 +322,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			handleObserver(task);
 
 			if (taskMonitor.cancelled()) {
-				if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
-				return;
+				return FinishStatus.newCancelled(task);
 			}
 
 				// now execute all subsequent tasks
@@ -331,35 +331,34 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				taskMonitor.setTask(task);
 
 				if (!displayTunables(task, taskMonitor)) {
-					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
-					return;
+					return FinishStatus.newCancelled(task);
 				}
 
 				task.run(taskMonitor);
 				handleObserver(task);
 
 				if (taskMonitor.cancelled()) {
-					if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
-					return;
+					return FinishStatus.newCancelled(task);
 				}
 			}
-			if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
+			return FinishStatus.getSucceeded();
 		}
 		
 		public void run() {
+			FinishStatus finishStatus = null;
 			try {
-				innerRun();
+				finishStatus = innerRun();
 				taskMonitor.close();
-				final boolean cancelled = taskMonitor.cancelled();
-				taskStatusBar.setTitle(TaskDialog.ICONS.get(cancelled ? "cancelled" : "finished"), taskMonitor.getFirstTitle());
-				history.setCompletionStatus(cancelled ? TaskHistory.TASK_CANCELLED : TaskHistory.TASK_SUCCESS);
 			} catch (Exception exception) {
+				finishStatus = FinishStatus.newFailed(task, exception);
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
-				taskStatusBar.setTitle(TaskDialog.ICONS.get("error"), taskMonitor.getFirstTitle());
-				history.setCompletionStatus(TaskHistory.TASK_FAILED);
-				if (observer != null) observer.allFinished(FinishStatus.newFailed(task, exception));
+				history.addMessage(TaskMonitor.Level.ERROR, exception.getMessage());
 			} finally {
+				taskStatusBar.setTitle(finishStatus.getType(), taskMonitor.getFirstTitle());
+				history.setFinishType(finishStatus.getType());
+				if (observer != null)
+					observer.allFinished(finishStatus);
 				parent = initialParent;
 				dialogTunableMutator.setConfigurationContext(null,true);
 			}

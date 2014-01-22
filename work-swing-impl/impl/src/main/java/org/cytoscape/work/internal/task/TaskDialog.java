@@ -148,8 +148,8 @@ class TaskDialog extends JDialog {
 
     final JPanel msgPanel = new JPanel(new GridBagLayout());
     msgPanel.add(msgLabel, c.reset().expandBoth().anchor("northwest"));
-    msgPanel.add(cancelLabel, c.right().noExpand().insets(0, 10, 0, 10));
-    msgPanel.add(closeButton, c.right().noExpand().insets(0, 10, 0, 10));
+    msgPanel.add(cancelLabel, c.right().noExpand().insets(0, 10, 0, 0));
+    msgPanel.add(closeButton, c.right().noExpand().insets(0, 10, 0, 0));
 
     super.setLayout(new GridBagLayout());
     super.add(titleLabel, c.reset().expandHoriz().insets(10, 10, 10, 10));
