@@ -375,20 +375,40 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		if (task == null) {
 			return true;
 		}
-		boolean ret = true;
-		
+
+		final boolean ret[] = new boolean[1];
+		ret[0] = true;
+
 		if (dialogTunableMutator.hasTunables(task, "gui")) {
 			taskMonitor.showDialog(false);
 
-			ret = dialogTunableMutator.validateAndWriteBack(task);
+			ValidateTunables validateTunables = new ValidateTunables(task, ret);
+			if (!SwingUtilities.isEventDispatchThread())
+				SwingUtilities.invokeAndWait(validateTunables);
+			else
+				validateTunables.run();
 
 			for ( TunableRecorder ti : tunableRecorders ) 
 				ti.recordTunableState(task);
 
 			taskMonitor.showDialog(true);
 		}
-	
-		return ret;
+
+		return ret[0];
+	}
+
+	class ValidateTunables implements Runnable {
+		final Object task;
+		final boolean[] ret;
+
+		public ValidateTunables(final Object task, final boolean[] ret) {
+			this.task = task;
+			this.ret = ret;
+		}
+
+		public void run() {
+			ret[0] = dialogTunableMutator.validateAndWriteBack(task);
+		}
 	}
 
 }
