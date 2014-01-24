@@ -114,6 +114,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	public void setTargetNetworkCollection(ListSingleSelection<String> roots) {
+		targetNetworkCollection = roots;
 		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(targetNetworkCollection.getSelectedValue()),
 				dataTypeTargetForNetworkCollection.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
 		if(!keyColumnForMapping.getPossibleValues().containsAll(tempList.getPossibleValues())
@@ -123,7 +124,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 	public ListSingleSelection<String> keyColumnForMapping;
 	@Tunable(description = "Key Column for Network:", groups = {"Target Table Data","Select a Network Collection"},gravity=3.0, xorKey=NETWORK_COLLECTION, listenForChange = {
-			"DataTypeOptions", "RootNetworkList" })
+			"DataTypeTargetForNetworkCollection", "TargetNetworkCollection" })
 	public ListSingleSelection<String> getKeyColumnForMapping() {
 		return keyColumnForMapping;
 	}
@@ -140,6 +141,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	public void setDataTypeTargetForNetworkCollection(ListSingleSelection<TableType> options) {
+		dataTypeTargetForNetworkCollection = options;
 		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(targetNetworkCollection.getSelectedValue()),
 				dataTypeTargetForNetworkCollection.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
 		if(!keyColumnForMapping.getPossibleValues().containsAll(tempList.getPossibleValues()) 
