@@ -40,7 +40,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.AbstractTableTaskFactory;
 import org.cytoscape.task.edit.ImportDataTableTaskFactory;
-import org.cytoscape.task.internal.table.MapTableToNetworkTablesTask.TableType;
+import org.cytoscape.task.internal.table.ImportTableDataTask.TableType;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.util.ListMultipleSelection;
@@ -139,8 +139,6 @@ public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory imp
 	}
 	
 	private TableType getTableType( Class<? extends CyIdentifiable> type) {
-		if (type.equals(TableType.GLOBAL.getType()))
-			return TableType.GLOBAL;
 		if (type.equals(TableType.EDGE_ATTR.getType()))
 			return TableType.EDGE_ATTR;
 		if (type.equals(TableType.NETWORK_ATTR.getType()))
