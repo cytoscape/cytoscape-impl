@@ -24,11 +24,13 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 		}
 		
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
-		if (networkView == null) {
-			return;
+		CyNetwork network;
+		if (networkView != null) {
+			network = networkView.getModel();
+		} else {
+			network = applicationManager.getCurrentNetwork();
 		}
 		
-		final CyNetwork network = networkView.getModel(); 
 		if (network == null) {
 			return;
 		}
@@ -80,7 +82,9 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				}
 				controller.setProgress(++counter / total, view);
 			}
-			networkView.updateView();
+			if (networkView != null) {
+				networkView.updateView();
+			}
 		} finally {
 			long duration = System.currentTimeMillis() - startTime;
 			controller.setProgress(1.0, view);
