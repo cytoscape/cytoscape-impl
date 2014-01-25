@@ -37,11 +37,13 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		}
 		
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
-		if (networkView == null) {
-			return;
+		CyNetwork network;
+		if (networkView != null) {
+			network = networkView.getModel();
+		} else {
+			network = applicationManager.getCurrentNetwork();
 		}
 		
-		final CyNetwork network = networkView.getModel(); 
 		if (network == null) {
 			return;
 		}
@@ -57,7 +59,9 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			
 			sink.network = network;
 			transformerManager.execute(network, source, transformers, sink);
-			networkView.updateView();
+			if (networkView != null) {
+				networkView.updateView();
+			}
 		} finally {
 			long duration = System.currentTimeMillis() - startTime;
 			controller.setProgress(1.0, view);
