@@ -38,6 +38,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingImpl;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingImpl;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -110,13 +111,11 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 			}
 
 			if (copyMapping != null)
-				copy.addVisualMappingFunction(mapping);
+				copy.addVisualMappingFunction(copyMapping);
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <K, V> VisualMappingFunction<K, V> createPassthrough(final PassthroughMapping<K, V> originalMapping) {
-
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<K> colType = originalMapping.getMappingColumnType();
 
@@ -134,7 +133,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 				originalMapping.getVisualProperty(), eventHelper);
 		List<ContinuousMappingPoint<K, V>> points = originalMapping.getAllPoints();
 		for (ContinuousMappingPoint<K, V> point : points)
-			copyMapping.addPoint(point.getValue(), point.getRange());
+			copyMapping.addPoint(point.getValue(), new BoundaryRangeValues<V>(point.getRange()));
 
 		return copyMapping;
 	}
