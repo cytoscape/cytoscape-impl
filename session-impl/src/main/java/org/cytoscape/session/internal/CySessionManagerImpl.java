@@ -257,6 +257,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			restoreTables(sess);
 			restoreNetworkSelection(sess, selectedNetworks);
 			restoreNetworkViews(sess);
+			restoreNetworkSelection(sess, selectedNetworks);
 			restoreVisualStyles(sess);
 			restoreCurrentVisualStyle();
 		}
