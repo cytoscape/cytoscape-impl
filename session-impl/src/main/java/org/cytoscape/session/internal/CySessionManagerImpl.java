@@ -253,10 +253,11 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			
 			restoreProperties(sess);
 			restoreNetworks(sess);
-			restoreNetworkViews(sess);
+
 			restoreTables(sess);
-			restoreVisualStyles(sess);
 			restoreNetworkSelection(sess, selectedNetworks);
+			restoreNetworkViews(sess);
+			restoreVisualStyles(sess);
 			restoreCurrentVisualStyle();
 		}
 		
@@ -340,7 +341,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		for (CyNetworkView nv : netViews) {
 			CyNetwork network = nv.getModel();
 			
-			if (network.getRow(network).get(CyNetwork.SELECTED, Boolean.class)) {
+			if (network.getRow(network).get(CyNetwork.SELECTED, Boolean.class, false)) {
 				selectedViews.add(nv);
 			}
 		}
