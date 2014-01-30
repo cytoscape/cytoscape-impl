@@ -3,6 +3,7 @@ package org.cytoscape.io.internal.write.json;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,6 +19,8 @@ import java.util.Map;
 
 import javax.xml.bind.ValidationEvent;
 
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
 import org.cytoscape.model.CyNetwork;
 import org.junit.Test;
@@ -30,8 +33,9 @@ public class CytoscapeJsViewWriterTest extends AbstractJsonNetworkViewWriterTest
 	@Test
 	public void testNetworkViewWriter() throws Exception {
 
+		final CyVersion cyVersion = mock(CyVersion.class); 
 		final ObjectMapper jsMapper = new ObjectMapper();
-		jsMapper.registerModule(new CytoscapeJsNetworkModule());
+		jsMapper.registerModule(new CytoscapeJsNetworkModule(cyVersion));
 
 		File temp = new File("target/cytoscapeJsNetwork1.json");
 		OutputStream os = new FileOutputStream(temp);

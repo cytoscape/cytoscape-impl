@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsVisualStyleModule;
 import org.cytoscape.io.write.CyWriter;
@@ -22,10 +23,13 @@ public class CytoscapeJsVisualStyleWriterFactory implements CyWriterFactory, Viz
 
 	private final CyFileFilter filter;
 	private final CyApplicationManager applicationManager;
-	
-	public CytoscapeJsVisualStyleWriterFactory(final CyFileFilter filter, final CyApplicationManager applicationManager) {
+	private final CyVersion cyVersion;
+
+
+	public CytoscapeJsVisualStyleWriterFactory(final CyFileFilter filter, final CyApplicationManager applicationManager, final CyVersion cyVersion) {
 		this.filter = filter;
 		this.applicationManager = applicationManager;
+		this.cyVersion = cyVersion;
 	}
 
 	@Override
@@ -38,7 +42,7 @@ public class CytoscapeJsVisualStyleWriterFactory implements CyWriterFactory, Viz
 		// Create Object Mapper here.  This is necessary because it should get correct VisualLexicon.
 		final VisualLexicon lexicon = applicationManager.getCurrentRenderingEngine().getVisualLexicon();
 		final ObjectMapper cytoscapeJsMapper = new ObjectMapper();
-		cytoscapeJsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon));
+		cytoscapeJsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon, cyVersion));
 		return new CytoscapeJsVisualStyleWriter(os, cytoscapeJsMapper, styles, lexicon);
 	}
 }
