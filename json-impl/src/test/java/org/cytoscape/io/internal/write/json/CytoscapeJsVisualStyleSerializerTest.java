@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.ObjectPosition;
@@ -78,11 +79,12 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	@Before
 	public void setUp() throws Exception {
 
+		final CyVersion cyVersion = mock(CyVersion.class); 
 		final CustomGraphicsManager cgManager = mock(CustomGraphicsManager.class);
 		lexicon = new DVisualLexicon(cgManager);
 		
 		final ValueSerializerManager manager = new ValueSerializerManager();
-		serializer = new CytoscapeJsVisualStyleSerializer(manager, lexicon);
+		serializer = new CytoscapeJsVisualStyleSerializer(manager, lexicon, cyVersion);
 
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
 		passthroughFactory = new PassthroughMappingFactory(eventHelper);
@@ -297,12 +299,13 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		assertNotNull(serializer);
 		assertNotNull(style);
 
+		final CyVersion cyVersion = mock(CyVersion.class); 
 		TaskMonitor tm = mock(TaskMonitor.class);
 		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
 		styles.add(style);
 
 		final ObjectMapper jsMapper = new ObjectMapper();
-		jsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon));
+		jsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon, cyVersion));
 
 		File temp = new File(fileName);
 		OutputStream os = new FileOutputStream(temp);

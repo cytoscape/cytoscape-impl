@@ -17,6 +17,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
@@ -61,13 +62,16 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	private final VisualLexicon lexicon;
 
 	private final ValueSerializerManager manager;
+	
+	private final String version;
 
-	public CytoscapeJsVisualStyleSerializer(final ValueSerializerManager manager, final VisualLexicon lexicon) {
+	public CytoscapeJsVisualStyleSerializer(final ValueSerializerManager manager, final VisualLexicon lexicon, final CyVersion cyVersion) {
 		this.passthrough = new PassthroughMappingSerializer();
 		this.manager = manager;
 
 		this.converter = new CytoscapeJsStyleConverter();
 		this.lexicon = lexicon;
+		this.version = cyVersion.getVersion();
 	}
 
 	/**
@@ -88,6 +92,10 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 		// Write actual contents
 		jg.writeStartObject();
+		
+		// Version
+		jg.writeStringField(CytoscapeJsNetworkModule.GENERATED_BY_TAG, "cytoscape-" + version);
+		jg.writeStringField(CytoscapeJsNetworkModule.TARGET_CYJS_VERSION_TAG, CytoscapeJsNetworkModule.CYTOSCAPEJS_VERSION);
 
 		// Title of Visual Style
 		jg.writeStringField(TITLE.getTag(), vs.getTitle());

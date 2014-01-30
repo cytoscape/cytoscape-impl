@@ -1,9 +1,11 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
+
 import java.io.IOException;
 import java.util.List;
 
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -20,6 +22,13 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  */
 public class CytoscapeJsNetworkSerializer extends JsonSerializer<CyNetwork> {
 
+	private final String version;
+	
+	public CytoscapeJsNetworkSerializer(final CyVersion cyVersion) {
+		this.version = cyVersion.getVersion();
+	}
+
+
 	@Override
 	public void serialize(CyNetwork network, JsonGenerator jgen, SerializerProvider provider) throws IOException,
 			JsonProcessingException {
@@ -27,6 +36,10 @@ public class CytoscapeJsNetworkSerializer extends JsonSerializer<CyNetwork> {
 		jgen.useDefaultPrettyPrinter();
 
 		jgen.writeStartObject();
+		
+		// Add version number
+		jgen.writeStringField(CytoscapeJsNetworkModule.GENERATED_BY_TAG, "cytoscape-" + version);
+		jgen.writeStringField(CytoscapeJsNetworkModule.TARGET_CYJS_VERSION_TAG, CytoscapeJsNetworkModule.CYTOSCAPEJS_VERSION);
 
 		// Serialize network data table
 		jgen.writeObjectFieldStart(DATA.getTag());
