@@ -31,6 +31,7 @@ public class CytoscapeJsViewSerializer extends JsonSerializer<CyNetworkView> {
 		jgen.useDefaultPrettyPrinter();
 
 		jgen.writeStartObject();
+		jgen.writeStringField(CytoscapeJsNetworkModule.FORMAT_VERSION_TAG, CytoscapeJsNetworkModule.FORMAT_VERSION);
 		jgen.writeStringField(CytoscapeJsNetworkModule.GENERATED_BY_TAG, "cytoscape-" + version);
 		jgen.writeStringField(CytoscapeJsNetworkModule.TARGET_CYJS_VERSION_TAG, CytoscapeJsNetworkModule.CYTOSCAPEJS_VERSION);
 
