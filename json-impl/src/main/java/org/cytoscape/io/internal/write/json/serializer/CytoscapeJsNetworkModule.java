@@ -14,6 +14,8 @@ public class CytoscapeJsNetworkModule extends SimpleModule {
 
 	private static final long serialVersionUID = -3553426112109820245L;
 	
+	static final String FORMAT_VERSION_TAG = "format_version";
+	static final String FORMAT_VERSION = "1.0";
 	static final String GENERATED_BY_TAG = "generated_by";
 	static final String TARGET_CYJS_VERSION_TAG = "target_cytoscapejs_version";
 	static final String CYTOSCAPEJS_VERSION = "2.0.4";

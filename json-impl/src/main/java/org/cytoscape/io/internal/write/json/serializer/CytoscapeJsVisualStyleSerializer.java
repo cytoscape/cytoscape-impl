@@ -94,6 +94,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeStartObject();
 		
 		// Version
+		jg.writeStringField(CytoscapeJsNetworkModule.FORMAT_VERSION_TAG, CytoscapeJsNetworkModule.FORMAT_VERSION);
 		jg.writeStringField(CytoscapeJsNetworkModule.GENERATED_BY_TAG, "cytoscape-" + version);
 		jg.writeStringField(CytoscapeJsNetworkModule.TARGET_CYJS_VERSION_TAG, CytoscapeJsNetworkModule.CYTOSCAPEJS_VERSION);
 
