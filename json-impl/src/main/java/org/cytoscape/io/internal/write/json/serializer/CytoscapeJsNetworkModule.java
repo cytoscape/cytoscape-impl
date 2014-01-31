@@ -18,7 +18,9 @@ public class CytoscapeJsNetworkModule extends SimpleModule {
 	static final String FORMAT_VERSION = "1.0";
 	static final String GENERATED_BY_TAG = "generated_by";
 	static final String TARGET_CYJS_VERSION_TAG = "target_cytoscapejs_version";
-	static final String CYTOSCAPEJS_VERSION = "2.0.4";
+	
+	// The version range syntax is based on https://npmjs.org/doc/misc/semver.html
+	static final String CYTOSCAPEJS_VERSION = "~2.1";
 
 	public CytoscapeJsNetworkModule(final CyVersion version) {
 		super("CytoscapeJsModule", new Version(1, 0, 0, null, null, null));
