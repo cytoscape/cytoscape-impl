@@ -201,6 +201,8 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		taskMonitor.setTitle("BioPAX reader");
 		taskMonitor.setProgress(0.0);
 		
+		if(cancelled) return;
+		
 		// import BioPAX data into a new in-memory model
 		Model model = null;
 		try {
