@@ -41,6 +41,8 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -338,7 +340,24 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			tableChooser.setMinimumSize(SELECTOR_SIZE);
 			tableChooser.setPreferredSize(SELECTOR_SIZE);
 			tableChooser.setSize(SELECTOR_SIZE);
-			tableChooser.setEnabled(false);
+			// Table selector is invisible unless it has more than one item
+			tableChooser.setVisible(false);
+			tableChooser.getModel().addListDataListener(new ListDataListener() {
+				@Override
+				public void intervalRemoved(ListDataEvent e) {
+					setVisible();
+				}
+				@Override
+				public void intervalAdded(ListDataEvent e) {
+					setVisible();
+				}
+				@Override
+				public void contentsChanged(ListDataEvent e) {
+				}
+				private void setVisible() {
+					tableChooser.setVisible(tableChooser.getItemCount() > 1);
+				}
+			});
 		}
 		
 		return tableChooser;
