@@ -205,7 +205,9 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cyNetworkViewManagerServiceRef, 
 		                                                               renderingEngineManagerServiceRef,
 		                                                               cytoscapePropertiesServiceRef,
-		                                                               cyHelpBroker, visualMappingManagerServiceRef);
+		                                                               cyHelpBroker,
+		                                                               visualMappingManagerServiceRef,
+		                                                               cyNetworkTableManagerServiceRef);
 
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);
