@@ -33,7 +33,6 @@ import java.util.List;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 
@@ -59,6 +58,7 @@ public final class ClipboardManagerImpl {
 		copy(networkView, nodes, edges);
 		networkView.getModel().removeEdges(edges);
 		networkView.getModel().removeNodes(nodes);
+		networkView.updateView();
 	}
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
