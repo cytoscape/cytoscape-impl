@@ -177,6 +177,13 @@ public class CyActivator extends AbstractCyActivator {
 		copyVisualStyleTaskFactoryProps.setProperty("title", "Copy Style");
 		copyVisualStyleTaskFactoryProps.setProperty("menu", "main");
 		registerAllServices(bc, copyVisualStyleTaskFactory, copyVisualStyleTaskFactoryProps);
+		
+		final MakeVisualStylesDefaultTaskFactory makeVisualStylesDefaultTaskFactory = new MakeVisualStylesDefaultTaskFactory(servicesUtil);
+		final Properties makeVisualStylesDefaultTaskFactoryProps = new Properties();
+		makeVisualStylesDefaultTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
+		makeVisualStylesDefaultTaskFactoryProps.setProperty("title", MakeVisualStylesDefaultTask.TITLE);
+		makeVisualStylesDefaultTaskFactoryProps.setProperty("menu", "main");
+		registerAllServices(bc, makeVisualStylesDefaultTaskFactory, makeVisualStylesDefaultTaskFactoryProps);
 
 		final CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(servicesUtil);
 		final Properties createLegendTaskFactoryProps = new Properties();

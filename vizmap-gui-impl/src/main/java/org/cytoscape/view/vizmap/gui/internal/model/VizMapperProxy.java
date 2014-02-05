@@ -62,6 +62,7 @@ public class VizMapperProxy extends Proxy
 							  		   SessionLoadedListener {
 
 	public static final String NAME = "VisualStyleProxy";
+	public static final String PRESET_VIZMAP_FILE = "default_vizmap.xml";
 	
 	private final SortedSet<VisualStyle> visualStyles;
 	private final ServicesUtil servicesUtil;
