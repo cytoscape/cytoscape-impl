@@ -23,24 +23,14 @@ package org.cytoscape.datasource.biogrid.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Properties;
-
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.datasource.biogrid.internal.task.UpdateDatasourceTaskFactory;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 
-	private static final String LATEST_RELEASE_URL = "http://thebiogrid.org/downloads/archives/Latest%20Release/BIOGRID-ORGANISM-LATEST.mitab.zip";
+	//private static final String LATEST_RELEASE_URL = "http://thebiogrid.org/downloads/archives/Latest%20Release/BIOGRID-ORGANISM-LATEST.mitab.zip";
 
 	public CyActivator() {
 		super();
@@ -56,22 +46,22 @@ public class CyActivator extends AbstractCyActivator {
 				cyApplicationConfigurationServiceRef.getConfigurationDirectoryLocation(), cytoscapePropertiesServiceRef);
 
 		// Update network data.
-		URL datasourceUrl = null;
-		try {
-			datasourceUrl = new URL(LATEST_RELEASE_URL);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-
-		final UpdateDatasourceTaskFactory updateDatasourceTaskFactory = new UpdateDatasourceTaskFactory(
-				cytoscapePropertiesServiceRef, datasourceUrl,
-				cyApplicationConfigurationServiceRef.getConfigurationDirectoryLocation());
-
-		Properties updateDatasourceTaskFactoryProps = new Properties();
-		updateDatasourceTaskFactoryProps.setProperty(ID, "updateDatasourceTaskFactory");
-		updateDatasourceTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
-		updateDatasourceTaskFactoryProps.setProperty(TITLE, "Update Organism Preset Networks");
-
-		registerService(bc, updateDatasourceTaskFactory, TaskFactory.class, updateDatasourceTaskFactoryProps);
+//		URL datasourceUrl = null;
+//		try {
+//			datasourceUrl = new URL(LATEST_RELEASE_URL);
+//		} catch (MalformedURLException e) {
+//			e.printStackTrace();
+//		}
+//
+//		final UpdateDatasourceTaskFactory updateDatasourceTaskFactory = new UpdateDatasourceTaskFactory(
+//				cytoscapePropertiesServiceRef, datasourceUrl,
+//				cyApplicationConfigurationServiceRef.getConfigurationDirectoryLocation());
+//
+//		Properties updateDatasourceTaskFactoryProps = new Properties();
+//		updateDatasourceTaskFactoryProps.setProperty(ID, "updateDatasourceTaskFactory");
+//		updateDatasourceTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
+//		updateDatasourceTaskFactoryProps.setProperty(TITLE, "Update Organism Preset Networks");
+//
+//		registerService(bc, updateDatasourceTaskFactory, TaskFactory.class, updateDatasourceTaskFactoryProps);
 	}
 }
