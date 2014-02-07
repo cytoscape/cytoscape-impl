@@ -45,6 +45,7 @@ import org.cytoscape.view.vizmap.gui.internal.model.PropsProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.*;
 import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.*;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
@@ -152,110 +153,123 @@ public class CyActivator extends AbstractCyActivator {
 		// -------------------------------------------------------------------------------------------------------------
 		final CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(servicesUtil);
 		final Properties createNewVisualStyleTaskFactoryProps = new Properties();
-		createNewVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		createNewVisualStyleTaskFactoryProps.setProperty("title", "Create New Style");
-		createNewVisualStyleTaskFactoryProps.setProperty("menu", "main");
+		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CreateNewVisualStyleTask.TITLE);
+		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
+		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "1.0");
 		registerAllServices(bc,createNewVisualStyleTaskFactory, createNewVisualStyleTaskFactoryProps);
-
-		final RemoveVisualStyleTaskFactory removeVisualStyleTaskFactory = new RemoveVisualStyleTaskFactory(servicesUtil);
-		final Properties removeVisualStyleTaskFactoryProps = new Properties();
-		removeVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		removeVisualStyleTaskFactoryProps.setProperty("title", "Remove Style");
-		removeVisualStyleTaskFactoryProps.setProperty("menu", "main");
-		registerAllServices(bc,removeVisualStyleTaskFactory, removeVisualStyleTaskFactoryProps);
-
-		final RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
-		final Properties renameVisualStyleTaskFactoryProps = new Properties();
-		renameVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		renameVisualStyleTaskFactoryProps.setProperty("title", "Rename Style");
-		renameVisualStyleTaskFactoryProps.setProperty("menu", "main");
-		registerAllServices(bc, renameVisualStyleTaskFactory, renameVisualStyleTaskFactoryProps);
 
 		final CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(servicesUtil);
 		final Properties copyVisualStyleTaskFactoryProps = new Properties();
-		copyVisualStyleTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		copyVisualStyleTaskFactoryProps.setProperty("title", "Copy Style");
-		copyVisualStyleTaskFactoryProps.setProperty("menu", "main");
+		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CopyVisualStyleTask.TITLE);
+		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
+		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "2.0");
 		registerAllServices(bc, copyVisualStyleTaskFactory, copyVisualStyleTaskFactoryProps);
 		
+		final RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
+		final Properties renameVisualStyleTaskFactoryProps = new Properties();
+		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, RenameVisualStyleTask.TITLE);
+		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
+		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "3.0");
+		registerAllServices(bc, renameVisualStyleTaskFactory, renameVisualStyleTaskFactoryProps);
+		
+		final RemoveVisualStyleTaskFactory removeVisualStyleTaskFactory = new RemoveVisualStyleTaskFactory(servicesUtil);
+		final Properties removeVisualStyleTaskFactoryProps = new Properties();
+		removeVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		removeVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, RemoveVisualStyleTask.TITLE);
+		removeVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
+		removeVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "4.0");
+		registerAllServices(bc,removeVisualStyleTaskFactory, removeVisualStyleTaskFactoryProps);
+
 		final MakeVisualStylesDefaultTaskFactory makeVisualStylesDefaultTaskFactory = new MakeVisualStylesDefaultTaskFactory(servicesUtil);
 		final Properties makeVisualStylesDefaultTaskFactoryProps = new Properties();
-		makeVisualStylesDefaultTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		makeVisualStylesDefaultTaskFactoryProps.setProperty("title", MakeVisualStylesDefaultTask.TITLE);
-		makeVisualStylesDefaultTaskFactoryProps.setProperty("menu", "main");
+		makeVisualStylesDefaultTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		makeVisualStylesDefaultTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, MakeVisualStylesDefaultTask.TITLE);
+		makeVisualStylesDefaultTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
+		makeVisualStylesDefaultTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "5.0");
+		makeVisualStylesDefaultTaskFactoryProps.setProperty(ServicePropertiesUtil.INSERT_SEPARATOR_BEFORE, "true");
 		registerAllServices(bc, makeVisualStylesDefaultTaskFactory, makeVisualStylesDefaultTaskFactoryProps);
 
 		final CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(servicesUtil);
 		final Properties createLegendTaskFactoryProps = new Properties();
-		createLegendTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		createLegendTaskFactoryProps.setProperty("title", "Create Legend");
-		createLegendTaskFactoryProps.setProperty("menu", "main");
+		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CreateLegendTask.TITLE);
+		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
+		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "6.0");
+		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.INSERT_SEPARATOR_BEFORE, "true");
 		registerAllServices(bc, createLegendTaskFactory, createLegendTaskFactoryProps);
 
 		// Visual Styles Panel Context Menu
 		// -------------------------------------------------------------------------------------------------------------
-		final RemoveVisualMappingsTaskFactory removeVisualMappingsTaskFactory = new RemoveVisualMappingsTaskFactory(servicesUtil);
-		final Properties removeVisualMappingTaskFactoryProps = new Properties();
-		removeVisualMappingTaskFactoryProps.setProperty("service.type", "vizmapUI.taskFactory");
-		removeVisualMappingTaskFactoryProps.setProperty("title", "Remove Mappings from Selected Visual Properties");
-		removeVisualMappingTaskFactoryProps.setProperty("menu", "context");
-		registerAllServices(bc, removeVisualMappingsTaskFactory, removeVisualMappingTaskFactoryProps);
-		
+		// Edit sub-menu
 		final EditSelectedDiscreteValuesAction editAction = new EditSelectedDiscreteValuesAction(servicesUtil, editorManager);
 		final Properties editSelectedProps = new Properties();
-		editSelectedProps.setProperty("service.type", "vizmapUI.contextMenu");
-		editSelectedProps.setProperty("title", EditSelectedDiscreteValuesAction.NAME);
-		editSelectedProps.setProperty("menu", "context");
+		editSelectedProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		editSelectedProps.setProperty(ServicePropertiesUtil.TITLE, EditSelectedDiscreteValuesAction.NAME);
+		editSelectedProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
+		editSelectedProps.setProperty(ServicePropertiesUtil.GRAVITY, "1.0");
 		registerService(bc, editAction, CyAction.class, editSelectedProps);
 		
 		final RemoveSelectedDiscreteValuesAction removeAction = new RemoveSelectedDiscreteValuesAction(servicesUtil);
 		final Properties removeSelectedProps = new Properties();
-		removeSelectedProps.setProperty("service.type", "vizmapUI.contextMenu");
-		removeSelectedProps.setProperty("title", RemoveSelectedDiscreteValuesAction.NAME);
-		removeSelectedProps.setProperty("menu", "context");
+		removeSelectedProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		removeSelectedProps.setProperty(ServicePropertiesUtil.TITLE, RemoveSelectedDiscreteValuesAction.NAME);
+		removeSelectedProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
+		removeSelectedProps.setProperty(ServicePropertiesUtil.GRAVITY, "2.0");
 		registerService(bc, removeAction, CyAction.class, removeSelectedProps);
+		
+		final RemoveVisualMappingsTaskFactory removeVisualMappingsTaskFactory = new RemoveVisualMappingsTaskFactory(servicesUtil);
+		final Properties removeVisualMappingTaskFactoryProps = new Properties();
+		removeVisualMappingTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		removeVisualMappingTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, "Remove Mappings from Selected Visual Properties");
+		removeVisualMappingTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
+		removeVisualMappingTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "3.0");
+		removeVisualMappingTaskFactoryProps.setProperty(ServicePropertiesUtil.INSERT_SEPARATOR_BEFORE, "true");
+		registerAllServices(bc, removeVisualMappingsTaskFactory, removeVisualMappingTaskFactoryProps);
 		
 		// Discrete value generators:
 		final RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
 		final Properties rainbowGeneratorProps = new Properties();
-		rainbowGeneratorProps.setProperty("service.type", "vizmapUI.contextMenu");
-		rainbowGeneratorProps.setProperty("title", "Rainbow");
-		rainbowGeneratorProps.setProperty("menu", "context");
+		rainbowGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		rainbowGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Rainbow");
+		rainbowGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, rainbowGenerator, DiscreteMappingGenerator.class, rainbowGeneratorProps);
 
 		final RainbowOscColorMappingGenerator rainbowOscGenerator = new RainbowOscColorMappingGenerator(Color.class);
 		final Properties rainbowOscGeneratorProps = new Properties();
-		rainbowOscGeneratorProps.setProperty("service.type", "vizmapUI.contextMenu");
-		rainbowOscGeneratorProps.setProperty("title", "Rainbow OSC");
-		rainbowOscGeneratorProps.setProperty("menu", "context");
+		rainbowOscGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI.contextMenu");
+		rainbowOscGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Rainbow OSC");
+		rainbowOscGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, rainbowOscGenerator, DiscreteMappingGenerator.class, rainbowOscGeneratorProps);
 
 		final RandomColorMappingGenerator randomColorGenerator = new RandomColorMappingGenerator(Color.class);
 		final Properties randomColorGeneratorProps = new Properties();
-		randomColorGeneratorProps.setProperty("service.type", "vizmapUI.contextMenu");
-		randomColorGeneratorProps.setProperty("title", "Random Color");
-		randomColorGeneratorProps.setProperty("menu", "context");
+		randomColorGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI.contextMenu");
+		randomColorGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Random Color");
+		randomColorGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, randomColorGenerator, DiscreteMappingGenerator.class, randomColorGeneratorProps);
 		
 		final NumberSeriesMappingGenerator<Number> seriesGenerator = new NumberSeriesMappingGenerator<Number>(Number.class);
 		final Properties numberSeriesGeneratorProps = new Properties();
-		numberSeriesGeneratorProps.setProperty("service.type", "vizmapUI.contextMenu");
-		numberSeriesGeneratorProps.setProperty("title", "Number Series");
-		numberSeriesGeneratorProps.setProperty("menu", "context");
+		numberSeriesGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI.contextMenu");
+		numberSeriesGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Number Series");
+		numberSeriesGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, seriesGenerator, DiscreteMappingGenerator.class, numberSeriesGeneratorProps);
 		
 		final RandomNumberMappingGenerator randomNumberGenerator = new RandomNumberMappingGenerator();
 		final Properties randomNumberGeneratorProps = new Properties();
-		randomNumberGeneratorProps.setProperty("service.type", "vizmapUI.contextMenu");
-		randomNumberGeneratorProps.setProperty("title", "Random Numbers");
-		randomNumberGeneratorProps.setProperty("menu", "context");
+		randomNumberGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI.contextMenu");
+		randomNumberGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Random Numbers");
+		randomNumberGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, randomNumberGenerator, DiscreteMappingGenerator.class, randomNumberGeneratorProps);
 		
 		final FitLabelMappingGenerator<Double> fitLabelMappingGenerator = new FitLabelMappingGenerator<Double>(Double.class, servicesUtil);
 		final Properties fitLabelGeneratorProps = new Properties();
-		fitLabelGeneratorProps.setProperty("service.type", "vizmapUI.contextMenu");
-		fitLabelGeneratorProps.setProperty("title", "Fit label width (only works with 'name' column to node size or width)");
-		fitLabelGeneratorProps.setProperty("menu", "context");
+		fitLabelGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI.contextMenu");
+		fitLabelGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Fit label width (only works with 'name' column to node size or width)");
+		fitLabelGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, fitLabelMappingGenerator, DiscreteMappingGenerator.class, fitLabelGeneratorProps);
 		
 		// Create the main GUI component

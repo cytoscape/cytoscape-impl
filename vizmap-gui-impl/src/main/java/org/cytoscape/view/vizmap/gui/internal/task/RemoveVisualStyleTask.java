@@ -33,6 +33,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
@@ -40,6 +41,8 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class RemoveVisualStyleTask extends AbstractTask {
 
+	public static final String TITLE = "Remove Style";
+	
 	private final VisualStyle style;
 	private final ServicesUtil servicesUtil;
 	private final Set<CyNetworkView> networkViews = new HashSet<CyNetworkView>();
@@ -52,6 +55,11 @@ public class RemoveVisualStyleTask extends AbstractTask {
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return TITLE;
+	}
 	
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
@@ -88,7 +96,7 @@ public class RemoveVisualStyleTask extends AbstractTask {
 	private class RemoveVisualStyleEdit extends AbstractCyEdit {
 
 		public RemoveVisualStyleEdit() {
-			super("Remove Style");
+			super(TITLE);
 		}
 
 		@Override

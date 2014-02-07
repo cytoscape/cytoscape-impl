@@ -72,10 +72,14 @@ import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.GravityTracker;
+import org.cytoscape.util.swing.MenuGravityTracker;
+import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -108,10 +112,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	/** Menu items under the options button */
 	private JPopupMenu mainMenu;
+	private PopupMenuGravityTracker mainMenuGravityTracker;
 	
 	/** Context menu */
 	private JPopupMenu contextPopupMenu;
 	private JMenu editSubMenu;
+	private MenuGravityTracker editSubMenuGravityTracker;
 	private JMenu mapValueGeneratorsSubMenu;
 	
 	private Map<String/*visual style name*/, JPanel> defViewPanelsMap;
@@ -259,6 +265,59 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		final VisualStyleDropDownButton vsBtn = getStylesBtn();
 		vsBtn.setItems(styles);
 	}
+	
+	public void hideSelectedItems() {
+		final VisualPropertySheet vpSheet = getSelectedVisualPropertySheet();
+		
+		if (vpSheet != null) {
+			for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
+				vpSheet.setVisible(item, false);
+		}
+	}
+	
+	/**
+	 * Add the menu item to the "Options" menu.
+	 * @param menuItem
+	 * @param gravity
+	 * @param insertSeparatorBefore
+	 * @param insertSeparatorAfter
+	 */
+	public void addOption(final JMenuItem menuItem, final double gravity, boolean insertSeparatorBefore,
+			boolean insertSeparatorAfter) {
+		addMenuItem(getMainMenuGravityTracker(), menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+		
+		if (menuItem.getAction() instanceof CyAction)
+			getMainMenu().addPopupMenuListener((CyAction)menuItem.getAction());
+	}
+
+	public void removeOption(final JMenuItem menuItem) {
+		getMainMenuGravityTracker().removeComponent(menuItem);
+		
+		if (menuItem.getAction() instanceof CyAction)
+			getMainMenu().removePopupMenuListener((CyAction)menuItem.getAction());
+	}
+	
+	/**
+	 * Add the menu item under the "Edit" context sub-menu.
+	 * @param menuItem
+	 * @param gravity
+	 * @param insertSeparatorBefore
+	 * @param insertSeparatorAfter
+	 */
+	public void addContextMenuItem(final JMenuItem menuItem, final double gravity, boolean insertSeparatorBefore,
+			boolean insertSeparatorAfter) {
+		addMenuItem(getEditSubMenuGravityTracker(), menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+		
+		if (menuItem.getAction() instanceof CyAction)
+			getContextMenu().addPopupMenuListener((CyAction)menuItem.getAction());
+	}
+	
+	public void removeContextMenuItem(final JMenuItem menuItem) {
+		getEditSubMenuGravityTracker().removeComponent(menuItem);
+		
+		if (menuItem.getAction() instanceof CyAction)
+			getContextMenu().removePopupMenuListener((CyAction)menuItem.getAction());
+	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================
 
@@ -376,13 +435,31 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return mapValueGeneratorsSubMenu;
 	}
 	
-	private void hideSelectedItems() {
-		final VisualPropertySheet vpSheet = getSelectedVisualPropertySheet();
-		
-		if (vpSheet != null) {
-			for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
-				vpSheet.setVisible(item, false);
+	private PopupMenuGravityTracker getMainMenuGravityTracker() {
+		if (mainMenuGravityTracker == null) {
+			mainMenuGravityTracker = new PopupMenuGravityTracker(getMainMenu());
 		}
+		
+		return mainMenuGravityTracker;
+	}
+	
+	private MenuGravityTracker getEditSubMenuGravityTracker() {
+		if (editSubMenuGravityTracker == null) {
+			editSubMenuGravityTracker = new MenuGravityTracker(getEditSubMenu());
+		}
+		
+		return editSubMenuGravityTracker;
+	}
+	
+	private void addMenuItem(final GravityTracker gravityTracker, final JMenuItem menuItem, final double gravity,
+			boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
+		if (insertSeparatorBefore)
+			gravityTracker.addMenuSeparator(gravity - .0001);
+		
+		gravityTracker.addMenuItem(menuItem, gravity);
+		
+		if (insertSeparatorAfter)
+			gravityTracker.addMenuSeparator(gravity + .0001);
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

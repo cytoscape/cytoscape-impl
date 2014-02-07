@@ -37,6 +37,8 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class RenameVisualStyleTask extends AbstractTask {
 
+	public static final String TITLE = "Rename Style";
+
 	@Tunable(description = "Enter new Style name:")
 	public String vsName;
 
@@ -58,7 +60,7 @@ public class RenameVisualStyleTask extends AbstractTask {
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Rename Style";
+		return TITLE;
 	}
 	
 	@Override
