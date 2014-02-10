@@ -245,7 +245,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	public NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers() {
 		DynamicComboBoxModel<FilterElement> model = getElementComboBoxModel();
 		
-		NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers = new NamedTransformer[model.getSize() - 1];
+		NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers = new NamedTransformer[model.getSize()];
 		int i = 0;
 		for (FilterElement element : model) {
 			if (element.filter == null) {
