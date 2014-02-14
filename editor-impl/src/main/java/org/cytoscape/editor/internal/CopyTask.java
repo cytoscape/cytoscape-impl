@@ -24,55 +24,52 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 public class CopyTask extends AbstractTask {
-	CyNetworkView netView;
-	ClipboardManagerImpl mgr;
-	List<CyNode> selNodes;
-	List<CyEdge> selEdges;
+	
+	private final CyNetworkView netView;
+	private final ClipboardManagerImpl clipMgr;
+	private final Set<CyNode> selNodes;
+	private final Set<CyEdge> selEdges;
 	
 	public CopyTask(final CyNetworkView netView, final ClipboardManagerImpl clipMgr) {
 		this.netView = netView;
 		// Get all of the selected nodes and edges
-		selNodes = CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true);
-		selEdges = CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true);
+		selNodes = new HashSet<CyNode>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		selEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
 
 		// Save them in our list
-		mgr = clipMgr;
+		this.clipMgr = clipMgr;
 	}
 
-	public CopyTask(final CyNetworkView netView, final View<?extends CyIdentifiable> objView, 
+	@SuppressWarnings("unchecked")
+	public CopyTask(final CyNetworkView netView,
+					final View<?extends CyIdentifiable> objView, 
 	                final ClipboardManagerImpl clipMgr) {
-
 		// Get all of the selected nodes and edges first
 		this(netView, clipMgr);
 
 		// Now, make sure we add our
-		if (objView.getModel() instanceof CyNode) {
-			CyNode node = ((View<CyNode>)objView).getModel();
-			if (!selNodes.contains(node))
-				selNodes.add(node);
-		} else if (objView.getModel() instanceof CyEdge) {
-			CyEdge edge = ((View<CyEdge>)objView).getModel();
-			if (!selEdges.contains(edge))
-				selEdges.add(edge);
-		}
+		if (objView.getModel() instanceof CyNode)
+			selNodes.add(((View<CyNode>)objView).getModel());
+		else if (objView.getModel() instanceof CyEdge)
+			selEdges.add(((View<CyEdge>)objView).getModel());
 	}
 
+	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		mgr.copy(netView, selNodes, selEdges);
+		clipMgr.copy(netView, selNodes, selEdges);
 	}
 }

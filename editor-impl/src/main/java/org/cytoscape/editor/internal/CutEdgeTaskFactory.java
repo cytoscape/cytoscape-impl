@@ -24,30 +24,34 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import java.util.List;
-
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.AbstractEdgeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 public class CutEdgeTaskFactory extends AbstractEdgeViewTaskFactory {
-	final CyNetworkManager netMgr;
-	final ClipboardManagerImpl clipMgr;
-	final UndoSupport undoSupport;
+	
+	private final ClipboardManagerImpl clipMgr;
+	private final VisualMappingManager vmMgr;
+	private final UndoSupport undoSupport;
+	private final CyEventHelper eventHelper;
 
-	public CutEdgeTaskFactory(final ClipboardManagerImpl clipboardMgr, final UndoSupport undoSupport,
-	                          final CyNetworkManager netMgr) {
-		this.netMgr = netMgr;
+	public CutEdgeTaskFactory(final ClipboardManagerImpl clipboardMgr,
+							  final VisualMappingManager vmMgr,
+							  final UndoSupport undoSupport,
+	                          final CyEventHelper eventHelper) {
 		this.clipMgr = clipboardMgr;
+		this.vmMgr = vmMgr;
 		this.undoSupport = undoSupport;
+		this.eventHelper = eventHelper;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyEdge> edgeView, CyNetworkView networkView) {
-		return new TaskIterator(new CutTask(networkView, edgeView, clipMgr, undoSupport));
+		return new TaskIterator(new CutTask(networkView, edgeView, clipMgr, vmMgr, undoSupport, eventHelper));
 	}
 }

@@ -79,7 +79,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, networkViewLocationTaskFactory, NetworkViewLocationTaskFactory.class, networkViewLocationTaskFactoryProps);
 
 		// We need a place to hold the objects themselves
-		ClipboardManagerImpl clipboardManager = new ClipboardManagerImpl();
+		ClipboardManagerImpl clipboardManager = new ClipboardManagerImpl(cyEventHelperServiceRef, visualMappingManagerServiceRef);
 
 		// Copy node
 		NetworkViewTaskFactory copyTaskFactory = 
@@ -95,7 +95,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Cut node
 		NetworkViewTaskFactory cutTaskFactory = 
-			new CutTaskFactory(clipboardManager, undoSupportServiceRef, cyNetworkManagerServiceRef);
+			new CutTaskFactory(clipboardManager, visualMappingManagerServiceRef, undoSupportServiceRef, cyEventHelperServiceRef);
 		Properties cutTaskFactoryProps = new Properties();
 		cutTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		cutTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -135,7 +135,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Cut node
 		NodeViewTaskFactory cutNodeTaskFactory = 
-			new CutNodeTaskFactory(clipboardManager, undoSupportServiceRef, cyNetworkManagerServiceRef);
+			new CutNodeTaskFactory(clipboardManager, visualMappingManagerServiceRef, undoSupportServiceRef, cyEventHelperServiceRef);
 		Properties cutNodeTaskFactoryProps = new Properties();
 		cutNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		cutNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
@@ -195,7 +195,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Cut edge
 		EdgeViewTaskFactory cutEdgeTaskFactory = 
-			new CutEdgeTaskFactory(clipboardManager, undoSupportServiceRef, cyNetworkManagerServiceRef);
+			new CutEdgeTaskFactory(clipboardManager, visualMappingManagerServiceRef, undoSupportServiceRef, cyEventHelperServiceRef);
 		Properties cutEdgeTaskFactoryProps = new Properties();
 		cutEdgeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		cutEdgeTaskFactoryProps.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);

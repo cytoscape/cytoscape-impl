@@ -30,15 +30,26 @@ package org.cytoscape.editor.internal;
  */
 
 import java.util.List;
+import java.util.Set;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 
 public final class ClipboardManagerImpl {
+	
 	private ClipboardImpl currentClipboard;
+	private final CyEventHelper eventHelper;
+	private final VisualMappingManager vmMgr;
+
+	public ClipboardManagerImpl(final CyEventHelper eventHelper, final VisualMappingManager vmMgr) {
+		this.eventHelper = eventHelper;
+		this.vmMgr = vmMgr;
+	}
 
 	public boolean clipboardHasData() {
 		if (currentClipboard == null)
@@ -51,18 +62,20 @@ public final class ClipboardManagerImpl {
 		this.currentClipboard = clip;
 	}
 
-	public void copy(CyNetworkView networkView, List<CyNode> nodes, List<CyEdge> edges) {
-		currentClipboard = new ClipboardImpl(networkView, nodes, edges);
+	public void copy(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges) {
+		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
+		currentClipboard = new ClipboardImpl(networkView, nodes, edges, lexicon, eventHelper);
 	}
 
-	public void cut(CyNetworkView networkView, List<CyNode> nodes, List<CyEdge> edges) {
+	public void cut(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges) {
 		copy(networkView, nodes, edges);
 		networkView.getModel().removeEdges(edges);
 		networkView.getModel().removeNodes(nodes);
+		networkView.updateView();
 	}
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
+		if (currentClipboard == null) return null;
 		return currentClipboard.paste(targetView, x, y);
 	}
-
 }
