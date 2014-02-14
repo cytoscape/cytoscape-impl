@@ -26,30 +26,31 @@ package org.cytoscape.editor.internal;
 
 import java.util.List;
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 public class CutTaskFactory extends AbstractNetworkViewTaskFactory {
-	final CyNetworkManager netMgr;
-	final ClipboardManagerImpl clipMgr;
-	final UndoSupport undoSupport;
+	
+	private final ClipboardManagerImpl clipMgr;
+	private final VisualMappingManager vmMgr;
+	private final UndoSupport undoSupport;
+	private CyEventHelper eventHelper;
 
-	public CutTaskFactory(final ClipboardManagerImpl clipboardMgr, final UndoSupport undoSupport, 
-	                      final CyNetworkManager netMgr) {
-		this.netMgr = netMgr;
+	public CutTaskFactory(final ClipboardManagerImpl clipboardMgr,
+						  final VisualMappingManager vmMgr,
+						  final UndoSupport undoSupport, 
+	                      final CyEventHelper eventHelper) {
 		this.clipMgr = clipboardMgr;
+		this.vmMgr = vmMgr;
 		this.undoSupport = undoSupport;
+		this.eventHelper = eventHelper;
 	}
 
 	@Override
@@ -66,6 +67,6 @@ public class CutTaskFactory extends AbstractNetworkViewTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView) {
-		return new TaskIterator(new CutTask(networkView, clipMgr, undoSupport));
+		return new TaskIterator(new CutTask(networkView, clipMgr, vmMgr, undoSupport, eventHelper));
 	}
 }
