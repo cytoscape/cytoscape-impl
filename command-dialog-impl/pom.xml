@@ -4,14 +4,12 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.1.0-SNAPSHOT</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.commandDialog</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.commandDialog.internal</bundle.namespace>
-		<cytoscape.api.version>3.1.0-SNAPSHOT</cytoscape.api.version>
-		
 		<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
 		<osgi.api.version>4.2.0</osgi.api.version>
 	</properties>
