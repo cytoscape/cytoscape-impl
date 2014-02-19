@@ -168,9 +168,13 @@ public class PSIMI25EntryMapper {
 	private void mapNodes(final Collection<Interactor> interactors) {
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		
-		// Create default columns
-		nodeTable.createColumn(INTERACTOR_TYPE, String.class, false);
-		nodeTable.createColumn(TAX_ID, String.class, false);
+		// Create default column
+		if(nodeTable.getColumn(INTERACTOR_TYPE) == null) {
+			nodeTable.createColumn(INTERACTOR_TYPE, String.class, false);
+		}
+		if(nodeTable.getColumn(TAX_ID) == null) {
+			nodeTable.createColumn(TAX_ID, String.class, false);
+		}
 		
 		for(final Interactor interactor: interactors) {
 			if(cancelFlag)
@@ -210,7 +214,9 @@ public class PSIMI25EntryMapper {
 		final CyTable edgeTable = network.getDefaultEdgeTable();
 		final CyTable nodeTable = network.getDefaultNodeTable();
 		
-		edgeTable.createListColumn(INTERACTION_TYPE, String.class, false);
+		if(edgeTable.getColumn(INTERACTION_TYPE) == null) {
+			edgeTable.createListColumn(INTERACTION_TYPE, String.class, false);
+		}
 		
 		for(Interaction interaction: interactions) {
 			if(cancelFlag)

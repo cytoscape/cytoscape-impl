@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.group;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
@@ -36,19 +37,33 @@ import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.task.edit.CollapseGroupTaskFactory;
 import org.cytoscape.task.edit.ExpandGroupTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory implements CollapseGroupTaskFactory,
-		ExpandGroupTaskFactory {
+public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory 
+                                             implements CollapseGroupTaskFactory, ExpandGroupTaskFactory,
+                                                        TaskFactory {
 	
+	private CyApplicationManager appMgr;
+	private CyNetworkViewManager viewMgr;
 	private CyGroupManager mgr;
 	private boolean collapse;
 
-	public GroupNodeContextTaskFactoryImpl(CyGroupManager mgr, boolean collapse) {
+	public GroupNodeContextTaskFactoryImpl(CyApplicationManager appMgr, CyNetworkViewManager viewMgr,
+	                                       CyGroupManager mgr, boolean collapse) {
 		super();
 		this.mgr = mgr;
+		this.appMgr = appMgr;
+		this.viewMgr = viewMgr;
 		this.collapse = collapse;
+	}
+
+	public boolean isReady() {return true;}
+
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new CollapseGroupTask(appMgr, viewMgr, mgr, collapse));
 	}
 
 	@Override
@@ -86,7 +101,7 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 			}
 		}
 
-		return new TaskIterator(new CollapseGroupTask(netView.getModel(), groups, mgr, collapse));
+		return new TaskIterator(new CollapseGroupTask(netView.getModel(), groups, viewMgr, mgr, collapse));
 	}
 
 	private CyGroup getExpandedGroupForNode(CyNode node, CyNetworkView netView) {

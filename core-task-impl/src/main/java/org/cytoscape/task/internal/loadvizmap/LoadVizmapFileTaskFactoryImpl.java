@@ -45,6 +45,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +57,6 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final VisualMappingManager vmMgr;
 	private final SynchronousTaskManager<?> syncTaskManager;
-
-	private LoadVizmapFileTask task;
 
 	private final TunableSetter tunableSetter;
 
@@ -71,8 +70,11 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		task = new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
-		return new TaskIterator(2, task);
+		return new TaskIterator(2, createTask());
+	}
+	
+	public LoadVizmapFileTask createTask() {
+		return new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
 	}
 
 	public Set<VisualStyle> loadStyles(File f) {
@@ -82,8 +84,9 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		Map<String, Object> m = new HashMap<String, Object>();
 		m.put("file", f);
 
+		LoadVizmapFileTask task = createTask();
 		syncTaskManager.setExecutionContext(m);
-		syncTaskManager.execute(createTaskIterator());
+		syncTaskManager.execute(new TaskIterator(2, task));
 
 		return task.getStyles();
 	}
@@ -106,11 +109,16 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
+		return createTaskIterator(file, null);
+	}
+
+	@Override
+	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
 
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("file", file);
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m);
+		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer);
 	}
 
 	// Read the inputStream and save the content in a tmp file

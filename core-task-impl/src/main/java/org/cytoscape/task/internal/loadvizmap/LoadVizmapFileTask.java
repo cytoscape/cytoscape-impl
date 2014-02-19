@@ -25,6 +25,8 @@ package org.cytoscape.task.internal.loadvizmap;
  */
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.io.read.VizmapReader;
@@ -32,6 +34,7 @@ import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -40,10 +43,10 @@ public class LoadVizmapFileTask extends AbstractTask {
 
 	@ProvidesTitle
 	public String getTitle() {
-		return "Import Vizmap";
+		return "Import Style";
 	}
 	
-	@Tunable(description = "Vizmap file", params = "fileCategory=vizmap;input=true")
+	@Tunable(description = "Style file", params = "fileCategory=vizmap;input=true")
 	public File file;
 
 	private final VisualMappingManager vmMgr;
@@ -78,7 +81,7 @@ public class LoadVizmapFileTask extends AbstractTask {
 	}
 }
 
-class AddVisualStylesTask extends AbstractTask {
+class AddVisualStylesTask extends AbstractTask implements ObservableTask {
 
 	private final VizmapReader reader;
 	private final VisualMappingManager vmMgr;
@@ -116,6 +119,20 @@ class AddVisualStylesTask extends AbstractTask {
 			}
 		}
 		taskMonitor.setProgress(1.0);
+	}
+
+	@Override
+	public Object getResults(Class expectedResult) {
+		if (expectedResult.equals(List.class))
+			return new ArrayList<VisualStyle>(styles);
+		else if (expectedResult.equals(String.class)) {
+			String strRes = "";
+			for (VisualStyle style: styles) {
+				strRes = style.toString()+"\n";
+			}
+			return strRes.substring(0, strRes.length()-1);
+		} else
+			return styles;
 	}
 
 	public Set<VisualStyle> getStyles() {

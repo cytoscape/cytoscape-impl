@@ -52,8 +52,12 @@ import javax.swing.event.ListSelectionListener;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.LoadNetstatsAction;
+import de.mpg.mpi_inf.bioinf.netanalyzer.SampleTaskMonitor;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkAnalysisReport;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
@@ -66,6 +70,9 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
 public class BatchResultsDialog extends JDialog implements ActionListener, ListSelectionListener {
 
 	private final CyNetworkReaderManager cyNetworkViewReaderMgr;
+	private final CyNetworkManager cyNetworkMgr;
+	private final CyNetworkViewManager netViewMgr;
+	
 	private final Frame aOwner;
 	
 	private final LoadNetstatsAction action;
@@ -78,13 +85,16 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 	 * @param aReports
 	 *            List of analysis reports to be visualized.
 	 */
-	public BatchResultsDialog(Frame aOwner, List<NetworkAnalysisReport> aReports, CyNetworkReaderManager cyNetworkViewReaderMgr, final LoadNetstatsAction action) {
+	public BatchResultsDialog(Frame aOwner, List<NetworkAnalysisReport> aReports, CyNetworkReaderManager cyNetworkViewReaderMgr, CyNetworkManager cyNetworkMgr,
+			CyNetworkViewManager netViewMgr, final LoadNetstatsAction action) {
 		super(aOwner, Messages.DT_BATCHRESULTS, false);
 		this.action = action;
 		
 		init(aReports);
 		setLocationRelativeTo(aOwner);
 		this.cyNetworkViewReaderMgr = cyNetworkViewReaderMgr;
+		this.cyNetworkMgr = cyNetworkMgr;
+		this.netViewMgr = netViewMgr;
 		this.aOwner = aOwner;
 	}
 
@@ -122,11 +132,21 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 						action.openNetstats(aOwner,file);
 					}
 				} else if (c == 0) {
+					// Open network and view when the user clicks on it
 					final File file = model.getNetwork(r);
 					if (file != null && file.isFile()) {
 						CyNetworkReader reader = cyNetworkViewReaderMgr.getReader(file.toURI(), file.getName());
-						CyNetwork[] networks = reader.getNetworks();
-						// TODO do something with the networks?
+						try {
+							// TODO Use the Task's task monitor
+							reader.run(new SampleTaskMonitor());
+							CyNetwork network = reader.getNetworks()[0];
+							network.getRow(network).set(CyNetwork.NAME, file.getName());
+							cyNetworkMgr.addNetwork(network);
+							CyNetworkView view = reader.buildCyNetworkView(network);
+							netViewMgr.addNetworkView(view);
+						} catch (Exception ex) {
+							// ignore
+						}
 					}
 				}
 			} catch (ClassCastException ex) {

@@ -24,12 +24,19 @@ package org.cytoscape.cmdline.gui.internal;
  * #L%
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.LoadTableFileTaskFactory;
-import org.cytoscape.task.read.LoadTableURLTaskFactory;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
@@ -39,17 +46,6 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
-
-import java.util.Properties;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 public class StartupConfig {
@@ -63,8 +59,6 @@ public class StartupConfig {
 	private LoadNetworkFileTaskFactory networkFileLoader;
 	private LoadNetworkURLTaskFactory networkURLLoader;
 	private LoadVizmapFileTaskFactory visualStylesLoader;
-	private LoadTableURLTaskFactory attributesURLLoader;
-	private LoadTableFileTaskFactory attributesFileLoader;
 	private final TaskManager taskManager;
 	
 	
@@ -74,10 +68,8 @@ public class StartupConfig {
 	private ArrayList<File> networkFiles;
 	private ArrayList<URL> networkURLs;
 	private ArrayList<File> vizmapFiles;
-	private ArrayList<File> tableFiles;
-	private ArrayList<URL> tableURLs;
 
-	public StartupConfig(Properties globalProps, StreamUtil streamUtil, LoadTableFileTaskFactory attributesFileLoader,
+	public StartupConfig(Properties globalProps, StreamUtil streamUtil,
 			OpenSessionTaskFactory loadSession, LoadNetworkFileTaskFactory networkFileLoader,
 			LoadNetworkURLTaskFactory networkURLLoader, LoadVizmapFileTaskFactory visualStylesLoader, TaskManager taskManager,
 			CyServiceRegistrar registrar) {
@@ -88,14 +80,11 @@ public class StartupConfig {
 		this.networkURLLoader = networkURLLoader;
 		this.visualStylesLoader = visualStylesLoader;
 		this.taskManager = taskManager;
-		this.attributesFileLoader = attributesFileLoader;
 		
 		this.registrar = registrar;
 		networkFiles= new ArrayList<File>();
 		networkURLs = new ArrayList<URL>();
 		vizmapFiles = new ArrayList<File>();
-		tableFiles = new ArrayList<File>();
-		tableURLs = new ArrayList<URL>();
 	}
 
 	public void setProperties(String[] potentialProps) {
@@ -136,13 +125,6 @@ public class StartupConfig {
 		// We do this so that anything specified on the command line
 		// overrides anything specified in a file.
 		localProps.putAll(argProps);
-	}
-
-	public void setSimplifiedPlugins(String[] args){
-		taskStart = true;
-	}
-
-	public void setBundlePlugins(String[] args){
 		taskStart = true;
 	}
 
@@ -152,6 +134,34 @@ public class StartupConfig {
 		}catch(Exception e){
 			logger.error(e.toString());
 		}
+		taskStart = true;
+	}
+
+	public void setCommandScript(String args) {
+		try{
+			File scriptName = new File(args);
+		}catch(Exception e){
+			System.err.println("Can't find script file: "+args+": "+e.toString());
+			logger.error(e.toString());
+			return;
+		}
+		localProps.setProperty("scriptFile", args);
+		taskStart = true;
+	}
+
+	public void setRestPort(String args) {
+		if (args == null || args.length() == 0)
+			args = "8080";
+		else {
+			try {
+				Integer port = Integer.valueOf(args);
+			} catch(Exception e) {
+				System.err.println("Rest port argument not an integer: "+args);
+				logger.error(e.toString());
+				return;
+			}
+		}
+		localProps.setProperty("restPort", args);
 		taskStart = true;
 	}
 
@@ -189,26 +199,6 @@ public class StartupConfig {
 		taskStart = true;
 	}
 
-
-	public void setTables(String[] args){
-		
-		tableFiles = new ArrayList<File>();
-		tableURLs = new ArrayList<URL>();
-		
-		for (String name : args){
-			try{
-			if (StreamUtil.URL_PATTERN.matches(name))
-				tableURLs.add(new URL(name));
-			else 
-				tableFiles.add(new File(name));
-			}catch (Exception e){
-				logger.error(e.toString());
-			}
-		}
-		
-		taskStart = true;
-	}
-
 	public void start() {
 		// set the properties
 		// no need to do this in a task since it's so fast
@@ -232,10 +222,6 @@ public class StartupConfig {
 
 		ArrayList<TaskIterator> taskIteratorList = new ArrayList<TaskIterator>();
 		
-	/*
-		taskIterator.append( pluginManager.loadSimplifiedPlugins() );
-		taskIterator.append( pluginManager.loadBundlePlugins() );
-	 */			
 		if ( sessionName != null ) 	{
 			taskIteratorList.add( loadSession.createTaskIterator(sessionName));
 
@@ -244,10 +230,6 @@ public class StartupConfig {
 				taskIteratorList.add( networkFileLoader.createTaskIterator(network) );
 			for ( URL network : networkURLs )
 				taskIteratorList.add( networkURLLoader.loadCyNetworks(network) );
-			for ( File table : tableFiles )
-				taskIteratorList.add( attributesFileLoader.createTaskIterator(table) );
-			for ( URL table : tableURLs )
-				taskIteratorList.add( attributesURLLoader.createTaskIterator(table) );
 			for ( File vizmap : vizmapFiles )
 				taskIteratorList.add( visualStylesLoader.createTaskIterator(vizmap));
 		}
@@ -267,7 +249,7 @@ public class StartupConfig {
 
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
-			//DO nothing it is a dummy tas just to initiate the iterator
+			//DO nothing it is a dummy task just to initiate the iterator
 		}
 		
 	}

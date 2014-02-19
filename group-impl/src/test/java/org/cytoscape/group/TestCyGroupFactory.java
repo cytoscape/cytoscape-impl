@@ -208,7 +208,7 @@ public class TestCyGroupFactory {
 			assertNotNull(group2);
 			assertEqualWithoutOrder(group2.getNodeList(), Arrays.asList(nodeD, nodeE));
 			assertEqualWithoutOrder(group2.getInternalEdgeList(), Arrays.asList(edge4));
-			assertTrue(group2.getExternalEdgeList().size()==6); // 4 external edges + 2 meta-edges
+			assertTrue(group2.getExternalEdgeList().size()==4); // 4 external edges, we create meta-edges when we collapse
 
 			// Collapse both groups
 			group1.collapse(net);

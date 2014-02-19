@@ -25,19 +25,29 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  */
 
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class RenameVisualStyleTaskFactory extends AbstractTaskFactory {
 
-	private final VisualMappingManager vmm;
+	private final ServicesUtil servicesUtil;
 
-	public RenameVisualStyleTaskFactory(final VisualMappingManager vmm) {
-		this.vmm = vmm;
+	public RenameVisualStyleTaskFactory(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new RenameVisualStyleTask(vmm));
+		final VisualMappingManager vmm = servicesUtil.get(VisualMappingManager.class);
+		
+		return new TaskIterator(new RenameVisualStyleTask(vmm.getCurrentVisualStyle(), servicesUtil));
+	}
+	
+	@Override
+	public boolean isReady() {
+		final VisualMappingManager vmm = servicesUtil.get(VisualMappingManager.class);
+		
+		return vmm != null && !vmm.getDefaultVisualStyle().equals(vmm.getCurrentVisualStyle());
 	}
 }

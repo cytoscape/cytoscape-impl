@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -42,18 +43,24 @@ import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.LayoutStyle;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
@@ -61,10 +68,14 @@ import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.task.ImportNetworkFromPSICQUICTask;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.FinishStatus.Type;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskObserver;
 
-public class SourceStatusPanel extends JPanel {
+public class SourceStatusPanel extends JPanel implements TaskObserver {
 
 	private static final long serialVersionUID = 6996385373168492882L;
 
@@ -95,7 +106,13 @@ public class SourceStatusPanel extends JPanel {
 
 	private final PSIMITagManager tagManager;
 
+	private final CyProperty<Properties> props;
+
+	private final CyServiceRegistrar registrar;
+
 	private int interactionsFound = 0;
+	
+	private final CyAction mergeAction;
 
 	/**
 	 * Creates new form PSICQUICResultDialog
@@ -104,14 +121,18 @@ public class SourceStatusPanel extends JPanel {
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
 			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final PSIMITagManager tagManager) {
+			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
+			final PSIMITagManager tagManager, final CyProperty<Properties> props, final CyServiceRegistrar registrar, final CyAction mergeAction) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
 		this.networkManager = networkManager;
 		this.taskManager = taskManager;
 		this.tagManager = tagManager;
-
+		this.props = props;
+		this.registrar = registrar;
+		this.mergeAction = mergeAction;
+		
 		if (mode == SearchMode.SPECIES)
 			this.mode = SearchMode.MIQL;
 		else
@@ -129,6 +150,8 @@ public class SourceStatusPanel extends JPanel {
 		this.setBorder(titledBorder);
 		this.setOpaque(false);
 		resultTable.setEnabled(false);
+
+		this.registrar.registerService(this, TaskObserver.class, new Properties());
 	}
 
 	private void refreshGUI() {
@@ -151,6 +174,7 @@ public class SourceStatusPanel extends JPanel {
 			return null;
 
 		final Set<String> selectedService = new HashSet<String>();
+		final StringBuilder builder = new StringBuilder();
 
 		TableModel model = this.resultTable.getModel();
 		for (int i = 0; i < model.getRowCount(); i++) {
@@ -158,8 +182,18 @@ public class SourceStatusPanel extends JPanel {
 			if (selected == null)
 				selected = false;
 
-			if (selected)
-				selectedService.add(model.getValueAt(i, DB_NAME_COLUMN_INDEX).toString());
+			if (selected) {
+				final String selectedSource = model.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
+				builder.append(selectedSource + ",");
+				selectedService.add(selectedSource);
+			}
+		}
+
+		// Save selection as property
+		String selectedSourceString = builder.toString();
+		if (selectedSourceString.equals("") == false) {
+			selectedSourceString = selectedSourceString.substring(0, selectedSourceString.length() - 1);
+			props.getProperties().setProperty(PSICQUICSearchUI.PROP_NAME, selectedSourceString);
 		}
 		return selectedService;
 	}
@@ -293,8 +327,6 @@ public class SourceStatusPanel extends JPanel {
 	@SuppressWarnings("unchecked")
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
-		// titlePanel = new javax.swing.JPanel();
-		// titleLabel = new javax.swing.JLabel();
 		resultScrollPane = new javax.swing.JScrollPane();
 
 		buttonPanel = new javax.swing.JPanel();
@@ -302,25 +334,8 @@ public class SourceStatusPanel extends JPanel {
 		cancelButton = new javax.swing.JButton();
 		clearSelectionButton = new JButton();
 		selectAllButton = new JButton();
-		clusterResultCheckBox = new JCheckBox("Merge results into one network");
-		clusterResultCheckBox.setSelected(true);
-
-		// titlePanel.setBackground(java.awt.Color.white);
-		//
-		// titleLabel.setFont(new java.awt.Font("SansSerif", Font.BOLD, 14)); //
-		// NOI18N
-		// titleLabel.setEnabled(false);
-		// titleLabel.setText("Binary Interactions Found: -");
-
-		// GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
-		// titlePanel.setLayout(titlePanelLayout);
-		// titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-		// .addGroup(
-		// titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
-		// .addContainerGap(40, Short.MAX_VALUE)));
-		// titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-		// titlePanelLayout.createSequentialGroup().addContainerGap().addComponent(titleLabel)
-		// .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+		clusterResultCheckBox = new JCheckBox("Automatic Network Merge (Experimental)");
+		clusterResultCheckBox.setSelected(false);
 
 		resultScrollPane.setBackground(java.awt.Color.white);
 		resultScrollPane.setViewportView(resultTable);
@@ -328,8 +343,8 @@ public class SourceStatusPanel extends JPanel {
 		buttonPanel.setBackground(java.awt.Color.white);
 
 		importNetworkButton.setText("Import");
-		importNetworkButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-		importNetworkButton.setForeground(Color.green);
+		importNetworkButton.setFont(new Font("SansSerif", Font.PLAIN, 13));
+		importNetworkButton.setForeground(new Color(255, 0, 55));
 		importNetworkButton.setPreferredSize(new java.awt.Dimension(70, 28));
 		importNetworkButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -358,7 +373,7 @@ public class SourceStatusPanel extends JPanel {
 			}
 		});
 
-		clusterResultCheckBox.setToolTipText("<html><h3>Cluster to single network</h3></html>");
+		clusterResultCheckBox.setToolTipText("<html><h3>Cluster all networks into single network</h3></html>");
 
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
 		buttonPanel.setLayout(buttonPanelLayout);
@@ -394,7 +409,8 @@ public class SourceStatusPanel extends JPanel {
 
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		layout.setHorizontalGroup(layout
+				.createParallelGroup(GroupLayout.Alignment.LEADING)
 				// .addComponent(titlePanel, GroupLayout.DEFAULT_SIZE,
 				// GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(resultScrollPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
@@ -413,25 +429,28 @@ public class SourceStatusPanel extends JPanel {
 	}
 
 	private void importButtonActionPerformed(ActionEvent evt) {
-
 		final boolean mergeNetwork = clusterResultCheckBox.isSelected();
-
 		final Set<String> targetSources = getSelected();
 		final Set<String> sourceURLs = new HashSet<String>();
-		for (String source : targetSources)
-			sourceURLs.add(manager.getActiveServices().get(source));
+		// Filter out invalid selections:
+		for (int i = 0; i < resultTable.getRowCount(); i++) {
+			final String source = resultTable.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
+			if (((Number) resultTable.getValueAt(i, RECORD_COUNT_COLUMN_INDEX)).intValue() != 0
+					&& targetSources.contains(source)) {
+				sourceURLs.add(manager.getActiveServices().get(source));
+			}
+		}
 
 		// Execute Import Task
 		final ImportNetworkFromPSICQUICTask networkTask = new ImportNetworkFromPSICQUICTask(query, client,
 				networkManager, manager, sourceURLs, mode, createViewTaskFactory, vsBuilder, vmm, mergeNetwork);
 
-		taskManager.execute(new TaskIterator(networkTask));
+		taskManager.execute(new TaskIterator(networkTask), this);
 
-		final Window parentWindow = ((Window) getRootPane().getParent());
-		parentWindow.pack();
-		repaint();
-
-		parentWindow.toFront();
+//		final Window parentWindow = ((Window) getRootPane().getParent());
+//		parentWindow.pack();
+//		repaint();
+//		parentWindow.toFront();
 	}
 
 	private void cancelButtonActionPerformed(ActionEvent evt) {
@@ -455,6 +474,19 @@ public class SourceStatusPanel extends JPanel {
 		}
 	}
 
+	void setSelected(final Set<String> sources) {
+		for (int i = 0; i < resultTable.getRowCount(); i++) {
+			final String dbName = resultTable.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
+			if (sources.contains(dbName)) {
+				// System.out.println("FOUND hit: " + dbName);
+				resultTable.setValueAt(Boolean.TRUE, i, IMPORT_COLUMN_INDEX);
+			} else {
+				// System.out.println("DISABLE: " + dbName);
+				resultTable.setValueAt(Boolean.FALSE, i, IMPORT_COLUMN_INDEX);
+			}
+		}
+	}
+
 	// Variables declaration - do not modify
 	private javax.swing.JPanel buttonPanel;
 	private javax.swing.JButton cancelButton;
@@ -465,11 +497,6 @@ public class SourceStatusPanel extends JPanel {
 
 	private javax.swing.JScrollPane resultScrollPane;
 	private javax.swing.JTable resultTable;
-
-	// private javax.swing.JLabel titleLabel;
-	// private javax.swing.JPanel titlePanel;
-
-	// End of variables declaration
 
 	private final class StatusTableModel extends DefaultTableModel {
 		private static final long serialVersionUID = -7798626850196524108L;
@@ -607,5 +634,78 @@ public class SourceStatusPanel extends JPanel {
 
 	void setQuery(final String query) {
 		this.query = query;
+	}
+
+	private Set<CyNetwork> results;
+
+	@Override
+	public void taskFinished(ObservableTask task) {
+		if (task.getResults(Object.class) instanceof Set) {
+			results = task.getResults(Set.class);
+		}
+	}
+
+	private final void showMergeUI(FinishStatus finishStatus) {
+		if (finishStatus.getType() == Type.SUCCEEDED) {
+			final StringBuilder builder = new StringBuilder();
+			builder.append("<html><h3>Networks created from the following databases:</h3><ul>");
+			for (final CyNetwork network : results) {
+				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+				final Integer edgeCount = network.getEdgeCount();
+				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
+			}
+			builder.append("</ul><br><h3>Do you want to manually merge networks?</h3></html>");
+
+			int selection = JOptionPane.showConfirmDialog(this, builder.toString(), "Import Finished", JOptionPane.YES_NO_OPTION, 
+					JOptionPane.INFORMATION_MESSAGE);
+			if(selection == JOptionPane.YES_OPTION) {
+				mergeAction.actionPerformed(null);
+			}
+		} else if (finishStatus.getType() == Type.CANCELLED) {
+			final Set<String> sources = new HashSet<String>();
+			final StringBuilder builder = new StringBuilder();
+			builder.append("<html><h2 style=\"color:red\">Import Canceled</h2>" + 
+					"<h3>Networks imported from the following databases (without view):</h3><ul>");
+			for (final CyNetwork network : results) {
+				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+				final Integer edgeCount = network.getEdgeCount();
+				sources.add(network.getRow(network).get("source", String.class));
+				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
+			}
+		
+			builder.append("<h3 style=\"color:red\">Import canceled for the following databases:</h3><ul style=\"color:red\">");
+			for (int i = 0; i < resultTable.getRowCount(); i++) {
+				final String dbName = resultTable.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
+				final Integer count = ((Number)resultTable.getValueAt(i, RECORD_COUNT_COLUMN_INDEX)).intValue();
+				final Boolean isImport = (Boolean) resultTable.getValueAt(i, IMPORT_COLUMN_INDEX);
+				if (sources.contains(dbName) == false && count != 0 && isImport) {
+					builder.append("<li>" + dbName + "</li>");
+				}
+			}
+			int selection = JOptionPane.showConfirmDialog(this, 
+					builder.toString() + "</ul><br><h3>Do you want to merge these networks?</h3></html>",
+					"Import Canceled", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null);
+			if(selection == JOptionPane.YES_OPTION) {
+				mergeAction.actionPerformed(null);
+			}
+		} else {
+			// Error!
+			JOptionPane.showMessageDialog(this,  "<html>Error: Please try again later.<br><br>" + finishStatus.getException().getLocalizedMessage()
+					+ "</html>", "Import Error",
+					JOptionPane.ERROR_MESSAGE, null);
+		}
+
+		results = null;
+	}
+	
+	
+	@Override
+	public void allFinished(final FinishStatus finishStatus) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				showMergeUI(finishStatus);
+			}
+		});
 	}
 }

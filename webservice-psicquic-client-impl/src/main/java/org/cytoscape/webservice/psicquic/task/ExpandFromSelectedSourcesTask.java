@@ -44,22 +44,28 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.enfin.mi.cluster.InteractionCluster;
 
 public class ExpandFromSelectedSourcesTask extends AbstractTask {
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(ExpandFromSelectedSourcesTask.class);
+
 	@Tunable(description="Select Data Source")
 	public ListMultipleSelection<String> services;
 	
+	private static final String DEFAULT_LAYOUT = "force-directed";
+	
 	private final PSICQUICRestClient client;
-	private final MergedNetworkBuilder builder;
+	private final CyNetworkBuilder builder;
 
 	private final String query;
 
@@ -68,7 +74,7 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 	private final CyNetworkView netView;
 	private final View<CyNode> nodeView;
 
-	private final CyEventHelper eh;
+	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
 
 	private volatile boolean canceled = false;
@@ -77,12 +83,12 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 
 	public ExpandFromSelectedSourcesTask(final String query, final PSICQUICRestClient client, final Map<String, String> sourceMap,
 			final CyNetworkView parentNetworkView, final View<CyNode> nodeView, final CyEventHelper eh,
-			final VisualMappingManager vmm, final CyLayoutAlgorithmManager layouts, final MergedNetworkBuilder builder) {
+			final VisualMappingManager vmm, final CyLayoutAlgorithmManager layouts, final CyNetworkBuilder builder) {
 		this.client = client;
 		this.query = query;
 		this.netView = parentNetworkView;
 		this.nodeView = nodeView;
-		this.eh = eh;
+		this.eventHelper = eh;
 		this.vmm = vmm;
 		this.layouts = layouts;
 		this.sourceMap = sourceMap;
@@ -115,26 +121,25 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 		taskMonitor.setProgress(0.8d);
 		expand(ic);
 		
-		final CyLayoutAlgorithm layout = layouts.getLayout("force-directed");
-		
-		Set<View<CyNode>> entries = new HashSet<View<CyNode>>();
-		for (View<CyNode> item : netView.getNodeViews()) {
-			CyRow row = netView.getModel().getRow(item.getModel());
+		final CyLayoutAlgorithm layout = layouts.getLayout(DEFAULT_LAYOUT);
+		final Set<View<CyNode>> entries = new HashSet<View<CyNode>>();
+		final CyNetwork network = netView.getModel();
+		for (final CyNode node : network.getNodeList()) {
+			final CyRow row = network.getRow(node);
 			if (row.get(CyNetwork.SELECTED, Boolean.class)) {
-				entries.add(item);
+				final View<CyNode> nv = netView.getNodeView(node);
+				entries.add(nv);
 			}
 		}
-		
-		TaskIterator itr = layout.createTaskIterator(netView, layout.getDefaultLayoutContext(), entries, "");
+
+		TaskIterator itr = layout.createTaskIterator(netView, layout.getDefaultLayoutContext(), entries,null);
 		this.insertTasksAfterCurrentTask(itr);
 		taskMonitor.setProgress(1.0d);
-		
 	}
-	
+
+
 	private void expand(final InteractionCluster iC) {
-		eh.flushPayloadEvents();
 		builder.addToNetwork(iC, netView, nodeView);
-		eh.flushPayloadEvents();
 
 		// Apply visual style
 		final VisualStyle vs = vmm.getVisualStyle(netView);
@@ -147,5 +152,4 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 		this.canceled = true;
 		client.cancel();
 	}
-
 }

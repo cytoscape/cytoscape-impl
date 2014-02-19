@@ -122,10 +122,10 @@ public class CyActivator extends AbstractCyActivator {
 		final GenerateCustomStyleTaskFactory generateCustomStyleTaskFactory = new GenerateCustomStyleTaskFactory(
 				analyzeNetworkCollectionTaskFactory, applicationManager, vsBuilder, vmm);
 		Properties generateCustomStyleTaskFactoryProps = new Properties();
-		generateCustomStyleTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools.Workflow");
+		generateCustomStyleTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools.Workflow[3.0]");
 		generateCustomStyleTaskFactoryProps.setProperty(MENU_GRAVITY, "20.0");
 		generateCustomStyleTaskFactoryProps.setProperty(TITLE,
-				"Analyze selected networks and create custom Visual Styles");
+				"Analyze selected networks and create custom styles");
 		generateCustomStyleTaskFactoryProps.setProperty(IN_TOOL_BAR, "false");
 		generateCustomStyleTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		registerAllServices(bc, generateCustomStyleTaskFactory, generateCustomStyleTaskFactoryProps);
@@ -133,9 +133,9 @@ public class CyActivator extends AbstractCyActivator {
 		// This is a preset task, so register it first.
 		final Map<String, String> propMap = new HashMap<String, String>();
 		propMap.put(CreateNewNetworkPanel.WORKFLOW_ID, "generateCustomStyleTaskFactory");
-		propMap.put(CreateNewNetworkPanel.WORKFLOW_NAME, "Analyze network and create custom Visual Style");
+		propMap.put(CreateNewNetworkPanel.WORKFLOW_NAME, "Analyze network and create custom style");
 		propMap.put(CreateNewNetworkPanel.WORKFLOW_DESCRIPTION,
-				"Analyze current/selected networks and create custom Visual Style for each network.");
+				"Analyze current/selected networks and create custom style for each network.");
 		createNewNetworkPanel.addTaskFactory(generateCustomStyleTaskFactory, propMap);
 
 		// Define listener

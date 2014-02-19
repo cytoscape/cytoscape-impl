@@ -113,7 +113,7 @@ public class EnhancedSearchPanel extends JPanel {
 
 		tfSearchText = new JTextField();
 
-		tfSearchText.setToolTipText("<html>Example Search Query:<br><br> YL* -- search from all attributes<br>name:YL*  -- Search by attribute 'name', </html>");
+		tfSearchText.setToolTipText("<html>Example Search Queries:<br><br>YL* -- Search all columns<br>name:YL* -- Search 'name' column<br>GO\\:1232 -- Escape special characters with backslash</html>");
 		tfSearchText.setName("tfSearchText"); // NOI18N
 		tfSearchText.setFont(MESSAGE_FONT);
 		tfSearchText.setText("Enter search term...");

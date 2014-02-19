@@ -159,16 +159,20 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		// Pick the first view
 		final CyNetworkView networkView = views.iterator().next();
 		
-		if (cbxNodeSize != null && cbxNodeSize.getSelectedItem() != null) {
+		if (cbxNodeSize != null && cbxNodeSize.getSelectedItem() != null
+				&& cbxNodeSize.getSelectedItem() != Utils.SEPARATOR) {
 			attrNodeSize = (String) cbxNodeSize.getSelectedItem();
 		}
-		if (cbxNodeColor != null && cbxNodeColor.getSelectedItem() != null) {
+		if (cbxNodeColor != null && cbxNodeColor.getSelectedItem() != null
+				&& cbxNodeColor.getSelectedItem() != Utils.SEPARATOR) {
 			attrNodeColor = (String) cbxNodeColor.getSelectedItem();
 		}
-		if (cbxEdgeSize != null && cbxEdgeSize.getSelectedItem() != null) {
+		if (cbxEdgeSize != null && cbxEdgeSize.getSelectedItem() != null
+				&& cbxEdgeSize.getSelectedItem() != Utils.SEPARATOR) {
 			attrEdgeSize = (String) cbxEdgeSize.getSelectedItem();
 		}
-		if (cbxEdgeColor != null && cbxEdgeColor.getSelectedItem() != null) {
+		if (cbxEdgeColor != null && cbxEdgeColor.getSelectedItem() != null
+				&& cbxEdgeColor.getSelectedItem() != Utils.SEPARATOR) {
 			attrEdgeColor = (String) cbxEdgeColor.getSelectedItem();
 		}
 		
@@ -402,9 +406,14 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 
 				Double attrValue = new Double(0.0);
 				if (attrType == Integer.class)
-					attrValue = network.getRow(entry).get(attr[i][j], Integer.class).doubleValue();
+				{
+					Integer x = network.getRow(entry).get(attr[i][j], Integer.class);
+					attrValue = x == null ? null : x.doubleValue();
+				}
 				else if (attrType == Double.class)
+				{
 					attrValue = network.getRow(entry).get(attr[i][j], Double.class);
+				}
 
 				if (attrValue != null && !attrValue.isNaN()) {
 					final Double oldMinValue = minAttrValue.get(attr[i][j]);

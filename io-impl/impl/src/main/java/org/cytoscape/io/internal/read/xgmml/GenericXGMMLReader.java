@@ -40,16 +40,19 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.internal.read.AbstractNetworkReader;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.internal.util.session.SessionUtil;
+import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -66,9 +69,10 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.ParserAdapter;
 
-public class GenericXGMMLReader extends AbstractNetworkReader {
+public class GenericXGMMLReader extends AbstractCyNetworkReader {
 
 	public static final String REPAIR_BARE_AMPERSANDS_PROPERTY = "cytoscape.xgmml.repair.bare.ampersands";
 
@@ -114,7 +118,7 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 							  final CyRootNetworkManager cyRootNetworkManager,
 							  final CyApplicationManager cyApplicationManager
 							  ) {
-		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
+		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
@@ -126,6 +130,23 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		
 		if (attemptRepair)
 			this.inputStream = new RepairBareAmpersandsInputStream(inputStream, 512);
+		
+		if (!SessionUtil.isReadingSessionFile()) {
+			final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
+			if (selectedNetworks != null && selectedNetworks.size() > 0) {
+				final CyNetwork selectedNetwork = cyApplicationManager.getSelectedNetworks().get(0);
+				String rootName = "";
+				if (selectedNetwork instanceof CySubNetwork) {
+					CySubNetwork subnet = (CySubNetwork) selectedNetwork;
+					CyRootNetwork rootNet = subnet.getRootNetwork();
+					rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
+				} else {
+					// it is a root network
+					rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
+				}
+				getRootNetworkList().setSelectedValue(rootName);
+			}
+		}
 	}
 
 	@Override
@@ -163,26 +184,29 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 		if (!readDataMgr.isSessionFormat())
 			readDataMgr.updateGroupNodes(netView);
 		
-		netView.updateView();
-
 		return netView;
 	}
+	
 	
 	protected void init(final TaskMonitor tm) {
 		readDataMgr.init();
 		readDataMgr.setViewFormat(false); // TODO: refactor readDataMgr and delete this line
 		
 		// Now user has the option to import network into different collection
-		initNodeMap(name2RootMap.get(rootNetworkList.getSelectedValue()), this.targetColumnList.getSelectedValue());		
-		readDataMgr.setNodeMap(this.nMap);
-		readDataMgr.setParentNetwork(name2RootMap.get(rootNetworkList.getSelectedValue()));
+		final CyRootNetwork networkCollection = getRootNetwork();
+		final Map<Object, CyNode> nMap = getNodeMap();
+		
+		readDataMgr.setNodeMap(nMap);
+		readDataMgr.setParentNetwork(networkCollection);
 	}
-	
+
+
 	protected void complete(TaskMonitor tm) {
-		Set<CyNetwork> netSet = readDataMgr.getPublicNetworks();
-		this.cyNetworks = netSet.toArray(new CyNetwork[netSet.size()]);
+		final Set<CyNetwork> netSet = readDataMgr.getPublicNetworks();
+		this.networks = netSet.toArray(new CyNetwork[netSet.size()]);
 	}
-	
+
+
 	/**
 	 * Actual method to read XGMML documents.
 	 * 
@@ -195,10 +219,16 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 
 		try {
 			// Get our parser
-			SAXParser sp = spf.newSAXParser();
-			ParserAdapter pa = new ParserAdapter(sp.getParser());
+			final SAXParser sp = spf.newSAXParser();
+			// Ignore the DTD declaration
+			final XMLReader reader = sp.getXMLReader();
+			reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			reader.setFeature("http://xml.org/sax/features/validation", false);
+			// Make the SAX1 Parser act as a SAX2 XMLReader
+			final ParserAdapter pa = new ParserAdapter(sp.getParser());
 			pa.setContentHandler(parser);
 			pa.setErrorHandler(parser);
+			// Parse the XGMML input
 			pa.parse(new InputSource(inputStream));
 		} catch (OutOfMemoryError oe) {
 			// It's not generally a good idea to catch OutOfMemoryErrors, but in
@@ -214,8 +244,11 @@ public class GenericXGMMLReader extends AbstractNetworkReader {
 			throw e;
 		} finally {
 			if (inputStream != null) {
-				inputStream.close();
-				inputStream = null;
+				try {
+					inputStream.close();
+				} catch (Exception e) {
+					logger.warn("Cannot close XGMML input stream", e);
+				}
 			}
 		}
 	}

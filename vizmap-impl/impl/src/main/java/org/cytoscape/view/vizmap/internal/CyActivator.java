@@ -39,14 +39,14 @@ import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
+	
 	public CyActivator() {
 		super();
 	}
 
 	public void start(BundleContext bc) {
-
 		final CyServiceRegistrar serviceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
-		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
+		final CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 
 		// Mapping Factories
 		DiscreteMappingFactory discreteMappingFactory = new DiscreteMappingFactory(cyEventHelperServiceRef);
@@ -57,7 +57,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(visualLexiconManager,
 				serviceRegistrarServiceRef, passthroughMappingFactory, cyEventHelperServiceRef);
 		VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(cyEventHelperServiceRef,
-				visualStyleFactory, visualLexiconManager);
+				visualStyleFactory, visualLexiconManager, serviceRegistrarServiceRef);
 		
 		registerAllServices(bc, visualMappingManager, new Properties());
 		registerService(bc, visualStyleFactory, VisualStyleFactory.class, new Properties());

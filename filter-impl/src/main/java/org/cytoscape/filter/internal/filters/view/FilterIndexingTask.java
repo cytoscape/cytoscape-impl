@@ -40,7 +40,6 @@ final class FilterIndexingTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Indexing Network Data");
 		quickFind.addNetwork(network, taskMonitor);
 	}
 }

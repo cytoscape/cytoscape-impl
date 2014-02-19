@@ -24,20 +24,13 @@ package org.cytoscape.app.internal;
  * #L%
  */
 
-import java.util.Map.Entry;
-import java.util.Properties;
-
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.action.AppManagerAction;
+import org.cytoscape.app.internal.action.CitationsAction;
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.manager.StartupMonitor;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.net.server.AddAccessControlAllowOriginHeaderAfterResponse;
-import org.cytoscape.app.internal.net.server.AppGetResponder;
-import org.cytoscape.app.internal.net.server.CyHttpd;
-import org.cytoscape.app.internal.net.server.CyHttpdFactoryImpl;
-import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
-import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
-import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
+import org.cytoscape.app.internal.net.server.*;
 import org.cytoscape.app.internal.tunable.AppInstallationConflictHandlerFactory;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.swing.CySwingAppAdapter;
@@ -47,6 +40,8 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -57,11 +52,7 @@ import org.cytoscape.io.read.CyPropertyReaderManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.io.write.CyPropertyWriterManager;
-import org.cytoscape.io.write.CySessionWriterManager;
-import org.cytoscape.io.write.CyTableWriterManager;
-import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.io.write.*;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
@@ -73,59 +64,20 @@ import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.create.CloneNetworkTaskFactory;
-import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
-import org.cytoscape.task.create.NewSessionTaskFactory;
-import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
-import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
-import org.cytoscape.task.destroy.DeleteTableTaskFactory;
-import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
-import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
-import org.cytoscape.task.edit.CollapseGroupTaskFactory;
-import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
-import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
-import org.cytoscape.task.edit.ExpandGroupTaskFactory;
-import org.cytoscape.task.edit.GroupNodesTaskFactory;
-import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.task.edit.RenameColumnTaskFactory;
-import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
-import org.cytoscape.task.edit.UnGroupTaskFactory;
-import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
-import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
-import org.cytoscape.task.hide.HideSelectedTaskFactory;
-import org.cytoscape.task.hide.UnHideAllEdgesTaskFactory;
-import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
-import org.cytoscape.task.hide.UnHideAllTaskFactory;
+import org.cytoscape.task.create.*;
+import org.cytoscape.task.destroy.*;
+import org.cytoscape.task.edit.*;
+import org.cytoscape.task.hide.*;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.task.select.DeselectAllEdgesTaskFactory;
-import org.cytoscape.task.select.DeselectAllNodesTaskFactory;
-import org.cytoscape.task.select.DeselectAllTaskFactory;
-import org.cytoscape.task.select.InvertSelectedEdgesTaskFactory;
-import org.cytoscape.task.select.InvertSelectedNodesTaskFactory;
-import org.cytoscape.task.select.SelectAdjacentEdgesTaskFactory;
-import org.cytoscape.task.select.SelectAllEdgesTaskFactory;
-import org.cytoscape.task.select.SelectAllNodesTaskFactory;
-import org.cytoscape.task.select.SelectAllTaskFactory;
-import org.cytoscape.task.select.SelectConnectedNodesTaskFactory;
-import org.cytoscape.task.select.SelectFirstNeighborsNodeViewTaskFactory;
-import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
-import org.cytoscape.task.select.SelectFromFileListTaskFactory;
+import org.cytoscape.task.select.*;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
-import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
-import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
-import org.cytoscape.task.write.ExportTableTaskFactory;
-import org.cytoscape.task.write.ExportVizmapTaskFactory;
-import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.task.write.*;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -139,7 +91,11 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
+
+import java.util.Map.Entry;
+import java.util.Properties;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -147,6 +103,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
+		CyApplicationConfiguration cyApplicationConfigurationRef = getService(bc, CyApplicationConfiguration.class);
 		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
 		CyEventHelper cyEventHelperRef = getService(bc,CyEventHelper.class);
 		CyGroupAggregationManager cyGroupAggregationManagerRef = getService(bc,CyGroupAggregationManager.class);
@@ -259,11 +216,19 @@ public class CyActivator extends AbstractCyActivator {
     	 UnGroupNodesTaskFactory unGroupNodesTaskFactory= getService(bc,UnGroupNodesTaskFactory.class);
 
 		// End of core-task services
+
+
+		// Command execution services
+		CommandExecutorTaskFactory cyCommandExecutorTaskFactory = getService(bc,CommandExecutorTaskFactory.class);
+		AvailableCommands availableCommands = getService(bc,AvailableCommands.class);
 		 
     	 StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
     	 FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
-		
-    	 CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(cyApplicationManagerRef,
+    	 OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
+
+    	 CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(
+				 cyApplicationConfigurationRef,
+				 cyApplicationManagerRef,
                  cyEventHelperRef,
                  cyGroupAggregationManagerRef, 
                  cyGroupFactoryRef, 
@@ -355,13 +320,15 @@ public class CyActivator extends AbstractCyActivator {
                  unGroupTaskFactory,
                  collapseGroupTaskFactory,
                  expandGroupTaskFactory,	
-                 unGroupNodesTaskFactory
+                 unGroupNodesTaskFactory,
+                 cyCommandExecutorTaskFactory,
+                 availableCommands
                  );
 		
 		registerService(bc,cyAppAdapter,CyAppAdapter.class, new Properties());
 		registerService(bc,cyAppAdapter,CySwingAppAdapter.class, new Properties());
 		
-		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef);
+		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef, cytoscapeVersionService);
 		registerService(bc, webQuerier, WebQuerier.class, new Properties());
 		
 		Properties properties = System.getProperties();
@@ -371,9 +338,13 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		StartLevel startLevel = getService(bc, StartLevel.class);
+		PackageAdmin packageAdmin = getService(bc, PackageAdmin.class);
+		StartupMonitor startupMonitor = new StartupMonitor(bc, packageAdmin, cyEventHelperRef);
+		bc.addBundleListener(startupMonitor);
+		
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, 
-				cyApplicationConfigurationServiceRef, webQuerier, startLevel);
+				cyApplicationConfigurationServiceRef, webQuerier, startLevel, startupMonitor);
 		registerService(bc, appManager, AppManager.class, new Properties());
 		bc.addFrameworkListener(appManager);
 		
@@ -388,14 +359,18 @@ public class CyActivator extends AbstractCyActivator {
 				cySwingApplicationRef, fileUtilServiceRef,
 				dialogTaskManagerRef, cyServiceRegistrarRef);
 		registerService(bc, appManagerAction, CyAction.class, new Properties());
+
+		// Show citations dialog
+		final CitationsAction citationsAction = new CitationsAction(webQuerier, appManager, dialogTaskManagerRef, cySwingApplicationRef, openBrowser);
+		registerService(bc, citationsAction, CyAction.class, new Properties());
 		
 		// Start local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store
-        final AppGetResponder appGetResponder = new AppGetResponder(appManager);
+        final AppGetResponder appGetResponder = new AppGetResponder(appManager, cytoscapeVersionService);
         final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607));
         httpd.addBeforeResponse(new ScreenOriginsBeforeResponse(WebQuerier.DEFAULT_APP_STORE_URL));
         httpd.addBeforeResponse(new OriginOptionsBeforeResponse("x-csrftoken"));
-        httpd.addAfterResponse(new AddAccessControlAllowOriginHeaderAfterResponse());
+        httpd.addAfterResponse(new AddAllowOriginHeader());
         httpd.addResponder(appGetResponder.new StatusResponder());
         httpd.addResponder(appGetResponder.new InstallResponder());
         httpd.start();

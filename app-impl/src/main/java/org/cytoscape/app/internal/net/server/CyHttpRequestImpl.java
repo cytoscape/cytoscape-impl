@@ -57,7 +57,7 @@ public class CyHttpRequestImpl implements CyHttpRequest
         }
         catch (UnsupportedEncodingException e)
         {
-            throw new IllegalArgumentException("Unable to parse uri: " + uriEncoded, e);
+            throw new IllegalArgumentException("Unable to parse URI: " + uriEncoded, e);
         }
 
         method = request.getRequestLine().getMethod().toUpperCase();

@@ -31,17 +31,20 @@ import java.util.Collection;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTask;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
 
-public abstract class AbstractSelectTask extends AbstractNetworkTask {
+public abstract class AbstractSelectTask extends AbstractTask {
 	protected final CyNetworkViewManager networkViewManager;
 	protected final SelectUtils selectUtils;
 	protected final CyEventHelper eventHelper;
+	protected CyNetwork network;
 
 	public AbstractSelectTask(final CyNetwork net, final CyNetworkViewManager networkViewManager, final CyEventHelper eventHelper) {
-		super(net);
+		// super(net);
+		this.network = net;
 		this.networkViewManager = networkViewManager;
 		this.selectUtils = new SelectUtils();
 		this.eventHelper = eventHelper;

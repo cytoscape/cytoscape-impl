@@ -3,12 +3,13 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.2</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
     <groupId>org.cytoscape</groupId>
     <artifactId>table-import-impl</artifactId>
+  <version>3.1.0</version>
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.table-import-impl</bundle.symbolicName>
@@ -245,7 +246,18 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>net.sf.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>2.1</version>
+        </dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
+			<scope>provided</scope>
+		</dependency>          
+    </dependencies>
 
 
 </project>

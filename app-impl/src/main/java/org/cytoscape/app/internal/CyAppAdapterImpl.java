@@ -24,39 +24,39 @@ package org.cytoscape.app.internal;
  * #L%
  */
 
-import java.util.Properties;
 import org.cytoscape.app.AbstractCyApp;
-import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.swing.CySwingAppAdapter;
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
-import org.cytoscape.io.datasource.DataSourceManager;
+import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.command.util.NodeList;
+import org.cytoscape.command.util.RowList;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.model.Transformer;
+import org.cytoscape.filter.predicates.Predicate;
+import org.cytoscape.filter.transformers.Transformers;
+import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.events.GroupAboutToBeDestroyedListener;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.CyNetworkReader;
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.io.read.CyPropertyReaderManager;
-import org.cytoscape.io.read.CySessionReaderManager;
-import org.cytoscape.io.read.CyTableReaderManager;
+import org.cytoscape.io.datasource.DataSourceManager;
+import org.cytoscape.io.read.*;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
 import org.cytoscape.io.webservice.events.DataImportFinishedEvent;
 import org.cytoscape.io.webservice.swing.WebServiceGUI;
-import org.cytoscape.io.write.CyNetworkViewWriterFactory;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.io.write.CyPropertyWriterManager;
-import org.cytoscape.io.write.CySessionWriterManager;
-import org.cytoscape.io.write.PresentationWriterManager;
-import org.cytoscape.io.write.CyTableWriterManager;
+import org.cytoscape.io.write.*;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
@@ -69,62 +69,17 @@ import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
-import org.cytoscape.task.create.CloneNetworkTaskFactory;
-import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
-import org.cytoscape.task.create.NewSessionTaskFactory;
-import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
-import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
-import org.cytoscape.task.destroy.DeleteTableTaskFactory;
-import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
-import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
-import org.cytoscape.task.edit.CollapseGroupTaskFactory;
-import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
-import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
-import org.cytoscape.task.edit.ExpandGroupTaskFactory;
-import org.cytoscape.task.edit.GroupNodesTaskFactory;
-import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.task.edit.RenameColumnTaskFactory;
-import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
-import org.cytoscape.task.edit.UnGroupTaskFactory;
-import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
-import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
-import org.cytoscape.task.hide.HideSelectedTaskFactory;
-import org.cytoscape.task.hide.UnHideAllEdgesTaskFactory;
-import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
-import org.cytoscape.task.hide.UnHideAllTaskFactory;
-import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
-import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.task.read.LoadTableFileTaskFactory;
-import org.cytoscape.task.read.LoadTableURLTaskFactory;
-import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
-import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.task.select.DeselectAllEdgesTaskFactory;
-import org.cytoscape.task.select.DeselectAllNodesTaskFactory;
-import org.cytoscape.task.select.DeselectAllTaskFactory;
-import org.cytoscape.task.select.InvertSelectedEdgesTaskFactory;
-import org.cytoscape.task.select.InvertSelectedNodesTaskFactory;
-import org.cytoscape.task.select.SelectAdjacentEdgesTaskFactory;
-import org.cytoscape.task.select.SelectAllEdgesTaskFactory;
-import org.cytoscape.task.select.SelectAllNodesTaskFactory;
-import org.cytoscape.task.select.SelectAllTaskFactory;
-import org.cytoscape.task.select.SelectConnectedNodesTaskFactory;
-import org.cytoscape.task.select.SelectFirstNeighborsNodeViewTaskFactory;
-import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
-import org.cytoscape.task.select.SelectFromFileListTaskFactory;
+import org.cytoscape.task.create.*;
+import org.cytoscape.task.destroy.*;
+import org.cytoscape.task.edit.*;
+import org.cytoscape.task.hide.*;
+import org.cytoscape.task.read.*;
+import org.cytoscape.task.select.*;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
-import org.cytoscape.task.write.ExportTableTaskFactory;
-import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
-import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
-import org.cytoscape.task.write.ExportVizmapTaskFactory;
-import org.cytoscape.task.write.SaveSessionAsTaskFactory;
-import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.write.*;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -132,6 +87,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsListener;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -153,8 +109,8 @@ import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.work.TaskFactory;
+
+import java.util.Properties;
 
 
 
@@ -171,6 +127,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	//
 	// NOTE that grep and sort are very useful!
 	//
+	private final CyApplicationConfiguration cyApplicationConfiguration;
 	private final CyApplicationManager cyApplicationManager;
 	private final CyEventHelper cyEventHelper;
 	private final CyGroupAggregationManager cyGroupAggregationManager;
@@ -241,7 +198,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private AbstractWebServiceClient abstractWebServiceClient;
 	private DataImportFinishedEvent dataImportFinishedEvent;
 	private AbstractCyApp cyApp;
-	private BasicVisualLexicon basicVisualLexicon; 
+	private BasicVisualLexicon basicVisualLexicon;
 	private final VisualMappingFunctionFactory visualMappingFunctionContinuousFactory;
 	private final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory;
 	private final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory;
@@ -254,6 +211,12 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private DiscreteMappingGenerator<?> discreteMappingGenerator;
 	private ContinuousMapping<?, ?> continuousMapping;
 	private SwingUndoSupport swingUndoSupport;
+	private Annotation annotation;
+	private Transformer transformer;
+	private TransformerManager transformerManager;
+	private Predicate predicate;
+	private Transformers transformers;
+	private TransformerViewFactory transformerViewFactory;
 
 /// from core-task api
 	private LoadVizmapFileTaskFactory loadVizmapFileTaskFactory;
@@ -266,20 +229,20 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private SelectAllNodesTaskFactory selectAllNodesTaskFactory;
 	private SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory;
 	private SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory;
-	
+
 	private SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory;
 	private SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge;
 	private SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge;
-	
+
 	private DeselectAllTaskFactory deselectAllTaskFactory;
 	private DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory;
 	private DeselectAllNodesTaskFactory deselectAllNodesTaskFactory;
 	private InvertSelectedEdgesTaskFactory invertSelectedEdgesTaskFactory;
 	private InvertSelectedNodesTaskFactory invertSelectedNodesTaskFactory;
 	private SelectFromFileListTaskFactory selectFromFileListTaskFactory;
-	
+
 	private SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory;
-	
+
 	private HideSelectedTaskFactory hideSelectedTaskFactory;
 	private HideSelectedNodesTaskFactory hideSelectedNodesTaskFactory;
 	private HideSelectedEdgesTaskFactory hideSelectedEdgesTaskFactory;
@@ -309,7 +272,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private RenameColumnTaskFactory renameColumnTaskFactory;
 	private DeleteTableTaskFactory deleteTableTaskFactory;
 	private ExportVizmapTaskFactory exportVizmapTaskFactory;
-	
+
 	private ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory;
 	private MapGlobalToLocalTableTaskFactory mapGlobal;
 	private ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory;
@@ -321,15 +284,23 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private ExpandGroupTaskFactory expandGroupTaskFactory;
 	private UnGroupNodesTaskFactory unGroupNodesTaskFactory;
 
+	// From command-executor-api
+	private EdgeList edgeList;
+	private NodeList nodeList;
+	private RowList rowList;
+	private CommandExecutorTaskFactory commandExecutorTaskFactory;
+	private AvailableCommands availableCommands;
+
 	private LoadTableFileTaskFactory loadAttributesFileTaskFactory;
 	private LoadTableURLTaskFactory loadAttributesURLTaskFactory;
-	
+
 	//
 	// Since this is implementation code, there shouldn't be a
 	// a problem adding new arguments as needed.  Therefore, to
 	// maintain sanity, keep the arguments in alphabetical order.
 	//
-	CyAppAdapterImpl( final CyApplicationManager cyApplicationManager,
+	CyAppAdapterImpl(    final CyApplicationConfiguration cyApplicationConfiguration,
+						 final CyApplicationManager cyApplicationManager,
 	                     final CyEventHelper cyEventHelper,
 	                     final CyGroupAggregationManager cyGroupAggregationManager,
 	                     final CyGroupFactory cyGroupFactory,
@@ -367,9 +338,9 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	                     final VisualMappingManager visualMappingManager,
 	                     final VisualStyleFactory visualStyleFactory,
 	                     final DataSourceManager dataSourceManager,
-	                     
+
 	                     // new from core-task-api
-	                     
+
 	                 	final LoadVizmapFileTaskFactory loadVizmapFileTaskFactory,
 	                	final LoadNetworkFileTaskFactory loadNetworkFileTaskFactory,
 	                	final LoadNetworkURLTaskFactory loadNetworkURLTaskFactory,
@@ -380,20 +351,20 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	                	final SelectAllNodesTaskFactory selectAllNodesTaskFactory,
 	                	final SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory,
 	                	final SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory,
-	                	
+
 	                	final SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory,
 	                	final SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge,
 	                	final SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge,
-	                	
+
 	                	final DeselectAllTaskFactory deselectAllTaskFactory,
 	                	final DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory,
 	                	final DeselectAllNodesTaskFactory deselectAllNodesTaskFactory,
 	                	final InvertSelectedEdgesTaskFactory invertSelectedEdgesTaskFactory,
 	                	final InvertSelectedNodesTaskFactory invertSelectedNodesTaskFactory,
 	                	final SelectFromFileListTaskFactory selectFromFileListTaskFactory,
-	                	
+
 	                	final SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory,
-	                	
+
 	                	final HideSelectedTaskFactory hideSelectedTaskFactory,
 	                	final HideSelectedNodesTaskFactory hideSelectedNodesTaskFactory,
 	                	final HideSelectedEdgesTaskFactory hideSelectedEdgesTaskFactory,
@@ -424,19 +395,22 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	                	final ExportVizmapTaskFactory exportVizmapTaskFactory,
 
 	                	final ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory,
-	                	
+
 	                	final MapGlobalToLocalTableTaskFactory mapGlobal,
-	                	
+
 	                	final ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory,
 	                	final MapTableToNetworkTablesTaskFactory mapNetworkAttrTaskFactory,
-	                	
+
 	                	final GroupNodesTaskFactory groupNodesTaskFactory,
 	                	final UnGroupTaskFactory unGroupTaskFactory,
 	                	final CollapseGroupTaskFactory collapseGroupTaskFactory,
-	                	final ExpandGroupTaskFactory expandGroupTaskFactory,	
-	                	final UnGroupNodesTaskFactory unGroupNodesTaskFactory
+	                	final ExpandGroupTaskFactory expandGroupTaskFactory,
+	                	final UnGroupNodesTaskFactory unGroupNodesTaskFactory,
+	                	final CommandExecutorTaskFactory commandExecutorTaskFactory,
+	                	final AvailableCommands availableCommands
 					    )
-	{		
+	{
+		this.cyApplicationConfiguration = cyApplicationConfiguration;
 		this.cyApplicationManager = cyApplicationManager;
 		this.cyEventHelper = cyEventHelper;
 		this.cyGroupAggregationManager = cyGroupAggregationManager;
@@ -475,7 +449,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 		this.visualMappingManager = visualMappingManager;
 		this.visualStyleFactory = visualStyleFactory;
 		this.dataSourceManager = dataSourceManager;
-		
+
 		//
 		this.loadVizmapFileTaskFactory = loadVizmapFileTaskFactory;
 		this.loadNetworkFileTaskFactory = loadNetworkFileTaskFactory;
@@ -526,24 +500,29 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 		this.mapGlobal = mapGlobal;
 		this.applyVisualStyleTaskFactory = applyVisualStyleTaskFactory;
 		this.mapNetworkAttrTaskFactory = mapNetworkAttrTaskFactory;
-		
+
 		this.groupNodesTaskFactory = groupNodesTaskFactory;
 		this.unGroupNodesTaskFactory = unGroupNodesTaskFactory;
 		this.collapseGroupTaskFactory = collapseGroupTaskFactory;
 		this.expandGroupTaskFactory = expandGroupTaskFactory;
 		this.unGroupNodesTaskFactory = unGroupNodesTaskFactory;
-
+		this.commandExecutorTaskFactory = commandExecutorTaskFactory;
+		this.availableCommands = availableCommands;
 	}
 
 	//
 	// May as well keep the methods alphabetical too!
-	// 
+	//
+	public AvailableCommands getAvailableCommands() { return availableCommands; }
+	public CommandExecutorTaskFactory getCommandExecutorTaskFactory() { return commandExecutorTaskFactory; }
 	public CyApplicationManager getCyApplicationManager() { return cyApplicationManager; }
-	public CyEventHelper getCyEventHelper() { return cyEventHelper; } 
-	@Override public CyGroupAggregationManager getCyGroupAggregationManager() { return cyGroupAggregationManager; } 
-	@Override public CyGroupFactory getCyGroupFactory() { return cyGroupFactory; } 
-	@Override public CyGroupManager getCyGroupManager() { return cyGroupManager; } 
-	public CyLayoutAlgorithmManager getCyLayoutAlgorithmManager() { return cyLayoutAlgorithmManager; } 
+	public CyEventHelper getCyEventHelper() { return cyEventHelper; }
+	@Override public CyGroupAggregationManager getCyGroupAggregationManager() { return cyGroupAggregationManager; }
+	@Override public CyGroupFactory getCyGroupFactory() { return cyGroupFactory; }
+	@Override public CyGroupManager getCyGroupManager() { return cyGroupManager; }
+	public CyLayoutAlgorithmManager getCyLayoutAlgorithmManager() { return cyLayoutAlgorithmManager; }
+
+	public CyApplicationConfiguration getCyApplicationConfiguration() { return cyApplicationConfiguration; }
 	public CyNetworkFactory getCyNetworkFactory() { return cyNetworkFactory; }
 	public CyNetworkManager getCyNetworkManager() { return cyNetworkManager; } 
 	public CyNetworkViewFactory getCyNetworkViewFactory() { return cyNetworkViewFactory; }

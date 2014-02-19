@@ -25,7 +25,7 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 public enum SupportedFileType {
-	EXCEL("xls"), OOXML("xlsx"), TEXT("txt");
+	EXCEL("xls"), OOXML("xlsx"), TEXT("txt"), CSV("csv");
 	
 	private final String extension;
 	

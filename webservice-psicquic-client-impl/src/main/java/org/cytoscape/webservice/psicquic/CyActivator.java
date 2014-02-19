@@ -31,10 +31,13 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
 
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -42,7 +45,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.webservice.psicquic.task.ExpandNodeContextMenuFactory;
 import org.cytoscape.webservice.psicquic.ui.PSIMITagManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -62,8 +65,13 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		final CyProperty<Properties> cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
+		final CyAction networkMergeActionServiceRef = getService(bc,CyAction.class,"(id=networkMergeAction)");
+		
 		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
 
+		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
+		
 		DialogTaskManager tm = getService(bc, DialogTaskManager.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
@@ -86,12 +94,12 @@ public class CyActivator extends AbstractCyActivator {
 		PSIMI25VisualStyleBuilder vsBuilder = new PSIMI25VisualStyleBuilder(vsFactoryServiceRef,
 				discreteMappingFactoryRef, passthroughMappingFactoryRef);
 
-		final MergedNetworkBuilder builder = new MergedNetworkBuilder(cyNetworkFactoryServiceRef);
+		final CyNetworkBuilder builder = new CyNetworkBuilder(cyNetworkFactoryServiceRef);
 
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "Interaction Database Universal Client",
 				CLIENT_DISCRIPTION, cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
-				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager);
+				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager, cyPropertyServiceRef, registrar, networkMergeActionServiceRef);
 
 		registerAllServices(bc, psicquicClient, new Properties());
 

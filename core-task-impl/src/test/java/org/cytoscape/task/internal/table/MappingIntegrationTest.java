@@ -43,6 +43,7 @@ import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -58,6 +59,7 @@ import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CySubNetworkImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTask;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -82,6 +84,7 @@ public class MappingIntegrationTest {
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 	private final TableTestSupport tableSupport = new TableTestSupport();
+	private CyRootNetwork root;
 
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
@@ -154,7 +157,8 @@ public class MappingIntegrationTest {
 		CyRow row2 = table1.getRow(node2Name);
 		row2.set(table1sCol, table1sRow2);
 		
-		mapping(table1, net1, false);
+		root = rootNetMgr.getRootNetwork(net1);
+		mapping(table1, net1, root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME),false);
 		//check the mapping by task
 		assertNotNull(net1.getDefaultNodeTable().getColumn(table1sCol));
 		assertEquals(table1sRow1, net1.getDefaultNodeTable().getRow(node1.getSUID()).get(table1sCol, String.class) );
@@ -198,7 +202,8 @@ public class MappingIntegrationTest {
 		CyRow row4 = table2.getRow(node2Name);
 		row4.set(table2sCol,table2sRow2);
 		
-		mapping(table2, net1, true);
+		root = rootNetMgr.getRootNetwork(net1);
+		mapping(table2, net1,root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME), true);
 		//check the mapping by task
 		assertNotNull(net1.getDefaultNodeTable().getColumn(table2sCol));
 		assertEquals(table2sRow1, net1.getDefaultNodeTable().getRow(node1.getSUID()).get(table2sCol, String.class) );
@@ -238,13 +243,13 @@ public class MappingIntegrationTest {
 	
 	}
 	
-	public void mapping(CyTable table, CyNetwork net, boolean selectedOnly) throws Exception{
+	public void mapping(CyTable table, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
-		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, rootNetMgr);
+		ImportTableDataTaskFactoryImpl mappingTF = new ImportTableDataTaskFactoryImpl(netMgr,tabMgr, ts, rootNetMgr);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		
-		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, nets , CyNode.class);
+		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, false, nets ,rootNet,col, CyNode.class);
 		assertNotNull("task iterator is null", ti);
 		
 		assertTrue(ti.hasNext());

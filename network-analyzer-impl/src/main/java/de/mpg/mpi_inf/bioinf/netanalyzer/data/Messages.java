@@ -351,12 +351,12 @@ public abstract class Messages {
 	/**
 	 * Name of Submenu in Cytoscape's menubar, where network analysis actions are added.
 	 */
-	public static String AC_MENU_ANALYSIS = "Network Analysis";
+	public static String AC_MENU_ANALYSIS = "Network Analysis[1.0]";
 
 	/**
 	 * Name of Submenu in Cytoscape's menubar, where network modification actions are added.
 	 */
-	public static String AC_MENU_MODIFICATION = "Subnetwork Creation";
+	public static String AC_MENU_MODIFICATION = "Subnetwork Creation[2.0]";
 
 	public static String AC_PLOTPARAM = "Plot Parameters";
 
@@ -366,7 +366,7 @@ public abstract class Messages {
 
 	public static String AC_REMSELFLOOPS = "Remove Self-Loops";
 
-	public static String AC_MAPPARAM = "Generate Visual Style from Statistics...";
+	public static String AC_MAPPARAM = "Generate Style from Statistics...";
 
 	// Labels of items in dialogs
 
@@ -376,7 +376,7 @@ public abstract class Messages {
 
 	public static String DI_APPLY = "Apply";
 
-	public static String DI_APPLYVS = "Apply visual styles to ";
+	public static String DI_APPLYVS = "Apply styles to ";
 
 	public static String DI_ATTRIBUTE1 = "Table Column 1";
 

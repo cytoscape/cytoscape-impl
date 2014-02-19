@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.io.write.CyWriterManager;
@@ -116,19 +117,9 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 		if (filter == null)
 			return true;
 
-		final String extension = getExtension(file.getPath());
-		if (extension == null)
-			return false;
-
-		return filter.getExtensions().contains(extension);
+		return filter.getExtensions().contains(FilenameUtils.getExtension(file.getName()));
 	}
 
-	private static final String getExtension(final String fileName) {
-		final int lastDotPos = fileName.lastIndexOf('.');
-		if (lastDotPos == -1 || lastDotPos == fileName.length() - 1)
-			return null;
-		return fileName.substring(lastDotPos + 1).toLowerCase();
-	}
 
 	protected final File addOrReplaceExtension(final File file) {
 		final CyFileFilter filter = getFileFilter(getExportFileFormat());
@@ -139,17 +130,12 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 		if (!extensions.hasNext())
 			return file;
 
-		final String extension = extensions.next();
-		final String pathWithoutExtension = stripExtension(file.getAbsolutePath());
-
-		return new File(pathWithoutExtension + "." + extension);
+		final String filterExtension = extensions.next();
+		String fileName = file.getAbsolutePath();
+		final String fileExtension = FilenameUtils.getExtension(fileName);
+		if( !filterExtension.trim().equals(fileExtension.trim()) )
+			fileName += "." + filterExtension;
+		return new File(fileName);
 	}
 
-	private static String stripExtension(final String fileName) {
-		final String extension = getExtension(fileName);
-		if (extension == null)
-			return fileName;
-
-		return fileName.substring(0, fileName.length() - 1 - extension.length());
-	}
 }

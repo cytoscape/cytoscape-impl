@@ -352,6 +352,11 @@ public abstract class AbstractTableFacade implements CyTable {
 		public Object getDefaultValue() {
 			return actualColumn.getDefaultValue();
 		}
+
+		@Override
+		public String toString() {
+			return "FACADE of: "+actualColumn.toString();
+		}
 		
 	}
 }

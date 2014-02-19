@@ -54,7 +54,9 @@ public class SearchRecoredsTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Searching PSICQUIC Services");
-		taskMonitor.setProgress(0.01d);
+		taskMonitor.setStatusMessage("Searching databases.  Please wait...");
+		taskMonitor.setProgress(0.05d);
+
 		if (query == null)
 			throw new NullPointerException("Query is null");
 		if (targetServices == null)
@@ -80,5 +82,4 @@ public class SearchRecoredsTask extends AbstractTask {
 	public Map<String, Long> getResult() {
 		return result;
 	}
-
 }

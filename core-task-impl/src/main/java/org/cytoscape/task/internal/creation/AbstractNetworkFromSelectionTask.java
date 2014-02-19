@@ -42,7 +42,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -52,12 +51,12 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
 
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
+	
 	private final UndoSupport undoSupport;
 	protected final CyRootNetworkManager rootNetworkManager;
 	protected final CyNetworkViewFactory viewFactory;
@@ -93,27 +92,36 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		this.renderingEngineMgr = renderingEngineMgr;
 	}
 
-	abstract Collection<CyEdge> getEdges(CyNetwork netx, List<CyNode> nodes);
+	abstract Set<CyNode> getNodes(CyNetwork net);
+	
+	abstract Set<CyEdge> getEdges(CyNetwork net);
+
+	String getNetworkName() {
+		return cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork);
+	}
 
 	@Override
 	public void run(TaskMonitor tm) {
-		if (parentNetwork == null)
-			throw new NullPointerException("Source network is null.");
+		if (parentNetwork == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Source network must be specified.");
+			return;
+		}
+		
 		tm.setProgress(0.0);
-
+		
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);		
 		CyNetworkView sourceView = null;
-		if(views.size() != 0)
+		
+		if (views.size() != 0)
 			sourceView = views.iterator().next();
 		
 		tm.setProgress(0.1);
 
-		// Get the selected nodes, but only create network if nodes are actually
-		// selected.
-		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(parentNetwork, CyNetwork.SELECTED, true);
+		// Get the selected nodes
+		final Set<CyNode> nodes = getNodes(parentNetwork);
 		tm.setProgress(0.2);
 
-		if (selectedNodes.size() <= 0)
+		if (nodes.size() <= 0)
 			throw new IllegalArgumentException("No nodes are selected.");
 
 		// create subnetwork and add selected nodes and appropriate edges
@@ -126,11 +134,12 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 
 		tm.setProgress(0.3);
 		
-		for (final CyNode node : selectedNodes){
+		for (final CyNode node : nodes){
 			newNet.addNode(node);
 			cloneRow(parentNetwork.getRow(node), newNet.getRow(node));
 			//Set rows and edges to not selected state to avoid conflicts with table browser
 			newNet.getRow(node).set(CyNetwork.SELECTED, false);
+			
 			if (groupMgr.isGroup(node, parentNetwork)) {
 				CyGroup group = groupMgr.getGroup(node, parentNetwork);
 				GroupUtils.addGroupToNetwork(group, parentNetwork, newNet);
@@ -138,16 +147,17 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		}
 
 		tm.setProgress(0.4);
-		for (final CyEdge edge : getEdges(parentNetwork, selectedNodes)){
+		
+		for (final CyEdge edge : getEdges(parentNetwork)){
 			newNet.addEdge(edge);
 			cloneRow(parentNetwork.getRow(edge), newNet.getRow(edge));
 			//Set rows and edges to not selected state to avoid conflicts with table browser
 			newNet.getRow(edge).set(CyNetwork.SELECTED, false);
 		}
-		tm.setProgress(0.5);
-
 		
-		newNet.getRow(newNet).set(CyNetwork.NAME, cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork));
+		tm.setProgress(0.5);
+		
+		newNet.getRow(newNet).set(CyNetwork.NAME, getNetworkName());
 
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
@@ -155,10 +165,11 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		// create the view in a separate task
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		networks.add(newNet);
-		final Task createViewTask = new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
-				null, eventHelper, vmm, renderingEngineMgr, sourceView);
+		final CreateNetworkViewTask createViewTask = 
+			new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
+				                        null, eventHelper, vmm, renderingEngineMgr, sourceView);
 		insertTasksAfterCurrentTask(createViewTask);
-
+		
 		tm.setProgress(1.0);
 	}
 
@@ -181,14 +192,17 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	private void addVirtualColumn (CyColumn col, CyTable subTable){
 		VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
 		CyColumn checkCol= subTable.getColumn(col.getName());
-		if(checkCol == null)
-			subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), col.isImmutable());
+		
+		if (checkCol == null)
+			subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), 
+					colInfo.getTargetJoinKey(), col.isImmutable());
 
 		else
 			if(!checkCol.getVirtualColumnInfo().isVirtual() ||
 					!checkCol.getVirtualColumnInfo().getSourceTable().equals(colInfo.getSourceTable()) ||
 					!checkCol.getVirtualColumnInfo().getSourceColumn().equals(colInfo.getSourceColumn()))
-				subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), colInfo.getTargetJoinKey(), col.isImmutable());
+				subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), 
+						colInfo.getTargetJoinKey(), col.isImmutable());
 	}
 
 	private void copyColumn(CyColumn col, CyTable subTable) {
@@ -197,7 +211,6 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		else
 			subTable.createColumn(col.getName(), col.getType(), false);	
 	}
-	
 
 	private void cloneRow(final CyRow from, final CyRow to) {
 		for (final CyColumn column : from.getTable().getColumns()){
@@ -205,5 +218,4 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 				to.set(column.getName(), from.getRaw(column.getName()));
 		}
 	}
-
 }

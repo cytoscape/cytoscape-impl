@@ -25,22 +25,21 @@ package org.cytoscape.equations.internal.functions;
  */
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
-import org.cytoscape.equations.internal.SUIDToEdgeMapper;
-import org.cytoscape.equations.internal.SUIDToNodeMapper;
-
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 
 
 public class TargetID extends AbstractFunction {
-	private final SUIDToEdgeMapper suidToEdgeMapper;
+	private CyApplicationManager applicationManager;
 
-	public TargetID(final SUIDToEdgeMapper suidToEdgeMapper) {
+	public TargetID(CyApplicationManager applicationManager) {
 		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "edge_ID", "An ID identifying an edge.") });
-		this.suidToEdgeMapper = suidToEdgeMapper;
+		this.applicationManager = applicationManager;
 	}
 
 	/**
@@ -55,7 +54,7 @@ public class TargetID extends AbstractFunction {
 	 */
 	public String getFunctionSummary() { return "Returns target ID of an edge."; }
 
-	public Class getReturnType() { return Long.class; }
+	public Class<?> getReturnType() { return Long.class; }
 
 	/**
 	 *  @param args the function arguments which must be either one object of type Double or Long
@@ -64,7 +63,11 @@ public class TargetID extends AbstractFunction {
 	public Object evaluateFunction(final Object[] args) {
 		final Long edgeID = FunctionUtil.getArgAsLong(args[0]);
 
-		final CyEdge edge = suidToEdgeMapper.getEdge(edgeID);
+		final CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
+		if (currentNetwork == null)
+			return (Long)(-1L);
+
+		final CyEdge edge = currentNetwork.getEdge(edgeID);
 		if (edge == null)
 			throw new IllegalArgumentException("\"" + edgeID + "\" is not a valid edge identifier.");
 		

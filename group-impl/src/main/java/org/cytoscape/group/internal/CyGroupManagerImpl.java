@@ -145,10 +145,10 @@ public class CyGroupManagerImpl implements CyGroupManager {
 			return;
 
 		cyEventHelper.fireEvent(new GroupAboutToBeDestroyedEvent(CyGroupManagerImpl.this, group));
-		((CyGroupImpl)group).destroyGroup();
 		if (rootMap.containsKey(group.getRootNetwork()))
 			rootMap.get(group.getRootNetwork()).remove(group);
 		groupSet.remove(group);
+		((CyGroupImpl)group).destroyGroup();
 		// updateGroupAttribute(group);
 	}
 

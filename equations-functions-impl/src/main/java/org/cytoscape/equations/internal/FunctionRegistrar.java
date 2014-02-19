@@ -34,27 +34,19 @@ import org.cytoscape.equations.internal.functions.*;
 public class FunctionRegistrar {
 	private final EquationCompiler compiler;
 	private final CyApplicationManager applicationManager;
-	private final SUIDToNodeMapper suidToNodeMapper;
-	private final SUIDToEdgeMapper suidToEdgeMapper;
 
-	public FunctionRegistrar(final EquationCompiler compiler, final CyApplicationManager applicationManager,
-				 final SUIDToNodeMapper suidToNodeMapper,
-				 final SUIDToEdgeMapper suidToEdgeMapper)
+	public FunctionRegistrar(final EquationCompiler compiler, final CyApplicationManager applicationManager)
 	{
 		this.compiler = compiler;
 		this.applicationManager = applicationManager;
-		this.suidToNodeMapper = suidToNodeMapper;
-		this.suidToEdgeMapper = suidToEdgeMapper;
-
-		registerAllFunctions();
 	}
 
-	private void registerAllFunctions() {
+	void registerAllFunctions() {
 		final EquationParser parser = compiler.getParser();
-		parser.registerFunction(new Degree(applicationManager, suidToNodeMapper));
-		parser.registerFunction(new InDegree(applicationManager, suidToNodeMapper));
-		parser.registerFunction(new OutDegree(applicationManager, suidToNodeMapper));
-		parser.registerFunction(new SourceID(suidToEdgeMapper));
-		parser.registerFunction(new TargetID(suidToEdgeMapper));
+		parser.registerFunction(new Degree(applicationManager));
+		parser.registerFunction(new InDegree(applicationManager));
+		parser.registerFunction(new OutDegree(applicationManager));
+		parser.registerFunction(new SourceID(applicationManager));
+		parser.registerFunction(new TargetID(applicationManager));
 	}
 }

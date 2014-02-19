@@ -122,6 +122,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				// 	calculate the offset for each member node from the center
 				// 	save it in the node's attribute
 				for (CyNode node: group.getNodeList()) {
+					if (!network.containsNode(node)) continue;
 					Dimension offset = calculateOffset(center, view, node);
 					updateNodeOffset(network, group, node, offset);
 				}
@@ -181,6 +182,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			if (opacity != 100.0)
 				nView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, (int)(opacity*255.0/100.0));
 
+			viewStyle.apply(network.getRow(nView.getModel()), nView);
+
 		} else {
 			CyNode groupNode = group.getGroupNode();
 
@@ -208,40 +211,46 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 			// TODO: turn off stupid nested network thing
 			for (CyNode node: group.getNodeList()) {
+				if (!network.containsNode(node)) continue;
+				View<CyNode> nView = view.getNodeView(node);
 				if (node.getNetworkPointer() != null && cyGroupManager.isGroup(node, network)) {
 					if (!cyGroupSettings.getUseNestedNetworks(cyGroupManager.getGroup(node, network))) {
-						View<CyNode> nView = view.getNodeView(node);
 						nView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, Boolean.FALSE);
 					}
 				}
+				viewStyle.apply(network.getRow(node), nView);
 			}
 		}
 		
 //		viewStyle.apply(view);
-//		view.updateView();
+		view.updateView();
 	}
 
 	private Dimension calculateCenter(CyNetworkView view, List<CyNode> nodeList) {
 		double xCenter = 0.0d;
 		double yCenter = 0.0d;
+		CyNetwork network = view.getModel();
 
+		int size = 0;
 		for (CyNode node: nodeList) {
+			if (!network.containsNode(node)) continue;
 			View<CyNode>nView = view.getNodeView(node);
 			if (nView == null) continue;
-			double x = nView.getVisualProperty(xLoc);
-			double y = nView.getVisualProperty(yLoc);
-			xCenter += (nView.getVisualProperty(xLoc)) / nodeList.size();
-			yCenter += (nView.getVisualProperty(yLoc)) / nodeList.size();
+			size++;
+			xCenter += (nView.getVisualProperty(xLoc));
+			yCenter += (nView.getVisualProperty(yLoc));
 			
 		}
-		return getDim(xCenter, yCenter);
+		return getDim(xCenter/size, yCenter/size);
 	}
 
 	private void moveNodes(CyGroup group, CyNetworkView view, Dimension center) {
 		CyNetwork net = view.getModel();
 		for (CyNode node: group.getNodeList()) {
-			Dimension location = getOffsetLocation(net, group, node, center);
-			moveNode(view, node, location);
+			if (net.containsNode(node)) {
+				Dimension location = getOffsetLocation(net, group, node, center);
+				moveNode(view, node, location);
+			}
 		}
 	}
 

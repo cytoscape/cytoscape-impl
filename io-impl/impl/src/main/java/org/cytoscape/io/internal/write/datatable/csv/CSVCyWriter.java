@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.cytoscape.equations.Equation;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
@@ -159,10 +160,8 @@ public class CSVCyWriter implements CyWriter {
 			for (CyColumn column : columns) {
 				if (handleEquations) {
 					final Object rawValue = row.getRaw(column.getName());
-					if (rawValue instanceof String
-					    && ((String)rawValue).startsWith("="))
-					{
-						values[index++] = (String)rawValue;
+					if (rawValue instanceof Equation) {
+						values[index++] = rawValue.toString();
 						continue;
 					}
 				}

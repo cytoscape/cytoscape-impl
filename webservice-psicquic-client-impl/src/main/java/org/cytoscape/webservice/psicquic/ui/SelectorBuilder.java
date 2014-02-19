@@ -29,9 +29,14 @@ import javax.swing.JComboBox;
 public class SelectorBuilder {
 
 	protected enum Species {
-		HUMAN("Homo sapiens"), MOUSE("Mus musculus"), YEAST("Saccharomyces cerevisiae"), FLY(
-				"Drosophila melanogaster"), ROUNDWORM("Caenorhabditis elegans"), ZEBRAFISH("Danio rerio"), MOUSE_EAR_CRESS(
-				"Arabidopsis Thaliana");
+		HUMAN("Homo sapiens"),
+		MOUSE("Mus musculus"),
+		YEAST("Saccharomyces cerevisiae"),
+		FLY("Drosophila melanogaster"),
+		ROUNDWORM("Caenorhabditis elegans"),
+		ECOLI("Escherichia coli"),
+		ZEBRAFISH("Danio rerio"),
+		MOUSE_EAR_CRESS("Arabidopsis Thaliana");
 
 		private final String name;
 
@@ -53,5 +58,4 @@ public class SelectorBuilder {
 
 		return speciesBox;
 	}
-
 }

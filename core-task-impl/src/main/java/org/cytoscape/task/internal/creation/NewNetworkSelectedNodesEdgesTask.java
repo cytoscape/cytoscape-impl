@@ -26,7 +26,8 @@ package org.cytoscape.task.internal.creation;
 
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -46,6 +47,10 @@ import org.cytoscape.work.undo.UndoSupport;
 
 
 public class NewNetworkSelectedNodesEdgesTask extends AbstractNetworkFromSelectionTask {
+	
+	private Set<CyNode> nodes;
+	private Set<CyEdge> edges;
+	
 	public NewNetworkSelectedNodesEdgesTask(final UndoSupport undoSupport, final CyNetwork net,
 	                                        final CyRootNetworkManager cyroot,
 	                                        final CyNetworkViewFactory cnvf,
@@ -56,13 +61,38 @@ public class NewNetworkSelectedNodesEdgesTask extends AbstractNetworkFromSelecti
 	                                        final CyApplicationManager appManager,
 	                                        final CyEventHelper eventHelper,
 	                                        final CyGroupManager groupMgr,
-	                                        final RenderingEngineManager renderingEngineMgr)
-	{
+	                                        final RenderingEngineManager renderingEngineMgr) {
 		super(undoSupport, net, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
 		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr);
 	}
 
-	Collection<CyEdge> getEdges(CyNetwork netx, List<CyNode> nodes) {
-		return CyTableUtil.getEdgesInState(netx, CyNetwork.SELECTED, true);
+	/**
+	 * Returns the selected nodes plus all nodes that connect the selected edges
+	 */
+	@Override
+	Set<CyNode> getNodes(final CyNetwork net) {
+		if (nodes == null) {
+			nodes = new HashSet<CyNode>(CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true));
+			final Collection<CyEdge> selectedEdges = getEdges(net);
+			
+			for (final CyEdge e : selectedEdges) {
+				nodes.add(e.getSource());
+				nodes.add(e.getTarget());
+			}
+		}
+		
+		return nodes;
+	}
+	
+	/**
+	 * Returns the selected edges.
+	 */
+	@Override
+	Set<CyEdge> getEdges(final CyNetwork net) {
+		if (edges == null) {
+			edges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, true));
+		}
+		
+		return edges;
 	}
 }

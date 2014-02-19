@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.2</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<properties>
@@ -14,6 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>layout-impl</artifactId>
+  <version>3.1.0</version>
 
 	<name>Cytoscape Layout Impl (${project.artifactId})</name>
 
@@ -70,11 +71,19 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>command-executor-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>layout-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>application-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

@@ -32,7 +32,6 @@ import javax.swing.ListModel;
 
 import org.cytoscape.cpath2.internal.schemas.search_response.ExtendedRecordType;
 import org.cytoscape.cpath2.internal.schemas.search_response.OrganismType;
-import org.cytoscape.cpath2.internal.view.model.ExtendedRecordWrapper;
 
 /**
  * Extension to JList to Support Tool Tips.

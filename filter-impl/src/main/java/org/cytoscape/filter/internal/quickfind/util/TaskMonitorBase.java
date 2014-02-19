@@ -36,6 +36,7 @@ public class TaskMonitorBase implements TaskMonitor {
 	private String status;
 	private String title;
 	private double progress;
+    private TaskMonitor.Level level;
 
 	@Override
 	public void setTitle(String title) {
@@ -49,6 +50,11 @@ public class TaskMonitorBase implements TaskMonitor {
 
 	@Override
 	public void setStatusMessage(String statusMessage) {
-		status = statusMessage;
+		showMessage(TaskMonitor.Level.INFO, statusMessage);
 	}
+
+    public void showMessage(TaskMonitor.Level level, String message) {
+        this.level = level;
+        this.status = message;
+    }
 }

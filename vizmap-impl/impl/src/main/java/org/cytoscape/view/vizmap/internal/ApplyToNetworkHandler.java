@@ -25,9 +25,8 @@ package org.cytoscape.view.vizmap.internal;
  */
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,6 +42,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -56,7 +56,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 
 	
 	ApplyToNetworkHandler(VisualStyle style, VisualLexiconManager lexManager) {
-		super(style, lexManager);
+		super(style, lexManager, CyNetwork.class);
 	}
 
 	@Override
@@ -66,35 +66,51 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		final Collection<View<CyEdge>> edgeViews = netView.getEdgeViews();
 		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
 		networkViewSet.add(netView);
+		
+		// Make sure the dependency maps are up to date
+		updateDependencyMaps();
 
+		// Clear visual properties from all views first
+		view.clearVisualProperties();
+		
+		for (final View<?> v : nodeViews)
+			v.clearVisualProperties();
+		
+		for (final View<?> v : edgeViews)
+			v.clearVisualProperties();
+		
+		// TODO: what if there is another Lexicon?
 		final VisualLexicon lex = lexManager.getAllVisualLexicon().iterator().next();
+		
 		applyDefaultsInParallel(netView, lexManager.getNodeVisualProperties(), lex);
 		applyDefaultsInParallel(netView, lexManager.getEdgeVisualProperties(), lex);
 		applyDefaultsInParallel(netView, lexManager.getNetworkVisualProperties(), lex);
 
-		final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap = applyDependencies(netView);
+		applyDependencies(netView);
 		
-		ExecutorService exe = Executors.newCachedThreadPool();
-		exe.submit(new ApplyMappingsTask(netView, nodeViews, lexManager.getNodeVisualProperties(), dependencyMap));
-		exe.submit(new ApplyMappingsTask(netView, edgeViews, lexManager.getEdgeVisualProperties(), dependencyMap));
-		exe.submit(new ApplyMappingsTask(netView, networkViewSet, lexManager.getNetworkVisualProperties(), dependencyMap));
+		final ExecutorService exe = Executors.newCachedThreadPool();
+		exe.submit(new ApplyMappingsTask(netView, nodeViews, BasicVisualLexicon.NODE, lex));
+		exe.submit(new ApplyMappingsTask(netView, edgeViews, BasicVisualLexicon.EDGE, lex));
+		exe.submit(new ApplyMappingsTask(netView, networkViewSet, BasicVisualLexicon.NETWORK, lex));
 		
 		try {
 			exe.shutdown();
 			exe.awaitTermination(15, TimeUnit.MINUTES);
 		} catch (Exception ex) {
 			logger.warn("Create apply operation failed.", ex);
-		} finally {
-
 		}
 	}
 	
-
-	private void applyDefaultsInParallel(final CyNetworkView netView, final Collection<VisualProperty<?>> vps, final VisualLexicon lex) {
+	private void applyDefaultsInParallel(final CyNetworkView netView, final Collection<VisualProperty<?>> vps,
+			final VisualLexicon lex) {
 		final ExecutorService exe = Executors.newCachedThreadPool();
 		
 		for (final VisualProperty<?> vp : vps) {
 			final VisualLexiconNode node = lex.getVisualLexiconNode(vp);
+			
+			if (node == null)
+				continue;
+			
 			final Collection<VisualLexiconNode> children = node.getChildren();
 
 			if (children.isEmpty()) {
@@ -104,6 +120,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 					((VisualStyleImpl) style).getStyleDefaults().put(vp, vp.getDefault());
 					defaultValue = style.getDefaultValue(vp);
 				}
+				
 				exe.submit(new ApplyDefaultTask(netView, vp, defaultValue));
 			}
 		}
@@ -119,6 +136,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	}
 	
 	private final class ApplyDefaultTask implements Runnable {
+		
 		private final CyNetworkView netView;
 		private final VisualProperty<?> vp;
 		private final Object defaultValue;
@@ -139,52 +157,67 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 
 		private final CyNetworkView netView;
 		private final Collection<? extends View<? extends CyIdentifiable>> views;
-		private final Collection<VisualProperty<?>> visualProperties;
-		private final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap;
+		private final VisualProperty<?> rootVisualProperty;
+		private final VisualLexicon lexicon;
 		
 		ApplyMappingsTask(final CyNetworkView netView,
-				final Collection<? extends View<? extends CyIdentifiable>> views,
-				final Collection<VisualProperty<?>> visualProperties,
-				final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap) {
+						  final Collection<? extends View<? extends CyIdentifiable>> views,
+						  final VisualProperty<?> rootVisualProperty,
+						  final VisualLexicon lexicon) {
 			this.netView = netView;
 			this.views = views;
-			this.visualProperties = visualProperties;
-			this.dependencyMap = dependencyMap;
+			this.rootVisualProperty = rootVisualProperty;
+			this.lexicon = lexicon;
 		}
 		
 		@Override
 		public void run() {
-			for (VisualProperty<?> vp : visualProperties) {
-				final VisualPropertyDependency<?> dep = dependencyMap.get(vp);
+			final Class<? extends CyIdentifiable> targetDataType = rootVisualProperty.getTargetDataType();
+			final LinkedList<VisualLexiconNode> descendants = new LinkedList<VisualLexiconNode>();
+			descendants.addAll(lexicon.getVisualLexiconNode(rootVisualProperty).getChildren());
+			
+			while (!descendants.isEmpty()) {
+				final VisualLexiconNode node = descendants.pop();
+				final VisualProperty<?> vp = node.getVisualProperty();
 				
-				if (dep != null)
-					continue; // Already handled when applying dependencies
+				if (vp.getTargetDataType() != targetDataType)
+					continue; // Because NETWORK has node/edge properties as descendants as well
 				
 				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
 
 				if (mapping != null) {
 					final CyNetwork net = netView.getModel();
+					final Set<VisualPropertyDependency<?>> depSet = dependencyParents.get(vp);
 
-					for (final View<? extends CyIdentifiable> v : views) {
-						Object value = mapping.getMappedValue(net.getRow(v.getModel()));
+					for (final View<? extends CyIdentifiable> view : views) {
+						final Object value = mapping.getMappedValue(net.getRow(view.getModel()));
 						
-						if (value != null)
-							v.setVisualProperty(vp, value);
+						if (value != null) {
+							// If this property has already received a propagated value from a previous
+							// enabled dependency, do not apply this mapping's value over it.
+							if (!isParentOfDependency(vp) && !isChildOfEnabledDependency(vp)) {
+								view.setVisualProperty(vp, value);
+							} else if (depSet != null) {
+								for (final VisualPropertyDependency<?> dep : depSet) {
+									// The dependency has a higher priority over children's mappings when enabled.
+									if (dep.isDependencyEnabled())
+										propagateValue(view, vp, value, dep.getVisualProperties(), false);
+								}
+							}
+						}
 					}
 				}
+				
+				descendants.addAll(node.getChildren());
 			}
 		}
 	}
 	
-	private Map<VisualProperty<?>, VisualPropertyDependency<?>> applyDependencies(final CyNetworkView netView) {
-		
-		final Map<VisualProperty<?>, VisualPropertyDependency<?>> dependencyMap = 
-				new HashMap<VisualProperty<?>, VisualPropertyDependency<?>>();
+	private void applyDependencies(final CyNetworkView netView) {
 		final Set<VisualPropertyDependency<?>> dependencies = style.getAllVisualPropertyDependencies();
 		
 		for (final VisualPropertyDependency<?> dep : dependencies) {
 			final VisualProperty<?> parentVP = dep.getParentVisualProperty();
-			dependencyMap.put(parentVP, dep); // Index the dependencies by their visual properties
 			
 			if (dep.isDependencyEnabled()) {
 				// Dependency is enabled.  Need to use parent value instead.
@@ -192,38 +225,13 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 				vpSet.add(parentVP);
 				
 				Object defaultValue = style.getDefaultValue(parentVP);
+				
 				if (defaultValue == null)
 					defaultValue = parentVP.getDefault();
 				
-				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(parentVP);
-				
-				for (VisualProperty<?> vp : vpSet) {
-					dependencyMap.put(vp, dep);
-					
+				for (VisualProperty<?> vp : vpSet)
 					netView.setViewDefault(vp, defaultValue);
-					
-					if (mapping != null) {
-						final CyNetwork net = netView.getModel();
-						Collection<View<? extends CyIdentifiable>> views = null;
-
-						if (vp.getTargetDataType() == CyNode.class)
-							views = (Collection) netView.getNodeViews();
-						else if (vp.getTargetDataType() == CyEdge.class)
-							views = (Collection) netView.getEdgeViews();
-						
-						if (views != null) {
-							for (final View<? extends CyIdentifiable> v : views) {
-								Object value = mapping.getMappedValue(net.getRow(v.getModel()));
-								
-								if (value != null)
-									v.setVisualProperty(vp, value);
-							}
-						}
-					}
-				}
 			}
 		}
-		
-		return dependencyMap;
 	}
 }

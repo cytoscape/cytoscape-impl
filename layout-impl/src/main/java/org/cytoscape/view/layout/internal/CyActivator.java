@@ -27,6 +27,7 @@ package org.cytoscape.view.layout.internal;
 import java.util.Properties;
 
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -47,9 +48,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyProperty cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
 		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
+		CyServiceRegistrar cyServiceRegistrar = getService(bc,CyServiceRegistrar.class);
 		
 		GridNodeLayout gridNodeLayout = new GridNodeLayout(undoSupportServiceRef);
-		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(cyPropertyServiceRef, gridNodeLayout);
+		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(cyServiceRegistrar, cyPropertyServiceRef, gridNodeLayout);
 		
 		registerService(bc,cyLayouts,CyLayoutAlgorithmManager.class, new Properties());
 

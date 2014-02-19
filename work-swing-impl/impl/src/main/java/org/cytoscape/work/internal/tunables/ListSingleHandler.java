@@ -31,6 +31,8 @@ import javax.swing.*;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.util.ListSelection;
+import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import java.awt.*;
@@ -45,9 +47,9 @@ import java.awt.event.ActionListener;
  *
  * @param <T> type of items the List contains
  */
-public class ListSingleHandler<T> extends AbstractGUITunableHandler implements ActionListener {
+public class ListSingleHandler<T> extends AbstractGUITunableHandler
+                                  implements ActionListener, ListChangeListener<T> {
 	
-	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD, 12);
 	private static final Font COMBOBOX_FONT = new Font("SansSerif", Font.PLAIN, 12);
 //	private static final Dimension DEF_LABEL_SIZE = new Dimension(300, 25);
 	private static final Dimension DEF_COMBOBOX_SIZE = new Dimension(300, 25);
@@ -96,7 +98,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		final JLabel textArea = new JLabel(getDescription());
 		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		textArea.setFont(LABEL_FONT);
+		textArea.setFont(GUIDefaults.LABEL_FONT);
 		textArea.setVerticalTextPosition(SwingConstants.CENTER);
 		panel.add(textArea);
 
@@ -108,6 +110,16 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 		panel.add(combobox);
 		
 		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
+
+		// Set the tooltip.  Note that at this point, we're setting
+		// the tooltip on the entire panel.  This may or may not be
+		// the right thing to do.
+		if (getTooltip() != null && getTooltip().length() > 0) {
+			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
+			tipManager.setInitialDelay(1);
+			tipManager.setDismissDelay(7500);
+			panel.setToolTipText(getTooltip());
+		}
 	}
 
 	public void update() {
@@ -158,5 +170,15 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler implements A
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		handle();
+	}
+
+	@Override
+	public void selectionChanged(ListSelection<T> source) {
+		update();
+	}
+
+	@Override
+	public void listChanged(ListSelection<T> source) {
+		update();
 	}
 }

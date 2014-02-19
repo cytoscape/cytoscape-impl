@@ -37,10 +37,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathProperties;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.cpath2.internal.util.SelectUtil;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyEdge;
@@ -67,7 +67,7 @@ public class MergeNetworkTask implements Task {
      */
     private CyNetwork mergedNetwork;
 
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 
     /**
      * Constructor.
@@ -75,7 +75,7 @@ public class MergeNetworkTask implements Task {
      * @param cpathURL URL
      * @param cyNetwork         CyNetwork
      */
-    public MergeNetworkTask(URL cpathURL, CyNetwork cyNetwork, CPath2Factory factory) {
+    public MergeNetworkTask(URL cpathURL, CyNetwork cyNetwork, CPathFactory factory) {
     	this.factory = factory;
     	
         // init member vars
@@ -127,10 +127,6 @@ public class MergeNetworkTask implements Task {
             newEdges.add(mergedEdge);
         }
 
-        // execute any post processing -
-        // in this case, biopax style is applied, network attributes set, etc
-//        reader.doPostProcessing(mergedNetwork);
-
         // select nodes / edges
         Collection<CyNode> nodes = newNodes.values();
         SelectUtil.setSelectedNodeState(mergedNetwork,nodes, true);
@@ -139,9 +135,6 @@ public class MergeNetworkTask implements Task {
         // setup undo
         UndoSupport undo = factory.getUndoSupport();
         undo.postEdit(factory.createMergeNetworkEdit(mergedNetwork, nodes, newEdges));
-
-        // fire Cytoscape.NETWORK_MODIFIED - should be removed when undo support is back in
-//        Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null, mergedNetwork);
 
         // update the task monitor
         taskMonitor.setStatusMessage(getMergeStatus(mergedNetwork, nodes.size(), newEdges.size()));

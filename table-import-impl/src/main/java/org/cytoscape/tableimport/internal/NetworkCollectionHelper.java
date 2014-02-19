@@ -47,6 +47,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public class NetworkCollectionHelper extends AbstractTask {
 
+	private LoadNetworkReaderTask importTask;
 	
 	/**
 	 * If this option is selected, reader should create new CyRootNetwork.
@@ -115,29 +116,40 @@ public class NetworkCollectionHelper extends AbstractTask {
 	
 	public NetworkCollectionHelper(){
 
+		this.importTask = null;
+		initTunables();
+	}
+	
+	public NetworkCollectionHelper(LoadNetworkReaderTask importTask){
+		
+		this.importTask = importTask;
+		initTunables();
+		
+	}
+	
+	void initTunables(){
 		// init tunables
 		
 		// initialize the network Collection
 		this.name2RootMap = getRootNetworkMap(CytoscapeServices.cyNetworkManager, CytoscapeServices.cyRootNetworkFactory);
-		
+				
 		List<String> rootNames = new ArrayList<String>();
 		rootNames.add(CRERATE_NEW_COLLECTION_STRING);
 		rootNames.addAll(name2RootMap.keySet());
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
-		
+				
 
 		// initialize target attribute list
 		List<String> colNames_target = new ArrayList<String>();
 		colNames_target.add("shared name");
 		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
-	
+			
 		// initialize source attribute list
 		List<String> colNames_source = new ArrayList<String>();
 		colNames_source.add("shared name");
 		this.sourceColumnList = new ListSingleSelection<String>(colNames_source);
 	}
-	
 	
 	// Return the rootNetwork based on user selection, if not existed yet, create a new one
 	public CyRootNetwork getRootNetwork(){
@@ -195,6 +207,11 @@ public class NetworkCollectionHelper extends AbstractTask {
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
 		this.initNodeMap();		
+		if(importTask != null)
+		{
+			importTask.setNodeMap(getNodeMap());
+			importTask.setRootNetwork(getRootNetwork());
+		}
 	}
 	
 	//

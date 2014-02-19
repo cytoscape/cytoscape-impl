@@ -26,6 +26,7 @@ package org.cytoscape.command.internal;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 
 import java.io.BufferedReader;
@@ -43,10 +44,12 @@ public class CommandFileExecutorTask extends AbstractTask {
 	public File file;
 
 	private final CommandExecutorImpl cei;
+	private final TaskObserver observer;
 
-	public CommandFileExecutorTask(CommandExecutorImpl cei) {
+	public CommandFileExecutorTask(CommandExecutorImpl cei, TaskObserver observer) {
 		super();
 		this.cei = cei;
+		this.observer = observer;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
@@ -66,7 +69,7 @@ public class CommandFileExecutorTask extends AbstractTask {
 			while ((s = bin.readLine()) != null) 
 				lines.add( s.trim() );
 
-			cei.executeList(lines,tm);
+			cei.executeList(lines,tm, observer);
 
 		} finally {
 			if ( bin != null )

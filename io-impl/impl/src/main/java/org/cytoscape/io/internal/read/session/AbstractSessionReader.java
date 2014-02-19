@@ -314,6 +314,9 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 
 		public void setStatusMessage(String statusMessage) {
 		}
+
+        public void showMessage(TaskMonitor.Level level, String message) {
+        }
 	}
 	
 	private class ReusableInputStream extends InputStream {

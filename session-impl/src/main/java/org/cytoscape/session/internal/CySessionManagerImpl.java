@@ -253,13 +253,14 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			
 			restoreProperties(sess);
 			restoreNetworks(sess);
-			restoreNetworkViews(sess);
+
 			restoreTables(sess);
-			restoreVisualStyles(sess);
+			restoreNetworkViews(sess, selectedNetworks);
 			restoreNetworkSelection(sess, selectedNetworks);
+			restoreVisualStyles(sess);
 			restoreCurrentVisualStyle();
 		}
-		
+
 		currentSession = sess;
 		currentFileName = fileName;
 
@@ -332,7 +333,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 	
-	private void restoreNetworkViews(final CySession sess) {
+	private void restoreNetworkViews(final CySession sess, List<CyNetwork> selectedNetworks) {
 		logger.debug("Restoring network views...");
 		Set<CyNetworkView> netViews = sess.getNetworkViews();
 		List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
@@ -340,7 +341,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		for (CyNetworkView nv : netViews) {
 			CyNetwork network = nv.getModel();
 			
-			if (network.getRow(network).get(CyNetwork.SELECTED, Boolean.class)) {
+			if (selectedNetworks.contains(network)) {
 				selectedViews.add(nv);
 			}
 		}
@@ -373,7 +374,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			for (Entry<VisualProperty<?>, Object> entry2 : entry1.getValue().entrySet())
 				nv.setVisualProperty(entry2.getKey(), entry2.getValue());
 		}
-		
+		if (!selectedViews.isEmpty())
+			appMgr.setCurrentNetworkView(selectedViews.get(0));
 		appMgr.setSelectedNetworkViews(selectedViews);
 	}
 
@@ -446,7 +448,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				if (vs != null) {
 					vmMgr.setVisualStyle(vs, netView);
 					vs.apply(netView);
-					netView.updateView();
 				}
 			}
 		}
@@ -501,8 +502,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			appMgr.setCurrentNetworkView(cv);
 		
 			// The selected networks must be set after setting the current one!
-			if (!selectedNets.isEmpty())
-				appMgr.setSelectedNetworks(selectedNets);
+			appMgr.setSelectedNetworks(selectedNets);
 		}
 	}
 

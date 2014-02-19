@@ -24,8 +24,7 @@ package org.cytoscape.welcome.internal.panel;
  * #L%
  */
 
-import java.awt.Cursor;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -33,10 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.CyVersion;
@@ -120,7 +117,6 @@ public class NewsAndLinkPanel extends AbstractWelcomeScreenChildPanel {
 		
 		add(linkPanel);
 		add(statusPanel);
-		
 	}
 
 	private final class LabelMouseListener extends MouseAdapter {

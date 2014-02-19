@@ -39,6 +39,7 @@ import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.internal.task.OpenRecentSessionTaskFactory;
 import org.cytoscape.io.read.CySessionReaderManager;
@@ -75,6 +76,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 	private final CyTableManager tableManager;
 	private final CyNetworkTableManager netTableManager;
 	private final CyGroupManager grManager;
+	private final CyEventHelper eventHelper;
 
 	private final Set<OpenRecentSessionTaskFactory> currentMenuItems;
 	
@@ -88,7 +90,8 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 								final CyNetworkManager netManager,
 								final CyTableManager tableManager,
 								final CyNetworkTableManager netTableManager,
-								final CyGroupManager grManager) {
+								final CyGroupManager grManager,
+								final CyEventHelper eventHelper) {
 		this.tracker = tracker;
 		this.registrar = registrar;
 		this.sessionManager = sessionManager;
@@ -98,6 +101,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		this.tableManager = tableManager;
 		this.netTableManager = netTableManager;
 		this.grManager = grManager;
+		this.eventHelper = eventHelper;
 		
 		this.currentMenuItems = new HashSet<OpenRecentSessionTaskFactory>();
 
@@ -128,7 +132,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 			prop.put(ServiceProperties.TITLE, url.getFile());
 			prop.put(ServiceProperties.MENU_GRAVITY, "6.0");
 			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager,
-					appManager, netManager, tableManager, netTableManager, grManager, tracker, url);
+					appManager, netManager, tableManager, netTableManager, grManager, tracker, url, eventHelper);
 			registrar.registerService(factory, TaskFactory.class, prop);
 
 			this.currentMenuItems.add(factory);

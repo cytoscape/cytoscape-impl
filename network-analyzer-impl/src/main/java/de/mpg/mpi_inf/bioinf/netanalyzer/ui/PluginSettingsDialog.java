@@ -26,26 +26,17 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.Dialog;
-import java.awt.FlowLayout;
-import java.awt.Frame;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.WindowConstants;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
-import de.mpg.mpi_inf.bioinf.netanalyzer.sconnect.HelpConnector;
 
 /**
  * Dialog for viewing and editing plugin's settings.
@@ -111,8 +102,6 @@ public class PluginSettingsDialog extends JDialog implements ActionListener {
 		} else if (source == btnCancel) {
 			this.setVisible(false);
 			this.dispose();
-		} else if (source == btnHelp) {
-			de.mpg.mpi_inf.bioinf.netanalyzer.OpenBrowser.openURL(HelpConnector.getSettingsURL());
 		}
 	}
 
@@ -138,12 +127,10 @@ public class PluginSettingsDialog extends JDialog implements ActionListener {
 		JPanel panButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, Utils.BORDER_SIZE, 0));
 		btnOK = Utils.createButton(Messages.DI_OK, null, this);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		btnHelp = Utils.createButton(Messages.DI_HELP, null, this);
-		Utils.equalizeSize(btnOK, btnCancel, btnHelp);
+		Utils.equalizeSize(btnOK, btnCancel);
 		panButtons.add(btnOK);
 		panButtons.add(btnCancel);
 		panButtons.add(Box.createHorizontalStrut(Utils.BORDER_SIZE * 2));
-		panButtons.add(btnHelp);
 		contentPane.add(panButtons, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -156,11 +143,6 @@ public class PluginSettingsDialog extends JDialog implements ActionListener {
 	 * &quot;Cancel&quot; button.
 	 */
 	private JButton btnCancel;
-
-	/**
-	 * &quot;Help&quot; button.
-	 */
-	private JButton btnHelp;
 
 	/**
 	 * &quot;OK&quot; button.

@@ -56,7 +56,7 @@ public abstract class VisualPropertyIcon<T> extends ImageIcon {
 	final protected T value;
 	final protected String name;
 
-	protected int leftPad = 20;
+	protected int leftPad = 0;
 	protected int bottomPad = 0;
 
 	/**
@@ -78,8 +78,7 @@ public abstract class VisualPropertyIcon<T> extends ImageIcon {
 			throw new NullPointerException("Name parameter is null.");
 		if (width <= 0 || height <= 0)
 			throw new IllegalArgumentException(
-					"Width and height should be positive integers: (w, h) = ("
-							+ width + ", " + height + ")");
+					"Width and height should be positive integers: (w, h) = (" + width + ", " + height + ")");
 
 		this.value = value;
 		this.width = width;

@@ -24,11 +24,15 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.command.util.NodeList;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -39,17 +43,27 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
+
 public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
+	private final CyApplicationManager appMgr;
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager visualMappingManager;
-	private final CyNetwork network;
+	private CyNetwork network;
+
+	@ContainsTunables
+	public NodeAndEdgeTunable tunables = null;
+
 
 	public DeleteSelectedNodesAndEdgesTask(final CyNetwork network,
+	                                       final CyApplicationManager appManager,
 	                                       final UndoSupport undoSupport, 
 	                                       final CyNetworkViewManager networkViewManager,
 	                                       final VisualMappingManager visualMappingManager, 
@@ -59,19 +73,40 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 		this.networkViewManager   = networkViewManager;
 		this.visualMappingManager = visualMappingManager;
 		this.eventHelper          = eventHelper;
+		this.appMgr               = appManager;
+		tunables                  = new NodeAndEdgeTunable(appMgr);
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		if (network == null)
-			return;
 
 		taskMonitor.setProgress(0.0);
+
+		List<CyNode> selectedNodes;
+		Set<CyEdge> selectedEdges;
+
+		List<CyNode> nodeList = tunables.getNodeList(false);
+		List<CyEdge> edgeList = tunables.getEdgeList(false);
+		if (tunables.getNetwork() != null)
+			network = tunables.getNetwork();
 		
 		// Delete from the base network so that our changes can be undone:
-		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, "selected", true);
-		taskMonitor.setProgress(0.1);
-		final Set<CyEdge> selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
+		if (nodeList == null && edgeList == null) {
+			selectedNodes = CyTableUtil.getNodesInState(network, "selected", true);
+			taskMonitor.setProgress(0.1);
+			selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
+		} else {
+			if (nodeList != null && nodeList.size() > 0)
+				selectedNodes = nodeList;
+			else
+				selectedNodes = new ArrayList<CyNode>();
+
+			if (edgeList != null && edgeList.size() > 0)
+				selectedEdges = new HashSet<CyEdge>(edgeList);
+			else
+				selectedEdges = new HashSet<CyEdge>();
+		}
+
 		taskMonitor.setProgress(0.2);
 		
 		// Make sure we're not loosing any edges for a possible undo!

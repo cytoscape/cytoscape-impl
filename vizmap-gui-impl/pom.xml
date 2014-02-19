@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.2</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<properties>
@@ -14,6 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>vizmap-gui-impl</artifactId>
+  <version>3.1.0</version>
 
 	<name>Cytoscape VizMap GUI Impl (${project.artifactId})</name>
 
@@ -137,6 +138,13 @@
 			<version>2.0.2</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- PureMVC: framework for creating applications based upon the classic Model-View-Controller -->
+		<dependency>
+			<groupId>org.puremvc</groupId>
+			<artifactId>PureMVC_Java_MultiCore</artifactId>
+			<version>1.0.7</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
-
 </project>

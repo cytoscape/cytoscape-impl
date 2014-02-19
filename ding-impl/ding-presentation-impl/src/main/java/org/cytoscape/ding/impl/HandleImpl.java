@@ -24,8 +24,6 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import java.awt.geom.Point2D;
-
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.editor.EditMode;
 import org.cytoscape.model.CyEdge;
@@ -33,6 +31,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.Handle;
+
+import java.awt.geom.Point2D;
 
 /**
  * A simple implementation of edge handle.
@@ -52,6 +52,15 @@ public class HandleImpl implements Handle {
 	
 	public HandleImpl(final CyNetworkView graphView, final View<CyEdge> view, double x, double y) {
 		defineHandle(graphView, view, x, y);
+	}
+
+	public HandleImpl(HandleImpl h)
+	{
+		this.x = h.x;
+		this.y = h.y;
+		this.cosTheta = h.cosTheta;
+		this.sinTheta = h.sinTheta;
+		this.ratio = h.ratio;
 	}
 
 	@Override

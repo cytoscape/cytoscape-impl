@@ -34,7 +34,6 @@ import java.util.Set;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStats;
@@ -48,7 +47,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.SumCountPair;
  */
 public abstract class NetworkAnalyzer {
 
-	protected static final String PARENT_MENU = "Tools.NetworkAnalyzer.";
+	protected static final String PARENT_MENU = "Tools.NetworkAnalyzer[1.0].";
 	
 	/**
 	 * Gets the title of the network being analyzed.
@@ -138,8 +137,6 @@ public abstract class NetworkAnalyzer {
 		nodeSet = aNodeSet;
 		interpr = aInterpr;
 		stats = new NetworkStats(aNetwork, aInterpr.getInterpretSuffix());
-		nodeAttributes = aNetwork.getDefaultNodeTable(); 
-		edgeAttributes = aNetwork.getDefaultEdgeTable(); 
 		progress = 0;
 	}
 
@@ -320,16 +317,6 @@ public abstract class NetworkAnalyzer {
 	 * </p>
 	 */
 	protected boolean cancelled;
-
-	/**
-	 * Global <code>HashMap</code> for storing node attributes.
-	 */
-	protected CyTable nodeAttributes;
-
-	/**
-	 * Global <code>HashMap</code> for storing edge attributes.
-	 */
-	protected CyTable edgeAttributes;
 
 	/**
 	 * Set of all edges that are removed from {@link #network} before the analysis. These edges are added back

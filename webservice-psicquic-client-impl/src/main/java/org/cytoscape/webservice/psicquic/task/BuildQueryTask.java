@@ -42,22 +42,25 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.RegistryManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
-import org.cytoscape.webservice.psicquic.mapper.MergedNetworkBuilder;
+import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/**
+ * Create query based on the selected node
+ * 
+ */
 public class BuildQueryTask extends AbstractTask {
-
 	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Extend Network by PSICQUIC Web Services";
 	}
 	
-	@Tunable(description = "Select column send as query:")
+	@Tunable(description = "Select query column:")
 	public ListSingleSelection<String> columnList;
 
 	private PSICQUICRestClient client;
@@ -70,7 +73,7 @@ public class BuildQueryTask extends AbstractTask {
 	private final VisualMappingManager vmm;
 
 	private final CyLayoutAlgorithmManager layouts;
-	private final MergedNetworkBuilder builder;
+	private final CyNetworkBuilder builder;
 
 	private final CyNetworkView netView;
 
@@ -78,7 +81,7 @@ public class BuildQueryTask extends AbstractTask {
 
 	BuildQueryTask(final CyNetworkView netView, final View<CyNode> nodeView, CyEventHelper eh,
 			VisualMappingManager vmm, final PSICQUICRestClient client, final RegistryManager manager,
-			final CyLayoutAlgorithmManager layouts, final MergedNetworkBuilder builder) {
+			final CyLayoutAlgorithmManager layouts, final CyNetworkBuilder builder) {
 		this.table = netView.getModel().getDefaultNodeTable();
 		this.nodeView = nodeView;
 		this.manager = manager;
@@ -130,7 +133,5 @@ public class BuildQueryTask extends AbstractTask {
 				nodeView, eh, vmm, layouts, manager, builder);
 
 		insertTasksAfterCurrentTask(searchTask, expandTask);
-
 	}
-
 }

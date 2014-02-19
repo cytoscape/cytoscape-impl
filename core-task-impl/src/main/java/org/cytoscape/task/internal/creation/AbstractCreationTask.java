@@ -26,8 +26,10 @@ package org.cytoscape.task.internal.creation;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 
 /**
  * Task to create new sub network from an original (parent) network.
@@ -37,7 +39,7 @@ public abstract class AbstractCreationTask extends AbstractTask {
 
 	protected final CyNetworkManager networkManager;
 	protected final CyNetworkViewManager networkViewManager;
-	protected final CyNetwork parentNetwork;
+	protected CyNetwork parentNetwork;
 
 	public AbstractCreationTask(final CyNetwork parentNetwork, final CyNetworkManager networkManager,
 	                            final CyNetworkViewManager networkViewManager) {

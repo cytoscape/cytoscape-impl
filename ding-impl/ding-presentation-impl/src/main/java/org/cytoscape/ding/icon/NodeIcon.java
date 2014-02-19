@@ -36,7 +36,6 @@ import java.awt.geom.AffineTransform;
 
 /**
  * Icon for node shapes.
- *
  */
 public class NodeIcon extends VisualPropertyIcon<Shape> {
 	
@@ -48,11 +47,10 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 	private Graphics2D g2d;
 
 	
-	public NodeIcon(Shape shape, int width, int height, String name) {
+	public NodeIcon(final Shape shape, int width, int height, String name) {
 		super(shape, width, height, name);
 		adjustShape();
 	}
-
 
 	private void adjustShape() {
 		final double shapeWidth = value.getBounds2D().getWidth();
@@ -66,19 +64,16 @@ public class NodeIcon extends VisualPropertyIcon<Shape> {
 		newShape = af.createTransformedShape(value);
 	}
 
-
 	@Override
-	public void paintIcon(Component c, Graphics g, int x, int y) {		
+	public void paintIcon(final Component c, final Graphics g, int x, int y) {		
 		g2d = (Graphics2D) g;
-
-		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		g2d.translate(leftPad, 0);
-		g2d.setColor(color);
+		g2d.translate(x, y);
+		g2d.setColor(c.getForeground());
 		g2d.setStroke(BASIC_STROKE);
 		g2d.draw(newShape);
-		g2d.translate(-leftPad, 0);
+		g2d.translate(-x, -y);
 	}
 
 	@Override

@@ -416,7 +416,10 @@ public class VisualStyleSerializerTest {
 		Properties props = loadVizmapProps("v283_vizmap.props");
 		Set<VisualStyle> styles = serializer.createVisualStyles(props);
 		assertEquals(6,  styles.size());
-		assertVisualStylesNotNull(styles, new String[] { "default", "Sample1", "Solid", "Universe", "galFiltered Style", "Nested Network Style" });
+		assertVisualStylesNotNull(styles, new String[] {
+				"default", "Sample1", "Solid", "Universe", 
+				"{Gal_Filt}: -(1:2),&[A*|B?]+%$#@!\\/;" /*Testing special chars*/,
+				"Nested Network Style" });
 		
 		// Test visual styles (defaults, mappings and dependencies)
 		// -----
@@ -484,7 +487,7 @@ public class VisualStyleSerializerTest {
 		assertFalse(dep1.isDependencyEnabled());
 		
 		// -----
-		VisualStyle galFiltered = getVisualStyleByTitle(styles, "galFiltered Style");
+		VisualStyle galFiltered = getVisualStyleByTitle(styles, "{Gal_Filt}: -(1:2),&[A*|B?]+%$#@!\\/;");
 		
 		ContinuousMapping<Double, Paint> nColorMp = (ContinuousMapping<Double, Paint>) galFiltered.getVisualMappingFunction(NODE_FILL_COLOR);
 		assertEquals("gal4RGexp", nColorMp.getMappingColumnName());

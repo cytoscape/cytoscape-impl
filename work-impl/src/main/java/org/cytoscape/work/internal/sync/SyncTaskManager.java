@@ -28,10 +28,13 @@ package org.cytoscape.work.internal.sync;
 import java.util.Map;
 
 import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,25 +73,39 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 		throw new UnsupportedOperationException("There is no configuration available for a SyncrhonousTaskManager");	
 	}
 
-
 	@Override
-	public void execute(final TaskIterator taskIterator) {
+	public void execute(final TaskIterator taskIterator, TaskObserver observer) {
+		// System.out.println("SyncTaskManager.execute");
 		final LoggingTaskMonitor taskMonitor = new LoggingTaskMonitor();
 		
+        Task task = null;
 		try {
 			while (taskIterator.hasNext()) {
-				final Task task = taskIterator.next();
+				task = taskIterator.next();
 				taskMonitor.setTask(task);
 
-				if (!displayTunables(task))
+				if (!displayTunables(task)) {
+                    if (observer != null) observer.allFinished(FinishStatus.newCancelled(task));
 					return;
+                }
 
 				task.run(taskMonitor);
+
+				if (task instanceof ObservableTask && observer != null) {
+					observer.taskFinished((ObservableTask)task);
+				} 
 			}
+            if (observer != null) observer.allFinished(FinishStatus.getSucceeded());
 
 		} catch (Exception exception) {
 			taskMonitor.showException(exception);
+            if (observer != null && task != null) observer.allFinished(FinishStatus.newFailed(task, exception));
 		}
+	}
+
+	@Override
+	public void execute(final TaskIterator taskIterator) {
+		execute(taskIterator, null);
 	}
 
 	private boolean displayTunables(final Object task) throws Exception {

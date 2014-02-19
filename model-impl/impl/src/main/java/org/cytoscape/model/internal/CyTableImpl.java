@@ -27,8 +27,10 @@ package org.cytoscape.model.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +51,7 @@ import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsDeletedEvent;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TablePrivacyChangedEvent;
@@ -69,6 +72,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private Map<String, SetMultimap<Object,Object>> reverse;
 	private Map<Object, CyRow> rows; // Maps the primary key to CyRow.
 	private Map<String, CyColumn> types;
+	private ArrayList<CyColumn> colList; //Stores the list of columns in the table
+	private ArrayList<CyRow> rowList;    //Stores the list of rows in the table
 	private Map<String, Set<CyColumn>> dependents;
 	// Caches the normalized names, in order to prevent creating new strings (e.g. name.toLowerCase())
 	// every time a column or value is retrieved.
@@ -128,6 +133,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		
 		rows = new ConcurrentHashMap<Object, CyRow>(defaultInitSize, 0.5f);
 		types = new ConcurrentHashMap<String, CyColumn>();
+		colList = new ArrayList<CyColumn>();
+		rowList = new ArrayList<CyRow>();
 		
 		dependents = new HashMap<String, Set<CyColumn>>();
 		normalizedColumnNames = new HashMap<String, String>();
@@ -142,6 +149,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 						                             /* isPrimaryKey = */ true,
 						                             /* isImmutable = */ true,
 						                             null));
+		colList.add(getColumn(normalizedPKName));
 		attributes.put(normalizedPKName, new HashMap<Object, Object>());
 		reverse.put(normalizedPKName, HashMultimap.create());
 
@@ -172,6 +180,14 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		final Map<String, CyColumn> tempTypes = types;
 		types = other.types;
 		other.types = tempTypes;
+		
+		final ArrayList<CyColumn> tempListCol = colList;
+		colList = other.colList;
+		other.colList = tempListCol;
+		
+		final ArrayList<CyRow> tempListRow = rowList;
+		rowList = other.rowList;
+		other.rowList = tempListRow;
 		
 		final Map<String, String> tempNormalizedColNames = normalizedColumnNames;
 		normalizedColumnNames = other.normalizedColumnNames;
@@ -322,7 +338,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	public Collection<CyColumn> getColumns() {
-		return types.values();
+		return colList;
 	}
 
 	@Override
@@ -361,11 +377,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 					virtualColumnMap.remove(normalizedColName);
 					attributes.remove(normalizedColName);
 					types.remove(normalizedColName);
+					colList.remove(cyColumn);
 					VirtualColumnInfo info = cyColumn.getVirtualColumnInfo();
 					((CyTableImpl) info.getSourceTable()).removeDependent(info.getSourceColumn(), cyColumn);
 				} else {
 					attributes.remove(normalizedColName);
 					reverse.remove(normalizedColName);
+					colList.remove(types.get(normalizedColName));
 					types.remove(normalizedColName);
 				}
 			}
@@ -431,6 +449,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							                              defaultValue));
 			attributes.put(normalizedColName, new HashMap<Object, Object>(defaultInitSize));
 			reverse.put(normalizedColName, HashMultimap.create());
+			colList.add(types.get(normalizedColName));
 		}
 		
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
@@ -471,6 +490,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 								   defaultValue));
 			attributes.put(normalizedColName, new HashMap<Object, Object>(defaultInitSize));
 			reverse.put(normalizedColName, HashMultimap.create());
+			colList.add(types.get(normalizedColName));
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
@@ -537,6 +557,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		row = new InternalRow(key);
 		rows.put(key, row);
+		rowList.add(row);
 
 		if (fireEvents)
 			eventHelper.addEventPayload((CyTable) this, (Object) key, RowsCreatedEvent.class);
@@ -566,7 +587,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	public List<CyRow> getAllRows() {
-		return new ArrayList<CyRow>(rows.values());
+		return rowList;
 	}
 
 	@Override
@@ -678,11 +699,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		if (fireEvents && virtColumn == null) {
 			// Fire an event for each table in the virtual column chain
-			fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue);
+			fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue, Collections.newSetFromMap(new IdentityHashMap<VirtualColumnInfo, Boolean>()));
 		}
 	}
 
-	private void fireVirtualColumnRowSetEvent(CyTableImpl table, Object key, String columnName, Object newValue, Object newRawValue) {
+	private void fireVirtualColumnRowSetEvent(CyTableImpl table, Object key, String columnName, Object newValue, Object newRawValue, Set<VirtualColumnInfo> seen) {
 		// Fire an event for this table
 		CyRow row = table.getRowNoCreate(key);
 		if (row == null) {
@@ -699,16 +720,20 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		
 		for (CyColumn dependent : columnDependents) {
 			VirtualColumnInfo info = dependent.getVirtualColumnInfo();
+			if (seen.contains(info)) {
+				continue;
+			}
+			seen.add(info);
 			CyTableImpl table2 = (CyTableImpl) dependent.getTable();
 			String targetJoinKey = info.getTargetJoinKey();
 			if (targetJoinKey.equals(table2.getPrimaryKey().getName())) {
-				fireVirtualColumnRowSetEvent(table2, key, targetJoinKey, newValue, newRawValue);
+				fireVirtualColumnRowSetEvent(table2, key, dependent.getName(), newValue, newRawValue, seen);
 			} else {
 				String normalizedTargetJoinKey = table2.normalizeColumnName(targetJoinKey);			
 				SetMultimap<Object, Object> reverseMap = table2.reverse.get(normalizedTargetJoinKey);
 				if(reverseMap != null) {
 					for (Object key2 : reverseMap.get(key)) {
-						fireVirtualColumnRowSetEvent(table2, key2, targetJoinKey, newValue, newRawValue);
+						fireVirtualColumnRowSetEvent(table2, key2, dependent.getName(), newValue, newRawValue, seen);
 					}
 				}
 			}
@@ -833,7 +858,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (virtColumn != null)
 			virtualValue = virtColumn.getRawValue(key);
 		
-		if (virtualValue != null && !(virtualValue instanceof Equation))
+		if (virtualValue != null)
 			return virtualValue;
 		
 		final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
@@ -1012,13 +1037,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (sourceColumn == null)
 				throw new IllegalArgumentException("\""+sourceColumnName+"\" is not a column in source table.");
 
-			final CyColumn targetJoinKeyType = this.getColumn(targetJoinKeyName);
-			if (targetJoinKeyType == null)
+			final CyColumn targetJoinKey = this.getColumn(targetJoinKeyName);
+			if (targetJoinKey == null)
 				throw new IllegalArgumentException("\""+ targetJoinKeyName +"\" is not a known column in this table.");
 
-			final CyColumn sourceJoinKeyType = sourceTable.getPrimaryKey();
-			if (sourceJoinKeyType.getType() != targetJoinKeyType.getType())
-				throw new IllegalArgumentException("\""+sourceColumnName+"\" has a different type from \""+targetJoinKeyName+"\".");
+			final CyColumn sourceJoinKey = sourceTable.getPrimaryKey();
+			if (sourceJoinKey.getType() != targetJoinKey.getType())
+				throw new IllegalArgumentException("\""+sourceJoinKey.getName()+"\" has a different type from \""+targetJoinKeyName+"\".");
 
 			VirtualColumn virtualColumn = new VirtualColumn((CyTableImpl)sourceTable, sourceColumnName, this,
                     sourceTable.getPrimaryKey().getName(), 
@@ -1027,7 +1052,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			final CyColumn targetColumn = new CyColumnImpl(this, targetName, sourceColumn.getType(),
 			                                               sourceColumn.getListElementType(), virtualColumn,
-			                                               /* isPrimaryKey = */ false, isImmutable, null);
+			                                               /* isPrimaryKey = */ false, isImmutable, sourceColumn.getDefaultValue());
 			
 			((CyTableImpl) sourceTable).addDependent(sourceColumnName, targetColumn);
 
@@ -1035,6 +1060,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			types.put(normalizedTargetName, targetColumn);
 			attributes.put(normalizedTargetName, new HashMap<Object, Object>(defaultInitSize));
 			virtualColumnMap.put(normalizedTargetName, virtualColumn);
+			colList.add(types.get(normalizedTargetName));
 		}
 
 		eventHelper.fireEvent(new ColumnCreatedEvent(this, targetName));
@@ -1051,6 +1077,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		for (final String columnName : virtualColumnMap.keySet()) {
 			final CyColumn column = types.get(columnName);
 			types.remove(columnName);
+			colList.remove(column);
 			VirtualColumnInfo info = column.getVirtualColumnInfo();
 			((CyTableImpl) info.getSourceTable()).removeDependent(info.getSourceColumn(), column);
 		}
@@ -1135,6 +1162,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		
 				CyRow row = rows.remove(key);
 				if (row != null) {
+					rowList.remove(row);
 					changed = true;
 				}
 
@@ -1154,7 +1182,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				}
 	        }
 		}
-		
+		if(changed)
+			eventHelper.fireEvent(new RowsDeletedEvent( this,  (Collection<Object>) primaryKeys));
 		return changed;
 	}
 	

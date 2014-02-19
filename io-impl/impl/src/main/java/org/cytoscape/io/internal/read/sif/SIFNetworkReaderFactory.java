@@ -42,7 +42,6 @@ public class SIFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
 	private final CyNetworkManager cyNetworkManager;;
 	private final CyRootNetworkManager cyRootNetworkManager;
-	private CyApplicationManager cyApplicationManager;
 	
 	public SIFNetworkReaderFactory(CyFileFilter filter, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
@@ -52,11 +51,10 @@ public class SIFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 		this.layouts = layouts;
 		this.cyNetworkManager = cyNetworkManager;
 		this.cyRootNetworkManager = cyRootNetworkManager;
-		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new SIFNetworkReader(inputStream, layouts, cyNetworkViewFactory, cyNetworkFactory,
-				this.cyNetworkManager, this.cyRootNetworkManager, this.cyApplicationManager));
+				this.cyNetworkManager, this.cyRootNetworkManager));
 	}
 }

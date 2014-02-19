@@ -31,7 +31,7 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;

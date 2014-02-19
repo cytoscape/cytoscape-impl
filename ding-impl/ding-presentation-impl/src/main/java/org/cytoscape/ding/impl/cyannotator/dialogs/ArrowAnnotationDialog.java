@@ -33,12 +33,13 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 public class ArrowAnnotationDialog extends JDialog {
 	private javax.swing.JButton applyButton;
@@ -47,9 +48,9 @@ public class ArrowAnnotationDialog extends JDialog {
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
 	private final Point2D startingLocation;
-	private final ArrowAnnotation mAnnotation;
-	private ArrowAnnotation preview;
-	private Annotation source = null;
+	private final ArrowAnnotationImpl mAnnotation;
+	private ArrowAnnotationImpl preview;
+	private DingAnnotation source = null;
 	private final boolean create;
 		
 	public ArrowAnnotationDialog(DGraphView view, Point2D start) {
@@ -63,7 +64,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		initComponents();		        
 	}
 
-	public ArrowAnnotationDialog(ArrowAnnotation mAnnotation) {
+	public ArrowAnnotationDialog(ArrowAnnotationImpl mAnnotation) {
 		this.mAnnotation=mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
@@ -74,16 +75,16 @@ public class ArrowAnnotationDialog extends JDialog {
 	}
     
 	private void initComponents() {
-		int ARROW_HEIGHT = 475;
+		int ARROW_HEIGHT = 500;
 		int ARROW_WIDTH = 500;
 		int PREVIEW_WIDTH = 500;
-		int PREVIEW_HEIGHT = 220;
+		int PREVIEW_HEIGHT = 120;
 
 		// Create the preview panel
 		preview = new ArrowAnnotationImpl(cyAnnotator, view);
 		preview.setUsedForPreviews(true);
 		preview.getComponent().setLocation(10,10);
-		((ArrowAnnotationImpl)preview).setSize(400.0,200.0);
+		((ArrowAnnotationImpl)preview).setSize(400.0,100.0);
 		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
 		JPanel arrowAnnotation1 = new ArrowAnnotationPanel(mAnnotation, previewPanel, ARROW_WIDTH, ARROW_HEIGHT);
@@ -141,9 +142,11 @@ public class ArrowAnnotationDialog extends JDialog {
 		mAnnotation.setArrowType(ArrowEnd.SOURCE, preview.getArrowType(ArrowEnd.SOURCE));
 		mAnnotation.setArrowColor(ArrowEnd.SOURCE, preview.getArrowColor(ArrowEnd.SOURCE));
 		mAnnotation.setArrowSize(ArrowEnd.SOURCE, preview.getArrowSize(ArrowEnd.SOURCE));
+		mAnnotation.setAnchorType(ArrowEnd.SOURCE, preview.getAnchorType(ArrowEnd.SOURCE));
 		mAnnotation.setArrowType(ArrowEnd.TARGET, preview.getArrowType(ArrowEnd.TARGET));
 		mAnnotation.setArrowColor(ArrowEnd.TARGET, preview.getArrowColor(ArrowEnd.TARGET));
 		mAnnotation.setArrowSize(ArrowEnd.TARGET, preview.getArrowSize(ArrowEnd.TARGET));
+		mAnnotation.setAnchorType(ArrowEnd.TARGET, preview.getAnchorType(ArrowEnd.TARGET));
 
 		if (!create) {
 			mAnnotation.update(); 

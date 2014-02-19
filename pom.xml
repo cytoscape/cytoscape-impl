@@ -6,23 +6,25 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.0</version>
+		<version>3.1.0</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
 	<artifactId>impl-parent</artifactId>
+	<version>3.1.0</version>
 	<packaging>pom</packaging>
-	<version>3.0.2</version>
+	<!-- Implementation bundles can have different version number -->
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
-		<cytoscape.api.version>${project.version}</cytoscape.api.version>
-		<cytoscape.support.version>3.0.0</cytoscape.support.version>
+		<cytoscape.api.version>3.1.0</cytoscape.api.version>
+		<cytoscape.support.version>3.1.0</cytoscape.support.version>
 	</properties>
 
 
 	<modules>
 		<module>biopax-impl</module>
+		<module>command-dialog-impl</module>
 		<module>command-executor-impl</module>
 		<module>cpath2-impl</module>
 		<module>ding-impl</module>
@@ -31,11 +33,13 @@
 		<module>equations-impl</module>
 		<module>event-impl</module>
 		<module>filter-impl</module>
+		<module>filter2-impl</module>
 		<module>graphml-impl</module>
 		<module>group-impl</module>
 		<module>group-data-impl</module>
 		<module>group-view-impl</module>
 		<module>io-impl</module>
+		<module>json-impl</module>
 		<module>layout-cytoscape-impl</module>
 		<module>layout-impl</module>
 		<module>layout-jgraph-impl</module>
@@ -78,6 +82,7 @@
 		<module>core-task-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
+		<module>rest-impl</module>
 	</modules>
 
 	<!-- Managed dependency.  If bundles are shared by everyone, it should be moved to dependencies section! -->
@@ -223,6 +228,11 @@
 				<artifactId>command-executor-api</artifactId>
 				<version>${cytoscape.api.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>service-api</artifactId>
+				<version>${cytoscape.api.version}</version>
+			</dependency>
 
 			<!-- test jars -->
 			<dependency>
@@ -328,7 +338,6 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
-			<version>${cytoscape.api.version}</version>
 		</dependency>
 	</dependencies>
 

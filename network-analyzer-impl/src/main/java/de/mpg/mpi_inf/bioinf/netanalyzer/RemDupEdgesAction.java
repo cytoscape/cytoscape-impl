@@ -31,11 +31,12 @@ import java.awt.event.ActionEvent;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ClearMultEdgesDialog;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
@@ -48,6 +49,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 public class RemDupEdgesAction extends NetAnalyzerAction {
 
 	private static final Logger logger = LoggerFactory.getLogger(RemDupEdgesAction.class);
+
 	private final CyNetworkManager netMgr;
 
 	/**
@@ -86,13 +88,19 @@ public class RemDupEdgesAction extends NetAnalyzerAction {
 				String[] networkNames = new String[size];
 				for (int i = 0; i < size; ++i) {
 					final CyNetwork currentNet = networks[i];
-					networkNames[i] = currentNet.getRow(currentNet).get("name",String.class);
+					networkNames[i] = currentNet.getRow(currentNet).get(CyNetwork.NAME, String.class);
 					removedEdges[i] = CyNetworkUtils.removeDuplEdges(currentNet, ignoreDir, createEdgeAttr);
 				}
 
 				final String r = Messages
 						.constructReport(removedEdges, Messages.SM_REMDUPEDGES, networkNames);
 				Utils.showInfoBox(desktop, Messages.DT_REMDUPEDGES, r);
+				
+				// Update view to reflect the change in view model.
+				final CyNetworkView curView = applicationManager.getCurrentNetworkView();
+				if(curView != null) {
+					curView.updateView();
+				}
 			}
 		} catch (InnerException ex) {
 			// NetworkAnalyzer internal error

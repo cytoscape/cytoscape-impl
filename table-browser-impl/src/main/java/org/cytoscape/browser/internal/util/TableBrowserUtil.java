@@ -30,15 +30,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 
 public final class TableBrowserUtil {
 
-	private static final Class<?>[] OBJECT_TYPES = {CyNode.class, CyEdge.class, CyNetwork.class};
-	
 	private static final int EOF = -1;
 
 	public static Object parseLong(final String text, final StringBuilder errorMessage) {
@@ -79,9 +74,7 @@ public final class TableBrowserUtil {
 		return null;
 	}
 
-
-	///
-	public static ArrayList parseCellInput(CyTable dataTable, String columnName, Object value){
+	public static List<Object> parseCellInput(CyTable dataTable, String columnName, Object value){
 		final String text = (String)value;
 
 		final Class<?> columnType = dataTable.getColumn(columnName).getType();
@@ -107,7 +100,7 @@ public final class TableBrowserUtil {
 			throw new IllegalStateException("unknown column type: "
 					+ columnType.getName() + ".");
 
-		ArrayList retValue = new ArrayList();
+		ArrayList<Object> retValue = new ArrayList<Object>();
 		retValue.add(parsedValue);;
 		retValue.add(errorMessage);
 

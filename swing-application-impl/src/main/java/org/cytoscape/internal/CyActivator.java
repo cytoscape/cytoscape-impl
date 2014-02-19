@@ -25,7 +25,7 @@ package org.cytoscape.internal;
  */
 
 import static org.cytoscape.application.swing.CytoPanelName.*;
-import static org.cytoscape.internal.view.CyDesktopManager.Arrange.*;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
 import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
@@ -40,6 +40,7 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
@@ -69,10 +70,12 @@ import org.cytoscape.internal.util.undo.UndoMonitor;
 import org.cytoscape.internal.view.BirdsEyeViewHandler;
 import org.cytoscape.internal.view.CyHelpBrokerImpl;
 import org.cytoscape.internal.view.CytoscapeDesktop;
+import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
+import org.cytoscape.internal.view.IconManagerImpl;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
@@ -117,6 +120,7 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.TaskStatusPanelFactory;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -155,6 +159,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
+		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
 
 		RenderingEngineFactory dingNavigationPresentationFactoryServiceRef = getService(bc,
 		                                                                                RenderingEngineFactory.class,
@@ -203,7 +208,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cyHelpBroker, visualMappingManagerServiceRef);
 
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
-		                                                                  dingNavigationPresentationFactoryServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);
 
 		NetworkPanel networkPanel = new NetworkPanel(cyApplicationManagerServiceRef,
@@ -214,12 +218,18 @@ public class CyActivator extends AbstractCyActivator {
 		                                             dynamicTaskFactoryProvisionerServiceRef,
 		                                             editNetworkTitleTFServiceRef);
 
+		final IconManagerImpl iconManager = new IconManagerImpl();
+		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
-		                                                         networkViewManager, networkPanel,
+		                                                         networkViewManager,
 		                                                         cytoscapeShutdownServiceRef,
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
-		                                                         dialogTaskManagerServiceRef);
+		                                                         dialogTaskManagerServiceRef,
+		                                                         taskStatusPanelFactoryRef,
+		                                                         iconManager);
+
+		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, networkViewManager);
 
 		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
 
@@ -273,12 +283,12 @@ public class CyActivator extends AbstractCyActivator {
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
 		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef, cyVersionServiceRef);
 		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersionServiceRef, cytoscapeDesktop);
-		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop, GRID);
-		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
+		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory(cyDesktopManager, GRID);
+		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
 		                                                                      CASCADE);
-		ArrangeTaskFactory arrangeHorizontalTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
+		ArrangeTaskFactory arrangeHorizontalTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
 		                                                                         HORIZONTAL);
-		ArrangeTaskFactory arrangeVerticalTaskFactory = new ArrangeTaskFactory((CytoscapeDesktop)cytoscapeDesktop,
+		ArrangeTaskFactory arrangeVerticalTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
 		                                                                       VERTICAL);
 		CytoPanelAction cytoPanelWestAction = new CytoPanelAction(WEST, true, cytoscapeDesktop, 1.0f);
 		CytoPanelAction cytoPanelSouthAction = new CytoPanelAction(SOUTH, true, cytoscapeDesktop, 1.1f);
@@ -303,7 +313,8 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                     cyNetworkManagerServiceRef,
 		                                                                     cyTableManagerServiceRef,
 		                                                                     cyNetworkTableManagerServiceRef,
-		                                                                     cyGroupManagerServiceRef);
+		                                                                     cyGroupManagerServiceRef,
+		                                                                     cyEventHelperServiceRef);
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());
@@ -317,6 +328,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
+		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class, new Properties());
 
 		Properties helpContentsTaskFactoryProps = new Properties();
 		helpContentsTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
@@ -346,34 +358,38 @@ public class CyActivator extends AbstractCyActivator {
 		Properties arrangeGridTaskFactoryProps = new Properties();
 		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeGridTaskFactoryProps.setProperty(ACCELERATOR,"cmd g");
-		arrangeGridTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[110]");
+		arrangeGridTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
 		arrangeGridTaskFactoryProps.setProperty(TITLE, "Grid");
+		arrangeGridTaskFactoryProps.setProperty(MENU_GRAVITY, "1.0");
 		registerService(bc, arrangeGridTaskFactory, TaskFactory.class, arrangeGridTaskFactoryProps);
 
 		Properties arrangeCascadeTaskFactoryProps = new Properties();
 		arrangeCascadeTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeCascadeTaskFactoryProps.setProperty(PREFERRED_MENU,
-		                                           "View.Arrange Network Windows[110]");
+		                                           "View.Arrange Network Windows[8]");
 		arrangeCascadeTaskFactoryProps.setProperty(TITLE, "Cascade");
+		arrangeCascadeTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
 		registerService(bc, arrangeCascadeTaskFactory, TaskFactory.class,
 		                arrangeCascadeTaskFactoryProps);
 
 		Properties arrangeHorizontalTaskFactoryProps = new Properties();
 		arrangeHorizontalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeHorizontalTaskFactoryProps.setProperty(PREFERRED_MENU,
-		                                              "View.Arrange Network Windows[110]");
+		                                              "View.Arrange Network Windows[8]");
 		arrangeHorizontalTaskFactoryProps.setProperty(TITLE, "Horizontal");
+		arrangeHorizontalTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");
 		registerService(bc, arrangeHorizontalTaskFactory, TaskFactory.class,
 		                arrangeHorizontalTaskFactoryProps);
 
 		Properties arrangeVerticalTaskFactoryProps = new Properties();
 		arrangeVerticalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
 		arrangeVerticalTaskFactoryProps.setProperty(PREFERRED_MENU,
-		                                            "View.Arrange Network Windows[110]");
+		                                            "View.Arrange Network Windows[8]");
 		arrangeVerticalTaskFactoryProps.setProperty(TITLE, "Vertical");
-		
+		arrangeVerticalTaskFactoryProps.setProperty(MENU_GRAVITY, "4.0");
 		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
 		                arrangeVerticalTaskFactoryProps);
+		
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
 		registerAllServices(bc, networkPanel, new Properties());
 		registerAllServices(bc, networkViewManager, new Properties());
@@ -413,8 +429,7 @@ public class CyActivator extends AbstractCyActivator {
 		                        NetworkViewCollectionTaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator, "addTableTaskFactory",
 		                        "removeTableTaskFactory", TableTaskFactory.class);
-		registerServiceListener(bc, networkViewManager, "addPresentationFactory",
-		                        "removePresentationFactory", RenderingEngineFactory.class);
+		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu
 		registerServiceListener(bc, networkPanel, "addNetworkViewTaskFactory",

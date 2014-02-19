@@ -24,11 +24,11 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Basic Implementation of edge bends.
@@ -43,6 +43,16 @@ public class BendImpl implements Bend {
 	
 	public BendImpl() {
 		this.handles = new ArrayList<Handle>();
+	}
+
+	public BendImpl(BendImpl bend)
+	{
+		this.handles = new ArrayList<Handle>();
+		for( Handle h : bend.handles)
+		{
+			HandleImpl handle = (HandleImpl)h;
+			handles.add( new HandleImpl(handle) );
+		}
 	}
 
 	@Override
@@ -112,4 +122,5 @@ public class BendImpl implements Bend {
 		}
 		return bend;
 	}
+
 }

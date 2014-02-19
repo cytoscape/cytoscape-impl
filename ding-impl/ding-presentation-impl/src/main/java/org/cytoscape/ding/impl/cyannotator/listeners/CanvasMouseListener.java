@@ -31,7 +31,7 @@ import java.awt.event.MouseListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 public class CanvasMouseListener implements MouseListener {
 	private final CyAnnotator cyAnnotator;
@@ -74,9 +74,9 @@ public class CanvasMouseListener implements MouseListener {
 			return;
 		}
 
-		Annotation annotation = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
+		DingAnnotation annotation = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		if (annotation == null) {
-			cyAnnotator.clearSelectedAnnotations();
+			// cyAnnotator.clearSelectedAnnotations();
 			if (!e.isConsumed()) {
 				networkCanvas.processMouseEvent(e);
 				e.consume();
@@ -84,6 +84,11 @@ public class CanvasMouseListener implements MouseListener {
 			return;
 		}
 
+/*
+ * It seems to be a little confusing to have double-click
+ * selection on annotations.
+ */
+/*
 		if(e.getClickCount()==2 && !e.isConsumed()) {
 			e.consume();
 			//We have doubled clicked on an Annotation
@@ -103,6 +108,7 @@ public class CanvasMouseListener implements MouseListener {
 			//Repaint the canvas
 			annotation.getCanvas().repaint();	
 		}
+*/
 	}
 
 	public void mouseEntered(MouseEvent e) {

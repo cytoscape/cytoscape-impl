@@ -24,21 +24,9 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
  * #L%
  */
 
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.SMALL_ICON_URL;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
+import de.mpg.mpi_inf.bioinf.netanalyzer.task.AnalyzeNetworkByNetworkAnalyzerTaskFactory;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -54,9 +42,11 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.task.AnalyzeNetworkByNetworkAnalyzerTaskFactory;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.cytoscape.work.ServiceProperties.*;
 
 
 
@@ -79,7 +69,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingManager vmmServiceRef = getService(bc,VisualMappingManager.class);
 		VisualStyleFactory vsFactoryServiceRef = getService(bc,VisualStyleFactory.class);
 		
-		VisualMappingFunctionFactory continupousMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=continuous)");
+		VisualMappingFunctionFactory continuousMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=continuous)");
 		VisualMappingFunctionFactory passthroughMappingFactoryRef = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		
 		// Create network from selection
@@ -93,11 +83,10 @@ public class CyActivator extends AbstractCyActivator {
 		Plugin plugin = new Plugin(cySwingApplicationServiceRef);
 		
 		// Builder object for custom Visual Style
-		VisualStyleBuilder vsBuilder = new VisualStyleBuilder(vsFactoryServiceRef, passthroughMappingFactoryRef, continupousMappingFactoryRef);
-		
+		VisualStyleBuilder vsBuilder = new VisualStyleBuilder(vsFactoryServiceRef, passthroughMappingFactoryRef, continuousMappingFactoryRef);
+
 		Map<String,String> analyzerActionProps = new HashMap<String, String>();
 		analyzerActionProps.put(ID,"analyzeNetworkAction");
-		analyzerActionProps.put(PREFERRED_MENU,"Tools.NetworkAnalyzer.Network Analysis");
 		analyzerActionProps.put(TITLE,"Analyze Network");
 		analyzerActionProps.put(MENU_GRAVITY,"9.0");
 		analyzerActionProps.put(TOOL_BAR_GRAVITY,"9.8");
@@ -106,19 +95,19 @@ public class CyActivator extends AbstractCyActivator {
 		analyzerActionProps.put(IN_TOOL_BAR,"false");
 		analyzerActionProps.put(TOOLTIP,"Analyze Network");
 		analyzerActionProps.put(ENABLE_FOR, "network");
-		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef, resultPanel);
+		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef, resultPanel, cyServiceRegistrarServiceRef);
 
 		AnalyzeNetworkByNetworkAnalyzerTaskFactory analyzeNetworkTaskFactory = new AnalyzeNetworkByNetworkAnalyzerTaskFactory();
 		Properties selectAllEdgesTaskFactoryProps = new Properties();
 		selectAllEdgesTaskFactoryProps.setProperty(ID, "analyzeNetworkByNetworkAnalyzerTaskFactory");
 		registerAllServices(bc,analyzeNetworkTaskFactory, selectAllEdgesTaskFactoryProps);
 		
-		LoadNetstatsAction loadNetstatsAction = new LoadNetstatsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, resultPanel);
+		LoadNetstatsAction loadNetstatsAction = new LoadNetstatsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, resultPanel, cyServiceRegistrarServiceRef);
 		MapParameterAction mapParameterAction = new MapParameterAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzeNetworkAction);
 		
 		AboutAction aboutAction = new AboutAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
 		AnalyzeSubsetAction analyzeSubsetAction = new AnalyzeSubsetAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, analyzeNetworkAction);
-		BatchAnalysisAction batchAnalysisAction = new BatchAnalysisAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef,cyNetworkViewReaderManagerServiceRef, loadNetstatsAction);
+		BatchAnalysisAction batchAnalysisAction = new BatchAnalysisAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef,cyNetworkViewReaderManagerServiceRef, viewManagerServiceRef, loadNetstatsAction);
 		
 		// Disabled because similar function is available from Network Merge
 		//CompareAction compareAction = new CompareAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);

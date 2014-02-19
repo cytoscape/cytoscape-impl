@@ -233,4 +233,36 @@ public class CyTableTest extends AbstractCyTableTest {
 
 		assertEquals(row1.get("ss", String.class), "XXXabc");
 	}
+	
+	@Test
+	public void testDefaultColumnValue() {
+		table.createColumn("test", String.class, false, "foo");
+		CyRow row1 = table.getRow(1L);
+		assertEquals("foo", row1.get("test", String.class));
+		assertEquals("foo", table.getColumn("test").getDefaultValue());
+		
+		table2.addVirtualColumn("virtualtest", "test", table, table.getPrimaryKey().getName(), true);
+		assertEquals("foo", table2.getRow(1L).get("virtualtest", String.class));		
+		assertEquals("foo", table2.getColumn("virtualtest").getDefaultValue());
+	}
+	
+	@Test
+	public void testVirtualColumnSet() {
+		table.createColumn("real", String.class, false);
+		table2.addVirtualColumn("virtual", "real", table, table.getPrimaryKey().getName(), true);
+		CyRow row = table2.getRow(1L);
+		row.set("virtual", "foo");
+		for (Object payload : eventHelper.getAllPayloads()) {
+			if (payload instanceof RowSetRecord) {
+				RowSetRecord record = (RowSetRecord) payload;
+				CyTable affectedTable = record.getRow().getTable();
+				if (affectedTable == table) {
+					assertEquals("real", record.getColumn());
+				}
+				if (affectedTable == table2) {
+					assertEquals("virtual", record.getColumn());
+				}
+			}
+		}
+	}
 }

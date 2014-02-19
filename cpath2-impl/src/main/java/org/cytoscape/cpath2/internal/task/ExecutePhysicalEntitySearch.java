@@ -29,12 +29,12 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import org.cytoscape.cpath2.internal.CPathException;
+import org.cytoscape.cpath2.internal.CPathProperties;
+import org.cytoscape.cpath2.internal.CPathWebService;
+import org.cytoscape.cpath2.internal.EmptySetException;
 import org.cytoscape.cpath2.internal.schemas.search_response.ExtendedRecordType;
 import org.cytoscape.cpath2.internal.schemas.search_response.SearchResponseType;
-import org.cytoscape.cpath2.internal.web_service.CPathException;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
-import org.cytoscape.cpath2.internal.web_service.EmptySetException;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 

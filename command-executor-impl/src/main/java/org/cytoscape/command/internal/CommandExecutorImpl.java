@@ -25,13 +25,15 @@ package org.cytoscape.command.internal;
  */
 
 
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.work.TaskFactory;
@@ -43,6 +45,7 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 
 public class CommandExecutorImpl {
 
@@ -51,17 +54,18 @@ public class CommandExecutorImpl {
 	private final Map<String, Map<String,Executor>> commandExecutorMap = 
 	                                             new HashMap<String,Map<String,Executor>>();
 
-	private final String commandRegex ="^(\\S+)\\s+(\\S+)(\\s+.+)?$";
-	private final Pattern commandPattern = Pattern.compile(commandRegex);
 	private final CommandTunableInterceptorImpl interceptor; 
 	private final CyApplicationManager appMgr;
+	private final AvailableCommands availableCommands;
 
 	private final DynamicTaskFactoryProvisioner factoryProvisioner;
 	
-	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor, DynamicTaskFactoryProvisioner factoryProvisioner) {
+	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor, 
+	                           AvailableCommands avc, DynamicTaskFactoryProvisioner factoryProvisioner) {
 		this.appMgr = appMgr;
 		this.factoryProvisioner = factoryProvisioner;
 		this.interceptor = interceptor;
+		this.availableCommands = avc;
 	}
 
 	public void addTaskFactory(TaskFactory tf, Map props) {
@@ -132,7 +136,7 @@ public class CommandExecutorImpl {
 		}
 	}
 
-	public void executeList(List<String> commandLines, TaskMonitor tm) throws Exception {
+	public void executeList(List<String> commandLines, TaskMonitor tm, TaskObserver observer) throws Exception {
 
 		double size = (double)commandLines.size();
 		double count = 1.0;
@@ -142,17 +146,18 @@ public class CommandExecutorImpl {
 			String line = fullLine.trim();
 
 			// ignore comments
-			if ( line.startsWith("#"))
+			if ( line.startsWith("#") || line.length() == 0)
 				continue;
 
-		  	Matcher m = commandPattern.matcher(line);
-			if ( !m.matches() )
-				throw new RuntimeException("command line (" + line + ") does not match pattern: namespace command [args ...]");
-			String all = m.group(0);
-			String namespace = m.group(1); 
-			String command = m.group(2); 
-			String args = m.group(3); 
+			handleCommand(line, tm, observer);
 
+			tm.setProgress(count/size);
+			count += 1.0;
+		}
+	}
+
+	public void executeCommand(String namespace, String command, Map<String, Object> args, 
+	                           TaskMonitor tm, TaskObserver observer) throws Exception {
 			Map<String,Executor> commandMap = commandExecutorMap.get(namespace);
 
 			if ( commandMap == null )
@@ -162,10 +167,113 @@ public class CommandExecutorImpl {
 
 			if ( ex == null )
 				throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
-			ex.execute(args);
+			ex.execute(args, observer);
+	}
 
-			tm.setProgress(count/size);
-			count += 1.0;
+	private void handleCommand(String commandLine, TaskMonitor tm, TaskObserver observer) throws Exception {
+		String ns = null;
+		if ((ns = isNamespace(commandLine)) == null) {
+			throw new RuntimeException("Failed to find command namespace: '"+commandLine+"'");
 		}
+
+		Map<String, Object> settings = new HashMap<String, Object>();
+		String comm = parseInput(commandLine.substring(ns.length()).trim(), settings);
+
+		String sub = null;
+		// We do this rather than just looking it up so we can do case-independent matches
+		for (String command: availableCommands.getCommands(ns)) {
+			if (command.equalsIgnoreCase(comm)) {
+				sub = command;
+				break;
+			}
+		}
+
+		if (sub == null && (comm != null && comm.length() > 0))
+			throw new RuntimeException("Failed to find command: '" + comm +"' (from namespace: " + ns + ")");
+
+		Map<String, Object> modifiedSettings = new HashMap<String, Object>();
+		// Now check the arguments
+		List<String> argList = availableCommands.getArguments(ns, comm);
+		for (String inputArg: settings.keySet()) {
+			boolean found = false;
+			for (String arg: argList) {
+				String[] bareArg = arg.split("=");
+				if (bareArg[0].trim().equalsIgnoreCase(inputArg)) {
+					found = true;
+					modifiedSettings.put(bareArg[0].trim(), settings.get(inputArg));
+					break;
+				}
+			}	
+			if (!found)
+				throw new RuntimeException("Argument: '"+inputArg+" isn't applicable to command: '"+ns+" "+comm+"'");	
+		}
+
+		executeCommand(ns, sub, modifiedSettings, tm, observer);
+		return;
+	}
+
+	private String isNamespace(String input) {
+		String namespace = null;
+		// Namespaces must always be single word
+		String [] splits = input.split(" ");
+		for (String ns: availableCommands.getNamespaces()) {
+			if (splits[0].equalsIgnoreCase(ns) && 
+			    (namespace == null || ns.length() > namespace.length()))
+				namespace = ns;
+		}
+		return namespace;
+	}
+
+	private String parseInput(String input, Map<String,Object> settings) {
+		// Tokenize
+		StringReader reader = new StringReader(input);
+		StreamTokenizer st = new StreamTokenizer(reader);
+
+		// We don't really want to parse numbers as numbers...
+		st.ordinaryChar('/');
+		st.ordinaryChar('_');
+		st.ordinaryChar('-');
+		st.ordinaryChar('.');
+		st.ordinaryChars('0', '9');
+
+		st.wordChars('/', '/');
+		st.wordChars('_', '_');
+		st.wordChars('-', '-');
+		st.wordChars('.', '.');
+		st.wordChars('0', '9');
+
+		List<String> tokenList = new ArrayList<String>();
+		int tokenIndex = 0;
+		int i;
+		try {
+			while ((i = st.nextToken()) != StreamTokenizer.TT_EOF) {
+				switch(i) {
+					case '=':
+						// Get the next token
+						i = st.nextToken();
+						if (i == StreamTokenizer.TT_WORD || i == '"') {
+							tokenIndex--;
+							String key = tokenList.get(tokenIndex);
+							settings.put(key, st.sval);
+							tokenList.remove(tokenIndex);
+						}
+						break;
+					case '"':
+					case StreamTokenizer.TT_WORD:
+						tokenList.add(st.sval);
+						tokenIndex++;
+						break;
+					default:
+						break;
+				}
+			} 
+		} catch (Exception e) { return ""; }
+
+		// Concatenate the commands together
+		String command = "";
+		for (String word: tokenList) command += word+" ";
+
+		// Now, the last token of the args goes with the first setting
+		return command.trim();
 	}
 }

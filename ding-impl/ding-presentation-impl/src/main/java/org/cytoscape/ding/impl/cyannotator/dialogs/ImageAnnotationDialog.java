@@ -36,7 +36,6 @@ import javax.swing.JFrame;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 
 public class ImageAnnotationDialog extends JDialog {
 
@@ -48,8 +47,8 @@ public class ImageAnnotationDialog extends JDialog {
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
 	private final Point2D startingLocation;
-	private final ImageAnnotation mAnnotation;
-	private ImageAnnotation preview;
+	private final ImageAnnotationImpl mAnnotation;
+	private ImageAnnotationImpl preview;
 	private final boolean create;
 		
 	public ImageAnnotationDialog(DGraphView view, Point2D start) {
@@ -62,7 +61,7 @@ public class ImageAnnotationDialog extends JDialog {
 		initComponents();		        
 	}
 
-	public ImageAnnotationDialog(ImageAnnotation mAnnotation) {
+	public ImageAnnotationDialog(ImageAnnotationImpl mAnnotation) {
 		this.mAnnotation=mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();

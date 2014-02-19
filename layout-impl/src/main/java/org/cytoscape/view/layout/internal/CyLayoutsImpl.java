@@ -29,12 +29,20 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskFactory;
 
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+
+import org.cytoscape.view.layout.internal.task.LayoutTaskFactoryWrapper;
 
 /**
  * CyLayoutsImpl is a singleton class that is used to register all available
@@ -43,11 +51,30 @@ import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
 public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 
 	private final Map<String, CyLayoutAlgorithm> layoutMap;
+	private final Map<String, TaskFactory> serviceMap;
 	private final CyProperty<Properties> cyProps;
+	private final CyServiceRegistrar serviceRegistrar;
+	private CyApplicationManager appManager;
+	private CyNetworkViewManager viewManager;
 
-	public CyLayoutsImpl(final CyProperty<Properties> p, CyLayoutAlgorithm defaultLayout) {
+	public CyLayoutsImpl(CyServiceRegistrar serviceRegistrar, final CyProperty<Properties> p, CyLayoutAlgorithm defaultLayout) {
 		this.cyProps = p;
-		layoutMap = new HashMap<String,CyLayoutAlgorithm>();
+		this.serviceRegistrar = serviceRegistrar;
+		layoutMap = new ConcurrentHashMap<String,CyLayoutAlgorithm>();
+		serviceMap = new ConcurrentHashMap<String,TaskFactory>();
+
+		// Get some services that we'll need.  
+		// NOTE: This creates a loader-order dependency for application-impl.  We
+		// could work around that by handing the serviceRegistrar ref down to
+		// the wrapper task and having it take the responsibility for getting
+		// the service, but that means we'll need to get the service every time
+		// we do a layout.  Probably not what we want.  Not clear what the
+		// right trade-off is here....
+		if (serviceRegistrar != null) {
+			appManager = serviceRegistrar.getService(CyApplicationManager.class);
+			viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		}
+
 		addLayout(defaultLayout, new HashMap());
 	}
 
@@ -62,8 +89,19 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	 * @param menu The menu that this should appear under
 	 */
 	public void addLayout(CyLayoutAlgorithm layout, Map props) {
-		if ( layout != null )
+		if ( layout != null ) {
 			layoutMap.put(layout.getName(),layout);
+
+			if (serviceRegistrar != null) {
+				Properties layoutProps = new Properties();
+				layoutProps.setProperty(COMMAND, layout.getName());
+				layoutProps.setProperty(COMMAND_NAMESPACE, "layout");
+				TaskFactory service = new LayoutTaskFactoryWrapper(appManager, viewManager, layout);
+				// Register the service as a TaskFactory for commands
+				serviceRegistrar.registerService(service, TaskFactory.class, layoutProps);
+				serviceMap.put(layout.getName(), service);
+			}
+		}
 	}
 
 	/**
@@ -72,8 +110,14 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	 * @param layout The layout to remove
 	 */
 	public void removeLayout(CyLayoutAlgorithm layout, Map props) {
-		if ( layout != null )
+		if ( layout != null ) {
 			layoutMap.remove(layout.getName());
+			if (serviceRegistrar != null && serviceMap.containsKey(layout.getName())) {
+				TaskFactory service = serviceMap.get(layout.getName());
+				serviceRegistrar.unregisterService(service,TaskFactory.class);
+				serviceMap.remove(layout.getName());
+			}
+		}
 	}
 
 	/**

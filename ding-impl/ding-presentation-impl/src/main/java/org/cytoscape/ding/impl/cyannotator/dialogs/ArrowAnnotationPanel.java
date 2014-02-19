@@ -51,30 +51,32 @@ import javax.swing.event.ListSelectionListener;
 
 import java.awt.Component;
 
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowType;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
+
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
 
 public class ArrowAnnotationPanel extends javax.swing.JPanel {
 	private int WIDTH = 500;
-	private int HEIGHT = 475;
+	private int HEIGHT = 500;
 	private int TOP = 10;
 	private int LEFT = 10;
 	private int COLUMN1 = 175;
 	private int COLUMN2 = 250;
 	private int RIGHT = WIDTH-10;
-	private int ARROWHEIGHT = 175;
+	private int ARROWHEIGHT = 190;
 
-	private ArrowAnnotation preview;
+	private ArrowAnnotationImpl preview;
 	private PreviewPanel previewPanel;
 	
 	private ArrowAnnotation mAnnotation;
 
-	public ArrowAnnotationPanel(ArrowAnnotation mAnnotation, PreviewPanel previewPanel, int width, int height) {
+	public ArrowAnnotationPanel(ArrowAnnotationImpl mAnnotation, PreviewPanel previewPanel, int width, int height) {
 		this.mAnnotation=mAnnotation;
 		this.previewPanel = previewPanel;
-		this.preview=(ArrowAnnotation)previewPanel.getPreviewAnnotation();
+		this.preview=(ArrowAnnotationImpl)previewPanel.getPreviewAnnotation();
 		this.WIDTH = width;
 		this.HEIGHT = height;
 		initComponents();
@@ -212,6 +214,8 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 		                     mAnnotation.getArrowSize(ArrowEnd.SOURCE));
 		preview.setArrowColor(ArrowEnd.SOURCE, 
 		                      mAnnotation.getArrowColor(ArrowEnd.SOURCE));
+		preview.setAnchorType(ArrowEnd.SOURCE, 
+		                      mAnnotation.getAnchorType(ArrowEnd.SOURCE));
 
 		// Target arrow parameters
 		preview.setArrowType(ArrowEnd.TARGET, 
@@ -220,11 +224,13 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 		                     mAnnotation.getArrowSize(ArrowEnd.TARGET));
 		preview.setArrowColor(ArrowEnd.TARGET, 
 		                      mAnnotation.getArrowColor(ArrowEnd.TARGET));
+		preview.setAnchorType(ArrowEnd.TARGET, 
+		                      mAnnotation.getAnchorType(ArrowEnd.TARGET));
 	
 		previewPanel.repaint();
 	}	
 	
-	public ArrowAnnotation getPreview() {
+	public ArrowAnnotationImpl getPreview() {
 		return preview;
 	}
 
@@ -251,11 +257,11 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 		// Arrow list
 		{
 			final JComboBox arrowList = new JComboBox();
-			arrowList.setModel(new DefaultComboBoxModel(mAnnotation.getSupportedArrows()));
+			arrowList.setModel(new DefaultComboBoxModel(mAnnotation.getSupportedArrows().toArray()));
 			arrowList.setSelectedItem(mAnnotation.getArrowType(end));
 			arrowList.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
-						preview.setArrowType(end, (ArrowType)arrowList.getSelectedItem());
+						preview.setArrowType(end, (String)arrowList.getSelectedItem());
 						previewPanel.repaint();
 				}
 			});		    
@@ -354,6 +360,33 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 				}
 			});	 
 			aSize.setBounds(COLUMN2, arrowY, 48, 20);
+			arrowPanel.add(aSize);
+		}
+
+		{
+			arrowY += 25;
+			JLabel jLabel7 = new JLabel();
+			jLabel7.setText("Anchor type");
+			jLabel7.setBounds(LEFT, arrowY, jLabel7.getPreferredSize().width, 14);
+			arrowPanel.add(jLabel7);
+
+			final JComboBox aSize = new JComboBox();
+			aSize.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Edge", "Center" }));
+			if(mAnnotation.getAnchorType(end)==AnchorType.CENTER)
+				aSize.setSelectedIndex(1);
+			else
+				aSize.setSelectedIndex(0);
+
+			aSize.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+						if (aSize.getModel().getSelectedItem().equals("Center"))
+							preview.setAnchorType(end, AnchorType.CENTER);
+						else
+							preview.setAnchorType(end, AnchorType.ANCHOR);
+						previewPanel.repaint();
+				}
+			});	 
+			aSize.setBounds(COLUMN2, arrowY, 70, 20);
 			arrowPanel.add(aSize);
 		}
 

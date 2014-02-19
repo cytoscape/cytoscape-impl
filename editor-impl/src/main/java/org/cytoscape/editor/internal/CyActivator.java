@@ -150,6 +150,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties renameNodeTaskFactoryProps = new Properties();
 		renameNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		renameNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+		renameNodeTaskFactoryProps.setProperty(INSERT_SEPARATOR_AFTER, "true");
 		renameNodeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.2f");
 		renameNodeTaskFactoryProps.setProperty(TITLE, "Rename Node");
 		registerService(bc, renameNodeTaskFactory, NodeViewTaskFactory.class, renameNodeTaskFactoryProps);

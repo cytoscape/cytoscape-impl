@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;

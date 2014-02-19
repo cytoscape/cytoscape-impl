@@ -26,41 +26,96 @@ package org.cytoscape.view.vizmap.gui.internal.task;
 
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class RenameVisualStyleTask extends AbstractTask {
 
-	@ProvidesTitle
-	public String getTitle() {
-		return "Rename Visual Style";
-	}
-
-	@Tunable(description = "Enter new Visual Style name:")
+	@Tunable(description = "Enter new Style name:")
 	public String vsName;
 
-	private final VisualMappingManager vmm;
+	private String previousName;
+	
+	private final VisualStyle style;
+	private final ServicesUtil servicesUtil;
 
-	public RenameVisualStyleTask(final VisualMappingManager vmm) {
-		this.vmm = vmm;
-		this.vsName = vmm.getCurrentVisualStyle().getTitle();
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
+	public RenameVisualStyleTask(final VisualStyle style, final ServicesUtil servicesUtil) {
+		this.style = style;
+		this.servicesUtil = servicesUtil;
+		final VisualMappingManager vmm = servicesUtil.get(VisualMappingManager.class);
+		vsName = vmm.getCurrentVisualStyle().getTitle();
 	}
 
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Rename Style";
+	}
+	
 	@Override
-	public void run(TaskMonitor monitor) throws Exception {
-
-		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
-
-		if (currentStyle.equals(this.vmm.getDefaultVisualStyle()))
-			throw new IllegalArgumentException("You cannot rename the default style.");
-
-		// Ignore if user does not enter new name.
-		if (vsName == null)
-			return;
-
-		currentStyle.setTitle(vsName);
+	public void run(final TaskMonitor monitor) throws Exception {
+		previousName = style.getTitle();
+		final boolean renamed = renameVisualStyle(vsName);
+		
+		if (renamed) {
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new RenameVisualStyleEdit());
+		}
 	}
 
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	private boolean renameVisualStyle(final String name) {
+		boolean renamed = false;
+		
+		if (name != null && style != null) {
+			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+	
+			if (style.equals(vmMgr.getDefaultVisualStyle()))
+				throw new IllegalArgumentException("You cannot rename the default style.");
+	
+			// Ignore if user does not enter new name.
+			if (!style.getTitle().equals(name)) {
+				style.setTitle(name);
+				renamed = true;
+				servicesUtil.sendNotification(NotificationNames.VISUAL_STYLE_NAME_CHANGED, style);
+			}
+		}
+		
+		return renamed;
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private class RenameVisualStyleEdit extends AbstractCyEdit {
+
+		public RenameVisualStyleEdit() {
+			super(getTitle());
+		}
+
+		@Override
+		public void undo() {
+			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+			
+			if (style != null && previousName != null && !style.equals(vmMgr.getDefaultVisualStyle()))
+				renameVisualStyle(previousName);
+		}
+
+		@Override
+		public void redo() {
+			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+			
+			if (style != null && vsName != null && !style.equals(vmMgr.getDefaultVisualStyle()))
+				renameVisualStyle(vsName);
+		}
+	}
 }

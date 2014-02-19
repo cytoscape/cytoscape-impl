@@ -79,6 +79,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import au.com.bytecode.opencsv.CSVReader;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -650,7 +651,9 @@ public class PreviewTablePanel extends JPanel {
 	/**
 	 * Load file and show preview.
 	 * 
-	 * @param sourceURL
+	 * @param wb
+	 * @param fileType
+	 * @param tempIs
 	 * @param delimiters
 	 * @param renderer
 	 *            renderer for this table. Can be null.
@@ -949,43 +952,73 @@ public class PreviewTablePanel extends JPanel {
 					importAll = true;
 				}
 
+		        //Distinguish between CSV files and everything else.
+				//TODO: Since the CSV parser allows for other delimiters, consider exploring using it for everything.
+
+				//The variables are modified by both the new method and the old method.
 				int counter = 0;
-				String[] parts;
 				maxColumn = 0;
 				data = new Vector();
-
-				while ((line = bufRd.readLine()) != null) {
-					if (((commentChar != null) && line.startsWith(commentChar))
-							|| (line.trim().length() == 0)
-							|| (counter < startLine)) {
-						// ignore
-					} else {
+				if( delimiters.contains(TextFileDelimiters.COMMA.toString()) && delimiters.size() == 1 )
+				{
+					//Only if there is exactly one delimiter and that delimiter is a comma should you read the file
+					//using OpenCSV
+					//New method... Using OpenCSV
+					CSVReader reader = new CSVReader(bufRd);
+					String [] rowData; //Note that rowData is roughly equivalent to "parts" in the old code.
+					while ((rowData = reader.readNext()) != null) {
 						Vector row = new Vector();
-
-						if (delimiterRegEx.length() == 0) {
-							parts = new String[1];
-							parts[0] = line;
-						} else {
-							parts = line.split(delimiterRegEx);
-						}
-
-						for (String entry : parts) {
-							row.add(entry);
-						}
-
-						if (parts.length > maxColumn) {
-							maxColumn = parts.length;
-						}
-
+						for( String field : rowData )
+							row.add(field);
+						if( rowData.length > maxColumn )
+							maxColumn = rowData.length;
 						data.add(row);
-					}
+						counter++;
 
-					counter++;
-
-					if ((importAll == false) && (counter >= size)) {
-						break;
+						if ((importAll == false) && (counter >= size)) {
+							break;
+						}
 					}
 				}
+		        else
+				{
+					//Old method... Using naive splitting.
+					String[] parts;
+					while ((line = bufRd.readLine()) != null) {
+						if (((commentChar != null) && line.startsWith(commentChar))
+								|| (line.trim().length() == 0)
+								|| (counter < startLine)) {
+							// ignore
+						} else {
+							Vector row = new Vector();
+
+							if (delimiterRegEx.length() == 0) {
+								parts = new String[1];
+								parts[0] = line;
+							} else {
+								parts = line.split(delimiterRegEx);
+							}
+
+							for (String entry : parts) {
+								row.add(entry);
+							}
+
+							if (parts.length > maxColumn) {
+								maxColumn = parts.length;
+							}
+
+							data.add(row);
+						}
+
+						counter++;
+
+						if ((importAll == false) && (counter >= size)) {
+							break;
+						}
+					}
+				}
+
+
 			// If the inputStream is passed in from parameter, do not close it
 			if ( tempIs!= null)
 				tempIs.close();

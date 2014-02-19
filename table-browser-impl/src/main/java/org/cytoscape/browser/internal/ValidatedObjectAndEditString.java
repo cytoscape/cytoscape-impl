@@ -25,41 +25,75 @@ package org.cytoscape.browser.internal;
  */
 
 
-public class ValidatedObjectAndEditString {
+public class ValidatedObjectAndEditString implements Comparable<Object> {
+	
 	private final Object validatedObject;
 	private final String editString;
 	private String errorText;
+	private boolean isEquation;
 
 	public ValidatedObjectAndEditString(final Object validatedObject, final String editString,
-	                                    final String errorText)
-	{
+	                                    final String errorText, final boolean isEquation) {
 		this.validatedObject = validatedObject;
 		this.editString = editString;
 		this.errorText = errorText;
+		this.isEquation = isEquation;
 	}
 
-	public ValidatedObjectAndEditString(final Object validatedObject, final String editString) {
-		this(validatedObject, editString, null);
+	public ValidatedObjectAndEditString(final Object validatedObject, final String editString,
+			final boolean isEquation) {
+		this(validatedObject, editString, null, isEquation);
 	}
 
 	public ValidatedObjectAndEditString(final Object validatedObject) {
-		this(validatedObject, null);
+		this(validatedObject, null, false);
 	}
 
-	public Object getValidatedObject() { return validatedObject; }
+	public Object getValidatedObject() {
+		return validatedObject;
+	}
+	
 	public String getEditString() {
 		if (editString != null)
 			return editString;
 		if (validatedObject != null)
 			return validatedObject.toString();
+		
 		return "";
 	}
 
-	public void setErrorText(final String newErrorText) { errorText = newErrorText; }
-	public String getErrorText() { return errorText; }
-
-	@Override public String toString() {
-		return "ValidatedObjectAndEditString: validatedObject=" + validatedObject
-		       + ", editString=" + editString;
+	public void setErrorText(final String newErrorText) {
+		errorText = newErrorText;
 	}
+	
+	public String getErrorText() {
+		return errorText;
+	}
+
+	public void setEquation(boolean isEquation) {
+		this.isEquation = isEquation;
+	}
+	
+	public boolean isEquation() {
+		return isEquation;
+	}
+	
+	@Override public String toString() {
+		return "ValidatedObjectAndEditString: validatedObject=" + validatedObject + ", editString=" + editString;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+    public int compareTo(Object o) {
+        ValidatedObjectAndEditString v = (ValidatedObjectAndEditString) o;
+        
+        if (validatedObject instanceof Comparable && v.validatedObject instanceof Comparable) {
+            Comparable<Object> c1 = (Comparable<Object>) validatedObject;
+            Comparable<Object> c2 = (Comparable<Object>) v.validatedObject;
+            
+            return c1.compareTo(c2);
+        } else {
+            return getEditString().compareTo(v.getEditString());
+        }
+    }
 }

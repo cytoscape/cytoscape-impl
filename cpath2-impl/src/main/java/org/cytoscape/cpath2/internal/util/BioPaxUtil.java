@@ -67,6 +67,7 @@ import org.biopax.paxtools.util.Filter;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,14 +85,12 @@ public final class BioPaxUtil {
 	
 	public static final Logger log = LoggerFactory.getLogger(BioPaxUtil.class);
     
-	public static final String BIOPAX_NETWORK = "BIOPAX_NETWORK";
-	public static final String BIOPAX_RDF_ID = "URI";
+	public static final String BIOPAX_URI = "URI";
 	public static final String BIOPAX_ENTITY_TYPE = "BIOPAX_TYPE";
 	public static final String BIOPAX_DATA = "BIOPAX_DATA";
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final int MAX_DISPLAY_STRING_LEN = 25;
 	public static final String NULL_ELEMENT_TYPE = "BioPAX Element";
-	public static final String BIOPAX_EDGE_TYPE = "BIOPAX_EDGE_TYPE";
 	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_MAP = "CHEMICAL_MODIFICATIONS_MAP";
 	public static final String BIOPAX_CHEMICAL_MODIFICATIONS_LIST = "CHEMICAL_MODIFICATIONS";
 	public static final String BIOPAX_UNIFICATION_REFERENCES = "UNIFICATION_REFERENCES";
@@ -477,7 +476,7 @@ public final class BioPaxUtil {
 		};
 
 		// set the most important attributes
-		AttributeUtil.set(network, node, BIOPAX_RDF_ID, element.getRDFId(), String.class);
+		AttributeUtil.set(network, node, BIOPAX_URI, element.getRDFId(), String.class);
 		AttributeUtil.set(network, node, BIOPAX_ENTITY_TYPE, element.getModelInterface().getSimpleName(), String.class);	
 		
 		// add a piece of the BioPAX (RDF/XML without parent|child elements)
@@ -799,5 +798,17 @@ public final class BioPaxUtil {
 		// outta here
 		return (((chemicalModification != null) && (chemicalModification.length() > 0))
 				? chemicalModification : "");
+	}
+	
+	/**
+	 * Detects whether a network was generated from BioPAX data.
+	 * 
+	 * @param cyNetwork
+	 */
+	public static boolean isFromBiopax(CyNetwork cyNetwork) {
+		//true if the attribute column exists
+		CyTable cyTable = cyNetwork.getDefaultNodeTable();
+		return cyTable.getColumn(BIOPAX_ENTITY_TYPE) != null
+				&& cyTable.getColumn(BIOPAX_URI) != null;
 	}
 }

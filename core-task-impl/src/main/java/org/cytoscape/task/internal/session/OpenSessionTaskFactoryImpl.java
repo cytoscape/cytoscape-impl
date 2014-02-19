@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
@@ -51,6 +52,7 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 	private final CyNetworkTableManager netTableManager;
 	private final CyGroupManager grManager;
 	private final RecentlyOpenedTracker tracker;
+	private final CyEventHelper eventHelper;
 
 	private final TunableSetter tunableSetter; 
 	
@@ -64,7 +66,8 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 									  final CyNetworkTableManager netTableManager,
 									  final CyGroupManager grManager,
 									  final RecentlyOpenedTracker tracker,
-									  final TunableSetter tunableSetter) {
+									  final TunableSetter tunableSetter,
+									  final CyEventHelper eventHelper) {
 		this.mgr = mgr;
 		this.rmgr = rmgr;
 		this.appManager = appManager;
@@ -74,10 +77,14 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 		this.grManager = grManager;
 		this.tracker = tracker;
 		this.tunableSetter = tunableSetter;
+		this.eventHelper = eventHelper;
 	}
 
-	public TaskIterator createTaskIterator() {
-		task = new OpenSessionTask(mgr, rmgr, appManager, netManager, tableManager, netTableManager, grManager, tracker);
+	@Override
+	public synchronized TaskIterator createTaskIterator() {
+		task = new OpenSessionTask(mgr, rmgr, appManager, netManager, tableManager, netTableManager, grManager, tracker,
+				eventHelper);
+		
 		return new TaskIterator(2, task);
 	}
 

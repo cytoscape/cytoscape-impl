@@ -33,6 +33,7 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
@@ -47,6 +48,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -71,9 +73,10 @@ public class Cy3SessionReaderImplTest {
 		VizmapReaderManager vizmapReaderMgr = mock(VizmapReaderManager.class);
 		CSVCyReaderFactory csvCyReaderFactory = mock(CSVCyReaderFactory.class);
 		CyRootNetworkManager rootNetMgr = mock(CyRootNetworkManager.class);
+		EquationCompiler compiler = mock(EquationCompiler.class);
 		
 		reader = new Cy3SessionReaderImpl(is, cache, groupUtil, suidUpdater, netReaderMgr, 
-				propReaderMgr, vizmapReaderMgr, csvCyReaderFactory, netTblMgr, rootNetMgr);
+				propReaderMgr, vizmapReaderMgr, csvCyReaderFactory, netTblMgr, rootNetMgr, compiler);
 		tblTestSupport = new TableTestSupport();
 	}
 	

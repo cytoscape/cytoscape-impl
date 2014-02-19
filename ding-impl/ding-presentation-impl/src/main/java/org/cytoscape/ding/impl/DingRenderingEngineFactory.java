@@ -33,7 +33,7 @@ import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;

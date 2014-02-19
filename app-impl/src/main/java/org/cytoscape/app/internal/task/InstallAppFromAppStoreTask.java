@@ -29,8 +29,7 @@ public class InstallAppFromAppStoreTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		DownloadStatus status = new DownloadStatus(taskMonitor);
-		taskMonitor.setTitle("Installing App from App Store");
-		taskMonitor.setStatusMessage("Installing app: " + webApp.getFullName());
+		taskMonitor.setTitle("Installing App from App Store: " + webApp.getFullName());
 		
 		// Download app
 		File appFile = webQuerier.downloadApp(webApp, null, new File(appManager.getDownloadedAppsPath()), status);

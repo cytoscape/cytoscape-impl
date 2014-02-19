@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.DataBindingException;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -117,7 +119,7 @@ public class PsiMiTabParser {
 				logger.warn("Could not parse this line: " + line, ex);
 				continue;
 			}
-			if (++interactionCount % 100 == 0)
+			if (++interactionCount % 1000 == 0)
 				taskMonitor.setStatusMessage("parsed " + interactionCount + " interactions");
 		}
 
@@ -131,6 +133,11 @@ public class PsiMiTabParser {
 	private void processFull(final CyNetwork network, final MITABLine25 mline, final String line) {
 		mline.readLine(line);
 
+		final String primaryKeyName = mline.srcDBs.get(0);
+		if(network.getDefaultNodeTable().getColumn(primaryKeyName) == null) {
+			network.getDefaultNodeTable().createColumn(primaryKeyName, String.class, true);
+		}
+		
 		final String sourceRawID = mline.sourceRawID;
 		final String targetRawID = mline.targetRawID;
 
@@ -138,8 +145,7 @@ public class PsiMiTabParser {
 		if (this.nMap.get(sourceRawID) == null){
 			source = network.addNode();
 			this.nMap.put(sourceRawID, this.rootNetwork.getNode(source.getSUID()));
-		}
-		else {
+		} else {
 			CyNode parentNode = this.nMap.get(sourceRawID);
 			CySubNetwork subnet = (CySubNetwork) network;
 			subnet.addNode(parentNode);
@@ -150,8 +156,7 @@ public class PsiMiTabParser {
 		if (this.nMap.get(targetRawID) == null){
 			target = network.addNode();
 			this.nMap.put(targetRawID, this.rootNetwork.getNode(target.getSUID()));
-		}
-		else {
+		} else {
 			CyNode parentNode = this.nMap.get(targetRawID);
 			CySubNetwork subnet = (CySubNetwork) network;
 			subnet.addNode(parentNode);
@@ -165,6 +170,8 @@ public class PsiMiTabParser {
 		// set various node attrs
 		sourceRow.set(CyNetwork.NAME, sourceRawID);
 		targetRow.set(CyNetwork.NAME, targetRawID);
+		sourceRow.set(primaryKeyName, sourceRawID);
+		targetRow.set(primaryKeyName, targetRawID);
 		
 		final List<String> sDB = mline.sourceDBs;
 		for(int i=0; i<sDB.size(); i++) {
@@ -209,6 +216,12 @@ public class PsiMiTabParser {
 		row.set(TAXONIDS, taxonIDs);
 		row.set(TAXONDBS, taxonDBs);
 	}
+
+
+	private void setUniqueId(CyRow row, List<String> taxonIDs, List<String> taxonDBs) {
+		
+	}
+
 
 	private void setPublication(CyRow row, List<String> pubID, List<String> pubDB) {
 		for (int i = 0; i < pubID.size(); i++) {

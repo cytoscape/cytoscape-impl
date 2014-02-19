@@ -25,8 +25,15 @@ package org.cytoscape.task.internal.hide;
  */
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -53,13 +60,21 @@ public class UnHideAllTask extends AbstractNetworkViewTask {
 		e.setProgress(0.0);
 		
 		final CyNetwork network = view.getModel();
-		undoSupport.postEdit(new HideEdit(eventHelper, "Show All Nodes And Edges", network, view));
+		final List<CyNode> nodes = network.getNodeList();
+		e.setProgress(0.1);
+		
+		final List<CyEdge> edges = network.getEdgeList();
+		final List<CyIdentifiable> elements = new ArrayList<CyIdentifiable>(edges);
+		elements.addAll(nodes);
 		e.setProgress(0.2);
 		
-		HideUtils.setVisibleNodes(network.getNodeList(), true, view);
+		undoSupport.postEdit(new HideEdit("Show All Nodes And Edges", view, elements, true, eventHelper, vmMgr));
+		e.setProgress(0.3);
+		
+		HideUtils.setVisibleNodes(nodes, true, view);
 		e.setProgress(0.5);
 		
-		HideUtils.setVisibleEdges(network.getEdgeList(), true, view);
+		HideUtils.setVisibleEdges(edges, true, view);
 		e.setProgress(0.7);
 		
 		vmMgr.getVisualStyle(view).apply(view);

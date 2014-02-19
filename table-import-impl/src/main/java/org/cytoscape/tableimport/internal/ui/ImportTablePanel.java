@@ -25,27 +25,37 @@ package org.cytoscape.tableimport.internal.ui;
  */
 
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.model.*;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
+import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
+import org.cytoscape.tableimport.internal.reader.SupportedFileType;
+import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
+import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.tableimport.internal.util.URLUtil;
+import org.cytoscape.util.swing.ColumnResizer;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.JStatusBar;
+import org.cytoscape.work.TaskManager;
+import org.jdesktop.layout.GroupLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.EDGE;
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.NETWORK;
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.NODE;
-import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.DB_OBJECT_SYMBOL;
-import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.DB_OBJECT_SYNONYM;
-import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.GO_ID;
-import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.TAXON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogFontTheme.TITLE_FONT;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.BOOLEAN_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.FLOAT_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.ID_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.INT_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.LIST_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.RIGHT_ARROW_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.SPREADSHEET_ICON_LARGE;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.STRING_ICON;
-
-import java.awt.Color;
-import java.awt.Component;
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import javax.xml.bind.JAXBException;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -53,86 +63,17 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
 
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
-import javax.xml.bind.JAXBException;
-
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
-import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
-import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
-import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
-import org.cytoscape.tableimport.internal.reader.GraphReader;
-import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
-import org.cytoscape.tableimport.internal.reader.NetworkTableReader;
-import org.cytoscape.tableimport.internal.reader.SupportedFileType;
-import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
-import org.cytoscape.tableimport.internal.reader.TextTableReader;
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.tableimport.internal.util.URLUtil;
-import org.cytoscape.util.swing.ColumnResizer;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.JStatusBar;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskManager;
-import org.jdesktop.layout.GroupLayout;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
+import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.*;
+import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.*;
+import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogFontTheme.TITLE_FONT;
+import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.*;
 
 
 /**
@@ -260,9 +201,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		this.tableFactory  = tableFactory;
 		this.tableManager  = tableManager;
         this.fileUtil = fileUtil;
+		this.fileType = fileType;
 
 		if (dialogType != ONTOLOGY_AND_ANNOTATION_IMPORT) {
 
+			//Before, this.fileType was always null.
 			tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
@@ -290,7 +233,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		}
 		
-		this.fileType = fileType;
+
 		selectedAttributes = null;
 
 		network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
@@ -345,7 +288,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		this.helpButton.setVisible(false);
 
-		setPreviewPanel(null);
+		boolean useFirstRow = dialogType == NETWORK_IMPORT || dialogType == SIMPLE_ATTRIBUTE_IMPORT;
+		setPreviewPanel(null, useFirstRow);
 		
 		// Hide the alias Panel, we will do the table join somewhere else, not in this GUI
 		aliasScrollPane.setVisible(false);
@@ -461,7 +405,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			});
 
 		caseSensitiveCheckBox = new JCheckBox("Case Sensitive");
-		caseSensitiveCheckBox.setToolTipText("<html><strong><font color=\"red\">Caution. If you uncheck this, import can be extrelely slow.</font></strong></html>");
+		caseSensitiveCheckBox.setToolTipText("<html><strong><font color=\"red\">Caution. If you uncheck this, import can be extremely slow.</font></strong></html>");
 		caseSensitiveCheckBox.setSelected(true);
 		caseSensitiveCheckBox.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -524,11 +468,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		arrowButton2 = new javax.swing.JButton();
 		textImportOptionPanel = new javax.swing.JPanel();
 		delimiterPanel = new javax.swing.JPanel();
-		tabCheckBox = new javax.swing.JCheckBox();
-		commaCheckBox = new javax.swing.JCheckBox();
-		semicolonCheckBox = new javax.swing.JCheckBox();
-		spaceCheckBox = new javax.swing.JCheckBox();
-		otherCheckBox = new javax.swing.JCheckBox();
+		tabCheckBox = new JCheckBox();
+		commaCheckBox = new JCheckBox();
+		semicolonCheckBox = new JCheckBox();
+		spaceCheckBox = new JCheckBox();
+		otherCheckBox = new JCheckBox();
 		otherDelimiterTextField = new javax.swing.JTextField();
 		transferNameCheckBox = new javax.swing.JCheckBox();
 
@@ -697,7 +641,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			selectAttributeFileButton.addActionListener(new java.awt.event.ActionListener() {
 					public void actionPerformed(java.awt.event.ActionEvent evt) {
 						try {
-							setPreviewPanel(evt);
+							setPreviewPanel(evt,false);
 						} catch (IOException e) {
 
 							JOptionPane.showMessageDialog(ImportTablePanel.this, "<html>Could not read selected file.<p>See <b>Help->Error Dialog</b> for further details.</html>", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -735,28 +679,28 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		basicPanel.setLayout(basicPanelLayout);
 
 		basicPanelLayout.setHorizontalGroup(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                    .add(basicPanelLayout.createSequentialGroup()
-		                                                                         .addContainerGap()
-		                                                                         .add(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                                              .add(basicPanelLayout.createSequentialGroup()
-		                                                                                                                   .add(simpleAttributeImportPanel,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                        Short.MAX_VALUE)
-		                                                                                                                   .addContainerGap())
-		                                                                                              .add(basicPanelLayout.createSequentialGroup()
-		                                                                                                                   .add(annotationAndOntologyImportPanel,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                        Short.MAX_VALUE)
-		                                                                                                                   .addContainerGap())
-		                                                                                              .add(basicPanelLayout.createSequentialGroup()
-		                                                                                                                   .add(attrTypePanel,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                                                   .addContainerGap(50,
-		                                                                                                                                    Short.MAX_VALUE)))));
+				.add(basicPanelLayout.createSequentialGroup()
+						.addContainerGap()
+						.add(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+								.add(basicPanelLayout.createSequentialGroup()
+										.add(simpleAttributeImportPanel,
+												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+												Short.MAX_VALUE)
+										.addContainerGap())
+								.add(basicPanelLayout.createSequentialGroup()
+										.add(annotationAndOntologyImportPanel,
+												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+												Short.MAX_VALUE)
+										.addContainerGap())
+								.add(basicPanelLayout.createSequentialGroup()
+										.add(attrTypePanel,
+												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+										.addContainerGap(50,
+												Short.MAX_VALUE)))));
 		basicPanelLayout.setVerticalGroup(basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
 		                                                  .add(basicPanelLayout.createSequentialGroup()
 		                                                                       .add(attrTypePanel,
@@ -903,89 +847,120 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		tabCheckBox.setText("Tab");
 		tabCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		tabCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		tabCheckBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					try {
-						delimiterCheckBoxActionPerformed(evt);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+		tabCheckBox.addActionListener(new java.awt.event.ActionListener()
+		{
+			public void actionPerformed(java.awt.event.ActionEvent evt)
+			{
+				try
+				{
+					delimiterCheckBoxActionPerformed(evt);
+				} catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			});
+			}
+		});
 
 		commaCheckBox.setText("Comma");
 		commaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		commaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		commaCheckBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					try {
-						delimiterCheckBoxActionPerformed(evt);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+		commaCheckBox.addActionListener(new java.awt.event.ActionListener()
+		{
+			public void actionPerformed(java.awt.event.ActionEvent evt)
+			{
+				try
+				{
+					delimiterCheckBoxActionPerformed(evt);
+				} catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			});
+			}
+		});
 
 		semicolonCheckBox.setText("Semicolon");
 		semicolonCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		semicolonCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		semicolonCheckBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					try {
-						delimiterCheckBoxActionPerformed(evt);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+		semicolonCheckBox.addActionListener(new java.awt.event.ActionListener()
+		{
+			public void actionPerformed(java.awt.event.ActionEvent evt)
+			{
+				try
+				{
+					delimiterCheckBoxActionPerformed(evt);
+				} catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			});
+			}
+		});
 
 		spaceCheckBox.setText("Space");
 		spaceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		spaceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		spaceCheckBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					try {
-						delimiterCheckBoxActionPerformed(evt);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+		spaceCheckBox.addActionListener(new java.awt.event.ActionListener()
+		{
+			public void actionPerformed(java.awt.event.ActionEvent evt)
+			{
+				try
+				{
+					delimiterCheckBoxActionPerformed(evt);
+				} catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			});
+			}
+		});
 
 		otherCheckBox.setText("Other");
 		otherCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		otherCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		otherCheckBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					try {
-						delimiterCheckBoxActionPerformed(evt);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+		otherCheckBox.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent evt)
+			{
+				try
+				{
+					otherDelimiterTextField.requestFocus();
+					delimiterCheckBoxActionPerformed(evt);
 				}
-			});
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		});
 
-		otherDelimiterTextField.addKeyListener(new KeyListener() {
-				public void keyPressed(KeyEvent evt) {
-					try {
-						otherTextFieldActionPerformed(evt);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
+		//TODO: VetoableChangeListener???
 
-				public void keyReleased(KeyEvent arg0) {
-				}
+		otherDelimiterTextField.addKeyListener(new KeyListener()
+		{
+			public void keyPressed(KeyEvent evt)
+			{
 
-				public void keyTyped(KeyEvent evt) {
+			}
+
+			public void keyReleased(KeyEvent evt)
+			{
+				try
+				{
+					if (otherCheckBox.isSelected())
+						displayPreview();
 				}
-			});
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+
+			public void keyTyped(KeyEvent evt)
+			{
+			}
+		});
 
 		GroupLayout delimiterPanelLayout = new GroupLayout(delimiterPanel);
 		delimiterPanel.setLayout(delimiterPanelLayout);
@@ -1015,11 +990,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		SpinnerNumberModel spinnerModel = new SpinnerNumberModel(100, 1, 10000000, 10);
 		counterSpinner.setModel(spinnerModel);
-		counterSpinner.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
-				public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
-					counterSpinnerMouseWheelMoved(evt);
-				}
-			});
+		counterSpinner.addMouseWheelListener(new java.awt.event.MouseWheelListener()
+		{
+			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
+			{
+				counterSpinnerMouseWheelMoved(evt);
+			}
+		});
 		counterSpinner.setToolTipText("<html><body>Click <strong text=\"red\"><i>Refresh Preview</i></strong> button to update the table.</body></html>");
 
 		counterLabel.setText("entries.");
@@ -1027,16 +1004,20 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		previewOptionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Preview Options"));
 		reloadButton.setText("Refresh Preview");
 		reloadButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-		reloadButton.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					try {
-						reloadButtonActionPerformed(evt);
-					} catch (IOException e) {
-						e.printStackTrace();
-						throw new IllegalStateException("Could not reload target file.");
-					}
+		reloadButton.addActionListener(new java.awt.event.ActionListener()
+		{
+			public void actionPerformed(java.awt.event.ActionEvent evt)
+			{
+				try
+				{
+					reloadButtonActionPerformed(evt);
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+					throw new IllegalStateException("Could not reload target file.");
 				}
-			});
+			}
+		});
 
 		showAllRadioButton.setText("Show all entries in the file");
 		showAllRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -1075,11 +1056,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		transferNameCheckBox.setBorder(null);
 		transferNameCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-		transferNameCheckBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					transferNameCheckBoxActionPerformed(evt);
-				}
-			});
+		transferNameCheckBox.addActionListener(new java.awt.event.ActionListener()
+		{
+			public void actionPerformed(java.awt.event.ActionEvent evt)
+			{
+				transferNameCheckBoxActionPerformed(evt);
+			}
+		});
 
 		startRowLabel.setText("Start Import Row: ");
 		startRowLabel.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -1088,59 +1071,61 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		SpinnerNumberModel startRowSpinnerModel = new SpinnerNumberModel(1, 1, 10000000, 1);
 		startRowSpinner.setModel(startRowSpinnerModel);
-		startRowSpinner.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
-				public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
-					startRowSpinnerMouseWheelMoved(evt);
-				}
-			});
+		startRowSpinner.addMouseWheelListener(new java.awt.event.MouseWheelListener()
+		{
+			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
+			{
+				startRowSpinnerMouseWheelMoved(evt);
+			}
+		});
 		startRowSpinner.setToolTipText("<html>Load entries from this line. <p>"
-		                               + "(Click on the <strong><i>Refresh Preview</i></strong> button to refresh preview.)</p></html>");
+				+ "(Click on the <strong><i>Refresh Preview</i></strong> button to refresh preview.)</p></html>");
 
 		commentLineLabel.setText("Comment Line:");
 
 		commentLineTextField.setToolTipText("<html>Lines start with this string will be ignored. <br>"
-		                                    + "(Click on the <strong><i>Refresh Preview</i></strong> button to refresh preview.)</html>");
+				+ "(Click on the <strong><i>Refresh Preview</i></strong> button to refresh preview.)</html>");
 
 		GroupLayout attributeNamePanelLayout = new org.jdesktop.layout.GroupLayout(attributeNamePanel);
 		attributeNamePanel.setLayout(attributeNamePanelLayout);
 
 		attributeNamePanelLayout.setHorizontalGroup(attributeNamePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                    .add(attributeNamePanelLayout.createSequentialGroup()
-		                                                                                                 .add(transferNameCheckBox)
-		                                                                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                                 .add(startRowLabel)
-		                                                                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                                 .add(startRowSpinner,
-		                                                                                                      org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                      51,
-		                                                                                                      org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                                 .add(commentLineLabel)
-		                                                                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                                 .add(commentLineTextField,
-		                                                                                                      org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                      24,
-		                                                                                                      org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                                 .addContainerGap(12,
-		                                                                                                                  Short.MAX_VALUE)));
+				.add(attributeNamePanelLayout.createSequentialGroup()
+						.add(transferNameCheckBox)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(startRowLabel)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(startRowSpinner,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+								51,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(commentLineLabel)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(commentLineTextField,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+								24,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.addContainerGap(12,
+								Short.MAX_VALUE)));
 		attributeNamePanelLayout.setVerticalGroup(attributeNamePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                  .add(attributeNamePanelLayout.createSequentialGroup()
-		                                                                                               .add(attributeNamePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-		                                                                                                                            .add(transferNameCheckBox,
-		                                                                                                                                 org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                                 21,
-		                                                                                                                                 Short.MAX_VALUE)
-		                                                                                                                            .add(startRowLabel)
-		                                                                                                                            .add(startRowSpinner,
-		                                                                                                                                 org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                                                 org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                                 org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                                                            .add(commentLineLabel)
-		                                                                                                                            .add(commentLineTextField,
-		                                                                                                                                 org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                                                 org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                                 org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-		                                                                                               .addContainerGap()));
+				.add(attributeNamePanelLayout.createSequentialGroup()
+						.add(attributeNamePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+								.add(transferNameCheckBox,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										21,
+										Short.MAX_VALUE)
+								.add(startRowLabel)
+								.add(startRowSpinner,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+								.add(commentLineLabel)
+								.add(commentLineTextField,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+						.addContainerGap()));
 
 		
 		
@@ -1149,130 +1134,130 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		defaultInteractionLabel.setText("Default Interaction:");
 		defaultInteractionTextField.setText(DEFAULT_INTERACTION);
 		defaultInteractionTextField.setToolTipText("<html>If <font color=\"red\"><i>Default Interaction</i></font>"
-		                                           + " is selected, this value will be used for <i>Interaction Type</i>.<br></html>");
+				+ " is selected, this value will be used for <i>Interaction Type</i>.<br></html>");
 
 		org.jdesktop.layout.GroupLayout networkImportOptionPanelLayout = new org.jdesktop.layout.GroupLayout(networkImportOptionPanel);
 		
 		networkImportOptionPanel.setLayout(networkImportOptionPanelLayout);
 
 		networkImportOptionPanelLayout.setHorizontalGroup(networkImportOptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                                .add(networkImportOptionPanelLayout.createSequentialGroup()
-		                                                                                                                   .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                                    Short.MAX_VALUE)
-		                                                                                                                   .add(defaultInteractionLabel)
-		                                                                                                                   .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                                                   .add(defaultInteractionTextField,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                                        58,
-		                                                                                                                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)));
+				.add(networkImportOptionPanelLayout.createSequentialGroup()
+						.addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+								Short.MAX_VALUE)
+						.add(defaultInteractionLabel)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(defaultInteractionTextField,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+								58,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)));
 		networkImportOptionPanelLayout.setVerticalGroup(networkImportOptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                              .add(defaultInteractionLabel)
-		                                                                              .add(defaultInteractionTextField,
-		                                                                                   org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                   org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                   org.jdesktop.layout.GroupLayout.PREFERRED_SIZE));
+				.add(defaultInteractionLabel)
+				.add(defaultInteractionTextField,
+						org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+						org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+						org.jdesktop.layout.GroupLayout.PREFERRED_SIZE));
 
 		org.jdesktop.layout.GroupLayout textImportOptionPanelLayout = new org.jdesktop.layout.GroupLayout(textImportOptionPanel);
 		textImportOptionPanel.setLayout(textImportOptionPanelLayout);
 
 		textImportOptionPanelLayout.setHorizontalGroup(textImportOptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                          .add(org.jdesktop.layout.GroupLayout.TRAILING,
-		                                                                               textImportOptionPanelLayout.createSequentialGroup()
-		                                                                                                          .add(attributeNamePanel,
-		                                                                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                               Short.MAX_VALUE)
-		                                                                                                          .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                                          .add(networkImportOptionPanel,
-		                                                                                                               org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                               org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                                          .add(29,
-		                                                                                                               29,
-		                                                                                                               29)
-		                                                                                                          .add(reloadButton))
-		                                                                          .add(org.jdesktop.layout.GroupLayout.TRAILING,
-		                                                                               textImportOptionPanelLayout.createSequentialGroup()
-		                                                                                                          .add(delimiterPanel,
-		                                                                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                               Short.MAX_VALUE)
-		                                                                                                          .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                                          .add(previewOptionPanel,
-		                                                                                                               org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                               org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)));
+				.add(org.jdesktop.layout.GroupLayout.TRAILING,
+						textImportOptionPanelLayout.createSequentialGroup()
+								.add(attributeNamePanel,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										Short.MAX_VALUE)
+								.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+								.add(networkImportOptionPanel,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+								.add(29,
+										29,
+										29)
+								.add(reloadButton))
+				.add(org.jdesktop.layout.GroupLayout.TRAILING,
+						textImportOptionPanelLayout.createSequentialGroup()
+								.add(delimiterPanel,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										Short.MAX_VALUE)
+								.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+								.add(previewOptionPanel,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)));
 		textImportOptionPanelLayout.setVerticalGroup(textImportOptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                        .add(textImportOptionPanelLayout.createSequentialGroup()
-		                                                                                                        .add(textImportOptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                                                                                        .add(delimiterPanel,
-		                                                                                                                                             org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                                                             71,
-		                                                                                                                                             org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                                                                        .add(previewOptionPanel,
-		                                                                                                                                             org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                                             50,
-		                                                                                                                                             Short.MAX_VALUE))
-		                                                                                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                                        .add(textImportOptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                                                                                                        .add(networkImportOptionPanel,
-		                                                                                                                                             org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                                                                             45,
-		                                                                                                                                             Short.MAX_VALUE)
-		                                                                                                                                        .add(attributeNamePanel,
-		                                                                                                                                             org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                                                                             71,
-		                                                                                                                                             org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                                                                        .add(org.jdesktop.layout.GroupLayout.TRAILING,
-		                                                                                                                                             reloadButton))));
+				.add(textImportOptionPanelLayout.createSequentialGroup()
+						.add(textImportOptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+								.add(delimiterPanel,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+										71,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+								.add(previewOptionPanel,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										50,
+										Short.MAX_VALUE))
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(textImportOptionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+								.add(networkImportOptionPanel,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+										45,
+										Short.MAX_VALUE)
+								.add(attributeNamePanel,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+										71,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+								.add(org.jdesktop.layout.GroupLayout.TRAILING,
+										reloadButton))));
 
 		org.jdesktop.layout.GroupLayout advancedPanelLayout = new org.jdesktop.layout.GroupLayout(advancedPanel);
 		advancedPanel.setLayout(advancedPanelLayout);
 
 		advancedPanelLayout.setHorizontalGroup(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                          .add(advancedPanelLayout.createSequentialGroup()
-		                                                                                  .addContainerGap()
-		                                                                                  .add(advancedOptionCheckBox)
-		                                                                                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                  .add(textImportCheckBox)
-		                                                                                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                  .add(importAllCheckBox)
-		                                                                                  .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                  .add(caseSensitiveCheckBox))
-		                                                          .add(attr2annotationPanel,
-		                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                               Short.MAX_VALUE)
-		                                                          .add(ontology2annotationPanel,
-		                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                               Short.MAX_VALUE)
-		                                                          .add(textImportOptionPanel,
-		                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                               org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                               Short.MAX_VALUE));
+				.add(advancedPanelLayout.createSequentialGroup()
+						.addContainerGap()
+						.add(advancedOptionCheckBox)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(textImportCheckBox)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(importAllCheckBox)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(caseSensitiveCheckBox))
+				.add(attr2annotationPanel,
+						org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+						org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE)
+				.add(ontology2annotationPanel,
+						org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+						org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE)
+				.add(textImportOptionPanel,
+						org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+						org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE));
 		advancedPanelLayout.setVerticalGroup(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                        .add(advancedPanelLayout.createSequentialGroup()
-		                                                                                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-		                                                                                                        .add(advancedOptionCheckBox)
-		                                                                                                        .add(textImportCheckBox)
-		                                                                                                        .add(importAllCheckBox)
-		                                                                                                        .add(caseSensitiveCheckBox))
-		                                                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                .add(attr2annotationPanel,
-		                                                                                     org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                     org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                     org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                .add(ontology2annotationPanel,
-		                                                                                     org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                     org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                     org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                                .add(textImportOptionPanel,
-		                                                                                     org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                                                     org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                                                     org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)));
+				.add(advancedPanelLayout.createSequentialGroup()
+						.add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+								.add(advancedOptionCheckBox)
+								.add(textImportCheckBox)
+								.add(importAllCheckBox)
+								.add(caseSensitiveCheckBox))
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(attr2annotationPanel,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(ontology2annotationPanel,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(textImportOptionPanel,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)));
 
 		globalLayout();
 
@@ -1342,13 +1327,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		// TODO: Quick help should be implemented!
 	}
 
-	private void otherTextFieldActionPerformed(KeyEvent evt) throws IOException {
-		if (otherCheckBox.isSelected()) {
-			displayPreview();
-		}
-	}
-
-
 	private void attributeRadioButtonActionPerformed(ActionEvent evt) {
 		CyNetwork network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
 
@@ -1413,55 +1391,62 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		setKeyList();
 	}
 
+    /*
+     * This method indicates whether the first row of a file that is being imported as a table should be used to
+     * populate column names.
+     */
+    private void useFirstRow(boolean useFirstRow)
+    {
+        final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
+        if( useFirstRow ) {
+            if ((previewPanel.getPreviewTable() != null) && (model != null)) {
+                columnHeaders = new String[previewPanel.getPreviewTable().getColumnCount()];
+
+                for (int i = 0; i < columnHeaders.length; i++) {
+                    // Save the header
+                    columnHeaders[i] = previewPanel.getPreviewTable().getColumnModel().getColumn(i)
+                            .getHeaderValue().toString();
+                    previewPanel.getPreviewTable().getColumnModel().getColumn(i)
+                            .setHeaderValue((String) model.getValueAt(0, i));
+                }
+
+                model.removeRow(0);
+                previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
+            }
+
+        } else {
+            // Restore row
+            String currentName = null;
+            Object headerVal = null;
+
+            for (int i = 0; i < columnHeaders.length; i++) {
+                headerVal = previewPanel.getPreviewTable().getColumnModel().getColumn(i)
+                        .getHeaderValue();
+
+                if (headerVal == null) {
+                    currentName = "";
+                } else {
+                    currentName = headerVal.toString();
+                }
+
+                previewPanel.getPreviewTable().getColumnModel().getColumn(i)
+                        .setHeaderValue(columnHeaders[i]);
+                columnHeaders[i] = currentName;
+            }
+
+            model.insertRow(0, columnHeaders);
+            previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
+            //startRowSpinner.setEnabled(true);
+        }
+
+        updateAliasTable();
+        updatePrimaryKeyComboBox();
+
+    }
 
 
 	private void transferNameCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
-		final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
-
-		if (transferNameCheckBox.isSelected()) {
-			if ((previewPanel.getPreviewTable() != null) && (model != null)) {
-				columnHeaders = new String[previewPanel.getPreviewTable().getColumnCount()];
-
-				for (int i = 0; i < columnHeaders.length; i++) {
-					// Save the header
-					columnHeaders[i] = previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-					                               .getHeaderValue().toString();
-					previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-					            .setHeaderValue((String) model.getValueAt(0, i));
-				}
-
-				model.removeRow(0);
-				previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
-			}
-
-			//startRowSpinner.setEnabled(false);
-		} else {
-			// Restore row
-			String currentName = null;
-			Object headerVal = null;
-
-			for (int i = 0; i < columnHeaders.length; i++) {
-				headerVal = previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-				                        .getHeaderValue();
-
-				if (headerVal == null) {
-					currentName = "";
-				} else {
-					currentName = headerVal.toString();
-				}
-
-				previewPanel.getPreviewTable().getColumnModel().getColumn(i)
-				            .setHeaderValue(columnHeaders[i]);
-				columnHeaders[i] = currentName;
-			}
-
-			model.insertRow(0, columnHeaders);
-			previewPanel.getPreviewTable().getTableHeader().resizeAndRepaint();
-			//startRowSpinner.setEnabled(true);
-		}
-
-		updateAliasTable();
-		updatePrimaryKeyComboBox();
+		useFirstRow(transferNameCheckBox.isSelected());
 		repaint();
 	}
 
@@ -1469,7 +1454,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	/**
 	 * Load from the data source.<br>
 	 *
-	 * @param evt
 	 * @throws Exception
 	 */
 	public void importTable() throws Exception {
@@ -1563,23 +1547,24 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				
 	}
 
-	private void setPreviewPanel(ActionEvent evt) throws IOException {
+	private void setPreviewPanel(ActionEvent evt, boolean useFirstRow) throws IOException {
 
 		readAnnotationForPreview( checkDelimiter());
 		transferNameCheckBox.setEnabled(true);
-		transferNameCheckBox.setSelected(false);
+		transferNameCheckBox.setSelected(true);
+		if( useFirstRow )
+			useFirstRow(true);
 
 		if (previewPanel.getPreviewTable() == null) {
 			return;
 		} else {
-			columnHeaders = new String[previewPanel.getPreviewTable().getColumnCount()];
 			ColumnResizer.adjustColumnPreferredWidths(previewPanel.getPreviewTable());
 			previewPanel.getPreviewTable().repaint();
 		}
 	}
 
 	private void delimiterCheckBoxActionPerformed(ActionEvent evt) throws IOException {
-		transferNameCheckBox.setSelected(false);
+        transferNameCheckBox.setSelected(false);
 		displayPreview();
 	}
 
@@ -1783,10 +1768,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		importTypeButtonGroup.add(counterRadioButton);
 		importTypeButtonGroup.setSelected(counterRadioButton.getModel(), true);
 
-		tabCheckBox.setSelected(true);
+		if( fileType != null && fileType.equalsIgnoreCase(SupportedFileType.CSV.getExtension()) )
+			commaCheckBox.setSelected(true);
+		else
+			tabCheckBox.setSelected(true);
+
 		tabCheckBox.setEnabled(false);
 		commaCheckBox.setEnabled(false);
-
 		spaceCheckBox.setEnabled(false);
 
 		if (dialogType == NETWORK_IMPORT) {
@@ -1886,7 +1874,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	/**
 	 * Display preview table
 	 *
-	 * @param sourceURL
 	 * @param delimiters
 	 * @throws IOException
 	 */
@@ -2386,7 +2373,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			delList.add(TextFileDelimiters.SEMICOLON.toString());
 		}
 
-		if (otherCheckBox.isSelected()) {
+		if (otherCheckBox.isSelected() && otherDelimiterTextField.getText().trim().length() > 0) {
 			delList.add(otherDelimiterTextField.getText());
 		}
 
@@ -2904,7 +2891,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected javax.swing.JButton browseAnnotationButton;
 	protected javax.swing.JButton browseOntologyButton;
 	protected javax.swing.JButton cancelButton;
-	protected javax.swing.JCheckBox commaCheckBox;
+
 	protected javax.swing.JPanel delimiterPanel;
 	protected javax.swing.JRadioButton edgeRadioButton;
 	protected javax.swing.JButton helpButton;
@@ -2918,17 +2905,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected javax.swing.JComboBox ontologyInAnnotationComboBox;
 	protected javax.swing.JLabel ontologyInAnnotationLabel;
 	protected javax.swing.JLabel ontologyLabel;
-	protected javax.swing.JTextField otherDelimiterTextField;
-	protected javax.swing.JCheckBox otherCheckBox;
 	protected PreviewTablePanel previewPanel;
 	protected javax.swing.JLabel primaryKeyLabel;
 	protected javax.swing.JButton selectAttributeFileButton;
-	protected javax.swing.JCheckBox semicolonCheckBox;
 	protected javax.swing.JPanel simpleAttributeImportPanel;
 	protected javax.swing.JComboBox annotationComboBox;
 	protected javax.swing.JLabel sourceLabel;
-	protected javax.swing.JCheckBox spaceCheckBox;
-	protected javax.swing.JCheckBox tabCheckBox;
+
 	protected javax.swing.JTextField targetDataSourceTextField;
 	protected javax.swing.JLabel targetOntologyLabel;
 	protected javax.swing.JTextField ontologyTextField;
@@ -2957,6 +2940,15 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected JSpinner startRowSpinner;
 	protected JLabel commentLineLabel;
 	protected JTextField commentLineTextField;
+
+	//Delimiter check boxes
+	protected JCheckBox tabCheckBox;
+	protected JCheckBox commaCheckBox;
+	protected JCheckBox semicolonCheckBox;
+	protected JCheckBox spaceCheckBox;
+	protected JCheckBox otherCheckBox;
+	protected JTextField otherDelimiterTextField;
+
 
 	// End of variables declaration
 	JStatusBar statusBar;

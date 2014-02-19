@@ -29,7 +29,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.LayoutManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -46,6 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneLayout;
+import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -53,8 +53,11 @@ import javax.swing.DefaultListModel;
 import javax.xml.ws.handler.MessageContext.Scope;
 
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSelection;
 
 
 /**
@@ -64,13 +67,11 @@ import org.cytoscape.work.util.ListMultipleSelection;
  *
  * @param <T> type of items the List contains
  */
-public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements ListSelectionListener {
+public class ListMultipleHandler<T> extends AbstractGUITunableHandler 
+                                            implements ListSelectionListener, ListChangeListener<T> {
 	private JList itemsContainerList;
 	private DefaultListModel listModel;
 	private ListMultipleSelection<T> listMultipleSelection;
-
-	private static final Font TEXT_FONT = new Font("SansSerif", Font.PLAIN,12);
-	private static final Font LABEL_FONT = new Font("SansSerif", Font.BOLD ,13);
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListMultipleSelection</code> type
@@ -108,7 +109,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 
 		//create GUI
 		if ( listMultipleSelection.getPossibleValues().isEmpty() ) {
-			panel = null;
+			panel = new JPanel();
 			itemsContainerList = null;
 			return;
 		}
@@ -116,18 +117,29 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		panel = new JPanel();
 		BorderLayout layout = new BorderLayout();
 		panel.setLayout(layout);
+		String description = getDescription();
+		if (description != null && description.length() > 80) {
+			// Use JTextArea for long descriptions
+			final JTextArea jta = new JTextArea(description);
 
-		JLabel jta = new JLabel(getDescription());
-		jta.setFont(LABEL_FONT);
-		jta.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		panel.add(jta, BorderLayout.PAGE_START);
+			jta.setLineWrap(true);
+			jta.setWrapStyleWord(true);
+			panel.add(jta, BorderLayout.PAGE_START);
+			jta.setBackground(panel.getBackground());
+			jta.setEditable(false);
+		} else if (description != null && description.length() > 0) {
+			// Otherwise, use JLabel
+			final JLabel jLabel = new JLabel(description);
+			jLabel.setFont(GUIDefaults.LABEL_FONT);
+			panel.add(jLabel, BorderLayout.PAGE_START);
+		}
 
 		//put the items in a list
 		itemsContainerList = new JList(listModel);//new JList(listMultipleSelection.getPossibleValues().toArray());
 		for ( T value : getMultipleSelection().getPossibleValues() ) 
 			listModel.addElement(value);
 		
-		itemsContainerList.setFont(TEXT_FONT);
+		itemsContainerList.setFont(GUIDefaults.TEXT_FONT);
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		itemsContainerList.addListSelectionListener(this);
 		
@@ -154,6 +166,16 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 		scrollpane.setOpaque(false);
 		scrollpane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 		panel.add(scrollpane, BorderLayout.CENTER);
+
+		// Set the tooltip.  Note that at this point, we're setting
+		// the tooltip on the entire panel.  This may or may not be
+		// the right thing to do.
+		if (getTooltip() != null && getTooltip().length() > 0) {
+			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
+			tipManager.setInitialDelay(1);
+			tipManager.setDismissDelay(7500);
+			panel.setToolTipText(getTooltip());
+		}
 	}
 
 	
@@ -236,5 +258,15 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler implements
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		handle();
+	}
+
+	@Override
+	public void selectionChanged(ListSelection<T> source) {
+		update();
+	}
+
+	@Override
+	public void listChanged(ListSelection<T> source) {
+		update();
 	}
 }

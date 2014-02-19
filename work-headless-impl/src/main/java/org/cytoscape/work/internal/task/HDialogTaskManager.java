@@ -31,6 +31,7 @@ import javax.swing.JDialog;
 
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 public class HDialogTaskManager implements DialogTaskManager {
@@ -49,6 +50,12 @@ public class HDialogTaskManager implements DialogTaskManager {
 
 	@Override
 	public void execute(TaskIterator iterator) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void execute(TaskIterator iterator, TaskObserver observer) {
 		// TODO Auto-generated method stub
 		
 	}

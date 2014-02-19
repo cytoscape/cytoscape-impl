@@ -31,12 +31,12 @@ import java.awt.datatransfer.Transferable;
 
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation; 
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation; 
-import org.cytoscape.ding.impl.cyannotator.create.AnnotationFactory; 
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation; 
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl; 
 
 
 public class AddArrowTaskFactory implements NetworkViewLocationTaskFactory {
@@ -59,8 +59,8 @@ public class AddArrowTaskFactory implements NetworkViewLocationTaskFactory {
 
 		// We need to be over an annotation
 		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		Annotation annotation = cyAnnotator.getAnnotationAt(javaPt);
-		if (annotation == null || annotation instanceof ArrowAnnotation) 
+		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		if (annotation == null || annotation instanceof ArrowAnnotationImpl) 
 			return false;
 
 		return true;

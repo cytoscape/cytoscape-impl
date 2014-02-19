@@ -34,6 +34,7 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskMonitor;
@@ -54,9 +55,9 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 	public LoadNetworkURLTask(CyNetworkReaderManager mgr, 
 				  CyNetworkManager netmgr, final CyNetworkViewManager networkViewManager,
 				  final Properties props,
-				  CyNetworkNaming namingUtil, StreamUtil streamUtil, final VisualMappingManager vmm)
+				  CyNetworkNaming namingUtil, StreamUtil streamUtil, final VisualMappingManager vmm, final CyNetworkViewFactory nullNetworkViewFactory)
 	{
-		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm);
+		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory);
 		this.streamUtil = streamUtil;
 	}
 

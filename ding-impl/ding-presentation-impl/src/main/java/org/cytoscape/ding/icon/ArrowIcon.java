@@ -32,6 +32,7 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 
 
@@ -41,85 +42,65 @@ import java.awt.geom.Rectangle2D;
 public class ArrowIcon extends VisualPropertyIcon<Shape> {
 	private final static long serialVersionUID = 1202339877462891L;
 	
-	private static final Stroke EDGE_STROKE = new BasicStroke(6.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
-	private static final Stroke EDGE_STROKE_SMALL = new BasicStroke(4.0f, BasicStroke.CAP_SQUARE,
-			BasicStroke.JOIN_MITER);
+	private static final int EDGE_WIDTH = 4;
+	private static final Stroke EDGE_STROKE = new BasicStroke(EDGE_WIDTH, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
 	protected Graphics2D g2d;
-	private static final int DEF_L_PAD = 15;
 
 
 	public ArrowIcon(final Shape shape, int width, int height, String name) {
 		super(shape, width, height, name);
 	}
 
-	
+	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
 		g2d = (Graphics2D) g;
-
-		// Turn AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setColor(color);
+		g2d.setColor(c.getForeground());
 
-		g2d.translate(leftPad, bottomPad);
-
-		/*
-		 * If shape is not defined, treat as no-head.
-		 */
-		if (value == null) {
-			if ((width < 20) || (height < 20)) {
-				
-				g2d.setStroke(EDGE_STROKE_SMALL);
-				g2d.drawLine(3, c.getHeight() / 2, width / 2 + 10, c.getHeight() / 2);
-				
-			} else {
-				g2d.setStroke(EDGE_STROKE);
-				g2d.drawLine(DEF_L_PAD, (height + 20) / 2,
-			             (int) (c.getWidth()*0.3), (height + 20) / 2);
+		double x1 = x;
+		double y1 = y + height / 2.0;
+		double x2 = x1 + width;
+		double y2 = y1;
+		
+		// If shape is not defined, treat as no-arrow.
+		if (value != null) {
+			final AffineTransform af = new AffineTransform();
+			g2d.setStroke(new BasicStroke(2.0f));
+	
+			Shape shape = value;
+			final double minx = shape.getBounds2D().getMinX();
+			final double miny = shape.getBounds2D().getMinY();
+			
+			// Adjust position if it is NOT in first quadrant.
+			if (minx < 0) {
+				af.setToTranslation(Math.abs(minx), 0);
+				shape = af.createTransformedShape(shape);
 			}
-			g2d.translate(-leftPad, -bottomPad);
-			return;
+	
+			if (miny < 0) {
+				af.setToTranslation(0, Math.abs(miny));
+				shape = af.createTransformedShape(shape);
+			}
+	
+			final double shapeWidth = shape.getBounds2D().getWidth();
+			final double shapeHeight = shape.getBounds2D().getHeight() * 2;
+	
+			final double originalXYRatio = shapeWidth / shapeHeight;
+			final double xRatio = (width / 3) / shapeWidth;
+			final double yRatio = height / shapeHeight;
+			af.setToScale(xRatio * originalXYRatio, yRatio);
+			shape = af.createTransformedShape(shape);
+	
+			Rectangle2D bound = shape.getBounds2D();
+			af.setToTranslation(x2 - bound.getWidth(), y2 - bound.getHeight() / 2);
+			shape = af.createTransformedShape(shape);
+			
+			g2d.fill(shape);
+			
+			x2 = shape.getBounds2D().getCenterX() - 2;
 		}
-
-		final AffineTransform af = new AffineTransform();
-		g2d.setStroke(new BasicStroke(2.0f));
-
-		final Rectangle2D bound = value.getBounds2D();
-		final double minx = bound.getMinX();
-		final double miny = bound.getMinY();
-
-		Shape newShape = value;
-
-		/*
-		 * Adjust position if it is NOT in first quadrant.
-		 */
-		if (minx < 0) {
-			af.setToTranslation(Math.abs(minx), 0);
-			newShape = af.createTransformedShape(newShape);
-		}
-
-		if (miny < 0) {
-			af.setToTranslation(0, Math.abs(miny));
-			newShape = af.createTransformedShape(newShape);
-		}
-
-		final double shapeWidth = newShape.getBounds2D().getWidth();
-		final double shapeHeight = newShape.getBounds2D().getHeight()*2;
-
-		final double originalXYRatio = shapeWidth / shapeHeight;
-
-		final double xRatio = (width / 3) / shapeWidth;
-		final double yRatio = height / shapeHeight;
-		af.setToScale(xRatio * originalXYRatio, yRatio);
-		newShape = af.createTransformedShape(newShape);
-
-		af.setToTranslation((width * 0.8) - newShape.getBounds2D().getCenterX(),
-		                    ((height + 20) / 2) - newShape.getBounds2D().getCenterY());
-		newShape = af.createTransformedShape(newShape);
-
-		g2d.fill(newShape);
+		
 		g2d.setStroke(EDGE_STROKE);
-		g2d.drawLine(DEF_L_PAD, (height + 20) / 2, (int) (newShape.getBounds2D().getCenterX()) - 2, (height + 20) / 2);
-		g2d.translate(-leftPad, -bottomPad);
-
+		g2d.draw(new Line2D.Double(x1, y1, x2, y2));
 	}
 }

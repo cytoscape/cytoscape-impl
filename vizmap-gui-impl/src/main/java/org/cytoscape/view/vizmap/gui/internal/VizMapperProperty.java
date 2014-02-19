@@ -29,11 +29,9 @@ import org.cytoscape.view.vizmap.gui.internal.event.CellType;
 import com.l2fprod.common.propertysheet.DefaultProperty;
 
 /**
- * Extended version of DefaultProperty which accepts one more value as hidden
- * object.
+ * Extended version of DefaultProperty which accepts one more value as hidden object.
  * 
  * Refactored for 3 to keep more information.
- * 
  */
 public class VizMapperProperty<K, V, T> extends DefaultProperty {
 	
@@ -46,13 +44,11 @@ public class VizMapperProperty<K, V, T> extends DefaultProperty {
 	
 
 	public <S extends V> VizMapperProperty(final CellType cellType, final K key, final Class<S> valueType) {
-		super();
-		
-		if(key == null)
+		if (key == null)
 			throw new NullPointerException("Key cannot be null.");
-		if(cellType == null)
+		if (cellType == null)
 			throw new NullPointerException("CellType cannot be null.");	
-		if(valueType == null)
+		if (valueType == null)
 			throw new NullPointerException("Value Type cannot be null.");
 		
 		this.cellType = cellType;
@@ -69,7 +65,8 @@ public class VizMapperProperty<K, V, T> extends DefaultProperty {
 	 */
 	public VizMapperProperty(final VizMapperProperty<K, V, T> original) {
 		super();
-		if(original == null)
+		
+		if (original == null)
 			throw new NullPointerException("Original value cannot be null.");
 		
 		this.cellType = original.getCellType();
@@ -82,18 +79,18 @@ public class VizMapperProperty<K, V, T> extends DefaultProperty {
 		this.internalValue = original.getInternalValue();
 	}
 	
-	
 	/**
 	 * Make name immutable.
 	 */
-	@Override public void setName(String name) {
+	@Override
+	public void setName(String name) {
 		throw new UnsupportedOperationException("Name is immutable in this implementation.");
 	}
 	
-	@Override public String getName() {
+	@Override
+	public String getName() {
 		return key.toString();
 	}
-	
 	
 	public void setInternalValue(final T internalValue) {
 		this.internalValue = internalValue;
@@ -109,5 +106,10 @@ public class VizMapperProperty<K, V, T> extends DefaultProperty {
 	
 	public K getKey() {
 		return key;
+	}
+
+	@Override
+	public String toString() {
+		return "VizMapperProperty [key=" + key + ", value=" + getValue() + "]";
 	}
 }

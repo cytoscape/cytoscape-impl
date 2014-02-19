@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.0.2</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<properties>
@@ -18,6 +18,34 @@
 	<name>Cytoscape Core Task Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
+
+
+	<repositories>
+		<!-- bootstrap for cytoscape dependencies, namely the parent POM snapshots -->
+		<repository>
+			<id>cytoscape_snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<name>Cytoscape Snapshots</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+		<!-- bootstrap for cytoscape dependencies, namely the parent POM releases -->
+		<repository>
+			<id>cytoscape_releases</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Cytoscape Releases</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>
@@ -60,6 +88,14 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>command-executor-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>presentation-api</artifactId>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -94,6 +130,14 @@
 			<artifactId>datasource-api</artifactId>
 		</dependency>
 
+		<!-- 3rd party library -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Test Dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -110,12 +154,6 @@
 			<artifactId>model-impl</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>equations-impl</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

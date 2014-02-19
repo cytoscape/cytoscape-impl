@@ -26,6 +26,7 @@ package org.cytoscape.command.internal;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 
 
 import java.util.List;
@@ -36,14 +37,16 @@ public class CommandStringsExecutorTask extends AbstractTask {
 
 	private final CommandExecutorImpl cei;
 	private final List<String> commands;
+	private final TaskObserver observer;
 
-	public CommandStringsExecutorTask(List<String> commands, CommandExecutorImpl cei) {
+	public CommandStringsExecutorTask(List<String> commands, CommandExecutorImpl cei, TaskObserver observer) {
 		super();
 		this.commands = commands;
 		this.cei = cei;
+		this.observer = observer;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
-		cei.executeList(commands,tm);
+		cei.executeList(commands,tm,observer);
 	}
 }

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.equations.internal.StringList;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;

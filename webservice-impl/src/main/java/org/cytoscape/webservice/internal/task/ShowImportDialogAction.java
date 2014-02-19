@@ -60,6 +60,7 @@ public class ShowImportDialogAction extends AbstractCyAction {
 			throw new NullPointerException("Menu Label is null.");
 
 		setPreferredMenu(menuLocation);
+		setMenuGravity(3.0f);
 
 		if(shortcut != null)
 			setAcceleratorKeyStroke(shortcut);

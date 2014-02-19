@@ -60,7 +60,6 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -343,6 +342,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		else
 			width = originalWidth;
 
+		resizeCustomGraphics(width/getWidth(), 1.0);
+
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return false;
@@ -382,6 +383,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			height = getVisualProperty(DVisualLexicon.NODE_HEIGHT);
 		else
 			height = originalHeight;
+
+		resizeCustomGraphics(1.0, height/getHeight());
 		
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
@@ -684,7 +687,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public void setText(String text) {
-		//synchronized (graphView.m_lock) {
+		synchronized (graphView.m_lock) {
 			graphView.m_nodeDetails.overrideLabelText(model, 0, text);
 
 			if (DEFAULT_LABEL_TEXT.equals(graphView.m_nodeDetails.getLabelText(model, 0)))
@@ -693,7 +696,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				graphView.m_nodeDetails.overrideLabelCount(model, 1);
 
 			graphView.m_contentChanged = true;
-		//}
+		}
 	}
 
 	/**
@@ -929,6 +932,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				final double IMAGE_WIDTH = getWidth() * NESTED_IMAGE_SCALE_FACTOR;
 				final double IMAGE_HEIGHT = getHeight() * NESTED_IMAGE_SCALE_FACTOR;
 
+				setNestedNetworkView();
+
 				// Do we have a node w/ a self-reference?
 				if (graphView == nestedNetworkView) {
 					if (RECURSIVE_NESTED_NETWORK_IMAGE == null)
@@ -938,8 +943,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 							IMAGE_HEIGHT);
 					return new TexturePaint(RECURSIVE_NESTED_NETWORK_IMAGE, rect);
 				}
-				
-				setNestedNetworkView();
 				
 				if (nestedNetworkView != null) {					
 					final double scaleFactor = graphView.getGraphLOD().getNestedNetworkImageScaleFactor();
@@ -1049,6 +1052,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		VisualProperty<?> vp = vpOriginal;
 		
@@ -1086,9 +1090,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setWidth(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_HEIGHT) {
 			setHeight(((Number) value).doubleValue());
-//		} else if (vp == BasicVisualLexicon.NODE_SIZE) { // TODO: delete?
-//			setWidth(((Number) value).doubleValue());
-//			setHeight(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
 		}  else if (vp == BasicVisualLexicon.NODE_LABEL_WIDTH) {
@@ -1144,16 +1145,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		// Check dependency. Sync size or not.
 		final VisualProperty<Double> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
-		Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
-		boolean sync = false;
+		boolean sync = syncToNode();
 		
-		for(VisualPropertyDependency dep:dependencies) {
-			if(dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
-				sync = dep.isDependencyEnabled();
-				break;
-			}
-		}
-
 		final VisualProperty<ObjectPosition> cgPositionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(vp);
 		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
 		final Double customSize = getVisualProperty(cgSizeVP);
@@ -1214,6 +1207,51 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		currentCG.addAll(newList);
 
 		this.cgMap.put(parent, currentCG);
+	}
+
+	private void resizeCustomGraphics(double widthScale, double heightScale) {
+		// System.out.println("resizing custom graphics to "+widthScale+", "+heightScale);
+		boolean sync = syncToNode();
+		if (!sync || cgMap == null || cgMap.isEmpty()) return;
+
+		// Get all of our custom graphics layers
+		for (VisualProperty<?> vp: cgMap.keySet()) {
+			final Set<CustomGraphicLayer> currentCG = cgMap.get(vp);
+			if (currentCG == null || currentCG.size() == 0) continue;
+
+			// Resize
+			final Set<CustomGraphicLayer> newList = new HashSet<CustomGraphicLayer>();
+			for (CustomGraphicLayer g : currentCG)
+				newList.add(resizeCustomGraphicsLayer(g, widthScale, heightScale));
+
+			currentCG.clear();
+			currentCG.addAll(newList);
+
+			this.cgMap.put(vp, currentCG);
+		}
+	}
+
+	CustomGraphicLayer resizeCustomGraphicsLayer(CustomGraphicLayer cg, double widthScale, double heightScale) {
+		removeCustomGraphic(cg);
+		AffineTransform scale = AffineTransform.getScaleInstance(widthScale, heightScale);
+		CustomGraphicLayer newCG = cg.transform(scale);
+		addCustomGraphic(newCG);
+		return newCG;
+	}
+
+	private boolean syncToNode() {
+		boolean sync = false;
+		if (vmm.getCurrentVisualStyle() != null) {
+			Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
+		
+			for (VisualPropertyDependency<?> dep:dependencies) {
+				if(dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
+					sync = dep.isDependencyEnabled();
+					break;
+				}
+			}
+		}
+		return sync;
 	}
 
 	private CustomGraphicLayer syncSize(CyCustomGraphics<CustomGraphicLayer> graphics, 

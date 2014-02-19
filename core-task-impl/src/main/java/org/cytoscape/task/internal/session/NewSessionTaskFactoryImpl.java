@@ -29,6 +29,7 @@ package org.cytoscape.task.internal.session;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.create.NewSessionTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -38,17 +39,19 @@ import org.cytoscape.work.TunableSetter;
 
 public class NewSessionTaskFactoryImpl extends AbstractTaskFactory implements NewSessionTaskFactory {
 
-	private CySessionManager mgr;
+	private final CySessionManager mgr;
+	private final TunableSetter tunableSetter;
+	private final CyEventHelper eventHelper;
 
-	private final TunableSetter tunableSetter; 
-
-	public NewSessionTaskFactoryImpl(CySessionManager mgr, TunableSetter tunableSetter) {
+	public NewSessionTaskFactoryImpl(CySessionManager mgr, TunableSetter tunableSetter, CyEventHelper eventHelper) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;
+		this.eventHelper = eventHelper;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new NewSessionTask(mgr));
+		return new TaskIterator(new NewSessionTask(mgr, eventHelper));
 	}
 
 	@Override

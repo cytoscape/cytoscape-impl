@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Arrays;
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.internal.available.dummies.DummyNetwork;
 import org.cytoscape.command.internal.available.dummies.DummyNetworkView;
 import org.cytoscape.command.internal.available.dummies.DummyTable;
@@ -60,18 +61,20 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 	private final static Logger logger = LoggerFactory.getLogger(AvailableCommandsImpl.class);
 
-	private final Map<TaskFactory,String[]> commands;
+	private final Map<String, TaskFactory> commands;
 	private final Map<String,Map<String,List<String>>> argStrings;
 	private final ArgRecorder argRec;
 	private final StaticTaskFactoryProvisioner factoryProvisioner;
 	private final Map<Object, TaskFactory> provisioners;
+	private final CyApplicationManager appMgr;
 
-	public AvailableCommandsImpl(ArgRecorder argRec) {
+	public AvailableCommandsImpl(ArgRecorder argRec, CyApplicationManager appMgr) {
 		this.argRec = argRec;
-		this.commands = new HashMap<TaskFactory,String[]>();
+		this.commands = new HashMap<String, TaskFactory>();
 		this.argStrings = new HashMap<String,Map<String,List<String>>>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
 		this.provisioners = new IdentityHashMap<Object, TaskFactory>();
+		this.appMgr = appMgr;
 	}
 
 	@Override
@@ -101,6 +104,14 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		} else {
 			List<String> ll = mm.get(command);
 			if ( ll == null ) {
+				if (commands.containsKey(namespace+" "+command)) {
+					List<String> args = getArgs(commands.get(namespace+" "+command));
+					mm.put(command, args);
+					// Make a private copy
+					List<String> l = new ArrayList<String>(args);
+					Collections.sort(l);
+					return l;
+				}
 				return Collections.emptyList();
 			} else {
 				List<String> l = new ArrayList<String>(ll);
@@ -113,27 +124,25 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	public void addTaskFactory(TaskFactory tf, Map props) { addCommand(tf,props); }
 	
 	public void addNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
-		TaskFactory provisioner = factoryProvisioner.createFor(tf, new DummyNetwork());
+		TaskFactory provisioner = factoryProvisioner.createFor(tf);
 		provisioners.put(tf, provisioner);
 		addCommand(provisioner,props);
 	}
 	
 	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
-		TaskFactory provisioner = factoryProvisioner.createFor(tf, new DummyNetworkView());
+		TaskFactory provisioner = factoryProvisioner.createFor(tf);
 		provisioners.put(tf, provisioner);
 		addCommand(provisioner,props);
 	}
 
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map props) {
-		List<CyNetworkView> views = new ArrayList<CyNetworkView>();
-		views.add(new DummyNetworkView());
-		TaskFactory provisioner = factoryProvisioner.createFor(tf, views);
+		TaskFactory provisioner = factoryProvisioner.createFor(tf);
 		provisioners.put(tf, provisioner);
 		addCommand(provisioner,props);
 	}
 	
 	public void addTableTaskFactory(TableTaskFactory tf, Map props) {
-		TaskFactory provisioner = factoryProvisioner.createFor(tf, new DummyTable());
+		TaskFactory provisioner = factoryProvisioner.createFor(tf);
 		provisioners.put(tf, provisioner);
 		addCommand(provisioner,props);
 	}
@@ -150,9 +159,10 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 		if (command == null || namespace == null) 
 			return;
-			
-		commands.put(tf, new String[] {namespace,command});
-		List<String> args = getArgs(tf);
+
+		commands.put(namespace+" "+command, tf);
+		// List<String> args = getArgs(tf);
+		List<String> args = null;
 		Map<String,List<String>> mm = argStrings.get(namespace);
 		if ( mm == null ) {
 			mm = new HashMap<String,List<String>>();
@@ -163,14 +173,17 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 
 	private void removeCommand(TaskFactory tf, Map properties) {
-		String[] l = commands.remove(tf);
+		String namespace = (String)(properties.get("commandNamespace"));
+		String command = (String)(properties.get("command"));
+
+		TaskFactory l = commands.remove(namespace+" "+command);
 		if (l == null)
 			return;
-		Map<String,List<String>> m = argStrings.get(l[0]);
+		Map<String,List<String>> m = argStrings.get(namespace);
 		if ( m != null )
-			m.remove(l[1]);
+			m.remove(command);
 		if (m.isEmpty())
-			argStrings.remove(l[0]);
+			argStrings.remove(namespace);
 	}
 
 	private List<String> getArgs(TaskFactory tf) {
@@ -184,46 +197,49 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			return args;	
 		} catch (Exception e) {
 			logger.debug("Could not create invocation string for command.",e);
+			e.printStackTrace();
 			return Arrays.asList("<unknown args>");
 		}
 	}
 	
-	static class StaticTaskFactoryProvisioner {
-		TaskFactory createFor(final NetworkTaskFactory factory, CyNetwork network) {
-			final Reference<CyNetwork> reference = new WeakReference<CyNetwork>(network);
+	class StaticTaskFactoryProvisioner {
+		TaskFactory createFor(final NetworkTaskFactory factory) {
 			return new AbstractTaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
+					final Reference<CyNetwork> reference = new WeakReference<CyNetwork>(appMgr.getCurrentNetwork());
 					return factory.createTaskIterator(reference.get());
 				}
 			};
 		}
 		
-		TaskFactory createFor(final NetworkViewTaskFactory factory, CyNetworkView networkView) {
-			final Reference<CyNetworkView> reference = new WeakReference<CyNetworkView>(networkView);
+		TaskFactory createFor(final NetworkViewTaskFactory factory) {
 			return new AbstractTaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
+					final Reference<CyNetworkView> reference = new WeakReference<CyNetworkView>(appMgr.getCurrentNetworkView());
 					return factory.createTaskIterator(reference.get());
 				}
 			};
 		}
 
-		TaskFactory createFor(final NetworkViewCollectionTaskFactory factory, List<CyNetworkView> networkViews) {
-			final Reference<List<CyNetworkView>> reference = new WeakReference<List<CyNetworkView>>(networkViews);
+		TaskFactory createFor(final NetworkViewCollectionTaskFactory factory) {
 			return new AbstractTaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
+					List<CyNetworkView> views = new ArrayList<CyNetworkView>();
+					views.add(appMgr.getCurrentNetworkView());
+					final Reference<List<CyNetworkView>> reference = new WeakReference<List<CyNetworkView>>(views);
 					return factory.createTaskIterator(reference.get());
 				}
 			};
 		}
 		
-		TaskFactory createFor(final TableTaskFactory factory, CyTable table) {
-			final Reference<CyTable> reference = new WeakReference<CyTable>(table);
+		TaskFactory createFor(final TableTaskFactory factory) {
 			return new AbstractTaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
+					final Reference<CyTable> reference = new WeakReference<CyTable>(appMgr.getCurrentNetwork().getDefaultNetworkTable());
 					return factory.createTaskIterator(reference.get());
 				}
 			};

@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.2</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<properties>
@@ -13,6 +13,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>swing-application-impl</artifactId>
+  <version>3.1.0</version>
 	<name>Cytoscape Swing Application Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
@@ -235,6 +236,17 @@
 			<artifactId>AppleJavaExtensions</artifactId>
 			<version>1.6</version>
 			<scope>compile</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

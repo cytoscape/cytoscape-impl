@@ -36,12 +36,12 @@ import javax.swing.border.TitledBorder;
 
 import java.awt.Component;
 
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 public class PreviewPanel extends javax.swing.JPanel {
-	Annotation mAnnotation;
+	DingAnnotation mAnnotation;
 
-	public PreviewPanel(Annotation annotation, int width, int height) {
+	public PreviewPanel(DingAnnotation annotation, int width, int height) {
 		this.mAnnotation=annotation;
 		JComponent c = mAnnotation.getComponent();
 		mAnnotation.setUsedForPreviews(true);
@@ -67,7 +67,7 @@ public class PreviewPanel extends javax.swing.JPanel {
 		repaint();
 	}
 
-	public Annotation getPreviewAnnotation() {
+	public DingAnnotation getPreviewAnnotation() {
 		return mAnnotation;
 	}
 }

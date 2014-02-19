@@ -39,6 +39,8 @@ public class SyncTunableMutator<S> extends AbstractTunableInterceptor<SyncTunabl
 	public void setConfigurationContext(final Object configContext) {
 		if (configContext != null && configContext instanceof Map)
 			map = (Map<String, Object>) configContext;
+		handlerMap.clear();
+		titleProviderMap.clear();
 	}
 
 	

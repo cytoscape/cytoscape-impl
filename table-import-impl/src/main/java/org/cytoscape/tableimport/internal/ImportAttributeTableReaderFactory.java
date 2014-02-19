@@ -25,12 +25,11 @@ package org.cytoscape.tableimport.internal;
  */
 
 
-
-import java.io.InputStream;
-
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.work.TaskIterator;
+
+import java.io.InputStream;
 
 
 public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactory {
@@ -46,7 +45,8 @@ public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactor
 	}
 
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		String fileFormat = inputName.substring(inputName.lastIndexOf('.'));
+		int lastIndex = inputName.lastIndexOf('.');
+		String fileFormat = lastIndex == -1 ? "" : inputName.substring(lastIndex);
 		return new TaskIterator(
 			new ImportAttributeTableReaderTask(inputStream, fileFormat, inputName));
 	}

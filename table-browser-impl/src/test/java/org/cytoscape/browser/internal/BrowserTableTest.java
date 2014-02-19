@@ -32,6 +32,7 @@ import static org.mockito.Mockito.mock;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.EquationCompiler;
@@ -65,15 +66,16 @@ public class BrowserTableTest {
 	
 	public BrowserTableTest(){
 		EquationCompiler equationCompiler = mock(EquationCompiler.class);
-		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(mock(TaskManager.class), mock(OpenBrowser.class));
+		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(mock(TaskManager.class), mock(OpenBrowser.class),
+				mock(CyApplicationManager.class), mock(CyEventHelper.class));
 		tableManager = mock(CyTableManager.class);
 		eventHelper = new DummyCyEventHelper();
-		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, mock(CyApplicationManager.class), eventHelper, tableManager );
+		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, mock(CyApplicationManager.class), eventHelper, tableManager);
 		
 		createTable();
 		assertEquals(4, table.getColumns().size());
 		
-		btm = new BrowserTableModel(table, CyNode.class, equationCompiler, tableManager);
+		btm = new BrowserTableModel(table, CyNode.class, equationCompiler);
 		browserTable.setModel(btm);
 		btcm = (BrowserTableColumnModel) browserTable.getColumnModel();
 		btcm.setAllColumnsVisible();
@@ -202,19 +204,55 @@ public class BrowserTableTest {
 	
 	}
 	
+	@Test
+	public void testTableAutoMode(){
+		browserTable.setModel(btm); //to reset the columns and rows
+
+		btm.setViewMode(BrowserTableModel.ViewMode.AUTO);
+		btm.fireTableDataChanged();
+		assertEquals(3, browserTable.getRowCount());
+
+		table.getRow((long)3).set(CyNetwork.SELECTED, true);
+		browserTable.handleEvent(new RowsSetEvent(table, Arrays.asList(
+			new RowSetRecord (table.getRow((long)3), CyNetwork.SELECTED, (Object) true , (Object) true )
+			)));
+		assertEquals(1, browserTable.getRowCount());
+
+		table.getRow((long)2).set(CyNetwork.SELECTED, true);
+		browserTable.handleEvent(new RowsSetEvent(table, Arrays.asList(
+			new RowSetRecord (table.getRow((long)2), CyNetwork.SELECTED, (Object) true , (Object) true )
+			)));
+		assertEquals(2, browserTable.getRowCount());
+
+		table.getRow((long)1).set(CyNetwork.SELECTED, true);
+		browserTable.handleEvent(new RowsSetEvent(table, Arrays.asList(
+			new RowSetRecord (table.getRow((long)1), CyNetwork.SELECTED, (Object) true , (Object) true )
+			)));
+		assertEquals(3, browserTable.getRowCount());
+
+		table.getRow((long)1).set(CyNetwork.SELECTED, false);
+		table.getRow((long)2).set(CyNetwork.SELECTED, false);
+		table.getRow((long)3).set(CyNetwork.SELECTED, false);
+		browserTable.handleEvent(new RowsSetEvent(table, Arrays.asList(
+			new RowSetRecord (table.getRow((long)1), CyNetwork.SELECTED, (Object) false , (Object) false ),
+			new RowSetRecord (table.getRow((long)2), CyNetwork.SELECTED, (Object) false , (Object) false ),
+			new RowSetRecord (table.getRow((long)3), CyNetwork.SELECTED, (Object) false , (Object) false )
+			)));
+		assertEquals(3, browserTable.getRowCount());
+	}
 	
 	@Test
 	public void testTableModeAndSelection(){
 		
 		browserTable.setModel(btm); //to reset the columns and rows
 
-		btm.setShowAll(true);
-		//btm.fireTableDataChanged();
+		btm.setViewMode(BrowserTableModel.ViewMode.ALL);
+		btm.fireTableDataChanged();
 
 		assertEquals(3, browserTable.getRowCount());
 		
-		btm.setShowAll(false);
-		//btm.fireTableDataChanged();
+		btm.setViewMode(BrowserTableModel.ViewMode.SELECTED);
+		btm.fireTableDataChanged();
 
 		assertEquals(0, browserTable.getRowCount());
 		
@@ -222,7 +260,7 @@ public class BrowserTableTest {
 		table.getRow((long)1).set(CyNetwork.SELECTED, true);
 		assertEquals(1, browserTable.getRowCount());
 		
-		btm.setShowAll(true);
+		btm.setViewMode(BrowserTableModel.ViewMode.ALL);
 		RowSetRecord rsc = new RowSetRecord  (table.getRow((long)1), CyNetwork.SELECTED, (Object) true , (Object) true );
 		List<RowSetRecord> rscs = new ArrayList<RowSetRecord>();
 		rscs.add(rsc);

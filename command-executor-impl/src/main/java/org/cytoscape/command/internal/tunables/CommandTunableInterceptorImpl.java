@@ -26,6 +26,8 @@ package org.cytoscape.command.internal.tunables;
 
 import java.util.Map;
 
+import org.cytoscape.command.StringTunableHandler;
+import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.work.AbstractTunableInterceptor;
 
 import org.slf4j.Logger;
@@ -35,10 +37,23 @@ import org.slf4j.LoggerFactory;
 public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<StringTunableHandler> {
 
 	private static final Logger logger = LoggerFactory.getLogger(CommandTunableInterceptorImpl.class);
-	private String args;
+	private String args = null;
+	private Map<String, Object> mapArgs = null;
 
-	public void setConfigurationContext(Object args) {
-		this.args = (String)args;
+	public void setConfigurationContext(String args) {
+		this.args = args;
+		if (args == null) {
+			titleProviderMap.clear();
+			handlerMap.clear();
+		}
+	}
+
+	public void setConfigurationContext(Map<String, Object> args) {
+		this.mapArgs = args;
+		if (args == null) {
+			titleProviderMap.clear();
+			handlerMap.clear();
+		}
 	}
 
 	public boolean validateAndWriteBackTunables(Object o) {
@@ -48,13 +63,31 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 			// for that tunable.
 			for ( StringTunableHandler h : getHandlers(o) ) {
 
-				// Give the handler the arg string and let it do its thing,
-				// which will hopefully be: set the tunable value based on
-				// information parsed from the arg string.
-				h.processArgString(args);
+				if (args != null) {
+					// Give the handler the arg string and let it do its thing,
+					// which will hopefully be: set the tunable value based on
+					// information parsed from the arg string.
+					h.processArgString(args);
+				} else {
+					for ( String string: mapArgs.keySet() ) {
+						if (h.getName().equals(string)) {
+							Object v = mapArgs.get(string);
+							try {
+								if (v instanceof String)
+									v = h.processArg((String)v);
+								h.setValue(v);
+							} catch (Exception e) {
+								logger.warn("Couldn't parse value from: " + v + " for setting: "+h.getName(), e);
+								throw new IllegalArgumentException("Couldn't parse value from: " + v + " for setting: "+h.getName());
+								// return false;
+							}
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
 			logger.warn("Exception processing tunables", e);
+			throw new RuntimeException("Error processing arguments: "+e.getMessage());
 		}
 		return true;
 	}

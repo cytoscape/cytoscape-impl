@@ -36,15 +36,16 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
+// import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
 	private String text;
 
-	public static final String NAME="TEXT";
 	public static final String FONTCOLOR="fontColor";
 	public static final String TEXT="text";
 	public static final String COLOR="color";
@@ -97,7 +98,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,NAME);
+		argMap.put(TYPE,TextAnnotation.class.getName());
 		argMap.put(TEXT,this.text);
 		argMap.put(COLOR,convertColor(this.textColor));
 		argMap.put(FONTFAMILY,this.font.getFamily());
@@ -110,7 +111,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setZoom(double zoom) {
 		font=font.deriveFont(((float)(zoom/getZoom()))*font.getSize2D());
 
-		setSize(getAnnotationWidth(), getAnnotationHeight());
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 		super.setZoom(zoom);
 	}
 
@@ -118,13 +120,16 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setSpecificZoom(double zoom) {
 		font=font.deriveFont(((float)(zoom/getSpecificZoom()))*font.getSize2D());
 				
-		setSize(getAnnotationWidth(), getAnnotationHeight());
-		super.setZoom(zoom);
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
+		super.setSpecificZoom(zoom);
 	}
 
 	@Override
 	public void setText(String text) {
 		this.text = text;
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	@Override
@@ -143,6 +148,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	@Override
@@ -153,6 +160,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontStyle(int style) {
 		font = font.deriveFont(style, fontSize);
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	@Override
@@ -164,6 +173,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
 		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	@Override
@@ -175,6 +186,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	public void setFont(Font font) { 
 		this.font = font; 
+		if(!usedForPreviews)
+			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	public JDialog getModifyDialog() {

@@ -55,6 +55,7 @@ import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.TaskMonitor;
 import org.json.JSONArray;
@@ -94,6 +95,8 @@ public class WebQuerier {
 	private static final Logger logger = LoggerFactory.getLogger(WebQuerier.class);
 	
 	private StreamUtil streamUtil;
+
+	private CyVersion cyVersion;
 	
 	/** A reference to the result obtained by the last successful query for all available apps. */
 	// private Set<WebApp> apps;
@@ -129,6 +132,8 @@ public class WebQuerier {
 	private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)([.](\\d+)([.](\\d+)([.]([-_a-zA-Z0-9]+))?)?)?");
 	
 	public static final Pattern OUTPUT_FILENAME_DISALLOWED_CHARACTERS = Pattern.compile("[^a-zA-Z0-9.-]");
+
+	private AppManager appManager = null;
 	
 	/**
 	 * A class that represents a tag used for apps, containing information about the tag
@@ -181,8 +186,9 @@ public class WebQuerier {
 		}
 	}
 	
-	public WebQuerier(StreamUtil streamUtil) {
+	public WebQuerier(StreamUtil streamUtil, CyVersion cyVersion) {
 		this.streamUtil = streamUtil;
+		this.cyVersion = cyVersion;
 		
 		/*
 		// *** Older initialization for previous implementation supporting a single app store page
@@ -234,6 +240,10 @@ public class WebQuerier {
 		connection.disconnect();
 		
 		return result;
+	}
+
+	public void setAppManager(AppManager appManager) {
+		this.appManager = appManager;
 	}
 	
 	public String getDefaultAppStoreUrl() {
@@ -292,6 +302,10 @@ public class WebQuerier {
 		
 		return new HashSet<AppTag>(appTagsByUrl.get(currentAppStoreUrl).values());
 	}
+
+	public boolean appsHaveBeenLoaded() {
+		return this.appsByUrl.get(currentAppStoreUrl) != null;
+	}
 	
 	public Set<WebApp> getAllApps() {
 		// If we have a cached result from the previous query, use that one
@@ -307,6 +321,10 @@ public class WebQuerier {
 		try {
 			// Obtain information about the app from the website
 			jsonResult = query(currentAppStoreUrl + "backend/all_apps");
+
+			if (appManager != null && appManager.getAppManagerDialog() != null) {
+				appManager.getAppManagerDialog().hideNetworkError();
+			}
 			
 			// Parse the JSON result
 			JSONArray jsonArray = new JSONArray(jsonResult);
@@ -366,12 +384,18 @@ public class WebQuerier {
 					}
 				}
 				
+				keyName = "citation";
+				if (jsonObject.has(keyName)) {
+					webApp.setCitation(jsonObject.get(keyName).toString());
+				}
+				
 				try {
 					List<WebApp.Release> releases = new LinkedList<WebApp.Release>();
 					
 					if (jsonObject.has("releases")) {
 						JSONArray jsonReleases = jsonObject.getJSONArray("releases");
 						JSONObject jsonRelease;
+						boolean isCompatible = true;
 						
 						for (int releaseIndex = 0; releaseIndex < jsonReleases.length(); releaseIndex++) {
 							jsonRelease = jsonReleases.getJSONObject(releaseIndex);
@@ -387,9 +411,11 @@ public class WebQuerier {
 							keyName = "works_with";
 							if (jsonRelease.has(keyName)) {
 								release.setCompatibleCytoscapeVersions(jsonRelease.get(keyName).toString());
+								isCompatible = release.isCompatible(cyVersion);
 							}
 							
-							releases.add(release);
+							if (isCompatible)
+								releases.add(release);
 						}
 						
 						// Sort releases by version number
@@ -426,21 +452,11 @@ public class WebQuerier {
 			}
 			
 		} catch (final IOException e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    JOptionPane.showMessageDialog(
-                        null,
-                        "<html>" +
-                        "Unable to connect to the App Store website to get the list of apps.<br><br>" +
-                        "<blockquote><tt>" + e.getClass().getName() + ": " + e.getMessage() + "</tt></blockquote><br><br>" +
-                        "Please make sure your internet connection is working.<br><br>" +
-                        "If you are behind a proxy, make sure the settings are correct by<br>" +
-                        "going to <i>Edit</i> &gt; <i>Settings</i> &gt; <i>Proxy Settings</i>.",
-                        "Unable to get list of apps",
-                        JOptionPane.ERROR_MESSAGE);
-                }
-            });
+			if (appManager != null && appManager.getAppManagerDialog() != null) {
+				appManager.getAppManagerDialog().showNetworkError();
+			}
 			e.printStackTrace();
+			result = null;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			DebugHelper.print("Error parsing JSON: " + e.getMessage());
@@ -448,7 +464,7 @@ public class WebQuerier {
 		}
 	
 		
-		DebugHelper.print(result.size() + " apps found from web store.");
+		//DebugHelper.print(result.size() + " apps found from web store.");
 		
 		// Cache the result of this query
 		this.appsByUrl.put(currentAppStoreUrl, result);

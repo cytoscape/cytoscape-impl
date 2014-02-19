@@ -26,8 +26,6 @@ package org.cytoscape.io.internal.read.nnf;
 
 import java.io.InputStream;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
 import org.cytoscape.model.CyNetworkFactory;
@@ -42,20 +40,18 @@ public class NNFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 	private final CyLayoutAlgorithmManager layouts;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
 	private final CyRootNetworkManager cyRootNetworkFactory;
-	private final CyApplicationManager cyApplicationManager;
 
 	public NNFNetworkReaderFactory(CyFileFilter filter, CyLayoutAlgorithmManager layouts,
 			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			 CyNetworkManager cyNetworkManagerServiceRef,CyRootNetworkManager cyRootNetworkFactory, CyApplicationManager cyApplicationManager) {
+			 CyNetworkManager cyNetworkManagerServiceRef,CyRootNetworkManager cyRootNetworkFactory) {
 		super(filter, cyNetworkViewFactory, cyNetworkFactory);
 		this.layouts = layouts;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
 		this.cyRootNetworkFactory = cyRootNetworkFactory;
-		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new NNFNetworkReader(inputStream, layouts, cyNetworkViewFactory, cyNetworkFactory,
-				 cyNetworkManagerServiceRef, cyRootNetworkFactory, cyApplicationManager));
+				 cyNetworkManagerServiceRef, cyRootNetworkFactory));
 	}
 }

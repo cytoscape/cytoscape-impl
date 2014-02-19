@@ -103,7 +103,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 
 	private  SIFNetworkReader readFile(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/sif/" + file);
-		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory, this.networkManager, this.rootNetworkManager, this.cyApplicationManager);
+		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory, this.networkManager, this.rootNetworkManager);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 

@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 
 import java.io.IOException;
 
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -81,6 +82,12 @@ public class CyHttpdFactoryImpl implements CyHttpdFactory
 class CyHttpdImpl implements CyHttpd
 {
     static final Logger logger = LoggerFactory.getLogger(CyHttpdImpl.class);
+    
+    /**
+     * If the server port can't be bound on the first try, wait this long
+     * between subsequent attempts to rebind.
+     */
+    static final int PORT_REBIND_INTERVAL = 5000;
 
     final ServerSocketFactory serverSocketFactory;
     final List<CyHttpResponder> responders = new ArrayList<CyHttpResponder>();
@@ -88,6 +95,8 @@ class CyHttpdImpl implements CyHttpd
     final List<CyHttpAfterResponse> afterResponses = new ArrayList<CyHttpAfterResponse>();
 
     boolean running = false;
+    boolean aborted = false;
+    
     ExecutorService executor = null;
 
     final HttpParams params;
@@ -134,10 +143,14 @@ class CyHttpdImpl implements CyHttpd
 	        if (running)
 	            throw new IllegalStateException("server is running");
 	        executor = Executors.newCachedThreadPool();
+	        aborted = false;
 	        executor.execute(new ServerThread());
 	        while (!running) {
 	        	try {
 	        		wait(500);
+	        		if (aborted) {
+	        			return;
+	        		}
 	        	} catch (InterruptedException e) {
 	        		throw new RuntimeException(e);
 	        	}
@@ -156,7 +169,7 @@ class CyHttpdImpl implements CyHttpd
 
     public boolean isRunning()
     {
-        return running;
+        return running && !aborted;
     }
 
     public void addResponder(CyHttpResponder responder)
@@ -210,14 +223,33 @@ class CyHttpdImpl implements CyHttpd
         {
             // Create a server socket
             ServerSocket serverSocket = null;
-            try
+            while (true)
             {
-                serverSocket = serverSocketFactory.createServerSocket();
-            }
-            catch (IOException e)
-            {
-                logger.error("Failed to create server socket", e);
-                return;
+	            try
+	            {
+	                serverSocket = serverSocketFactory.createServerSocket();
+	                break;
+	            }
+	            catch (BindException e)
+	            {
+	            	// We can't bind the port.  Wait a bit before trying again.
+	                logger.error("Port already in use", e);
+	                aborted = true;
+	                try
+	                {
+						Thread.sleep(PORT_REBIND_INTERVAL);
+					}
+	                catch (InterruptedException e1)
+					{
+						logger.error("Unexpected interruption", e1);
+					}
+	            }
+	            catch (IOException e)
+	            {
+	                logger.error("Failed to create server socket", e);
+	                aborted = true;
+	                return;
+	            }
             }
         
             logger.info("Server socket started on {}", String.format("%s:%d", serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort()));

@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
@@ -218,13 +219,17 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	
 	@Test
 	public void testUpdatedSUIDAttributes() throws Exception {
-		List<CyNetworkView> views = getViews("suid_metadata.xgmml");
-		CyNetwork net = checkSingleNetwork(views, 2, 2);
-		List<CyNode> nodes = net.getNodeList();
-		List<CyEdge> edges = net.getEdgeList();
+		final List<CyNetworkView> views = getViews("suid_metadata.xgmml");
+		final CyNetwork net = checkSingleNetwork(views, 2, 2);
+		
+		final List<CyNode> nodes = net.getNodeList();
+		final List<CyEdge> edges = net.getEdgeList();
 		
 		// Check network attributes
+		Collection<CyColumn> columns = net.getRow(net).getTable().getColumns();
+		System.out.println(columns);
 		assertEquals(net.getSUID(), net.getRow(net).get("net_id.SUID", Long.class));
+		
 		// Hidden List att
 		List<Long> netAttList = net.getRow(net, HIDDEN_ATTRS).getList("nodes.SUID", Long.class);
 		assertEquals(2, netAttList.size());
@@ -479,6 +484,8 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	}
 	
 	private List<CyNetworkView> getViews(String file) throws Exception {
+		SessionUtil.setReadingSessionFile(false);
+		
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
 		reader = new GenericXGMMLReader(new FileInputStream(f), viewFactory, netFactory,
 				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, this.networkManager, this.rootNetworkManager, this.cyApplicationManager);

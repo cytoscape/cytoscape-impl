@@ -237,6 +237,9 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 			if (nodes != null && sub instanceof CySubNetworkImpl)
 				((CySubNetworkImpl) sub).removeRows(nodes, CyNode.class);
 		}
+
+		// Do we want to do this?????
+		this.removeRows(nodes, CyNode.class);
 		
 		return removeNodesInternal(nodes);
 	}
@@ -412,13 +415,13 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	
 	@Override
 	public String toString() {
-		String name;
+		String name = null;
 		try {
 			name = getRow(this).get(NAME, String.class);
 		} catch (NullPointerException e) {
 			name = "(unavailable)";
 		}
-		return "CyRootNetwork: " + getSUID() + " name: " + name; 
+		return name; 
 	}
 
 	private synchronized int getNextNodeIndex() {

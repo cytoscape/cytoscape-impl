@@ -115,7 +115,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	@Override
 	public void handleEvent(final CyShutdownEvent e) {
 		// If there are no networks, just quit.
-		if (netMgr.getNetworkSet().size() == 0) 
+		if (netMgr.getNetworkSet().size() == 0 || e.forceShutdown()) 
 			return;
 
 		// Ask user whether to save current session or not.

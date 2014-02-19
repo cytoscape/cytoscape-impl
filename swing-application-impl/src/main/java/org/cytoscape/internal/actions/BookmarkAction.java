@@ -47,6 +47,7 @@ public class BookmarkAction extends AbstractCyAction {
 		super("Bookmarks...");
 		this.bookmarkDialogFactory = bookmarkDialogFactory;
 		setPreferredMenu("Edit.Preferences");
+		setMenuGravity(2.0f);
 		this.desktop = desktop;
 	}
 

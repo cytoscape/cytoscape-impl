@@ -63,7 +63,7 @@ public class PreferenceAction extends AbstractCyAction {
 		this.bkUtil = bkUtil;
 		
 		setPreferredMenu("Edit.Preferences");
-		setMenuGravity(10.0f);
+		setMenuGravity(1.0f);
 	}
 
 	@Override

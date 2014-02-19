@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Arrays;
 
@@ -46,6 +47,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.work.AbstractTunableInterceptor;
+import org.cytoscape.work.AbstractTunableHandler;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.TunableValidator;
@@ -56,7 +58,6 @@ import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * Interceptor of <code>Tunable</code> that will be applied on <code>GUITunableHandlers</code>.
@@ -116,6 +117,12 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		return super.hasTunables(o);
 	}
 
+	public boolean hasTunables(final Object o, String context) {
+		List<GUITunableHandler> handlers = 
+			getApplicableHandlers(o, context);
+		return (handlers.size() > 0);
+	}
+
 	/** {@inheritDoc} */
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 
@@ -146,7 +153,8 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		else
 			++otherCount;
 
-		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
+		List<GUITunableHandler> handlers = 
+			getApplicableHandlers(objectWithTunables, "gui");
 
 		// Sanity check:
 		if (factoryCount > 0) {
@@ -265,6 +273,27 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			tunablePanel = null;
 			return retVal;
 		}
+	}
+
+	public List<GUITunableHandler> getApplicableHandlers(Object objectWithTunables, String desiredContext) {
+		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
+
+		if (handlers != null ) {
+			// Remove any tunables that aren't appropriate for a GUI context
+			ListIterator<GUITunableHandler> li = handlers.listIterator();
+			while (li.hasNext()) {
+				GUITunableHandler gh = li.next();
+				String context = gh.getParams().get(AbstractTunableHandler.CONTEXT).toString();
+				if (desiredContext.equalsIgnoreCase("gui")) {
+					if (context.equalsIgnoreCase("nogui"))
+						li.remove();
+				} else if (desiredContext.equalsIgnoreCase("nogui")) {
+					if (context.equalsIgnoreCase("gui"))
+						li.remove();
+				}
+			}
+		}
+		return handlers;
 	}
 
 	/**

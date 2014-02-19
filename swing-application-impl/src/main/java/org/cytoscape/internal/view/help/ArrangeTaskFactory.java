@@ -25,23 +25,23 @@ package org.cytoscape.internal.view.help;
  */
 
 
-import org.cytoscape.internal.view.CyDesktopManager.Arrange;
-import org.cytoscape.internal.view.CytoscapeDesktop;
+import org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType;
+import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
 public class ArrangeTaskFactory extends AbstractTaskFactory {
 
-	private CytoscapeDesktop desk;
-	private Arrange arrange;
+	private CyDesktopManager desktopMgr;
+	private ArrangeType arrange;
 
-	public ArrangeTaskFactory(CytoscapeDesktop desk, Arrange arrange) {
-		this.desk = desk;
+	public ArrangeTaskFactory(CyDesktopManager desktopMgr, ArrangeType arrange) {
+		this.desktopMgr = desktopMgr;
 		this.arrange = arrange;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ArrangeTask(desk, arrange));
+		return new TaskIterator(new ArrangeTask(desktopMgr, arrange));
 	} 
 }

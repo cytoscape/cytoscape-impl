@@ -32,12 +32,15 @@ import java.awt.geom.Point2D;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.BoundedTextAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 
 public class BoundedTextAnnotationDialog extends JDialog {
 
@@ -50,8 +53,8 @@ public class BoundedTextAnnotationDialog extends JDialog {
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
 	private final Point2D startingLocation;
-	private final BoundedTextAnnotation mAnnotation;
-	private BoundedTextAnnotation preview;
+	private final BoundedTextAnnotationImpl mAnnotation;
+	private BoundedTextAnnotationImpl preview;
 	private final boolean create;
 		
 	public BoundedTextAnnotationDialog(DGraphView view, Point2D start) {
@@ -64,7 +67,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		initComponents();		        
 	}
 
-	public BoundedTextAnnotationDialog(BoundedTextAnnotation mAnnotation) {
+	public BoundedTextAnnotationDialog(BoundedTextAnnotationImpl mAnnotation) {
 		this.mAnnotation=mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();

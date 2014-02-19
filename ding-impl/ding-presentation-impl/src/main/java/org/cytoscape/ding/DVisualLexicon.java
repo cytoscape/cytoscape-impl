@@ -63,6 +63,7 @@ import org.cytoscape.view.presentation.property.DoubleVisualProperty;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.PaintVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
+import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
 public class DVisualLexicon extends BasicVisualLexicon {
@@ -338,6 +339,9 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(SEPARATE_ARROW);
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(SINEWAVE);
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(VERTICAL_SLASH);
+		
+		// Add Ding-dependent node shapes.
+		((DiscreteRange<NodeShape>) NODE_SHAPE.getRange()).addRangeValue(DNodeShape.VEE);
 
 		CG_RANGE.setManager(manager);
 

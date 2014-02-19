@@ -35,9 +35,10 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
+
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 
 public class CanvasMouseMotionListener implements MouseMotionListener{
 	private final CyAnnotator cyAnnotator;
@@ -56,9 +57,9 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 	}
 
 	public void mouseMoved(MouseEvent e) {
-		ShapeAnnotation resizeAnnotation = cyAnnotator.getResizeShape();
-		Annotation moveAnnotation = cyAnnotator.getMovingAnnotation();
-		ArrowAnnotation repositionAnnotation = cyAnnotator.getRepositioningArrow();
+		ShapeAnnotationImpl resizeAnnotation = cyAnnotator.getResizeShape();
+		DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
+		ArrowAnnotationImpl repositionAnnotation = cyAnnotator.getRepositioningArrow();
 		if (resizeAnnotation == null && moveAnnotation == null && repositionAnnotation == null) {
 			networkCanvas.mouseMoved(e);
 			return;
@@ -68,7 +69,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		int mouseY = e.getY();
 
 		if (moveAnnotation != null) {
-			moveAnnotation.getComponent().setLocation(mouseX, mouseY);
+			moveAnnotation.moveAnnotation(new Point2D.Double((double)mouseX, (double)mouseY));
 			moveAnnotation.update();
 			moveAnnotation.getCanvas().repaint();
 		} else if (resizeAnnotation != null) {
@@ -77,27 +78,29 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 			int cornerY1 = resizeComponent.getY();
 			int cornerX2 = cornerX1 + resizeComponent.getWidth();
 			int cornerY2 = cornerY1 + resizeComponent.getHeight();
-
-			int width, height;
+			double borderWidth = resizeAnnotation.getBorderWidth();
 
 			// Figure out which corner we're tracking
 			if (Math.abs(mouseX-cornerX1) < Math.abs(mouseX-cornerX2)) {
 				// Left
 				cornerX1 = mouseX;
-				width = cornerX2-cornerX1;
 			} else {
 				// Right
-				width = mouseX-cornerX1;
+				cornerX2 = mouseX;
 			}
 
-			if (Math.abs(mouseY-cornerY1) < Math.abs(mouseY-cornerY2)) {
+			int width = cornerX2-cornerX1-(int)(borderWidth*2*resizeAnnotation.getZoom());
+
+			// if (Math.abs(mouseY-cornerY1) < Math.abs(mouseY-cornerY2)) {
+			if (mouseY <= cornerY1) {
 				// Upper
 				cornerY1 = mouseY;
-				height = cornerY2-cornerY1;
-			} else {
+			} else if (mouseY >= cornerY2-resizeComponent.getHeight()/2) {
 				// Lower
-				height = mouseY-cornerY1;
+				cornerY2 = mouseY;
 			}
+
+			int height = cornerY2-cornerY1-(int)(borderWidth*2*resizeAnnotation.getZoom());
 
 			if (width == 0) width = 2;
 			if (height == 0) height = 2;
@@ -111,8 +114,8 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 
 			// See what's under our mouse
 			// Annotation?
-			Annotation a = cyAnnotator.getAnnotationAt(mousePoint);
-			if (a != null && !(a instanceof ArrowAnnotation)) {
+			DingAnnotation a = cyAnnotator.getAnnotationAt(mousePoint);
+			if (a != null && !(a instanceof ArrowAnnotationImpl)) {
 				repositionAnnotation.setTarget(a);
 
 			// Node?

@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.group;
 
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -35,36 +36,80 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
-public class CollapseGroupTask extends AbstractTask {
-	private CyNetwork net;
-	private CyGroupManager mgr;
+import org.cytoscape.task.internal.utils.DataUtils;
+
+public class CollapseGroupTask extends AbstractGroupTask {
 	private List<CyGroup> groups;
 	private boolean collapse;
+	private CyNetworkViewManager viewMgr;
 
-	public CollapseGroupTask(CyNetwork net, List<CyGroup> groups, CyGroupManager manager, boolean collapse) {
-		if (net == null)
-			throw new NullPointerException("network is null");
-		if (groups == null || groups.size() == 0)
-			throw new NullPointerException("group list is null");
+	@Tunable (description="Network", context="nogui")
+	public CyNetwork network;
+
+	@Tunable (description="List of groups", context="nogui")
+	public String groupList;
+
+	public CollapseGroupTask(CyNetwork net, List<CyGroup> groups, CyNetworkViewManager viewManager,
+	                         CyGroupManager manager, boolean collapse) {
 		this.net = net;
-		this.mgr = manager;
+		this.groupMgr = manager;
+		this.viewMgr = viewManager;
 		this.groups = groups;
 		this.collapse = collapse;
 	}
 
+	public CollapseGroupTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager, 
+	                         CyGroupManager manager, boolean collapse) {
+		this.net = appMgr.getCurrentNetwork();
+		this.groupMgr = manager;
+		this.viewMgr = viewManager;
+		this.collapse = collapse;
+	}
+
 	public void run(TaskMonitor tm) throws Exception {
+		if (network != null)
+			net = network;
+
+		if (groups == null && groupList == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "List of groups must be specified");
+			return;
+		}
+
+		if (groups == null)
+			groups = getGroupList(tm, groupList);
+
 		tm.setProgress(0.0);
+		int collapsed = 0;
 		for (CyGroup group: groups) {
-			if (collapse)
-				group.collapse(net);
-			else
-				group.expand(net);
+			if (collapse) {
+				if (group.isInNetwork(net) && !group.isCollapsed(net)) {
+					collapsed++;
+					group.collapse(net);
+				}
+			} else {
+				if (group.isInNetwork(net) && group.isCollapsed(net)) {
+					collapsed++;
+					group.expand(net);
+				}
+			}
 			tm.setProgress(1.0d/groups.size());
+		}
+
+		if (collapse)
+			tm.showMessage(TaskMonitor.Level.INFO, "Collapsed "+collapsed+" groups");
+		else
+			tm.showMessage(TaskMonitor.Level.INFO, "Expanded "+collapsed+" groups");
+
+		for (CyNetworkView view: viewMgr.getNetworkViews(net)) {
+			view.updateView();
 		}
 		tm.setProgress(1.0d);
 	}
+
 }

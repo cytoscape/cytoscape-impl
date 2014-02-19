@@ -31,6 +31,7 @@ import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionSaveCancelledEvent;
 import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -38,6 +39,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 public class SaveSessionAsTask extends AbstractTask {
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Save Session";
@@ -49,34 +51,57 @@ public class SaveSessionAsTask extends AbstractTask {
 	private final CySessionWriterManager writerMgr;
 	private final CySessionManager sessionMgr;
 	private final RecentlyOpenedTracker tracker;
-	private final CyEventHelper cyEventHelper;
+	private final CyEventHelper eventHelper;
+	
+	private CySessionWriter writer;
 	
 	/**
 	 * setAcceleratorCombo(KeyEvent.VK_S, ActionEvent.CTRL_MASK);
 	 */
 	public SaveSessionAsTask(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper) {
+			final RecentlyOpenedTracker tracker, final CyEventHelper eventHelper) {
 		super();
 		this.writerMgr = writerMgr;
 		this.sessionMgr = sessionMgr;
 		this.tracker = tracker;
-		this.cyEventHelper = cyEventHelper;
+		this.eventHelper = eventHelper;
 	}
 
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.05);
-
-		final CySession session = sessionMgr.getCurrentSession();
-		insertTasksAfterCurrentTask(new CySessionWriter(writerMgr, session, file));
-		taskMonitor.setProgress(1.0);
+		CySession session = null;
+		
+		try {
+			taskMonitor.setProgress(0.05);
 	
-		// Add this session file URL as the most recent file.
-		if ( !file.getName().endsWith(".cys"))
-			file = new File(file.getPath() + ".cys");
+			session = sessionMgr.getCurrentSession();
+			writer = new CySessionWriter(writerMgr, session, file);
+			writer.run(taskMonitor);
+			
+			taskMonitor.setProgress(1.0);
 		
-		// Fire event to tell others session had been saved to a file.
-		cyEventHelper.fireEvent(new SessionSavedEvent(this, session, file.getAbsolutePath()));
+			// Add this session file URL as the most recent file.
+			if (!file.getName().endsWith(".cys"))
+				file = new File(file.getPath() + ".cys");
+		} catch (Exception e) {
+			eventHelper.fireEvent(new SessionSaveCancelledEvent(this));
+			throw e;
+		}
 		
-		tracker.add(file.toURI().toURL());
+		if (!cancelled) {
+			// Fire event to tell others session has been saved to a file.
+			eventHelper.fireEvent(new SessionSavedEvent(this, session, file.getAbsolutePath()));
+			tracker.add(file.toURI().toURL());
+		}
+	}
+	
+	@Override
+	public void cancel() {
+		super.cancel();
+		
+		if (writer != null)
+			writer.cancel();
+		
+		eventHelper.fireEvent(new SessionSaveCancelledEvent(this));
 	}
 }

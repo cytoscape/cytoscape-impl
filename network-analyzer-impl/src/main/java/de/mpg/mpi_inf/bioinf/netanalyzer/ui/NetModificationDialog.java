@@ -26,26 +26,15 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.HeadlessException;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionEvent;
-
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetwork;
-
-import de.mpg.mpi_inf.bioinf.netanalyzer.OpenBrowser;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 
 /**
  * Dialog for selecting networks on which to apply analysis or a basic modification.
@@ -113,8 +102,6 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 		if (source == btnCancel) {
 			setVisible(false);
 			dispose();
-		} else if (source == btnHelp) {
-			OpenBrowser.openURL(helpURL);
 		} else if (source == btnOK) {
 			// Store the list of networks selected by the user
 			final int[] indices = listNetNames.getSelectedIndices();
@@ -203,12 +190,10 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 		btnOK = Utils.createButton(Messages.DI_OK, null, this);
 		btnOK.setEnabled(false);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		btnHelp = Utils.createButton(Messages.DI_HELP, null, this);
-		Utils.equalizeSize(btnOK, btnCancel, btnHelp);
+		Utils.equalizeSize(btnOK, btnCancel);
 		panButtons.add(btnOK);
 		panButtons.add(btnCancel);
 		panButtons.add(Box.createHorizontalStrut(Utils.BORDER_SIZE * 2));
-		panButtons.add(btnHelp);
 		contentPane.add(panButtons);
 
 		// Add a warning message
@@ -231,10 +216,6 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 	 */
 	private JButton btnCancel;
 
-	/**
-	 * &quot;Help&quot; button.
-	 */
-	private JButton btnHelp;
 
 	/**
 	 * &quot;OK&quot; button.

@@ -31,7 +31,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 
 import javax.swing.BorderFactory;
@@ -214,6 +214,8 @@ public class TextAnnotationPanel extends javax.swing.JPanel {
 	}
 
 	public String getText(){
+		// Make sure text is updated
+		preview.setText(annotationText.getText());	   
 		return preview.getText();
 	}
 

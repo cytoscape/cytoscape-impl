@@ -27,30 +27,27 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
  */
 
 
-import java.awt.event.ActionEvent;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.ImageIcon;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.ServiceProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInspection;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStatus;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.InterpretationDialog;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanel;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.event.ActionEvent;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Action handler for the menu item &quot;Analyze Network&quot;.
@@ -65,19 +62,21 @@ public class AnalyzeNetworkAction extends NetAnalyzerAction {
 	private final VisualMappingManager vmm;
 	private final VisualStyleBuilder vsBuilder;
 	private final ResultPanelFactory resultPanelFactory;
+	private CyServiceRegistrar registrar;
 
 	/**
 	 * Initializes a new instance of <code>AnalyzeNetworkAction</code>.
 	 */
-	public AnalyzeNetworkAction(CyApplicationManager appMgr,CySwingApplication swingApp, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm, final Map<String, String> configProps,
-			final CyNetworkViewManager networkViewManager, final ResultPanelFactory resultPanelFactory) {
+	public AnalyzeNetworkAction(CyApplicationManager appMgr, CySwingApplication swingApp, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
+								final VisualMappingManager vmm, final Map<String, String> configProps,
+								final CyNetworkViewManager networkViewManager, final ResultPanelFactory resultPanelFactory, CyServiceRegistrar registrar) {
 		super(Messages.AC_ANALYZE,appMgr,swingApp, configProps, networkViewManager);
 		this.viewManager = viewManager;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
 		this.resultPanelFactory = resultPanelFactory;
-		
+		this.registrar = registrar;
+
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
@@ -129,7 +128,7 @@ public class AnalyzeNetworkAction extends NetAnalyzerAction {
 			} else {
 				analyzer = new UndirNetworkAnalyzer(aNetwork, aNodeSet, interpr);
 			}
-			return new AnalysisExecutor(swingApp, swingApp.getJFrame(), resultPanelFactory, analyzer, viewManager, vsBuilder, vmm);
+			return new AnalysisExecutor(swingApp, swingApp.getJFrame(), resultPanelFactory, analyzer, viewManager, vsBuilder, vmm, registrar);
 		} catch (IllegalArgumentException ex) {
 			Utils.showInfoBox(swingApp.getJFrame(),Messages.DT_INFO, Messages.SM_NETWORKEMPTY);
 			return null;

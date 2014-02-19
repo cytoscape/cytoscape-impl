@@ -44,7 +44,6 @@ import javax.swing.event.ChangeEvent;
 
 import java.awt.Component;
 
-import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 
 public class ImageAnnotationPanel extends javax.swing.JPanel {
@@ -65,15 +64,15 @@ public class ImageAnnotationPanel extends javax.swing.JPanel {
 	private JCheckBox edgeColor;
 	private JButton sECButton;
 
-	private ImageAnnotation preview;
+	private ImageAnnotationImpl preview;
 	private PreviewPanel previewPanel;
 	
-	private ImageAnnotation mAnnotation;
+	private ImageAnnotationImpl mAnnotation;
 
-	public ImageAnnotationPanel(ImageAnnotation mAnnotation, PreviewPanel previewPanel, int width, int height) {
+	public ImageAnnotationPanel(ImageAnnotationImpl mAnnotation, PreviewPanel previewPanel, int width, int height) {
 		this.mAnnotation=mAnnotation;
 		this.previewPanel = previewPanel;
-		this.preview=(ImageAnnotation)previewPanel.getPreviewAnnotation();
+		this.preview=(ImageAnnotationImpl)previewPanel.getPreviewAnnotation();
 		this.WIDTH = width;
 		this.HEIGHT = height;
 		initComponents();
@@ -239,7 +238,7 @@ public class ImageAnnotationPanel extends javax.swing.JPanel {
 		iModifySAPreview();	
 	}
 	
-	public ImageAnnotation getPreview(){
+	public ImageAnnotationImpl getPreview(){
 		return preview;
 	}
 	

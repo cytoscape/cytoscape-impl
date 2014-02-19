@@ -24,15 +24,16 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
+import static org.cytoscape.browser.internal.IconManager.ICON_COG;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
@@ -45,6 +46,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.browser.internal.BrowserTableModel.ViewMode;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -53,8 +55,13 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.ColumnCreatedEvent;
+import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -67,17 +74,18 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 
 public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
-		NetworkAddedListener, NetworkAboutToBeDestroyedListener, TableAboutToBeDeletedListener {
+		NetworkAddedListener, NetworkAboutToBeDestroyedListener, TableAboutToBeDeletedListener,
+		ColumnCreatedListener, ColumnDeletedListener {
 
 	private static final long serialVersionUID = 627394119637512735L;
 
-	private final JButton selectionModeButton;
+	private JButton selectionModeButton;
 	private JPopupMenu displayMode;
 	
 	private final JComboBox networkChooser;
 	private final Class<? extends CyIdentifiable> objType;
 
-	private boolean rowSelectionMode;
+	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
 	private boolean ignoreSetCurrentNetwork = true;
 	
 	public DefaultTableBrowser(final String tabTitle,
@@ -91,7 +99,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 							   final DialogTaskManager guiTaskManager,
 							   final PopupMenuHelper popupMenuHelper,
 							   final CyApplicationManager applicationManager,
-							   final CyEventHelper eventHelper) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
+							   final CyEventHelper eventHelper,
+							   final IconManager iconManager) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
 		super(tabTitle, tableManager, networkTableManager, serviceRegistrar, compiler, networkManager,
 				deleteTableTaskFactory, guiTaskManager, popupMenuHelper, applicationManager, eventHelper);
 
@@ -107,44 +116,63 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		networkChooser.setEnabled(false);
 		
 		createPopupMenu();
-		selectionModeButton = new JButton();
-		selectionModeButton.addActionListener(this);
-		selectionModeButton.setBorder(null);
-		selectionModeButton.setMargin(new Insets(0, 0, 0, 0));
-		selectionModeButton.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/table-gear-icon.png")));
-		selectionModeButton.setBorder(null);
-		selectionModeButton.setToolTipText("Change Table Mode");
 		
-		selectionModeButton.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				displayMode.show(e.getComponent(), e.getX(), e.getY());
-			}
+		if (objType != CyNetwork.class) {
+			selectionModeButton = new JButton(ICON_COG);
+			selectionModeButton.setToolTipText("Change Table Mode");
+			AttributeBrowserToolBar.styleButton(selectionModeButton,
+					iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
+			
+			selectionModeButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					DefaultTableBrowser.this.actionPerformed(e);
+					displayMode.show(selectionModeButton, 0, selectionModeButton.getHeight());
+				}
+			});
+			
+			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler, deleteTableTaskFactory,
+					guiTaskManager, networkChooser, selectionModeButton, objType, applicationManager, iconManager);// , mapGlobalTableTaskFactoryService);
+		} else {
+			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler, deleteTableTaskFactory,
+					guiTaskManager, networkChooser, objType, applicationManager, iconManager);
+		}
 		
-		});
-		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactory, guiTaskManager, networkChooser, selectionModeButton, objType,
-				applicationManager);// , mapGlobalTableTaskFactoryService);
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
 	
 	private void createPopupMenu() {
-		
 		displayMode = new JPopupMenu();
-		
+		final JCheckBoxMenuItem displayAuto = new JCheckBoxMenuItem("Auto");
+		displayAuto.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.AUTO);
 		final JCheckBoxMenuItem displayAll = new JCheckBoxMenuItem("Show all");
-		displayAll.setSelected(rowSelectionMode);
+		displayAll.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.ALL);
 		final JCheckBoxMenuItem displaySelect = new JCheckBoxMenuItem("Show selected");
-		displaySelect.setSelected(! rowSelectionMode);
+		displaySelect.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.SELECTED);
+
+		displayAuto.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
+				changeSelectionMode();
+
+				displayAuto.setSelected(true);
+				displayAll.setSelected(false);
+				displaySelect.setSelected(false);
+			}
+		});
 		
 		displayAll.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = true;
+				rowSelectionMode = BrowserTableModel.ViewMode.ALL;
 				changeSelectionMode();
 
-				displayAll.setSelected(rowSelectionMode);
-				displaySelect.setSelected(!rowSelectionMode);
+				displayAuto.setSelected(false);
+				displayAll.setSelected(true);
+				displaySelect.setSelected(false);
 			}
 		});
 		
@@ -152,23 +180,39 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = false;
+				rowSelectionMode = BrowserTableModel.ViewMode.SELECTED;
 				changeSelectionMode();
 				
-				displayAll.setSelected(rowSelectionMode);
-				displaySelect.setSelected(!rowSelectionMode);
+				displayAuto.setSelected(false);
+				displayAll.setSelected(false);
+				displaySelect.setSelected(true);
 			}
 		});
 		
+		displayMode.add(displayAuto);
 		displayMode.add(displayAll);
 		displayMode.add(displaySelect);
 	}
 
 	private void changeSelectionMode() {
-		//rowSelectionMode = selectionModeButton.isSelected();
-		BrowserTableModel model = (BrowserTableModel) getCurrentBrowserTable().getModel();
-		model.setShowAll(rowSelectionMode);
-		model.updateShowAll();
+		final BrowserTable browserTable = getCurrentBrowserTable();
+		final BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
+		model.setViewMode(rowSelectionMode);
+		model.updateViewMode();
+		
+		if (rowSelectionMode == ViewMode.ALL) {
+			// Show the current selected rows
+			final Set<Long> suidSelected = new HashSet<Long>();
+			final Set<Long> suidUnselected = new HashSet<Long>();
+			final Collection<CyRow> selectedRows = currentTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
+	
+			for (final CyRow row : selectedRows) {
+				suidSelected.add(row.get(CyIdentifiable.SUID, Long.class));
+			}
+	
+			if (!suidSelected.isEmpty())
+				browserTable.changeRowSelection(suidSelected, suidUnselected);
+		}
 	}
 	
 	@Override
@@ -214,14 +258,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 		});
 		
-		final BrowserTable currentBrowserTable = getCurrentBrowserTable();
-		
-		if (currentBrowserTable != null) {
-			final BrowserTableModel model = (BrowserTableModel) currentBrowserTable.getModel();
-			model.setShowAll(rowSelectionMode);
-		}
-		
+		if (currentTable != null)
+			applicationManager.setCurrentTable(currentTable);
 		showSelectedTable();
+		changeSelectionMode();
 	}
 
 	@Override
@@ -242,8 +282,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			}
 		});
 	}
-
-	
 
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
@@ -266,6 +304,18 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
 		deleteTable(cyTable);
+	}
+	
+	@Override
+	public void handleEvent(final ColumnDeletedEvent e) {
+		if (e.getSource() == currentTable)
+			attributeBrowserToolBar.updateEnableState();
+	}
+
+	@Override
+	public void handleEvent(final ColumnCreatedEvent e) {
+		if (e.getSource() == currentTable)
+			attributeBrowserToolBar.updateEnableState();
 	}
 	
 	private static final class NetworkChooserCustomRenderer extends JLabel implements ListCellRenderer {

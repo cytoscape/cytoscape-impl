@@ -32,6 +32,9 @@ import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.cytoscape.work.swing.RequestsUIHelper;
+import org.cytoscape.work.swing.TunableUIHelper;
+
 /**
  * Interceptor of <code>Tunable</code> that will be applied on
  * <code>GUITunableHandlers</code>.
@@ -58,12 +61,15 @@ import org.slf4j.LoggerFactory;
  * 
  * @author pasteur
  */
-public class JDialogTunableMutator extends JPanelTunableMutator {
+public class JDialogTunableMutator extends JPanelTunableMutator implements TunableUIHelper {
 
 	/** Provides an initialised logger. */
 	private Logger logger = LoggerFactory.getLogger(JDialogTunableMutator.class);
 
 	private Window parent = null;
+
+	private Dialog.ModalityType modality = Dialog.DEFAULT_MODALITY_TYPE;
+	private	Window dialogWindow = null;
 
 	/**
 	 * Constructor.
@@ -72,10 +78,25 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 		super();
 	}
 
-	/** {@inheritDoc} */
-	public void setConfigurationContext(Object win) {
-		if (win == null)
+	/**
+	 * Used configure the TunableMutator so that it builds its
+	 * configuration object in the correct location. For instance,
+	 * a GUI based TunableMutator might call this method with a
+	 * JPanel, indicating that the TunableMutator should build its
+	 * configuration within that JPanel.  This method may be a 
+	 * no-op depending on the type of configuration.
+	 * @param o The context object in which the configuration will be built.
+	 * @param resetContext It tells whether the context map variables need to be cleared
+	 */
+	public void setConfigurationContext(Object win, boolean resetContext) {
+		if (win == null) {
+			if(resetContext)
+			{
+				handlerMap.clear();
+				titleProviderMap.clear();
+			}
 			return;
+		}
 
 		if (win instanceof Window)
 			parent = (Window) win;
@@ -84,21 +105,32 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 					+ win.getClass());
 	}
 
+	public JPanel buildConfiguration(Object objectWithTunables) {
+		return super.buildConfiguration(objectWithTunables, parent);
+	}
+
 	/** {@inheritDoc} */
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 		final JPanel panel = buildConfiguration(objectWithTunables, parent);
+		return validateAndWriteBack(panel, objectWithTunables);
+	}
 
+	public boolean validateAndWriteBack(JPanel panel, Object objectWithTunables) {
 		// no tunables found, everything OK for task to proceed
-		if (panel == null)
+		if (panel == null) {
 			return true;
-
-		// found the special case of the file handle cancel panel,
-		// which means we should quit now
-		else if (panel == HANDLER_CANCEL_PANEL)
+		} else if (panel == HANDLER_CANCEL_PANEL) {
+			// found the special case of the file handle cancel panel,
+			// which means we should quit now
 			return false;
+		} else {
+			if (objectWithTunables instanceof RequestsUIHelper) {
+				dialogWindow = (Window)panel.getTopLevelAncestor();
+				((RequestsUIHelper)objectWithTunables).setUIHelper(this);
+			}
 
-		else
 			return displayGUI(panel, objectWithTunables);
+		}
 	}
 
 	/**
@@ -117,10 +149,11 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 
 		do {
 			tunableDialog = new TunableDialog(parent, optionPanel);
+			dialogWindow = tunableDialog;
 			tunableDialog.setLocationRelativeTo(parent);
 
 			tunableDialog.setTitle(getTitle(objectWithTunables));
-			tunableDialog.setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
+			tunableDialog.setModalityType(modality);
 			tunableDialog.setVisible(true);
 
 			userInput = tunableDialog.getUserInput();
@@ -134,5 +167,13 @@ public class JDialogTunableMutator extends JPanelTunableMutator {
 		} else {
 			return false;
 		}
+	}
+
+	public Window getParent() {
+		return dialogWindow;
+	}
+
+	public void setModality(Dialog.ModalityType modality) {
+		this.modality = modality;
 	}
 }

@@ -30,14 +30,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.internal.read.AbstractNetworkReader;
+import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -49,17 +51,12 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-//import java.util.HashMap;
-//import java.util.Map;
-//import org.cytoscape.model.CyTable;
-//import org.cytoscape.work.util.ListSingleSelection;
-//import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 /**
  * Reader for graphs in the interactions file format. Given the filename,
  * provides the graph and attributes objects constructed from the file.
  */
-public class SIFNetworkReader extends AbstractNetworkReader {
+public class SIFNetworkReader extends AbstractCyNetworkReader {
 	private static final Logger logger = LoggerFactory.getLogger(SIFNetworkReader.class);
 
 	private static final String TAB = "\t";
@@ -69,13 +66,16 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 	private final StringBuilder edgeNameBuilder = new StringBuilder();
 	
 	private TaskMonitor parentTaskMonitor;
+
+	private Map<String, CyNode> nMap;
 	
 	public SIFNetworkReader(InputStream is, final CyLayoutAlgorithmManager layouts,
 			final CyNetworkViewFactory cyNetworkViewFactory, final CyNetworkFactory cyNetworkFactory,
-			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager,
-			final CyApplicationManager cyApplicationManager) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
+			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager) {
+		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.layouts = layouts;
+		
+		this.nMap = new HashMap<String, CyNode>(10000);
 	}
 
 	@Override
@@ -98,27 +98,20 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		final BufferedReader br =
 			new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()), 128*1024);
 
-		String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
-
-		CySubNetwork subNetwork;
-		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
-			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
-			CyNetwork rootNetwork = cyNetworkFactory.createNetwork();
-			subNetwork = this.cyRootNetworkManager.getRootNetwork(rootNetwork).addSubNetwork();
-		}
-		else {
-			// Add a new subNetwork to the given collection
-			subNetwork = this.name2RootMap.get(networkCollectionName).addSubNetwork();
+		CySubNetwork subNetwork = null;
+		final CyRootNetwork rootNetwork = getRootNetwork();
+		
+		if(rootNetwork != null) {
+			subNetwork = rootNetwork.addSubNetwork();
+		} else {
+			// Need to create new network with new root.
+			subNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
 		}
 		
-		// Build a Map based on the key attribute for the entire collection, 
-		// For SIF network, the 'shared name' attribute is the primary key
-		this.initNodeMap(subNetwork.getRootNetwork(), "shared "+CyNetwork.NAME);
-				
+		Map<Object, CyNode> nMap = getNodeMap() ;
+		
 		tm.setProgress(0.1);
 		
-		// Generate bundled event to avoid too many events problem.
-
 		final String firstLine = br.readLine();
 		if (firstLine.contains(TAB))
 			delimiter = TAB;
@@ -158,13 +151,12 @@ public class SIFNetworkReader extends AbstractNetworkReader {
 		nMap.clear();
 		nMap = null;
 
-		this.cyNetworks = new CyNetwork[] {subNetwork};
-		
+		this.networks = new CyNetwork[] {subNetwork};
 		tm.setProgress(1.0);
-		
 		logger.debug("SIF file loaded: ID = " + subNetwork.getSUID());
 	}
-
+	
+	
 	private void createEdge(final Interaction itr, final CySubNetwork subNetwork) {
 		CyNode sourceNode = nMap.get(itr.getSource());
 		if (sourceNode == null) {

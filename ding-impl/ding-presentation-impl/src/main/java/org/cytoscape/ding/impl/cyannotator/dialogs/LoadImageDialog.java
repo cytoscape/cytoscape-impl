@@ -37,11 +37,11 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,10 +121,10 @@ public class LoadImageDialog extends JDialog {
 			BufferedImage image = ImageIO.read(imageFile);
 			URL url = imageFile.toURI().toURL();
 			//The Attributes are x, y, Image, componentNumber, scaleFactor
-			ImageAnnotation newOne=new ImageAnnotationImpl(cyAnnotator, view, 
-			                                               (int)startingLocation.getX(), (int)startingLocation.getY(), 
-			                                               url, image, 
- 			                                               view.getZoom(),cgm);
+			ImageAnnotationImpl newOne=new ImageAnnotationImpl(cyAnnotator, view, 
+			                                                   (int)startingLocation.getX(), (int)startingLocation.getY(), 
+			                                                   url, image, 
+ 			                                                   view.getZoom(),cgm);
 
 			newOne.addComponent(null);
 			cyAnnotator.addAnnotation(newOne);
@@ -151,20 +151,6 @@ public class LoadImageDialog extends JDialog {
 		dispose();
 	}
 
-	public String getExtension(File f) {
-
-		String ext = null;
-		String s = f.getName();
-
-		int i = s.lastIndexOf('.');
-
-		if (i > 0 &&  i < s.length() - 1) {
-			ext = s.substring(i+1).toLowerCase();
-		}
-		
-		return ext;
-	}
-
 
 	//This class provides a FileFilter for the JFileChooser
 
@@ -177,9 +163,9 @@ public class LoadImageDialog extends JDialog {
 				return true;
 			}
 
-			String extension = getExtension(f);
+			String extension = FilenameUtils.getExtension(f.getName());
 			
-			if (extension != null) {
+			if (!extension.isEmpty()) {
 				
 				if (extension.equals("tiff") ||
 					extension.equals("tif") ||

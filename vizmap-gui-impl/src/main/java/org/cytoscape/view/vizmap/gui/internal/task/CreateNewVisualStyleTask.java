@@ -25,57 +25,57 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  */
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 
 public class CreateNewVisualStyleTask extends AbstractTask implements TunableValidator {
 
-	private static final Logger logger = LoggerFactory.getLogger(CreateNewVisualStyleTask.class);
-
-	@ProvidesTitle
-	public String getTitle() {
-		return "Create New Visual Style";
-	}
-
-	@Tunable(description = "Name of new Visual Style:")
+	@Tunable(description = "Name of new Style:")
 	public String vsName;
 
-	private final VisualStyleFactory vsFactory;
-	private final VisualMappingManager vmm;
+	private VisualStyle newStyle;
+	private VisualStyle previousCurrentStyle;
+	private final ServicesUtil servicesUtil;
 
-	public CreateNewVisualStyleTask(final VisualStyleFactory vsFactory, final VisualMappingManager vmm) {
-		super();
-		this.vsFactory = vsFactory;
-		this.vmm = vmm;
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
+	public CreateNewVisualStyleTask(final ServicesUtil servicesUtil) {
+		this.servicesUtil = servicesUtil;
 	}
 
-	public void run(TaskMonitor tm) {
-		if (vsName == null)
-			return;
-
-		final VisualStyle style = vsFactory.createVisualStyle(vsName);
-
-		vmm.addVisualStyle(style);
-		vmm.setCurrentVisualStyle(style);
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return "Create New Style";
+	}
+	
+	@Override
+	public void run(final TaskMonitor tm) {
+		if (vsName != null) {
+			createVisualStyle();
+			
+			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+			undo.postEdit(new CreateNewVisualStyleEdit());
+		}
 	}
 
+	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
-		Iterator<VisualStyle> it = this.vmm.getAllVisualStyles().iterator();
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 
-		while (it.hasNext()) {
-			VisualStyle exist_vs = it.next();
-
-			if (exist_vs.getTitle().equalsIgnoreCase(vsName)) {
+		for  (final VisualStyle vs : vmMgr.getAllVisualStyles()) {
+			if (vs.getTitle().equalsIgnoreCase(vsName)) {
 				try {
 					errMsg.append("Visual style " + vsName + " already existed.");
 					return ValidationState.INVALID;
@@ -85,5 +85,54 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 		}
 
 		return ValidationState.OK;
+	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	private void createVisualStyle() {
+		final VisualStyleFactory vsFactory = servicesUtil.get(VisualStyleFactory.class);
+		newStyle = vsFactory.createVisualStyle(vsName);
+
+		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		
+		// Save the current visual style first, so it can be set as current again if the action is undone
+		previousCurrentStyle = vmMgr.getCurrentVisualStyle();
+		
+		vmMgr.addVisualStyle(newStyle);
+		vmMgr.setCurrentVisualStyle(newStyle);
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private class CreateNewVisualStyleEdit extends AbstractCyEdit {
+
+		public CreateNewVisualStyleEdit() {
+			super(getTitle());
+		}
+
+		@Override
+		public void undo() {
+			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+			
+			if (newStyle != null && vmMgr.getAllVisualStyles().contains(newStyle)) {
+				// Unregister the newly created visual style
+				vmMgr.removeVisualStyle(newStyle);
+				
+				// Also restore the previous current style
+				if (previousCurrentStyle != null)
+					vmMgr.setCurrentVisualStyle(previousCurrentStyle);
+			}
+		}
+
+		@Override
+		public void redo() {
+			// Register the new visual style again
+			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+			
+			if (newStyle != null && !vmMgr.getAllVisualStyles().contains(newStyle)) {
+				vmMgr.addVisualStyle(newStyle);
+				vmMgr.setCurrentVisualStyle(newStyle);
+			}
+		}
 	}
 }

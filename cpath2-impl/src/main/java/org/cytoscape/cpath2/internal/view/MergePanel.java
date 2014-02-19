@@ -31,7 +31,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
 import org.cytoscape.cpath2.internal.util.NetworkMergeUtil;
 
 /**
@@ -42,7 +42,7 @@ import org.cytoscape.cpath2.internal.util.NetworkMergeUtil;
 public class MergePanel extends JPanel {
     private JComboBox networkComboBox;
 
-    public MergePanel(CPath2Factory factory) {
+    public MergePanel(CPathFactory factory) {
         this.setLayout(new FlowLayout(FlowLayout.LEFT));
         NetworkMergeUtil mergeUtil = factory.getNetworkMergeUtil();
         if (mergeUtil.mergeNetworksExist()) {

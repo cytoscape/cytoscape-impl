@@ -33,7 +33,7 @@ public enum GraphMLToken {
 	SOURCE("source"), TARGET("target"), DATA("data"), TYPE("type"),
 	
 	// Supported attribute data types
-	INT("int", Integer.class), LONG("long", Long.class), FLOAT("float", Float.class), DOUBLE("double", Double.class),
+	INT("int", Integer.class), LONG("long", Long.class), FLOAT("float", Double.class), DOUBLE("double", Double.class),
 	BOOLEAN("boolean", Boolean.class), STRING("string", String.class);
 	
 	private final String tag;
@@ -57,9 +57,15 @@ public enum GraphMLToken {
 	}
 	
 	public Object getObjectValue(final String value) { 
-		if(dataType == String.class)
+		if (dataType == String.class)
 			return value;
-		else if(dataType == Double.class)
+		else if (dataType == Boolean.class)
+			return Boolean.parseBoolean(value);
+		else if (dataType == Integer.class)
+			return Integer.parseInt(value);
+		else if (dataType == Long.class)
+			return Long.parseLong(value);
+		else if (dataType == Float.class || dataType == Double.class)
 			return Double.parseDouble(value);
 		
 		return null;
@@ -67,9 +73,10 @@ public enum GraphMLToken {
 	
 	public static GraphMLToken getType(final String tag) {
 		for (GraphMLToken token : GraphMLToken.values()) {
-			if(token.getTag().equals(tag))
+			if (token.getTag().equals(tag))
 				return token;
 		}
+		
 		return null;
 	}
 }

@@ -1,0 +1,99 @@
+package org.cytoscape.task.internal.group;
+
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2012 - 2013 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
+
+public class AddToGroupTask extends AbstractGroupTask {
+
+	@Tunable (description="Group", context="nogui")
+	public String groupName;
+
+	@ContainsTunables
+	public NodeAndEdgeTunable nodesAndEdges;
+
+	public AddToGroupTask(CyApplicationManager appMgr, CyGroupManager manager) {
+		this.groupMgr = manager;
+		nodesAndEdges = new NodeAndEdgeTunable(appMgr);
+	}
+
+	public void run(TaskMonitor tm) throws Exception {
+		net = nodesAndEdges.getNetwork();
+
+		if (groupName == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Group must be specified");
+			return;
+		}
+
+		CyGroup grp = getGroup(groupName);
+		if (grp == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Can't find group '"+groupName+"' in network: "+net.toString());
+			return;
+		}
+
+		List<CyEdge> edgeList = nodesAndEdges.getEdgeList(false);
+		List<CyNode> nodeList = nodesAndEdges.getNodeList(false);
+		if (edgeList == null && nodeList == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Nothing to add");
+			return;
+		}
+
+		int edges = 0;
+		if (edgeList != null)
+			edges = edgeList.size();
+
+		int nodes = 0;
+		if (nodeList != null)
+			nodes = nodeList.size();
+
+		tm.showMessage(TaskMonitor.Level.INFO, "Adding "+nodes+" nodes and "+edges+" edges to group "+getGroupDesc(grp));
+
+		if (edgeList != null && edgeList.size() > 0) {
+			grp.addEdges(edgeList);
+		}
+		if (nodeList != null && nodeList.size() > 0) {
+			grp.addNodes(nodeList);
+		}
+
+		tm.showMessage(TaskMonitor.Level.INFO, "Added "+nodes+" nodes and "+edges+" edges to group "+getGroupDesc(grp));
+	}
+
+}

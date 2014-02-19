@@ -74,6 +74,7 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new GenericXGMMLReader(inputStream, cyNetworkViewFactory, cyNetworkFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr,this.cyNetworkManager, this.cyRootNetworkManager, this.cyApplicationManager));
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, cyNetworkManager, 
+				cyRootNetworkManager, cyApplicationManager));
 	}
 }

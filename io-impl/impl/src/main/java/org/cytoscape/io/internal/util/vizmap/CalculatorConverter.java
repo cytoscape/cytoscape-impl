@@ -254,7 +254,7 @@ public class CalculatorConverter {
 
 			for (String sk : props.stringPropertyNames()) {
 				if (sk.contains(entryKey)) {
-					String attrValue = sk.replaceAll(entryKey, "");
+					String attrValue = sk.replace(entryKey, "");
 					String sv = props.getProperty(sk);
 					String value = getValue(sv);
 

@@ -32,7 +32,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -40,13 +40,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EditAnnotationTask extends AbstractNetworkViewTask {
-	private final Annotation annotation; 
+	private final DingAnnotation annotation; 
 	private final Point2D location; 
 
 	private static final Logger logger = LoggerFactory.getLogger(EditAnnotationTask.class);
 	
 	
-	public EditAnnotationTask(CyNetworkView view, Annotation annotation, Point2D location) {
+	public EditAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D location) {
 		super(view);
 		this.annotation = annotation;
 		this.location = location;
@@ -59,8 +59,10 @@ public class EditAnnotationTask extends AbstractNetworkViewTask {
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
 		 			JDialog dialog = annotation.getModifyDialog();	
-					dialog.setLocation((int)location.getX(), (int)location.getY());
-					dialog.setVisible(true);
+					if (dialog != null) {
+						dialog.setLocation((int)location.getX(), (int)location.getY());
+						dialog.setVisible(true);
+					}
 				}
 			});
 		}

@@ -27,9 +27,10 @@ package org.cytoscape.task.internal.export.network;
 
 import java.io.File;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.view.model.CyNetworkView;
@@ -56,14 +57,28 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 			throw new NullPointerException("View is null.");
 		
 		this.view = view;
-		// Pick SIF as a default file format
+		// Pick XGMML as a default file format
 		for(String fileTypeDesc: this.getFileFilterDescriptions()) {
-			if(fileTypeDesc.contains("SIF")) {
+			if(fileTypeDesc.contains("XGMML")) {
 				this.options.setSelectedValue(fileTypeDesc);
 				break;
 			}
 		}
 	}
+
+	void setDefaultFileFormatUsingFileExt(File file) {
+		String ext = FilenameUtils.getExtension(file.getName());
+		ext = ext.toLowerCase().trim();
+		String searchDesc = "*." + ext;
+		//Use the EXT to determine the default file format
+		for(String fileTypeDesc: this.getFileFilterDescriptions() )
+			if(fileTypeDesc.contains(searchDesc) )
+			{
+				options.setSelectedValue(fileTypeDesc);
+				break;
+			}
+	}
+
 
 	/**
 	 * {@inheritDoc}  
@@ -78,7 +93,7 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 		return writerManager.getWriter(view,filter,file);
 	}
 	
-	@Tunable(description="Save Network As:", params="fileCategory=network;input=false", dependsOn="options!=")
+	@Tunable(description="Save Network (and View) As:", params="fileCategory=network;input=false", dependsOn="options!=")
 	public  File getOutputFile() {	
 		return outputFile;
 	}
@@ -87,4 +102,8 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 	public String getTitle() {
 		return "Export Network";
 	}
+	
+
+	
+	
 }

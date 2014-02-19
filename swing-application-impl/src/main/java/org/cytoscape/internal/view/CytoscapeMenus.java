@@ -70,6 +70,7 @@ public class CytoscapeMenus {
 
 		menuBar.addSeparator("View", 2.0);
 		menuBar.addSeparator("View", 6.0);
+		menuBar.addSeparator("View", 9.0);
 
 		menuBar.addSeparator("Select", 2.0);
 		menuBar.addSeparator("Select", 4.0);

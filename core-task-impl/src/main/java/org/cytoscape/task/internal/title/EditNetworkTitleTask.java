@@ -50,7 +50,10 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 	}
 	
 	@Tunable(description = "New title")
-	public String title;
+	public String name;
+
+	@Tunable(description = "Network to rename", context="nogui")
+	public CyNetwork sourceNetwork = null;
 
 	public EditNetworkTitleTask(final UndoSupport undoSupport, final CyNetwork net, CyNetworkManager cyNetworkManagerServiceRef,
 			CyNetworkNaming cyNetworkNamingServiceRef) {
@@ -58,28 +61,28 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		this.undoSupport = undoSupport;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
 		this.cyNetworkNamingServiceRef = cyNetworkNamingServiceRef;
-		title = network.getRow(network).get(CyNetwork.NAME, String.class);		
+		name = network.getRow(network).get(CyNetwork.NAME, String.class);		
 	}
 
 	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
-		title = title.trim();
+		name = name.trim();
 		
 		// Check if the network tile already existed
 		boolean titleAlreayExisted = false;
 		
-		String newTitle = this.cyNetworkNamingServiceRef.getSuggestedNetworkTitle(title);
-		if (!newTitle.equalsIgnoreCase(title)){
+		String newTitle = this.cyNetworkNamingServiceRef.getSuggestedNetworkTitle(name);
+		if (!newTitle.equalsIgnoreCase(name)){
 			titleAlreayExisted= true;
 		}
 				
 		if (titleAlreayExisted){
 			// Inform user duplicated network title!
 			try {
-				errMsg.append("Duplicated network title.");	
+				errMsg.append("Duplicated network name.");	
 			}
 			catch (Exception e){
-				System.out.println("Warning: Duplicated network title.");
+				System.out.println("Warning: Duplicated network name.");
 			}
 			return ValidationState.INVALID;			
 		}
@@ -91,12 +94,14 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 	
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
-		final String oldTitle = network.getRow(network).get(CyNetwork.NAME, String.class);
+		if (sourceNetwork == null)
+			sourceNetwork = network;
+		final String oldTitle = network.getRow(sourceNetwork).get(CyNetwork.NAME, String.class);
 		e.setProgress(0.3);
-		network.getRow(network).set(CyNetwork.NAME, title);
+		network.getRow(sourceNetwork).set(CyNetwork.NAME, name);
 		e.setProgress(0.6);
 		undoSupport.postEdit(
-			new NetworkTitleEdit(network, oldTitle));
+			new NetworkTitleEdit(sourceNetwork, oldTitle));
 		
 		e.setProgress(1.0);
 	}

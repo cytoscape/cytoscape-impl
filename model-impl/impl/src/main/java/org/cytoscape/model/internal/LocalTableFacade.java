@@ -84,12 +84,13 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 	}
 
 	public <T> void createColumn(String columnName, Class<?extends T> type, boolean isImmutable, T defaultValue) {
-		logger.debug("delegating createColumn '" + columnName + "' from local " + local.getTitle() + " to shared: " + shared.getTitle() + ": " + type.getName() + " " + isImmutable );
 		final CyColumn col = shared.getColumn(columnName);
-		if (col == null)
+		if (col == null) {
+			logger.debug("delegating createColumn '" + columnName + "' from local " + local.getTitle() + " to shared: " + shared.getTitle() + ": " + type.getName() + " " + isImmutable );
 			shared.createColumn(columnName, type, isImmutable, defaultValue);
-		else
+		} else {
 			local.addVirtualColumn(columnName, columnName, shared.getActualTable(), CyIdentifiable.SUID, isImmutable);
+		}
 	}
 
 	public <T> void createListColumn(String columnName, Class<T> listElementType, boolean isImmutable) {

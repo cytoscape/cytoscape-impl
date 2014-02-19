@@ -32,11 +32,13 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 
 import java.awt.event.ActionEvent;
+import java.util.Map;
 
 
 public class SettingsAction extends AbstractCyAction implements SetCurrentNetworkViewListener {
@@ -73,4 +75,12 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		settingsDialog.setNetworkView(e.getNetworkView());
 	}
+	
+    public void addLayout(final CyLayoutAlgorithm layout, Map props) {
+    	settingsDialog.addLayout(layout);
+    }
+    
+    public void removeLayout(final CyLayoutAlgorithm layout, Map props) {
+    	settingsDialog.removeLayout(layout);
+    }
 }

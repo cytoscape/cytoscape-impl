@@ -25,18 +25,15 @@ package org.cytoscape.task.internal.loadnetwork;
  */
 
 import java.net.URI;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.util.Collection;
 import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
@@ -69,15 +66,17 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 	protected Properties props;
 	protected CyNetworkNaming namingUtil;
 	protected final VisualMappingManager vmm;
+	protected final CyNetworkViewFactory nullNetworkViewFactory;
 
 	public AbstractLoadNetworkTask(final CyNetworkReaderManager mgr, final CyNetworkManager networkManager,
-			final CyNetworkViewManager networkViewManager, final Properties props, final CyNetworkNaming namingUtil, final VisualMappingManager vmm) {
+			final CyNetworkViewManager networkViewManager, final Properties props, final CyNetworkNaming namingUtil, final VisualMappingManager vmm, final CyNetworkViewFactory nullNetworkViewFactory) {
 		this.mgr = mgr;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.props = props;
 		this.namingUtil = namingUtil;
 		this.vmm = vmm;
+		this.nullNetworkViewFactory = nullNetworkViewFactory;
 		
 		this.viewThreshold = getViewThreshold();
 	}
@@ -91,8 +90,10 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 			taskMonitor.setProgress(0.0);
 			taskMonitor.setStatusMessage("Creating Cytoscape Network...");
 		}
-		insertTasksAfterCurrentTask(viewReader, new GenerateNetworkViewsTask(name, viewReader, networkManager,
-				networkViewManager, namingUtil, viewThreshold, vmm));
+		
+		GenerateNetworkViewsTask generateViewsTask = new GenerateNetworkViewsTask(name, viewReader, networkManager,
+				networkViewManager, namingUtil, viewThreshold, vmm, nullNetworkViewFactory);
+		insertTasksAfterCurrentTask(viewReader, generateViewsTask);
 		
 		if (taskMonitor != null)
 			taskMonitor.setProgress(1.0);

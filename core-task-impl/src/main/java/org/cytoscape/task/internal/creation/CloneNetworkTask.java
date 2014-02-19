@@ -57,11 +57,12 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CloneNetworkTask extends AbstractCreationTask {
+public class CloneNetworkTask extends AbstractCreationTask implements ObservableTask {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CloneNetworkTask.class);
 
@@ -80,6 +81,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private final CyGroupManager groupMgr;
 	private final CyGroupFactory groupFactory;
 	private final RenderingEngineManager renderingEngineMgr;
+	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private CyNetworkView result = null;
 
 	public CloneNetworkTask(final CyNetwork net,
 							final CyNetworkManager netmgr,
@@ -93,7 +96,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 							final CyRootNetworkManager rootNetMgr,
 							final CyGroupManager groupMgr,
 							final CyGroupFactory groupFactory,
-							final RenderingEngineManager renderingEngineMgr) {
+							final RenderingEngineManager renderingEngineMgr,
+							final CyNetworkViewFactory nullNetworkViewFactory) {
 		super(net, netmgr, networkViewManager);
 
 		this.vmm = vmm;
@@ -106,6 +110,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		this.groupMgr = groupMgr;
 		this.groupFactory = groupFactory;
 		this.renderingEngineMgr = renderingEngineMgr;
+		this.nullNetworkViewFactory = nullNetworkViewFactory;
 	}
 
 	public void run(TaskMonitor tm) {
@@ -126,11 +131,24 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		if (origView != null) {
 	        final CyNetworkView newView = netViewFactory.createNetworkView(newNet);
 			networkViewManager.addNetworkView(newView);
-			insertTasksAfterCurrentTask(new CopyExistingViewTask(vmm, renderingEngineMgr, newView, origView, 
-					new2OrigNodeMap, new2OrigEdgeMap, false));
+			CopyExistingViewTask task = new CopyExistingViewTask(vmm, renderingEngineMgr, newView, origView, new2OrigNodeMap, new2OrigEdgeMap, false);
+			insertTasksAfterCurrentTask(task);
+			// Let the CopyExistingViewTask respond to the Observer (if any)
+		} else {
+			result = nullNetworkViewFactory.createNetworkView(newNet);
 		}
 
 		tm.setProgress(1.0);
+	}
+
+	@Override
+	public Object getResults(Class type) {
+		if (result == null) return null;
+		if (type.equals(String.class))
+			return result.toString();
+		if (type.equals(CyNetwork.class))
+			return result.getModel();
+		return result;
 	}
 
 	private CyNetwork cloneNetwork(final CyNetwork origNet) {

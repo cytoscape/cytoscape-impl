@@ -26,7 +26,7 @@ package org.cytoscape.ding.internal;
 
 
 import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -36,11 +36,9 @@ import java.util.Properties;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.read.sif.SIFNetworkReader;
 import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
@@ -99,9 +97,7 @@ public class PerfTest {
 
 	private SIFNetworkReader readFile(String file) throws Exception {
 		InputStream is = getClass().getResource("/testData/sif/" + file).openStream();
-		final CyApplicationManager cyApplicationManager = mock(CyApplicationManager.class);
-		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, netMgr, rootMgr,
-				cyApplicationManager);
+		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, netMgr, rootMgr);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
@@ -178,7 +174,7 @@ public class PerfTest {
 		Properties p = new Properties();
 		CyProperty<Properties> props = new SimpleCyProperty<Properties>("Test",p,Properties.class,DO_NOT_SAVE);
 		CyLayoutAlgorithm gridNodeLayout = new GridNodeLayout(null);
-		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(props, gridNodeLayout);
+		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(null, props, gridNodeLayout);
 		return cyLayouts;
 	}
 }

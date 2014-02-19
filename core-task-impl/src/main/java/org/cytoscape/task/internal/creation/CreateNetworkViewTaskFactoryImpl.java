@@ -25,7 +25,9 @@ package org.cytoscape.task.internal.creation;
  */
 
 import java.util.Collection;
+import java.util.Collections;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
@@ -35,11 +37,12 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
 public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionTaskFactory implements
-		CreateNetworkViewTaskFactory {
+		CreateNetworkViewTaskFactory, TaskFactory {
 
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager netViewMgr;
@@ -48,11 +51,14 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
 	private final RenderingEngineManager renderingEngineMgr;
+	private final CyApplicationManager appMgr;
 
-	public CreateNetworkViewTaskFactoryImpl(final UndoSupport undoSupport, final CyNetworkViewFactory viewFactory,
+	public CreateNetworkViewTaskFactoryImpl(final UndoSupport undoSupport, 
+			final CyNetworkViewFactory viewFactory,
 			final CyNetworkViewManager netViewMgr, final CyLayoutAlgorithmManager layoutMgr,
 			final CyEventHelper eventHelper, final VisualMappingManager vmm,
-			final RenderingEngineManager renderingEngineMgr) {
+			final RenderingEngineManager renderingEngineMgr,
+			final CyApplicationManager appMgr) {
 		this.undoSupport = undoSupport;
 		this.viewFactory = viewFactory;
 		this.netViewMgr = netViewMgr;
@@ -60,17 +66,22 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
 		this.renderingEngineMgr = renderingEngineMgr;
+		this.appMgr = appMgr;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(final Collection<CyNetwork> networks) {
 		// Create visualization + layout (optional)
 		if (layoutMgr == null)
-			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, networks, viewFactory, netViewMgr,
-					layoutMgr, eventHelper, vmm, renderingEngineMgr));
+			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, networks, 
+			                                                     viewFactory, netViewMgr,
+			                                                     layoutMgr, eventHelper, 
+			                                                     vmm, renderingEngineMgr));
 		else
-			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, networks, viewFactory, netViewMgr,
-					layoutMgr, eventHelper, vmm, renderingEngineMgr));
+			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, networks, 
+			                                                     viewFactory, netViewMgr,
+					                                                 layoutMgr, eventHelper, 
+			                                                     vmm, renderingEngineMgr));
 	}
 
 	@Override
@@ -80,6 +91,18 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 				return false;
 
 		return true;
+	}
+
+	@Override
+	public TaskIterator createTaskIterator() {
+		return createTaskIterator(Collections.singletonList(appMgr.getCurrentNetwork()));
+	}
+
+	@Override
+	public boolean isReady() {
+		if (appMgr.getCurrentNetwork() != null)
+			return true;
+		return false;
 	}
 
 }

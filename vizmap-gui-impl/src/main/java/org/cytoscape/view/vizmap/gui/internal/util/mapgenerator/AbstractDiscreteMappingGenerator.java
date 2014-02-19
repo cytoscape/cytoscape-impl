@@ -38,5 +38,4 @@ public abstract class AbstractDiscreteMappingGenerator<V> implements DiscreteMap
 	public Class<V> getDataType() {
 		return type;
 	}
-
 }

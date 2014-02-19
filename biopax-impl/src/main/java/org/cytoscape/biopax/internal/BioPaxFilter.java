@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
@@ -44,7 +45,7 @@ import org.cytoscape.io.util.StreamUtil;
  * @author Ethan Cerami; (refactored by) Jason Montojo and Igor Rodchenkov
  */
 public class BioPaxFilter extends BasicCyFileFilter {
-	private static final String BIOPAX_XML_NAMESPACE = "www.biopax.org";
+	private static final String BIOPAX_NAMESPACE_STARTS_WITH= "http://www.biopax.org/release/biopax";
 
 	private static final int DEFAULT_LINES_TO_CHECK = 20;
 
@@ -53,7 +54,7 @@ public class BioPaxFilter extends BasicCyFileFilter {
 	 */
 	public BioPaxFilter(StreamUtil streamUtil) {
 		super(
-				new String[] { "xml", "owl", "rdf" }, 
+				new String[] { "xml", "owl", "rdf", ""}, 
 				new String[] { "text/xml", "application/rdf+xml", "application/xml", "text/plain" }, 
 				"BioPAX data", 
 				DataCategory.NETWORK, 
@@ -83,7 +84,7 @@ public class BioPaxFilter extends BasicCyFileFilter {
 			int linesToCheck = DEFAULT_LINES_TO_CHECK;
 			while (linesToCheck > 0) {
 				String line = reader.readLine();
-				if (line != null && line.contains(BIOPAX_XML_NAMESPACE)) {
+				if (line != null && line.contains(BIOPAX_NAMESPACE_STARTS_WITH)) {
 					return true;
 				}
 				linesToCheck--;
@@ -97,9 +98,12 @@ public class BioPaxFilter extends BasicCyFileFilter {
 
 
 	@Override
-	public boolean accepts(URI uri, DataCategory category) {		
+	public boolean accepts(URI uri, DataCategory category) {
+		String ext = FilenameUtils.getExtension(uri.toString());		
 		try {
-			return super.accepts(uri, category) && accepts(streamUtil.getInputStream(uri.toURL()), category);
+			return (category == this.category) 
+				&& extensions.contains(ext) 
+					&& accepts(streamUtil.getInputStream(uri.toURL()), category);
 		} catch (IOException e) {
 			return false;
 		}

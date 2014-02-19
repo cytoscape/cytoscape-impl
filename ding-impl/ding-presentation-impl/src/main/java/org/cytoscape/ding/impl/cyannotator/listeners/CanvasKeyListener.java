@@ -25,8 +25,8 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
  */
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.api.Annotation;
-import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
@@ -50,7 +50,7 @@ public class CanvasKeyListener implements KeyListener {
 
 	public void keyPressed(KeyEvent e) {
 		int code = e.getKeyCode();
-		Set<Annotation> selectedAnnotations = cyAnnotator.getSelectedAnnotations();
+		Set<DingAnnotation> selectedAnnotations = cyAnnotator.getSelectedAnnotations();
 
 		if ((selectedAnnotations != null && selectedAnnotations.size() > 0) &&
 		    ((code == KeyEvent.VK_UP) || 
@@ -60,12 +60,12 @@ public class CanvasKeyListener implements KeyListener {
 		{
 			//Some annotations have been double clicked and selected
 			int move=2;
-			for (Annotation annotation: selectedAnnotations) {
+			for (DingAnnotation annotation: selectedAnnotations) {
 				Component c = annotation.getComponent();
 				int x=c.getX(), y=c.getY();
 				int shiftMask = e.getModifiers() & KeyEvent.SHIFT_DOWN_MASK;
-				if (annotation instanceof ShapeAnnotation && e.isShiftDown()) {
-					ShapeAnnotation sa = (ShapeAnnotation)annotation;
+				if (annotation instanceof ShapeAnnotationImpl && e.isShiftDown()) {
+					ShapeAnnotationImpl sa = (ShapeAnnotationImpl)annotation;
 					int width = c.getWidth(), height = c.getHeight();
 					if (code == KeyEvent.VK_UP) {
 						height -= move;

@@ -38,9 +38,9 @@ import org.cytoscape.cpath2.internal.schemas.search_response.PathwayType;
 import org.cytoscape.cpath2.internal.schemas.search_response.SearchResponseType;
 import org.cytoscape.cpath2.internal.schemas.search_response.XRefType;
 import org.cytoscape.cpath2.internal.schemas.summary_response.SummaryResponseType;
-import org.cytoscape.cpath2.internal.view.model.InteractionBundleModel;
-import org.cytoscape.cpath2.internal.view.model.PathwayTableModel;
-import org.cytoscape.cpath2.internal.view.model.RecordList;
+import org.cytoscape.cpath2.internal.view.InteractionBundleModel;
+import org.cytoscape.cpath2.internal.view.PathwayTableModel;
+import org.cytoscape.cpath2.internal.view.RecordList;
 
 /**
  * Indicates that the user has selected a physical entity from the list of search results.

@@ -26,6 +26,7 @@ package org.cytoscape.work.internal.task;
 
 
 import java.awt.Window;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,9 +40,13 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -82,6 +87,16 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * The default Cytoscape property object.
 	 */
 	private final CyProperty<Properties> cyProperty;
+
+	/**
+	 * Display the user of the latest task information
+	 */
+	private final TaskStatusBar taskStatusBar;
+
+	/**
+	 * Record task history
+	 */
+	private final TaskHistory taskHistory;
 	
 	/**
 	 * Used to create Threads for executed tasks.
@@ -112,6 +127,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	// Parent component of Task Monitor GUI.
 	private Window parent;
 
+	// this is set with the first setExecutionContext value
+	private Window initialParent;
+
 	private final JDialogTunableMutator dialogTunableMutator;
 
 	/**
@@ -123,12 +141,15 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * <li><code>cancelExecutorService</code> is the same as <code>taskExecutorService</code>.</li>
 	 * </ul>
 	 */
-	public JDialogTaskManager(final JDialogTunableMutator tunableMutator, final CyProperty<Properties> cyProperty) {
+	public JDialogTaskManager(final JDialogTunableMutator tunableMutator, final CyProperty<Properties> cyProperty, final TaskStatusBar taskStatusBar, final TaskHistory taskHistory) {
 		super(tunableMutator);
 		this.dialogTunableMutator = tunableMutator;
 		this.cyProperty = cyProperty;
+		this.taskStatusBar = taskStatusBar;
+		this.taskHistory = taskHistory;
 
 		parent = null;
+		initialParent = null;
 		taskThreadFactory = new TaskThreadFactory();
 		taskExecutorService = Executors.newCachedThreadPool(taskThreadFactory);
 		addShutdownHook(taskExecutorService);
@@ -164,8 +185,10 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	@Override 
 	public void setExecutionContext(final Window parent) {
 		this.parent = parent;
+		if (initialParent == null) {
+			initialParent = parent;
+		}
 	}
-
 
 	@Override 
 	public JDialog getConfiguration(TaskFactory factory, Object tunableContext) {
@@ -175,21 +198,28 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 
 	@Override
 	public void execute(final TaskIterator iterator) {
-		execute(iterator, null);
+		execute(iterator, null, null);
+	}
+
+	@Override
+	public void execute(final TaskIterator iterator, final TaskObserver observer) {
+		execute(iterator, null, observer);
 	}
 
 	/**
 	 * For users of this class.
 	 */
-	public void execute(final TaskIterator taskIterator, Object tunableContext) {
-		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent);
+	public void execute(final TaskIterator taskIterator, Object tunableContext, 
+	                    final TaskObserver observer) {
+		final TaskHistory.History history = taskHistory.newHistory();
+		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent, history);
 		
 		final Task first; 
 
 		try {
-			dialogTunableMutator.setConfigurationContext(parent);
+			dialogTunableMutator.setConfigurationContext(parent,true);
 
-			if ( tunableContext != null && !displayTunables(tunableContext) ) {
+			if ( tunableContext != null && !displayTunables(tunableContext, taskMonitor) ) {
 				taskMonitor.cancel();
 				return;
 			}
@@ -200,8 +230,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			// We do this outside of the thread so that the task monitor only gets
 			// displayed AFTER the first tunables dialog gets displayed.
 			first = taskIterator.next();
-			if (!displayTunables(first)) {
+			if (!displayTunables(first, taskMonitor)) {
 				taskMonitor.cancel();
+				if (observer != null) observer.allFinished(FinishStatus.newCancelled(first));
 				return;
 			}
 
@@ -212,7 +243,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		}
 
 		// create the task thread
-		final Runnable tasks = new TaskRunnable(first, taskMonitor, taskIterator); 
+		final Runnable tasks = new TaskRunnable(first, taskMonitor, taskIterator, observer, history); 
 
 		// submit the task thread for execution
 		final Future<?> executorFuture = taskExecutorService.submit(tasks);
@@ -227,7 +258,6 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		final Runnable timedOpen = new Runnable() {
 			public void run() {
 				if (!(executorFuture.isDone() || executorFuture.isCancelled())) {
-					taskMonitor.setFuture(executorFuture);
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
@@ -245,6 +275,8 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	
 	private class TaskThreadFactory implements ThreadFactory {
 
+		int thread = 1;
+
 		@Override
 		public Thread newThread(Runnable r) {
 			long stackSize;
@@ -254,7 +286,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			} catch (Exception e) {	
 				stackSize = DEFAULT_STACK_SIZE;
 			}
-			return new Thread(null, r, "Task Thread", stackSize);
+			return new Thread(null, r, String.format("Task-Thread-%d-Factory-0x%x", thread++, super.hashCode()), stackSize);
 		}
 
 	}
@@ -263,76 +295,120 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		
 		private final SwingTaskMonitor taskMonitor;
 		private final TaskIterator taskIterator;
-		private final Task first;
+		private final TaskObserver observer;
+		private final TaskHistory.History history;
+		private Task task;
 
-		TaskRunnable(final Task first, final SwingTaskMonitor tm, final TaskIterator ti) {
-			this.first = first;
+		TaskRunnable(final Task first, final SwingTaskMonitor tm, final TaskIterator ti, 
+		             final TaskObserver observer, TaskHistory.History history) {
+			this.task = first;
 			this.taskMonitor = tm;
 			this.taskIterator = ti;
+			this.observer = observer;
+			this.history = history;
+		}
+
+		/**
+		 * Loop through each task, show their tunables, and execute them.
+		 * This is in its own method in order to allow cleanly exiting this method when dealing with 
+		 * the first task.
+		 */
+		private FinishStatus innerRun() throws Exception {
+				// actually run the first task 
+				// don't dispaly the tunables here - they were handled above. 
+			taskMonitor.setTask(task);
+			history.setFirstTaskClass(task.getClass());
+			task.run(taskMonitor);
+			handleObserver(task);
+
+			if (taskMonitor.cancelled()) {
+				return FinishStatus.newCancelled(task);
+			}
+
+				// now execute all subsequent tasks
+			while (taskIterator.hasNext()) {
+				task = taskIterator.next();
+				taskMonitor.setTask(task);
+
+				if (!displayTunables(task, taskMonitor)) {
+					return FinishStatus.newCancelled(task);
+				}
+
+				task.run(taskMonitor);
+				handleObserver(task);
+
+				if (taskMonitor.cancelled()) {
+					return FinishStatus.newCancelled(task);
+				}
+			}
+			return FinishStatus.getSucceeded();
 		}
 		
 		public void run() {
+			FinishStatus finishStatus = null;
 			try {
-				// actually run the first task 
-				// don't dispaly the tunables here - they were handled above. 
-				taskMonitor.setTask(first);
-				first.run(taskMonitor);
-
-				if (taskMonitor.cancelled())
-					return;
-
-				// now execute all subsequent tasks
-				while (taskIterator.hasNext()) {
-					final Task task = taskIterator.next();
-					taskMonitor.setTask(task);
-
-					// hide the dialog to avoid swing threading issues
-					// while displaying tunables
-					taskMonitor.showDialog(false);
-
-					if (!displayTunables(task)) {
-						taskMonitor.cancel();
-						return;
-					}
-
-					taskMonitor.showDialog(true);
-
-					task.run(taskMonitor);
-
-					if (taskMonitor.cancelled())
-						break;
-				}
-			} catch (Throwable exception) {
+				finishStatus = innerRun();
+				taskMonitor.close();
+			} catch (Exception exception) {
+				finishStatus = FinishStatus.newFailed(task, exception);
 				logger.warn("Caught exception executing task. ", exception);
-				taskMonitor.showException(new Exception(exception));
+				taskMonitor.showException(exception);
+				history.addMessage(TaskMonitor.Level.ERROR, exception.getMessage());
 			} finally {
-				parent = null;
-				dialogTunableMutator.setConfigurationContext(null);
+				taskStatusBar.setTitle(finishStatus.getType(), taskMonitor.getFirstTitle());
+				history.setFinishType(finishStatus.getType());
+				if (observer != null)
+					observer.allFinished(finishStatus);
+				parent = initialParent;
+				dialogTunableMutator.setConfigurationContext(null,true);
 			}
+		}
 
-			// clean up the task monitor
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					if (taskMonitor.isOpened() && !taskMonitor.isShowingException())
-						taskMonitor.close();
-				}
-			});
+		private void handleObserver(Task t) {
+			if (t instanceof ObservableTask && observer != null) {
+				observer.taskFinished((ObservableTask)t);
+			}
 		}
 	}
 
-	private boolean displayTunables(final Object task) throws Exception {
+	private boolean displayTunables(final Object task, final SwingTaskMonitor taskMonitor) throws Exception {
 		if (task == null) {
 			return true;
 		}
-		
-		boolean ret = dialogTunableMutator.validateAndWriteBack(task);
 
-		for ( TunableRecorder ti : tunableRecorders ) 
-			ti.recordTunableState(task);
+		final boolean ret[] = new boolean[1];
+		ret[0] = true;
 
-		return ret;
+		if (dialogTunableMutator.hasTunables(task, "gui")) {
+			taskMonitor.showDialog(false);
+
+			ValidateTunables validateTunables = new ValidateTunables(task, ret);
+			if (!SwingUtilities.isEventDispatchThread())
+				SwingUtilities.invokeAndWait(validateTunables);
+			else
+				validateTunables.run();
+
+			for ( TunableRecorder ti : tunableRecorders ) 
+				ti.recordTunableState(task);
+
+			taskMonitor.showDialog(true);
+		}
+
+		return ret[0];
+	}
+
+	class ValidateTunables implements Runnable {
+		final Object task;
+		final boolean[] ret;
+
+		public ValidateTunables(final Object task, final boolean[] ret) {
+			this.task = task;
+			this.ret = ret;
+		}
+
+		public void run() {
+			ret[0] = dialogTunableMutator.validateAndWriteBack(task);
+		}
 	}
 
 }
-

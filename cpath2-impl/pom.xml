@@ -3,18 +3,18 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.2</version>
+		<version>3.1.0</version>
 	</parent>
 	
 	<properties>
 		<bundle.symbolicName>org.cytoscape.cpath2-impl</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.cpath2</bundle.namespace>
-		<paxtools.version>4.1.5b2</paxtools.version>
+		<paxtools.version>4.2.0</paxtools.version>
 	</properties>
 	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>cpath2-impl</artifactId>
-	<name>Cytoscape CPath2 Impl (${project.artifactId})</name>
+	<name>Old Pathway Commons WS Client (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 	
 	<dependencies>
@@ -64,6 +64,11 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>service-api</artifactId>
+			<scope>provided</scope>
+		</dependency>		
+		<dependency>
             <groupId>cytoscape-temp</groupId>
             <artifactId>woodstox-core-lgpl</artifactId>
             <version>[4.0.5, 5.0.0)</version>
@@ -81,26 +86,11 @@
 	  		<version>1.1.0</version>
 	  		<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
         	<groupId>org.biopax.paxtools</groupId>
         	<artifactId>paxtools-core</artifactId>
         	<version>${paxtools.version}</version>
         </dependency>        
-        <dependency>
-        	<groupId>org.biopax.paxtools</groupId>
-        	<artifactId>biopax-converter</artifactId>
-        	<version>${paxtools.version}</version>
-        </dependency>
 	</dependencies>
 	
 	<build>
@@ -161,9 +151,8 @@
 							org.biopax.paxtools.*
 						</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.internal.CyActivator</Bundle-Activator>
-						<Embed-Dependency>
-							*;groupId=org.biopax.paxtools;scope=compile|runtime;type=!pom;inline=true,
-						</Embed-Dependency>
+						<Embed-Dependency>*;scope=runtime|compile;optional=false</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
 						<Import-Package>*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>

@@ -90,7 +90,7 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 			
 			if (column != null) {
 				throw new IllegalArgumentException("column already exists with name: '" + columnName
-						+ "' with type: " + column.getType());
+						+ "' with type: " + column.getType() + "\nin table: " + table.getTitle());
 			}
 		};
 	}

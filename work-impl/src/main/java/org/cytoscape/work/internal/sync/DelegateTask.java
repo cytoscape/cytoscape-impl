@@ -27,9 +27,11 @@ package org.cytoscape.work.internal.sync;
 import java.util.Map;
 
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableRecorder;
 
 public class DelegateTask extends AbstractTask {
@@ -37,16 +39,18 @@ public class DelegateTask extends AbstractTask {
 	private final SyncTunableMutator stm;
 	private final TunableRecorderManager trm;
 	private final TaskIterator ti;
+	private final TaskObserver observer;
 	private final Map<String, Object> tunableValues;
 
 	private volatile Task currentTask = null;
 
 	public DelegateTask(SyncTunableMutator stm, TunableRecorderManager trm, TaskIterator ti,
-			Map<String, Object> tunableValues) {
+			Map<String, Object> tunableValues, TaskObserver observer) {
 		this.stm = stm;
 		this.trm = trm;
 		this.ti = ti;
 		this.tunableValues = tunableValues;
+		this.observer = observer;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
@@ -66,8 +70,12 @@ public class DelegateTask extends AbstractTask {
 
 			currentTask = task;
 			task.run(dtm);
+			if (currentTask instanceof ObservableTask && observer != null) {
+				observer.taskFinished((ObservableTask)currentTask);
+			}
 			currentTask = null;
 		}
+		// We don't call allfinished() since we're delegating...
 	}
 
 	@Override

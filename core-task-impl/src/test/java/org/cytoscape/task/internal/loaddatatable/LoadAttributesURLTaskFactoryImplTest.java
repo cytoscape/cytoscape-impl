@@ -72,7 +72,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesURLTaskFactory() throws Exception {
 
-		final LoadAttributesURLTaskFactoryImpl factory = new LoadAttributesURLTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
+		final LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
 		
 		final TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
@@ -81,7 +81,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 		Task t = ti.next();
 		assertNotNull( t );	
 		
-		((LoadAttributesURLTask)t).url = new URL("http://chianti.ucsd.edu/kono/data/galFiltered.sif");
+		((LoadTableURLTask)t).url = new URL("http://chianti.ucsd.edu/kono/data/galFiltered.sif");
 		t.run(tm);
 	}
 }

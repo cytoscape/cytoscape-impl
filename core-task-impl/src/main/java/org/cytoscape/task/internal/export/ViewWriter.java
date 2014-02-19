@@ -61,6 +61,14 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 		if ( re == null )
 			throw new NullPointerException("rendering engine is null");
 		this.re = re;
+		
+		// Pick PNG as a default file format
+		for(String fileTypeDesc: this.getFileFilterDescriptions()) {
+			if(fileTypeDesc.contains("PNG")) {
+				this.options.setSelectedValue(fileTypeDesc);
+				break;
+			}
+		}
 	}
 
 	/**

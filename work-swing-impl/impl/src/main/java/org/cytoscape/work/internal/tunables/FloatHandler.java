@@ -27,7 +27,6 @@ package org.cytoscape.work.internal.tunables;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.*;
@@ -79,7 +78,7 @@ public class FloatHandler extends AbstractGUITunableHandler implements ActionLis
 		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		JLabel label = new JLabel(getDescription());
-		label.setFont(new Font(null, Font.PLAIN, 12));
+		label.setFont(GUIDefaults.LABEL_FONT);
 		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
 		textField.addActionListener(this);
@@ -90,6 +89,16 @@ public class FloatHandler extends AbstractGUITunableHandler implements ActionLis
 		} else {
 			panel.add(label, BorderLayout.WEST);
 			panel.add(textField, BorderLayout.EAST);
+		}
+
+		// Set the tooltip.  Note that at this point, we're setting
+		// the tooltip on the entire panel.  This may or may not be
+		// the right thing to do.
+		if (getTooltip() != null && getTooltip().length() > 0) {
+			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
+			tipManager.setInitialDelay(1);
+			tipManager.setDismissDelay(7500);
+			panel.setToolTipText(getTooltip());
 		}
 	}
 

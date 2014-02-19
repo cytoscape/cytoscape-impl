@@ -25,7 +25,10 @@ package org.cytoscape.view.vizmap.gui.internal.event;
  */
 
 import java.beans.PropertyChangeEvent;
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelListener;
@@ -37,29 +40,28 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.Visualizable;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSet;
-import org.cytoscape.view.vizmap.gui.internal.AttributeSetManager;
-import org.cytoscape.view.vizmap.gui.internal.VizMapPropertySheetBuilder;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
-import org.cytoscape.view.vizmap.gui.internal.editor.propertyeditor.AttributeComboBoxPropertyEditor;
-import org.cytoscape.view.vizmap.gui.internal.util.VizMapperUtil;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
+import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
+import org.cytoscape.view.vizmap.gui.internal.util.MathUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.AttributeComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 
-import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
-import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
-import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 
 // TODO: Should be refactored for readability!!
 /**
@@ -67,33 +69,22 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
  */
 public final class CellEditorEventHandler implements VizMapEventHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(CellEditorEventHandler.class);
-
-	private final CyNetworkTableManager tableMgr;
-
-	protected final VizMapPropertySheetBuilder vizMapPropertySheetBuilder;
-	protected final PropertySheetPanel propertySheetPanel;
-	protected final CyApplicationManager applicationManager;
-	private final VisualMappingManager vmm;
-
-	private final AttributeSetManager attrManager;
-
-	private final VizMapperUtil util;
+	private final AttributeSetProxy attrProxy;
+	private final ServicesUtil servicesUtil;
+	private final VizMapperMediator vizMapperMediator;
+	private final VizMapPropertyBuilder vizMapPropertyBuilder;
 
 	/**
 	 * Creates a new CellEditorEventHandler object.
 	 */
-	public CellEditorEventHandler(final PropertySheetPanel propertySheetPanel, final CyNetworkTableManager tableMgr,
-			final CyApplicationManager applicationManager, final VizMapPropertySheetBuilder vizMapPropertySheetBuilder,
-			final AttributeSetManager attrManager, final VizMapperUtil util, final VisualMappingManager vmm) {
-
-		this.propertySheetPanel = propertySheetPanel;
-		this.tableMgr = tableMgr;
-		this.applicationManager = applicationManager;
-		this.vizMapPropertySheetBuilder = vizMapPropertySheetBuilder;
-		this.attrManager = attrManager;
-		this.util = util;
-		this.vmm = vmm;
+	public CellEditorEventHandler(final AttributeSetProxy attrProxy,
+								  final ServicesUtil servicesUtil,
+								  final VizMapPropertyBuilder vizMapPropertyBuilder,
+								  final VizMapperMediator vizMapperMediator) {
+		this.attrProxy = attrProxy;
+		this.servicesUtil = servicesUtil;
+		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
+		this.vizMapperMediator = vizMapperMediator;
 	}
 
 	/**
@@ -108,10 +99,10 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	 * Other old global events (ex. Cytoscape.NETWORK_LOADED) is replaced by new
 	 * events.
 	 * 
-	 * @param e
-	 *            PCE to be processed in this handler.
+	 * @param e PCE to be processed in this handler.
 	 */
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void processEvent(final PropertyChangeEvent e) {
 		final Object newVal = e.getNewValue();
 		final Object oldVal = e.getOldValue();
@@ -124,266 +115,331 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		if (newVal != null && newVal.equals(oldVal))
 			return;
 
-		// find selected cell
-		final PropertySheetTable table = propertySheetPanel.getTable();
-		final int selected = table.getSelectedRow();
-
-		// If nothing selected, ignore.
-		if (selected < 0)
+		final VisualPropertySheetItem<?> vpSheetItem = vizMapperMediator.getCurrentVisualPropertySheetItem();
+		final PropertySheetPanel propSheetPnl = vpSheetItem != null ? vpSheetItem.getPropSheetPnl() : null;
+		
+		if (propSheetPnl == null)
 			return;
-
-		// Extract selected Property object in the table.
-		final Item selectedItem = (Item) propertySheetPanel.getTable().getValueAt(selected, 0);
-		final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();
+		
+		final VizMapperProperty<?, ?, ?> prop = vizMapperMediator.getCurrentVizMapperProperty();
 
 		if (prop == null)
 			return;
 		
-		VisualProperty<?> type = null;
-
-		if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
-			// Case 1: Attribute type changed.
-			if (newVal != null && e.getSource() instanceof AttributeComboBoxPropertyEditor) {
-				final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
-				processTableColumnChange(newVal.toString(), prop, editor);
-			}
-		} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
-			// Case 2. Switch mapping type
-			// Parent is always root.
-			final VizMapperProperty<?, ?, ?> parent = (VizMapperProperty<?, ?, ?>) prop.getParentProperty();
-			type = (VisualProperty<?>) parent.getKey();
-			Object controllingAttrName = parent.getValue();
-
-			if (type == null || controllingAttrName == null)
-				return;
-
-			logger.debug("New Type = " + type.getDisplayName());
-			logger.debug("New Attr Name = " + controllingAttrName);
-
-			switchMappingType(prop, type, (VisualMappingFunctionFactory) e.getNewValue(),
-					controllingAttrName.toString());
-		} else if (prop.getParentProperty() != null) {
-			// Case 3: Discrete Cell editor event. Create new map entry and
-			// register it.
-			logger.debug("Cell edit event: name = " + prop.getName());
-			logger.debug("Cell edit event: old val = " + prop.getValue());
-			logger.debug("Cell edit event: new val = " + newVal);
-			logger.debug("Cell edit event: associated mapping = " + prop.getInternalValue());
-
-			final VisualMappingFunction<?, ?> mapping = (VisualMappingFunction<?, ?>) prop.getInternalValue();
-
-			if (mapping == null)
-				return;
-
-			if (mapping instanceof DiscreteMapping) {
-				DiscreteMapping<Object, Object> discMap = (DiscreteMapping<Object, Object>) mapping;
-				discMap.putMapValue(prop.getKey(), newVal);
-			}
-
-//			vmm.getCurrentVisualStyle().apply(applicationManager.getCurrentNetworkView());
-			//applicationManager.getCurrentNetworkView().updateView();
-		}
-	}
-
-	private <K, V> void switchControllingAttr(final VisualMappingFunctionFactory factory,
-			final AttributeComboBoxPropertyEditor editor, VizMapperProperty<K, V, ?> prop, final String ctrAttrName) {
-		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
-
-		final VisualProperty<V> vp = (VisualProperty<V>) prop.getKey();
-		VisualMappingFunction<K, V> mapping = (VisualMappingFunction<K, V>) currentStyle.getVisualMappingFunction(vp);
-
-		/*
-		 * Ignore if not compatible.
-		 */
-		@SuppressWarnings("unchecked")
-		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) editor.getTargetObjectType();
-		final CyTable attrForTest = tableMgr.getTable(applicationManager.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-
-		final CyColumn column = attrForTest.getColumn(ctrAttrName);
-		if (column == null)
-			return;
-
-		final Class<K> dataType = (Class<K>) column.getType();
-
-		if (mapping == null) {
-			// Need to create new one
-			logger.debug("Mapping is still null: " + ctrAttrName);
-
-			if (factory == null)
-				return;
-
-			mapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
-			currentStyle.addVisualMappingFunction(mapping);
-		}
-
-		// If same, do nothing.
-		if (ctrAttrName.equals(mapping.getMappingColumnName())) {
-			logger.debug("Same controlling attr.  Do nothing for: " + ctrAttrName);
-			return;
-		}
-
+		final VisualProperty<?> vp = vpSheetItem.getModel().getVisualProperty();
+		final VisualMappingFunction mapping = vpSheetItem.getModel().getVisualMappingFunction();
 		
-		/////// Create new Mapping ///////
-		
-		VisualMappingFunction<K, V> newMapping = null;
-		if (mapping instanceof PassthroughMapping) {
-			// Create new Passthrough mapping and register to current style.
-			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
-			
-			logger.debug("Changed to new Map from " + mapping.getMappingColumnName() + " to "
-					+ newMapping.getMappingColumnName());
-		} else if (mapping instanceof ContinuousMapping) {
-			if ((dataType == Double.class) || (dataType == Integer.class) || (dataType == Long.class)
-					|| (dataType == Float.class) || (dataType == Byte.class)) {
-				newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
-			} else {
-				JOptionPane.showMessageDialog(null,
-						"Continuous Mapper can be used with Numbers only.\nPlease select a numerical column type.",
-						"Incompatible Mapping Type.", JOptionPane.INFORMATION_MESSAGE);
-				return;
-			}
-		} else if (mapping instanceof DiscreteMapping) {
-			newMapping = factory.createVisualMappingFunction(ctrAttrName, dataType, vp);
-			logger.debug("Changed to new Map from " + mapping.getMappingColumnName() + " to "
-					+ newMapping.getMappingColumnName());
-		}
-		
-		
-		// Register the new mapping
-		if(newMapping != null) {
-			currentStyle.addVisualMappingFunction(newMapping);
+		if (prop.getCellType() == CellType.DISCRETE && mapping instanceof DiscreteMapping) {
+			// Discrete mapping value changed:
+			// -------------------------------
+			// Create new map entry and register it.
+			final DiscreteMapping<Object, Object> discMap = (DiscreteMapping<Object, Object>) mapping;
+			setDiscreteMappingEntry(prop.getKey(), oldVal, newVal, discMap);
 		} else {
-			throw new NullPointerException("Mapping function is null.");
+			VisualMappingFunction newMapping = mapping;
+			String undoName = null;
+			
+			if (prop.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
+				// Attribute type changed:
+				// -----------------------
+				if (newVal != null && e.getSource() instanceof AttributeComboBoxPropertyEditor) {
+					final AttributeComboBoxPropertyEditor editor = (AttributeComboBoxPropertyEditor) e.getSource();
+					final VisualMappingFunctionFactory factory = 
+							(VisualMappingFunctionFactory) propSheetPnl.getTable().getValueAt(1, 1);
+					
+					newMapping = switchColumn(factory, editor, prop, newVal.toString(), propSheetPnl);
+					vpSheetItem.getModel().setVisualMappingFunction(newMapping);
+					
+					if (newMapping == null)
+						vpSheetItem.getModel().setMappingColumnName(
+								prop.getValue() != null ? prop.getValue().toString() : null);
+					
+					undoName = "Set Mapping Column";
+				}
+			} else if (prop.getCellType() == CellType.MAPPING_TYPE) {
+				// Mapping type changed:
+				// -----------------------
+				// Parent is always root.
+				// TODO: refactor--this class should not have to know the row/column where the value is
+				Object controllingAttrName = propSheetPnl.getTable().getValueAt(0, 1);
+	
+				if (vp != null && controllingAttrName != null 
+						&& (newVal == null || newVal instanceof VisualMappingFunctionFactory)) {
+					newMapping = switchMappingType(prop, vp, (VisualMappingFunctionFactory) oldVal, 
+							(VisualMappingFunctionFactory) newVal, controllingAttrName.toString(), propSheetPnl);
+					vpSheetItem.getModel().setVisualMappingFunction(newMapping);
+					
+					undoName = "Set Mapping Type";
+				}
+			}
+			
+			if (newMapping != mapping && undoName != null) {
+				// Add undo support
+				final VisualMappingFunction myNewMapping = newMapping;
+				final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+				undo.postEdit(new AbstractCyEdit(undoName) {
+					@Override
+					public void undo() {
+						vpSheetItem.getModel().setVisualMappingFunction(mapping);
+					}
+					@Override
+					public void redo() {
+						vpSheetItem.getModel().setVisualMappingFunction(myNewMapping);
+					}
+				});
+			}
 		}
-
-		// Remove old property
-		propertySheetPanel.removeProperty(prop);
-		
-		// Create new Property.
-		final VisualProperty<Visualizable> category = util.getCategory((Class<? extends CyIdentifiable>) vp
-				.getTargetDataType());
-		VizMapperProperty<VisualProperty<V>, String, ?> newRootProp = vizMapPropertySheetBuilder.getPropertyBuilder()
-				.buildProperty(newMapping, category.getDisplayName(), propertySheetPanel, factory);
-
-		vizMapPropertySheetBuilder.removeProperty(prop, currentStyle);
-		final List<Property> propList = vizMapPropertySheetBuilder.getPropertyList(currentStyle);
-		propList.add(newRootProp);
-
-		prop = null;
-
-		vizMapPropertySheetBuilder.expandLastSelectedItem(vp.getIdString());
-		vizMapPropertySheetBuilder.updateTableView();
-
-		// Finally, update graph view and focus.
-//		currentStyle.apply(applicationManager.getCurrentNetworkView());
-//		applicationManager.getCurrentNetworkView().updateView();
-		return;
-
 	}
 
-	private void switchMappingType(final VizMapperProperty<?, ?, ?> prop, final VisualProperty<?> vp,
-			final VisualMappingFunctionFactory factory, final String controllingAttrName) {
+	@SuppressWarnings("unchecked")
+	private VisualMappingFunction<?, ?> switchColumn(final VisualMappingFunctionFactory factory,
+													 final AttributeComboBoxPropertyEditor editor,
+													 final VizMapperProperty<?, ?, ?> prop,
+													 final String columnName,
+													 final PropertySheetPanel propertySheetPanel) {
+		final VisualStyle currentStyle = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
+		VisualMappingFunction<?, ?> mapping = currentStyle.getVisualMappingFunction(vp);
+
+		// Ignore if not compatible.
+		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) editor.getTargetObjectType();
+		final CyTable table = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
+
+		final CyColumn column = table.getColumn(columnName);
+		
+		if (column == null) {
+			JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
+					+ columnName + "\").\nPlease select another column.", "Invalid Column.",
+					JOptionPane.WARNING_MESSAGE);
+			prop.setValue(mapping != null ? mapping.getMappingColumnName() : null);
+			
+			return mapping;
+		}
+
+		final Class<?> dataType = column.getType();
+
+		if (factory != null && (mapping == null || !columnName.equals(mapping.getMappingColumnName()))) {
+			// Need to create new mapping function
+			if (ContinuousMapping.class.isAssignableFrom(factory.getMappingFunctionType()) &&
+					!Number.class.isAssignableFrom(dataType)) {
+				JOptionPane.showMessageDialog(null,
+						"Continuous Mapper can be used with numbers only.\nPlease select a numerical column type.",
+						"Incompatible Mapping Type.", JOptionPane.INFORMATION_MESSAGE);
+				prop.setValue(mapping != null ? mapping.getMappingColumnName() : null);
+				
+				return mapping;
+			}
+			
+			return switchMappingType(prop, vp, factory, factory, columnName, propertySheetPanel);
+		}
+		
+		return mapping;
+	}
+
+	private VisualMappingFunction<?, ?> switchMappingType(final VizMapperProperty<?, ?, ?> prop,
+														  final VisualProperty<?> vp,
+														  final VisualMappingFunctionFactory oldFactory,
+														  final VisualMappingFunctionFactory newFactory,
+														  final String controllingAttrName,
+														  final PropertySheetPanel propertySheetPanel) {
 		// This is the currently selected Visual Style.
-		final VisualStyle style = vmm.getCurrentVisualStyle();
-		final VisualProperty<Visualizable> startVP = util.getCategory((Class<? extends CyIdentifiable>) vp
-				.getTargetDataType());
-		final VisualMappingFunction<?, ?> currentMapping = style.getVisualMappingFunction(vp);
-
-		logger.debug("Current Mapping for " + vp.getDisplayName() + " is: " + currentMapping);
-
-		final VisualMappingFunction<?, ?> newMapping;
-		logger.debug("!! New factory Category: " + factory.getMappingFunctionType());
-		logger.debug("!! Current Mapping type: " + currentMapping);
-
-		if (currentMapping == null || currentMapping.getClass() != factory.getMappingFunctionType()) {
-			final CyNetwork currentNet = applicationManager.getCurrentNetwork();
+		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
+		VisualMappingFunction<?, ?> newMapping = mapping;
+		final Class<?> newMappingType = newFactory.getMappingFunctionType();
+		
+		if (mapping == null || mapping.getClass() != newMappingType 
+				|| !mapping.getMappingColumnName().equals(controllingAttrName)) {
+			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+			final CyNetwork currentNet = appMgr.getCurrentNetwork();
 			
 			if (currentNet == null)
-				return;
+				return newMapping;
 				
 			// Mapping does not exist. Need to create new one.
-			final AttributeSet attrSet = attrManager.getAttributeSet(currentNet, vp.getTargetDataType());
-			final Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
+			final AttributeSet attrSet = attrProxy.getAttributeSet(currentNet, vp.getTargetDataType());
+			Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
-			if (factory.getMappingFunctionType() == ContinuousMapping.class) {
-				if (attributeDataType == null) {
-					JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
-							+ controllingAttrName + "\").\nPlease select another column.", "Invalid Column.",
-							JOptionPane.WARNING_MESSAGE);
-					return;
-				}
-
+			if (attributeDataType == null) {
+				JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
+						+ controllingAttrName + "\").\nPlease select another column.", "Invalid Column.",
+						JOptionPane.WARNING_MESSAGE);
+				prop.setValue(oldFactory);
+				
+				return newMapping;
+			}
+			
+			if (newMappingType == ContinuousMapping.class) {
 				if (!Number.class.isAssignableFrom(attributeDataType)) {
 					JOptionPane.showMessageDialog(null,
 							"Selected column data type is not Number.\nPlease select a numerical column type.",
 							"Incompatible Column Type.", JOptionPane.WARNING_MESSAGE);
-					return;
+					prop.setValue(oldFactory);
+					
+					return newMapping;
 				}
+			} else if (newMappingType == DiscreteMapping.class) {
+				if (attributeDataType == List.class)
+					attributeDataType = String.class;
 			}
 
-			newMapping = factory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
-			style.addVisualMappingFunction(newMapping);
-		} else {
-			newMapping = currentMapping;
+			// Create new mapping
+			newMapping = newFactory.createVisualMappingFunction(controllingAttrName, attributeDataType, vp);
+			
+			// Keep old mapping values if the new mapping has the same type
+			if (oldFactory != null && oldFactory.getMappingFunctionType() == newMappingType)
+				copyMappingValues(mapping, newMapping);
 		}
 
 		// Disable listeners to avoid unnecessary updates
-		final PropertySheetTableModel model = (PropertySheetTableModel) this.propertySheetPanel.getTable().getModel();
+		final PropertySheetTableModel model = (PropertySheetTableModel) propertySheetPanel.getTable().getModel();
 		final TableModelListener[] modelListeners = model.getTableModelListeners();
 		
 		for (final TableModelListener tm : modelListeners)
 			model.removeTableModelListener(tm);
 
-		logger.debug("New VisualMappingFunction Created: Mapping Type = "
-				+ style.getVisualMappingFunction(vp).toString());
-		logger.debug("New VisualMappingFunction Created: Controlling attr = "
-				+ style.getVisualMappingFunction(vp).getMappingColumnName());
-
-		// First, remove current property
-		Property parent = prop.getParentProperty();
-		propertySheetPanel.removeProperty(parent);
-
-		final VizMapperProperty<?, ?, VisualMappingFunctionFactory> newRootProp;
-
-		newRootProp = vizMapPropertySheetBuilder.getPropertyBuilder().buildProperty(newMapping,
-				startVP.getDisplayName(), propertySheetPanel, factory);
-
-		vizMapPropertySheetBuilder.expandLastSelectedItem(vp.getDisplayName());
-		vizMapPropertySheetBuilder.removeProperty(parent, style);
-
-		final List<Property> propList = vizMapPropertySheetBuilder.getPropertyList(style);
-		propList.add(newRootProp);
-
-		parent = null;
-//		final VisualStyle currentStyle = vmm.getCurrentVisualStyle();
-//		currentStyle.apply(applicationManager.getCurrentNetworkView());
+		vizMapPropertyBuilder.createMappingProperties(newMapping, propertySheetPanel, newFactory);
 		
-		//applicationManager.getCurrentNetworkView().updateView();
-
-		vizMapPropertySheetBuilder.updateTableView();
-
 		// Restore listeners
 		for (final TableModelListener tm : modelListeners)
 			model.addTableModelListener(tm);
+		
+		return newMapping;
 	}
 
-	private void processTableColumnChange(final String newColumnName, final VizMapperProperty<?, ?, ?> prop,
-			final AttributeComboBoxPropertyEditor editor) {
+	private void setDiscreteMappingEntry(final Object key, final Object oldVal, final Object newVal,
+			final DiscreteMapping<Object, Object> mapping) {
+		final VisualProperty<?> vp = mapping.getVisualProperty();
+		
+		if (newVal == null || vp.getRange().getType().isAssignableFrom(newVal.getClass())) {
+			mapping.putMapValue(key, newVal);
+			
+			// Undo support
+			if ((oldVal != null && newVal == null) || (newVal != null && !newVal.equals(oldVal))) {
+				final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+				undo.postEdit(new AbstractCyEdit("Set Discrete Mapping Value") {
+					@Override
+					public void undo() {
+						mapping.putMapValue(key, oldVal);
+					}
+					@Override
+					public void redo() {
+						mapping.putMapValue(key, newVal);
+					}
+				});
+			}
+		}
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void copyMappingValues(final VisualMappingFunction<?, ?> source, final VisualMappingFunction<?, ?> target) {
+		if (source instanceof ContinuousMapping && target instanceof ContinuousMapping) {
+			final CyNetwork curNet = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
+			
+			if (curNet != null) {
+				final ContinuousMapping cm1 = (ContinuousMapping<?, ?>) source;
+				final ContinuousMapping cm2 = (ContinuousMapping<?, ?>) target;
+				final List<ContinuousMappingPoint<?, ?>> points1 = cm1.getAllPoints();
+				
+				if (points1 == null || points1.isEmpty())
+					return;
+				
+				// Check if source point values are valid
+				for (final ContinuousMappingPoint<?, ?> p : points1) {
+					final Object v = p.getValue();
+					
+					if (!(v instanceof Number)
+							|| Double.isInfinite(((Number) v).doubleValue())
+							|| Double.isNaN(((Number) v).doubleValue()))
+						return; // Do not copy!
+				}
+				
+				final VisualProperty<?> vp = source.getVisualProperty();
+				final CyTable dataTable = curNet.getTable(vp.getTargetDataType(), CyNetwork.DEFAULT_ATTRS);
+				final CyColumn col = dataTable.getColumn(target.getMappingColumnName());
 
-		VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) prop.getInternalValue();
-		if (factory == null) {
-			Property[] children = prop.getSubProperties();
-			for (int i = 0; i < children.length; i++) {
-				final VizMapperProperty<?, ?, ?> child = (VizMapperProperty<?, ?, ?>) children[i];
-				if (child.getCellType().equals(CellType.MAPPING_TYPE)
-						&& child.getValue() instanceof VisualMappingFunctionFactory) {
-					factory = (VisualMappingFunctionFactory) child.getValue();
-					break;
+				if (col == null)
+					return;
+				
+				// Get new column's min/max values
+				double minTgtVal = Double.POSITIVE_INFINITY;
+				double maxTgtVal = Double.NEGATIVE_INFINITY;
+				final List<?> valueList = col.getValues(col.getType());
+
+				for (final Object o : valueList) {
+					if (o instanceof Number) {
+						double val = ((Number) o).doubleValue();
+						
+						if (!Double.isNaN(val)) {
+							maxTgtVal = Math.max(maxTgtVal, val);
+							minTgtVal = Math.min(minTgtVal, val);
+						}
+					}
+				}
+				
+				// Make sure the source points are sorted by their values
+				final TreeSet<ContinuousMappingPoint<?, ?>> srcPoints = new TreeSet<ContinuousMappingPoint<?, ?>>(
+						new Comparator<ContinuousMappingPoint<?, ?>>() {
+							@Override
+							public int compare(
+									final ContinuousMappingPoint<?, ?> o1,
+									final ContinuousMappingPoint<?, ?> o2) {
+								final BigDecimal v1 = new BigDecimal(((Number)o1.getValue()).doubleValue());
+								final BigDecimal v2 = new BigDecimal(((Number)o2.getValue()).doubleValue());
+								return v1.compareTo(v2);
+							}
+						});
+				srcPoints.addAll(points1);
+				
+				// Now that the source points are sorted, we can get the min/max source values
+				final double minSrcVal = ((Number)srcPoints.first().getValue()).doubleValue();
+				final double maxSrcVal = ((Number)srcPoints.last().getValue()).doubleValue();
+				
+				// Make sure the target mapping has no points, so delete any existing one
+				int tgtPointsSize = cm2.getPointCount();
+				
+				for (int i = 0; i < tgtPointsSize; i++)
+					cm2.removePoint(i);
+				
+				// Convert the source points and copy them to the target mapping
+				int srcPointsSize = srcPoints.size();
+				
+				for (int i = 0; i < srcPointsSize; i++) {
+					final ContinuousMappingPoint<?, ?> mp = cm1.getPoint(i);
+					final double srcVal = ((Number)cm1.getPoint(i).getValue()).doubleValue();
+					
+					// Linearly interpolate the new value
+					final double f = MathUtil.invLinearInterp(srcVal, minSrcVal, maxSrcVal);
+					final double tgtVal = MathUtil.linearInterp(f, minTgtVal, maxTgtVal);
+					
+					if (!Double.isNaN(tgtVal) && !Double.isInfinite(tgtVal))
+						cm2.addPoint(tgtVal, mp.getRange());
 				}
 			}
-			if (factory == null)
-				return;
+		} else if (source instanceof DiscreteMapping && target instanceof DiscreteMapping) {
+			// TODO The problem here is that the new mapping entries haven't been created yet
+//			final DiscreteMapping dm1 = (DiscreteMapping<?, ?>) source;
+//			final DiscreteMapping dm2 = (DiscreteMapping<?, ?>) target;
+//			final Map map1 = dm1.getAll();
+//			final Map map2 = dm2.getAll();
+//			System.out.println("MAP 1: " + map1.size());
+//			System.out.println("MAP 2: " + map2.size());
+//			
+//			if (map1 == null || map1.isEmpty() || map2 == null || map2.isEmpty())
+//				return;
+//			
+//			final Iterator<?> tgtKeyIter = map2.keySet().iterator();
+//			
+//			for (final Object srcVal : map1.values()) {
+//				if (tgtKeyIter.hasNext()) {
+//					final Object tgtKey = tgtKeyIter.next();
+//					dm2.putMapValue(tgtKey, srcVal);
+//				} else {
+//					break;
+//				}
+//			}
 		}
-		switchControllingAttr(factory, editor, prop, newColumnName);
 	}
 }

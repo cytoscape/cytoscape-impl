@@ -51,15 +51,8 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
-import org.cytoscape.cpath2.internal.filters.ChainedFilter;
-import org.cytoscape.cpath2.internal.filters.DataSourceFilter;
-import org.cytoscape.cpath2.internal.filters.EntityTypeFilter;
+import org.cytoscape.cpath2.internal.CPathFactory;
 import org.cytoscape.cpath2.internal.schemas.summary_response.BasicRecordType;
-import org.cytoscape.cpath2.internal.view.model.InteractionBundleModel;
-import org.cytoscape.cpath2.internal.view.model.RecordList;
-import org.cytoscape.cpath2.internal.view.tree.CheckNode;
-import org.cytoscape.cpath2.internal.view.tree.JTreeWithCheckNodes;
 import org.cytoscape.model.CyNetwork;
 
 /**
@@ -77,23 +70,23 @@ public class InteractionBundlePanel extends JPanel {
     private CollapsablePanel filterPanel;
     private JDialog dialog;
     private CyNetwork mergeNetwork;
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 
     public InteractionBundlePanel(InteractionBundleModel
-            interactionBundleModel, JDialog dialog, CPath2Factory factory) {
+            interactionBundleModel, JDialog dialog, CPathFactory factory) {
         this(interactionBundleModel, factory);
         this.dialog = dialog;
     }
 
     public InteractionBundlePanel(InteractionBundleModel
-            interactionBundleModel, CyNetwork mergeNetwork, JDialog dialog, CPath2Factory factory) {
+            interactionBundleModel, CyNetwork mergeNetwork, JDialog dialog, CPathFactory factory) {
         this(interactionBundleModel, factory);
         this.dialog = dialog;
         this.mergeNetwork = mergeNetwork;
     }
 
     public InteractionBundlePanel(InteractionBundleModel
-            interactionBundleModel, CPath2Factory factory) {
+            interactionBundleModel, CPathFactory factory) {
         this.factory = factory;
         this.interactionBundleModel = interactionBundleModel;
         JPanel panel = new JPanel();

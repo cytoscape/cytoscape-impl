@@ -26,26 +26,25 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
  * #L%
  */
 
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JFrame;
-import javax.swing.ProgressMonitor;
-import javax.swing.Timer;
-
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisResultPanel;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.AnalysisResultPanel;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanel;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Initializer and starter of a separate thread dedicated to network analysis.
@@ -73,7 +72,8 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	private final CyNetworkViewManager viewManager;
 	private final VisualMappingManager vmm;
 	private final VisualStyleBuilder vsBuilder;
-	
+	private CyServiceRegistrar registrar;
+
 	private final ResultPanelFactory resultPanelFactory;
 	private final Window owner;
 	private final CySwingApplication swingApplication;
@@ -89,14 +89,14 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 	 * - this is performed by the <code>start()</code> method. It is recommended
 	 * that <code>start()</code> is called immediately after the initialization.
 	 * </p>
-	 * 
-	 * @param aDesktop
+	 *
+	 * @param owner
 	 *            Owner of the dialog(s) that will appear.
 	 * @param aAnalyzer
-	 *            <code>NetworkAnalyzer</code> instance to be started.
+	 * @param registrar
 	 */
 	public AnalysisExecutor(final CySwingApplication swingApplication, final Window owner, final ResultPanelFactory resultPanelFactory, NetworkAnalyzer aAnalyzer, final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm) {
+							final VisualMappingManager vmm, CyServiceRegistrar registrar) {
 		this.resultPanelFactory = resultPanelFactory;
 		analyzer = aAnalyzer;
 		this.owner = owner;
@@ -105,7 +105,8 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 		this.viewManager = viewManager;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
-		
+		this.registrar = registrar;
+
 		listeners = new ArrayList<AnalysisListener>();
 		showDialog = true;
 		int maxProgress = analyzer.getMaxProgress();
@@ -140,6 +141,7 @@ public class AnalysisExecutor extends SwingWorker implements ActionListener {
 			if (showDialog) {
 				try {
 					AnalysisResultPanel d = new AnalysisResultPanel(swingApplication, owner, resultPanelFactory, analyzer.getStats(), analyzer, viewManager, vsBuilder, vmm);
+					registrar.registerService(d,CytoPanelStateChangedListener.class,new Properties());
 					d.setVisible(true);
 				} catch (InnerException ex) {
 					// NetworkAnalyzer internal error

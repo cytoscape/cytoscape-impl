@@ -57,8 +57,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	private final DGraphView graphView;
 	private final HandleFactory handleFacgtory;
 
-	// Since Fonts are created from size and font face, we need this local value.
-	private Integer fontSize;
 	private LineType lineType;
 	private boolean selected;
 	
@@ -71,7 +69,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		this.handleFacgtory = handleFactory;
 		this.graphView = graphView;
 		this.selected = false;
-		this.fontSize = DVisualLexicon.EDGE_LABEL_FONT_SIZE.getDefault();
 	}
 
 	@Override
@@ -309,7 +306,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	@Override
 	public void setToolTip(String tip) {
-		graphView.m_edgeDetails.m_edgeTooltips.put(model, tip);
+		synchronized (graphView.m_lock) {
+			graphView.m_edgeDetails.m_edgeTooltips.put(model, tip);
+		}
 	}
 
 
@@ -323,8 +322,11 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	@Override
 	public void setTextPaint(Paint textPaint) {
 		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.overrideLabelPaint(model, 0, textPaint);
-			graphView.m_contentChanged = true;
+			if (textPaint != null) {
+				final Paint transparentColor = getTransparentColor(textPaint, graphView.m_edgeDetails.getLabelTransparency(model));
+				graphView.m_edgeDetails.overrideLabelPaint(model, 0, transparentColor);
+				graphView.m_contentChanged = true;
+			}
 		}
 	}
 
@@ -580,15 +582,17 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			
 			graphView.m_edgeDetails.overrideLabelTransparency(model, transparency);
 			setTextPaint(graphView.m_edgeDetails.getLabelPaint(model, 0));
-			
 			graphView.m_contentChanged = true;
 		}
 	}
 	
 	@Override
 	public void setBend(final Bend bend) {
-		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.m_edgeBends.put(model, bend);
+		if( !isValueLocked(BasicVisualLexicon.EDGE_BEND) )
+		{
+			synchronized (graphView.m_lock) {
+				graphView.m_edgeDetails.m_edgeBends.put(model, bend);
+			}
 		}
 		graphView.m_contentChanged = true;
 	}
@@ -623,7 +627,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	@Override
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		VisualProperty<?> vp = vpOriginal;
-		
+
 		// If value is null, simply use the VP's default value.
 		if (value == null)
 			value = (V) vp.getDefault();
@@ -631,12 +635,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		if (vp == DVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
 			setSelectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
-			setUnselectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_SELECTED_PAINT) {
-			setSelectedPaint((Paint) value);
-			setSourceEdgeEndSelectedPaint((Paint) value);
-			setTargetEdgeEndSelectedPaint((Paint) value);
-		} else if (vp == DVisualLexicon.EDGE_UNSELECTED_PAINT) {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_WIDTH) {
 			final float w = ((Number) value).floatValue();
@@ -674,10 +672,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		} else if (vp == DVisualLexicon.EDGE_TOOLTIP) {
 			setToolTip(value.toString());
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {
-			final Font newFont = ((Font) value).deriveFont(fontSize);
+			Font newFont = (Font) value;
+			final Font f = getFont();
+			if (f != null)
+				newFont = f.deriveFont((float)f.getSize());
 			setFont(newFont);
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_SIZE) {
-			fontSize = ((Number) value).intValue();
+			float fontSize = ((Number) value).floatValue();
 			final Font f = getFont();
 			if (f != null)
 				setFont(f.deriveFont(fontSize));

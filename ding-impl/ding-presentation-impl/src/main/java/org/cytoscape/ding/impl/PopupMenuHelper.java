@@ -25,31 +25,6 @@ package org.cytoscape.ding.impl;
  */
 
 
-import static org.cytoscape.work.ServiceProperties.APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyMenuItem;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
@@ -65,10 +40,21 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
+
+import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.cytoscape.work.ServiceProperties.*;
 
 
 // TODO Consider generalizing this class so that it can be used by anyone
@@ -98,6 +84,8 @@ class PopupMenuHelper {
 
 	/**
 	 * Creates a menu based on the EdgeView.
+	 *
+	 * @param action Acceptable values are "NEW" or "OPEN." Case does not matter.
 	 */
 	void createEdgeViewMenu(EdgeView edgeView, int x, int y, String action) {
 		if (edgeView != null ) {
@@ -150,6 +138,8 @@ class PopupMenuHelper {
 
 	/**
 	 * Creates a menu based on the NodeView.
+	 *
+	 * @param action Acceptable values are "NEW", "OPEN", or "EDGE". Case does not matter.
 	 */
 	void createNodeViewMenu(NodeView nview, int x, int y , String action) {
 		if (nview != null ) {
@@ -207,6 +197,8 @@ class PopupMenuHelper {
 
 	/**
 	 * Creates a menu based on the NetworkView.
+	 *
+	 * @param action Acceptable values are "NEW" or "OPEN." Case does not matter.
 	 */
 	void createNetworkViewMenu(Point rawPt, Point xformPt, String action) {
 
@@ -252,18 +244,6 @@ class PopupMenuHelper {
 			}
 			
 			for ( NetworkViewTaskFactory nvtf : usableTFs ) {
-				// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HACK ALERT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
-				// Until we get better control over NetworkViewTaskFactories, there are a couple
-				// of Menu bar menus that appear in the network view context menu that have no
-				// business being there.  This hack skips those menu items....
-				// I, Scooter, am responsible for this hack.....
-				// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HACK ALERT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
-				Map props = m_view.emptySpaceTFs.get(nvtf);
-				String pref = (String)(props.get(PREFERRED_MENU));
-				if (pref != null && pref.length() > 0 && 
-				    (pref.startsWith("File") || pref.startsWith("Layout")))
-					continue;	// Skip any "File" or "Layout" menus
-				
 				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, m_view);
 				addMenuItem(null, menu, provisioner, null, tracker, m_view.emptySpaceTFs.get( nvtf ) );
 			}

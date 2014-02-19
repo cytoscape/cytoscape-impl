@@ -33,7 +33,6 @@ import javax.swing.JFrame;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 
 public class TextAnnotationDialog extends JDialog {
 
@@ -41,9 +40,9 @@ public class TextAnnotationDialog extends JDialog {
 	private final CyAnnotator cyAnnotator;
 	private final Point2D startingLocation;
 	private final boolean create;
-	private final TextAnnotation mAnnotation;
+	private final TextAnnotationImpl mAnnotation;
 	private TextAnnotationPanel textAnnotation1;
-	private TextAnnotation preview;
+	private TextAnnotationImpl preview;
 
 	public TextAnnotationDialog(DGraphView view, Point2D start) {
 		this.view = view;
@@ -55,7 +54,7 @@ public class TextAnnotationDialog extends JDialog {
 		initComponents();	
 	}	
 
-	public TextAnnotationDialog(TextAnnotation mAnnotation) {
+	public TextAnnotationDialog(TextAnnotationImpl mAnnotation) {
 		this.mAnnotation=mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();

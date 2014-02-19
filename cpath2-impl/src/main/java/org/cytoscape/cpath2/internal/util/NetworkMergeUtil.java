@@ -32,10 +32,10 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathProperties;
+import org.cytoscape.cpath2.internal.view.NetworkWrapper;
 import org.cytoscape.cpath2.internal.view.SearchDetailsPanel;
-import org.cytoscape.cpath2.internal.view.model.NetworkWrapper;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
 import org.cytoscape.model.CyNetwork;
 
 /**
@@ -43,12 +43,12 @@ import org.cytoscape.model.CyNetwork;
  */
 public class NetworkMergeUtil {
     private Vector networkVector;
-	private final CPath2Factory factory;
+	private final CPathFactory factory;
 
     /**
      * Constructor.
      */
-    public NetworkMergeUtil(CPath2Factory factory) {
+    public NetworkMergeUtil(CPathFactory factory) {
     	this.factory = factory;
     	
         CPathProperties cPathProperties = CPathProperties.getInstance();
@@ -75,7 +75,7 @@ public class NetworkMergeUtil {
         if (mergeNetworksExist()) {
             NetworkWrapper[] networks = (NetworkWrapper[]) getMergeNetworks().toArray
                 (new NetworkWrapper[getMergeNetworks().size()]);
-            URL iconURL = SearchDetailsPanel.class.getResource("resources/question.png");
+            URL iconURL = SearchDetailsPanel.class.getResource("question.png");
             Icon icon = null;
             if (iconURL != null) {
                 icon = new ImageIcon(iconURL);

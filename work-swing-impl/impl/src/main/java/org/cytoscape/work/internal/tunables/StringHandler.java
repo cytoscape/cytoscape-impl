@@ -37,6 +37,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.ToolTipManager;
 import javax.swing.text.DefaultFormatter;
 
 import org.cytoscape.work.Tunable;
@@ -54,9 +55,6 @@ import org.slf4j.LoggerFactory;
 public class StringHandler extends AbstractGUITunableHandler implements ActionListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
-	
-	private static final Font TEXT_FONT = new Font("SansSerif", Font.PLAIN,12);
-	private static final Font LABEL_FONT = new Font("SansSerif", Font.PLAIN ,12);
 	
 	private JFormattedTextField textField;
 
@@ -96,12 +94,11 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
 		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
 		final JLabel label = new JLabel(getDescription());
-		label.setFont(LABEL_FONT);
+		label.setFont(GUIDefaults.LABEL_FONT);
 		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		textField.setFont(TEXT_FONT);
+		textField.setFont(GUIDefaults.TEXT_FONT);
 		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.addActionListener(this);
-		textField.setPreferredSize(new Dimension(200, 14));
 
 		if (horizontal) {
 			panel.add(label, BorderLayout.NORTH);
@@ -109,6 +106,16 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		} else {
 			panel.add(label, BorderLayout.WEST );
 			panel.add(textField, BorderLayout.EAST);
+		}
+
+		// Set the tooltip.  Note that at this point, we're setting
+		// the tooltip on the entire panel.  This may or may not be
+		// the right thing to do.
+		if (getTooltip() != null && getTooltip().length() > 0) {
+			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
+			tipManager.setInitialDelay(1);
+			tipManager.setDismissDelay(7500);
+			panel.setToolTipText(getTooltip());
 		}
 	}
 	

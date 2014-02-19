@@ -112,12 +112,15 @@ public class DelegatingTaskMonitorTest {
 
 	private class TestTaskMonitor implements TaskMonitor {
 		private String title;
+        private TaskMonitor.Level level;
 		private String msg;
 		private double progress;
 		public void setTitle(String t) { title = t;	}
-		public void setStatusMessage(String m) { msg = m; }
+		public void setStatusMessage(String m) { showMessage(TaskMonitor.Level.INFO, m); }
+        public void showMessage(TaskMonitor.Level l, String m) { level = l; msg = m; }
 		public void setProgress(double p) { progress = p; }
 		public String getTitle() { return title; }
+		public TaskMonitor.Level getLevel() { return level; }
 		public String getStatusMessage() { return msg; }
 		public double getProgress() { return progress; }
 	}

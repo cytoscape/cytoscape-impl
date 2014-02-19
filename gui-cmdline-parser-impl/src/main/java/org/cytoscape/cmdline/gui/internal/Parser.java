@@ -24,19 +24,7 @@ package org.cytoscape.cmdline.gui.internal;
  * #L%
  */
 
-import org.cytoscape.application.CyShutdown;
-import org.cytoscape.application.CyVersion;
-
 import java.util.Properties;
-
-import java.awt.Dimension;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -45,7 +33,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-
+import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,24 +76,6 @@ public class Parser {
 		              .withDescription( "Load a network file (any format).")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("N"));
-		
-		opt.addOption(OptionBuilder
-		              .withLongOpt("table")
-		              .withDescription("Load a data table file (any table format).")
-		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("T"));
-
-		opt.addOption(OptionBuilder
-		              .withLongOpt("plugin")
-		              .withDescription("Load a SIMPLIFIED plugin jar file/URL (not implemented in current release).")
-		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("p"));
-
-		opt.addOption(OptionBuilder
-		              .withLongOpt("bundle")
-		              .withDescription("Load a BUNDLE plugin jar file or URL (not implemented in current release).")
-		              .withValueSeparator('\0').withArgName("file").hasArgs()
-		              .create("b"));
 
 		opt.addOption(OptionBuilder
 		              .withLongOpt("props")
@@ -118,6 +89,18 @@ public class Parser {
 		              .withDescription("Load vizmap properties file (Cytoscape VizMap format).")
 		              .withValueSeparator('\0').withArgName("file").hasArgs()
 		              .create("V"));
+
+		opt.addOption(OptionBuilder
+		              .withLongOpt("script")
+		              .withDescription("Execute commands from script file")
+		              .withValueSeparator('\0').withArgName("file").hasArgs()
+		              .create("S"));
+
+		opt.addOption(OptionBuilder
+		              .withLongOpt("rest")
+		              .withDescription("Start a rest service")
+		              .withValueSeparator('\0').withArgName("port").hasArgs()
+		              .create("R"));
 
 		return opt;
 	}
@@ -158,14 +141,6 @@ public class Parser {
 		if (line.hasOption("P"))
 			startupConfig.setProperties(line.getOptionValues("P"));
 
-		// always load any plugins specified
-		if (line.hasOption("p"))
-			startupConfig.setSimplifiedPlugins(line.getOptionValues("p"));
-
-		// always load any bundle plugins specified
-		if (line.hasOption("b"))
-			startupConfig.setBundlePlugins(line.getOptionValues("b"));
-
 		// it the only argument is a session file, load it
 		if (line.getOptions().length == 0 && line.getArgs().length == 1 && line.getArgs()[0].endsWith(".cys")){
 			startupConfig.setSession(line.getArgs()[0]);
@@ -183,10 +158,15 @@ public class Parser {
 
 			if (line.hasOption("V"))
 				startupConfig.setVizMapProps(line.getOptionValues("V"));
-
-			if (line.hasOption("T"))
-				startupConfig.setTables(line.getOptionValues("T"));
 		}
+
+		// Do we have any command scripts requested?
+		if (line.hasOption("S"))
+			startupConfig.setCommandScript(line.getOptionValue("S"));
+
+		// Do we want a rest server?
+		if (line.hasOption("R"))
+			startupConfig.setRestPort(line.getOptionValue("R"));
 	}
 
 	private void printHelp() {

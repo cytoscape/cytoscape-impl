@@ -39,7 +39,7 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import org.biopax.paxtools.converter.OneTwoThree;
+import org.biopax.paxtools.converter.LevelUpgrader;
 import org.biopax.paxtools.io.SimpleIOHandler;
 import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.BioPAXLevel;
@@ -49,16 +49,16 @@ import org.biopax.paxtools.model.level3.EntityReference;
 import org.biopax.paxtools.model.level3.Named;
 import org.biopax.paxtools.model.level3.PhysicalEntity;
 import org.biopax.paxtools.model.level3.SimplePhysicalEntity;
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathException;
+import org.cytoscape.cpath2.internal.CPathProperties;
+import org.cytoscape.cpath2.internal.CPathResponseFormat;
+import org.cytoscape.cpath2.internal.CPathWebService;
+import org.cytoscape.cpath2.internal.EmptySetException;
 import org.cytoscape.cpath2.internal.StaxHack;
 import org.cytoscape.cpath2.internal.util.AttributeUtil;
 import org.cytoscape.cpath2.internal.util.BioPaxUtil;
 import org.cytoscape.cpath2.internal.util.SelectUtil;
-import org.cytoscape.cpath2.internal.web_service.CPathException;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
-import org.cytoscape.cpath2.internal.web_service.CPathResponseFormat;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
-import org.cytoscape.cpath2.internal.web_service.EmptySetException;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -66,8 +66,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -88,8 +86,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 	private final static String CPATH_SERVER_NAME_ATTRIBUTE = "CPATH_SERVER_NAME";
 	private final static String CPATH_SERVER_DETAILS_URL = "CPATH_SERVER_DETAILS_URL";
 	private Logger logger = LoggerFactory.getLogger(ExecuteGetRecordByCPathId.class);
-	private final CPath2Factory cPathFactory;
-	private final VisualMappingManager mappingManager;
+	private final CPathFactory cPathFactory;
 
 
 	/**
@@ -111,8 +108,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			CPathResponseFormat format,
 			String networkTitle, 
 			CyNetwork mergedNetwork, 
-			CPath2Factory cPathFactory,  
-			VisualMappingManager mappingManager) 
+			CPathFactory cPathFactory) 
 	{
 		this.webApi = webApi;
 		this.ids = ids;
@@ -120,7 +116,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		this.networkTitle = networkTitle;
 		this.mergedNetwork = mergedNetwork;
 		this.cPathFactory = cPathFactory;
-		this.mappingManager = mappingManager;
 	}
 
 	/**
@@ -283,8 +278,6 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		// Set the Quick Find Default Index
 		AttributeUtil.set(cyNetwork, cyNetwork, "quickfind.default_index", CyNetwork.NAME, String.class);
 
-		// Specify that this is a BINARY_NETWORK
-		AttributeUtil.set(cyNetwork, cyNetwork, "BIOPAX_NETWORK", Boolean.TRUE, Boolean.class);
 
 		// Get all node details.
 		getNodeDetails(cyNetwork, taskMonitor);
@@ -293,15 +286,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			if (mergedNetwork != null) {
 				mergeNetworks(cyNetwork, taskMonitor);
 			} else {
-				if (taskMonitor != null) {
-					taskMonitor.setStatusMessage("Creating Network View...");
-					taskMonitor.setProgress(0);
-				}
-
-				VisualStyle visualStyle = cPathFactory.getBinarySifVisualStyleUtil().getVisualStyle();
-				mappingManager.setVisualStyle(visualStyle, view);
-				visualStyle.apply(view);
-				view.updateView();
+				//nothing
 			}
 		}
 	}
@@ -318,41 +303,8 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			if (mergedNetwork != null) {
 				mergeNetworks(cyNetwork, taskMonitor);
 			} else {
-				// } else if (cyNetwork.getNodeCount() <
-				// Integer.parseInt(CytoscapeInit.getProperties()
-				// .getProperty("viewThreshold"))) {
-				if (taskMonitor != null) {
-					taskMonitor.setStatusMessage("Creating Network View...");
-					taskMonitor.setProgress(0);
-				}
-
-				// Set up the right visual style
-				// VisualStyle visualStyle =
-				// BioPaxVisualStyleUtil.getBioPaxVisualStyle();
-
-				// Set up the right layout algorithm.
-				// LayoutUtil layoutAlgorithm = new LayoutUtil();
-
-				// Now, create the view.
-				// Use local create view option, so that we don't mess up the
-				// visual style.
-				// CyNetworkView view = createNetworkView(cyNetwork,
-				// cyNetwork.getCyRow(cyNetwork).get(CyNetwork.NAME, String.class),
-				// layoutAlgorithm, null);
-
-				// Now apply the visual style;
-				// Doing this as a separate step ensures that the visual style
-				// appears
-				// in the visual style drop-down menu.
-				// view.applyVizmapper(visualStyle);
+				//nothing (BioPAX visual style is applied by the biopax core plugin)
 			}
-		} else {
-			// If we have requested a halt, and we have a network, destroy it.
-			// TODO: Review: Network hasn't been added to manager at this point
-			// so we don't need to do the following, right?
-			// if (cyNetwork != null) {
-			// Cytoscape.destroyNetwork(cyNetwork);
-			// }
 		}
 	}
 
@@ -443,7 +395,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 				Model model = convertFromOwl(new ByteArrayInputStream(xml.getBytes()));
 				// convert L2 to L3 if required (L1 is converted to L2 always anyway - by the handler)
 				if(BioPAXLevel.L2.equals(model.getLevel())) { // 
-					model = (new OneTwoThree()).filter(model);
+					model = (new LevelUpgrader()).filter(model);
 				}
 				//map biopax properties to Cy attributes for SIF nodes
 				for (BioPAXElement e : model.getObjects()) {
@@ -509,42 +461,7 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 			masterList.add(currentList);
 		}
 		return masterList;
-	}
-
-	// private CyNetworkView createNetworkView (CyNetwork network, String title,
-	// CyLayoutAlgorithm
-	// layout, VisualStyle vs) {
-	//
-	// if (viewManager.viewExists((network.getSUID()))) {
-	// return Cytoscape.getNetworkView(network.getIdentifier());
-	// }
-	//
-	// final DingNetworkView view = new DingNetworkView(network, title);
-	// view.setGraphLOD(new CyGraphLOD());
-	// view.setIdentifier(network.getIdentifier());
-	// view.setTitle(network.getTitle());
-	// Cytoscape.getNetworkViewMap().put(network.getIdentifier(), view);
-	// Cytoscape.setSelectionMode(Cytoscape.getSelectionMode(), view);
-	//
-	// VisualMappingManager VMM = Cytoscape.getVisualMappingManager();
-	// if (vs != null) {
-	// view.setVisualStyle(vs.getName());
-	// VMM.setVisualStyle(vs);
-	// VMM.setNetworkView(view);
-	// }
-	//
-	// if (layout == null) {
-	// layout = CyLayouts.getDefaultLayout();
-	// }
-	//
-	// Cytoscape.firePropertyChange(cytoscape.view.CytoscapeDesktop.NETWORK_VIEW_CREATED,
-	// null, view);
-	// layout.doLayout(view);
-	// view.fitContent();
-	// view.redrawGraph(false, true);
-	// return view;
-	// }
-	
+	}	
 
 	class NullTaskMonitor implements TaskMonitor {
 		@Override
@@ -558,36 +475,9 @@ public class ExecuteGetRecordByCPathId extends AbstractTask {
 		@Override
 		public void setTitle(String arg0) {
 		}
-	}
 
-	private void fixDisplayName(Model model) {
-		if (logger.isInfoEnabled())
-			logger.info("Trying to auto-fix 'null' displayName...");
-		// where it's null, set to the shortest name if possible
-		for (Named e : model.getObjects(Named.class)) {
-			if (e.getDisplayName() == null) {
-				if (e.getStandardName() != null) {
-					e.setDisplayName(e.getStandardName());
-				} else if (!e.getName().isEmpty()) {
-					String dsp = e.getName().iterator().next();
-					for (String name : e.getName()) {
-						if (name.length() < dsp.length())
-							dsp = name;
-					}
-					e.setDisplayName(dsp);
-				}
-			}
-		}
-		// if required, set PE name to (already fixed) ER's name...
-		for(EntityReference er : model.getObjects(EntityReference.class)) {
-			for(SimplePhysicalEntity spe : er.getEntityReferenceOf()) {
-				if(spe.getDisplayName() == null || spe.getDisplayName().trim().length() == 0) {
-					if(er.getDisplayName() != null && er.getDisplayName().trim().length() > 0) {
-						spe.setDisplayName(er.getDisplayName());
-					}
-				}
-			}
-		}
+        public void showMessage(TaskMonitor.Level level, String mesage) {
+        }
 	}
-		
+	
 }

@@ -3,10 +3,11 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.0.2</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<artifactId>io-impl-parent</artifactId>
+  <version>3.1.0</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape IO Impl Parent (${project.artifactId})</name>
 
@@ -33,6 +34,31 @@
         </plugins>
     </build>
 
+
+	<repositories>
+		<repository>
+			<id>cytoscape_snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<name>Cytoscape Snapshots</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
+			<id>cytoscape_releases</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Cytoscape Releases</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
+		</repository>
+	</repositories>
 
 	<!--
 	Dependencies included here should *ONLY* be for the impl bundle.
@@ -110,6 +136,17 @@
 			<artifactId>freehep-graphicsio-ps</artifactId>
 			<version>2.1.3</version>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- For Testing -->
 		<dependency>
@@ -121,7 +158,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<scope>test</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -164,12 +201,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>equations-impl</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
@@ -184,6 +215,12 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>filter2-impl</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -37,16 +37,13 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
-import org.cytoscape.cpath2.internal.CPath2Factory;
+import org.cytoscape.cpath2.internal.CPathFactory;
+import org.cytoscape.cpath2.internal.CPathProperties;
+import org.cytoscape.cpath2.internal.CPathResponseFormat;
+import org.cytoscape.cpath2.internal.CPathWebService;
+import org.cytoscape.cpath2.internal.CPathWebServiceImpl;
 import org.cytoscape.cpath2.internal.task.ExecuteGetRecordByCPathIdTaskFactory;
 import org.cytoscape.cpath2.internal.util.NetworkMergeUtil;
-import org.cytoscape.cpath2.internal.view.model.InteractionBundleModel;
-import org.cytoscape.cpath2.internal.view.model.NetworkWrapper;
-import org.cytoscape.cpath2.internal.view.model.PathwayTableModel;
-import org.cytoscape.cpath2.internal.web_service.CPathProperties;
-import org.cytoscape.cpath2.internal.web_service.CPathResponseFormat;
-import org.cytoscape.cpath2.internal.web_service.CPathWebService;
-import org.cytoscape.cpath2.internal.web_service.CPathWebServiceImpl;
 
 /**
  * Search Details Panel.
@@ -55,7 +52,7 @@ import org.cytoscape.cpath2.internal.web_service.CPathWebServiceImpl;
  */
 public class SearchDetailsPanel extends JPanel {
 	
-    private CPath2Factory factory;
+    private CPathFactory factory;
 
 	/**
      * Constructor.
@@ -66,7 +63,7 @@ public class SearchDetailsPanel extends JPanel {
      * @param taskManager 
      */
     public SearchDetailsPanel(InteractionBundleModel interactionBundleModel,
-            PathwayTableModel pathwayTableModel, CPath2Factory factory) {
+            PathwayTableModel pathwayTableModel, CPathFactory factory) {
     	this.factory = factory;
         GradientHeader header = new GradientHeader("Step 3:  Select Network(s)");
         setLayout(new BorderLayout());
