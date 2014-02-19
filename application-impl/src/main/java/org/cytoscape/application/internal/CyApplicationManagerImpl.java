@@ -369,7 +369,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		this.currentRenderingEngine = engine;
 		
 		if (engine != null) {
-			currentRenderer = getRenderer(engine.getRendererId());
+			currentRenderer = getNetworkViewRenderer(engine.getRendererId());
 		} else {
 			currentRenderer = null;
 		}
@@ -378,7 +378,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 			cyEventHelper.fireEvent(new SetCurrentRenderingEngineEvent(this, this.currentRenderingEngine));
 	}
 
-	private NetworkViewRenderer getRenderer(String rendererId) {
+	@Override
+	public NetworkViewRenderer getNetworkViewRenderer(final String rendererId) {
 		return renderers.get(rendererId);
 	}
 
