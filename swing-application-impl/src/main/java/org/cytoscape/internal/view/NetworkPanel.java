@@ -32,6 +32,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,6 +43,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -56,6 +58,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -63,11 +66,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
@@ -182,7 +189,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		this.factoryProvisioner = factoryProvisioner;
 		
 		root = new NetworkTreeNode("Network Root", null);
-		treeTableModel = new NetworkTreeTableModel(this, root);
+		treeTableModel = new NetworkTreeTableModel(this, root, netViewMgr);
 		treeTable = new JTreeTable(treeTableModel);
 		
 		icon = new ImageIcon(getClass().getResource("/images/class_hi.gif"));
@@ -278,6 +285,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		treeTable.setSelectionBackground(new Color(200, 200, 200, 150));
 
 		treeTable.getColumn("Network").setPreferredWidth(250);
+		treeTable.getColumn("Views").setPreferredWidth(45);
 		treeTable.getColumn("Nodes").setPreferredWidth(45);
 		treeTable.getColumn("Edges").setPreferredWidth(45);
 
@@ -974,9 +982,20 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 					if (selectedList == null || !selectedList.contains(network)) {
 						appMgr.setCurrentNetwork(network);
 						appMgr.setSelectedNetworks(Arrays.asList(new CyNetwork[]{ network }));
-						final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
-						appMgr.setSelectedNetworkViews(new ArrayList<CyNetworkView>(netViews));
+//						final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
+//						appMgr.setSelectedNetworkViews(new ArrayList<CyNetworkView>(netViews));
 					}
+					
+					// Make sure all network views of selected networks are selected as well,
+					// so tasks/actions are executed on all of them
+					final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+					
+					for (final CyNetwork n : appMgr.getSelectedNetworks()) {
+						if (netMgr.networkExists(n.getSUID()))
+							selectedViews.addAll(netViewMgr.getNetworkViews(n));
+					}
+					
+					appMgr.setSelectedNetworkViews(selectedViews);
 					
 					// Always repaint, because the rendering of the tree selection
 					// may be out of sync with the AppManager one
