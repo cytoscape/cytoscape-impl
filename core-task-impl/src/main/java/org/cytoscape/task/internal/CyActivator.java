@@ -25,6 +25,7 @@ package org.cytoscape.task.internal;
  */
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -198,7 +199,7 @@ public class CyActivator extends AbstractCyActivator {
 		SaveSessionAsTaskFactoryImpl saveSessionAsTaskFactory = new SaveSessionAsTaskFactoryImpl( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef, tunableSetterServiceRef);
 		ProxySettingsTaskFactoryImpl proxySettingsTaskFactory = new ProxySettingsTaskFactoryImpl(cyPropertyServiceRef, streamUtilRef);
 		EditNetworkTitleTaskFactoryImpl editNetworkTitleTaskFactory = new EditNetworkTitleTaskFactoryImpl(undoSupportServiceRef, cyNetworkManagerServiceRef, cyNetworkNamingServiceRef, tunableSetterServiceRef);
-		CreateNetworkViewTaskFactoryImpl createNetworkViewTaskFactory = new CreateNetworkViewTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,cyLayoutsServiceRef,cyEventHelperRef,visualMappingManagerServiceRef,renderingEngineManagerServiceRef,cyApplicationManagerServiceRef);
+		CreateNetworkViewTaskFactoryImpl createNetworkViewTaskFactory = new CreateNetworkViewTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyLayoutsServiceRef,cyEventHelperRef,visualMappingManagerServiceRef,renderingEngineManagerServiceRef,cyApplicationManagerServiceRef);
 		ExportNetworkImageTaskFactoryImpl exportNetworkImageTaskFactory = new ExportNetworkImageTaskFactoryImpl(viewWriterManagerServiceRef,cyApplicationManagerServiceRef);
 		ExportNetworkTaskFactoryImpl exportNetworkTaskFactory = new ExportNetworkTaskFactoryImpl(networkViewWriterManagerServiceRef, tunableSetterServiceRef);
 		ExportNetworkViewTaskFactoryImpl exportNetworkViewTaskFactory = new ExportNetworkViewTaskFactoryImpl(networkViewWriterManagerServiceRef, tunableSetterServiceRef);
@@ -653,7 +654,7 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		destroyNetworkViewTaskFactoryProps.setProperty(ACCELERATOR,"cmd w");
 		destroyNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
-		destroyNetworkViewTaskFactoryProps.setProperty(TITLE,"Destroy View");
+		destroyNetworkViewTaskFactoryProps.setProperty(TITLE,"Destroy Views");
 		destroyNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
 		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND,"destroy");
@@ -730,6 +731,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		registerService(bc,createNetworkViewTaskFactory,NetworkCollectionTaskFactory.class, createNetworkViewTaskFactoryProps);
 		registerService(bc,createNetworkViewTaskFactory,CreateNetworkViewTaskFactory.class, createNetworkViewTaskFactoryProps);
+		registerServiceListener(bc, createNetworkViewTaskFactory, "addNetworkViewRenderer", "removeNetworkViewRenderer", NetworkViewRenderer.class);
 
 		// For commands
 		Properties createNetworkViewCommandProps = new Properties();
