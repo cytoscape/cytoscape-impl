@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.cytoscape</groupId>
     <artifactId>impl-parent</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -14,7 +14,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>layout-cytoscape-impl</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1-SNAPSHOT</version>
 
   <name>Cytoscape Layout Algorithms Impl (${project.artifactId})</name>
 

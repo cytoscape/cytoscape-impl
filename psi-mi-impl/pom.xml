@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.1.0</version>
+		<version>3.1.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>psi-mi-impl-parent</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
     <name>Cytoscape PSI-MI Impl Parent (${project.artifactId})</name>
 

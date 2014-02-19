@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.1.0</version>
+		<version>3.1.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>gui-cmdline-parser-impl</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1-SNAPSHOT</version>
 
 	<name>Cytoscape GUI Command Line Parser Impl (${project.artifactId})</name>
 
