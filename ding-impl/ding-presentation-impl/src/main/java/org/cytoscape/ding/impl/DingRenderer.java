@@ -9,7 +9,9 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 
 public class DingRenderer implements NetworkViewRenderer {
+	
 	public static final String ID = "org.cytoscape.ding";
+	public static final String DISPLAY_NAME = "Cytoscape 2D";
 	
 	private static DingRenderer instance = new DingRenderer();
 	
@@ -49,5 +51,10 @@ public class DingRenderer implements NetworkViewRenderer {
 	@Override
 	public String getId() {
 		return ID;
+	}
+	
+	@Override
+	public String toString() {
+		return DISPLAY_NAME;
 	}
 }
