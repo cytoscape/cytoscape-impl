@@ -130,7 +130,7 @@ public class ReadDataManager {
 	private Object networkViewId;
 	private Object networkId;
 	private String visualStyleName;
-	private String rendererName;
+	private String rendererId;
 	private Object currentElementId; // node/edge/network old id
 	private Map<Object/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewGraphics;
 	private Map<Object/*old model id*/, Map<String/*att name*/, String/*att value*/>> viewLockedGraphics;
@@ -209,7 +209,7 @@ public class ReadDataManager {
 		networkViewId = null;
 		networkId = null;
 		visualStyleName = null;
-		rendererName = null;
+		rendererId = null;
 		viewGraphics = new LinkedHashMap<Object, Map<String,String>>();
 		viewLockedGraphics = new LinkedHashMap<Object, Map<String,String>>();
 	}
@@ -642,12 +642,12 @@ public class ReadDataManager {
 		this.visualStyleName = visualStyleName;
 	}
 
-	public String getRendererName() {
-		return rendererName;
+	public String getRendererId() {
+		return rendererId;
 	}
 
-	protected void setRendererName(String rendererName) {
-		this.rendererName = rendererName;
+	protected void setRendererId(String rendererId) {
+		this.rendererId = rendererId;
 	}
 	
 	protected Object getCurrentElementId() {
