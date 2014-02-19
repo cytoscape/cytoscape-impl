@@ -519,8 +519,12 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 				final NetworkTreeNode node = treeNodeMap.get(netView.getModel().getSUID());
 				
 				if (node != null) {
-					node.setNodeColor(Color.red);
-					treeTable.repaint();
+					final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(netView.getModel());
+					
+					if (views.isEmpty()) {
+						node.setNodeColor(NetworkTreeNode.DEF_NODE_COLOR);
+						treeTable.repaint();
+					}
 				}
 			}
 		});
