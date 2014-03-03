@@ -63,13 +63,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	private BufferedImage image;
 	private	URL url = null;
 
-	private static final String URL="URL";
-	private static final String WIDTH="width";
-	private static final String HEIGHT="height";
-	private static final String OPACITY="opacity";
-	private static final String CONTRAST="contrast";
-	private static final String LIGHTNESS="brightness";
-
 	private static final float MAX_CONTRAST=4.0f;
 	
 	protected double imageWidth=0, imageHeight=0;
@@ -125,11 +118,18 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		super(cyAnnotator, view, argMap);
 		this.customGraphicsManager = customGraphicsManager;
 
-		imageWidth = getDouble(argMap, WIDTH, 100.0);
-		imageHeight = getDouble(argMap, HEIGHT, 100.0);
+		imageWidth = getDouble(argMap, ImageAnnotation.WIDTH, 100.0);
+		imageHeight = getDouble(argMap, ImageAnnotation.HEIGHT, 100.0);
+
+		opacity = getFloat(argMap, OPACITY, 1.0f);
+		brightness = getInteger(argMap, LIGHTNESS, 0);
+		contrast = getInteger(argMap, CONTRAST, 0);
 
 		this.image = null;
 		this.resizedImage = null;
+
+		if (!argMap.containsKey(URL))
+			return;
 
 		// Get the image from the image pool
 		try {
@@ -145,18 +145,14 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			logger.warn("Unable to restore image '"+argMap.get(URL)+"'",e);
 			return;
 		}
-
-		opacity = getFloat(argMap, OPACITY, 1.0f);
-		brightness = getInteger(argMap, LIGHTNESS, 0);
-		contrast = getInteger(argMap, CONTRAST, 0);
 	}
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,ImageAnnotation.class.getName());
 		argMap.put(URL, url.toString());
-		argMap.put(WIDTH, Double.toString(imageWidth));
-		argMap.put(HEIGHT, Double.toString(imageHeight));
+		argMap.put(ImageAnnotation.WIDTH, Double.toString(imageWidth));
+		argMap.put(ImageAnnotation.HEIGHT, Double.toString(imageHeight));
 		argMap.put(OPACITY, Float.toString(opacity));
 		argMap.put(LIGHTNESS, Integer.toString(brightness));
 		argMap.put(CONTRAST, Integer.toString(contrast));

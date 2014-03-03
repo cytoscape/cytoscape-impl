@@ -48,13 +48,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	private String text;
 	private boolean shapeIsFit = false;
 
-	public static final String FONTCOLOR="fontColor";
-	public static final String TEXT="text";
-	public static final String COLOR="color";
-	public static final String FONTFAMILY="fontFamily";
-	public static final String FONTSIZE="fontSize";
-	public static final String FONTSTYLE="fontStyle";
-
 	private Font scaledFont = null;
 	private double lastScaleFactor = -1;
 
@@ -101,11 +94,12 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
 	                                 Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
-		this.font = getArgFont(argMap);
+		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
     this.textColor = getColor(argMap, COLOR, Color.BLACK);
-		this.text = argMap.get(TEXT);
+		this.text = getString(argMap, TEXT, "");
 		this.fontSize = font.getSize2D();
-		if (!argMap.containsKey(ShapeAnnotationImpl.WIDTH)) {
+
+		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
 			double width = getTextWidth((Graphics2D)this.getGraphics())+8;
 			double height = getTextHeight((Graphics2D)this.getGraphics())+8;
 			super.setSize(width, height);

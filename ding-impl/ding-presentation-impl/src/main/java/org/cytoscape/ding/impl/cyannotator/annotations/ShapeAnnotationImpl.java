@@ -55,17 +55,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double shapeHeight = 0.0;
 	protected double factor = 1.0;
 
-	protected static final String WIDTH="width";
-	protected static final String HEIGHT="height";
-	protected static final String EDGECOLOR = "edgeColor";
-	protected static final String EDGETHICKNESS = "edgeThickness";
-	protected static final String EDGEOPACITY = "edgeOpacity";
-	protected static final String FILLCOLOR = "fillColor";
-	protected static final String FILLOPACITY = "fillOpacity";
-	protected static final String SHAPETYPE = "shapeType";
-	protected static final String CUSTOMSHAPE = "customShape";
-
-
 	public enum ShapeType {
 		RECTANGLE ("Rectangle"),
 		ROUNDEDRECTANGLE ("Rounded Rectangle"),
@@ -135,8 +124,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.fillOpacity = getDouble(argMap, FILLOPACITY, 100.0);
 
     // If this is an old bounded text, we might not (yet) have a width or height
-    this.shapeWidth = getDouble(argMap, WIDTH, 100.0);
-    this.shapeHeight = getDouble(argMap, HEIGHT, 100.0);
+    this.shapeWidth = getDouble(argMap, ShapeAnnotation.WIDTH, 100.0);
+    this.shapeHeight = getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0);
 
     this.borderWidth = getDouble(argMap, EDGETHICKNESS, 1.0);
     this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
@@ -162,8 +151,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		argMap.put(EDGETHICKNESS,Double.toString(this.borderWidth));
 		argMap.put(EDGEOPACITY, Double.toString(this.borderOpacity));
 		argMap.put(SHAPETYPE, Integer.toString(this.shapeType.ordinal()));
-		argMap.put(WIDTH, Double.toString(this.shapeWidth));
-		argMap.put(HEIGHT, Double.toString(this.shapeHeight));
+		argMap.put(ShapeAnnotation.WIDTH, Double.toString(this.shapeWidth));
+		argMap.put(ShapeAnnotation.HEIGHT, Double.toString(this.shapeHeight));
 		if (shapeType.equals(ShapeType.CUSTOM))
 			argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
 		return argMap;

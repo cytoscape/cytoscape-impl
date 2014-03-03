@@ -52,7 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnnotation {
-	public static final String MEMBERS = "memberUUIDs";
 
 	List<DingAnnotation> annotations = null;
 	Rectangle2D bounds = null;

@@ -44,14 +44,7 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
-	private String text;
-
-	public static final String FONTCOLOR="fontColor";
-	public static final String TEXT="text";
-	public static final String COLOR="color";
-	public static final String FONTFAMILY="fontFamily";
-	public static final String FONTSIZE="fontSize";
-	public static final String FONTSTYLE="fontStyle";
+	private String text = "";
 
 	private Font scaledFont = null;
 	private double lastScaleFactor = -1;
@@ -87,11 +80,12 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	// This constructor is used to construct a text annotation from an
 	// argument map.
+	// Need to make sure all arguments have reasonable options
 	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
-		this.font = getArgFont(argMap);
+		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
     this.textColor = getColor(argMap, COLOR, Color.BLACK);
-		this.text = argMap.get(TEXT);
+		this.text = getString(argMap, TEXT, "");
 		this.fontSize = font.getSize2D();
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
@@ -285,13 +279,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		// If we don't have a graphics context, yet, make some assumptions
 		return (int)(fontSize*1.5);
 */
-	}
-
-	Font getArgFont(Map<String, String> argMap) {
-		String family = argMap.get(FONTFAMILY);
-		int size = Integer.parseInt(argMap.get(FONTSIZE));
-		int style = Integer.parseInt(argMap.get(FONTSTYLE));
-		return new Font(family, style, size);
 	}
 
 }
