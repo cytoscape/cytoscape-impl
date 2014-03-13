@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -45,6 +46,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
@@ -135,8 +137,8 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		this.cyAnnotator = cyAnnotator;
 		this.view = view;
 		Point2D coords = getComponentCoordinates(argMap);
-		this.globalZoom = Double.parseDouble(argMap.get(ZOOM));
-		String canvasString = argMap.get(CANVAS);
+		this.globalZoom = getDouble(argMap, ZOOM, 1.0);
+		String canvasString = getString(argMap, CANVAS, FOREGROUND);
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
 			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
 			this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
@@ -460,6 +462,12 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		return new Color(Integer.parseInt(argMap.get(key)));
 	}
 
+  protected Double getDouble(Map<String, String> argMap, String key, double defValue) {
+		if (!argMap.containsKey(key) || argMap.get(key) == null)
+			return defValue;
+		return Double.parseDouble(argMap.get(key));
+	}
+
   protected Float getFloat(Map<String, String> argMap, String key, float defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
@@ -472,10 +480,17 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		return Integer.parseInt(argMap.get(key));
 	}
 
-  protected Double getDouble(Map<String, String> argMap, String key, double defValue) {
+  protected String getString(Map<String, String> argMap, String key, String defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
-		return Double.parseDouble(argMap.get(key));
+		return argMap.get(key);
+	}
+ 
+	protected Font getArgFont(Map<String, String> argMap, String defFamily, int defStyle, int defSize) {
+		String family = getString(argMap, TextAnnotationImpl.FONTFAMILY, defFamily);
+		int size = getInteger(argMap, TextAnnotationImpl.FONTSIZE, defSize);
+		int style = getInteger(argMap, TextAnnotationImpl.FONTSTYLE, defStyle);
+		return new Font(family, style, size);
 	}
 
 	// Private methods
@@ -488,8 +503,13 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	protected Point2D getComponentCoordinates(Map<String, String> argMap) {
 		// Get our current transform
 		double[] nextLocn = new double[2];
-		nextLocn[0] = Double.parseDouble(argMap.get(X));
-		nextLocn[1] = Double.parseDouble(argMap.get(Y));
+		nextLocn[0] = 0.0;
+		nextLocn[1] = 0.0;
+
+		if (argMap.containsKey(X))
+			nextLocn[0] = Double.parseDouble(argMap.get(X));
+		if (argMap.containsKey(Y))
+			nextLocn[1] = Double.parseDouble(argMap.get(Y));
 
 		view.xformNodeToComponentCoords(nextLocn);
 		
