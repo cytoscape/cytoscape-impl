@@ -626,6 +626,13 @@ class CyGroupImpl implements CyGroup {
 		// Get the list of nodes we collapsed in this net
 		List<CyNode> nodes = collapsedNodes.get(net.getSUID());
 
+		// If we were just restored as part of a session, we will be "collapsed", but
+		// not really collapsed cleanly, so our collapsedNodes map will not (yet) be
+		// initialized.  Handle this special case here
+		if (nodes == null) {
+			nodes = getNodeList();
+		}
+
 		// Expand it.
 
 		// Remove the group node from the target network only if
