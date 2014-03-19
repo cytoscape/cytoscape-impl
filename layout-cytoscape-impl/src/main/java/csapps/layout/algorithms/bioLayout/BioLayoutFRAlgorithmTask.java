@@ -156,8 +156,8 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		// nodes * 2
 		calculateSize();
 
-		System.out.println("BioLayoutFR Algorithm.  Laying out " + partition.nodeCount()
-		                   + " nodes and " + partition.edgeCount() + " edges: ");
+		//System.out.println("BioLayoutFR Algorithm.  Laying out " + partition.nodeCount()
+		//                   + " nodes and " + partition.edgeCount() + " edges: ");
 
 		// Initialize our temperature
 		double temp;
@@ -240,6 +240,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		xDelta = finalLocation.getX() - initialLocation.getX();
 		yDelta = finalLocation.getY() - initialLocation.getY();
 
+		partition.resetNodes();
 		for (LayoutNode v: partition.getNodeList()) {
 			if (!v.isLocked()) {
 				v.decrement(xDelta, yDelta);
@@ -247,7 +248,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 			}
 		}
 
-		System.out.println("Layout complete after " + iteration + " iterations");
+		//System.out.println("Layout complete after " + iteration + " iterations");
 	}
 
 	/**
@@ -588,9 +589,9 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		this.maxDistance = Math.max(Math.max(averageWidth * 10, averageHeight * 10),
 		                            Math.min(width, height) * context.max_distance_factor / 100);
 
-		        System.out.println("Size: "+width+" x "+height);
-		        System.out.println("maxDistance = "+maxDistance);
-		        System.out.println("maxVelocity = "+maxVelocity);
+		        // System.out.println("Size: "+width+" x "+height);
+		        // System.out.println("maxDistance = "+maxDistance);
+		        // System.out.println("maxVelocity = "+maxVelocity);
 		/*
 		*/
 	}

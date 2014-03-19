@@ -82,7 +82,7 @@ public class ISOMLayoutTask  extends AbstractPartitionLayoutTask {
 
 		adaption = context.initialAdaptation;
 
-		System.out.println("Epoch: " + epoch + " maxEpoch: " + context.maxEpoch);
+		// System.out.println("Epoch: " + epoch + " maxEpoch: " + context.maxEpoch);
 
 		while (epoch < context.maxEpoch) {
 			partition.resetNodes();
