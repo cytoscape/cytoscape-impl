@@ -2514,9 +2514,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void clearValueLock(final VisualProperty<?> vp) {
-		directLocks.remove(vp);
-		allLocks.remove(vp);
-		applyVisualProperty(vp, visualProperties.get(vp)); // always apply the regular vp
+		lock.writeLock().lock();
+		try {
+			directLocks.remove(vp);
+			allLocks.remove(vp);
+			applyVisualProperty(vp, visualProperties.get(vp)); // always apply the regular vp
+		} finally {
+			lock.writeLock().unlock();
+		}
 	}
 	
 	@Override
