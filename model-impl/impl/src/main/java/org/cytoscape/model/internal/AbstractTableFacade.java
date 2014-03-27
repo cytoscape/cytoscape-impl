@@ -40,6 +40,8 @@ import org.cytoscape.model.VirtualColumnInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.MapMaker;
+
 
 /**
  * An abstract table facade class. 
@@ -57,8 +59,8 @@ public abstract class AbstractTableFacade implements CyTable {
 	public AbstractTableFacade(final CyTable actual) {
 		this.actual = actual;
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID()); 
-		this.facadeRows = new HashMap<CyRow,CyRow>();
-		this.facadeColumns = new HashMap<CyColumn,CyColumn>();
+		this.facadeRows = new MapMaker().weakKeys().makeMap();
+		this.facadeColumns = new MapMaker().weakKeys().makeMap();
 	}
 
 	@Override
