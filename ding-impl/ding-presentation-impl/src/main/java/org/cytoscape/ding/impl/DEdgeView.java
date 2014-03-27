@@ -607,7 +607,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void clearValueLock(final VisualProperty<?> vp) {
-		final boolean isDefault = !visualProperties.containsKey(vp);
+		final boolean isDefault;
+		lock.readLock().lock();
+		try {
+			isDefault = !visualProperties.containsKey(vp);
+		} finally {
+			lock.readLock().unlock();
+		}
 		super.clearValueLock(vp);
 		
 		// Reset to the visual style default if visualProperties map doesn't contain this vp

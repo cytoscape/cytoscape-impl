@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
@@ -50,6 +52,9 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	protected final Map<VisualProperty<?>, Object> directLocks;
 	protected final Map<VisualProperty<?>, Object> allLocks;
 
+	// Protects access to visual property/lock maps
+	protected ReadWriteLock lock;
+	
 	/**
 	 * Create an instance of view model, but not firing event to upper layer.
 	 * 
@@ -63,9 +68,12 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		this.model = model;
 		this.lexicon = lexicon;
 
+		// All access to these maps should go through "lock" field
 		this.visualProperties = new IdentityHashMap<VisualProperty<?>, Object>();
 		this.directLocks = new IdentityHashMap<VisualProperty<?>, Object>();
 		allLocks = new IdentityHashMap<VisualProperty<?>, Object>();
+		
+		lock = new ReentrantReadWriteLock(true);
 	}
 
 	@Override
@@ -80,10 +88,15 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
-		if (value == null)
-			visualProperties.remove(vp);
-		else
-			visualProperties.put(vp, value);
+		lock.writeLock().lock();
+		try {
+			if (value == null)
+				visualProperties.remove(vp);
+			else
+				visualProperties.put(vp, value);
+		} finally {
+			lock.writeLock().unlock();
+		}
 
 		if (!isValueLocked(vp))
 			applyVisualProperty(vp, value);
@@ -101,6 +114,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 			
 			if (!isDirectlyLocked(vp)) {
 				if (parent.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
+					// Caller should already have write lock to modify this
 					allLocks.put(vp, value);
 					applyVisualProperty(vp, value);
 				}
@@ -112,70 +126,96 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public boolean isDirectlyLocked(VisualProperty<?> visualProperty) {
-		return directLocks.get(visualProperty) != null;
+		lock.readLock().lock();
+		try {
+			return directLocks.get(visualProperty) != null;
+		} finally {
+			lock.readLock().unlock();
+		}
 	}
 	
 	@Override
 	public <T, V extends T> void setLockedValue(final VisualProperty<? extends T> vp, final V value) {
-		directLocks.put(vp, value);
-		allLocks.put(vp, value);
-		
-		applyVisualProperty(vp, value);
-		VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
-		propagateLockedVisualProperty(vp, node.getChildren(), value);
+		lock.writeLock().lock();
+		try {
+			directLocks.put(vp, value);
+			allLocks.put(vp, value);
+			
+			applyVisualProperty(vp, value);
+			VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
+			propagateLockedVisualProperty(vp, node.getChildren(), value);
+		} finally {
+			lock.writeLock().unlock();
+		}
 	}
 
 	@Override
 	public boolean isValueLocked(final VisualProperty<?> vp) {
-		return allLocks.get(vp) != null;
+		lock.readLock().lock();
+		try {
+			return allLocks.get(vp) != null;
+		} finally {
+			lock.readLock().unlock();
+		}
 	}
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void clearValueLock(final VisualProperty<?> vp) {
-		directLocks.remove(vp);
-		
-		VisualLexiconNode root = lexicon.getVisualLexiconNode(vp);
-		LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
-		nodes.add(root);
-		while (!nodes.isEmpty()) {
-			VisualLexiconNode node = nodes.pop();
-			VisualProperty visualProperty = node.getVisualProperty();
-			allLocks.remove(visualProperty);
+		lock.writeLock().lock();
+		try {
+			directLocks.remove(vp);
 			
-			// Re-apply the regular visual property value
-			if (visualProperties.containsKey(visualProperty)) {
-				applyVisualProperty(visualProperty, visualProperties.get(visualProperty));
-			// TODO else: reset to the visual style default if visualProperties map doesn't contain this vp
-			} else {
-				// Apply default if necessary.
-				final Object newValue = getVisualProperty(visualProperty);
-				applyVisualProperty(visualProperty, newValue);
-			}
-			
-			for (VisualLexiconNode child : node.getChildren()) {
-				if (!isDirectlyLocked(child.getVisualProperty())) {
-					nodes.add(child);
+			VisualLexiconNode root = lexicon.getVisualLexiconNode(vp);
+			LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
+			nodes.add(root);
+			while (!nodes.isEmpty()) {
+				VisualLexiconNode node = nodes.pop();
+				VisualProperty visualProperty = node.getVisualProperty();
+				allLocks.remove(visualProperty);
+				
+				// Re-apply the regular visual property value
+				if (visualProperties.containsKey(visualProperty)) {
+					applyVisualProperty(visualProperty, visualProperties.get(visualProperty));
+				// TODO else: reset to the visual style default if visualProperties map doesn't contain this vp
+				} else {
+					// Apply default if necessary.
+					final Object newValue = getVisualProperty(visualProperty);
+					applyVisualProperty(visualProperty, newValue);
 				}
+				
+				for (VisualLexiconNode child : node.getChildren()) {
+					if (!isDirectlyLocked(child.getVisualProperty())) {
+						nodes.add(child);
+					}
+				}
+				nodes.addAll(node.getChildren());
 			}
-			nodes.addAll(node.getChildren());
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getVisualProperty(final VisualProperty<T> vp) {
-		Object value = directLocks.get(vp);
-		if (value != null)
-			return (T) value;
-
-		value = allLocks.get(vp);
-		if (value != null)
-			return (T) value;
+		Object value;
+		lock.readLock().lock();
+		try {
+			value = directLocks.get(vp);
+			if (value != null)
+				return (T) value;
+	
+			value = allLocks.get(vp);
+			if (value != null)
+				return (T) value;
 		
-		value = visualProperties.get(vp);
-		if (value != null)
-			return (T) value;
+			value = visualProperties.get(vp);
+			if (value != null)
+				return (T) value;
+		} finally {
+			lock.readLock().unlock();
+		}
 		
 		// Mapped value is null.  Try default
 		value = this.getDefaultValue(vp);
@@ -187,21 +227,31 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	
 	@Override
 	public boolean isSet(final VisualProperty<?> vp) {
-		return visualProperties.get(vp) != null || allLocks.get(vp) != null || getDefaultValue(vp) != null;
+		lock.readLock().lock();
+		try {
+			return visualProperties.get(vp) != null || allLocks.get(vp) != null || getDefaultValue(vp) != null;
+		} finally {
+			lock.readLock().unlock();
+		}
 	}
 	
 	@Override
 	public void clearVisualProperties() {
-		final Iterator<Entry<VisualProperty<?>, Object>> it = visualProperties.entrySet().iterator();
-		
-		while (it.hasNext()) {
-			final Entry<VisualProperty<?>, Object> entry = it.next();
-			final VisualProperty<?> vp = entry.getKey();
+		lock.writeLock().lock();
+		try {
+			final Iterator<Entry<VisualProperty<?>, Object>> it = visualProperties.entrySet().iterator();
 			
-			if (!vp.shouldIgnoreDefault()) {
-				it.remove(); // do this first to prevent ConcurrentModificationExceptions later
-				setVisualProperty(vp, null);
+			while (it.hasNext()) {
+				final Entry<VisualProperty<?>, Object> entry = it.next();
+				final VisualProperty<?> vp = entry.getKey();
+				
+				if (!vp.shouldIgnoreDefault()) {
+					it.remove(); // do this first to prevent ConcurrentModificationExceptions later
+					setVisualProperty(vp, null);
+				}
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 	
