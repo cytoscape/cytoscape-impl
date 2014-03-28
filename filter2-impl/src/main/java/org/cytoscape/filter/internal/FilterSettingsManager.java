@@ -9,6 +9,8 @@ import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
@@ -16,7 +18,7 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FilterSettingsManager implements SessionAboutToBeSavedListener, SessionLoadedListener {
+public class FilterSettingsManager implements SessionAboutToBeSavedListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
 	static final Logger logger = LoggerFactory.getLogger(FilterSettingsManager.class);
 	static final String SESSION_NAMESPACE = "org.cytoscape.filter";
 	
@@ -31,17 +33,33 @@ public class FilterSettingsManager implements SessionAboutToBeSavedListener, Ses
 	}
 	
 	@Override
+	public void handleEvent(SessionAboutToBeLoadedEvent e) {
+		filterPanel.getController().reset(filterPanel);
+		transformerPanel.getController().reset(transformerPanel);
+		addDefaultsIfEmpty();
+	}
+	
+	private void addDefaultsIfEmpty() {
+		FilterPanelController filterPanelController = filterPanel.getController();
+		if (filterPanelController.getElementCount() == 0) {
+			filterPanelController.addNewElement("Default filter");
+		}
+		
+		TransformerPanelController transformerPanelController = transformerPanel.getController();
+		if (transformerPanelController.getElementCount() == 0) {
+			transformerPanelController.addNewElement("Default chain");
+		}
+	}
+	
+	@Override
 	public void handleEvent(SessionLoadedEvent event) {
 		List<File> files = event.getLoadedSession().getAppFileListMap().get(SESSION_NAMESPACE);
 		if (files == null) {
 			return;
 		}
 		
-		FilterPanelController filterPanelController = filterPanel.getController();
-		filterPanelController.reset();
-		
-		TransformerPanelController transformerPanelController = transformerPanel.getController();
-		transformerPanelController.reset();
+		filterPanel.getController().reset(filterPanel);
+		transformerPanel.getController().reset(transformerPanel);
 		
 		for (File file : files) {
 			try {
@@ -55,13 +73,7 @@ public class FilterSettingsManager implements SessionAboutToBeSavedListener, Ses
 			}
 		}
 		
-		if (filterPanelController.getElementCount() == 0) {
-			filterPanelController.addNewElement("Default filter");
-		}
-		
-		if (transformerPanelController.getElementCount() == 0) {
-			transformerPanelController.addNewElement("Default chain");
-		}
+		addDefaultsIfEmpty();
 	}
 
 	@Override

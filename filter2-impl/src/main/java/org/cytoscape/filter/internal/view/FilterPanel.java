@@ -92,4 +92,9 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 	public JCheckBox getApplyAutomaticallyCheckBox() {
 		return applyAutomaticallyCheckBox;
 	}
+	
+	@Override
+	public void reset() {
+		setRootPanel(null);
+	}
 }

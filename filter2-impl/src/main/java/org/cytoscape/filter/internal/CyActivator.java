@@ -55,6 +55,7 @@ import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.io.read.CyTransformerReader;
 import org.cytoscape.io.write.CyTransformerWriter;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.work.TaskManager;
@@ -115,6 +116,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		FilterSettingsManager settingsManager = new FilterSettingsManager(filterPanel, transformerPanel, filterIo);
 		registerService(context, settingsManager, SessionAboutToBeSavedListener.class, new Properties());
+		registerService(context, settingsManager, SessionAboutToBeLoadedListener.class, new Properties());
 		registerService(context, settingsManager, SessionLoadedListener.class, new Properties());
 	}
 }
