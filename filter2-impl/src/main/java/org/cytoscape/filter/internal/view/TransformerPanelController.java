@@ -2,6 +2,7 @@ package org.cytoscape.filter.internal.view;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -176,12 +177,18 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	@Override
 	public void addNamedTransformers(final TransformerPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					addNamedTransformers(panel, namedTransformers);
-				}
-			});
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					@Override
+					public void run() {
+						addNamedTransformers(panel, namedTransformers);
+					}
+				});
+			} catch (InterruptedException e) {
+				logger.error("An unexpected error occurred", e);
+			} catch (InvocationTargetException e) {
+				logger.error("An unexpected error occurred", e);
+			}
 			return;
 		}
 		

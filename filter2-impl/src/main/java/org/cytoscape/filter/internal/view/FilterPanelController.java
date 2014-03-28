@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -203,12 +204,18 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	@Override
 	public void addNamedTransformers(final FilterPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					addNamedTransformers(panel, namedTransformers);
-				}
-			});
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					@Override
+					public void run() {
+						addNamedTransformers(panel, namedTransformers);
+					}
+				});
+			} catch (InterruptedException e) {
+				logger.error("An unexpected error occurred", e);
+			} catch (InvocationTargetException e) {
+				logger.error("An unexpected error occurred", e);
+			}
 			return;
 		}
 		

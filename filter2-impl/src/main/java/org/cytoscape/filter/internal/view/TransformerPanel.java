@@ -89,4 +89,9 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 	public CompositeTransformerPanel getRootPanel() {
 		return root;
 	}
+	
+	@Override
+	public void reset() {
+		setRootPanel(null);
+	}
 }

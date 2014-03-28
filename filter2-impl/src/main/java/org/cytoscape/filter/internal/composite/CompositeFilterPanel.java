@@ -20,6 +20,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 import org.cytoscape.filter.internal.view.DragHandler;
@@ -102,6 +103,15 @@ public class CompositeFilterPanel extends JPanel {
 	}
 
 	public void updateLayout() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					updateLayout();
+				}
+			});
+			return;
+		}
 		removeAll();
 
 		final ParallelGroup checkBoxGroup = layout.createParallelGroup(Alignment.LEADING);
