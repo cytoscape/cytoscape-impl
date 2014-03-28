@@ -86,6 +86,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 
 			if (filter.getPredicate() == null) {
 				filter.setPredicate(Predicate.CONTAINS);
+				filter.setCriterion("");
 			}
 			
 			final Number[] range = new Number[2];
