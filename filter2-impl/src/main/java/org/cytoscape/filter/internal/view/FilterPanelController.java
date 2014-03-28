@@ -237,6 +237,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 					continue;
 				}
 				Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
+				addListeners(filter);
 				element.filter.append(filter);
 			}
 		}
@@ -247,6 +248,16 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		setFilter(selected.filter, panel);
 	}
 	
+	private void addListeners(Filter<CyNetwork, CyIdentifiable> filter) {
+		filter.addListener(worker);
+		if (filter instanceof CompositeFilter) {
+			CompositeFilter<CyNetwork, CyIdentifiable> composite = (CompositeFilter<CyNetwork, CyIdentifiable>) filter;
+			for (int i = 0; i < composite.getLength(); i++) {
+				addListeners(composite.get(i));
+			}
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers() {
