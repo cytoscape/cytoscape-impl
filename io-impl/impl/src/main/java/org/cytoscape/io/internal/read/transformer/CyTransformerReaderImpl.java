@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.model.CompositeFilter;
+import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.io.internal.util.FilterIO;
@@ -86,8 +88,28 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 		assertEquals(JsonToken.END_OBJECT, parser.getCurrentToken());
 		
 		FilterIO.applyParameters(parameters, transformer);
+		
+		if (transformer instanceof CompositeFilter) {
+			readCompositeFilter(parser, (CompositeFilter<?, ?>) transformer);
+		}
+		
 		assertNextToken(parser, JsonToken.END_OBJECT);
 		return transformer;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void readCompositeFilter(JsonParser parser, CompositeFilter composite) throws IOException {
+		assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+		assertEquals(FilterIO.TRANSFORMERS_FIELD, parser.getCurrentName());
+		assertEquals(JsonToken.START_ARRAY, parser.nextToken());
+		while (true) {
+			Filter filter = (Filter) readTransformer(parser);
+			if (filter == null) {
+				break;
+			}
+			composite.append(filter);
+		}
+		assertEquals(JsonToken.END_ARRAY, parser.getCurrentToken());
 	}
 
 	private Map<String, Object> readParameters(JsonParser parser, Transformer<?, ?> transformer) throws IOException {

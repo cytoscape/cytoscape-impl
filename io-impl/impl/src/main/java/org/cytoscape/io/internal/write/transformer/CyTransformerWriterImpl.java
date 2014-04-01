@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.io.internal.util.FilterIO;
@@ -79,6 +80,17 @@ public class CyTransformerWriterImpl implements CyTransformerWriter {
 				throw new IOException(e);
 			} finally {
 				generator.writeEndObject();
+			}
+			if (transformer instanceof CompositeFilter) {
+				CompositeFilter<?, ?> composite = (CompositeFilter<?, ?>) transformer;
+				generator.writeArrayFieldStart(FilterIO.TRANSFORMERS_FIELD);
+				try {
+					for (int i = 0; i < composite.getLength(); i++) {
+						write(generator, composite.get(i));
+					}
+				} finally {
+					generator.writeEndArray();
+				}
 			}
 		} finally {
 			generator.writeEndObject();
