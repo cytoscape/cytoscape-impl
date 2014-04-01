@@ -47,6 +47,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 	ModelMonitor modelMonitor;
 	List<ColumnComboBoxElement> nameComboBoxModel;
 	List<PredicateElement> predicateComboBoxModel;
+	List<Boolean> booleanComboBoxModel;
 	private IconManager iconManager;
 	
 	public ColumnFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
@@ -61,6 +62,10 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		predicateComboBoxModel.add(new PredicateElement(Predicate.IS, "is"));
 		predicateComboBoxModel.add(new PredicateElement(Predicate.IS_NOT, "is not"));
 		predicateComboBoxModel.add(new PredicateElement(Predicate.REGEX, "matches regex"));
+		
+		booleanComboBoxModel = new ArrayList<Boolean>();
+		booleanComboBoxModel.add(true);
+		booleanComboBoxModel.add(false);
 	}
 	
 	@Override
@@ -126,6 +131,13 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			filter.setCriterion(text);
 		}
 		
+		public void setBooleanCriterion(View view, Boolean value) {
+			if (value != null && value.equals(filter.getCriterion())) {
+				return;
+			}
+			filter.setCriterion(value);
+		}
+		
 		public void setColumnName(String name) {
 			filter.setColumnName(name);
 		}
@@ -182,14 +194,30 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			setColumnName(selected.name);
 			setMatchType(selected.columnType);
 			
-			if (modelMonitor.isString(selected.name, selected.columnType)) {
+			if (modelMonitor.checkType(selected.name, selected.columnType, String.class)) {
 				Predicate predicate = filter.getPredicate();
 				if (predicate == null || predicate == Predicate.BETWEEN) {
 					filter.setPredicate(Predicate.CONTAINS);
 				}
+				Object criterion = filter.getCriterion();
+				if (criterion == null || !(criterion instanceof String)) {
+					filter.setPredicate(Predicate.CONTAINS);
+					filter.setCriterion("");
+				}
 				
 				view.handleStringColumnSelected();
 				chooserController.setInteractive(false, rangeChooser);
+			} else if (modelMonitor.checkType(selected.name, selected.columnType, Boolean.class)) {
+					Predicate predicate = filter.getPredicate();
+					if (predicate == null || predicate == Predicate.BETWEEN) {
+						filter.setPredicate(Predicate.IS);
+					}
+					Object criterion = filter.getCriterion();
+					if (criterion == null || !(criterion instanceof Boolean)) {
+						filter.setCriterion(true);
+					}
+					view.handleBooleanColumnSelected();
+					chooserController.setInteractive(false, rangeChooser);
 			} else {
 				filter.setPredicate(Predicate.BETWEEN);
 				view.handleNumericColumnSelected();
@@ -209,6 +237,10 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				NumberRangeModel model = (NumberRangeModel) chooserController.getSliderModel();
 				model.setLowValue(range[0]);
 				model.setHighValue(range[1]);
+			}
+			if (criterion instanceof Boolean) {
+				JComboBox comboBox = view.getBooleanComboBox();
+				comboBox.setSelectedItem(criterion);
 			}
 			
 			view.getCaseSensitiveCheckBox().setSelected(filter.getCaseSensitive());
@@ -249,6 +281,9 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			case STRING:
 				view.handleStringColumnSelected();
 				break;
+			case BOOLEAN:
+				view.handleBooleanColumnSelected();
+				break;
 			}
 		}
 		
@@ -272,6 +307,10 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		private SelectedColumnType selectedColumn;
 		private Controller controller;
 		private RangeChooser rangeChooser;
+		
+		private JComboBox booleanComboBox;
+		private JLabel booleanLabel;
+		private JPanel booleanPanel;
 		
 		public View(final Controller controller, IconManager iconManager) {
 			this.controller = controller;
@@ -348,6 +387,21 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
+			booleanComboBox = new JComboBox(new DynamicComboBoxModel<Boolean>(booleanComboBoxModel));
+			booleanComboBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent event) {
+					controller.setBooleanCriterion(View.this, (Boolean) booleanComboBox.getSelectedItem());
+				}
+			});
+			
+			booleanLabel = new JLabel("is");
+			booleanPanel = new JPanel();
+			booleanPanel.setOpaque(false);
+			booleanPanel.setLayout(new GridBagLayout());
+			booleanPanel.add(booleanLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			booleanPanel.add(booleanComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			
 			spacerPanel = new JPanel();
 			spacerPanel.setOpaque(false);
 			
@@ -420,6 +474,16 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			validate();
 		}
 
+		void handleBooleanColumnSelected() {
+			selectedColumn = SelectedColumnType.BOOLEAN;
+			removeAll();
+			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			add(spacerPanel, new GridBagConstraints(1, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(booleanPanel, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			invalidate();
+			validate();
+		}
+		
 		private void handleNoColumnSelected() {
 			selectedColumn = SelectedColumnType.NONE;
 			removeAll();
@@ -450,6 +514,11 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		}
 		
 		@Override
+		public JComboBox getBooleanComboBox() {
+			return booleanComboBox;
+		}
+		
+		@Override
 		public void handleInteractivityChanged(boolean isInteractive) {
 			controller.setInteractive(isInteractive, this);
 		}
@@ -459,5 +528,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		NONE,
 		NUMERIC,
 		STRING,
+		BOOLEAN,
 	}
 }

@@ -82,4 +82,6 @@ public interface ColumnFilterView {
 	JComboBox getNameComboBox();
 
 	JComboBox getPredicateComboBox();
+
+	JComboBox getBooleanComboBox();
 }
