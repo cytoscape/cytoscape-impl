@@ -3,24 +3,31 @@ package org.cytoscape.io.internal.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.cytoscape.filter.internal.TransformerManagerImpl;
+import org.cytoscape.filter.internal.composite.CompositeFilterFactory;
+import org.cytoscape.filter.internal.composite.CompositeFilterImpl;
 import org.cytoscape.filter.internal.degree.DegreeFilter;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.model.AbstractTransformer;
+import org.cytoscape.filter.model.CompositeFilter;
+import org.cytoscape.filter.model.CompositeFilter.Type;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.FilterFactory;
 import org.cytoscape.filter.model.NamedTransformer;
+import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.io.internal.read.transformer.CyTransformerReaderImpl;
 import org.cytoscape.io.internal.write.transformer.CyTransformerWriterImpl;
 import org.cytoscape.io.write.CyTransformerWriter;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class FilterIOTest {
@@ -54,6 +61,59 @@ public class FilterIOTest {
 		
 		String serialized2 = stream2.toString("utf-8");
 		Assert.assertEquals(serialized, serialized2);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void testNestedFilterRoundTrip() throws Exception {
+		DegreeFilter degreeFilter = new DegreeFilter();
+		degreeFilter.setCriterion(new Double[] { 0.2, 5.5 });
+		degreeFilter.setEdgeType(CyEdge.Type.ANY);
+		
+		CompositeFilter<CyNetwork, CyIdentifiable> composite = new CompositeFilterImpl<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class);
+		composite.setType(Type.ANY);
+		composite.append(degreeFilter);
+		
+		CyTransformerWriter writer = new CyTransformerWriterImpl();
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		writer.write(stream, FilterIO.createNamedTransformer("filter1", composite));
+		String serialized = stream.toString("utf-8");
+		
+		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
+		Map<String, String> properties = Collections.emptyMap();
+		transformerManager.registerFilterFactory(new DegreeFilterFactory(), properties);
+		transformerManager.registerFilterFactory(new CompositeFilterFactory<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class), properties);
+		
+		CyTransformerReaderImpl reader = new CyTransformerReaderImpl();
+		reader.registerTransformerManager(transformerManager, null);
+		
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(stream.toByteArray());
+		NamedTransformer<?, ?>[] transformers = reader.read(inputStream);
+		
+		Assert.assertNotNull(transformers);
+		Assert.assertEquals(1, transformers.length);
+		
+		NamedTransformer<?, ?> namedTransformer = transformers[0];
+		Assert.assertNotNull(namedTransformer);
+		Assert.assertEquals("filter1", namedTransformer.getName());
+		
+		List children = namedTransformer.getTransformers();
+		Assert.assertEquals(1, children.size());
+		
+		Transformer child = (Transformer) children.get(0);
+		Assert.assertNotNull(child);
+		Assert.assertTrue(child instanceof CompositeFilter);
+		
+		CompositeFilter composite2 = (CompositeFilter) child;
+		Assert.assertEquals(composite.getType(), composite2.getType());
+		Assert.assertEquals(composite.getLength(), composite2.getLength());
+		
+		Filter filter = composite2.get(0);
+		Assert.assertTrue(filter instanceof DegreeFilter);
+		
+		DegreeFilter degreeFilter2 = (DegreeFilter) filter;
+		Assert.assertArrayEquals((Number[]) degreeFilter.getCriterion(), (Number[]) degreeFilter2.getCriterion());
+		Assert.assertEquals(degreeFilter.getEdgeType(), degreeFilter2.getEdgeType());
 	}
 	
 	public static class DummyFilter extends AbstractTransformer<Object, Object> implements Filter<Object, Object> {
