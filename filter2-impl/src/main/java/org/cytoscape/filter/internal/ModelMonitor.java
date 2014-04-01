@@ -330,9 +330,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			Class<?> elementType = column.getType();
 			Class<?> listElementType = column.getListElementType();
 			
-			if (List.class.equals(elementType) && (String.class.equals(listElementType) || Number.class.isAssignableFrom(listElementType))) {
+			if (List.class.equals(elementType) && (String.class.equals(listElementType) || Number.class.isAssignableFrom(listElementType) || Boolean.class.equals(listElementType))) {
 				columnNames.add(new ColumnComboBoxElement(type, column.getName()));
-			} else if (String.class.equals(elementType) || Number.class.isAssignableFrom(elementType)) {
+			} else if (String.class.equals(elementType) || Number.class.isAssignableFrom(elementType) || Boolean.class.equals(elementType)) {
 				columnNames.add(new ColumnComboBoxElement(type, column.getName()));
 			}
 		}
@@ -531,7 +531,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		return columnNames;
 	}
 
-	public boolean isString(String name, Class<?> columnType) {
+	public boolean checkType(String name, Class<?> columnType, Class<?> targetType) {
 		lock.readLock().lock();
 		try {
 			if (network == null) {
@@ -547,9 +547,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 			Class<?> type = column.getType();
 			if (List.class.equals(type)) {
-				return String.class.equals(column.getListElementType());
+				return targetType.equals(column.getListElementType());
 			}
-			return String.class.equals(type);
+			return targetType.equals(type);
 		} finally {
 			lock.readLock().unlock();
 		}

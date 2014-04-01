@@ -199,6 +199,13 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 						return true;
 					}
 				}
+			} else if (Boolean.class.equals(listElementType)) {
+				List<Boolean> list = (List<Boolean>) row.getList(columnName, listElementType);
+				for (Boolean value : list) {
+					if (value != null && rawCriterion.equals(value)) {
+						return true;
+					}
+				}
 			}
 		} else if (columnType.equals(String.class)) {
 			String value = row.get(columnName, String.class);
@@ -206,6 +213,9 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		} else if (Number.class.isAssignableFrom(columnType)) {
 			Number value = row.get(columnName, (Class<Number>) columnType);
 			return numericDelegate.accepts(lowerBound, upperBound, value);
+		} else if (Boolean.class.equals(columnType)) {
+			Boolean value = row.get(columnName, Boolean.class);
+			return rawCriterion.equals(value);
 		}
 		return false;
 	}
