@@ -85,9 +85,11 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 	class Controller implements ColumnFilterController {
 		private ColumnFilter filter;
 		private RangeChooserController chooserController;
+		private boolean listenersEnabled;
 		
 		public Controller(final ColumnFilter filter) {
 			this.filter = filter;
+			listenersEnabled = true;
 
 			if (filter.getPredicate() == null) {
 				filter.setPredicate(Predicate.CONTAINS);
@@ -247,10 +249,17 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			
 			JComboBox nameComboBox = view.getNameComboBox();
 			
-			// Ensure model changes propagate to view
+			// Ensure model changes propagate to view.  Disable
+			// view listeners first to ensure state changes in the view
+			// don't feed back into the model.
 			final String selectedColumn = filter.getColumnName();
-			DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
-			model.notifyChanged(0, model.getSize() - 1);
+			listenersEnabled = false;
+			try {
+				DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
+				model.notifyChanged(0, model.getSize() - 1);
+			} finally {
+				listenersEnabled = true;
+			}
 			
 			DynamicComboBoxModel.select(nameComboBox, 0, new Matcher<ColumnComboBoxElement>() {
 				@Override
@@ -384,6 +393,9 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			nameComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
+					if (!controller.listenersEnabled) {
+						return;
+					}
 					controller.handleColumnSelected(View.this, nameComboBox);
 				}
 			});
