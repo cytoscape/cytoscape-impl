@@ -28,6 +28,7 @@ import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.IconManager;
+import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.CompositeFilter;
@@ -81,6 +82,13 @@ public class CompositeFilterPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				controller.handleCombiningMethodSelected(combiningMethodComboBox, model);
+			}
+		});
+		
+		DynamicComboBoxModel.select(combiningMethodComboBox, 0, new Matcher<CombiningMethodElement>() {
+			@Override
+			public boolean matches(CombiningMethodElement item) {
+				return model.getType().equals(item.combiningMethod);
 			}
 		});
 		
