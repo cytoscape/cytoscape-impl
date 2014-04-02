@@ -248,13 +248,14 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			JComboBox nameComboBox = view.getNameComboBox();
 			
 			// Ensure model changes propagate to view
+			final String selectedColumn = filter.getColumnName();
 			DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
 			model.notifyChanged(0, model.getSize() - 1);
 			
 			DynamicComboBoxModel.select(nameComboBox, 0, new Matcher<ColumnComboBoxElement>() {
 				@Override
 				public boolean matches(ColumnComboBoxElement item) {
-					return item.name.equals(filter.getColumnName()) && item.columnType.equals(filter.getColumnType());
+					return item.name.equals(selectedColumn) && item.columnType.equals(filter.getColumnType());
 				}
 			});
 			
