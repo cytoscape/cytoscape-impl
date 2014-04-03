@@ -212,6 +212,15 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return element;
 	}
 	
+	public T getElementByName(String name) {
+		for (T element : namedElementComboBoxModel.items) {
+			if (element.name.equals(name)) {
+				return element;
+			}
+		}
+		return null;
+	}
+	
 	public void reset(V view) {
 		view.reset();
 		while (namedElementComboBoxModel.getSize() > 0) {
