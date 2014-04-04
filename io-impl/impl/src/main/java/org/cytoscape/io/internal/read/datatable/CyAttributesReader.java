@@ -345,8 +345,8 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 			else if (type == TYPE_FLOATING_POINT)
 				tbl.createListColumn(attributeName, Double.class, false);
 			else
-				// type is String, do nothing
-				/* Intentionally empty. */;
+				// type is String,
+				tbl.createListColumn(attributeName, String.class, false);
 		}
 		CyRow row = tbl.getRow(key);
 		row.set(attributeName, elmsBuff);

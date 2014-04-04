@@ -63,8 +63,12 @@ public class TransformerViewManager {
 	public void unregisterTransformerViewFactory(TransformerViewFactory factory, Map<String, String> properties) {
 		String id = factory.getId();
 		viewFactories.remove(id);
-		
-		Iterator<TransformerViewElement> iterator = filterConditionViewElements.iterator();
+		removeTransformerViewElement(id, filterConditionViewElements);
+		removeTransformerViewElement(id, chainTransformerViewElements);
+	}
+	
+	void removeTransformerViewElement(String id, List<TransformerViewElement> elements) {
+		Iterator<TransformerViewElement> iterator = elements.iterator();
 		while (iterator.hasNext()) {
 			TransformerViewElement element = iterator.next();
 			if (id.equals(element.getId())) {

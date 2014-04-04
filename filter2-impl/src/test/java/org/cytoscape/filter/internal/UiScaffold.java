@@ -23,6 +23,8 @@ import org.cytoscape.filter.internal.interaction.InteractionTransformerFactory;
 import org.cytoscape.filter.internal.interaction.InteractionTransformerViewFactory;
 import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
 import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
+import org.cytoscape.filter.internal.topology.TopologyTransformerFactory;
+import org.cytoscape.filter.internal.topology.TopologyTransformerViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.FilterWorker;
@@ -87,6 +89,9 @@ public class UiScaffold {
 		transformerManager.registerFilterFactory(new TopologyFilterFactory(), properties);
 		
 		transformerManager.registerElementTransformerFactory(new InteractionTransformerFactory(), properties);
+		
+		TopologyTransformerFactory topologyTransformerFactory = new TopologyTransformerFactory();
+		transformerManager.registerHolisticTransformerFactory(topologyTransformerFactory, properties);
 
 		ModelMonitor modelMonitor = new ModelMonitor();
 		modelMonitor.handleEvent(new SetCurrentNetworkEvent(applicationManager, network));
@@ -98,6 +103,9 @@ public class UiScaffold {
 		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);
 		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(), properties);
 		transformerViewManager.registerTransformerViewFactory(new InteractionTransformerViewFactory(), properties);
+		
+		TopologyTransformerViewFactory topologyTransformerViewFactory = new TopologyTransformerViewFactory();
+		transformerViewManager.registerTransformerViewFactory(topologyTransformerViewFactory, properties);
 
 		LazyWorkQueue queue = new LazyWorkQueue();
 		
@@ -106,6 +114,9 @@ public class UiScaffold {
 		TaskManager<?, ?> taskManager = null;
 		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor, filterIo, taskManager, iconManager);
 		FilterPanel filterPanel = new FilterPanel(filterPanelController, iconManager, filterWorker);
+		
+		filterPanelController.addNamedElementListener(topologyTransformerViewFactory);
+		topologyTransformerFactory.setFilterPanelController(filterPanelController);
 		
 		TransformerWorker transformerWorker = new TransformerWorker(queue, applicationManager, transformerManager);
 		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker, filterIo, taskManager, iconManager);
