@@ -32,8 +32,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
@@ -52,9 +50,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	protected final Map<VisualProperty<?>, Object> directLocks;
 	protected final Map<VisualProperty<?>, Object> allLocks;
 
-	// Protects access to visual property/lock maps
-	protected ReadWriteLock lock;
-	
 	/**
 	 * Create an instance of view model, but not firing event to upper layer.
 	 * 
@@ -72,8 +67,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		this.visualProperties = new IdentityHashMap<VisualProperty<?>, Object>();
 		this.directLocks = new IdentityHashMap<VisualProperty<?>, Object>();
 		allLocks = new IdentityHashMap<VisualProperty<?>, Object>();
-		
-		lock = new ReentrantReadWriteLock(true);
 	}
 
 	@Override
@@ -88,14 +81,11 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
-		lock.writeLock().lock();
-		try {
+		synchronized (getDGraphView().m_lock) {
 			if (value == null)
 				visualProperties.remove(vp);
 			else
 				visualProperties.put(vp, value);
-		} finally {
-			lock.writeLock().unlock();
 		}
 
 		if (!isValueLocked(vp))
@@ -126,44 +116,34 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public boolean isDirectlyLocked(VisualProperty<?> visualProperty) {
-		lock.readLock().lock();
-		try {
+		synchronized (getDGraphView().m_lock) {
 			return directLocks.get(visualProperty) != null;
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 	
 	@Override
 	public <T, V extends T> void setLockedValue(final VisualProperty<? extends T> vp, final V value) {
-		lock.writeLock().lock();
-		try {
+		synchronized (getDGraphView().m_lock) {
 			directLocks.put(vp, value);
 			allLocks.put(vp, value);
 			
 			applyVisualProperty(vp, value);
 			VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
 			propagateLockedVisualProperty(vp, node.getChildren(), value);
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 
 	@Override
 	public boolean isValueLocked(final VisualProperty<?> vp) {
-		lock.readLock().lock();
-		try {
+		synchronized (getDGraphView().m_lock) {
 			return allLocks.get(vp) != null;
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void clearValueLock(final VisualProperty<?> vp) {
-		lock.writeLock().lock();
-		try {
+		synchronized (getDGraphView().m_lock) {
 			directLocks.remove(vp);
 			
 			VisualLexiconNode root = lexicon.getVisualLexiconNode(vp);
@@ -191,8 +171,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 				}
 				nodes.addAll(node.getChildren());
 			}
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
@@ -200,8 +178,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	@Override
 	public <T> T getVisualProperty(final VisualProperty<T> vp) {
 		Object value;
-		lock.readLock().lock();
-		try {
+		synchronized (getDGraphView().m_lock) {
 			value = directLocks.get(vp);
 			if (value != null)
 				return (T) value;
@@ -213,8 +190,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 			value = visualProperties.get(vp);
 			if (value != null)
 				return (T) value;
-		} finally {
-			lock.readLock().unlock();
 		}
 		
 		// Mapped value is null.  Try default
@@ -227,18 +202,14 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	
 	@Override
 	public boolean isSet(final VisualProperty<?> vp) {
-		lock.readLock().lock();
-		try {
+		synchronized (getDGraphView().m_lock) {
 			return visualProperties.get(vp) != null || allLocks.get(vp) != null || getDefaultValue(vp) != null;
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 	
 	@Override
 	public void clearVisualProperties() {
-		lock.writeLock().lock();
-		try {
+		synchronized (getDGraphView().m_lock) {
 			final Iterator<Entry<VisualProperty<?>, Object>> it = visualProperties.entrySet().iterator();
 			
 			while (it.hasNext()) {
@@ -250,8 +221,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 					setVisualProperty(vp, null);
 				}
 			}
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
@@ -269,4 +238,6 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 			return p;
 		}
 	}
+	
+	protected abstract DGraphView getDGraphView();
 }
