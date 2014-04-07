@@ -2514,13 +2514,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void clearValueLock(final VisualProperty<?> vp) {
-		lock.writeLock().lock();
-		try {
+		synchronized (m_lock) {
 			directLocks.remove(vp);
 			allLocks.remove(vp);
 			applyVisualProperty(vp, visualProperties.get(vp)); // always apply the regular vp
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
@@ -2680,5 +2677,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public String getRendererId() {
 		return DingRenderer.ID;
+	}
+	
+	@Override
+	protected DGraphView getDGraphView() {
+		return this;
 	}
 }
