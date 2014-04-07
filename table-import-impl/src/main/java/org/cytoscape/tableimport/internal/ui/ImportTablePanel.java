@@ -2136,11 +2136,17 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 			if (objType == NODE) {
 				for ( CyNode node : network.getNodeList() ) {
-					valueSet.add(network.getRow(node).get(ID, String.class)); // ID = "name"
+          final String name = network.getRow(node).get(ID, String.class);
+          if (name == null)
+            continue;
+					valueSet.add(name); // ID = "name"
 				}
 			} else if (objType == EDGE) {
 				for ( CyEdge edge : network.getEdgeList() ) {
-					valueSet.add(network.getRow(edge).get(ID, String.class)); // ID = "name"
+          final String name = network.getRow(edge).get(ID, String.class);
+          if (name == null)
+            continue;
+					valueSet.add(name); // ID = "name"
 				}
 			} 
 		} 
