@@ -174,7 +174,7 @@ public class CSVCyWriter implements CyWriter {
 					if (list != null) {
 						for (Object value : list) {
 							if (!first) {
-								builder.append("\r");
+								builder.append(" ");
 							}
 							if (value != null) {
 								builder.append(value);
