@@ -218,7 +218,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			if(firstRowAsColumnNames)
 				startLoadRowTemp = 0;
 			
-			previewPanel.setPreviewTable(workbook, fileType, new FileInputStream(tempFile), delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
+			previewPanel.setPreviewTable(workbook, fileType,tempFile.getAbsolutePath(), new FileInputStream(tempFile), delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
 			
 			colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
 			importFlag = new boolean[colCount];
