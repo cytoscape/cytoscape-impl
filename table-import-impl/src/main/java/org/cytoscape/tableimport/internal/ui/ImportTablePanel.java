@@ -292,7 +292,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		setPreviewPanel(null, useFirstRow);
 		
 		// Hide the alias Panel, we will do the table join somewhere else, not in this GUI
-		aliasScrollPane.setVisible(false);
+		if (dialogType != ONTOLOGY_AND_ANNOTATION_IMPORT)
+			aliasScrollPane.setVisible(false);
 
 	}
 
@@ -1820,7 +1821,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final String commentChar = commentLineTextField.getText();
 		int startLine = getStartLineNumber();
 		InputStream tempIs = URLUtil.getInputStream(sourceURL);
-		previewPanel.setPreviewTable( workbook, this.fileType,  tempIs, delimiters, null, previewSize,
+		previewPanel.setPreviewTable( workbook, this.fileType,sourceURL.toString(),  tempIs, delimiters, null, previewSize,
 				commentChar, startLine - 1);
 		
 		tempIs.close();
@@ -1861,6 +1862,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				initializeAliasTable(columnCount, null, i);
 			}
 
+			advancedOptionCheckBox.setEnabled(true);
+			textImportCheckBox.setEnabled(true);
 			updatePrimaryKeyComboBox();
 			
 			setOntologyInAnnotationComboBox();
@@ -1923,8 +1926,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (tempFile != null)
 			 tempIs2 =  new FileInputStream(tempFile);
 
-
-		previewPanel.setPreviewTable( workbook, this.fileType,  tempIs2, delimiters, null, previewSize,
+		previewPanel.setPreviewTable( workbook, this.fileType,"",  tempIs2, delimiters, null, previewSize,
 				commentChar, startLine - 1);
 
 		if (tempIs2 != null){

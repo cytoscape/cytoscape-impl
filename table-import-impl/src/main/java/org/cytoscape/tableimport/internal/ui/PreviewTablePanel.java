@@ -653,6 +653,7 @@ public class PreviewTablePanel extends JPanel {
 	 * 
 	 * @param wb
 	 * @param fileType
+	 * @param fileFullName
 	 * @param tempIs
 	 * @param delimiters
 	 * @param renderer
@@ -664,7 +665,7 @@ public class PreviewTablePanel extends JPanel {
 	 *            TODO
 	 * @throws IOException
 	 */
-	public void setPreviewTable(final Workbook wb, String fileType, InputStream tempIs, List<String> delimiters,
+	public void setPreviewTable(final Workbook wb, String fileType, String fileFullName, InputStream tempIs, List<String> delimiters,
 			TableCellRenderer renderer, int size, final String commentLineChar,
 			final int startLine) throws IOException {
 		
@@ -741,7 +742,12 @@ public class PreviewTablePanel extends JPanel {
 				newModel = parseText(tempIs, size, curRenderer, delimiters,
 						startLine);
 			
-			String tabName = "newTable";
+			String tabName;
+			String[] urlParts = fileFullName.split("/");
+			if(urlParts.length > 0 && !fileFullName.isEmpty())
+				tabName = urlParts[urlParts.length - 1];
+			else
+				tabName = "newTable";
 			DataTypeUtil.guessTypes(newModel, tabName, dataTypeMap);
 			listDataTypeMap.put(tabName, initListDataTypes(newModel));
 			addTableTab(newModel, tabName, curRenderer);
