@@ -70,6 +70,13 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 			JInternalFrame frame = viewManager.getInternalFrame(view);
 			if (frame == null)
 				return;
+            // It is CRITICAL that this setMaximum be performed before the setBounds().
+            // If frame's state is such that isMaximum() is true, then it seems to
+            // ignore any setBounds() statements until the iFrame is in a non-maximum
+            // state. The result of this is that frame will use its previous
+            // setting for the frame bounds when the frame is restored
+            // (set to non Maximum state):
+            frame.setMaximum(false);
 			frame.setBounds(bounds);
 		} catch (Exception e) {
 			return;
