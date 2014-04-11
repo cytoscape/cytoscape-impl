@@ -38,6 +38,7 @@ public class CSVTableWriterFactory extends AbstractCyWriterFactory implements Cy
 	private final boolean writeSchema;
 	private final boolean handleEquations;
 	private final boolean includeVirtualColumns;
+	private final CyFileFilter fileFilter;
 
 	public CSVTableWriterFactory(final CyFileFilter fileFilter, final boolean writeSchema,
 				     final boolean handleEquations, final boolean includeVirtualColumns)
@@ -46,10 +47,11 @@ public class CSVTableWriterFactory extends AbstractCyWriterFactory implements Cy
 		this.writeSchema     = writeSchema;
 		this.handleEquations = handleEquations;
 		this.includeVirtualColumns = includeVirtualColumns;
+		this.fileFilter = fileFilter;
 	}
 	
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CyTable table) {
-		return new CSVCyWriter(outputStream, table, writeSchema, handleEquations, includeVirtualColumns, "UTF-8");
+		return new CSVCyWriter(outputStream, table,fileFilter, writeSchema, handleEquations, includeVirtualColumns, "UTF-8");
 	}
 }
