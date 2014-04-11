@@ -92,6 +92,7 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 	public TaskIterator createTaskIterator(File file) {
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("file", file);
+		m.put("loadSession", true);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
