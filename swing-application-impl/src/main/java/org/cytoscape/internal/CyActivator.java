@@ -41,6 +41,7 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 
 import javax.swing.SwingUtilities;
@@ -493,16 +494,22 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	private void setLookAndFeel() {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setLookAndFeel();
-				}
-			});
-			return;
-		}
 		Logger logger = LoggerFactory.getLogger(getClass());
+		if (!SwingUtilities.isEventDispatchThread()) {
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					@Override
+					public void run() {
+						setLookAndFeel();
+					}
+				});
+				return;
+			} catch (InterruptedException e) {
+				logger.error("Unexpected error", e);
+			} catch (InvocationTargetException e) {
+				logger.error("Unexpected error", e);
+			}
+		}
 		String lookAndFeel;
 		// update look and feel
 		if (System.getProperty("os.name").startsWith("Mac OS X") ||
