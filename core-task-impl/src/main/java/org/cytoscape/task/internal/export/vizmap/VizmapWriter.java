@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.export.vizmap;
 import java.io.File;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterManager;
@@ -45,6 +46,19 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory,Vi
 		super(writerManager);
 		if (vmMgr == null) throw new NullPointerException("VisualMappingManager is null");
 		this.vmMgr = vmMgr;
+	}
+	
+	void setDefaultFileFormatUsingFileExt(File file) {
+		String ext = FilenameUtils.getExtension(file.getName());
+		ext = ext.toLowerCase().trim();
+		String searchDesc = "*." + ext;
+		//Use the EXT to determine the default file format
+		for(String fileTypeDesc: this.getFileFilterDescriptions() )
+			if(fileTypeDesc.contains(searchDesc) )
+			{
+				options.setSelectedValue(fileTypeDesc);
+				break;
+			}
 	}
 
 	@Override

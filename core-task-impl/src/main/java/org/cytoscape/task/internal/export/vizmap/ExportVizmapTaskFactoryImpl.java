@@ -58,7 +58,11 @@ public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements 
 	public TaskIterator createTaskIterator(File file) {
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("OutputFile", file);
+		
+		VizmapWriter writer = new VizmapWriter(writerManager, vmMgr);
+		
+		writer.setDefaultFileFormatUsingFileExt(file);
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		return tunableSetter.createTaskIterator(new TaskIterator(2,writer), m); 
 	}
 }

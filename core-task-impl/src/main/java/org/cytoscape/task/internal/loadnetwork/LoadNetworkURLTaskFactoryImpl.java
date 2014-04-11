@@ -25,11 +25,13 @@ package org.cytoscape.task.internal.loadnetwork;
  */
 
 
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
@@ -98,18 +100,23 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 
 	@Override
 	public TaskIterator createTaskIterator(final URL url, TaskObserver observer) {
-		final Map<String,Object> m = new HashMap<String,Object>();
-		m.put("url", url);
-	
-		return tunableSetter.createTaskIterator( this.createTaskIterator(), m, observer);
+		return loadCyNetworks(url);
 	}
 	
 	@Override
 	public TaskIterator loadCyNetworks(final URL url) {
 		
-		final Map<String,Object> m = new HashMap<String,Object>();
-		m.put("url", url);
-	
-		return tunableSetter.createTaskIterator( this.createTaskIterator(), m);
+		String name = "";
+		CyNetworkReader reader = null;
+		
+		try {
+			name = url.toURI().toString();
+			reader = mgr.getReader(url.toURI(), url.toURI().toString());
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return new TaskIterator(2,new LoadNetworkTask(mgr, netmgr, reader, name,networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
 	}
 }

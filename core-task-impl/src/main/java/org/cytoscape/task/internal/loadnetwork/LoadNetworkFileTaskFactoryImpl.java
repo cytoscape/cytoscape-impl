@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
@@ -82,17 +83,18 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("file", file);
+		
+		CyNetworkReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		return new TaskIterator(3, new LoadNetworkTask(mgr, netmgr, reader, file.getName(),networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("file", file);
+		CyNetworkReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer); 
+		return new TaskIterator(3,new LoadNetworkTask(mgr, netmgr, reader, file.getName(),networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
+
+		
 	}
 }
