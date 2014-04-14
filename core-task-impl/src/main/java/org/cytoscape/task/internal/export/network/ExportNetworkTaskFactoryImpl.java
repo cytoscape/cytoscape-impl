@@ -59,7 +59,7 @@ public class ExportNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory imp
 
 		CyNetworkWriter writer = new CyNetworkWriter(writerManager, network);
 		writer.setDefaultFileFormatUsingFileExt(file);
-		return new TaskIterator(2, writer);
+		return tunableSetter.createTaskIterator(new TaskIterator(2,writer), m); 
 	}
 
 }
