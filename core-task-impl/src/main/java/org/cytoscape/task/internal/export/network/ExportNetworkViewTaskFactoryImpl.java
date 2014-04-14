@@ -58,6 +58,6 @@ public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFac
 
 		CyNetworkViewWriter writer = new CyNetworkViewWriter(writerManager, view);
 		writer.setDefaultFileFormatUsingFileExt(file);
-		return new TaskIterator(2, writer);
+		return tunableSetter.createTaskIterator(new TaskIterator(2,writer), m); 
 	}
 }
