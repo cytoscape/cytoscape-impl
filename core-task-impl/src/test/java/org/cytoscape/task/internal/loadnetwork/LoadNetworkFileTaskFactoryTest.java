@@ -2,7 +2,6 @@ package org.cytoscape.task.internal.loadnetwork;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -10,9 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Collection;
 
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.internal.NullCyNetworkViewFactory;
 import org.cytoscape.work.ObservableTask;
@@ -40,7 +37,8 @@ public class LoadNetworkFileTaskFactoryTest extends AbstractLoadNetworkTaskTeste
 
 		TunableSetter tunableSetter = new TunableSetterImpl(new SyncTunableMutatorFactory(new SyncTunableHandlerFactory()), new TunableRecorderManager());
 		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
-		LoadNetworkFileTaskFactoryImpl factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil, tunableSetter, vmm, nullNetworkViewFactory);
+		LoadNetworkFileTaskFactoryImpl factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, 
+				props, namingUtil, vmm, nullNetworkViewFactory);
 
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		TaskObserver observer = mock(TaskObserver.class);

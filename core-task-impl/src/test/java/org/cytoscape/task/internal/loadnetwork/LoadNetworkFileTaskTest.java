@@ -24,7 +24,9 @@ package org.cytoscape.task.internal.loadnetwork;
  * #L%
  */
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 
@@ -53,7 +55,8 @@ public class LoadNetworkFileTaskTest extends AbstractLoadNetworkTaskTester {
 	@Test
 	public void testRun() throws Exception {
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
-		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil, ts, vmm, nullNetworkViewFactory );
+		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
+				vmm, nullNetworkViewFactory);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
@@ -73,7 +76,8 @@ public class LoadNetworkFileTaskTest extends AbstractLoadNetworkTaskTester {
 	@Test(expected = NullPointerException.class)
 	public void testNullFile() throws Exception {
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
-		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil, ts, vmm, nullNetworkViewFactory);
+		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
+				vmm, nullNetworkViewFactory);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;

@@ -72,7 +72,7 @@ public class LoadAttributesURLTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesURLTaskFactory() throws Exception {
 
-		final LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
+		final LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(rmgr, netMgr, tabMgr, rootNetMgr);
 		
 		final TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

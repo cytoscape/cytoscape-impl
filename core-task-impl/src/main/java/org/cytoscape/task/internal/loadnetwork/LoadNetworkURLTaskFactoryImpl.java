@@ -65,7 +65,6 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 	
 	private final SynchronousTaskManager<?> syncTaskManager;
 	
-	private final TunableSetter tunableSetter;
 	
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
@@ -75,8 +74,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 					     final CyNetworkViewManager networkViewManager,
 					     CyProperty<Properties> cyProps, CyNetworkNaming cyNetworkNaming,
 					     StreamUtil streamUtil, final SynchronousTaskManager<?> syncTaskManager,
-						 TunableSetter tunableSetter, final VisualMappingManager vmm,
-						 final CyNetworkViewFactory nullNetworkViewFactory)
+						 final VisualMappingManager vmm,final CyNetworkViewFactory nullNetworkViewFactory)
 	{
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -84,7 +82,6 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		this.props = cyProps.getProperties();
 		this.cyNetworkNaming = cyNetworkNaming;
 		this.streamUtil = streamUtil;
-		this.tunableSetter = tunableSetter;
 		this.syncTaskManager = syncTaskManager;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
