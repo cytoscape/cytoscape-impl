@@ -55,14 +55,13 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 	private Properties props;
 	
 	private CyNetworkNaming cyNetworkNaming;
-	private final TunableSetter tunableSetter;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
 
 
 	public LoadNetworkFileTaskFactoryImpl(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, CyProperty<Properties> cyProp,
-			CyNetworkNaming cyNetworkNaming, TunableSetter tunableSetter, final VisualMappingManager vmm,
+			CyNetworkNaming cyNetworkNaming, final VisualMappingManager vmm,
 			final CyNetworkViewFactory nullNetworkViewFactory) {
 		
 		this.mgr = mgr;
@@ -70,7 +69,6 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.networkViewManager = networkViewManager;
 		this.props = cyProp.getProperties();
 		this.cyNetworkNaming = cyNetworkNaming;
-		this.tunableSetter = tunableSetter;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
 	}

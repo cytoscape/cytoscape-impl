@@ -55,7 +55,7 @@ public class LoadNetworkFileTaskTest extends AbstractLoadNetworkTaskTester {
 	@Test
 	public void testRun() throws Exception {
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
-		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil, ts,
+		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
 				vmm, nullNetworkViewFactory);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
@@ -76,7 +76,7 @@ public class LoadNetworkFileTaskTest extends AbstractLoadNetworkTaskTester {
 	@Test(expected = NullPointerException.class)
 	public void testNullFile() throws Exception {
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
-		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil, ts,
+		TaskFactory factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
 				vmm, nullNetworkViewFactory);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);

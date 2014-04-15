@@ -71,7 +71,7 @@ public class LoadAttributesFileTaskFactoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesFileTaskFactory() throws Exception {
 
-		final LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(rmgr, ts, netMgr, tabMgr, rootNetMgr);
+		final LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(rmgr, netMgr, tabMgr, rootNetMgr);
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
 

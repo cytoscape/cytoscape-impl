@@ -45,7 +45,7 @@ public class LoadNetworkURLTaskFactoryTest extends AbstractLoadNetworkTaskTester
 		TunableSetter tunableSetter = new TunableSetterImpl(new SyncTunableMutatorFactory(new SyncTunableHandlerFactory()), new TunableRecorderManager());
 		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
 		LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager,
-				props, namingUtil, streamUtil, synchronousTaskManager, tunableSetter, vmm, nullNetworkViewFactory);
+				props, namingUtil, streamUtil, synchronousTaskManager, vmm, nullNetworkViewFactory);
 
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		TaskObserver observer = mock(TaskObserver.class);

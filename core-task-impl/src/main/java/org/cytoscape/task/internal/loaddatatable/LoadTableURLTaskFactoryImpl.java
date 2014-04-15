@@ -44,15 +44,13 @@ import org.cytoscape.work.TunableSetter;
 public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements LoadTableURLTaskFactory {
 	
 	private final CyTableReaderManager mgr;
-	private final TunableSetter tunableSetter; 
 	private  final CyNetworkManager netMgr;
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	
-	public LoadTableURLTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr,
+	public LoadTableURLTaskFactoryImpl(CyTableReaderManager mgr,  final CyNetworkManager netMgr,
 			final CyTableManager tabelMgr, final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
-		this.tunableSetter = tunableSetter;
 		this.netMgr = netMgr;
 		this.tableMgr = tabelMgr;
 		this.rootNetMgr = rootNetMgr;
@@ -65,8 +63,7 @@ public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements 
 
 	@Override
 	public TaskIterator createTaskIterator(URL url) {
-		//final Map<String, Object> m = new HashMap<String, Object>();
-		//m.put("url", url);
+		
 	    URI uri = null;
 		try {
 			uri = url.toURI();
@@ -78,6 +75,5 @@ public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements 
 		
 		return new TaskIterator(new CombineReaderAndMappingTask( reader,tableMgr, netMgr, rootNetMgr));
 
-		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }
