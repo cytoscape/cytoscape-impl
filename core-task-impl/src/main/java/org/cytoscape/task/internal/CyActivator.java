@@ -731,7 +731,6 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		registerService(bc,createNetworkViewTaskFactory,NetworkCollectionTaskFactory.class, createNetworkViewTaskFactoryProps);
 		registerService(bc,createNetworkViewTaskFactory,CreateNetworkViewTaskFactory.class, createNetworkViewTaskFactoryProps);
-		registerServiceListener(bc, createNetworkViewTaskFactory, "addNetworkViewRenderer", "removeNetworkViewRenderer", NetworkViewRenderer.class);
 
 		// For commands
 		Properties createNetworkViewCommandProps = new Properties();
