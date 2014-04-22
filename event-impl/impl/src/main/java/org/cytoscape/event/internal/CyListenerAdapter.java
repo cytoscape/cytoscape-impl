@@ -104,31 +104,28 @@ public class CyListenerAdapter {
 			final Method method = listenerClass.getMethod("handleEvent", event.getClass());
 
 			for (final Object listener : listeners) {
-				lastListener = listener;
-
-				// This call is VERY memory intensive - only use it for debugging!!!!
-				// logger.debug("event: " + event.getClass().getName() + "  listener: " + listener.getClass().getName());
-				if ( printEventTrace ) {
-					printTrace(fireCount,"listener: " + listener.getClass().getName());
-					begin = System.currentTimeMillis();
-				}
-
-				method.invoke(listenerClass.cast(listener), event);
-
-				if ( printEventTrace ) {
-					final long end = System.currentTimeMillis();
-					printTrace(fireCount,"listener: " + listener.getClass().getName() + " duration: " + (end - begin));
+				try {
+					lastListener = listener;
+	
+					// This call is VERY memory intensive - only use it for debugging!!!!
+					// logger.debug("event: " + event.getClass().getName() + "  listener: " + listener.getClass().getName());
+					if ( printEventTrace ) {
+						printTrace(fireCount,"listener: " + listener.getClass().getName());
+						begin = System.currentTimeMillis();
+					}
+	
+					method.invoke(listenerClass.cast(listener), event);
+	
+					if ( printEventTrace ) {
+						final long end = System.currentTimeMillis();
+						printTrace(fireCount,"listener: " + listener.getClass().getName() + " duration: " + (end - begin));
+					}
+				} catch (Exception e) {
+					logger.error("Unexpected exception while handling listener: " + listenerClass.getName(), e);
 				}
 			}
 		} catch (NoSuchMethodException e) {
 			logger.error("Listener doesn't implement \"handleEvent\" method: "
-				     + listenerClass.getName(), e);
-		} catch (InvocationTargetException e) {
-			logger.error("Listener \"" + lastListener.getClass().getName()
-				     + "\" threw exception as part of \"handleEvent\" invocation: "
-				     + listenerClass.getName(), e);
-		} catch (IllegalAccessException e) {
-			logger.error("Listener can't execute \"handleEvent\" method: "
 				     + listenerClass.getName(), e);
 		}
 
