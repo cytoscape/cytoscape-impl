@@ -1,4 +1,17 @@
 {
+  "format_version" : "1.0",
+  "generated_by" : "cytoscape-3.1.0",
+  "target_cytoscapejs_version" : "~2.1",
+  "data" : {
+    "selected" : true,
+    "__Annotations" : [ "" ],
+    "shared_name" : "Yeast Sample",
+    "SUID" : 52,
+    "name" : "Yeast Network Sample",
+    "description" : "Sample network created by JSON export.",
+    "numberList" : [1, 200, 322, -100],
+    "floatList" : [1.2, 0.30, 3]
+  },
   "elements" : {
     "nodes" : [ {
       "data" : {
