@@ -187,23 +187,29 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 			Class<?> listElementType = column.getListElementType();
 			if (String.class.equals(listElementType)) {
 				List<String> list = row.getList(columnName, String.class);
-				for (String item : list) {
-					if (stringDelegate.accepts(stringCriterion, lowerCaseCriterion, item, caseSensitive)) {
-						return true;
+				if (list != null) {
+					for (String item : list) {
+						if (stringDelegate.accepts(stringCriterion, lowerCaseCriterion, item, caseSensitive)) {
+							return true;
+						}
 					}
 				}
 			} else if (Number.class.isAssignableFrom(listElementType)) {
 				List<Number> list = (List<Number>) row.getList(columnName, listElementType);
-				for (Number number : list) {
-					if (numericDelegate.accepts(lowerBound, upperBound, number)) {
-						return true;
+				if (list != null) {
+					for (Number number : list) {
+						if (numericDelegate.accepts(lowerBound, upperBound, number)) {
+							return true;
+						}
 					}
 				}
 			} else if (Boolean.class.equals(listElementType)) {
 				List<Boolean> list = (List<Boolean>) row.getList(columnName, listElementType);
-				for (Boolean value : list) {
-					if (value != null && rawCriterion.equals(value)) {
-						return true;
+				if (list != null) {
+					for (Boolean value : list) {
+						if (value != null && rawCriterion.equals(value)) {
+							return true;
+						}
 					}
 				}
 			}

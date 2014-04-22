@@ -24,62 +24,162 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 public class CutTask extends AbstractTask {
-	CyNetwork net;
-	CyNetworkView view;
-	ClipboardManagerImpl mgr;
-	final UndoSupport undoSupport;
-	List<CyNode> selNodes;
-	List<CyEdge> selEdges;
 	
-	public CutTask(final CyNetworkView netView, final ClipboardManagerImpl clipMgr, 
-	               final UndoSupport undoSupport) {
-		this.view = netView;
+	private final CyNetworkView netView;
+	private final ClipboardManagerImpl clipMgr;
+	private final VisualMappingManager vmMgr;
+	private final UndoSupport undoSupport;
+	private final CyEventHelper eventHelper;
+	private final Set<CyNode> selNodes;
+	private final Set<CyEdge> selEdges;
+	private final Map<CyEdge, Map<VisualProperty<?>, Object>/*bypass values*/> deletedEdges;
+	
+	public CutTask(final CyNetworkView netView,
+				   final ClipboardManagerImpl clipMgr,
+				   final VisualMappingManager vmMgr,
+	               final UndoSupport undoSupport,
+	               final CyEventHelper eventHelper) {
+		this.netView = netView;
+		this.clipMgr = clipMgr;
+		this.vmMgr = vmMgr;
 		this.undoSupport = undoSupport;
+		this.eventHelper = eventHelper;
+		
 		// Get all of the selected nodes and edges
-		selNodes = CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true);
-		selEdges = CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true);
-
-		// Save them in our list
-		mgr = clipMgr;
+		selNodes = new HashSet<CyNode>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		selEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		deletedEdges = new HashMap<CyEdge, Map<VisualProperty<?>,Object>>();
 	}
 
+	@SuppressWarnings("unchecked")
 	public CutTask(final CyNetworkView netView, final View<?extends CyIdentifiable> objView, 
-	               final ClipboardManagerImpl clipMgr, final UndoSupport undoSupport) {
-
+	               final ClipboardManagerImpl clipMgr, final VisualMappingManager vmMgr,
+	               final UndoSupport undoSupport, final CyEventHelper eventHelper) {
 		// Get all of the selected nodes and edges first
-		this(netView, clipMgr, undoSupport);
+		this(netView, clipMgr, vmMgr, undoSupport, eventHelper);
 
 		// Now, make sure we add our
-		if (objView.getModel() instanceof CyNode) {
-			CyNode node = ((View<CyNode>)objView).getModel();
-			if (!selNodes.contains(node))
-				selNodes.add(node);
-		} else if (objView.getModel() instanceof CyEdge) {
-			CyEdge edge = ((View<CyEdge>)objView).getModel();
-			if (!selEdges.contains(edge))
-				selEdges.add(edge);
-		}
+		if (objView.getModel() instanceof CyNode)
+			selNodes.add(((View<CyNode>)objView).getModel());
+		else if (objView.getModel() instanceof CyEdge)
+			selEdges.add(((View<CyEdge>)objView).getModel());
 	}
 
+	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		mgr.cut(view, selNodes, selEdges);
-		undoSupport.postEdit(new CutEdit(mgr, view));
+		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
+		final Collection<VisualProperty<?>> edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
+		
+		// Save edges that connect nodes that will be cut but are not selected to be cut themselves,
+		// so they can be restored later on undo
+		for (CyNode node : selNodes) {
+			List<CyEdge> adjacentEdgeList = netView.getModel().getAdjacentEdgeList(node, CyEdge.Type.ANY);
+			
+			for (CyEdge edge : adjacentEdgeList) {
+				if (!selEdges.contains(edge)) {
+					deletedEdges.put(edge, new HashMap<VisualProperty<?>, Object>());
+					
+					// Save the bypass values for this edge
+					View<CyEdge> edgeView = netView.getEdgeView(edge);
+					
+					if (edgeView != null)
+						ClipboardImpl.saveLockedValues(edgeView, edgeProps, deletedEdges);
+				}
+			}
+		}
+		
+		clipMgr.cut(netView, selNodes, selEdges);
+		undoSupport.postEdit(new CutEdit());
+	}
+	
+	private class CutEdit extends AbstractCyEdit {
+		
+		private final ClipboardImpl clipboard;
+
+		public CutEdit() { 
+			super("Cut");
+			this.clipboard = clipMgr.getCurrentClipboard();
+		}
+
+		@Override
+		public void redo() {
+			clipMgr.cut(netView, clipboard.getNodes(), clipboard.getEdges());
+			netView.updateView();
+		}
+
+		@Override
+		public void undo() {
+			clipMgr.setCurrentClipboard(clipboard);
+			final HashSet<CyIdentifiable> objects = 
+					new HashSet<CyIdentifiable>(clipMgr.paste(netView, clipboard.getCenterX(), clipboard.getCenterY()));
+			
+			// Restore edges that were not cut, but were deleted because their nodes were cut
+			if (netView.getModel() instanceof CySubNetwork) {
+				final CySubNetwork net = (CySubNetwork) netView.getModel();
+				
+				for (CyEdge edge : deletedEdges.keySet()) {
+					if (!net.containsEdge(edge)) {
+						// Add edge back
+						net.addEdge(edge);
+						objects.add(edge);
+					}
+				}
+			}
+			
+			eventHelper.flushPayloadEvents(); // Make sure views are created
+			
+			// Restore bypass values to deleted edges that were not cut
+			for (Entry<CyEdge, Map<VisualProperty<?>, Object>> entry : deletedEdges.entrySet()) {
+				View<CyEdge> edgeView = netView.getEdgeView(entry.getKey());
+				
+				if (edgeView != null)
+					ClipboardImpl.setLockedValues(edgeView, edgeView.getModel(), deletedEdges);
+			}
+			
+			// Apply visual style to all restored nodes/edges
+			final VisualStyle style = vmMgr.getVisualStyle(netView);
+			
+			for (CyIdentifiable element: objects) {
+				View<? extends CyIdentifiable> view = null;
+				
+				if (element instanceof CyNode)
+					view = netView.getNodeView((CyNode)element);
+				else if (element instanceof CyEdge)
+					view = netView.getEdgeView((CyEdge)element);
+
+				if (view != null)
+					style.apply(netView.getModel().getRow(element), view);
+			}
+			
+			netView.updateView();
+		}
 	}
 }

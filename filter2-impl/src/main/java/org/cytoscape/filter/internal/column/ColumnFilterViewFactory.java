@@ -230,6 +230,8 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 
 		@Override
 		public void synchronize(ColumnFilterView view) {
+			updateRange();
+			
 			Object criterion = filter.getCriterion();
 			if (criterion instanceof String) {
 				view.getField().setText((String) criterion);
@@ -274,8 +276,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 					return item.predicate.equals(filter.getPredicate());
 				}
 			});
-			
-			updateRange();
 		}
 
 		public void setInteractive(boolean isInteractive, View view) {

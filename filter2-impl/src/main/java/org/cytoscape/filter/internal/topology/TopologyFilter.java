@@ -92,14 +92,25 @@ public class TopologyFilter  extends AbstractTransformer<CyNetwork, CyIdentifiab
 	}
 
 	private static void countNeighbours(CyNetwork network, CyNode node, int distance, OpenLongIntHashMap seen) {
-		if (distance < 0 || seen.containsKey(node.getSUID())) {
+		if (distance == 0) {
+			seen.put(node.getSUID(), 1);
 			return;
 		}
 		
-		seen.put(node.getSUID(), 1);
 		for (CyEdge edge : network.getAdjacentEdgeIterable(node, Type.ANY)) {
-			countNeighbours(network, edge.getSource(), distance - 1, seen);
-			countNeighbours(network, edge.getTarget(), distance - 1, seen);
+			CyNode source = edge.getSource();
+			CyNode target = edge.getTarget();
+			if (source == node && target == node) {
+				// Self edge
+				seen.put(node.getSUID(), 1);
+				countNeighbours(network, node, distance - 1, seen);
+			} else if (source == node) {
+				seen.put(target.getSUID(), 1);
+				countNeighbours(network, target, distance - 1, seen);
+			} else {
+				seen.put(source.getSUID(), 1);
+				countNeighbours(network, source, distance - 1, seen);
+			}
 		}
 	}
 }
