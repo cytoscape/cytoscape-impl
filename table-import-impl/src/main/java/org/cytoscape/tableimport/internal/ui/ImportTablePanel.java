@@ -1710,8 +1710,12 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 	private void updatePrimaryKeyComboBox() {
 		final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
+		String oldSelectedItem = "";
 
 		primaryKeyComboBox.setRenderer(new ComboBoxRenderer(attributeDataTypes));
+		
+		if(primaryKeyComboBox.getSelectedItem() != null)
+			oldSelectedItem = primaryKeyComboBox.getSelectedItem().toString();
 
 		if ((model != null) && (model.getColumnCount() > 0)) {
 			primaryKeyComboBox.removeAllItems();
@@ -1724,6 +1728,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 				if (curValue != null) {
 					primaryKeyComboBox.addItem(curValue.toString());
+					if(curValue.toString().equals(oldSelectedItem))
+						primaryKeyComboBox.setSelectedItem(curValue.toString());
 				} else {
 					primaryKeyComboBox.addItem("");
 				}
@@ -1737,7 +1743,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (selectedIndex == null) {
 			//primaryKeyComboBox.setSelectedIndex(0);
 		} else {
-			primaryKeyComboBox.setSelectedIndex(selectedIndex);
+			if(primaryKeyComboBox.getSelectedItem() != null)
+				primaryKeyComboBox.setSelectedIndex(selectedIndex);
 		}
 	}
 
