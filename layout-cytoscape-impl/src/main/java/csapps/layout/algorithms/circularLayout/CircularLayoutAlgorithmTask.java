@@ -834,6 +834,19 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 		boolean goDown = false;
 		boolean goUp = false;
 
+		//An infinite loop occurs when there is no place in the outerPositionsTaken array where all the number
+		//of positions that we need (noOfPos) can fit contiguously. In such a case, an infinite loop occurs.
+		//Experiment: Create a count. If the count exceeds outPositionsTaken.length, then we have looked at every
+		//possible startPos. Set startPos to the best startPos (meaning, the most contingious spaces) and set found
+		//to true.
+
+		//Experiment: int goUpCount = 0;
+		int goUpCount = 0;
+		//Experiment: int biggestGap = 0;
+		int biggestGap = 0;
+		//Experiment: int bestStartPos;
+		int bestStartPos =  0;
+
 		while (!found && !(goUp && goDown)) {
 			//System.out.print(startPos + " ");
 			for (i = startPos;
@@ -854,8 +867,28 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 
 					goDown = true;
 				} else {
-					startPos = (i + 1) % outerPositionsTaken.length;
-					goUp = true;
+					//Experiment: goUpCount++;
+					goUpCount++;
+					//Experiment: int thisGap = i - startPos;
+					int thisGap = i - startPos;
+					//Experiment: if( thisGap > biggestGap )
+					if( thisGap > biggestGap )
+					{
+						biggestGap = thisGap;
+						bestStartPos = startPos;
+					}
+					//Experiment: if( count > outerPositionsTaken.length )
+					if( goUpCount > outerPositionsTaken.length * 3 )
+					{
+						startPos = bestStartPos;
+						found = true;
+					}
+					//Experiment: else
+					else
+					{
+						startPos = (i + 1) % outerPositionsTaken.length;
+						goUp = true;
+					}
 				}
 			} else
 				found = true;
