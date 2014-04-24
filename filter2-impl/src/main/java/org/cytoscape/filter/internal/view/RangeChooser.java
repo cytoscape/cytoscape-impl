@@ -14,11 +14,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.filter.internal.prefuse.JRangeSlider;
-import org.cytoscape.filter.internal.prefuse.JRangeSliderExtended;
 
 @SuppressWarnings("serial")
 public class RangeChooser extends JPanel {
-	private JRangeSliderExtended slider;
+	private JRangeSlider slider;
 	private JFormattedTextField minimumField;
 	private JFormattedTextField maximumField;
 	private JLabel label1;
@@ -27,7 +26,7 @@ public class RangeChooser extends JPanel {
 	private JLabel label3;
 
 	public RangeChooser(final RangeChooserController controller) {
-		slider = new JRangeSliderExtended(controller.getSliderModel(), JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
+		slider = new JRangeSlider(controller.getSliderModel(), JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
 		slider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent event) {
@@ -37,7 +36,7 @@ public class RangeChooser extends JPanel {
 		
 		minimumField = new JFormattedTextField(ViewUtil.createNumberFormatter());
 		minimumField.setHorizontalAlignment(JTextField.TRAILING);
-		minimumField.setColumns(8);
+		minimumField.setColumns(6);
 		minimumField.addPropertyChangeListener("value", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
@@ -47,7 +46,7 @@ public class RangeChooser extends JPanel {
 
 		maximumField = new JFormattedTextField(ViewUtil.createNumberFormatter());
 		maximumField.setHorizontalAlignment(JTextField.TRAILING);
-		maximumField.setColumns(8);
+		maximumField.setColumns(6);
 		maximumField.addPropertyChangeListener("value", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
@@ -76,16 +75,18 @@ public class RangeChooser extends JPanel {
 	
 	void setInteractive(boolean isInteractive) {
 		removeAll();
+		int row = 0;
+		add(label1, new GridBagConstraints(0, row, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(minimumField, new GridBagConstraints(1, row, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(label2, new GridBagConstraints(2, row, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(maximumField, new GridBagConstraints(3, row, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(label3, new GridBagConstraints(4, row, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+		add(spacerPanel, new GridBagConstraints(5, row, 1, 1, 1, 0, GridBagConstraints.LINE_START,  GridBagConstraints.HORIZONTAL,  new Insets(0, 0, 0, 0), 0, 0));
+		row++;
+		
 		if (isInteractive) {
-			add(slider, new GridBagConstraints(0, 0, 1, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
+			add(slider, new GridBagConstraints(0, row, 6, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
 			slider.invalidate();
-		} else {
-			add(label1, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(minimumField, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(label2, new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(maximumField, new GridBagConstraints(3, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(label3, new GridBagConstraints(4, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(spacerPanel, new GridBagConstraints(5, 0, 1, 1, 1, 0, GridBagConstraints.LINE_START,  GridBagConstraints.HORIZONTAL,  new Insets(0, 0, 0, 0), 0, 0));
 		}
 		revalidate();
 	}

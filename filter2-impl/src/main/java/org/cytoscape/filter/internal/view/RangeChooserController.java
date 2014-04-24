@@ -40,11 +40,19 @@ public abstract class RangeChooserController {
 	
 	public void minimumChanged(RangeChooser chooser) {
 		low = (Number) chooser.getMinimumField().getValue();
+		if (low == null) {
+			low = minimum;
+		}
+		sliderModel.setValueRange(low, high, minimum, maximum);
 		handleRangeChanged(low, high);
 	}
 
 	public void maximumChanged(RangeChooser chooser) {
 		high = (Number) chooser.getMaximumField().getValue();
+		if (high == null) {
+			high = maximum;
+		}
+		sliderModel.setValueRange(low, high, minimum, maximum);
 		handleRangeChanged(low, high);
 	}
 
@@ -75,6 +83,14 @@ public abstract class RangeChooserController {
 			high = maximum;
 		}
 		setRange(low, high, minimum, maximum);
+	}
+	
+	public Number getMinimum() {
+		return minimum;
+	}
+
+	public Number getMaximum() {
+		return maximum;
 	}
 	
 	protected abstract void handleRangeChanged(Number low, Number high);

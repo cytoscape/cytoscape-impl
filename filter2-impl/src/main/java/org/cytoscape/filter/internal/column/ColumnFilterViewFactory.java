@@ -235,6 +235,13 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			Object criterion = filter.getCriterion();
 			if (criterion instanceof String) {
 				view.getField().setText((String) criterion);
+				
+				if (((String) criterion).length() == 0) {
+					Number minimum = chooserController.getMinimum();
+					Number maximum = chooserController.getMaximum();
+					view.getRangeChooser().getMinimumField().setText(minimum.toString());
+					view.getRangeChooser().getMaximumField().setText(maximum.toString());
+				}
 			}
 			if (criterion instanceof Number[]) {
 				Number[] range = (Number[]) criterion;
@@ -534,6 +541,11 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		@Override
 		public void handleInteractivityChanged(boolean isInteractive) {
 			controller.setInteractive(isInteractive, this);
+		}
+		
+		@Override
+		public RangeChooser getRangeChooser() {
+			return rangeChooser;
 		}
 	}
 	
