@@ -325,16 +325,19 @@ public class ClipboardImpl {
 				}
 			}
 
-			// We want to create another copy of the edge
-			// Create the edge
-			newEdge = targetNetwork.addEdge(newNodeMap.get(sourceNode), 
-			                                newNodeMap.get(targetNode), edge.isDirected());
-
+			if (targetNetwork.containsEdge(edge)) {
+				// We want to create another copy of the edge
+				newEdge = targetNetwork.addEdge(newNodeMap.get(sourceNode), 
+				                                newNodeMap.get(targetNode), edge.isDirected());
+			} else {
+				// We just want to add the existing edge to this subnetwork
+				targetNetwork.addEdge(edge);
+				newEdge = edge;
+			}
+			
 			// Copy the attributes over
-			rowMap.put(oldLocalRowMap.get(edge),
-			           targetNetwork.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
-			rowMap.put(oldHiddenRowMap.get(edge),
-			           targetNetwork.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
+			rowMap.put(oldLocalRowMap.get(edge), targetNetwork.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
+			rowMap.put(oldHiddenRowMap.get(edge), targetNetwork.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
 		}
 		
 		return newEdge;
