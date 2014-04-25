@@ -65,6 +65,7 @@ import org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkViewReader;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.io.internal.util.TypeUtils;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CyNetworkReader;
@@ -667,7 +668,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void restoreEquations(CyTable table) {
 		Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 		for (CyColumn column : table.getColumns()) {
-			variableNameToTypeMap.put(column.getName(), column.getType());
+			variableNameToTypeMap.put(column.getName(), column.getType() == Integer.class ? Long.class : column.getType());
 		}
 		
 		for (CyRow row : table.getAllRows()) {
@@ -678,16 +679,25 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 					continue;
 				}
 				Equation equation = (Equation) value;
-
-				final Class<?> type = variableNameToTypeMap.remove(name);
+				final Class<?> columnType = column.getType();
+				final Class<?> expectedType = variableNameToTypeMap.remove(name);
 				try {
 					if (compiler.compile(equation.toString(), variableNameToTypeMap)) {
+						final Class<?> eqnType = compiler.getEquation().getType();
+						if(TypeUtils.eqnTypeIsCompatible(columnType, eqnType))
+							equation = compiler.getEquation();
+						else {
+							final String errorMsg = "Equation result type is "
+								+ TypeUtils.getUnqualifiedName(eqnType) + ", column type is "
+								+ TypeUtils.getUnqualifiedName(columnType) + ".";
+							equation = compiler.getErrorEquation(equation.toString(), expectedType, errorMsg);
+						}
 						row.set(name, compiler.getEquation());
 					}
 				} catch (Exception e) {
 					logger.error("Unexpected error while restoring equation: " + equation.toString(), e);
 				}
-				variableNameToTypeMap.put(name, type);
+				variableNameToTypeMap.put(name, expectedType);
 			}
 		}
 	}
