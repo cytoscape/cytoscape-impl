@@ -58,8 +58,8 @@ class EqnSupport {
 
 		if (targetType == Double.class || targetType == Boolean.class
 		    || targetType == Integer.class || targetType == Long.class)
-			return eqnReturnType == Double.class || eqnReturnType == Boolean.class
-			       || eqnReturnType == Integer.class || eqnReturnType == Long.class;
+			return eqnReturnType == Double.class || eqnReturnType == Long.class
+			       || eqnReturnType == Boolean.class;
 		else if (targetType == String.class)
 			return true; // Everything can be turned into a String!
 		else
