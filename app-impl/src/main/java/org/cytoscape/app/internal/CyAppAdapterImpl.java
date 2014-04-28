@@ -88,6 +88,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsListener;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -206,6 +207,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private WebServiceGUI webServiceGui;
 	private AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
 	private CustomGraphicLayer customGraphicLayer;
+	private CyChart cyChart;
 	private ArrowShape arrowShape;
 	private VizMapGUI vizMapGui;
 	private DiscreteMappingGenerator<?> discreteMappingGenerator;

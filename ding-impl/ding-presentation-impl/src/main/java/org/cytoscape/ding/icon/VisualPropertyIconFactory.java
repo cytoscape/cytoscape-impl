@@ -33,7 +33,6 @@ import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.impl.DLineType;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -67,7 +66,10 @@ public class VisualPropertyIconFactory {
 		} else if(value instanceof LineType) {
 			icon = new StrokeIcon(DLineType.getDLineType((LineType) value).getStroke(2f), w, h, value.toString());
 		} else if(value instanceof CyCustomGraphics) {
-			icon = new CustomGraphicsIcon(((CyCustomGraphics) value), w, h, ((CyCustomGraphics) value).getDisplayName());
+			final String name = ((CyCustomGraphics) value).getDisplayName();
+			
+			if (name != null)
+				icon = new CustomGraphicsIcon(((CyCustomGraphics) value), w, h, name);
 		} else if(value instanceof ObjectPosition) {
 			icon = new ObjectPositionIcon((ObjectPosition) value, w, h, "Label");
 		} else if(value instanceof Font) {

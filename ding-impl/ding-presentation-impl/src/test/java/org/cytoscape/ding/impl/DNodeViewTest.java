@@ -24,30 +24,23 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Paint;
-import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
-import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.DLineType;
-import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.ViewTaskFactoryListener;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;

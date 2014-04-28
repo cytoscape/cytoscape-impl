@@ -645,8 +645,8 @@ public final class GraphRenderer {
 					final long node = nodeHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
 					
-					renderNodeHigh(graph, grafx, node, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, lodBits);
-				
+					renderNodeHigh(graph, grafx, node, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails,
+							lodBits, scaleFactor);
 
 					// Take care of label rendering.
 					if ((lodBits & LOD_NODE_LABELS) != 0) { // Potential label rendering.
@@ -1029,19 +1029,10 @@ public final class GraphRenderer {
 	
 	/**
 	 * Render node view with details, including custom graphics.
-	 * 
-	 * @param graph
-	 * @param grafx
-	 * @param node
-	 * @param floatBuff1
-	 * @param doubleBuff1
-	 * @param doubleBuff2
-	 * @param nodeDetails
-	 * @param lodBits
 	 */
 	private static final void renderNodeHigh(final CyNetwork graph, final GraphGraphics grafx, 
 			final long node, final CyNode cyNode, final float[] floatBuff1, final double[] doubleBuff1, 
-			final double[] doubleBuff2, final NodeDetails nodeDetails, final int lodBits) {
+			final double[] doubleBuff2, final NodeDetails nodeDetails, final int lodBits, final double scaleFactor) {
 
 		Shape nodeShape = null;
 
@@ -1106,7 +1097,7 @@ public final class GraphRenderer {
 					doubleBuff1[3] = floatBuff1[3];
 					lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
 					grafx.drawCustomGraphicFull(nodeShape, cg, (float) (doubleBuff2[0] + offsetVectorX), 
-					                            (float) (doubleBuff2[1] + offsetVectorY));
+					                            (float) (doubleBuff2[1] + offsetVectorY), scaleFactor);
 					graphicInx++;
 				}
 			}

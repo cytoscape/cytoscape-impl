@@ -357,8 +357,7 @@ public abstract class AbstractTableFacade implements CyTable {
 
 		@Override
 		public String toString() {
-			return "FACADE of: "+actualColumn.toString();
+			return actualColumn.toString();
 		}
-		
 	}
 }

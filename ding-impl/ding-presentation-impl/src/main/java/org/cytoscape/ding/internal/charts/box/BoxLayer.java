@@ -1,0 +1,118 @@
+package org.cytoscape.ding.internal.charts.box;
+
+import java.awt.Color;
+import java.awt.geom.Rectangle2D;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.ding.internal.charts.AbstractChartLayer;
+import org.cytoscape.ding.internal.charts.Orientation;
+import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
+import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
+import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
+
+
+public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
+	
+	private final Orientation orientation;
+	private final boolean showCategoryAxis;
+	private final boolean showRangeAxis;
+
+	public BoxLayer(final Map<String/*series*/, List<Double>/*values*/> data,
+					final List<String> labels,
+					final List<Color> colors,
+					final DoubleRange range,
+					final Orientation orientation,
+					final boolean showCategoryAxis,
+					final boolean showRangeAxis,
+					final Rectangle2D bounds) {
+        super(data, labels, false, colors, range, bounds);
+        this.orientation = orientation;
+        this.showCategoryAxis = showCategoryAxis;
+        this.showRangeAxis = showRangeAxis;
+	}
+	
+	@Override
+	protected BoxAndWhiskerCategoryDataset createDataset() {
+		final DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+		int count = 0;
+		
+		for (String series : data.keySet()) {
+			final List<Double> values = data.get(series);
+			
+			if (labels != null && labels.size() > count)
+				series = labels.get(count);
+			
+			dataset.add(values, "?", series); // switch series and category name so labels are displayed for series
+			count++;
+		}
+		
+		return dataset;
+	}
+    
+	@Override
+	protected JFreeChart createChart(final BoxAndWhiskerCategoryDataset dataset) {
+		final JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(
+					null, // chart title
+					null, // domain axis label
+					null, // range axis label
+					dataset, // data
+					false); // include legend
+		
+        chart.setAntiAlias(true);
+        chart.setBorderVisible(false);
+        chart.setBorderPaint(TRANSPARENT_COLOR);
+        chart.setBackgroundPaint(TRANSPARENT_COLOR);
+        chart.setBackgroundImageAlpha(0.0f);
+        
+        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+		plot.setOutlineVisible(false);
+		plot.setOutlinePaint(TRANSPARENT_COLOR);
+		plot.setDomainGridlinePaint(TRANSPARENT_COLOR);
+		plot.setDomainGridlinesVisible(false);
+	    plot.setRangeGridlinePaint(TRANSPARENT_COLOR);
+	    plot.setRangeGridlinesVisible(false);
+		plot.setBackgroundPaint(TRANSPARENT_COLOR);
+		plot.setBackgroundAlpha(0.0f);
+		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+		
+		final PlotOrientation plotOrientation = 
+				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
+		plot.setOrientation(plotOrientation);
+		
+		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
+        domainAxis.setVisible(showCategoryAxis);
+        domainAxis.setAxisLineVisible(showCategoryAxis);
+        domainAxis.setTickMarksVisible(true);
+        domainAxis.setTickLabelsVisible(true);
+        domainAxis.setCategoryMargin(.1);
+        
+        if (!showCategoryAxis && !showRangeAxis) {
+        	// Prevent bars from being cropped
+	        domainAxis.setLowerMargin(.01);
+	        domainAxis.setUpperMargin(.01);
+        }
+        
+		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		rangeAxis.setVisible(showRangeAxis);
+        
+		// Set axis range		
+		if (range != null) {
+			rangeAxis.setLowerBound(range.min);
+			rangeAxis.setUpperBound(range.max);
+		}
+		
+		final BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();
+		renderer.setFillBox(false); // No colors
+		
+		return chart;
+	}
+}

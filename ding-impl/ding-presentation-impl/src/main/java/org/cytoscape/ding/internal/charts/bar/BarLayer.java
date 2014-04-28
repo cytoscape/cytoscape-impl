@@ -1,0 +1,145 @@
+package org.cytoscape.ding.internal.charts.bar;
+
+import java.awt.Color;
+import java.awt.geom.Rectangle2D;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.ding.internal.charts.AbstractChartLayer;
+import org.cytoscape.ding.internal.charts.Orientation;
+import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.data.category.CategoryDataset;
+
+
+public class BarLayer extends AbstractChartLayer<CategoryDataset> {
+	
+	private final boolean stacked;
+	private final Orientation orientation;
+	private final boolean showCategoryAxis;
+	private final boolean showRangeAxis;
+
+	public BarLayer(final Map<String/*category*/, List<Double>/*values*/> data,
+					final boolean stacked,
+					final List<String> labels,
+					final boolean showLabels,
+					final List<Color> colors,
+					final DoubleRange range,
+					final Orientation orientation,
+					final boolean showCategoryAxis,
+					final boolean showRangeAxis,
+					final Rectangle2D bounds) {
+        super(data, labels, showLabels, colors, range, bounds);
+        this.stacked = stacked;
+        this.orientation = orientation;
+        this.showCategoryAxis = showCategoryAxis;
+        this.showRangeAxis = showRangeAxis;
+	}
+	
+	@Override
+	protected CategoryDataset createDataset() {
+		return createCategoryDataset(data, false, labels);
+	}
+    
+	@Override
+	protected JFreeChart createChart(final CategoryDataset dataset) {
+		final PlotOrientation plotOrientation = 
+				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
+		final JFreeChart chart;
+		
+		if (stacked)
+			chart = ChartFactory.createStackedBarChart(
+					null, // chart title
+					null, // domain axis label
+					null, // range axis label
+					dataset, // data
+					plotOrientation,
+					false, // include legend
+					false, // tooltips
+					false); // urls
+		else
+			chart = ChartFactory.createBarChart(
+					null, // chart title
+					null, // domain axis label
+					null, // range axis label
+					dataset, // data
+					plotOrientation,
+					false, // include legend
+					false, // tooltips
+					false); // urls
+		
+        chart.setAntiAlias(true);
+        chart.setBorderVisible(false);
+        chart.setBorderPaint(TRANSPARENT_COLOR);
+        chart.setBackgroundPaint(TRANSPARENT_COLOR);
+        chart.setBackgroundImageAlpha(0.0f);
+        
+        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+		plot.setOutlineVisible(false);
+		plot.setOutlinePaint(TRANSPARENT_COLOR);
+		plot.setDomainGridlinePaint(TRANSPARENT_COLOR);
+		plot.setDomainGridlinesVisible(false);
+	    plot.setRangeGridlinePaint(TRANSPARENT_COLOR);
+	    plot.setRangeGridlinesVisible(false);
+		plot.setBackgroundPaint(TRANSPARENT_COLOR);
+		plot.setBackgroundAlpha(0.0f);
+		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+		
+		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
+        domainAxis.setVisible(showCategoryAxis);
+        domainAxis.setAxisLineVisible(showCategoryAxis);
+        domainAxis.setTickMarksVisible(true);
+        domainAxis.setTickLabelsVisible(true);
+        domainAxis.setCategoryMargin(.1);
+        
+        if (!showCategoryAxis && !showRangeAxis) {
+        	// Prevent bars from being cropped
+	        domainAxis.setLowerMargin(.01);
+	        domainAxis.setUpperMargin(.01);
+        }
+        
+		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		rangeAxis.setVisible(showRangeAxis);
+        
+		// Set axis range		
+		if (range != null) {
+			rangeAxis.setLowerBound(range.min);
+			rangeAxis.setUpperBound(range.max);
+		}
+		
+//		if (!showRangeAxis) {
+//			// Prevent bars from being cropped
+//	        rangeAxis.setLowerMargin(.5);
+//	        rangeAxis.setUpperMargin(.5);
+//        }
+		
+		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
+		renderer.setBarPainter(new StandardBarPainter());
+		renderer.setBaseItemLabelGenerator(showLabels ? new StandardCategoryItemLabelGenerator() : null);
+		renderer.setBaseItemLabelsVisible(showLabels);
+		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
+		renderer.setShadowVisible(false);
+		renderer.setDrawBarOutline(true);
+		renderer.setItemMargin(0.0);
+		
+		final List<?> keys = dataset.getRowKeys();
+		
+		if (colors != null && colors.size() >= keys.size()) {
+			for (int i = 0; i < keys.size(); i++) {
+				final Color c = colors.get(i);
+				renderer.setSeriesFillPaint(i, c);
+			}
+		}
+		
+		return chart;
+	}
+}

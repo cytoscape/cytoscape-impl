@@ -25,14 +25,13 @@ package org.cytoscape.ding.impl;
  */
 
 
+import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyNetwork;
-
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.AbstractRenderingEngineTest;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.ding.*;
 
 
 public class DGraphViewTest extends AbstractRenderingEngineTest {
