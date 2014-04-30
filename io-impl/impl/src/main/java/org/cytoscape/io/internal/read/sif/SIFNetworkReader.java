@@ -66,16 +66,12 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 	private final StringBuilder edgeNameBuilder = new StringBuilder();
 	
 	private TaskMonitor parentTaskMonitor;
-
-	private Map<String, CyNode> nMap;
 	
 	public SIFNetworkReader(InputStream is, final CyLayoutAlgorithmManager layouts,
 			final CyNetworkViewFactory cyNetworkViewFactory, final CyNetworkFactory cyNetworkFactory,
 			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager) {
 		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.layouts = layouts;
-		
-		this.nMap = new HashMap<String, CyNode>(10000);
 	}
 
 	@Override
@@ -107,15 +103,15 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 			// Need to create new network with new root.
 			subNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
 		}
-		
-		Map<Object, CyNode> nMap = getNodeMap() ;
+
+		Map<Object, CyNode> nMap = getNodeMap();
 		
 		tm.setProgress(0.1);
 		
 		final String firstLine = br.readLine();
 		if (firstLine.contains(TAB))
 			delimiter = TAB;
-		createEdge(new Interaction(firstLine.trim(), delimiter), subNetwork);
+		createEdge(new Interaction(firstLine.trim(), delimiter), subNetwork, nMap);
 
 		tm.setProgress(0.15);
 		tm.setStatusMessage("Processing the interactions...");
@@ -135,7 +131,7 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 
 			try {
 				final Interaction itr = new Interaction(line, delimiter);
-				createEdge(itr, subNetwork);
+				createEdge(itr, subNetwork, nMap);
 			} catch (Exception e) {
 				// Simply ignore invalid lines.
 				continue;
@@ -157,7 +153,7 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 	}
 	
 	
-	private void createEdge(final Interaction itr, final CySubNetwork subNetwork) {
+	private void createEdge(final Interaction itr, final CySubNetwork subNetwork, final Map<Object, CyNode> nMap) {
 		CyNode sourceNode = nMap.get(itr.getSource());
 		if (sourceNode == null) {
 			sourceNode = subNetwork.addNode();
