@@ -13,6 +13,7 @@ public abstract class RangeChooserController {
 	private Number high;
 	private Number minimum;
 	private Number maximum;
+	private boolean disableListeners;
 	
 	public RangeChooserController() {
 		sliderModel = new NumberRangeModel(0, 0, 0, 0);
@@ -55,8 +56,13 @@ public abstract class RangeChooserController {
 		low = newLow ;
 		high = newHigh;
 		
-		minimumField.setValue(low);
-		maximumField.setValue(high);
+		disableListeners = true;
+		try {
+			minimumField.setValue(low);
+			maximumField.setValue(high);
+		} finally {
+			disableListeners = false;
+		}
 		handleRangeChanged(low, high);
 	}
 	
@@ -66,6 +72,9 @@ public abstract class RangeChooserController {
 			low = minimum;
 		}
 		sliderModel.setValueRange(low, high, minimum, maximum);
+		if (disableListeners) {
+			return;
+		}
 		handleRangeChanged(low, high);
 	}
 
@@ -75,6 +84,9 @@ public abstract class RangeChooserController {
 			high = maximum;
 		}
 		sliderModel.setValueRange(low, high, minimum, maximum);
+		if (disableListeners) {
+			return;
+		}
 		handleRangeChanged(low, high);
 	}
 
