@@ -230,9 +230,9 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 
 		@Override
 		public void synchronize(ColumnFilterView view) {
+			Object criterion = filter.getCriterion();
 			updateRange();
 			
-			Object criterion = filter.getCriterion();
 			if (criterion instanceof String) {
 				view.getField().setText((String) criterion);
 				

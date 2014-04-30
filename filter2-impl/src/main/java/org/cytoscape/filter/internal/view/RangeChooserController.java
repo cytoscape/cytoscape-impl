@@ -1,5 +1,10 @@
 package org.cytoscape.filter.internal.view;
 
+import java.text.ParseException;
+
+import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+
 import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
 
 public abstract class RangeChooserController {
@@ -21,9 +26,27 @@ public abstract class RangeChooserController {
 		return sliderModel;
 	}
 	
+	Number clampByFormat(AbstractFormatter format, Number value) {
+		if (format == null) {
+			return value;
+		}
+		if (value == null) {
+			return null;
+		}
+		try {
+			return (Number) format.stringToValue(format.valueToString(value));
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
 	public void sliderChanged(RangeChooser chooser) {
-		Number newLow = (Number) sliderModel.getLowValue();
-		Number newHigh = (Number) sliderModel.getHighValue();
+		JFormattedTextField minimumField = chooser.getMinimumField();
+		JFormattedTextField maximumField = chooser.getMaximumField();
+		
+		// Ensure that what we display is what actually makes it into the model
+		Number newLow = clampByFormat(minimumField.getFormatter(), (Number) sliderModel.getLowValue());
+		Number newHigh = clampByFormat(maximumField.getFormatter(), (Number) sliderModel.getHighValue());
 		
 		if (newLow != null && newLow.equals(low) && newHigh != null && newHigh.equals(high)) {
 			return;
@@ -32,9 +55,8 @@ public abstract class RangeChooserController {
 		low = newLow ;
 		high = newHigh;
 		
-		chooser.getMinimumField().setValue(low);
-		chooser.getMaximumField().setValue(high);
-		
+		minimumField.setValue(low);
+		maximumField.setValue(high);
 		handleRangeChanged(low, high);
 	}
 	
