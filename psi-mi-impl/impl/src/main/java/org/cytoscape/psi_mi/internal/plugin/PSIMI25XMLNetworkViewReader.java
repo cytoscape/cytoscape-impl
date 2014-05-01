@@ -99,15 +99,6 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 		}
 		targetColumnList = getTargetColumns(name2RootMap.get(rootNetworkList.getSelectedValue()));
 	}
-
-	public ListSingleSelection<String> sourceColumnList;
-	@Tunable(description = "Mapping Column for New Network:", groups=" ")
-	public ListSingleSelection<String> getSourceColumnList(){
-		return sourceColumnList;
-	}
-	public void setSourceColumnList(ListSingleSelection<String> colList){
-		this.sourceColumnList = colList;
-	}
 	
 	public ListSingleSelection<String> targetColumnList;
 	@Tunable(description = "Mapping Column for Existing Network:",groups=" ", listenForChange={"RootNetworkList"})
@@ -226,11 +217,6 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 		colNames_target.add("shared name");
 		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
 		targetColumnList.setSelectedValue("shared name");
-	
-		// initialize source attribute list
-		List<String> colNames_source = new ArrayList<String>();
-		colNames_source.add("shared name");
-		this.sourceColumnList = new ListSingleSelection<String>(colNames_source);
 	}
 
 	@Override
