@@ -8,6 +8,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements ImageCust
 	/** Show item labels? */
 	protected final boolean showLabels;
 	protected final List<Color> colors;
-	protected final DoubleRange range;
+	protected DoubleRange range;
 	
 	protected Rectangle2D bounds;
 	protected Rectangle2D scaledBounds;
@@ -52,8 +53,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements ImageCust
 		this.labels = labels;
 		this.showLabels = showLabels;
 		this.colors = colors;
-		this.range = range;
 		this.bounds = scaledBounds = bounds;
+		this.range = range;
 	}
 	
 	@Override
@@ -207,5 +208,39 @@ public abstract class AbstractChartLayer<T extends Dataset> implements ImageCust
 			labels.add("#" + (i+1));
 		
 		return labels;
+	}
+	
+	public static DoubleRange calculateRange(final Collection<List<Double>> lists, final boolean stacked) {
+		DoubleRange range = null;
+		
+		if (lists != null && !lists.isEmpty()) {
+			double min = Double.POSITIVE_INFINITY;
+			double max = Double.NEGATIVE_INFINITY;
+			
+			for (final List<Double> values : lists) {
+				double sum = 0;
+				
+				if (values != null) {
+					for (final double v : values) {
+						if (stacked) {
+							sum += v;
+						} else {
+							min = Math.min(min, v);
+							max = Math.max(max, v);
+						}
+					}
+					
+					if (stacked) {
+						min = Math.min(min, sum);
+						max = Math.max(max, sum);
+					}
+				}
+				
+				if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY)
+					range = new DoubleRange(min, max);
+			}
+		}
+		
+		return range;
 	}
 }

@@ -100,6 +100,8 @@ import org.cytoscape.ding.internal.charts.box.BoxChartEditorFactory;
 import org.cytoscape.ding.internal.charts.box.BoxChartFactory;
 import org.cytoscape.ding.internal.charts.donut.DonutChartEditorFactory;
 import org.cytoscape.ding.internal.charts.donut.DonutChartFactory;
+import org.cytoscape.ding.internal.charts.heatmap.HeatMapChartEditorFactory;
+import org.cytoscape.ding.internal.charts.heatmap.HeatMapChartFactory;
 import org.cytoscape.ding.internal.charts.line.LineChartEditorFactory;
 import org.cytoscape.ding.internal.charts.line.LineChartFactory;
 import org.cytoscape.ding.internal.charts.pie.PieChartEditorFactory;
@@ -609,6 +611,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, stripeChartFactory, CyChartFactory.class, new Properties());
 		final StripeChartEditorFactory stripeChartEditorFactory = new StripeChartEditorFactory(cyApplicationManagerServiceRef);
 		registerService(bc, stripeChartEditorFactory, CyChartEditorFactory.class, new Properties());
+		
+		final HeatMapChartFactory heatMapChartFactory = new HeatMapChartFactory();
+		registerService(bc, heatMapChartFactory, CyChartFactory.class, new Properties());
+		final HeatMapChartEditorFactory heatMapChartEditorFactory = new HeatMapChartEditorFactory(cyApplicationManagerServiceRef);
+		registerService(bc, heatMapChartEditorFactory, CyChartEditorFactory.class, new Properties());
 	}
 
 	private void startCustomGraphicsMgr(BundleContext bc) {
