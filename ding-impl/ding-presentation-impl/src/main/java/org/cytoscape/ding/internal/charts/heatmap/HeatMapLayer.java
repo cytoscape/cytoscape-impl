@@ -22,35 +22,46 @@ import org.jfree.data.xy.XYZDataset;
 
 public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 	
-	private final boolean showCategoryAxis;
-	private final boolean showRangeAxis;
+	private final String[] xLabels;
+	private final String[] yLabels;
+	private int maxYSize;
 	
-    final String[] xAxisLabels = {"a", "b", "c", "d", "e"}; //TODO: generalize
-
 	public HeatMapLayer(final Map<String/*key*/, List<Double>/*z-values*/> data,
-						final List<String> labels,
-						final boolean showLabels,
+						final List<String> itemLabels,
+						final List<String> domainLabels,
+						final List<String> rangeLabels,
+						final boolean showDomainAxis,
+						final boolean showRangeAxis,
 						final List<Color> colors,
 						final DoubleRange range,
-						final boolean showCategoryAxis,
-						final boolean showRangeAxis,
 						final Rectangle2D bounds) {
-        super(data, labels, showLabels, colors, range, bounds);
-        this.showCategoryAxis = showCategoryAxis;
-        this.showRangeAxis = showRangeAxis;
+        super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, colors,
+        		range, bounds);
         
+        // Range cannot be null
         if (range == null)
         	this.range = calculateRange(data.values(), false);
+        
+        // x/y Labels are mandatory
+        xLabels = new String[data.size()];
+        int x = 0;
+        
+        for (final List<Double> values : data.values()) {
+			maxYSize = Math.max(maxYSize, values.size());
+			xLabels[x] = (domainLabels != null && domainLabels.size() > x) ? domainLabels.get(x) : ""+(x+1);
+			x++;
+        }
+        
+        yLabels = new String[maxYSize];
+        
+        for (int i = 0; i < maxYSize; i++) {
+        	yLabels[i] = (rangeLabels != null && rangeLabels.size() > i) ? rangeLabels.get(i) : ""+(i+1);
+        }
 	}
 	
 	@Override
 	protected XYZDataset createDataset() {
 		final DefaultXYZDataset dataset = new DefaultXYZDataset();
-		int maxSize = 0;
-		
-		for (final List<Double> values : data.values())
-			maxSize = Math.max(maxSize, values.size());
-		
 		int x = 0;
 		
 		for (final Entry<String, List<Double>> series : data.entrySet()) {
@@ -63,10 +74,10 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 			// - and the third containing the z-values
 			// { { x1, x2 }, { y1, y2 }, { z1, z2 } }
 			
-			final double[][] seriesData = new double[3][maxSize];
+			final double[][] seriesData = new double[3][maxYSize];
 			Arrays.fill(seriesData[0], x);
 			
-			for (int y = 0; y < maxSize; y++) {
+			for (int y = 0; y < maxYSize; y++) {
 				final double z = zValues.size() > y ? zValues.get(y) : range.min;
 				seriesData[1][y] = y;
 				seriesData[2][y] = z;
@@ -81,22 +92,29 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
     
 	@Override
 	protected JFreeChart createChart(final XYZDataset dataset) {
-		final SymbolAxis xAxis = new SymbolAxis(null, xAxisLabels);
+		final SymbolAxis xAxis = new SymbolAxis(null, xLabels);
+		xAxis.setVisible(showDomainAxis);
+		xAxis.setTickMarksVisible(false);
 		xAxis.setLowerMargin(0.0);
 		xAxis.setUpperMargin(0.0);
 
-		final SymbolAxis yAxis = new SymbolAxis(null, labels.toArray(new String[labels.size()]));
+		final SymbolAxis yAxis = new SymbolAxis(null, yLabels);
+		yAxis.setVisible(showRangeAxis);
+		yAxis.setTickMarksVisible(false);
 		yAxis.setLowerMargin(0.0);
 		yAxis.setUpperMargin(0.0);
 		yAxis.setInverted(true);
 
 		final XYBlockRenderer renderer = new XYBlockRenderer();
-		final PaintScale scale = new GrayPaintScale(range.min, range.max);
-		renderer.setPaintScale(scale);
+		
+		if (range != null) {
+			final PaintScale scale = new GrayPaintScale(range.min, range.max);
+			renderer.setPaintScale(scale);
+		}
 
 		final XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
-		plot.setDomainAxis(1, xAxis);
-        plot.setDomainAxisLocation(1, AxisLocation.TOP_OR_LEFT);
+		plot.setDomainAxis(xAxis);
+        plot.setDomainAxisLocation(AxisLocation.TOP_OR_LEFT);
         plot.setBackgroundPaint(Color.LIGHT_GRAY);
 		plot.setDomainGridlinesVisible(false);
 		plot.setRangeGridlinesVisible(false);

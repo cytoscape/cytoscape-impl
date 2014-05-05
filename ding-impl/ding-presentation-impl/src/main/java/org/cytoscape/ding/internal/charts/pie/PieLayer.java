@@ -20,13 +20,13 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 					final boolean showLabels,
 					final List<Color> colors,
 					final Rectangle2D bounds) {
-        super(data, labels, showLabels, colors, null, bounds);
+        super(data, labels, null, null, showLabels, false, false, colors, null, bounds);
 	}
 	
 	@Override
 	protected PieDataset createDataset() {
 		final List<Double> values = data.isEmpty() ? null : data.values().iterator().next();
-		return createPieDataset(values, labels);
+		return createPieDataset(values, itemLabels);
 	}
     
 	@Override
@@ -50,7 +50,7 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 		plot.setDirection(Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
 		plot.setOutlinePaint(TRANSPARENT_COLOR);
-		plot.setLabelGenerator(showLabels ? new StandardPieSectionLabelGenerator() : null);
+		plot.setLabelGenerator(showItemLabels ? new StandardPieSectionLabelGenerator() : null);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setShadowPaint(TRANSPARENT_COLOR);

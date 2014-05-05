@@ -25,18 +25,18 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 	private final Orientation orientation;
 
 	public StripeLayer(final Map<String/*category*/, List<Double>/*values*/> data,
-					   final List<String> labels,
-					   final boolean showLabels,
+					   final List<String> itemLabels,
+					   final boolean showItemLabels,
 					   final List<Color> colors,
 					   final Orientation orientation,
 					   final Rectangle2D bounds) {
-        super(data, labels, showLabels, colors, null, bounds);
+        super(data, itemLabels, null, null, showItemLabels, false, false, colors, null, bounds);
         this.orientation = orientation;
 	}
 	
 	@Override
 	protected CategoryDataset createDataset() {
-		return createCategoryDataset(data, false, labels);
+		return createCategoryDataset(data, false, itemLabels);
 	}
     
 	@Override
@@ -44,7 +44,7 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 		// The actual bar orientation is inverted here, because we will use a stacked bar chart
 		final PlotOrientation plotOrientation = 
 				orientation == Orientation.HORIZONTAL ? PlotOrientation.VERTICAL : PlotOrientation.HORIZONTAL;
-		// Use stacked bar chart so labels are automatically centered inside the bars.
+		// Use stacked bar chart so itemLabels are automatically centered inside the bars.
 		final JFreeChart chart = ChartFactory.createStackedBarChart(
 				null, // chart title
 				null, // domain axis label
@@ -85,8 +85,8 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 		
 		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
 		renderer.setBarPainter(new StandardBarPainter());
-		renderer.setBaseItemLabelGenerator(showLabels ? new StandardCategoryItemLabelGenerator() : null);
-		renderer.setBaseItemLabelsVisible(showLabels);
+		renderer.setBaseItemLabelGenerator(showItemLabels ? new StandardCategoryItemLabelGenerator() : null);
+		renderer.setBaseItemLabelsVisible(showItemLabels);
 		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
 		renderer.setShadowVisible(false);
 		renderer.setDrawBarOutline(true);

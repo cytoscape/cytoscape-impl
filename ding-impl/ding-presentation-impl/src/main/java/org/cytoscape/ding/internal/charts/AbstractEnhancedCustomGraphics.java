@@ -22,22 +22,20 @@ import org.slf4j.LoggerFactory;
 // TODO: remove this class?
 public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLayer> implements CyChart<T> {
 
-	// Standard command strings
-//	public static final String ALL = "all";
 	public static final String DATA_COLUMNS = "datacolumns";
 	public static final String YBASE = "ybase";
-//	public static final String CLEAR = "clear";
-//	public static final String CURRENT = "current";
-	public static final String LABELS_COLUMN = "labelscolumn";
-//	public static final String LIST = "list";
-//	public static final String NETWORK = "network";
+	public static final String ITEM_LABELS_COLUMN = "itemlabelscolumn";
+	public static final String DOMAIN_LABELS_COLUMN = "domainlabelscolumn";
+	public static final String RANGE_LABELS_COLUMN = "rangelabelscolumn";
 	public static final String POSITION = "position";
 	public static final String GLOBAL_RANGE = "globalrange";
 	public static final String AUTO_RANGE = "autorange";
 	public static final String RANGE = "range";
 	public static final String SCALE = "scale";
 	public static final String SIZE = "size";
-	public static final String SHOW_LABELS = "showlabels";
+	public static final String SHOW_ITEM_LABELS = "showitemlabels";
+	public static final String SHOW_DOMAIN_AXIS = "showdomainaxis";
+	public static final String SHOW_RANGE_AXIS = "showrangeaxis";
 	public static final String VALUES = "valuelist";
 	public static final String COLORS = "colorlist";
 	public static final String COLOR_SCHEME = "colorscheme";
@@ -207,12 +205,16 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	
 	protected Class<?> getSettingType(final String key) {
 		if (key.equals(DATA_COLUMNS)) return List.class;
-		if (key.equals(LABELS_COLUMN)) return String.class;
+		if (key.equals(ITEM_LABELS_COLUMN)) return String.class;
+		if (key.equals(DOMAIN_LABELS_COLUMN)) return String.class;
+		if (key.equals(RANGE_LABELS_COLUMN)) return String.class;
 		if (key.equals(VALUES)) return List.class;
 		if (key.equals(COLORS)) return List.class;
 		if (key.equals(COLOR_SCHEME)) return String.class;
 		if (key.equals(SCALE)) return Double.class;
-		if (key.equals(SHOW_LABELS)) return Boolean.class;
+		if (key.equals(SHOW_ITEM_LABELS)) return Boolean.class;
+		if (key.equals(SHOW_RANGE_AXIS)) return Boolean.class;
+		if (key.equals(SHOW_DOMAIN_AXIS)) return Boolean.class;
 		if (key.equals(GLOBAL_RANGE)) return Boolean.class;
 		if (key.equals(AUTO_RANGE)) return Boolean.class;
 		if (key.equals(RANGE)) return DoubleRange.class;
@@ -236,7 +238,7 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	@SuppressWarnings("unchecked")
 	protected <S> S parseValue(final String key, Object value, final Class<S> type) {
 		if (value == null) {
-			if (type == Boolean.class && key.equalsIgnoreCase(SHOW_LABELS))
+			if (type == Boolean.class && key.equalsIgnoreCase(SHOW_ITEM_LABELS))
 				return (S) Boolean.TRUE;
 			if (type == Double.class && key.equalsIgnoreCase(SCALE))
 				return (S) new Double(0.9);

@@ -25,29 +25,28 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
 	private final boolean stacked;
 	private final Orientation orientation;
-	private final boolean showCategoryAxis;
-	private final boolean showRangeAxis;
 
 	public BarLayer(final Map<String/*category*/, List<Double>/*values*/> data,
 					final boolean stacked,
-					final List<String> labels,
-					final boolean showLabels,
+					final List<String> itemLabels,
+					final List<String> domainLabels,
+					final List<String> rangeLabels,
+					final boolean showItemLabels,
+					final boolean showDomainAxis,
+					final boolean showRangeAxis,
 					final List<Color> colors,
 					final DoubleRange range,
 					final Orientation orientation,
-					final boolean showCategoryAxis,
-					final boolean showRangeAxis,
 					final Rectangle2D bounds) {
-        super(data, labels, showLabels, colors, range, bounds);
+        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
+        		range, bounds);
         this.stacked = stacked;
         this.orientation = orientation;
-        this.showCategoryAxis = showCategoryAxis;
-        this.showRangeAxis = showRangeAxis;
 	}
 	
 	@Override
 	protected CategoryDataset createDataset() {
-		return createCategoryDataset(data, false, labels);
+		return createCategoryDataset(data, false, domainLabels);
 	}
     
 	@Override
@@ -95,13 +94,13 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
-        domainAxis.setVisible(showCategoryAxis);
-        domainAxis.setAxisLineVisible(showCategoryAxis);
+        domainAxis.setVisible(showDomainAxis);
+        domainAxis.setAxisLineVisible(showDomainAxis);
         domainAxis.setTickMarksVisible(true);
         domainAxis.setTickLabelsVisible(true);
         domainAxis.setCategoryMargin(.1);
         
-        if (!showCategoryAxis && !showRangeAxis) {
+        if (!showDomainAxis && !showRangeAxis) {
         	// Prevent bars from being cropped
 	        domainAxis.setLowerMargin(.01);
 	        domainAxis.setUpperMargin(.01);
@@ -124,8 +123,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		
 		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
 		renderer.setBarPainter(new StandardBarPainter());
-		renderer.setBaseItemLabelGenerator(showLabels ? new StandardCategoryItemLabelGenerator() : null);
-		renderer.setBaseItemLabelsVisible(showLabels);
+		renderer.setBaseItemLabelGenerator(showItemLabels ? new StandardCategoryItemLabelGenerator() : null);
+		renderer.setBaseItemLabelsVisible(showItemLabels);
 		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
 		renderer.setShadowVisible(false);
 		renderer.setDrawBarOutline(true);

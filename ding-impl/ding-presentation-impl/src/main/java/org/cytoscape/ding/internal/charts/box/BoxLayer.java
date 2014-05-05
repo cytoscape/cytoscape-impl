@@ -2,6 +2,7 @@ package org.cytoscape.ding.internal.charts.box;
 
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -23,21 +24,19 @@ import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 	
 	private final Orientation orientation;
-	private final boolean showCategoryAxis;
-	private final boolean showRangeAxis;
 
+	@SuppressWarnings("unchecked")
 	public BoxLayer(final Map<String/*series*/, List<Double>/*values*/> data,
-					final List<String> labels,
+					final List<String> domainLabels,
+					final boolean showDomainAxis,
+					final boolean showRangeAxis,
 					final List<Color> colors,
 					final DoubleRange range,
 					final Orientation orientation,
-					final boolean showCategoryAxis,
-					final boolean showRangeAxis,
 					final Rectangle2D bounds) {
-        super(data, labels, false, colors, range, bounds);
+        super(data, Collections.EMPTY_LIST, domainLabels, Collections.EMPTY_LIST, false, showDomainAxis, showRangeAxis,
+        		colors, range, bounds);
         this.orientation = orientation;
-        this.showCategoryAxis = showCategoryAxis;
-        this.showRangeAxis = showRangeAxis;
 	}
 	
 	@Override
@@ -48,10 +47,10 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		for (String series : data.keySet()) {
 			final List<Double> values = data.get(series);
 			
-			if (labels != null && labels.size() > count)
-				series = labels.get(count);
+			if (domainLabels != null && domainLabels.size() > count)
+				series = domainLabels.get(count);
 			
-			dataset.add(values, "?", series); // switch series and category name so labels are displayed for series
+			dataset.add(values, "?", series); // switch series and category name so domainLabels are displayed for series
 			count++;
 		}
 		
@@ -89,13 +88,13 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		plot.setOrientation(plotOrientation);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
-        domainAxis.setVisible(showCategoryAxis);
-        domainAxis.setAxisLineVisible(showCategoryAxis);
+        domainAxis.setVisible(showDomainAxis);
+        domainAxis.setAxisLineVisible(showDomainAxis);
         domainAxis.setTickMarksVisible(true);
         domainAxis.setTickLabelsVisible(true);
         domainAxis.setCategoryMargin(.1);
         
-        if (!showCategoryAxis && !showRangeAxis) {
+        if (!showDomainAxis && !showRangeAxis) {
         	// Prevent bars from being cropped
 	        domainAxis.setLowerMargin(.01);
 	        domainAxis.setUpperMargin(.01);

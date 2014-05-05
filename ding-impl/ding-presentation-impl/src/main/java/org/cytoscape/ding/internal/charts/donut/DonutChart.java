@@ -51,7 +51,7 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
-		final String labelsColumn = get(LABELS_COLUMN, String.class);
+		final String labelsColumn = get(ITEM_LABELS_COLUMN, String.class);
 		final String colorScheme = get(COLOR_SCHEME, String.class);
 		final Map<String, List<Double>> data;
 		final List<String> labels = getLabelsFromColumn(network, model, labelsColumn);
@@ -67,7 +67,7 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
-		final boolean showLabels = get(SHOW_LABELS, Boolean.class, false);
+		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		
 		final DonutLayer layer = new DonutLayer(data, labels, showLabels, colors, bounds);
 		

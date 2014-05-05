@@ -55,7 +55,7 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final String labelsColumn = get(LABELS_COLUMN, String.class);
+		final String labelsColumn = get(ITEM_LABELS_COLUMN, String.class);
 		final List<String> labels = getLabelsFromColumn(network, model, labelsColumn);
 		final List<Color> colors = getList(COLORS, Color.class);
 		
@@ -67,7 +67,7 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
-		final boolean showLabels = get(SHOW_LABELS, Boolean.class, false);
+		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		
 		StripeLayer layer = new StripeLayer(data, labels, showLabels, colors, orientation, bounds);
 		

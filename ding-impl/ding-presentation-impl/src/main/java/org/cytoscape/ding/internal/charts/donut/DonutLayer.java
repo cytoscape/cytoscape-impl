@@ -36,7 +36,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 					 final boolean showLabels,
 					 final List<Color> colors,
 					 final Rectangle2D bounds) {
-        super(data, labels, showLabels, colors, null, bounds);
+        super(data, labels, null, null, showLabels, false, false, colors, null, bounds);
 	}
 	
 	@Override
@@ -45,7 +45,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		
 		for (final String category : data.keySet()) {
 			final List<Double> values = data.get(category);
-			final PieDataset ds = createPieDataset(values, labels);
+			final PieDataset ds = createPieDataset(values, itemLabels);
 			
 			if (ds != null)
 				datasetList.add(ds);
@@ -121,7 +121,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		plot.setDirection(Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
 		plot.setOutlinePaint(TRANSPARENT_COLOR);
-		plot.setLabelGenerator(showLabels ? new StandardPieSectionLabelGenerator() : null);
+		plot.setLabelGenerator(showItemLabels ? new StandardPieSectionLabelGenerator() : null);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setShadowPaint(TRANSPARENT_COLOR);

@@ -22,28 +22,27 @@ import org.jfree.data.category.CategoryDataset;
 
 public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 	
-	private final boolean showCategoryAxis;
-	private final boolean showRangeAxis;
 	private final int lineWidth;
 
 	public LineLayer(final Map<String/*series*/, List<Double>/*values*/> data,
-					final List<String> labels,
-					final boolean showLabels,
-					final List<Color> colors,
-					final DoubleRange range,
-					final boolean showCategoryAxis,
-					final boolean showRangeAxis,
-					final int lineWidth,
-					final Rectangle2D bounds) {
-        super(data, labels, showLabels, colors, range, bounds);
-        this.showCategoryAxis = showCategoryAxis;
-        this.showRangeAxis = showRangeAxis;
+					 final List<String> itemLabels,
+					 final List<String> domainLabels,
+					 final List<String> rangeLabels,
+					 final boolean showItemLabels,
+					 final boolean showDomainAxis,
+					 final boolean showRangeAxis,
+					 final List<Color> colors,
+					 final DoubleRange range,
+					 final int lineWidth,
+					 final Rectangle2D bounds) {
+        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
+        		range, bounds);
         this.lineWidth = lineWidth >= 0 ? lineWidth : 0;
 	}
 	
 	@Override
 	protected CategoryDataset createDataset() {
-		return createCategoryDataset(data, true, labels);
+		return createCategoryDataset(data, true, domainLabels);
 	}
     
 	@Override
@@ -75,8 +74,8 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
-        domainAxis.setVisible(showCategoryAxis);
-        domainAxis.setAxisLineVisible(showCategoryAxis);
+        domainAxis.setVisible(showDomainAxis);
+        domainAxis.setAxisLineVisible(showDomainAxis);
         domainAxis.setTickMarksVisible(true);
         domainAxis.setTickLabelsVisible(true);
         domainAxis.setCategoryMargin(.1);
@@ -91,8 +90,8 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		}
 		
 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-		renderer.setBaseItemLabelGenerator(showLabels ? new StandardCategoryItemLabelGenerator() : null);
-		renderer.setBaseItemLabelsVisible(showLabels);
+		renderer.setBaseItemLabelGenerator(showItemLabels ? new StandardCategoryItemLabelGenerator() : null);
+		renderer.setBaseItemLabelsVisible(showItemLabels);
 		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
 		
 		final List<?> keys = dataset.getRowKeys();

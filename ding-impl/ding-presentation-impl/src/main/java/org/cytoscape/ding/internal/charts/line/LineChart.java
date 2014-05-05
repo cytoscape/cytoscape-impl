@@ -26,8 +26,6 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.chart.Line";
 	
-	public static final String CATEGORY_AXIS_VISIBLE = "categoryaxisvisible";
-	public static final String RANGE_AXIS_VISIBLE = "rangeaxisvisible";
 	public static final String LINE_WIDTH = "linewidth";
 	
 	public static ImageIcon ICON;
@@ -59,10 +57,11 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
-		final String labelsColumn = get(LABELS_COLUMN, String.class);
 		final String colorScheme = get(COLOR_SCHEME, String.class);
 		final Map<String, List<Double>> data;
-		final List<String> labels = getLabelsFromColumn(network, model, labelsColumn);
+		final List<String> itemLabels = getLabelsFromColumn(network, model, get(ITEM_LABELS_COLUMN, String.class));
+		final List<String> domainLabels = getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, String.class));
+		final List<String> rangeLabels = getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, String.class));
 		final List<Color> colors;
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
@@ -78,13 +77,13 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
-		final boolean showLabels = get(SHOW_LABELS, Boolean.class, false);
-		final boolean showCategoryAxis = get(CATEGORY_AXIS_VISIBLE, Boolean.class, false);
-		final boolean showRangeAxis = get(RANGE_AXIS_VISIBLE, Boolean.class, false);
+		final boolean showItemLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
+		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
+		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
 		final int lineWidth = get(LINE_WIDTH, Integer.class, 2);
 		
-		LineLayer layer = new LineLayer(data, labels, showLabels, colors, range, showCategoryAxis, showRangeAxis,
-				lineWidth, bounds);
+		LineLayer layer = new LineLayer(data, itemLabels, domainLabels, rangeLabels, showItemLabels, 
+				showDomainAxis, showRangeAxis, colors, range, lineWidth, bounds);
 		
 		return Collections.singletonList(layer);
 	}
@@ -96,8 +95,6 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 	
 	@Override
 	protected Class<?> getSettingType(final String key) {
-		if (key.equals(RANGE_AXIS_VISIBLE)) return Boolean.class;
-		if (key.equals(CATEGORY_AXIS_VISIBLE)) return Boolean.class;
 		if (key.equals(LINE_WIDTH)) return Integer.class;
 		
 		return super.getSettingType(key);

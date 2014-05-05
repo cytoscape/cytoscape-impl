@@ -30,9 +30,12 @@ public abstract class AbstractChartLayer<T extends Dataset> implements ImageCust
 	
 	/** Category ID -> list of values */
 	protected final Map<String, List<Double>> data;
-	protected final List<String> labels;
-	/** Show item labels? */
-	protected final boolean showLabels;
+	protected final List<String> itemLabels;
+	protected final List<String> domainLabels;
+	protected final List<String> rangeLabels;
+	protected final boolean showItemLabels;
+	protected final boolean showDomainAxis;
+	protected final boolean showRangeAxis;
 	protected final List<Color> colors;
 	protected DoubleRange range;
 	
@@ -44,14 +47,22 @@ public abstract class AbstractChartLayer<T extends Dataset> implements ImageCust
 	protected TexturePaint paint;
 	
 	protected AbstractChartLayer(final Map<String, List<Double>> data,
-								 final List<String> labels,
-								 final boolean showLabels,
+								 final List<String> itemLabels,
+								 final List<String> domainLabels,
+								 final List<String> rangeLabels,
+								 final boolean showItemLabels,
+								 final boolean showDomainAxis,
+								 final boolean showRangeAxis,
 								 final List<Color> colors,
 								 final DoubleRange range,
 								 final Rectangle2D bounds) {
 		this.data = data;
-		this.labels = labels;
-		this.showLabels = showLabels;
+		this.itemLabels = itemLabels;
+		this.domainLabels = domainLabels;
+		this.rangeLabels = rangeLabels;
+		this.showItemLabels = showItemLabels;
+		this.showDomainAxis = showDomainAxis;
+		this.showRangeAxis = showRangeAxis;
 		this.colors = colors;
 		this.bounds = scaledBounds = bounds;
 		this.range = range;

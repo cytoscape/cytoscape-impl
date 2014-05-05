@@ -1,6 +1,17 @@
 package org.cytoscape.ding.internal.charts;
 
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.*;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.AUTO_RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLORS;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLOR_SCHEME;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.DATA_COLUMNS;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.DOMAIN_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.GLOBAL_RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.ITEM_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.ORIENTATION;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.RANGE_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.SHOW_ITEM_LABELS;
+import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.STACKED;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -24,10 +35,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.BorderFactory;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.InputVerifier;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -35,6 +49,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
@@ -43,6 +58,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
+import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -64,11 +80,18 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JPanel advancedOptionsPnl;
 	private DataPanel dataPnl;
 	private JPanel rangePnl;
+	private JPanel labelsPnl;
+	private JPanel orientationPnl;
+	private JPanel axesPnl;
 	private JPanel otherBasicOptionsPnl;
 	private JPanel otherAdvancedOptionsPnl;
 	protected JLabel dataColumnLbl;
-	protected JLabel labelColumnLbl;
-	private JComboBox labelColumnCmb;
+	protected JLabel itemLabelsColumnLbl;
+	protected JLabel domainLabelsColumnLbl;
+	protected JLabel rangeLabelsColumnLbl;
+	private JComboBox itemLabelsColumnCmb;
+	private JComboBox domainLabelsColumnCmb;
+	private JComboBox rangeLabelsColumnCmb;
 	private JLabel colorSchemeLbl;
 	private JComboBox colorSchemeCmb;
 	private JCheckBox globalRangeCkb;
@@ -78,10 +101,21 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JButton refreshRangeBtn;
 	private JLabel rangeMaxLbl;
 	private JTextField rangeMaxTxt;
-	private JCheckBox labelsVisibleCkb;
+	private JCheckBox itemLabelsVisibleCkb;
+	private JCheckBox domainAxisVisibleCkb;
+	private JCheckBox rangeAxisVisibleCkb;
+	protected JLabel orientationLbl;
+	private ButtonGroup orientationGrp;
+	private JRadioButton verticalRd;
+	private JRadioButton horizontalRd;
 	
 	protected final int maxDataColumns; 
 	protected final boolean setRange;
+	protected final boolean setOrientation;
+	protected final boolean setItemLabels;
+	protected final boolean setDomainLabels;
+	protected final boolean setRangeLabels;
+	protected final boolean hasAxes;
 	protected final Map<String, CyColumn> columns;
 	protected final T chart;
 	protected final CyApplicationManager appMgr;
@@ -91,6 +125,11 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	protected AbstractChartEditor(final T chart,
 								  final int maxDataColumns,
 								  final boolean setRange,
+								  final boolean setOrientation,
+								  final boolean setItemLabels,
+								  final boolean setDomainLabels,
+								  final boolean setRangeLabels,
+								  final boolean hasAxes,
 								  final CyApplicationManager appMgr) {
 		if (chart == null)
 			throw new IllegalArgumentException("'chart' argument must not be null.");
@@ -100,6 +139,11 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		this.chart = chart;
 		this.maxDataColumns = maxDataColumns;
 		this.setRange = setRange;
+		this.setOrientation = setOrientation;
+		this.setItemLabels = setItemLabels;
+		this.setDomainLabels = setDomainLabels;
+		this.setRangeLabels = setRangeLabels;
+		this.hasAxes = hasAxes;
 		this.appMgr = appMgr;
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
@@ -131,10 +175,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected void init() {
 		dataColumnLbl = new JLabel("Data Column" + (maxDataColumns > 1 ? "s" : ""));
-		labelColumnLbl = new JLabel("Label Column");
+		itemLabelsColumnLbl = new JLabel("Item Labels Column");
+		domainLabelsColumnLbl = new JLabel("Domain Labels Column");
+		rangeLabelsColumnLbl = new JLabel("Range Labels Column");
 		colorSchemeLbl = new JLabel("Color Scheme");
 		rangeMinLbl = new JLabel("Min");
 		rangeMaxLbl = new JLabel("Max");
+		orientationLbl = new JLabel("Plot Orientation");
 		
 		setOpaque(false);
 		setLayout(new BorderLayout());
@@ -175,49 +222,18 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			basicOptionsPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			
-			final JSeparator sep1 = new JSeparator();
-			final JSeparator sep2 = new JSeparator();
-			final JSeparator sep3 = new JSeparator();
-			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					// Data columns
 					.addComponent(getDataPnl())
-					.addComponent(sep1)
-					// Data range
 					.addComponent(getRangePnl())
-					.addComponent(sep2)
-					// Labels
-					.addGroup(layout.createSequentialGroup()
-							.addComponent(labelColumnLbl)
-							.addComponent(getLabelColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-							          GroupLayout.PREFERRED_SIZE))
-					.addComponent(sep3)
 					.addComponent(getOtherBasicOptionsPnl())
-					);
+			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					// Data columns
 					.addComponent(getDataPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
-					.addComponent(sep1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
-					// Data range
 					.addComponent(getRangePnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
-					.addComponent(sep2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
-					// Labels
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(labelColumnLbl)
-							.addComponent(getLabelColumnCmb()))
-					.addComponent(sep3)
 					.addComponent(getOtherBasicOptionsPnl())
-					);
-			
-			getDataPnl().setVisible(maxDataColumns > 0);
-			sep1.setVisible(maxDataColumns > 0);
-			getRangePnl().setVisible(setRange);
-			sep2.setVisible(setRange);
-			sep3.setVisible(getOtherBasicOptionsPnl().isVisible());
+			);
 		}
 		
 		return basicOptionsPnl;
@@ -232,32 +248,32 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			advancedOptionsPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			
-			final JSeparator sep1 = new JSeparator();
-			final JSeparator sep2 = new JSeparator();
+			final JSeparator sep = new JSeparator();
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(getLabelsVisibleCkb())
-					.addComponent(sep1)
+					.addComponent(getLabelsPnl())
+					.addComponent(getOrientationPnl())
+					.addComponent(getAxesPnl())
 					.addGroup(layout.createSequentialGroup()
 							.addComponent(colorSchemeLbl)
 							.addComponent(getColorSchemeCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 							          GroupLayout.PREFERRED_SIZE))
-					.addComponent(sep2)
+					.addComponent(sep)
 					.addComponent(getOtherAdvancedOptionsPnl())
-					);
+			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(getLabelsVisibleCkb())
-					.addComponent(sep1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
+					.addComponent(getLabelsPnl())
+					.addComponent(getOrientationPnl())
+					.addComponent(getAxesPnl())
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(colorSchemeLbl)
 							.addComponent(getColorSchemeCmb()))
-					.addComponent(sep2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
 					.addComponent(getOtherAdvancedOptionsPnl())
-					);
+			);
 			
-			sep2.setVisible(getOtherAdvancedOptionsPnl().isVisible());
+			sep.setVisible(getOtherAdvancedOptionsPnl().isVisible());
 		}
 		
 		return advancedOptionsPnl;
@@ -267,6 +283,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		if (dataPnl == null) {
 			dataPnl = new DataPanel();
 			dataPnl.setOpaque(false);
+			dataPnl.setVisible(maxDataColumns > 0);
 			dataPnl.refresh();
 		}
 		
@@ -277,35 +294,170 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		if (rangePnl == null) {
 			rangePnl = new JPanel();
 			rangePnl.setOpaque(false);
+			rangePnl.setVisible(setRange);
+			
+			if (!rangePnl.isVisible())
+				return rangePnl;
 			
 			final GroupLayout layout = new GroupLayout(rangePnl);
 			rangePnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			
-			if (setRange) {
-				layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-						.addComponent(getGlobalRangeCkb())
-						.addGroup(layout.createSequentialGroup()
-								.addComponent(getAutoRangeCkb())
-								.addPreferredGap(ComponentPlacement.UNRELATED)
-								.addComponent(rangeMinLbl)
-								.addComponent(getRangeMinTxt())
-								.addComponent(rangeMaxLbl)
-								.addComponent(getRangeMaxTxt())
-								.addComponent(getRefreshRangeBtn())));
-				layout.setVerticalGroup(layout.createSequentialGroup()
-						.addComponent(getGlobalRangeCkb())
-						.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-								.addComponent(getAutoRangeCkb())
-								.addComponent(rangeMinLbl)
-								.addComponent(getRangeMinTxt())
-								.addComponent(rangeMaxLbl)
-								.addComponent(getRangeMaxTxt())
-								.addComponent(getRefreshRangeBtn())));
-			}
+			final JSeparator sep = new JSeparator();
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(getGlobalRangeCkb())
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(getAutoRangeCkb())
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(rangeMinLbl)
+							.addComponent(getRangeMinTxt())
+							.addComponent(rangeMaxLbl)
+							.addComponent(getRangeMaxTxt())
+							.addComponent(getRefreshRangeBtn()))
+							.addComponent(sep)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getGlobalRangeCkb())
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(getAutoRangeCkb())
+							.addComponent(rangeMinLbl)
+							.addComponent(getRangeMinTxt())
+							.addComponent(rangeMaxLbl)
+							.addComponent(getRangeMaxTxt())
+							.addComponent(getRefreshRangeBtn()))
+					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+				          GroupLayout.PREFERRED_SIZE)
+			);
 		}
 		
 		return rangePnl;
+	}
+	
+	protected JPanel getLabelsPnl() {
+		if (labelsPnl == null) {
+			labelsPnl = new JPanel();
+			labelsPnl.setOpaque(false);
+			labelsPnl.setVisible(setItemLabels || setDomainLabels || setRangeLabels);
+			
+			if (!labelsPnl.isVisible())
+				return labelsPnl;
+			
+			final GroupLayout layout = new GroupLayout(labelsPnl);
+			labelsPnl.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			
+			final ParallelGroup hGroup = layout.createParallelGroup(Alignment.LEADING, true);
+			final SequentialGroup vGroup = layout.createSequentialGroup();
+			layout.setHorizontalGroup(hGroup);
+			layout.setVerticalGroup(vGroup);
+			
+			if (setItemLabels) {
+				hGroup.addGroup(layout.createSequentialGroup()
+						.addComponent(itemLabelsColumnLbl)
+						.addComponent(getItemLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						          GroupLayout.PREFERRED_SIZE));
+				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(itemLabelsColumnLbl)
+						.addComponent(getItemLabelsColumnCmb()));
+			}
+			
+			if (setDomainLabels) {
+				hGroup.addGroup(layout.createSequentialGroup()
+						.addComponent(domainLabelsColumnLbl)
+						.addComponent(getDomainLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						          GroupLayout.PREFERRED_SIZE));
+				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(domainLabelsColumnLbl)
+						.addComponent(getDomainLabelsColumnCmb()));
+			}
+			
+			if (setRangeLabels) {
+				hGroup.addGroup(layout.createSequentialGroup()
+						.addComponent(rangeLabelsColumnLbl)
+						.addComponent(getRangeLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						          GroupLayout.PREFERRED_SIZE));
+				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(rangeLabelsColumnLbl)
+						.addComponent(getRangeLabelsColumnCmb()));
+					
+			}
+			
+			final JSeparator sep = new JSeparator();
+			
+			hGroup.addComponent(sep);
+			vGroup.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+		}
+		
+		return labelsPnl;
+	}
+	
+	protected JPanel getOrientationPnl() {
+		if (orientationPnl == null) {
+			orientationPnl = new JPanel();
+			orientationPnl.setOpaque(false);
+			orientationPnl.setVisible(setOrientation);
+			
+			if (!orientationPnl.isVisible())
+				return orientationPnl;
+			
+			final GroupLayout layout = new GroupLayout(orientationPnl);
+			orientationPnl.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			
+			final JSeparator sep = new JSeparator();
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(orientationLbl)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(getVerticalRd())
+							.addComponent(getHorizontalRd()))
+					.addComponent(sep)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(orientationLbl)
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(getVerticalRd())
+							.addComponent(getHorizontalRd()))
+					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+					          GroupLayout.PREFERRED_SIZE)
+			);
+		}
+		
+		return orientationPnl;
+	}
+	
+	protected JPanel getAxesPnl() {
+		if (axesPnl == null) {
+			axesPnl = new JPanel();
+			axesPnl.setOpaque(false);
+			axesPnl.setVisible(hasAxes || setItemLabels);
+			
+			if (!axesPnl.isVisible())
+				return axesPnl;
+			
+			final GroupLayout layout = new GroupLayout(axesPnl);
+			axesPnl.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			
+			final JSeparator sep = new JSeparator();
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(getItemLabelsVisibleCkb())
+					.addComponent(getDomainAxisVisibleCkb())
+					.addComponent(getRangeAxisVisibleCkb())
+					.addComponent(sep)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getItemLabelsVisibleCkb())
+					.addComponent(getDomainAxisVisibleCkb())
+					.addComponent(getRangeAxisVisibleCkb())
+					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+					          GroupLayout.PREFERRED_SIZE)
+			);
+		}
+		
+		return axesPnl;
 	}
 	
 	/**
@@ -336,21 +488,55 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		return otherAdvancedOptionsPnl;
 	}
 	
-	protected JComboBox getLabelColumnCmb() {
-		if (labelColumnCmb == null) {
-			labelColumnCmb = new JComboBox(columns.values().toArray());
-			selectCyColumnItem(labelColumnCmb, chart.get(LABELS_COLUMN, String.class));
+	protected JComboBox getItemLabelsColumnCmb() {
+		if (itemLabelsColumnCmb == null) {
+			itemLabelsColumnCmb = new JComboBox(columns.values().toArray());
+			selectCyColumnItem(itemLabelsColumnCmb, chart.get(ITEM_LABELS_COLUMN, String.class));
 			
-			labelColumnCmb.addActionListener(new ActionListener() {
+			itemLabelsColumnCmb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final CyColumn column = (CyColumn) labelColumnCmb.getSelectedItem();
-					chart.set(LABELS_COLUMN, column != null ? column.getName() : null);
+					final CyColumn column = (CyColumn) itemLabelsColumnCmb.getSelectedItem();
+					chart.set(ITEM_LABELS_COLUMN, column != null ? column.getName() : null);
 				}
 			});
 		}
 
-		return labelColumnCmb;
+		return itemLabelsColumnCmb;
+	}
+	
+	protected JComboBox getDomainLabelsColumnCmb() {
+		if (domainLabelsColumnCmb == null) {
+			domainLabelsColumnCmb = new JComboBox(columns.values().toArray());
+			selectCyColumnItem(domainLabelsColumnCmb, chart.get(DOMAIN_LABELS_COLUMN, String.class));
+			
+			domainLabelsColumnCmb.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final CyColumn column = (CyColumn) domainLabelsColumnCmb.getSelectedItem();
+					chart.set(DOMAIN_LABELS_COLUMN, column != null ? column.getName() : null);
+				}
+			});
+		}
+		
+		return domainLabelsColumnCmb;
+	}
+	
+	protected JComboBox getRangeLabelsColumnCmb() {
+		if (rangeLabelsColumnCmb == null) {
+			rangeLabelsColumnCmb = new JComboBox(columns.values().toArray());
+			selectCyColumnItem(rangeLabelsColumnCmb, chart.get(RANGE_LABELS_COLUMN, String.class));
+			
+			rangeLabelsColumnCmb.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final CyColumn column = (CyColumn) rangeLabelsColumnCmb.getSelectedItem();
+					chart.set(RANGE_LABELS_COLUMN, column != null ? column.getName() : null);
+				}
+			});
+		}
+		
+		return rangeLabelsColumnCmb;
 	}
 	
 	protected JCheckBox getGlobalRangeCkb() {
@@ -434,7 +620,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		return rangeMaxTxt;
 	}
 	
-	public JButton getRefreshRangeBtn() {
+	protected JButton getRefreshRangeBtn() {
 		if (refreshRangeBtn == null) {
 			refreshRangeBtn = new JButton();
 			refreshRangeBtn.setToolTipText("Refresh automatic range values");
@@ -475,6 +661,114 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		return colorSchemeCmb;
 	}
 	
+	protected JCheckBox getItemLabelsVisibleCkb() {
+		if (itemLabelsVisibleCkb == null) {
+			itemLabelsVisibleCkb = new JCheckBox("Show Item Labels");
+			itemLabelsVisibleCkb.setVisible(setItemLabels);
+			
+			if (setItemLabels) {
+				itemLabelsVisibleCkb.setSelected(chart.get(SHOW_ITEM_LABELS, Boolean.class, false));
+				itemLabelsVisibleCkb.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						chart.set(SHOW_ITEM_LABELS, itemLabelsVisibleCkb.isSelected());
+					}
+				});
+			}
+		}
+		
+		return itemLabelsVisibleCkb;
+	}
+	
+	protected JCheckBox getDomainAxisVisibleCkb() {
+		if (domainAxisVisibleCkb == null) {
+			domainAxisVisibleCkb = new JCheckBox("Show Domain Axis");
+			domainAxisVisibleCkb.setVisible(hasAxes);
+			
+			if (hasAxes) {
+				domainAxisVisibleCkb.setSelected(chart.get(HeatMapChart.SHOW_DOMAIN_AXIS, Boolean.class, false));
+				domainAxisVisibleCkb.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						chart.set(HeatMapChart.SHOW_DOMAIN_AXIS, domainAxisVisibleCkb.isSelected());
+					}
+				});
+			}
+		}
+		
+		return domainAxisVisibleCkb;
+	}
+	
+	protected JCheckBox getRangeAxisVisibleCkb() {
+		if (rangeAxisVisibleCkb == null) {
+			rangeAxisVisibleCkb = new JCheckBox("Show Range Axis");
+			rangeAxisVisibleCkb.setVisible(hasAxes);
+			
+			if (hasAxes) {
+				rangeAxisVisibleCkb.setSelected(chart.get(HeatMapChart.SHOW_RANGE_AXIS, Boolean.class, false));
+				rangeAxisVisibleCkb.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						chart.set(HeatMapChart.SHOW_RANGE_AXIS, rangeAxisVisibleCkb.isSelected());
+					}
+				});
+			}
+		}
+		
+		return rangeAxisVisibleCkb;
+	}
+	
+	private ButtonGroup getOrientationGrp() {
+		if (orientationGrp == null) {
+			orientationGrp = new ButtonGroup();
+			orientationGrp.add(getVerticalRd());
+			orientationGrp.add(getHorizontalRd());
+		}
+		
+		return orientationGrp;
+	}
+	
+	protected JRadioButton getVerticalRd() {
+		if (verticalRd == null) {
+			verticalRd = new JRadioButton("Vertical");
+			verticalRd.setVisible(setOrientation);
+			
+			if (setOrientation) {
+				verticalRd.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						setOrientation();
+					}
+				});
+			}
+		}
+		
+		return verticalRd;
+	}
+	
+	protected JRadioButton getHorizontalRd() {
+		if (horizontalRd == null) {
+			horizontalRd = new JRadioButton("Horizontal");
+			horizontalRd.setVisible(setOrientation);
+			
+			if (setOrientation) {
+				horizontalRd.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						setOrientation();
+					}
+				});
+			}
+		}
+		
+		return horizontalRd;
+	}
+	
+	protected void setOrientation() {
+		final Orientation orientation = getHorizontalRd().isSelected() ? Orientation.HORIZONTAL : Orientation.VERTICAL;
+		chart.set(ORIENTATION, orientation);
+	}
+	
 	protected void updateColorList() {
 		final String scheme = chart.get(COLOR_SCHEME, String.class, "");
 		final List<Color> colors = chart.getList(COLORS, Color.class);
@@ -488,21 +782,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		// TODO: user change any color in the list => set scheme to "custom"
 		// TODO always set COLORS to charts, even if not "custom" to guarantee the data-color match?
 		
-	}
-
-	public JCheckBox getLabelsVisibleCkb() {
-		if (labelsVisibleCkb == null) {
-			labelsVisibleCkb = new JCheckBox("Show Item Labels");
-			labelsVisibleCkb.setSelected(chart.get(SHOW_LABELS, Boolean.class, false));
-			labelsVisibleCkb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					chart.set(SHOW_LABELS, labelsVisibleCkb.isSelected());
-				}
-			});
-		}
-		
-		return labelsVisibleCkb;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -556,8 +835,16 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	}
 	
 	protected void update(final boolean recalculateRange) {
+		if (setOrientation)
+			updateOrientation();
 		updateGlobalRange();
 		updateRangeMinMax(recalculateRange);
+	}
+	
+	protected void updateOrientation() {
+		final Orientation orientation = chart.get(ORIENTATION, Orientation.class, Orientation.VERTICAL);
+		final JRadioButton orientRd = orientation == Orientation.HORIZONTAL ? getHorizontalRd() : getVerticalRd();
+		getOrientationGrp().setSelected(orientRd.getModel(), true);
 	}
 	
 	protected void updateGlobalRange() {
@@ -663,6 +950,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			
 			add(dataColumnLbl);
 			add(getAddDataColumnBtn());
+			add(new JSeparator());
 		}
 		
 		protected void refresh() {
@@ -710,7 +998,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			final DataColumnSelector selector = new DataColumnSelector(columnName);
 			columnSelectors.add(selector);
 			
-			final int index = getComponentCount() > 0 ? getComponentCount() - 1 : 0;
+			final int index = getComponentCount() > 0 ? getComponentCount() - 2 : 0;
 			add(selector, index);
 			
 			chart.set(DATA_COLUMNS, getDataColumnNames());
