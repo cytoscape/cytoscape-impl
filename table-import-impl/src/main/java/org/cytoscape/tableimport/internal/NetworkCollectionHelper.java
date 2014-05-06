@@ -68,7 +68,7 @@ public class NetworkCollectionHelper extends AbstractTask {
 	}
 	
 	public ListSingleSelection<String> targetColumnList;
-	@Tunable(description = "Mapping Column for Existing Network:",groups="Select a Network Collection", listenForChange={"RootNetworkList"})
+	@Tunable(description = "Node Identifier Mapping Column:",groups="Select a Network Collection", listenForChange={"RootNetworkList"})
 	public ListSingleSelection<String> getTargetColumnList(){
 		return targetColumnList;
 	}
