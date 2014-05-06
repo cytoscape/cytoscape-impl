@@ -1874,6 +1874,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			updatePrimaryKeyComboBox();
 			
 			setOntologyInAnnotationComboBox();
+			
+			if(GO_ID.getPosition() < ontologyInAnnotationComboBox.getItemCount())
+				ontologyInAnnotationComboBox.setSelectedIndex(GO_ID.getPosition());
 
 			attributeRadioButtonActionPerformed(null);
 		}
