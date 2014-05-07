@@ -27,31 +27,24 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 
 	@SuppressWarnings("unchecked")
 	public BoxLayer(final Map<String/*series*/, List<Double>/*values*/> data,
-					final List<String> domainLabels,
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final List<Color> colors,
 					final DoubleRange range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
-        super(data, Collections.EMPTY_LIST, domainLabels, Collections.EMPTY_LIST, false, showDomainAxis, showRangeAxis,
-        		colors, range, bounds);
+        super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
+        		false, showDomainAxis, showRangeAxis, colors, range, bounds);
         this.orientation = orientation;
 	}
 	
 	@Override
 	protected BoxAndWhiskerCategoryDataset createDataset() {
 		final DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
-		int count = 0;
 		
 		for (String series : data.keySet()) {
 			final List<Double> values = data.get(series);
-			
-			if (domainLabels != null && domainLabels.size() > count)
-				series = domainLabels.get(count);
-			
-			dataset.add(values, "?", series); // switch series and category name so domainLabels are displayed for series
-			count++;
+			dataset.add(values, series, "1"); // switch series and category name so labels are displayed for series
 		}
 		
 		return dataset;
@@ -90,8 +83,8 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
         domainAxis.setAxisLineVisible(showDomainAxis);
-        domainAxis.setTickMarksVisible(true);
-        domainAxis.setTickLabelsVisible(true);
+        domainAxis.setTickMarksVisible(false);
+        domainAxis.setTickLabelsVisible(false);
         domainAxis.setCategoryMargin(.1);
         
         if (!showDomainAxis && !showRangeAxis) {
@@ -110,7 +103,18 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		}
 		
 		final BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();
-		renderer.setFillBox(false); // No colors
+		renderer.setFillBox(true);
+		renderer.setMeanVisible(false);
+		renderer.setBaseItemLabelsVisible(false); // Box chart does not support item labels, anyway
+		
+		final List<?> keys = dataset.getRowKeys();
+		
+		if (colors != null && colors.size() >= keys.size()) {
+			for (int i = 0; i < keys.size(); i++) {
+				final Color c = colors.get(i);
+				renderer.setSeriesPaint(i, c);
+			}
+		}
 		
 		return chart;
 	}

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
+import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.Orientation;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.jfree.chart.ChartFactory;
@@ -13,12 +14,14 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.labels.ItemLabelAnchor;
+import org.jfree.chart.labels.ItemLabelPosition;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.data.category.CategoryDataset;
+import org.jfree.ui.TextAnchor;
 
 
 public class BarLayer extends AbstractChartLayer<CategoryDataset> {
@@ -123,19 +126,26 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		
 		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
 		renderer.setBarPainter(new StandardBarPainter());
-		renderer.setBaseItemLabelGenerator(showItemLabels ? new StandardCategoryItemLabelGenerator() : null);
-		renderer.setBaseItemLabelsVisible(showItemLabels);
 		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
 		renderer.setShadowVisible(false);
 		renderer.setDrawBarOutline(true);
 		renderer.setItemMargin(0.0);
+		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
+		renderer.setBaseItemLabelsVisible(showItemLabels);
+		
+		if (!stacked && showItemLabels) {
+			renderer.setBasePositiveItemLabelPosition(new ItemLabelPosition(
+					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, -Math.PI/2));
+			renderer.setBaseNegativeItemLabelPosition(new ItemLabelPosition(
+					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, -Math.PI/2));
+		}
 		
 		final List<?> keys = dataset.getRowKeys();
 		
 		if (colors != null && colors.size() >= keys.size()) {
 			for (int i = 0; i < keys.size(); i++) {
 				final Color c = colors.get(i);
-				renderer.setSeriesFillPaint(i, c);
+				renderer.setSeriesPaint(i, c);
 			}
 		}
 		

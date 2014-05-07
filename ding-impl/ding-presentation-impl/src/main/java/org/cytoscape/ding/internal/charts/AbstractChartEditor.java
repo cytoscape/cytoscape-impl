@@ -38,6 +38,8 @@ import java.util.TreeMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -48,6 +50,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -490,7 +493,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getItemLabelsColumnCmb() {
 		if (itemLabelsColumnCmb == null) {
-			itemLabelsColumnCmb = new JComboBox(columns.values().toArray());
+			itemLabelsColumnCmb = new CyColumnComboBox(columns.values(), true);
 			selectCyColumnItem(itemLabelsColumnCmb, chart.get(ITEM_LABELS_COLUMN, String.class));
 			
 			itemLabelsColumnCmb.addActionListener(new ActionListener() {
@@ -507,7 +510,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getDomainLabelsColumnCmb() {
 		if (domainLabelsColumnCmb == null) {
-			domainLabelsColumnCmb = new JComboBox(columns.values().toArray());
+			domainLabelsColumnCmb = new CyColumnComboBox(columns.values(), true);
 			selectCyColumnItem(domainLabelsColumnCmb, chart.get(DOMAIN_LABELS_COLUMN, String.class));
 			
 			domainLabelsColumnCmb.addActionListener(new ActionListener() {
@@ -524,7 +527,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getRangeLabelsColumnCmb() {
 		if (rangeLabelsColumnCmb == null) {
-			rangeLabelsColumnCmb = new JComboBox(columns.values().toArray());
+			rangeLabelsColumnCmb = new CyColumnComboBox(columns.values(), true);
 			selectCyColumnItem(rangeLabelsColumnCmb, chart.get(RANGE_LABELS_COLUMN, String.class));
 			
 			rangeLabelsColumnCmb.addActionListener(new ActionListener() {
@@ -914,7 +917,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			for (int i = 0; i < cmb.getItemCount(); i++) {
 				final CyColumn column = (CyColumn) cmb.getItemAt(i);
 				
-				if (column.getName().equals(columnName)) {
+				if (column != null && column.getName().equals(columnName)) {
 					cmb.setSelectedItem(column);
 					break;
 				}
@@ -1076,7 +1079,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				setOpaque(false);
 				setAlignmentX(Component.LEFT_ALIGNMENT);
 				
-				cmb = new JComboBox(dataColumns.toArray());
+				cmb = new CyColumnComboBox(dataColumns, false);
 				cmb.setSelectedItem(null);
 				cmb.addActionListener(new ActionListener() {
 					@Override
@@ -1132,5 +1135,43 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	            return false;
 	        }
 		}
+	}
+	
+	protected static class CyColumnComboBox extends JComboBox {
+		
+		private static final long serialVersionUID = 8890884100875883324L;
+
+		CyColumnComboBox(final Collection<CyColumn> columns, final boolean acceptsNull) {
+			final List<CyColumn> values = new ArrayList<CyColumn>(columns);
+			
+			if (acceptsNull && !values.contains(null))
+				values.add(0, null);
+			
+			DefaultComboBoxModel model = new DefaultComboBoxModel(values.toArray());
+			this.setModel(model);
+			this.setRenderer(new CyColumnComboBoxRenderer());
+		}
+	}
+	
+	protected static class CyColumnComboBoxRenderer extends DefaultListCellRenderer {
+
+		private static final long serialVersionUID = 840896421390898632L;
+
+		@Override
+		public Component getListCellRendererComponent(final JList list, final Object value, final int index,
+				final boolean isSelected, final boolean cellHasFocus) {
+			final DefaultListCellRenderer c = (DefaultListCellRenderer) super.getListCellRendererComponent(
+					list, value, index, isSelected, cellHasFocus);
+			
+			if (value == null)
+				c.setText("-- none --");
+			else if (value instanceof CyColumn)
+				c.setText(((CyColumn)value).getName());
+			else
+				c.setText("[ invalid column ]"); // Should never happen
+				
+			return c;
+		}
+		
 	}
 }

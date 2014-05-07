@@ -57,19 +57,11 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
 		final String colorScheme = get(COLOR_SCHEME, String.class);
-		final Map<String, List<Double>> data;
-		final List<String> domainLabels = getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, String.class));
-		final List<Color> colors;
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
 		
-		if (!dataColumns.isEmpty()) {
-			data = getDataFromColumns(network, model, dataColumns, false);
-			colors = convertInputToColor(colorScheme, data, false);
-		} else {
-			data = Collections.emptyMap();
-			colors = Collections.emptyList();
-		}
+		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
+		final List<Color> colors = getColors(colorScheme, data);
 
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
@@ -78,8 +70,7 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
 		
-		final BoxLayer layer = new BoxLayer(data, domainLabels, showDomainAxis, showRangeAxis, colors, range,
-				orientation, bounds);
+		final BoxLayer layer = new BoxLayer(data, showDomainAxis, showRangeAxis, colors, range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

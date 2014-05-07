@@ -46,9 +46,12 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
         xLabels = new String[data.size()];
         int x = 0;
         
-        for (final List<Double> values : data.values()) {
-			maxYSize = Math.max(maxYSize, values.size());
-			xLabels[x] = (domainLabels != null && domainLabels.size() > x) ? domainLabels.get(x) : ""+(x+1);
+        for (final Entry<String, List<Double>> series : data.entrySet()) {
+        	final String k = series.getKey();
+			final List<Double> zValues = series.getValue();
+			
+			maxYSize = Math.max(maxYSize, zValues.size());
+			xLabels[x] = (domainLabels != null && domainLabels.size() > x) ? domainLabels.get(x) : k;
 			x++;
         }
         

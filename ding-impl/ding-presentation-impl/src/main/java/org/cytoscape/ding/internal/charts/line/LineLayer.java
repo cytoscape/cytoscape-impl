@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
+import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
@@ -90,16 +90,16 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		}
 		
 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-		renderer.setBaseItemLabelGenerator(showItemLabels ? new StandardCategoryItemLabelGenerator() : null);
+		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
 		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
 		
 		final List<?> keys = dataset.getRowKeys();
-		System.out.println(lineWidth);
+		
 		if (colors != null && colors.size() >= keys.size()) {
 			for (int i = 0; i < keys.size(); i++) {
 				final Color c = colors.get(i);
-				renderer.setSeriesFillPaint(i, c);
+				renderer.setSeriesPaint(i, c);
 				renderer.setSeriesStroke(i, new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			}
 		}

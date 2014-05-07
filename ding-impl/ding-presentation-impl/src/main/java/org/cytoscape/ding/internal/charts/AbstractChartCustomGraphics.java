@@ -23,6 +23,8 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> extends
 		AbstractEnhancedCustomGraphics<T> {
 
+	private List<Color> colors;
+	
 	protected AbstractChartCustomGraphics(final String displayName) {
 		this(displayName, "");
 	}
@@ -33,6 +35,22 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	
 	protected AbstractChartCustomGraphics(final AbstractChartCustomGraphics<T> chart) {
 		super(chart);
+	}
+	
+	@Override
+	public synchronized void set(final String key, final Object value) {
+		if (key.equals(COLOR_SCHEME)) {
+			final String currentScheme = get(COLOR_SCHEME, String.class);
+			
+			// Reset colors
+			if ((value != null && value.toString().equalsIgnoreCase(currentScheme))
+					|| (value == null && currentScheme != null)) {
+				colors = null;
+				System.out.println("\n RESET COLORS !!!\n");
+			}
+		}
+		
+		super.set(key, value);
 	}
 	
 	public List<Double> convertInputToDouble(String input) {
@@ -50,8 +68,8 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	 * @return the lists of values @ if the attributes aren't numeric
 	 */
 	public Map<String, List<Double>> getDataFromColumns(final CyNetwork network, final CyIdentifiable model,
-			final List<String> columnNames, final boolean normalize) {
-		final Map<String, List<Double>> data = new LinkedHashMap<String, List<Double>>();
+			final List<String> columnNames) {
+		final LinkedHashMap<String, List<Double>> data = new LinkedHashMap<String, List<Double>>();
 		final CyRow row = network.getRow(model);
 		
 		if (row == null)
@@ -92,9 +110,6 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 			}
 		}
 
-//		if (normalize)
-//			values = normalize(values, rangeMin, rangeMax);
-		
 		return data;
 	}
 	
@@ -245,12 +260,6 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		return maxValues;
 	}
 
-	public void normalize(List<Double> values, List<Double> maxValues) {
-		for (int index = 0; index < values.size(); index++) {
-			values.set(index, values.get(index) / maxValues.get(index));
-		}
-	}
-
 	/**
 	 * Takes a map of objects indexed by a string keyword and returns a map of
 	 * strings indexed by that keyword. This involves figuring out if the object
@@ -285,38 +294,53 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		return result;
 	}
 
-	public List<Color> convertInputToColor(final String input, final Map<String, ? extends List<?>> data,
-			final boolean normalize) {
+	protected List<Color> getColors(final String scheme, final Map<String, ? extends List<?>> data) {
 		int nColors = 0;
 		
 		for (final List<?> values : data.values())
 			nColors = Math.max(nColors, values.size());
 
-		if (input == null) {
-			// give the default: contrasting colors
-			return ColorUtil.generateContrastingColors(nColors);
+		synchronized (this) {
+			if (colors == null || colors.size() < nColors) {System.out.println("\n Creating COLORS ...\n");
+				if (scheme != null) 
+					colors = ColorUtil.parseColorKeyword(scheme.trim(), nColors);
+				else
+					colors = ColorUtil.generateContrastingColors(nColors); // Default
+			}
 		}
-
-// TODO
-//		// OK, we have three possibilities. The input could be a keyword, a
-//		// comma-separated list of colors, or a list of Color objects. We need to figure this out first...
-//		// See if we have a csv
-//		String[] colorArray = input.split(",");
-//		
-//		// Look for up/down special case
-//		if (colorArray.length == 2
-//				&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN))) {
-//			return parseUpDownColor(colorArray, values, normalize);
-//		} else if (colorArray.length == 3
-//				&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN) || colorArray[0]
-//						.toLowerCase().startsWith(ZERO))) {
-//			return parseUpDownColor(colorArray, values, normalize);
-//		} else if (colorArray.length > 1) {
-//			return parseColorList(colorArray);
-//		} else {
-			return ColorUtil.parseColorKeyword(input.trim(), nColors);
-//		}
+		
+		return colors;
 	}
+	
+//	public List<Color> convertInputToColor(final String input, final Map<String, ? extends List<?>> data,
+//			final boolean normalize) {
+//		int nColors = 0;
+//		
+//		for (final List<?> values : data.values())
+//			nColors = Math.max(nColors, values.size());
+//
+//		if (input != null) {
+//			// OK, we have three possibilities. The input could be a keyword, a
+//			// comma-separated list of colors, or a list of Color objects. We need to figure this out first...
+//			// See if we have a csv
+//			String[] colorArray = input.split(",");
+//			
+//			// Look for up/down special case
+//			if (colorArray.length == 2
+//					&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN))) {
+//				return parseUpDownColor(colorArray, values, normalize);
+//			} else if (colorArray.length == 3
+//					&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN) || colorArray[0]
+//							.toLowerCase().startsWith(ZERO))) {
+//				return parseUpDownColor(colorArray, values, normalize);
+//			} else if (colorArray.length > 1) {
+//				return parseColorList(colorArray);
+//			}
+//		}
+//		
+//		// Return the default
+//		return ColorUtil.generateContrastingColors(nColors);
+//	}
 
 	public String serialize(final String attName, final Object attValue) {
 		return " " + attName + "=\"" + serialize(attValue) + "\"";

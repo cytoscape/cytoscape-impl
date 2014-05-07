@@ -153,19 +153,15 @@ public abstract class AbstractChartLayer<T extends Dataset> implements ImageCust
 														List<String> labels) {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		
-		if (labels == null || labels.isEmpty()) {
+		if (listIsSeries && (labels == null || labels.isEmpty())) {
 			int size = 0;
 			
-			if (listIsSeries) {
-				for (final List<Double> values : data.values())
-					size = Math.max(size, values.size());
-			} else {
-				size = data.size();
-			}
+			for (final List<Double> values : data.values())
+				size = Math.max(size, values.size());
 			
 			labels = createDefaultLabels(size);
 		}
-		
+			
 		int count = 0;
 		
 		for (String category : data.keySet()) {

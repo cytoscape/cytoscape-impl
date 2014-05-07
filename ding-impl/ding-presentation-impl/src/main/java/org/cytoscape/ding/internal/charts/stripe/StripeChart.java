@@ -75,8 +75,8 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 	}
 
 	@Override
-	public List<Color> convertInputToColor(final String input, final Map<String, ? extends List<?>> data,
-			final boolean normalize) {
+	public List<Color> getColors(final String input, final Map<String, ? extends List<?>> data) {
+		// TODO call super with a normalized dataset
 		int nColors = 0;
 		
 		for (final List<?> values : data.values())
