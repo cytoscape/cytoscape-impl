@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>psi-mi-impl-parent</artifactId>
-		<version>3.1.1-SNAPSHOT</version>
+		<version>3.1.1</version>
 	</parent>
 	<properties>
 		<bundle.symbolicName>org.cytoscape.psi-mi-impl</bundle.symbolicName>
