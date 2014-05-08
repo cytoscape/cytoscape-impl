@@ -25,6 +25,8 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -66,23 +68,8 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	public ExcelNetworkSheetReader(final String networkName, final Sheet sheet,
 	                               final NetworkTableMappingParameters nmp, 
 	                               final Map<Object, CyNode> nMap, final CyRootNetwork rootNetwork) {
-		this(networkName, sheet, nmp, nmp.getStartLineNumber(), nMap, rootNetwork);
-	}
-
-	/**
-	 * Creates a new ExcelNetworkSheetReader object.
-	 *
-	 * @param networkName  DOCUMENT ME!
-	 * @param sheet  DOCUMENT ME!
-	 * @param nmp  DOCUMENT ME!
-	 * @param startLineNumber  DOCUMENT ME!
-	 */
-	public ExcelNetworkSheetReader(final String networkName, final Sheet sheet,
-	                               final NetworkTableMappingParameters nmp, final int startLineNumber,
-	                           	   Map<Object, CyNode> nMap, CyRootNetwork rootNetwork) {
 		super(networkName, null, nmp, nMap, rootNetwork);
 		this.sheet = sheet;
-		//this.nMap = nMap;
 	}
 
 	/**
@@ -111,7 +98,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	}
 
 	/**
-	 * For a given Excell row, convert the cells into String.
+	 * For a given Excel row, convert the cells into String.
 	 *
 	 * @param row
 	 * @return
@@ -120,7 +107,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 		if (nmp.getColumnCount() == -1)
 			return null;
 		String[] cells = new String[nmp.getColumnCount()];
-		Cell cell = null;
+		Cell cell;
 
 		for (short i = 0; i < nmp.getColumnCount(); i++) {
 			cell = row.getCell(i);
@@ -135,7 +122,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 					Integer intValue = dblValue.intValue();
 					cells[i] = intValue.toString();
 				} else {
-					cells[i] = Double.toString(cell.getNumericCellValue());
+					cells[i] = convertDoubleToString(cell.getNumericCellValue());
 				}
 			} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
 				cells[i] = Boolean.toString(cell.getBooleanCellValue());
@@ -149,4 +136,19 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 
 		return cells;
 	}
+
+	private static String convertDoubleToString(Double v)
+	{
+		BigDecimal bd = new BigDecimal(v);
+		try
+		{
+			BigInteger bi = bd.toBigIntegerExact();
+			return bi.toString();
+		}
+		catch( ArithmeticException e )
+		{
+			return v.toString();
+		}
+	}
+
 }
