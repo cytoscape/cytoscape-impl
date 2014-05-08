@@ -6,21 +6,25 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
+import org.cytoscape.ding.internal.charts.CustomPieSectionLabelGenerator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.PieDataset;
 import org.jfree.util.Rotation;
 
 public class PieLayer extends AbstractChartLayer<PieDataset> {
 	
+	private final double startAngle;
+
 	public PieLayer(final Map<String, List<Double>> data,
-					final List<String> labels,
+					final List<String> itemLabels,
 					final boolean showLabels,
 					final List<Color> colors,
+					final double startAngle,
 					final Rectangle2D bounds) {
-        super(data, labels, null, null, showLabels, false, false, colors, null, bounds);
+        super(data, itemLabels, null, null, showLabels, false, false, colors, null, bounds);
+        this.startAngle = startAngle;
 	}
 	
 	@Override
@@ -46,16 +50,17 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
         
 		final PiePlot plot = (PiePlot) chart.getPlot();
 		plot.setCircular(true);
-//		plot.setStartAngle(290);
+		plot.setStartAngle(startAngle);
 		plot.setDirection(Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
 		plot.setOutlinePaint(TRANSPARENT_COLOR);
-		plot.setLabelGenerator(showItemLabels ? new StandardPieSectionLabelGenerator() : null);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setShadowPaint(TRANSPARENT_COLOR);
 		plot.setShadowXOffset(0);
 		plot.setShadowYOffset(0);
+		plot.setLabelGenerator(showItemLabels ? new CustomPieSectionLabelGenerator(itemLabels) : null);
+		plot.setSimpleLabels(true);
 		
 		final List<?> keys = dataset.getKeys();
 		

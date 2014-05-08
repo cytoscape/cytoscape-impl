@@ -22,6 +22,9 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 
 	public static final String FACTORY_ID = "org.cytoscape.chart.Donut";
 	
+	public static final String START_ANGLE = "startangle";
+	public static final String HOLE_SIZE = "holesize";
+	
 	public static ImageIcon ICON;
 	
 	static {
@@ -53,6 +56,8 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
 		final String labelsColumn = get(ITEM_LABELS_COLUMN, String.class);
 		final String colorScheme = get(COLOR_SCHEME, String.class);
+		final double startAngle = get(START_ANGLE, Double.class, 90.0);
+		final double hole = get(HOLE_SIZE, Double.class, 0.2);
 		final List<String> labels = getLabelsFromColumn(network, model, labelsColumn);
 		
 		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
@@ -62,7 +67,7 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		
-		final DonutLayer layer = new DonutLayer(data, labels, showLabels, colors, bounds);
+		final DonutLayer layer = new DonutLayer(data, labels, showLabels, colors, startAngle, hole, bounds);
 		
 		return Collections.singletonList(layer);
 	}
@@ -75,5 +80,13 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 	@Override
 	public String getId() {
 		return FACTORY_ID;
+	}
+	
+	@Override
+	protected Class<?> getSettingType(final String key) {
+		if (key.equals(START_ANGLE)) return Double.class;
+		if (key.equals(HOLE_SIZE)) return Double.class;
+		
+		return super.getSettingType(key);
 	}
 }

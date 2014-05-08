@@ -120,7 +120,6 @@ public abstract class AbstractChartLayer<T extends Dataset> implements ImageCust
 		
 		if ((r.getWidth() < minSize || r.getHeight() < minSize) && r.getWidth() > 4 && r.getHeight() > 4)
 			minScale = minSize / Math.min(r.getWidth(), r.getHeight()); // Or the plot is not drawn/centered correctly;
-		System.out.println("\tMIN SCALE =  " + minScale);
 		
 		int w = (int) Math.round(r.getWidth() * minScale);
 		int h = (int) Math.round(r.getHeight() * minScale);

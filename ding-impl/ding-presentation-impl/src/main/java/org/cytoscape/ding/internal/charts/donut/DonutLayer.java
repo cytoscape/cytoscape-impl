@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
+import org.cytoscape.ding.internal.charts.CustomPieSectionLabelGenerator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.RingPlot;
 import org.jfree.data.general.PieDataset;
 import org.jfree.util.Rotation;
@@ -28,15 +28,21 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 	private List<PieDataset> datasetList;
     private List<JFreeChart> chartList;
     
+    /** The angle in degrees to start the pie. 0 points east, 90 points south, etc. */
+    private final double startAngle;
     /** Where to begin the first circle, as a proportion of the entire node */
-    private final double hole = 0.2;
+    private final double hole;
 	
 	public DonutLayer(final Map<String, List<Double>> data,
 					 final List<String> labels,
 					 final boolean showLabels,
 					 final List<Color> colors,
+					 final double startAngle,
+					 final double hole,
 					 final Rectangle2D bounds) {
         super(data, labels, null, null, showLabels, false, false, colors, null, bounds);
+        this.startAngle = startAngle;
+        this.hole = hole;
 	}
 	
 	@Override
@@ -87,6 +93,9 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 	protected BufferedImage createImage(final Rectangle2D r) {
 		getChart(); // Make sure charts have been created
 		
+		if (chartList.size() == 1)
+			return super.createImage(r);
+		
 		final Rectangle nr = validateBounds(r);
         final BufferedImage img = new BufferedImage(nr.width, nr.height, BufferedImage.TYPE_INT_ARGB);
         final Graphics g = img.getGraphics();
@@ -117,11 +126,10 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
         
 		final RingPlot plot = (RingPlot) chart.getPlot();
 		plot.setCircular(true);
-//		plot.setStartAngle(290);
+		plot.setStartAngle(startAngle);
 		plot.setDirection(Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
 		plot.setOutlinePaint(TRANSPARENT_COLOR);
-		plot.setLabelGenerator(showItemLabels ? new StandardPieSectionLabelGenerator() : null);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setShadowPaint(TRANSPARENT_COLOR);
@@ -131,6 +139,10 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 	    plot.setOuterSeparatorExtension(0);
 	    plot.setSectionDepth(sectionDepth);
 		plot.setInteriorGap(interiorGap);
+		// Labels don't look good if it has multiple rings, so only show them when there's only one ring
+		plot.setLabelGenerator(
+				showItemLabels && data.size() == 1 ? new CustomPieSectionLabelGenerator(itemLabels) : null);
+		plot.setSimpleLabels(true);
 		
 		final List<?> keys = dataset.getKeys();
 		

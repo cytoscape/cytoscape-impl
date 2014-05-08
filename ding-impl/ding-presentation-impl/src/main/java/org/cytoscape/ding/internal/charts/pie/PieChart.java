@@ -21,6 +21,9 @@ import org.cytoscape.view.model.View;
 public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 
 	public static final String FACTORY_ID = "org.cytoscape.chart.Pie";
+	
+	public static final String START_ANGLE = "startangle";
+	
 	public static ImageIcon ICON;
 	
 	static {
@@ -52,6 +55,7 @@ public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
 		final String labelsColumn = get(ITEM_LABELS_COLUMN, String.class);
 		final String colorScheme = get(COLOR_SCHEME, String.class);
+		final double startAngle = get(START_ANGLE, Double.class, 90.0);
 		final List<String> labels = getLabelsFromColumn(network, model, labelsColumn);
 		
 		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
@@ -61,7 +65,7 @@ public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		
-		final PieLayer layer = new PieLayer(data, labels, showLabels, colors, bounds);
+		final PieLayer layer = new PieLayer(data, labels, showLabels, colors, startAngle, bounds);
 		
 		return Collections.singletonList(layer);
 	}
@@ -74,5 +78,12 @@ public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 	@Override
 	public String getId() {
 		return FACTORY_ID;
+	}
+	
+	@Override
+	protected Class<?> getSettingType(final String key) {
+		if (key.equals(START_ANGLE)) return Double.class;
+		
+		return super.getSettingType(key);
 	}
 }
