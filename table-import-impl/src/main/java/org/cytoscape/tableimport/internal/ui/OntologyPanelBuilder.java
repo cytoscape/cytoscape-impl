@@ -258,10 +258,6 @@ public class OntologyPanelBuilder {
 												GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 										.add(panel.browseOntologyButton))
 								.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-
-		panel.setSize(MIN_SIZE);
-		panel.setMinimumSize(MIN_SIZE);
-		panel.setPreferredSize(MIN_SIZE);
 	}
 
 	private void ontologyComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
