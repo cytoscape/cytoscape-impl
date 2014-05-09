@@ -10,8 +10,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public HeatMapChartEditor(final HeatMapChart chart, final CyApplicationManager appMgr) {
-		super(chart, 10, true, false, false, true, true, true, appMgr);
-		// TODO Make it easier for user to set many columns at once
+		super(chart, Number.class, 10, true, false, false, true, true, true, appMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

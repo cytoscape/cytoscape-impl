@@ -121,11 +121,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	protected final boolean hasAxes;
 	protected final Map<String, CyColumn> columns;
 	protected final T chart;
+	protected final Class<?> dataType;
 	protected final CyApplicationManager appMgr;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	protected AbstractChartEditor(final T chart,
+								  final Class<?> dataType,
 								  final int maxDataColumns,
 								  final boolean setRange,
 								  final boolean setOrientation,
@@ -136,10 +138,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 								  final CyApplicationManager appMgr) {
 		if (chart == null)
 			throw new IllegalArgumentException("'chart' argument must not be null.");
+		if (dataType == null)
+			throw new IllegalArgumentException("'dataType' argument must not be null.");
 		if (appMgr == null)
 			throw new IllegalArgumentException("'appMgr' argument must not be null.");
 		
 		this.chart = chart;
+		this.dataType = dataType;
 		this.maxDataColumns = maxDataColumns;
 		this.setRange = setRange;
 		this.setOrientation = setOrientation;
@@ -912,6 +917,20 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		}
 	}
 	
+	protected JComboBox createDataColumnComboBox(final Collection<CyColumn> columns, final boolean acceptsNull) {
+		final JComboBox cmb = new CyColumnComboBox(columns, false);
+		cmb.setSelectedItem(null);
+		cmb.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				chart.set(DATA_COLUMNS, getDataPnl().getDataColumnNames());
+				updateRangeMinMax(true);
+			}
+		});
+		
+		return cmb;
+	}
+	
 	protected static void selectCyColumnItem(final JComboBox cmb, final String columnName) {
 		if (columnName != null) {
 			for (int i = 0; i < cmb.getItemCount(); i++) {
@@ -942,7 +961,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			
 			// Filter all columns that are list of numbers
 			for (final CyColumn c : columns.values()) {
-				if (List.class.isAssignableFrom(c.getType()) && Number.class.isAssignableFrom(c.getListElementType()))
+				if (List.class.isAssignableFrom(c.getType()) && dataType.isAssignableFrom(c.getListElementType()))
 					dataColumns.add(c);
 			}
 			
@@ -1037,7 +1056,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			return dataColumns;
 		}
 		
-		protected List<String> getDataColumnNames() {
+		public List<String> getDataColumnNames() {
 			final List<String> names = new ArrayList<String>();
 			
 			for (final DataColumnSelector selector : columnSelectors) {
@@ -1079,15 +1098,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				setOpaque(false);
 				setAlignmentX(Component.LEFT_ALIGNMENT);
 				
-				cmb = new CyColumnComboBox(dataColumns, false);
-				cmb.setSelectedItem(null);
-				cmb.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						chart.set(DATA_COLUMNS, getDataColumnNames());
-						updateRangeMinMax(true);
-					}
-				});
+				cmb = createDataColumnComboBox(dataColumns, false);
 				
 				delBtn = new JButton("-");
 				delBtn.setToolTipText("Remove this column's data from chart");
@@ -1107,7 +1118,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				
 				selectCyColumnItem(cmb, columnName);
 			}
-			
 		}
 	}
 	
@@ -1141,7 +1151,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		
 		private static final long serialVersionUID = 8890884100875883324L;
 
-		CyColumnComboBox(final Collection<CyColumn> columns, final boolean acceptsNull) {
+		public CyColumnComboBox(final Collection<CyColumn> columns, final boolean acceptsNull) {
 			final List<CyColumn> values = new ArrayList<CyColumn>(columns);
 			
 			if (acceptsNull && !values.contains(null))

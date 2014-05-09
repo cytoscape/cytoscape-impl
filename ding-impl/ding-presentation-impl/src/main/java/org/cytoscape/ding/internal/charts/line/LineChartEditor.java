@@ -23,7 +23,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public LineChartEditor(final LineChart chart, final CyApplicationManager appMgr) {
-		super(chart, 10, true, false, true, true, false, true, appMgr);
+		super(chart, Number.class, 10, true, false, true, true, false, true, appMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

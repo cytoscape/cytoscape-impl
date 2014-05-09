@@ -25,7 +25,7 @@ public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public DonutChartEditor(final DonutChart chart, final CyApplicationManager appMgr) {
-		super(chart, 5, false, false, true, false, false, false, appMgr);
+		super(chart, Number.class, 5, false, false, true, false, false, false, appMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

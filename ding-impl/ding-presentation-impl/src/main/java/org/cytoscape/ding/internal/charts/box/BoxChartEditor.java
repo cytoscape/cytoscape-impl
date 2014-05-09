@@ -10,7 +10,7 @@ public class BoxChartEditor extends AbstractChartEditor<BoxChart> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public BoxChartEditor(final BoxChart chart, final CyApplicationManager appMgr) {
-		super(chart, 10, true, true, false, false, false, true, appMgr);
+		super(chart, Number.class, 10, true, true, false, false, false, true, appMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
