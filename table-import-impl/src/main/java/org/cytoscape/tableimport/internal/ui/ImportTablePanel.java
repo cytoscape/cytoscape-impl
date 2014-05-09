@@ -1273,7 +1273,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			arrowButton1.setVisible(false);
 			networkImportOptionPanel.setVisible(false);
 		}
-		//pack();
 	} // </editor-fold>
 
 	/**
@@ -1367,8 +1366,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (dialogType == ImportTablePanel.SIMPLE_ATTRIBUTE_IMPORT) {
 			ontology2annotationPanel.setVisible(false);
 		}
-		JDialog dlg = (JDialog)SwingUtilities.getWindowAncestor(this);
-		dlg.pack();
+		
+		Window parent = SwingUtilities.getWindowAncestor(this);
+		if(parent != null)
+			parent.pack();
 	}
 
 	/**
@@ -1576,9 +1577,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			textImportOptionPanel.setVisible(false);
 		}
 
-		JDialog dlg = (JDialog)SwingUtilities.getWindowAncestor(this);
-		dlg.pack();
-		
+		Window parent = SwingUtilities.getWindowAncestor(this);
+		if(parent != null)
+			parent.pack();
 	}
 
 
@@ -1696,7 +1697,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		startRowLabel.setEnabled(false);
 		previewPanel.getPreviewTable().getTableHeader().setReorderingAllowed(false);
 		setRadioButtonGroup();
-		//pack();
 
 		if (dialogType == NETWORK_IMPORT){
 			// do nothing
@@ -1706,6 +1706,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 
 		setStatusBar("-", "-", "File Size: Unknown");
+		
+		Window parent = SwingUtilities.getWindowAncestor(this);
+		if(parent != null)
+			parent.pack();
 	}
 
 	private void updatePrimaryKeyComboBox() {
@@ -1872,6 +1876,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				ontologyInAnnotationComboBox.setSelectedIndex(GO_ID.getPosition());
 
 			attributeRadioButtonActionPerformed(null);
+			
+			Window parent = SwingUtilities.getWindowAncestor(this);
+			if(parent != null)
+				parent.pack();
 		}
 		
 	}
@@ -2027,6 +2035,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		reloadButton.setEnabled(true);
 		startRowSpinner.setEnabled(true);
 		startRowLabel.setEnabled(true);
+		
+		Window parent = SwingUtilities.getWindowAncestor(this);
+		if(parent != null)
+			parent.pack();
 	}
 
 	private void disableComponentsForGA() {
@@ -2516,7 +2528,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 									.add(statusBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 											org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 											org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap()));
-			// pack();
 		} else if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
 			layout.setHorizontalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
 			                                .add(layout.createSequentialGroup().addContainerGap()
