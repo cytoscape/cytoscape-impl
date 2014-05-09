@@ -1879,6 +1879,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			
 			setOntologyInAnnotationComboBox();
 			
+			if(DB_OBJECT_SYMBOL.getPosition() < primaryKeyComboBox.getItemCount())
+				primaryKeyComboBox.setSelectedIndex(DB_OBJECT_SYMBOL.getPosition());
+			
 			if(GO_ID.getPosition() < ontologyInAnnotationComboBox.getItemCount())
 				ontologyInAnnotationComboBox.setSelectedIndex(GO_ID.getPosition());
 
