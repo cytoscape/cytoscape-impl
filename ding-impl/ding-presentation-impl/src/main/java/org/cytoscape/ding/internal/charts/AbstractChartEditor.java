@@ -1,8 +1,6 @@
 package org.cytoscape.ding.internal.charts;
 
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.AUTO_RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLORS;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLOR_SCHEME;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.DATA_COLUMNS;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.DOMAIN_LABELS_COLUMN;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.GLOBAL_RANGE;
@@ -14,7 +12,6 @@ import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.STACKED;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -25,7 +22,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -62,7 +58,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
-import org.cytoscape.ding.internal.charts.util.ColorUtil;
+import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -72,12 +68,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 
 	private static final long serialVersionUID = 2022740799541917592L;
 	
-	private static final String CUSTOM = "custom";
-
-	protected static final String[] COLOR_SCHEMES = new String[] {
-		ColorUtil.CONTRASTING, ColorUtil.MODULATED, ColorUtil.RAINBOW, ColorUtil.RANDOM, CUSTOM
-	};
-	
 	private JTabbedPane optionsTpn;
 	private JPanel basicOptionsPnl;
 	private JPanel advancedOptionsPnl;
@@ -86,6 +76,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JPanel labelsPnl;
 	private JPanel orientationPnl;
 	private JPanel axesPnl;
+	private ColorSchemeEditor<T> colorSchemeEditor;
 	private JPanel otherBasicOptionsPnl;
 	private JPanel otherAdvancedOptionsPnl;
 	protected JLabel dataColumnLbl;
@@ -95,8 +86,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JComboBox itemLabelsColumnCmb;
 	private JComboBox domainLabelsColumnCmb;
 	private JComboBox rangeLabelsColumnCmb;
-	private JLabel colorSchemeLbl;
-	private JComboBox colorSchemeCmb;
 	private JCheckBox globalRangeCkb;
 	private JCheckBox autoRangeCkb;
 	private JLabel rangeMinLbl;
@@ -123,6 +112,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	protected final T chart;
 	protected final Class<?> dataType;
 	protected final CyApplicationManager appMgr;
+	protected final IconManager iconMgr;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -135,13 +125,16 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 								  final boolean setDomainLabels,
 								  final boolean setRangeLabels,
 								  final boolean hasAxes,
-								  final CyApplicationManager appMgr) {
+								  final CyApplicationManager appMgr,
+								  final IconManager iconMgr) {
 		if (chart == null)
 			throw new IllegalArgumentException("'chart' argument must not be null.");
 		if (dataType == null)
 			throw new IllegalArgumentException("'dataType' argument must not be null.");
 		if (appMgr == null)
 			throw new IllegalArgumentException("'appMgr' argument must not be null.");
+		if (iconMgr == null)
+			throw new IllegalArgumentException("'iconMgr' argument must not be null.");
 		
 		this.chart = chart;
 		this.dataType = dataType;
@@ -153,6 +146,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		this.setRangeLabels = setRangeLabels;
 		this.hasAxes = hasAxes;
 		this.appMgr = appMgr;
+		this.iconMgr = iconMgr;
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
 		columns = new TreeMap<String, CyColumn>(new Comparator<String>() {
@@ -186,7 +180,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		itemLabelsColumnLbl = new JLabel("Item Labels Column");
 		domainLabelsColumnLbl = new JLabel("Domain Labels Column");
 		rangeLabelsColumnLbl = new JLabel("Range Labels Column");
-		colorSchemeLbl = new JLabel("Color Scheme");
 		rangeMinLbl = new JLabel("Min");
 		rangeMaxLbl = new JLabel("Max");
 		orientationLbl = new JLabel("Plot Orientation");
@@ -201,6 +194,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	protected JTabbedPane getOptionsTpn() {
 		if (optionsTpn == null) {
 			optionsTpn = new JTabbedPane(JTabbedPane.LEFT);
+			optionsTpn.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 			
 			JScrollPane scr1 = new JScrollPane(getBasicOptionsPnl(), 
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -256,32 +250,20 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			advancedOptionsPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			
-			final JSeparator sep = new JSeparator();
-			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(getLabelsPnl())
+					.addComponent(getColorSchemeEditor())
 					.addComponent(getOrientationPnl())
 					.addComponent(getAxesPnl())
-					.addGroup(layout.createSequentialGroup()
-							.addComponent(colorSchemeLbl)
-							.addComponent(getColorSchemeCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-							          GroupLayout.PREFERRED_SIZE))
-					.addComponent(sep)
 					.addComponent(getOtherAdvancedOptionsPnl())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getLabelsPnl())
+					.addComponent(getColorSchemeEditor())
 					.addComponent(getOrientationPnl())
 					.addComponent(getAxesPnl())
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(colorSchemeLbl)
-							.addComponent(getColorSchemeCmb()))
-					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
 					.addComponent(getOtherAdvancedOptionsPnl())
 			);
-			
-			sep.setVisible(getOtherAdvancedOptionsPnl().isVisible());
 		}
 		
 		return advancedOptionsPnl;
@@ -468,6 +450,14 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		return axesPnl;
 	}
 	
+	protected ColorSchemeEditor<T> getColorSchemeEditor() {
+		if (colorSchemeEditor == null) {
+			colorSchemeEditor = new ColorSchemeEditor<T>(chart, appMgr.getCurrentNetwork());
+		}
+		
+		return colorSchemeEditor;
+	}
+	
 	/**
 	 * Should be overridden by the concrete subclass if it provides extra fields.
 	 * @return
@@ -630,7 +620,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JButton getRefreshRangeBtn() {
 		if (refreshRangeBtn == null) {
-			refreshRangeBtn = new JButton();
+			refreshRangeBtn = new JButton(IconManager.ICON_REFRESH);
+			refreshRangeBtn.setFont(iconMgr.getIconFont(12.0f));
 			refreshRangeBtn.setToolTipText("Refresh automatic range values");
 			
 			refreshRangeBtn.addActionListener(new ActionListener() {
@@ -643,30 +634,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		}
 		
 		return refreshRangeBtn;
-	}
-	
-	protected JComboBox getColorSchemeCmb() {
-		if (colorSchemeCmb == null) {
-			colorSchemeCmb = new JComboBox(COLOR_SCHEMES);
-			
-			final String scheme = chart.get(COLOR_SCHEME, String.class, "");
-			
-			if (Arrays.binarySearch(COLOR_SCHEMES, scheme) >= 0)
-				colorSchemeCmb.setSelectedItem(scheme);
-			else
-				colorSchemeCmb.setSelectedItem(null);
-			
-			colorSchemeCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final String newScheme = (String) colorSchemeCmb.getSelectedItem();
-					chart.set(COLOR_SCHEME, newScheme);
-					updateColorList();
-				}
-			});
-		}
-		
-		return colorSchemeCmb;
 	}
 	
 	protected JCheckBox getItemLabelsVisibleCkb() {
@@ -775,21 +742,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	protected void setOrientation() {
 		final Orientation orientation = getHorizontalRd().isSelected() ? Orientation.HORIZONTAL : Orientation.VERTICAL;
 		chart.set(ORIENTATION, orientation);
-	}
-	
-	protected void updateColorList() {
-		final String scheme = chart.get(COLOR_SCHEME, String.class, "");
-		final List<Color> colors = chart.getList(COLORS, Color.class);
-		
-		if (!CUSTOM.equalsIgnoreCase(scheme)) {
-			// Update list of colors (add new ones if there are more values now)
-		}
-		
-		// TODO build list or table of editable colors
-		
-		// TODO: user change any color in the list => set scheme to "custom"
-		// TODO always set COLORS to charts, even if not "custom" to guarantee the data-color match?
-		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -999,7 +951,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		
 		protected JButton getAddDataColumnBtn() {
 			if (addDataColumnBtn == null) {
-				addDataColumnBtn = new JButton("+");
+				addDataColumnBtn = new JButton(IconManager.ICON_PLUS);
+				addDataColumnBtn.setFont(iconMgr.getIconFont(12.0f));
 				addDataColumnBtn.setToolTipText("Add another data column");
 				addDataColumnBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
 				addDataColumnBtn.setVisible(maxColumns > 1);
@@ -1100,7 +1053,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				
 				cmb = createDataColumnComboBox(dataColumns, false);
 				
-				delBtn = new JButton("-");
+				delBtn = new JButton(IconManager.ICON_REMOVE);
+				delBtn.setFont(iconMgr.getIconFont(12.0f));
 				delBtn.setToolTipText("Remove this column's data from chart");
 				delBtn.setVisible(maxColumns > 1);
 				delBtn.addActionListener(new ActionListener() {

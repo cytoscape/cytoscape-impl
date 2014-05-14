@@ -56,12 +56,11 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
-		final String colorScheme = get(COLOR_SCHEME, String.class);
+		final List<Color> colors = getList(COLORS, Color.class);
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
 		
 		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
-		final List<Color> colors = getColors(colorScheme, data);
 
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);

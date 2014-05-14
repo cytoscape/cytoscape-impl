@@ -294,24 +294,6 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		return result;
 	}
 
-	protected List<Color> getColors(final String scheme, final Map<String, ? extends List<?>> data) {
-		int nColors = 0;
-		
-		for (final List<?> values : data.values())
-			nColors = Math.max(nColors, values.size());
-
-		synchronized (this) {
-			if (colors == null || colors.size() < nColors) {System.out.println("\n Creating COLORS ...\n");
-				if (scheme != null) 
-					colors = ColorUtil.parseColorKeyword(scheme.trim(), nColors);
-				else
-					colors = ColorUtil.generateContrastingColors(nColors); // Default
-			}
-		}
-		
-		return colors;
-	}
-	
 //	public List<Color> convertInputToColor(final String input, final Map<String, ? extends List<?>> data,
 //			final boolean normalize) {
 //		int nColors = 0;

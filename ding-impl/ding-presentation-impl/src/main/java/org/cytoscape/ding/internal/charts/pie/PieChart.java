@@ -54,12 +54,11 @@ public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 		
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
 		final String labelsColumn = get(ITEM_LABELS_COLUMN, String.class);
-		final String colorScheme = get(COLOR_SCHEME, String.class);
+		final List<Color> colors = getList(COLORS, Color.class);
 		final double startAngle = get(START_ANGLE, Double.class, 90.0);
 		final List<String> labels = getLabelsFromColumn(network, model, labelsColumn);
 		
 		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
-		final List<Color> colors = getColors(colorScheme, data);
 		
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);

@@ -56,7 +56,7 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
-		final String colorScheme = get(COLOR_SCHEME, String.class);
+		final List<Color> colors = getList(COLORS, Color.class);
 		final List<String> itemLabels = getLabelsFromColumn(network, model, get(ITEM_LABELS_COLUMN, String.class));
 		final List<String> domainLabels = getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, String.class));
 		final List<String> rangeLabels = getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, String.class));
@@ -64,7 +64,6 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
 		
 		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
-		final List<Color> colors = getColors(colorScheme, data);
 		
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);

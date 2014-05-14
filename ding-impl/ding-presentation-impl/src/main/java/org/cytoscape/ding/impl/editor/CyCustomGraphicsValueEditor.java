@@ -82,8 +82,6 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		setLocationRelativeTo(parent);
 		setVisible(true);
 		
-		// TODO 
-		
 		return editCancelled ? oldCustomGraphics : newCustomGraphics;
 	}
 

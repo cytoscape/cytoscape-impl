@@ -17,6 +17,7 @@ import javax.swing.JComboBox;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -28,8 +29,8 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public StripeChartEditor(final StripeChart chart, final CyApplicationManager appMgr) {
-		super(chart, Object.class, 1, false, true, false, false, false, false, appMgr);
+	public StripeChartEditor(final StripeChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
+		super(chart, Object.class, 1, false, true, false, false, false, false, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

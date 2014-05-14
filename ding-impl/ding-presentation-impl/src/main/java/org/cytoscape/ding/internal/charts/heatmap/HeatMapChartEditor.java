@@ -2,6 +2,7 @@ package org.cytoscape.ding.internal.charts.heatmap;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.util.IconManager;
 
 public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
@@ -9,8 +10,8 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public HeatMapChartEditor(final HeatMapChart chart, final CyApplicationManager appMgr) {
-		super(chart, Number.class, 10, true, false, false, true, true, true, appMgr);
+	public HeatMapChartEditor(final HeatMapChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
+		super(chart, Number.class, 10, true, false, false, true, true, true, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

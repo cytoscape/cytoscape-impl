@@ -12,6 +12,7 @@ import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.util.IconManager;
 
 public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 
@@ -24,8 +25,8 @@ public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public DonutChartEditor(final DonutChart chart, final CyApplicationManager appMgr) {
-		super(chart, Number.class, 5, false, false, true, false, false, false, appMgr);
+	public DonutChartEditor(final DonutChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
+		super(chart, Number.class, 5, false, false, true, false, false, false, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

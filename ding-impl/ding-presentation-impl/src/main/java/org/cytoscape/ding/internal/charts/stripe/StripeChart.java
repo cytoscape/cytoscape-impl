@@ -63,7 +63,7 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		
 		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
 		final List<String> distinctValues = getList(DISTINCT_VALUES, String.class);
-		final String colorScheme = get(COLOR_SCHEME, String.class);
+		final List<Color> colors = getList(COLORS, Color.class);
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		final List<String> labels = Collections.emptyList();
 		
@@ -87,8 +87,6 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		} else {
 			data = Collections.emptyMap();
 		}
-		
-		final List<Color> colors = getColors(colorScheme, data);
 		
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);

@@ -21,6 +21,12 @@ public final class IconUtil {
 		return new ImageIcon(bi);
 	}
 	
+	public static ImageIcon emptyIcon(final int width, final int height) {
+		final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		
+		return new ImageIcon(bi);
+	}
+	
 	private IconUtil() {
 		// restrict instantiation
 	}

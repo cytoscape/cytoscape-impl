@@ -12,6 +12,7 @@ import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.util.IconManager;
 
 public class PieChartEditor extends AbstractChartEditor<PieChart> {
 
@@ -22,8 +23,8 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public PieChartEditor(final PieChart chart, final CyApplicationManager appMgr) {
-		super(chart, Number.class, 1, false, false, true, false, false, false, appMgr);
+	public PieChartEditor(final PieChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
+		super(chart, Number.class, 1, false, false, true, false, false, false, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

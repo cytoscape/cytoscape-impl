@@ -3,15 +3,18 @@ package org.cytoscape.ding.internal.charts.pie;
 import javax.swing.JComponent;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.charts.CyChartEditorFactory;
 
 public class PieChartEditorFactory implements CyChartEditorFactory<PieLayer> {
 
 	private final CyApplicationManager appMgr;
+	private final IconManager iconMgr;
 
-	public PieChartEditorFactory(final CyApplicationManager appMgr) {
+	public PieChartEditorFactory(final CyApplicationManager appMgr, final IconManager iconMgr) {
 		this.appMgr = appMgr;
+		this.iconMgr = iconMgr;
 	}
 	
 	@Override
@@ -21,6 +24,6 @@ public class PieChartEditorFactory implements CyChartEditorFactory<PieLayer> {
 
 	@Override
 	public JComponent createEditor(final CyChart<PieLayer> chart) {
-		return new PieChartEditor((PieChart)chart, appMgr);
+		return new PieChartEditor((PieChart)chart, appMgr, iconMgr);
 	}
 }

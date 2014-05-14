@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.util.IconManager;
 
 public class BarChartEditor extends AbstractChartEditor<BarChart> {
 
@@ -19,8 +20,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public BarChartEditor(final BarChart chart, final CyApplicationManager appMgr) {
-		super(chart, Number.class, 10, true, true, true, true, false, true, appMgr);
+	public BarChartEditor(final BarChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
+		super(chart, Number.class, 10, true, true, true, true, false, true, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

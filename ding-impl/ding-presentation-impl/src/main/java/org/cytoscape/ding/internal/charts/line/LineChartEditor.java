@@ -12,6 +12,7 @@ import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.util.IconManager;
 
 public class LineChartEditor extends AbstractChartEditor<LineChart> {
 
@@ -22,8 +23,8 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public LineChartEditor(final LineChart chart, final CyApplicationManager appMgr) {
-		super(chart, Number.class, 10, true, false, true, true, false, true, appMgr);
+	public LineChartEditor(final LineChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
+		super(chart, Number.class, 10, true, false, true, true, false, true, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

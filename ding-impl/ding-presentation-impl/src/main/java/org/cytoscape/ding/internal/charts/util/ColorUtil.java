@@ -20,6 +20,17 @@ public final class ColorUtil {
 
 	private ColorUtil() {}
 	
+	public static List<Color> getColors(final String scheme, final int nColors) {
+		final List<Color> colors;
+
+		if (scheme != null) 
+			colors = parseColorKeyword(scheme.trim(), nColors);
+		else
+			colors = generateContrastingColors(nColors); // Default
+		
+		return colors;
+	}
+	
 	public static List<Color> parseColorList(String[] inputArray) {
 		List<Color> colors = new ArrayList<Color>();
 		
