@@ -877,6 +877,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			public void actionPerformed(ActionEvent e) {
 				chart.set(DATA_COLUMNS, getDataPnl().getDataColumnNames());
 				updateRangeMinMax(true);
+				getColorSchemeEditor().reset();
 			}
 		});
 		
@@ -979,6 +980,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			chart.set(DATA_COLUMNS, getDataColumnNames());
 			updateAddDataColumnBtn();
 			updateRangeMinMax(true);
+			getColorSchemeEditor().reset();
 			invalidate();
 		}
 		
@@ -994,6 +996,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			}
 			
 			updateRangeMinMax(true);
+			getColorSchemeEditor().reset();
 		}
 		
 		protected Set<CyColumn> getDataColumns() {

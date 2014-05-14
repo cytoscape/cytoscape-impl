@@ -156,7 +156,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		return colorListPnl;
 	}
 	
-	protected void updateColorList(final boolean newScheme) {
+	private void updateColorList(final boolean newScheme) {
 		List<Color> colors = chart.getList(COLORS, Color.class);
 		final String scheme = chart.get(COLOR_SCHEME, String.class, "");
 		final int nColors = getTotal();
@@ -164,9 +164,10 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		if (nColors > 0) {
 			if (newScheme || colors.isEmpty()) {
 				if (CUSTOM.equalsIgnoreCase(scheme)) {
-					colors = new ArrayList<Color>(nColors);
+					int newSize = Math.max(colors.size(), nColors);
+					colors = new ArrayList<Color>(newSize);
 					
-					for (int i = 0; i < nColors; i++)
+					for (int i = 0; i < newSize; i++)
 						colors.add(DEFAULT_COLOR);
 				} else {
 					colors = ColorUtil.getColors(scheme, nColors);
@@ -174,7 +175,9 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 			} else if (colors.size() < nColors) {
 				// Just update existing list of colors (add new ones if there are more values now)
 				final List<Color> newColors = ColorUtil.getColors(scheme, nColors);
-				colors.addAll(newColors.subList(colors.size(), newColors.size() - 1));
+				
+				if (newColors.size() > colors.size())
+					colors.addAll(newColors.subList(colors.size(), newColors.size()));
 			}
 		}
 		
@@ -189,10 +192,8 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	
 		if (!colors.isEmpty())
 			chart.set(COLORS, colors);
-		
-		// TODO: user change any color in the list => set scheme to "custom"
 	}
-
+	
 	protected int getTotal() {
 		if (total <= 0) {
 			int nColors = 0;
