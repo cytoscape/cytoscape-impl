@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts.heatmap;
 
+import java.util.Map;
+
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
@@ -19,8 +21,8 @@ public class HeatMapChartFactory implements CyChartFactory<HeatMapLayer> {
 	}
 	
 	@Override
-	public CyChart<HeatMapLayer> getInstance() {
-		return new HeatMapChart();
+	public CyChart<HeatMapLayer> getInstance(final Map<String, Object> properties) {
+		return new HeatMapChart(properties);
 	}
 
 	@Override

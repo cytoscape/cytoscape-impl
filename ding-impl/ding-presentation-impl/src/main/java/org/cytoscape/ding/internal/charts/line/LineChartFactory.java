@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts.line;
 
+import java.util.Map;
+
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
@@ -19,8 +21,8 @@ public class LineChartFactory implements CyChartFactory<LineLayer> {
 	}
 	
 	@Override
-	public CyChart<LineLayer> getInstance() {
-		return new LineChart();
+	public CyChart<LineLayer> getInstance(final Map<String, Object> properties) {
+		return new LineChart(properties);
 	}
 
 	@Override

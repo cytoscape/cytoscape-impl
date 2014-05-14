@@ -25,6 +25,7 @@ import org.cytoscape.view.model.View;
 public class HeatMapChart extends AbstractChartCustomGraphics<HeatMapLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.chart.HeatMap";
+	public static final String DISPLAY_NAME = "Heat Map Chart";
 	
 	public static ImageIcon ICON;
 	
@@ -37,8 +38,8 @@ public class HeatMapChart extends AbstractChartCustomGraphics<HeatMapLayer> {
 		}
 	}
 
-	public HeatMapChart() {
-		this("");
+	public HeatMapChart(final Map<String, Object> properties) {
+		super(DISPLAY_NAME, properties);
 	}
 	
 	public HeatMapChart(final HeatMapChart chart) {
@@ -46,7 +47,7 @@ public class HeatMapChart extends AbstractChartCustomGraphics<HeatMapLayer> {
 	}
 	
 	public HeatMapChart(final String input) {
-		super("Heat Map Chart", input);
+		super(DISPLAY_NAME, input);
 	}
 
 	@Override 

@@ -26,6 +26,7 @@ import org.cytoscape.view.model.View;
 public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.chart.Box";
+	public static final String DISPLAY_NAME = "Box Chart";
 	
 	public static ImageIcon ICON;
 	
@@ -38,8 +39,8 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		}
 	}
 
-	public BoxChart() {
-		this("");
+	public BoxChart(final Map<String, Object> properties) {
+		super(DISPLAY_NAME, properties);
 	}
 	
 	public BoxChart(final BoxChart chart) {
@@ -47,7 +48,7 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 	}
 	
 	public BoxChart(final String input) {
-		super("Bar Chart", input);
+		super(DISPLAY_NAME, input);
 	}
 
 	@Override 

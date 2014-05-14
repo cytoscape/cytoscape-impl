@@ -21,6 +21,7 @@ import org.cytoscape.view.model.View;
 public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 
 	public static final String FACTORY_ID = "org.cytoscape.chart.Donut";
+	public static final String DISPLAY_NAME = "Donut Chart";
 	
 	public static final String START_ANGLE = "startangle";
 	public static final String HOLE_SIZE = "holesize";
@@ -36,8 +37,8 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		}
 	}
 	
-	public DonutChart() {
-		this("");
+	public DonutChart(final Map<String, Object> properties) {
+		super(DISPLAY_NAME, properties);
 	}
 	
 	public DonutChart(final DonutChart chart) {
@@ -45,7 +46,7 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 	}
 	
 	public DonutChart(final String input) {
-		super("Donut Chart", input);
+		super(DISPLAY_NAME, input);
 	}
 	
 	@Override

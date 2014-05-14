@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts.pie;
 
+import java.util.Map;
+
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
@@ -19,8 +21,8 @@ public class PieChartFactory  implements CyChartFactory<PieLayer> {
 	}
 	
 	@Override
-	public CyChart<PieLayer> getInstance() {
-		return new PieChart();
+	public CyChart<PieLayer> getInstance(final Map<String, Object> properties) {
+		return new PieChart(properties);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -69,7 +70,7 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	
 	@Override
 	@SuppressWarnings("rawtypes")
-	public <S extends CyCustomGraphics> CyCustomGraphics showEditor(final Component parent, final S initialValue) {
+	public <S extends CyCustomGraphics> CyCustomGraphics<? extends CustomGraphicLayer> showEditor(final Component parent, final S initialValue) {
 		oldCustomGraphics = initialValue;
 		
 		// Make sure it initializes only after the Cytoscape UI (specially DefaultViewPanel) is ready
@@ -305,11 +306,15 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 					
 					CyChart<?> initialChart = null;
 					
-					if (chart != null && cf.getSupportedClass().isAssignableFrom(chart.getClass())) {
-						selectedEditorPn = chartEditorPn;
-						initialChart = chart;
+					if (chart != null) {
+						if (cf.getSupportedClass().isAssignableFrom(chart.getClass())) {
+							selectedEditorPn = chartEditorPn;
+							initialChart = chart;
+						} else {
+							initialChart = cf.getInstance(chart.getProperties());
+						}
 					} else {
-						initialChart = cf.getInstance();
+						initialChart = cf.getInstance(new HashMap<String, Object>());
 					}
 					
 					if (initialChart != null) // Just so this panel's dimensions are set correctly
@@ -341,7 +346,8 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 							final CyChartFactory<?> cf = ((ChartEditorPane)c).getChartFactory();
 							
 							if (chart == null || !cf.getSupportedClass().isAssignableFrom(chart.getClass()))
-								chart = cf.getInstance();
+								chart = cf.getInstance(
+										chart != null ? chart.getProperties() : new HashMap<String, Object>());
 								
 							((ChartEditorPane)c).update(chart);
 						}

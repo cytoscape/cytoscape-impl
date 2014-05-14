@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.ViewUtils.Position;
@@ -50,22 +51,36 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	protected int width = 50;
 	protected int height = 50;
 	
-	protected final Map<String, Object> settings;
+	protected final Map<String, Object> properties;
 	
 	protected static Logger logger;
 
-	protected AbstractEnhancedCustomGraphics(final String displayName, final String input) {
-		this.displayName = displayName;
-		settings = new HashMap<String, Object>();
+	protected AbstractEnhancedCustomGraphics(final String displayName) {
 		logger = LoggerFactory.getLogger(this.getClass());
-		parseInput(input);
+		this.displayName = displayName;
+		this.properties = new HashMap<String, Object>();
+	}
+	
+	protected AbstractEnhancedCustomGraphics(final String displayName, final String input) {
+		this(displayName);
+		addProperties(parseInput(input));
 	}
 	
 	protected AbstractEnhancedCustomGraphics(final AbstractEnhancedCustomGraphics<T> chart) {
-		this(chart.getDisplayName(), "");
-		settings.putAll(chart.settings);
+		this(chart.getDisplayName());
+		this.properties.putAll(chart.getProperties());
+	}
+	
+	protected AbstractEnhancedCustomGraphics(final String displayName, final Map<String, Object> properties) {
+		this(displayName);
+		addProperties(properties);
 	}
 
+	@Override
+	public Map<String, Object> getProperties() {
+		return new HashMap<String, Object>(properties);
+	}
+	
 	@Override
 	public Long getIdentifier() {
 		return id;
@@ -121,23 +136,25 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		return displayName;
 	}
 
-	public synchronized void set(final String key, Object value) {System.out.println(key + " = " + value);
+	public synchronized void set(final String key, Object value) {
 		if (key == null)
 			throw new IllegalArgumentException("'key' must not be null.");
 		
 		final Class<?> type = getSettingType(key);
 		
-		if (List.class.isAssignableFrom(type))
-			value = parseListValue(key, value, getSettingListType(key));
-		else
-			value = parseValue(key, value, type);
-		
-		settings.put(key, value);
+		if (type != null) {
+			if (List.class.isAssignableFrom(type))
+				value = parseListValue(key, value, getSettingListType(key));
+			else
+				value = parseValue(key, value, type);
+			
+			properties.put(key, value);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	public synchronized <S> S get(final String key, final Class<S> cls) {
-		return (S) settings.get(key);
+		return (S) properties.get(key);
 	}
 	
 	public synchronized <S> S get(final String key, final Class<S> cls, final S defValue) {
@@ -147,14 +164,16 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public synchronized <S> List<S> getList(final String key, final Class<S> cls) {
-		Object obj = settings.get(key);
+		Object obj = properties.get(key);
 		
 		return obj instanceof List ? (List)obj : Collections.emptyList();
 	}
 	
-	protected void parseInput(final String input) {
+	protected Map<String, Object> parseInput(final String input) {
+		final Map<String, Object> props = new HashMap<String, Object>();
+		
 		if (input == null)
-			return;
+			return props;
 		
 		// Tokenize
 		StringReader reader = new StringReader(input);
@@ -186,7 +205,7 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 					if (i == StreamTokenizer.TT_WORD || i == '"') {
 						tokenIndex--;
 						String key = tokenList.get(tokenIndex);
-						set(key, st.sval);
+						props.put(key, st.sval);
 						tokenList.remove(tokenIndex);
 					}
 					break;
@@ -201,6 +220,8 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 			}
 		} catch (Exception e) {
 		}
+		
+		return props;
 	}
 	
 	protected Class<?> getSettingType(final String key) {
@@ -224,7 +245,7 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		if (key.equals(ORIENTATION)) return Orientation.class;
 		if (key.equals(STACKED)) return Boolean.class;
 			
-		return Object.class;
+		return null;
 	}
 	
 	protected Class<?> getSettingListType(final String key) {
@@ -422,5 +443,14 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		else if (input instanceof String)
 			return Double.parseDouble((String)input);
 		throw new NumberFormatException("input can not be converted to double");
+	}
+	
+	protected void addProperties(final Map<String, Object> properties) {
+		if (properties != null) {
+			for (final Entry<String, Object> entry : properties.entrySet()) {
+				if (getSettingType(entry.getKey()) != null)
+					set(entry.getKey(), entry.getValue());
+			}
+		}
 	}
 }

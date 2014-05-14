@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts.stripe;
 
+import java.util.Map;
+
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
@@ -19,8 +21,8 @@ public class StripeChartFactory implements CyChartFactory<StripeLayer> {
 	}
 	
 	@Override
-	public CyChart<StripeLayer> getInstance() {
-		return new StripeChart();
+	public CyChart<StripeLayer> getInstance(final Map<String, Object> properties) {
+		return new StripeChart(properties);
 	}
 
 	@Override

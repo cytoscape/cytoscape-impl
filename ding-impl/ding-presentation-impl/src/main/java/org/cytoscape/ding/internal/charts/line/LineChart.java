@@ -25,6 +25,8 @@ import org.cytoscape.view.model.View;
 public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.chart.Line";
+	public static final String DISPLAY_NAME = "Line Chart";
+	
 	
 	public static final String LINE_WIDTH = "linewidth";
 	
@@ -39,8 +41,8 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 		}
 	}
 
-	public LineChart() {
-		this("");
+	public LineChart(final Map<String, Object> properties) {
+		super(DISPLAY_NAME, properties);
 	}
 	
 	public LineChart(final LineChart chart) {
@@ -48,7 +50,7 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 	}
 	
 	public LineChart(final String input) {
-		super("Line Chart", input);
+		super(DISPLAY_NAME, input);
 	}
 
 	@Override 

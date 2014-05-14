@@ -30,6 +30,7 @@ import org.cytoscape.view.model.View;
 public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.chart.Stripe";
+	public static final String DISPLAY_NAME = "Stripe Chart";
 	
 	public static final String DISTINCT_VALUES = "distinctvalues";
 	
@@ -44,8 +45,8 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		}
 	}
 
-	public StripeChart() {
-		this("");
+	public StripeChart(final Map<String, Object> properties) {
+		super(DISPLAY_NAME, properties);
 	}
 	
 	public StripeChart(final StripeChart chart) {
@@ -53,7 +54,7 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 	}
 	
 	public StripeChart(final String input) {
-		super("Stripe Chart", input);
+		super(DISPLAY_NAME, input);
 	}
 
 	@Override 

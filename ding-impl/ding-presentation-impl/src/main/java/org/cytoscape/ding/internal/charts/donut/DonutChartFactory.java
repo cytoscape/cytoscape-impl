@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts.donut;
 
+import java.util.Map;
+
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
@@ -19,8 +21,8 @@ public class DonutChartFactory  implements CyChartFactory<DonutLayer> {
 	}
 	
 	@Override
-	public CyChart<DonutLayer> getInstance() {
-		return new DonutChart();
+	public CyChart<DonutLayer> getInstance(final Map<String, Object> properties) {
+		return new DonutChart(properties);
 	}
 
 	@Override

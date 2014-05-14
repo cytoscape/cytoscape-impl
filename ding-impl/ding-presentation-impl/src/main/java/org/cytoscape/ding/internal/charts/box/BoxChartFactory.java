@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts.box;
 
+import java.util.Map;
+
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
@@ -19,8 +21,8 @@ public class BoxChartFactory implements CyChartFactory<BoxLayer> {
 	}
 	
 	@Override
-	public CyChart<BoxLayer> getInstance() {
-		return new BoxChart();
+	public CyChart<BoxLayer> getInstance(final Map<String, Object> properties) {
+		return new BoxChart(properties);
 	}
 
 	@Override

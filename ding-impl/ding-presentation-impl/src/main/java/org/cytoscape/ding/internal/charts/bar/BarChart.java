@@ -26,6 +26,7 @@ import org.cytoscape.view.model.View;
 public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.chart.Bar";
+	public static final String DISPLAY_NAME = "Bar Chart";
 	
 	public static ImageIcon ICON;
 	
@@ -38,8 +39,8 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		}
 	}
 
-	public BarChart() {
-		this("");
+	public BarChart(final Map<String, Object> properties) {
+		super(DISPLAY_NAME, properties);
 	}
 	
 	public BarChart(final BarChart chart) {
@@ -47,7 +48,7 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	}
 	
 	public BarChart(final String input) {
-		super("Bar Chart", input);
+		super(DISPLAY_NAME, input);
 	}
 
 	@Override 

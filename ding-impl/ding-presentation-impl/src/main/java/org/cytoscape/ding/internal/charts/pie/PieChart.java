@@ -21,6 +21,7 @@ import org.cytoscape.view.model.View;
 public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 
 	public static final String FACTORY_ID = "org.cytoscape.chart.Pie";
+	public static final String DISPLAY_NAME = "Pie Chart";
 	
 	public static final String START_ANGLE = "startangle";
 	
@@ -35,8 +36,8 @@ public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 		}
 	}
 	
-	public PieChart() {
-		this("");
+	public PieChart(final Map<String, Object> properties) {
+		super(DISPLAY_NAME, properties);
 	}
 	
 	public PieChart(final PieChart chart) {
@@ -44,7 +45,7 @@ public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 	}
 	
 	public PieChart(final String input) {
-		super("Pie Chart", input);
+		super(DISPLAY_NAME, input);
 	}
 	
 	@Override

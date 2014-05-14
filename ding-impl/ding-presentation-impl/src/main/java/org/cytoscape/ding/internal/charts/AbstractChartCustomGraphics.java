@@ -23,10 +23,8 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> extends
 		AbstractEnhancedCustomGraphics<T> {
 
-	private List<Color> colors;
-	
 	protected AbstractChartCustomGraphics(final String displayName) {
-		this(displayName, "");
+		super(displayName);
 	}
 	
 	protected AbstractChartCustomGraphics(final String displayName, final String input) {
@@ -37,20 +35,8 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		super(chart);
 	}
 	
-	@Override
-	public synchronized void set(final String key, final Object value) {
-		if (key.equals(COLOR_SCHEME)) {
-			final String currentScheme = get(COLOR_SCHEME, String.class);
-			
-			// Reset colors
-			if ((value != null && value.toString().equalsIgnoreCase(currentScheme))
-					|| (value == null && currentScheme != null)) {
-				colors = null;
-				System.out.println("\n RESET COLORS !!!\n");
-			}
-		}
-		
-		super.set(key, value);
+	protected AbstractChartCustomGraphics(final String displayName, final Map<String, Object> properties) {
+		super(displayName, properties);
 	}
 	
 	public List<Double> convertInputToDouble(String input) {
@@ -363,7 +349,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	public String toSerializableString() {
 		final StringBuilder sb = new StringBuilder(getId() + ":");
 		
-		for (final Entry<String, Object> entry : settings.entrySet()) {
+		for (final Entry<String, Object> entry : properties.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			
