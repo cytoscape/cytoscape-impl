@@ -1,6 +1,7 @@
 package org.cytoscape.ding.internal.charts.bar;
 
 import java.awt.Color;
+import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import org.jfree.ui.TextAnchor;
 
 public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
+	private final boolean upAndDown;
 	private final boolean stacked;
 	private final Orientation orientation;
 
@@ -38,11 +40,13 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final List<Color> colors,
+					final boolean upAndDown,
 					final DoubleRange range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
         		range, bounds);
+        this.upAndDown = upAndDown;
         this.stacked = stacked;
         this.orientation = orientation;
 	}
@@ -124,7 +128,15 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 //	        rangeAxis.setUpperMargin(.5);
 //        }
 		
-		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
+		BarRenderer renderer = (BarRenderer) plot.getRenderer();
+		
+		if (upAndDown && !stacked) {
+			final Color up = colors.size() > 0 ? colors.get(0) : Color.LIGHT_GRAY;
+			final Color down = colors.size() > 1 ? colors.get(colors.size() - 1) : Color.DARK_GRAY;
+			renderer = new UpDownColorBarRenderer(up, down);
+			plot.setRenderer(renderer);
+		}
+		
 		renderer.setBarPainter(new StandardBarPainter());
 		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
 		renderer.setShadowVisible(false);
@@ -140,15 +152,42 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, -Math.PI/2));
 		}
 		
-		final List<?> keys = dataset.getRowKeys();
-		
-		if (colors != null && colors.size() >= keys.size()) {
+		if (stacked || !upAndDown) {
+			final List<?> keys = dataset.getRowKeys();
+			
 			for (int i = 0; i < keys.size(); i++) {
-				final Color c = colors.get(i);
+				Color c = Color.LIGHT_GRAY;
+				
+				if (colors.size() > i)
+					c = colors.get(i);
+				
 				renderer.setSeriesPaint(i, c);
 			}
 		}
 		
 		return chart;
+	}
+
+	class UpDownColorBarRenderer extends BarRenderer {
+
+		private static final long serialVersionUID = -1827868101222293644L;
+		
+		private Color upColor;
+		private Color downColor;
+
+		UpDownColorBarRenderer(final Color up, final Color down) {
+			this.upColor = up;
+			this.downColor = down;
+		}
+		
+		@Override
+		public Paint getItemPaint(final int row, final int column) {
+			final CategoryDataset dataset = getPlot().getDataset();
+			final String rowKey = (String) dataset.getRowKey(row);
+			final String colKey = (String) dataset.getColumnKey(column);
+			final double value = dataset.getValue(rowKey, colKey).doubleValue();
+			
+			return (value < 0.0) ? downColor : upColor;
+		}
 	}
 }

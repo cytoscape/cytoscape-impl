@@ -58,6 +58,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
+import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -67,6 +68,10 @@ import org.cytoscape.model.CyTable;
 public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphics<?>> extends JPanel {
 
 	private static final long serialVersionUID = 2022740799541917592L;
+	
+	private static final String[] BASIC_COLOR_SCHEMES = new String[] {
+		ColorUtil.CONTRASTING, ColorUtil.MODULATED, ColorUtil.RAINBOW, ColorUtil.RANDOM, ColorUtil.CUSTOM
+	};
 	
 	private JTabbedPane optionsTpn;
 	private JPanel basicOptionsPnl;
@@ -452,7 +457,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected ColorSchemeEditor<T> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {
-			colorSchemeEditor = new ColorSchemeEditor<T>(chart, appMgr.getCurrentNetwork());
+			colorSchemeEditor = new ColorSchemeEditor<T>(chart, getColorSchemes(), appMgr.getCurrentNetwork());
 		}
 		
 		return colorSchemeEditor;
@@ -884,6 +889,10 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		return cmb;
 	}
 	
+	protected String[] getColorSchemes() {
+		return BASIC_COLOR_SCHEMES;
+	}
+	
 	protected static void selectCyColumnItem(final JComboBox cmb, final String columnName) {
 		if (columnName != null) {
 			for (int i = 0; i < cmb.getItemCount(); i++) {
@@ -1139,6 +1148,5 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				
 			return c;
 		}
-		
 	}
 }

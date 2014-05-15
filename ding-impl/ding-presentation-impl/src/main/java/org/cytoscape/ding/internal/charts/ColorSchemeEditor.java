@@ -41,12 +41,6 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 
 	private static final long serialVersionUID = 4652060176779329556L;
 	
-	public static final String CUSTOM = "custom";
-	
-	public static final String[] COLOR_SCHEMES = new String[] {
-		ColorUtil.CONTRASTING, ColorUtil.MODULATED, ColorUtil.RAINBOW, ColorUtil.RANDOM, CUSTOM
-	};
-	
 	private static final Color DEFAULT_COLOR = Color.LIGHT_GRAY;
 	private static final JColorChooser colorChooser = new JColorChooser();
 	
@@ -58,13 +52,15 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	private JPanel colorListPnl;
 	
 	private final T chart;
+	private final String[] colorSchemes;
 	private final CyNetwork network;
 	private int total = 0;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public ColorSchemeEditor(final T chart, final CyNetwork network) {
+	public ColorSchemeEditor(final T chart, final String[] colorSchemes, final CyNetwork network) {
 		this.chart = chart;
+		this.colorSchemes = colorSchemes;
 		this.network = network;
 		
 		JList tmpList = new JList();
@@ -123,14 +119,14 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	
 	protected JComboBox getColorSchemeCmb() {
 		if (colorSchemeCmb == null) {
-			colorSchemeCmb = new JComboBox(COLOR_SCHEMES);
+			colorSchemeCmb = new JComboBox(colorSchemes);
 			
 			final String scheme = chart.get(COLOR_SCHEME, String.class, "");
 			
-			if (Arrays.asList(COLOR_SCHEMES).contains(scheme))
+			if (Arrays.asList(colorSchemes).contains(scheme))
 				colorSchemeCmb.setSelectedItem(scheme);
 			else
-				colorSchemeCmb.setSelectedItem(CUSTOM);
+				colorSchemeCmb.setSelectedItem(ColorUtil.CUSTOM);
 			
 			colorSchemeCmb.addActionListener(new ActionListener() {
 				@Override
@@ -159,11 +155,11 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	private void updateColorList(final boolean newScheme) {
 		List<Color> colors = chart.getList(COLORS, Color.class);
 		final String scheme = chart.get(COLOR_SCHEME, String.class, "");
-		final int nColors = getTotal();
+		final int nColors = ColorUtil.UP_DOWN.equalsIgnoreCase(scheme) ? 2 : getTotal();
 		
 		if (nColors > 0) {
 			if (newScheme || colors.isEmpty()) {
-				if (CUSTOM.equalsIgnoreCase(scheme)) {
+				if (ColorUtil.CUSTOM.equalsIgnoreCase(scheme)) {
 					int newSize = Math.max(colors.size(), nColors);
 					colors = new ArrayList<Color>(newSize);
 					
@@ -189,6 +185,8 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 			final ColorPanel cp = new ColorPanel(c, ""+(++count));
 			getColorListPnl().add(cp);
 		}
+		
+		getColorListPnl().repaint();
 	
 		if (!colors.isEmpty())
 			chart.set(COLORS, colors);

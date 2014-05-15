@@ -2,6 +2,7 @@ package org.cytoscape.ding.internal.charts.util;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
@@ -12,10 +13,13 @@ public final class ColorUtil {
 	public static final String MODULATED = "modulated";
 	public static final String RAINBOW = "rainbow";
 	public static final String RANDOM = "random";
-	public static final String UP = "up:";
-	public static final String DOWN = "down:";
-	public static final String ZERO = "zero:";
+	public static final String UP_DOWN = "updown";
+	public static final String CUSTOM = "custom";
 	
+	/** ColorBrewer - PuOr (2 color-blind safe divergent colors) */
+	public static final Color[] UP_DOWN_PUOR = new Color[] { new Color(241, 163, 64), new Color(153, 142, 195) };
+	
+	public static final String ZERO = "zero:";
 	private static final double EPSILON = 1E-8f;
 
 	private ColorUtil() {}
@@ -118,25 +122,25 @@ public final class ColorUtil {
 		return values;
 	}
 
-	public static List<Color> parseUpDownColor(String[] colorArray) {
-		if (colorArray.length < 2)
-			return null;
-
-		String[] colors = new String[3];
-		colors[2] = "black";
-		
-		for (int index = 0; index < colorArray.length; index++) {
-			if (colorArray[index].toLowerCase().startsWith(UP)) {
-				colors[0] = colorArray[index].substring(UP.length());
-			} else if (colorArray[index].toLowerCase().startsWith(DOWN)) {
-				colors[1] = colorArray[index].substring(DOWN.length());
-			} else if (colorArray[index].toLowerCase().startsWith(ZERO)) {
-				colors[2] = colorArray[index].substring(ZERO.length());
-			}
-		}
-		
-		return ColorUtil.parseColorList(colors);
-	}
+//	public static List<Color> parseUpDownColor(String[] colorArray) {
+//		if (colorArray.length < 2)
+//			return null;
+//
+//		String[] colors = new String[3];
+//		colors[2] = "black";
+//		
+//		for (int index = 0; index < colorArray.length; index++) {
+//			if (colorArray[index].toLowerCase().startsWith(UP)) {
+//				colors[0] = colorArray[index].substring(UP.length());
+//			} else if (colorArray[index].toLowerCase().startsWith(DOWN)) {
+//				colors[1] = colorArray[index].substring(DOWN.length());
+//			} else if (colorArray[index].toLowerCase().startsWith(ZERO)) {
+//				colors[2] = colorArray[index].substring(ZERO.length());
+//			}
+//		}
+//		
+//		return ColorUtil.parseColorList(colors);
+//	}
 	
 //	private List<Color> parseUpDownColor(String[] colorArray, List<Double> values, final boolean normalize) {
 //	List<Color> upDownColors = parseUpDownColor(colorArray);
@@ -201,20 +205,22 @@ public final class ColorUtil {
 		return color;
 	}
 
-	public static  List<Color> parseColorKeyword(String input, int nColors) {
+	public static List<Color> parseColorKeyword(final String input, final int nColors) {
 		if (input.equals(RANDOM))
 			return generateRandomColors(nColors);
-		else if (input.equals(RAINBOW))
+		if (input.equals(RAINBOW))
 			return generateRainbowColors(nColors);
-		else if (input.equals(MODULATED))
+		if (input.equals(MODULATED))
 			return generateModulatedRainbowColors(nColors);
-		else if (input.equals(CONTRASTING))
+		if (input.equals(CONTRASTING))
 			return generateContrastingColors(nColors);
-		else {
-			String[] colorArray = new String[1];
-			colorArray[0] = input;
-			List<Color> colors = parseColorList(colorArray);
-			return colors;
-		}
+		if (input.equals(UP_DOWN))
+			return Arrays.asList(UP_DOWN_PUOR);
+		
+		String[] colorArray = new String[1];
+		colorArray[0] = input;
+		List<Color> colors = parseColorList(colorArray);
+		
+		return colors;
 	}
 }
