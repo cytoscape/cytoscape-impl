@@ -580,9 +580,8 @@ public class CyActivator extends AbstractCyActivator {
 		final CyCustomGraphicsValueEditor customGraphicsValueEditor = new CyCustomGraphicsValueEditor(customGraphicsManagerServiceRef, cyChartFactoryManagerServiceRef, cyServiceRegistrarRef);
 		registerAllServices(bc, customGraphicsValueEditor, new Properties());
 		
-		final CyCustomGraphicsPropertyEditor cyCustomGraphicsPropertyEditor = new CyCustomGraphicsPropertyEditor(customGraphicsValueEditor);
-		final CustomGraphicsVisualPropertyEditor customGraphicsVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, cyCustomGraphicsPropertyEditor, continuousMappingCellRendererFactory);
-		registerAllServices(bc, customGraphicsVisualPropertyEditor, new Properties());
+		final CustomGraphicsVisualPropertyEditor customGraphicsVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, customGraphicsValueEditor, continuousMappingCellRendererFactory);
+		registerService(bc, customGraphicsVisualPropertyEditor, VisualPropertyEditor.class, new Properties());
 		
 		// Register CyChart Factories
 		final BarChartFactory barChartFactory = new BarChartFactory();

@@ -34,9 +34,9 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 public class CustomGraphicsVisualPropertyEditor extends AbstractVisualPropertyEditor<CyCustomGraphics> {
 	
 	public CustomGraphicsVisualPropertyEditor(final Class<CyCustomGraphics> type,
-											  final CyCustomGraphicsPropertyEditor propEditor,
+											  final CyCustomGraphicsValueEditor valueEditor,
 											  final ContinuousMappingCellRendererFactory cellRendererFactory) {
-		super(type, propEditor, ContinuousEditorType.DISCRETE, cellRendererFactory);
+		super(type, new CyCustomGraphicsPropertyEditor(valueEditor), ContinuousEditorType.DISCRETE, cellRendererFactory);
 		discreteTableCellRenderer = new CyCustomGraphicsCellRenderer();
 	}
 }
