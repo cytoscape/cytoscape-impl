@@ -125,10 +125,11 @@ class GraphicsUtilities {
 	static public ShapeType getShapeType(Map<String, String> argMap, String key, ShapeType defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
-		int shapeNumber = Integer.parseInt(argMap.get(key));
+		String shapeString = argMap.get(key);
 		for (ShapeType type: supportedShapes) {
-			if (shapeNumber == type.ordinal())
-				return type;
+			if (shapeString.equalsIgnoreCase(type.shapeName()) || shapeString.equalsIgnoreCase(type.name())) {
+        return type;
+      }
 		}
 		return defValue;
 	}
