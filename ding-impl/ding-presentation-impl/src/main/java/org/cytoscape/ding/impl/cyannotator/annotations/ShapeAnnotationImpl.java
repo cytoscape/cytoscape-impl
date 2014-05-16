@@ -107,8 +107,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
     this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
+    System.out.println("argMap[SHAPETYPE]: " + argMap.get(SHAPETYPE));
     this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
-    System.out.println("shapeType: " + this.shapeType);
+    System.out.println("GraphicsUtilities.getShapeType: " + this.shapeType);
 		if (this.shapeType != ShapeType.CUSTOM)
     	this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 		else if (argMap.containsKey(CUSTOMSHAPE))

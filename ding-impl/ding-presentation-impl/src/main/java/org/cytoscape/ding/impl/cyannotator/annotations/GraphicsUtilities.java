@@ -261,25 +261,16 @@ class GraphicsUtilities {
         final Path2D.Double path = new Path2D.Double();
 
         final String[] pieces = str.split("\\p{Space}+");
-        if (pieces.length < 1) {
-            return path;
-        }
-
-        final String windingRule = pieces[0];
-        if (windingRule.equalsIgnoreCase("eo")) {
-            path.setWindingRule(Path2D.WIND_EVEN_ODD);
-        } else if (windingRule.equalsIgnoreCase("nz")) {
-            path.setWindingRule(Path2D.WIND_NON_ZERO);
-        } else {
-            throw new IllegalArgumentException(String.format("Winding rule must be either 'eo' or 'nz': %s", str));
-        }
-
         final double[] nums = new double[6];
-        for (int i = 1; i < pieces.length; /* increment based on command */) {
+        for (int i = 0; i < pieces.length; /* increment based on command */) {
             final String cmd = pieces[i];
             i++; // move past the command
             if (cmd.equalsIgnoreCase("z")) {
                 path.closePath();
+            } else if (cmd.equalsIgnoreCase("eo")) {
+              path.setWindingRule(Path2D.WIND_EVEN_ODD);
+            } else if (cmd.equalsIgnoreCase("nz")) {
+              path.setWindingRule(Path2D.WIND_NON_ZERO);
             } else if (cmd.equalsIgnoreCase("m")) {
                 i += parseDoubles(pieces, i, 2, nums);
                 path.moveTo(nums[0], nums[1]);
