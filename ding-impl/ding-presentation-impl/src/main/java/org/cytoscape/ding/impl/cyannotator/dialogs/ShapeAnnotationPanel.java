@@ -41,9 +41,9 @@ import javax.swing.event.ChangeEvent;
 
 
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl.ShapeType;
 
 public class ShapeAnnotationPanel extends javax.swing.JPanel {
 	private int WIDTH = 500;

@@ -49,7 +49,7 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
 // import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl.ShapeType;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
 
 // import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;

@@ -37,6 +37,7 @@ import java.util.Map;
 import javax.swing.JDialog;
 
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -54,31 +55,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double shapeWidth = 0.0;
 	protected double shapeHeight = 0.0;
 	protected double factor = 1.0;
-
-	public enum ShapeType {
-		RECTANGLE ("Rectangle"),
-		ROUNDEDRECTANGLE ("Rounded Rectangle"),
-		ELLIPSE ("Ellipse"),
-		TRIANGLE ("Triangle"),
-		PENTAGON ("Pentagon"),
-		STAR5 ("5-Pointed Star"),
-		HEXAGON ("Hexagon"),
-		STAR6 ("6-Pointed Star"),
-		CUSTOM ("Custom");
-	
-		private final String name;
-		ShapeType (String name) { 
-			this.name = name; 
-		}
-	
-		public String shapeName() {
-			return this.name;
-		}
-
-		public String toString() {
-			return this.name;
-		}
-	} 
 
 	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height) {
 		super(cyAnnotator, view);
@@ -132,6 +108,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
     this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
+    System.out.println("shapeType: " + this.shapeType);
 		if (this.shapeType != ShapeType.CUSTOM)
     	this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 		else if (argMap.containsKey(CUSTOMSHAPE))
