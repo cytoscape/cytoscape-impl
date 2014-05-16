@@ -126,7 +126,7 @@ class GraphicsUtilities {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
 		String shapeString = argMap.get(key);
-		for (ShapeType type: supportedShapes) {
+		for (ShapeType type: ShapeType.values()) {
 			if (shapeString.equalsIgnoreCase(type.shapeName()) || shapeString.equalsIgnoreCase(type.name())) {
         return type;
       }
@@ -152,21 +152,29 @@ class GraphicsUtilities {
 		// System.out.println("Border width = "+border+", isPrinting = "+isPrinting);
 
 		Shape shape = null;
-		if (annotation.getShapeType().equals(ShapeType.CUSTOM)) {
+		if (annotation.getShapeType().equals(ShapeType.CUSTOM.shapeName())) {
+      final double destX = x + border;
+      final double destY = y + border;
+      final double destW = width - border;
+      final double destH = height - border;
+
 			shape = annotation.getShape();
 			// Scale the shape appropriately
 			Rectangle2D originalBounds = shape.getBounds2D();
-			double widthScale = (width-border)/originalBounds.getWidth();
-			double heightScale = (height-border)/originalBounds.getHeight();
-			AffineTransform transform = AffineTransform.getScaleInstance(widthScale, heightScale);
-			transform.translate(x+border, y+border);
+			double widthScale = destW/originalBounds.getWidth();
+			double heightScale = destH/originalBounds.getHeight();
+
+			AffineTransform transform = new AffineTransform();
+      transform.translate(destX, destY);
+      transform.scale(widthScale, heightScale);
+      transform.translate(-originalBounds.getX(), -originalBounds.getY());
 			shape = transform.createTransformedShape(shape);
 		} else {
 			// Get the shape
 			shape = getShape(annotation.getShapeType(), x+border, y+border, width-border, height-border);
 		}
 
-		// System.out.println("drawShape: shape = "+shape.toString());
+		//System.out.println("drawShape: shape = " + serializeShape(shape));
 
 		// Set our fill color
 		if (annotation.getFillColor() != null) {

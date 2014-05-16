@@ -107,9 +107,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
     this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
 
-    System.out.println("argMap[SHAPETYPE]: " + argMap.get(SHAPETYPE));
     this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
-    System.out.println("GraphicsUtilities.getShapeType: " + this.shapeType);
 		if (this.shapeType != ShapeType.CUSTOM)
     	this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 		else if (argMap.containsKey(CUSTOMSHAPE))
@@ -128,11 +126,12 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			argMap.put(EDGECOLOR,convertColor(this.borderColor));
 		argMap.put(EDGETHICKNESS,Double.toString(this.borderWidth));
 		argMap.put(EDGEOPACITY, Double.toString(this.borderOpacity));
-		argMap.put(SHAPETYPE, Integer.toString(this.shapeType.ordinal()));
+		argMap.put(SHAPETYPE, this.shapeType.name());
 		argMap.put(ShapeAnnotation.WIDTH, Double.toString(this.shapeWidth));
 		argMap.put(ShapeAnnotation.HEIGHT, Double.toString(this.shapeHeight));
 		if (shapeType.equals(ShapeType.CUSTOM))
 			argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
+    //System.out.println("getArgMap: " + argMap);
 		return argMap;
 	}
 
