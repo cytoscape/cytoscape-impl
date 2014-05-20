@@ -60,7 +60,7 @@ public final class ColorUtil {
 			int r = rand.nextInt(255);
 			int g = rand.nextInt(255);
 			int b = rand.nextInt(255);
-			result.add(index, new Color(r, g, b, 200));
+			result.add(index, new Color(r, g, b, 255));
 		}
 		
 		return result;
@@ -206,7 +206,7 @@ public final class ColorUtil {
 	}
 
 	public static List<Color> parseColorKeyword(final String input, final int nColors) {
-		if (input.equals(RANDOM))
+		if (input.equals(RANDOM) || input.equals(CUSTOM))
 			return generateRandomColors(nColors);
 		if (input.equals(RAINBOW))
 			return generateRainbowColors(nColors);

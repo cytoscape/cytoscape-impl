@@ -11,9 +11,13 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.PieDataset;
+import org.jfree.ui.RectangleInsets;
 import org.jfree.util.Rotation;
 
 public class PieLayer extends AbstractChartLayer<PieDataset> {
+	
+	/** Just to prevent the circle's border from being cropped */
+	public static final double INTERIOR_GAP = 0.004;
 	
 	private final double startAngle;
 
@@ -44,21 +48,22 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 		
         chart.setAntiAlias(true);
         chart.setBorderVisible(false);
-        chart.setBorderPaint(TRANSPARENT_COLOR);
         chart.setBackgroundPaint(TRANSPARENT_COLOR);
         chart.setBackgroundImageAlpha(0.0f);
+        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
 		final PiePlot plot = (PiePlot) chart.getPlot();
-		plot.setCircular(true);
+		plot.setCircular(false);
 		plot.setStartAngle(startAngle);
 		plot.setDirection(Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
-		plot.setOutlinePaint(TRANSPARENT_COLOR);
+		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+		plot.setInteriorGap(INTERIOR_GAP);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setShadowPaint(TRANSPARENT_COLOR);
-		plot.setShadowXOffset(0);
-		plot.setShadowYOffset(0);
+		plot.setShadowXOffset(0.0);
+		plot.setShadowYOffset(0.0);
 		plot.setLabelGenerator(showItemLabels ? new CustomPieSectionLabelGenerator(itemLabels) : null);
 		plot.setSimpleLabels(true);
 		

@@ -85,13 +85,11 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		
         chart.setAntiAlias(true);
         chart.setBorderVisible(false);
-        chart.setBorderPaint(TRANSPARENT_COLOR);
         chart.setBackgroundPaint(TRANSPARENT_COLOR);
         chart.setBackgroundImageAlpha(0.0f);
         
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
-		plot.setOutlinePaint(TRANSPARENT_COLOR);
 		plot.setDomainGridlinePaint(TRANSPARENT_COLOR);
 		plot.setDomainGridlinesVisible(false);
 	    plot.setRangeGridlinePaint(TRANSPARENT_COLOR);

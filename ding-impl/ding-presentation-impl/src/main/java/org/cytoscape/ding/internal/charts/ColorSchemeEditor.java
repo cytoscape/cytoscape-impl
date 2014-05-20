@@ -121,12 +121,15 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		if (colorSchemeCmb == null) {
 			colorSchemeCmb = new JComboBox(colorSchemes);
 			
-			final String scheme = chart.get(COLOR_SCHEME, String.class, "");
+			String scheme = chart.get(COLOR_SCHEME, String.class, "");
 			
-			if (Arrays.asList(colorSchemes).contains(scheme))
+			if (Arrays.asList(colorSchemes).contains(scheme)) {
 				colorSchemeCmb.setSelectedItem(scheme);
-			else
-				colorSchemeCmb.setSelectedItem(ColorUtil.CUSTOM);
+			} else {
+				scheme = ColorUtil.CUSTOM;
+				colorSchemeCmb.setSelectedItem(scheme);
+				chart.set(COLOR_SCHEME, scheme);
+			}
 			
 			colorSchemeCmb.addActionListener(new ActionListener() {
 				@Override
@@ -134,7 +137,6 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 					final String newScheme = (String) colorSchemeCmb.getSelectedItem();
 					chart.set(COLOR_SCHEME, newScheme);
 					updateColorList(true);
-					onColorsUpdated();
 				}
 			});
 		}
@@ -155,7 +157,8 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	private void updateColorList(final boolean newScheme) {
 		List<Color> colors = chart.getList(COLORS, Color.class);
 		final String scheme = chart.get(COLOR_SCHEME, String.class, "");
-		final int nColors = ColorUtil.UP_DOWN.equalsIgnoreCase(scheme) ? 2 : getTotal();
+		final int nColors =
+				ColorUtil.UP_DOWN.equals(scheme) && Arrays.asList(colorSchemes).contains(scheme) ? 2 : getTotal();
 		
 		if (nColors > 0) {
 			if (newScheme || colors.isEmpty()) {
@@ -220,22 +223,6 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		return total;
 	}
 	
-	private void onColorsUpdated() {
-		final Component[] rows = getColorListPnl().getComponents();
-		final List<Color> newColors = new ArrayList<Color>();
-		
-		if (rows != null) {
-			for (final Component c : rows) {
-				if (c instanceof ColorSchemeEditor.ColorPanel) {
-					final Color color = ((ColorSchemeEditor.ColorPanel)c).getColor();
-					newColors.add(color);
-				}
-			}
-		}
-		
-		chart.set(COLORS, newColors);
-	}
-	
 	// ==[ CLASSES ]====================================================================================================
 
 	class ColorPanel extends JLabel {
@@ -289,6 +276,22 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 						}
 					}, null);
 			dialog.setVisible(true);
+		}
+		
+		private void onColorsUpdated() {
+			final Component[] rows = getColorListPnl().getComponents();
+			final List<Color> newColors = new ArrayList<Color>();
+			
+			if (rows != null) {
+				for (final Component c : rows) {
+					if (c instanceof ColorSchemeEditor.ColorPanel) {
+						final Color color = ((ColorSchemeEditor.ColorPanel)c).getColor();
+						newColors.add(color);
+					}
+				}
+			}
+			
+			chart.set(COLORS, newColors);
 		}
 	}
 }

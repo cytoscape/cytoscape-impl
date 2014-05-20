@@ -17,10 +17,12 @@ import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomPieSectionLabelGenerator;
+import org.cytoscape.ding.internal.charts.pie.PieLayer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.RingPlot;
 import org.jfree.data.general.PieDataset;
+import org.jfree.ui.RectangleInsets;
 import org.jfree.util.Rotation;
 
 public class DonutLayer extends AbstractChartLayer<PieDataset> {
@@ -72,9 +74,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 				
 				for (final PieDataset ds : datasetList) {
 					double sectionDepth = ((1.0 - hole) / (double)total) * (total - count);
-					
-					System.out.println("\tsectionDepth="+sectionDepth);
-					final JFreeChart chart = createChart(ds, sectionDepth, 0.0);
+					final JFreeChart chart = createChart(ds, sectionDepth, PieLayer.INTERIOR_GAP);
 					chartList.add(chart);
 					count++;
 				}
@@ -120,16 +120,16 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		
         chart.setAntiAlias(true);
         chart.setBorderVisible(false);
-        chart.setBorderPaint(TRANSPARENT_COLOR);
         chart.setBackgroundPaint(TRANSPARENT_COLOR);
         chart.setBackgroundImageAlpha(0.0f);
+        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
 		final RingPlot plot = (RingPlot) chart.getPlot();
 		plot.setCircular(true);
 		plot.setStartAngle(startAngle);
 		plot.setDirection(Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
-		plot.setOutlinePaint(TRANSPARENT_COLOR);
+		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setShadowPaint(TRANSPARENT_COLOR);

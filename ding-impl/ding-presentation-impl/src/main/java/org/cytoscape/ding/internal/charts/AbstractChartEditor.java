@@ -950,12 +950,12 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				if (dataColumns != null) {
 					for (final String name : dataColumns) {
 						if (count++ < maxColumns)
-							addDataColumnSelector(name);
+							addDataColumnSelector(name, false);
 					}
 				}
 				
 				if (count == 0) // Add at least one selector to begin with
-					addDataColumnSelector(null);
+					addDataColumnSelector(null, false);
 			}
 		}
 		
@@ -971,7 +971,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				addDataColumnBtn.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						addDataColumnSelector(null);
+						addDataColumnSelector(null, true);
 					}
 				});
 			}
@@ -979,7 +979,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			return addDataColumnBtn;
 		}
 		
-		protected void addDataColumnSelector(final String columnName) {
+		protected void addDataColumnSelector(final String columnName, final boolean resetColorScheme) {
 			final DataColumnSelector selector = new DataColumnSelector(columnName);
 			columnSelectors.add(selector);
 			
@@ -989,7 +989,10 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			chart.set(DATA_COLUMNS, getDataColumnNames());
 			updateAddDataColumnBtn();
 			updateRangeMinMax(true);
-			getColorSchemeEditor().reset();
+			
+			if (resetColorScheme)
+				getColorSchemeEditor().reset();
+			
 			invalidate();
 		}
 		
