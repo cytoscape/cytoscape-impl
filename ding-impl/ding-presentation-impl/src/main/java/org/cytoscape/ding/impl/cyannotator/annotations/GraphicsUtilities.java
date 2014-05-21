@@ -159,6 +159,8 @@ class GraphicsUtilities {
       final double destH = height - border;
 
 			shape = annotation.getShape();
+      if (shape == null)
+        return;
 			// Scale the shape appropriately
 			Rectangle2D originalBounds = shape.getBounds2D();
 			double widthScale = destW/originalBounds.getWidth();
