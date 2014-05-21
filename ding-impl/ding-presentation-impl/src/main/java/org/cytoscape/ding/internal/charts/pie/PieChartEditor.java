@@ -24,7 +24,7 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public PieChartEditor(final PieChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
-		super(chart, Number.class, 1, false, false, true, false, false, false, appMgr, iconMgr);
+		super(chart, Number.class, false, 1, false, false, true, false, false, false, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

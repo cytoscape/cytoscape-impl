@@ -300,9 +300,10 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 							chartFactoryMgr.getCyChartEditorFactory(cf.getSupportedClass());
 					final ChartEditorPane chartEditorPn = new ChartEditorPane(cf, cef);
 					getChartTypeTpn().addTab(
-							cf.getDisplayName(), 
+							"", 
 							cf.getIcon(CHART_ICON_SIZE, CHART_ICON_SIZE), 
-							chartEditorPn);
+							chartEditorPn,
+							cf.getDisplayName());
 					
 					CyChart<?> initialChart = null;
 					

@@ -19,6 +19,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
+import org.jfree.ui.RectangleInsets;
 
 
 public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
@@ -63,12 +64,12 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
         chart.setBorderVisible(false);
         chart.setBackgroundPaint(TRANSPARENT_COLOR);
         chart.setBackgroundImageAlpha(0.0f);
+        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
-		plot.setDomainGridlinePaint(TRANSPARENT_COLOR);
+		plot.setInsets(new RectangleInsets(2.0, 2.0, 1.0, 2.0));
 		plot.setDomainGridlinesVisible(false);
-	    plot.setRangeGridlinePaint(TRANSPARENT_COLOR);
 	    plot.setRangeGridlinesVisible(false);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);

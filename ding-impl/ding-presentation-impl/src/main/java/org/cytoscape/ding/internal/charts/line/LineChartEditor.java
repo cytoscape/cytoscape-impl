@@ -24,7 +24,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public LineChartEditor(final LineChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
-		super(chart, Number.class, 10, true, false, true, true, false, true, appMgr, iconMgr);
+		super(chart, Number.class, true, 10, true, false, true, true, false, true, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

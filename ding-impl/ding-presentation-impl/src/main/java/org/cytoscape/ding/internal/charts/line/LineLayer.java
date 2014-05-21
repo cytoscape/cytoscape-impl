@@ -18,6 +18,7 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
+import org.jfree.ui.RectangleInsets;
 
 
 public class LineLayer extends AbstractChartLayer<CategoryDataset> {
@@ -61,10 +62,11 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
         chart.setBorderVisible(false);
         chart.setBackgroundPaint(TRANSPARENT_COLOR);
         chart.setBackgroundImageAlpha(0.0f);
+        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
-		plot.setDomainGridlinePaint(TRANSPARENT_COLOR);
+		plot.setInsets(new RectangleInsets(2.0, 2.0, 2.0, 2.0));
 		plot.setDomainGridlinesVisible(false);
 	    plot.setRangeGridlinesVisible(showRangeAxis);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);

@@ -81,7 +81,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JPanel labelsPnl;
 	private JPanel orientationPnl;
 	private JPanel axesPnl;
-	private ColorSchemeEditor<T> colorSchemeEditor;
+	protected ColorSchemeEditor<T> colorSchemeEditor;
 	private JPanel otherBasicOptionsPnl;
 	private JPanel otherAdvancedOptionsPnl;
 	protected JLabel dataColumnLbl;
@@ -106,6 +106,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JRadioButton verticalRd;
 	private JRadioButton horizontalRd;
 	
+	protected final boolean columnIsSeries;
 	protected final int maxDataColumns; 
 	protected final boolean setRange;
 	protected final boolean setOrientation;
@@ -123,6 +124,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected AbstractChartEditor(final T chart,
 								  final Class<?> dataType,
+								  final boolean columnIsSeries,
 								  final int maxDataColumns,
 								  final boolean setRange,
 								  final boolean setOrientation,
@@ -142,6 +144,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			throw new IllegalArgumentException("'iconMgr' argument must not be null.");
 		
 		this.chart = chart;
+		this.columnIsSeries = columnIsSeries;
 		this.dataType = dataType;
 		this.maxDataColumns = maxDataColumns;
 		this.setRange = setRange;
@@ -457,7 +460,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected ColorSchemeEditor<T> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {
-			colorSchemeEditor = new ColorSchemeEditor<T>(chart, getColorSchemes(), appMgr.getCurrentNetwork());
+			colorSchemeEditor = new ColorSchemeEditor<T>(chart, getColorSchemes(), columnIsSeries,
+					appMgr.getCurrentNetwork(), iconMgr);
 		}
 		
 		return colorSchemeEditor;
@@ -956,6 +960,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				
 				if (count == 0) // Add at least one selector to begin with
 					addDataColumnSelector(null, false);
+				
+				getColorSchemeEditor().reset();
 			}
 		}
 		

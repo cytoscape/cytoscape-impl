@@ -27,7 +27,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public BarChartEditor(final BarChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
-		super(chart, Number.class, 10, true, true, true, true, false, true, appMgr, iconMgr);
+		super(chart, Number.class, false, 10, true, true, true, true, false, true, appMgr, iconMgr);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

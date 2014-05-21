@@ -30,6 +30,7 @@ import javax.swing.JSeparator;
 import javax.swing.border.Border;
 
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
+import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -51,17 +52,23 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	private JComboBox colorSchemeCmb;
 	private JPanel colorListPnl;
 	
-	private final T chart;
-	private final String[] colorSchemes;
-	private final CyNetwork network;
-	private int total = 0;
+	protected final T chart;
+	protected final String[] colorSchemes;
+	protected final boolean columnIsSeries;
+	protected final CyNetwork network;
+	protected final IconManager iconMgr;
 	
+	protected int total = 0;
+
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public ColorSchemeEditor(final T chart, final String[] colorSchemes, final CyNetwork network) {
+	public ColorSchemeEditor(final T chart, final String[] colorSchemes, final boolean columnIsSeries,
+			final CyNetwork network, final IconManager iconMgr) {
 		this.chart = chart;
 		this.colorSchemes = colorSchemes;
+		this.columnIsSeries = columnIsSeries;
 		this.network = network;
+		this.iconMgr = iconMgr;
 		
 		JList tmpList = new JList();
 		COLOR_BORDER = BorderFactory.createCompoundBorder(
@@ -185,8 +192,20 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		int count = 0;
 		
 		for (final Color c : colors) {
-			final ColorPanel cp = new ColorPanel(c, ""+(++count));
+			final ColorPanel cp = new ColorPanel(c, "");
+			String label = "";
+			
+			if (ColorUtil.UP_DOWN.equals(scheme) && count < 2) {
+				label = count == 0 ? IconManager.ICON_ARROW_UP : IconManager.ICON_ARROW_DOWN;
+				cp.setFont(iconMgr.getIconFont(11));
+			} else {
+				label = "" + (count + 1);
+			}
+			
+			cp.setText(label);
+			
 			getColorListPnl().add(cp);
+			count++;
 		}
 		
 		getColorListPnl().repaint();
@@ -197,10 +216,15 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	
 	protected int getTotal() {
 		if (total <= 0) {
-			int nColors = 0;
+			final List<String> columns = chart.getList(DATA_COLUMNS, String.class);
 			
-			if (network != null) {
-				final List<String> columns = chart.getList(DATA_COLUMNS, String.class);
+			if (columnIsSeries) {
+				// Each column represents a data series
+				total = columns.size();
+			} else if (network != null) {
+				// Columns represent data categories--each list element is an item/color
+				int nColors = 0;
+				
 				final List<CyNode> allNodes = network.getNodeList();
 				final CyTable table = network.getDefaultNodeTable();
 				
@@ -215,9 +239,9 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 						}
 					}
 				}
+				
+				total = nColors;
 			}
-			
-			total = nColors;
 		}
 		
 		return total;
@@ -232,14 +256,17 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		private Color color;
 
 		ColorPanel(final Color color, final String label) {
-			super(IconUtil.emptyIcon(20, 20));
-			this.color = color != null ? color : Color.LIGHT_GRAY;
-			this.setToolTipText(label);
-			this.setOpaque(false);
+			super(label, IconUtil.emptyIcon(20, 20), JLabel.CENTER);
 			
+			this.color = color != null ? color : Color.LIGHT_GRAY;
+			
+			this.setFont(this.getFont().deriveFont(10.0f));
+			this.setHorizontalTextPosition(JLabel.CENTER);
 			this.setOpaque(true);
 			this.setBackground(color);
+			this.setForeground(ColorUtil.getContrastingColor(color));
 			this.setBorder(COLOR_BORDER);
+			this.setToolTipText(String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()));
 			
 			this.addMouseListener(new MouseAdapter() {
 				@Override
@@ -273,6 +300,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 						public void actionPerformed(ActionEvent e) {
 							color = colorChooser.getColor();
 							ColorPanel.this.setBackground(color);
+							ColorPanel.this.setForeground(ColorUtil.getContrastingColor(color));
 						}
 					}, null);
 			dialog.setVisible(true);

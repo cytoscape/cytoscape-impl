@@ -9,15 +9,15 @@ import java.util.Map.Entry;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
+import org.cytoscape.ding.internal.charts.util.ColorScale;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.GrayPaintScale;
-import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.XYZDataset;
+import org.jfree.ui.RectangleInsets;
 
 
 public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
@@ -111,7 +111,9 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 		final XYBlockRenderer renderer = new XYBlockRenderer();
 		
 		if (range != null) {
-			final PaintScale scale = new GrayPaintScale(range.min, range.max);
+			final Color color1 = colors != null && colors.size() > 0 ? colors.get(0) : Color.BLACK;
+			final Color color2 = colors != null && colors.size() > 1 ? colors.get(1) : Color.WHITE;
+			final ColorScale scale = new ColorScale(range.min, range.max, color1, color2);
 			renderer.setPaintScale(scale);
 		}
 
@@ -122,57 +124,13 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 		plot.setDomainGridlinesVisible(false);
 		plot.setRangeGridlinesVisible(false);
 		plot.setBackgroundPaint(Color.WHITE);
+		plot.setInsets(new RectangleInsets(2.0, 2.0, 2.0, 2.0));
 
 		final JFreeChart chart = new JFreeChart(null, plot);
 		chart.removeLegend();
 		chart.setBackgroundPaint(TRANSPARENT_COLOR);
+		chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		
 		return chart;
 	}
-	
-//	static class SimpleColorScale implements PaintScale {
-//		
-//		private static final Color[] colors = {
-//			new Color(36, 35, 105),
-//			new Color(0, 6, 252),
-//			new Color(0, 134, 250),
-//			new Color(9, 251, 242),
-//			new Color(135, 252, 112),
-//			new Color(254, 241, 3),
-//			new Color(255, 117, 0),
-//			new Color(244, 0, 1),
-//			new Color(104, 21, 21), };
-//
-//		private int lowerBound = 0;
-//		private int upperBound = 100;
-//
-//		public SimpleColorScale(int lowerBound, int upperBound) {
-//			this.lowerBound = lowerBound;
-//			this.upperBound = upperBound;
-//		}
-//
-//		@Override
-//		public double getLowerBound() {
-//			return lowerBound;
-//		}
-//
-//		@Override
-//		public double getUpperBound() {
-//			return upperBound;
-//		}
-//
-//		@Override
-//		public Paint getPaint(double v) {
-//			double divisor = (upperBound - lowerBound) / colors.length;
-//			int index = (int) ((v - lowerBound) / divisor);
-//			
-//			if (index < 0)
-//				return colors[0];
-//			
-//			if (index >= colors.length)
-//				return colors[colors.length - 1];
-//			
-//			return colors[index];
-//		}
-//	}
 }
