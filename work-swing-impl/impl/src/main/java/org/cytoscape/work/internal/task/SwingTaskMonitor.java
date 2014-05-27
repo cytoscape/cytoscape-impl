@@ -58,12 +58,12 @@ class SwingTaskMonitor implements TaskMonitor {
 	private volatile boolean cancelled;
 	private volatile TaskDialog dialog;
 	private volatile Task task;
-	private String firstTitle;
-	private String title;
-	private TaskMonitor.Level statusMessageLevel;
-	private String statusMessage;
+	private volatile String firstTitle;
+	private volatile String title;
+	private volatile TaskMonitor.Level statusMessageLevel;
+	private volatile String statusMessage;
 	private volatile double progress;
-	private Exception exception;
+	private volatile Exception exception;
 	private int expectedNumTasks = 1;
 	private int currentTaskNum = -1; // so that the first task is numbered 0
 
@@ -128,8 +128,12 @@ class SwingTaskMonitor implements TaskMonitor {
 				}
 			});
 
-			if (title != null)
+			if (firstTitle != null && firstTitle != title /* don't need to call firstTitle.equals() */) {
+				dialog.setTaskTitle(firstTitle);
+			}
+			if (title != null) {
 				dialog.setTaskTitle(title);
+			}
 
 			if (exception == null) {
 				if (statusMessage != null) {
