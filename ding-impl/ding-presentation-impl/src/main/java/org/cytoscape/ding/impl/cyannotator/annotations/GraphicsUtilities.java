@@ -150,7 +150,7 @@ class GraphicsUtilities {
 
 		// Get the stroke
 		float border = (float)(annotation.getBorderWidth()*annotation.getZoom());
-		if (!isPrinting && border < 1.0f) border = 1.0f;
+		//if (!isPrinting && border < 1.0f) border = 1.0f;
 		// System.out.println("Border width = "+border+", isPrinting = "+isPrinting);
 
 		Shape shape = null;
@@ -195,22 +195,24 @@ class GraphicsUtilities {
       g2.setComposite(originalComposite);
 		}
 
-		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
-			// System.out.println("drawShape: border color = "+annotation.getBorderColor());
-			g2.setPaint(annotation.getBorderColor());
-			g2.setStroke(new BasicStroke(border));
-			g2.draw(shape);
-		} else if (annotation.isSelected()) {
-			// Create a yellow border around the shape
-			BasicStroke stroke = new BasicStroke(border);
-			Shape strokedShape = stroke.createStrokedShape(shape);
-			g2.setPaint(Color.YELLOW);
-			g2.draw(strokedShape);
-		} else {
-			g2.setPaint(Color.BLACK);
-			g2.setStroke(new BasicStroke(border));
-			g2.draw(shape);
-		}
+    if (border > 0.0f) { // only paint a border if the border thickness is greater than zero
+  		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
+  			// System.out.println("drawShape: border color = "+annotation.getBorderColor());
+  			g2.setPaint(annotation.getBorderColor());
+  			g2.setStroke(new BasicStroke(border));
+  			g2.draw(shape);
+  		} else if (annotation.isSelected()) {
+  			// Create a yellow border around the shape
+  			BasicStroke stroke = new BasicStroke(border);
+  			Shape strokedShape = stroke.createStrokedShape(shape);
+  			g2.setPaint(Color.YELLOW);
+  			g2.draw(strokedShape);
+  		} else {
+  			g2.setPaint(Color.BLACK);
+  			g2.setStroke(new BasicStroke(border));
+  			g2.draw(shape);
+  		}
+    }
 	}
 
 	static public String serializeShape(final Shape s) {
