@@ -24,8 +24,10 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * #L%
  */
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -181,8 +183,16 @@ class GraphicsUtilities {
 		// Set our fill color
 		if (annotation.getFillColor() != null) {
 			// System.out.println("drawShape: fill color = "+annotation.getFillColor());
-			g2.setPaint(annotation.getFillColor());
+      g2.setPaint(annotation.getFillColor());
+      float opacity = (float) (annotation.getFillOpacity() / 100.0);
+      if (opacity < 0.0f)
+        opacity = 0.0f;
+      else if (opacity > 1.0f)
+        opacity = 1.0f;
+      final Composite originalComposite = g2.getComposite();
+      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 			g2.fill(shape);
+      g2.setComposite(originalComposite);
 		}
 
 		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
