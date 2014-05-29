@@ -98,7 +98,7 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		setTitle("Graphics");
 		setResizable(false);
 		setModal(true);
-		setMinimumSize(new Dimension(100, 40));
+		setMinimumSize(new Dimension(400, 600));
 		
 		addWindowListener(new WindowAdapter() {
 			@Override

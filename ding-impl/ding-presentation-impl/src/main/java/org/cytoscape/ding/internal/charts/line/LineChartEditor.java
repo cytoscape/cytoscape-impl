@@ -59,15 +59,15 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	
 	private JTextField getLineWidthTxt() {
 		if (lineWidthTxt == null) {
-			lineWidthTxt = new JTextField("" + chart.get(LineChart.LINE_WIDTH, Integer.class, 2));
-			lineWidthTxt.setInputVerifier(new IntInputVerifier());
+			lineWidthTxt = new JTextField("" + chart.get(LineChart.LINE_WIDTH, Float.class, 1.0f));
+			lineWidthTxt.setInputVerifier(new DoubleInputVerifier());
 			lineWidthTxt.setPreferredSize(new Dimension(40, lineWidthTxt.getMinimumSize().height));
 			
 			lineWidthTxt.addFocusListener(new FocusAdapter() {
 				@Override
 				public void focusLost(final FocusEvent e) {
 					try {
-			            int width = Double.valueOf(lineWidthTxt.getText().trim()).intValue();
+			            float width = Double.valueOf(lineWidthTxt.getText().trim()).floatValue();
 			            chart.set(LineChart.LINE_WIDTH, width);
 			        } catch (NumberFormatException ex) {
 			        }

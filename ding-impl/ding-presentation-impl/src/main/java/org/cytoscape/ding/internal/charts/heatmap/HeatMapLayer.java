@@ -26,6 +26,8 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 	private final String[] yLabels;
 	private int maxYSize;
 	
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public HeatMapLayer(final Map<String/*key*/, List<Double>/*z-values*/> data,
 						final List<String> itemLabels,
 						final List<String> domainLabels,
@@ -62,6 +64,8 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
         }
 	}
 	
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
 	@Override
 	protected XYZDataset createDataset() {
 		final DefaultXYZDataset dataset = new DefaultXYZDataset();
@@ -97,13 +101,19 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 	protected JFreeChart createChart(final XYZDataset dataset) {
 		final SymbolAxis xAxis = new SymbolAxis(null, xLabels);
 		xAxis.setVisible(showDomainAxis);
+		xAxis.setAxisLineVisible(false);
 		xAxis.setTickMarksVisible(false);
+		xAxis.setTickLabelFont(xAxis.getLabelFont().deriveFont(axisFontSize));
+		xAxis.setTickLabelPaint(axisColor);
 		xAxis.setLowerMargin(0.0);
 		xAxis.setUpperMargin(0.0);
 
 		final SymbolAxis yAxis = new SymbolAxis(null, yLabels);
 		yAxis.setVisible(showRangeAxis);
+		yAxis.setAxisLineVisible(false);
 		yAxis.setTickMarksVisible(false);
+		yAxis.setTickLabelFont(yAxis.getLabelFont().deriveFont(axisFontSize));
+		yAxis.setTickLabelPaint(axisColor);
 		yAxis.setLowerMargin(0.0);
 		yAxis.setUpperMargin(0.0);
 		yAxis.setInverted(true);
@@ -120,14 +130,16 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 		final XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
 		plot.setDomainAxis(xAxis);
         plot.setDomainAxisLocation(AxisLocation.TOP_OR_LEFT);
-        plot.setBackgroundPaint(Color.LIGHT_GRAY);
+        plot.setOutlineVisible(false);
 		plot.setDomainGridlinesVisible(false);
 		plot.setRangeGridlinesVisible(false);
-		plot.setBackgroundPaint(Color.WHITE);
-		plot.setInsets(new RectangleInsets(2.0, 2.0, 2.0, 2.0));
+		plot.setBackgroundPaint(TRANSPARENT_COLOR);
+		plot.setInsets(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
+		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
 
 		final JFreeChart chart = new JFreeChart(null, plot);
 		chart.removeLegend();
+		chart.setBorderVisible(false);
 		chart.setBackgroundPaint(TRANSPARENT_COLOR);
 		chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		

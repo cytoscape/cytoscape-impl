@@ -1,5 +1,6 @@
 package org.cytoscape.ding.internal.charts.stripe;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
@@ -25,6 +26,8 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 	
 	private final Orientation orientation;
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public StripeLayer(final Map<String/*category*/, List<Double>/*values*/> data,
 					   final List<String> itemLabels,
 					   final boolean showItemLabels,
@@ -34,6 +37,8 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
         super(data, itemLabels, null, null, showItemLabels, false, false, colors, null, bounds);
         this.orientation = orientation;
 	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
 	protected CategoryDataset createDataset() {
@@ -65,6 +70,7 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
 		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
 		plot.setDomainGridlinesVisible(false);
 	    plot.setRangeGridlinesVisible(false);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
@@ -74,30 +80,35 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(false);
         domainAxis.setAxisLineVisible(false);
-//        domainAxis.setCategoryMargin(.1);
-        // Prevent bars from being cropped
-//	    domainAxis.setLowerMargin(.01);
-//	    domainAxis.setUpperMargin(.01);
+	    domainAxis.setLowerMargin(0.0);
+	    domainAxis.setUpperMargin(0.0);
         
 		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);
+		rangeAxis.setLowerMargin(0.0);
+		rangeAxis.setUpperMargin(0.0);
 		
 		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
 		renderer.setBarPainter(new StandardBarPainter());
 		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
-		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
+		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
+		renderer.setBaseItemLabelPaint(labelColor);
 		renderer.setShadowVisible(false);
 		renderer.setDrawBarOutline(true);
 		renderer.setItemMargin(0.0);
 		
+		final BasicStroke stroke =
+				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		
 		final List<?> keys = dataset.getRowKeys();
 		
-		if (colors != null && colors.size() >= keys.size()) {
-			for (int i = 0; i < keys.size(); i++) {
-				final Color c = colors.get(i);
-				renderer.setSeriesPaint(i, c);
-			}
+		for (int i = 0; i < keys.size(); i++) {
+			renderer.setSeriesOutlineStroke(i, stroke);
+			renderer.setSeriesOutlinePaint(i, borderColor);
+			
+			if (colors != null && colors.size() >= keys.size())
+				renderer.setSeriesPaint(i, colors.get(i));
 		}
 		
 		return chart;

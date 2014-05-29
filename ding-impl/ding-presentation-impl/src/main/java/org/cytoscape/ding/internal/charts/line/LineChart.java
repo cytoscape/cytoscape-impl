@@ -74,7 +74,7 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 		final boolean showItemLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
-		final int lineWidth = get(LINE_WIDTH, Integer.class, 2);
+		final float lineWidth = get(LINE_WIDTH, Float.class, 1.0f);
 		
 		LineLayer layer = new LineLayer(data, itemLabels, domainLabels, rangeLabels, showItemLabels, 
 				showDomainAxis, showRangeAxis, colors, range, lineWidth, bounds);
@@ -89,7 +89,7 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 	
 	@Override
 	protected Class<?> getSettingType(final String key) {
-		if (key.equals(LINE_WIDTH)) return Integer.class;
+		if (key.equals(LINE_WIDTH)) return Float.class;
 		
 		return super.getSettingType(key);
 	}

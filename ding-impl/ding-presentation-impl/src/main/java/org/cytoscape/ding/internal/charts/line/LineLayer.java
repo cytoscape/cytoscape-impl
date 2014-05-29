@@ -23,8 +23,10 @@ import org.jfree.ui.RectangleInsets;
 
 public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 	
-	private final int lineWidth;
+	private final float lineWidth;
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public LineLayer(final Map<String/*series*/, List<Double>/*values*/> data,
 					 final List<String> itemLabels,
 					 final List<String> domainLabels,
@@ -34,12 +36,14 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final boolean showRangeAxis,
 					 final List<Color> colors,
 					 final DoubleRange range,
-					 final int lineWidth,
+					 final float lineWidth,
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
         		range, bounds);
-        this.lineWidth = lineWidth >= 0 ? lineWidth : 0;
+        this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
 	protected CategoryDataset createDataset() {
@@ -66,22 +70,47 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
         
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
-		plot.setInsets(new RectangleInsets(2.0, 2.0, 2.0, 2.0));
+		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
 		plot.setDomainGridlinesVisible(false);
 	    plot.setRangeGridlinesVisible(showRangeAxis);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
+		final BasicStroke gridLineStroke =
+				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
+						 0.5f, new float[]{ 0.5f }, 0.0f);
+		
+		plot.setRangeGridlineStroke(gridLineStroke);
+		
+		final BasicStroke axisStroke =
+				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
-        domainAxis.setAxisLineVisible(showDomainAxis);
+        domainAxis.setAxisLineStroke(axisStroke);
+        domainAxis.setAxisLinePaint(axisColor);
         domainAxis.setTickMarksVisible(true);
+        domainAxis.setTickMarkStroke(axisStroke);
+        domainAxis.setTickMarkPaint(axisColor);
         domainAxis.setTickLabelsVisible(true);
+        domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize));
+        domainAxis.setTickLabelPaint(axisColor);
         domainAxis.setCategoryMargin(.1);
+        domainAxis.setLowerMargin(0.0);
+        domainAxis.setUpperMargin(0.0);
         
 		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(showRangeAxis);
+		rangeAxis.setAxisLineStroke(axisStroke);
+		rangeAxis.setAxisLinePaint(axisColor);
+		rangeAxis.setTickMarkStroke(axisStroke);
+		rangeAxis.setTickMarkPaint(axisColor);
+		rangeAxis.setTickLabelFont(rangeAxis.getLabelFont().deriveFont(axisFontSize));
+		rangeAxis.setTickLabelPaint(axisColor);
+		rangeAxis.setLowerMargin(0.0);
+		rangeAxis.setUpperMargin(0.0);
         
 		// Set axis range		
 		if (range != null) {
@@ -92,7 +121,11 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
 		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
-		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
+		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
+		renderer.setBaseItemLabelPaint(labelColor);
+		
+		final BasicStroke seriesStroke =
+				new BasicStroke(lineWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final List<?> keys = dataset.getRowKeys();
 		
@@ -100,7 +133,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 			for (int i = 0; i < keys.size(); i++) {
 				final Color c = colors.get(i);
 				renderer.setSeriesPaint(i, c);
-				renderer.setSeriesStroke(i, new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+				renderer.setSeriesStroke(i, seriesStroke);
 			}
 		}
 		

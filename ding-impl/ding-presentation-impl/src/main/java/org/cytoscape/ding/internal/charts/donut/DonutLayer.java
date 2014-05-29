@@ -1,7 +1,9 @@
 package org.cytoscape.ding.internal.charts.donut;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -12,6 +14,7 @@ import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
 import java.awt.image.RGBImageFilter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,11 +33,14 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 	private List<PieDataset> datasetList;
     private List<JFreeChart> chartList;
     
+    private final Map<String, String> labels;
     /** The angle in degrees to start the pie. 0 points east, 90 points south, etc. */
     private final double startAngle;
     /** Where to begin the first circle, as a proportion of the entire node */
     private final double hole;
 	
+    // ==[ CONSTRUCTORS ]===============================================================================================
+    
 	public DonutLayer(final Map<String, List<Double>> data,
 					 final List<String> labels,
 					 final boolean showLabels,
@@ -45,7 +51,25 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
         super(data, labels, null, null, showLabels, false, false, colors, null, bounds);
         this.startAngle = startAngle;
         this.hole = hole;
+        this.labels = new HashMap<String, String>();
 	}
+	
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
+	@Override
+	public void draw(final Graphics2D g, final Rectangle2D area) {
+		getChart(); // Make sure charts have been created
+		
+		if (chartList.size() == 1) {
+			super.draw(g, area);
+		} else {
+	        for (final JFreeChart chart : chartList) {
+	        	chart.draw(g, area);
+	        }
+		}
+	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
 	protected PieDataset createDataset() {
@@ -53,11 +77,21 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		
 		for (final String category : data.keySet()) {
 			final List<Double> values = data.get(category);
-			final PieDataset ds = createPieDataset(values, itemLabels);
+			final PieDataset ds = createPieDataset(values);
 			
 			if (ds != null)
 				datasetList.add(ds);
 		}
+		
+		if (showItemLabels && itemLabels != null && datasetList.size() == 1) {
+			final List<?> keys = datasetList.get(0).getKeys();
+			
+			for (int i = 0; i < keys.size(); i++) {
+				final String k = (String) keys.get(i);
+				final String label = itemLabels.size() > i ? itemLabels.get(i) : null;
+				labels.put(k, label);
+			}
+        }
 		
 		return datasetList.isEmpty() ? null : datasetList.get(0);
 	}
@@ -125,7 +159,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
         chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
 		final RingPlot plot = (RingPlot) chart.getPlot();
-		plot.setCircular(true);
+		plot.setCircular(false);
 		plot.setStartAngle(startAngle);
 		plot.setDirection(Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
@@ -141,17 +175,26 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		plot.setInteriorGap(interiorGap);
 		// Labels don't look good if it has multiple rings, so only show them when there's only one ring
 		plot.setLabelGenerator(
-				showItemLabels && data.size() == 1 ? new CustomPieSectionLabelGenerator(itemLabels) : null);
+				showItemLabels && datasetList.size() == 1 ? new CustomPieSectionLabelGenerator(labels) : null);
 		plot.setSimpleLabels(true);
+		plot.setLabelBackgroundPaint(TRANSPARENT_COLOR);
+		plot.setLabelOutlinePaint(TRANSPARENT_COLOR);
+		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
+		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
+		
+		final BasicStroke stroke =
+				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		plot.setSeparatorStroke(stroke);
+		plot.setSeparatorPaint(getBorderColor());
 		
 		final List<?> keys = dataset.getKeys();
 		
-		if (colors != null && colors.size() >= keys.size()) {
-			for (int i = 0; i < keys.size(); i++) {
-				final String k = (String) keys.get(i);
-				final Color c = colors.get(i);
-				plot.setSectionPaint(k, c);
-			}
+		for (int i = 0; i < keys.size(); i++) {
+			final String k = (String) keys.get(i);
+			final Color c = colors.size() > i ? colors.get(i) : Color.LIGHT_GRAY;
+			plot.setSectionPaint(k, c);
+			plot.setSectionOutlinePaint(k, borderColor);
+			plot.setSectionOutlineStroke(k, stroke);
 		}
 		
 		return chart;

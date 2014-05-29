@@ -20,7 +20,9 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: remove this class?
+/**
+ * 
+ */
 public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLayer> implements CyChart<T> {
 
 	public static final String DATA_COLUMNS = "datacolumns";

@@ -2,8 +2,8 @@ package org.cytoscape.ding.internal.charts;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.data.general.PieDataset;
@@ -13,31 +13,32 @@ public class CustomPieSectionLabelGenerator extends StandardPieSectionLabelGener
 
 	private static final long serialVersionUID = -1278987792442187738L;
 
-	private final List<String> itemLabels;
+	private final Map<String, String> labels;
 	
-	public CustomPieSectionLabelGenerator(final List<String> itemLabels) {
-		this("{1} ({2})", new DecimalFormat("0.0"), new DecimalFormat("0%"), itemLabels);
+	public CustomPieSectionLabelGenerator(final Map<String, String> labels) {
+		this("{1} ({2})", new DecimalFormat("0.0"), new DecimalFormat("0%"), labels);
 	}
 
-	public CustomPieSectionLabelGenerator(Locale locale, final List<String> itemLabels) {
+	public CustomPieSectionLabelGenerator(final Locale locale, final Map<String, String> labels) {
 		super(locale);
-		this.itemLabels = itemLabels;
+		this.labels = labels;
 	}
 
-	public CustomPieSectionLabelGenerator(String labelFormat, Locale locale, final List<String> itemLabels) {
+	public CustomPieSectionLabelGenerator(final String labelFormat, final Locale locale,
+			final Map<String, String> labels) {
 		super(labelFormat, locale);
-		this.itemLabels = itemLabels;
+		this.labels = labels;
 	}
 
-	public CustomPieSectionLabelGenerator(String labelFormat, NumberFormat numberFormat, NumberFormat percentFormat,
-			final List<String> itemLabels) {
+	public CustomPieSectionLabelGenerator(final String labelFormat, final NumberFormat numberFormat,
+			final NumberFormat percentFormat, final Map<String, String> labels) {
 		super(labelFormat, numberFormat, percentFormat);
-		this.itemLabels = itemLabels;
+		this.labels = labels;
 	}
 
-	public CustomPieSectionLabelGenerator(String labelFormat, final List<String> itemLabels) {
+	public CustomPieSectionLabelGenerator(final String labelFormat, final Map<String, String> labels) {
 		super(labelFormat);
-		this.itemLabels = itemLabels;
+		this.labels = labels;
 	}
 
 	@Override
@@ -45,8 +46,8 @@ public class CustomPieSectionLabelGenerator extends StandardPieSectionLabelGener
     public String generateSectionLabel(PieDataset dataset, Comparable key) {
         if (dataset.getValue(key).doubleValue() == 0.0)
         	return null;
-        if (itemLabels != null && itemLabels.contains(key.toString()))
-        	return key.toString();
+        if (labels != null && labels.get(key.toString()) != null)
+        	return labels.get(key.toString());
         
         return super.generateSectionLabel(dataset, key);
     }

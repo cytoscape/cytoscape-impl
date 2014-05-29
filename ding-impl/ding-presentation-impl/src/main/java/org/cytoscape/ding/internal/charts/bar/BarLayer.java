@@ -1,6 +1,8 @@
 package org.cytoscape.ding.internal.charts.bar;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
@@ -13,6 +15,7 @@ import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.AxisSpace;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.ItemLabelAnchor;
@@ -32,6 +35,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	private final boolean stacked;
 	private final Orientation orientation;
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public BarLayer(final Map<String/*category*/, List<Double>/*values*/> data,
 					final boolean stacked,
 					final List<String> itemLabels,
@@ -51,6 +56,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         this.stacked = stacked;
         this.orientation = orientation;
 	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
 	protected CategoryDataset createDataset() {
@@ -92,29 +99,51 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
-		plot.setInsets(new RectangleInsets(2.0, 2.0, 2.0, 2.0));
+		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
 		plot.setDomainGridlinesVisible(false);
 	    plot.setRangeGridlinesVisible(false);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+//		final AxisSpace das = new AxisSpace();
+//		das.setTop(1.5);
+//		das.setRight(0.0);
+//		das.setLeft(0.0);
+//		das.setBottom(0.5);
+//		plot.setFixedDomainAxisSpace(das);
+		
+		final BasicStroke axisStroke =
+				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
-        domainAxis.setAxisLineVisible(showDomainAxis);
-        domainAxis.setTickMarksVisible(true);
+        domainAxis.setAxisLineStroke(axisStroke);
+        domainAxis.setAxisLinePaint(axisColor);
+        domainAxis.setTickMarkStroke(axisStroke);
+        domainAxis.setTickMarkPaint(axisColor);
         domainAxis.setTickLabelsVisible(true);
+        domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize));
+        domainAxis.setTickLabelPaint(axisColor);
         domainAxis.setCategoryMargin(.1);
         
-        if (!showDomainAxis && !showRangeAxis) {
-        	// Prevent bars from being cropped
-	        domainAxis.setLowerMargin(.01);
-	        domainAxis.setUpperMargin(.01);
-        }
+//        if (!showDomainAxis && !showRangeAxis) {
+//        	// Prevent bars from being cropped
+//	        domainAxis.setLowerMargin(.01);
+//	        domainAxis.setUpperMargin(.01);
+//        }
         
 		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(showRangeAxis);
-        
+		rangeAxis.setAxisLineStroke(axisStroke);
+		rangeAxis.setAxisLinePaint(axisColor);
+		rangeAxis.setTickMarkStroke(axisStroke);
+		rangeAxis.setTickMarkPaint(axisColor);
+		rangeAxis.setTickLabelFont(rangeAxis.getLabelFont().deriveFont(axisFontSize).deriveFont(Font.PLAIN));
+		rangeAxis.setTickLabelPaint(axisColor);
+		rangeAxis.setLowerMargin(0.1);
+		rangeAxis.setUpperMargin(0.1);
+		
 		// Set axis range		
 		if (range != null) {
 			rangeAxis.setLowerBound(range.min);
@@ -123,8 +152,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		
 //		if (!showRangeAxis) {
 //			// Prevent bars from being cropped
-//	        rangeAxis.setLowerMargin(.5);
-//	        rangeAxis.setUpperMargin(.5);
+//	        rangeAxis.setLowerMargin(.01);
+//	        rangeAxis.setUpperMargin(.01);
 //        }
 		
 		BarRenderer renderer = (BarRenderer) plot.getRenderer();
@@ -137,24 +166,34 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		}
 		
 		renderer.setBarPainter(new StandardBarPainter());
-		renderer.setBaseItemLabelPaint(domainAxis.getLabelPaint());
 		renderer.setShadowVisible(false);
 		renderer.setDrawBarOutline(true);
 		renderer.setItemMargin(0.0);
 		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
+		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
+		renderer.setBaseItemLabelPaint(labelColor);
 		
 		if (!stacked && showItemLabels) {
+			double angle = orientation == Orientation.HORIZONTAL ? 0 : -Math.PI/2;
+			
 			renderer.setBasePositiveItemLabelPosition(new ItemLabelPosition(
-					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, -Math.PI/2));
+					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, angle));
 			renderer.setBaseNegativeItemLabelPosition(new ItemLabelPosition(
-					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, -Math.PI/2));
+					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, angle));
 		}
 		
-		if (stacked || !upAndDown) {
-			final List<?> keys = dataset.getRowKeys();
+		
+		final BasicStroke borderStroke =
+				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		
+		final List<?> keys = dataset.getRowKeys();
+		
+		for (int i = 0; i < keys.size(); i++) {
+			renderer.setSeriesOutlineStroke(i, borderStroke);
+			renderer.setSeriesOutlinePaint(i, borderColor);
 			
-			for (int i = 0; i < keys.size(); i++) {
+			if (stacked || !upAndDown) {
 				Color c = Color.LIGHT_GRAY;
 				
 				if (colors.size() > i)
@@ -167,6 +206,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		return chart;
 	}
 
+	// ==[ CLASSES ]====================================================================================================
+	
 	class UpDownColorBarRenderer extends BarRenderer {
 
 		private static final long serialVersionUID = -1827868101222293644L;
