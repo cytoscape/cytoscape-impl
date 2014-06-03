@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.io.internal.util.TypeUtils;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -97,7 +98,7 @@ public class CSVCyReader implements CyTableReader {
 
 		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 		for (final ColumnInfo colInfo : columns)
-			variableNameToTypeMap.put(colInfo.getName(), colInfo.getType());
+			variableNameToTypeMap.put(colInfo.getName(), colInfo.getType() == Integer.class ? Long.class : colInfo.getType());
 
 		for (int i = 1; i < columns.length; i++) {
 			ColumnInfo column = columns[i];
@@ -118,22 +119,33 @@ public class CSVCyReader implements CyTableReader {
 			for (int i = 1; i < values.length; i++) {
 				ColumnInfo column = columns[i];
 				String name = column.getName();
+				final Class<?> columnType = column.getType();
+				final Class<?> columnListElementType = column.getListElementType();
 				if (handleEquations && values[i].startsWith("=")) {
-					final Class<?> type = variableNameToTypeMap.remove(name);
+					final Class<?> expectedType = variableNameToTypeMap.remove(name);
 					try {
 						final Equation equation;
+						final Class<?> eqnType;
 						if (compiler.compile(values[i], variableNameToTypeMap)) {
-							equation = compiler.getEquation();
+							eqnType = compiler.getEquation().getType();
+							if(TypeUtils.eqnTypeIsCompatible(columnType, eqnType))
+								equation = compiler.getEquation();
+							else {
+								final String errorMsg = "Equation result type is "
+									+ TypeUtils.getUnqualifiedName(eqnType) + ", column type is "
+									+ TypeUtils.getUnqualifiedName(columnType) + ".";
+								equation = compiler.getErrorEquation(values[i], expectedType, errorMsg);
+							}
 						} else {
-							equation = compiler.getErrorEquation(values[i], type, compiler.getLastErrorMsg());
+							equation = compiler.getErrorEquation(values[i], expectedType, compiler.getLastErrorMsg());
 						}
 						row.set(name, equation);
 					} catch (final Exception e) {
 						throw new IOException(e.getMessage(), e.getCause());
 					}
-					variableNameToTypeMap.put(name, type);
+					variableNameToTypeMap.put(name, expectedType);
 				} else {
-					Object value = parseValue(column.getType(), column.getListElementType(), values[i]);
+					Object value = parseValue(columnType, columnListElementType, values[i]);
 					if (value != null)
 						row.set(name, value);
 				}

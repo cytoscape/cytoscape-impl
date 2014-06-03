@@ -29,15 +29,13 @@ package org.cytoscape.task.internal.loaddatatable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.read.*;
+import org.cytoscape.task.read.LoadTableURLTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
@@ -45,30 +43,27 @@ import org.cytoscape.work.TunableSetter;
 
 public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements LoadTableURLTaskFactory {
 	
-	private CyTableReaderManager mgr;
-	
-	private final TunableSetter tunableSetter; 
+	private final CyTableReaderManager mgr;
 	private  final CyNetworkManager netMgr;
 	private final CyTableManager tableMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	
-	public LoadTableURLTaskFactoryImpl(CyTableReaderManager mgr, TunableSetter tunableSetter,  final CyNetworkManager netMgr,
+	public LoadTableURLTaskFactoryImpl(CyTableReaderManager mgr,  final CyNetworkManager netMgr,
 			final CyTableManager tabelMgr, final CyRootNetworkManager rootNetMgr) {
 		this.mgr = mgr;
-		this.tunableSetter = tunableSetter;
 		this.netMgr = netMgr;
 		this.tableMgr = tabelMgr;
 		this.rootNetMgr = rootNetMgr;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new LoadTableURLTask(mgr, netMgr, tableMgr, rootNetMgr));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(URL url) {
-		//final Map<String, Object> m = new HashMap<String, Object>();
-		//m.put("url", url);
+		
 	    URI uri = null;
 		try {
 			uri = url.toURI();
@@ -80,6 +75,5 @@ public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements 
 		
 		return new TaskIterator(new CombineReaderAndMappingTask( reader,tableMgr, netMgr, rootNetMgr));
 
-		//return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
 	}
 }

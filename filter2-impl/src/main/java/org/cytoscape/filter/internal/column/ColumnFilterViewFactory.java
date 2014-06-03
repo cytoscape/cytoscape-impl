@@ -47,6 +47,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 	ModelMonitor modelMonitor;
 	List<ColumnComboBoxElement> nameComboBoxModel;
 	List<PredicateElement> predicateComboBoxModel;
+	List<Boolean> booleanComboBoxModel;
 	private IconManager iconManager;
 	
 	public ColumnFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
@@ -61,6 +62,10 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		predicateComboBoxModel.add(new PredicateElement(Predicate.IS, "is"));
 		predicateComboBoxModel.add(new PredicateElement(Predicate.IS_NOT, "is not"));
 		predicateComboBoxModel.add(new PredicateElement(Predicate.REGEX, "matches regex"));
+		
+		booleanComboBoxModel = new ArrayList<Boolean>();
+		booleanComboBoxModel.add(true);
+		booleanComboBoxModel.add(false);
 	}
 	
 	@Override
@@ -80,12 +85,15 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 	class Controller implements ColumnFilterController {
 		private ColumnFilter filter;
 		private RangeChooserController chooserController;
+		private boolean listenersEnabled;
 		
 		public Controller(final ColumnFilter filter) {
 			this.filter = filter;
+			listenersEnabled = true;
 
 			if (filter.getPredicate() == null) {
 				filter.setPredicate(Predicate.CONTAINS);
+				filter.setCriterion("");
 			}
 			
 			final Number[] range = new Number[2];
@@ -123,6 +131,13 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				return;
 			}
 			filter.setCriterion(text);
+		}
+		
+		public void setBooleanCriterion(View view, Boolean value) {
+			if (value != null && value.equals(filter.getCriterion())) {
+				return;
+			}
+			filter.setCriterion(value);
 		}
 		
 		public void setColumnName(String name) {
@@ -181,14 +196,30 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			setColumnName(selected.name);
 			setMatchType(selected.columnType);
 			
-			if (modelMonitor.isString(selected.name, selected.columnType)) {
+			if (modelMonitor.checkType(selected.name, selected.columnType, String.class)) {
 				Predicate predicate = filter.getPredicate();
 				if (predicate == null || predicate == Predicate.BETWEEN) {
 					filter.setPredicate(Predicate.CONTAINS);
 				}
+				Object criterion = filter.getCriterion();
+				if (criterion == null || !(criterion instanceof String)) {
+					filter.setPredicate(Predicate.CONTAINS);
+					filter.setCriterion("");
+				}
 				
 				view.handleStringColumnSelected();
 				chooserController.setInteractive(false, rangeChooser);
+			} else if (modelMonitor.checkType(selected.name, selected.columnType, Boolean.class)) {
+					Predicate predicate = filter.getPredicate();
+					if (predicate == null || predicate == Predicate.BETWEEN) {
+						filter.setPredicate(Predicate.IS);
+					}
+					Object criterion = filter.getCriterion();
+					if (criterion == null || !(criterion instanceof Boolean)) {
+						filter.setCriterion(true);
+					}
+					view.handleBooleanColumnSelected();
+					chooserController.setInteractive(false, rangeChooser);
 			} else {
 				filter.setPredicate(Predicate.BETWEEN);
 				view.handleNumericColumnSelected();
@@ -200,8 +231,17 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		@Override
 		public void synchronize(ColumnFilterView view) {
 			Object criterion = filter.getCriterion();
+			updateRange();
+			
 			if (criterion instanceof String) {
 				view.getField().setText((String) criterion);
+				
+				if (((String) criterion).length() == 0) {
+					Number minimum = chooserController.getMinimum();
+					Number maximum = chooserController.getMaximum();
+					view.getRangeChooser().getMinimumField().setText(minimum.toString());
+					view.getRangeChooser().getMaximumField().setText(maximum.toString());
+				}
 			}
 			if (criterion instanceof Number[]) {
 				Number[] range = (Number[]) criterion;
@@ -209,19 +249,31 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				model.setLowValue(range[0]);
 				model.setHighValue(range[1]);
 			}
+			if (criterion instanceof Boolean) {
+				JComboBox comboBox = view.getBooleanComboBox();
+				comboBox.setSelectedItem(criterion);
+			}
 			
 			view.getCaseSensitiveCheckBox().setSelected(filter.getCaseSensitive());
 			
 			JComboBox nameComboBox = view.getNameComboBox();
 			
-			// Ensure model changes propagate to view
-			DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
-			model.notifyChanged(0, model.getSize() - 1);
+			// Ensure model changes propagate to view.  Disable
+			// view listeners first to ensure state changes in the view
+			// don't feed back into the model.
+			final String selectedColumn = filter.getColumnName();
+			listenersEnabled = false;
+			try {
+				DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
+				model.notifyChanged(0, model.getSize() - 1);
+			} finally {
+				listenersEnabled = true;
+			}
 			
 			DynamicComboBoxModel.select(nameComboBox, 0, new Matcher<ColumnComboBoxElement>() {
 				@Override
 				public boolean matches(ColumnComboBoxElement item) {
-					return item.name.equals(filter.getColumnName()) && item.columnType.equals(filter.getColumnType());
+					return item.name.equals(selectedColumn) && item.columnType.equals(filter.getColumnType());
 				}
 			});
 			
@@ -231,8 +283,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 					return item.predicate.equals(filter.getPredicate());
 				}
 			});
-			
-			updateRange();
 		}
 
 		public void setInteractive(boolean isInteractive, View view) {
@@ -247,6 +297,9 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				break;
 			case STRING:
 				view.handleStringColumnSelected();
+				break;
+			case BOOLEAN:
+				view.handleBooleanColumnSelected();
 				break;
 			}
 		}
@@ -271,6 +324,10 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		private SelectedColumnType selectedColumn;
 		private Controller controller;
 		private RangeChooser rangeChooser;
+		
+		private JComboBox booleanComboBox;
+		private JLabel booleanLabel;
+		private JPanel booleanPanel;
 		
 		public View(final Controller controller, IconManager iconManager) {
 			this.controller = controller;
@@ -343,9 +400,27 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			nameComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
+					if (!controller.listenersEnabled) {
+						return;
+					}
 					controller.handleColumnSelected(View.this, nameComboBox);
 				}
 			});
+			
+			booleanComboBox = new JComboBox(new DynamicComboBoxModel<Boolean>(booleanComboBoxModel));
+			booleanComboBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent event) {
+					controller.setBooleanCriterion(View.this, (Boolean) booleanComboBox.getSelectedItem());
+				}
+			});
+			
+			booleanLabel = new JLabel("is");
+			booleanPanel = new JPanel();
+			booleanPanel.setOpaque(false);
+			booleanPanel.setLayout(new GridBagLayout());
+			booleanPanel.add(booleanLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			booleanPanel.add(booleanComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			
 			spacerPanel = new JPanel();
 			spacerPanel.setOpaque(false);
@@ -419,6 +494,16 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			validate();
 		}
 
+		void handleBooleanColumnSelected() {
+			selectedColumn = SelectedColumnType.BOOLEAN;
+			removeAll();
+			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			add(spacerPanel, new GridBagConstraints(1, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(booleanPanel, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			invalidate();
+			validate();
+		}
+		
 		private void handleNoColumnSelected() {
 			selectedColumn = SelectedColumnType.NONE;
 			removeAll();
@@ -449,8 +534,18 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		}
 		
 		@Override
+		public JComboBox getBooleanComboBox() {
+			return booleanComboBox;
+		}
+		
+		@Override
 		public void handleInteractivityChanged(boolean isInteractive) {
 			controller.setInteractive(isInteractive, this);
+		}
+		
+		@Override
+		public RangeChooser getRangeChooser() {
+			return rangeChooser;
 		}
 	}
 	
@@ -458,5 +553,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		NONE,
 		NUMERIC,
 		STRING,
+		BOOLEAN,
 	}
 }

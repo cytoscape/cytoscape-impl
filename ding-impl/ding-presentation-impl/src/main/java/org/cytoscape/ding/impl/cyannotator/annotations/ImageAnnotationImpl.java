@@ -128,8 +128,15 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		imageWidth = getDouble(argMap, WIDTH, 100.0);
 		imageHeight = getDouble(argMap, HEIGHT, 100.0);
 
-		this.image = null;
-		this.resizedImage = null;
+		opacity = getFloat(argMap, OPACITY, 1.0f);
+		brightness = getInteger(argMap, LIGHTNESS, 0);
+		contrast = getInteger(argMap, CONTRAST, 0);
+ 
+ 		this.image = null;
+ 		this.resizedImage = null;
+ 
+		if (!argMap.containsKey(URL))
+			return;
 
 		// Get the image from the image pool
 		try {
@@ -146,9 +153,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			return;
 		}
 
-		opacity = getFloat(argMap, OPACITY, 1.0f);
-		brightness = getInteger(argMap, LIGHTNESS, 0);
-		contrast = getInteger(argMap, CONTRAST, 0);
 	}
 
 	public Map<String,String> getArgMap() {

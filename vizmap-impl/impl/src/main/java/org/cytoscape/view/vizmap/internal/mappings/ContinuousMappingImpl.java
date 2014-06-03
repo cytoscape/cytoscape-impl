@@ -144,7 +144,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	}
 
 	private V getRangeValue(K domainValue) {
-		if (points.isEmpty() || 
+		if (points.isEmpty() || domainValue == null ||
 				(domainValue instanceof Number && Double.isNaN(((Number)domainValue).doubleValue())))
 			return null;
 		
@@ -235,8 +235,8 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	private int compareValues(K probe, K target) {
 		final Number n1 = (Number) probe;
 		final Number n2 = (Number) target;
-		double d1 = n1.doubleValue();
-		double d2 = n2.doubleValue();
+		double d1 = n1 != null ? n1.doubleValue() : Double.NEGATIVE_INFINITY;
+		double d2 = n2 != null ? n2.doubleValue() : Double.NEGATIVE_INFINITY;
 
 		if (d1 < d2)
 			return -1;

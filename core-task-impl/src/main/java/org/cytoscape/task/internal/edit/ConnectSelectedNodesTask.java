@@ -33,6 +33,7 @@ import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -80,6 +81,7 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 
 		final List<CyEdge> newEdges = new ArrayList<CyEdge>();
 
+		eventHelper.silenceEventSource(network);
 		for (final CyNode source : selectedNodes) {
 			for (final CyNode target : selectedNodes) {
 				if (source != target) {
@@ -89,10 +91,10 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 						// connect it
 						final CyEdge newEdge = network.addEdge(source, target, false);
 						newEdges.add(newEdge);
-						network.getRow(newEdge).set(
-								CyNetwork.NAME,
-								network.getRow(source).get(CyNetwork.NAME, String.class) + " (" + INTERACTION + ") "
-										+ network.getRow(target).get(CyNetwork.NAME, String.class));
+						String name = network.getRow(source).get(CyNetwork.NAME, String.class) + " (" + INTERACTION + ") "
+										+ network.getRow(target).get(CyNetwork.NAME, String.class);
+						network.getRow(newEdge).set(CyNetwork.NAME, name);
+						// System.out.println("Added edge "+name);
 						network.getRow(newEdge).set(CyEdge.INTERACTION, INTERACTION);
 					}
 				}
@@ -101,12 +103,16 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 			i++;
 			taskMonitor.setProgress(0.1 + i / (double) selectedNodesCount * 0.9);
 		}
+		eventHelper.unsilenceEventSource(network);
 
 		undoSupport.postEdit(new ConnectSelectedNodesEdit(network, newEdges));
 
-		// Apply visual style
+		for (CyEdge edge: newEdges) {
+			eventHelper.addEventPayload(network, edge, AddedEdgesEvent.class); 
+		}
 		eventHelper.flushPayloadEvents(); // To make sure the edge views are created before applying the style
 
+		// Apply visual style
 		for (final CyNetworkView view : netViewMgr.getNetworkViews(network)) {
 			VisualStyle vs = vmm.getVisualStyle(view);
 			vs.apply(view);

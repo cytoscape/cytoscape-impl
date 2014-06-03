@@ -18,6 +18,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -72,6 +73,20 @@ public class JSONCytoscapejsNetworkReaderTest {
 
 	private final void testLoadedNetwork(final CyNetworkView view) {
 		final CyNetwork network = view.getModel();
+		
+		// Check network table
+		final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+		final String networkSharedName = network.getRow(network).get("shared_name", String.class);
+		assertEquals("Yeast Network Sample", networkName);
+		assertEquals("Yeast Sample", networkSharedName);
+		
+		final List<Integer> numbers = network.getRow(network).getList("numberList", Integer.class);
+		assertEquals(4, numbers.size());
+		assertTrue(200 == numbers.get(1));
+		
+		final List<Double> doubles = network.getRow(network).getList("floatList", Double.class);
+		assertEquals(3, doubles.size());
+		assertTrue(0.30 == doubles.get(1));
 
 		final int nodeCount = network.getNodeCount();
 		final int edgeCount = network.getEdgeCount();

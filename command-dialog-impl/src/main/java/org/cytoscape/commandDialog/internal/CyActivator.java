@@ -155,7 +155,7 @@ public class CyActivator extends AbstractCyActivator {
 				javax.swing.SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						// TODO: need a non-gui approach to this!
-						dialog.executeCommand("command run commands file="+scriptFile);
+						dialog.executeCommand("command run file="+scriptFile);
 					}
 				});
 			} else if (dialog == null) {

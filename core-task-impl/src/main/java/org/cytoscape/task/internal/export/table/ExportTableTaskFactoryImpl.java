@@ -56,8 +56,11 @@ public class ExportTableTaskFactoryImpl extends org.cytoscape.task.AbstractTable
 	
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("OutputFile", file);
+		
+		CyTableWriter writer = new CyTableWriter(writerManager, table);
 
-		return tunableSetter.createTaskIterator(new TaskIterator(2, new CyTableWriter(writerManager, table)), m);
+		writer.setDefaultFileFormatUsingFileExt(file);
+		return tunableSetter.createTaskIterator(new TaskIterator(2,writer ), m);
 	}
 
 }

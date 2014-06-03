@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class CytoscapejsMapper implements JSONMapper {
 
 	private final CyNetworkFactory factory;
-
 	private Map<CyNode, Double[]> positionMap;
 
 	public CytoscapejsMapper(final CyNetworkFactory factory) {
@@ -48,6 +47,10 @@ public class CytoscapejsMapper implements JSONMapper {
 		final JsonNode edges = elements.get(EDGES.getTag());
 
 		final CyNetwork network = factory.createNetwork();
+		// Read network 
+		final JsonNode data = rootNode.get(DATA.getTag());
+		addTableData(data, network, network);
+		
 		this.positionMap = new HashMap<CyNode, Double[]>();
 		final Map<String, CyNode> nodeMap = this.addNodes(network, nodes);
 		this.addEdges(network, edges, nodeMap);
@@ -60,7 +63,6 @@ public class CytoscapejsMapper implements JSONMapper {
 		final Map<String, CyNode> nodeMap = new HashMap<String, CyNode>();
 
 		for (final JsonNode node : nodes) {
-
 			// Extract node properties.
 			final JsonNode data = node.get(DATA.getTag());
 			final JsonNode nodeId = data.get(ID.getTag());
@@ -88,6 +90,7 @@ public class CytoscapejsMapper implements JSONMapper {
 		return nodeMap;
 	}
 
+
 	private final void addEdges(final CyNetwork network, final JsonNode edges, final Map<String, CyNode> nodeMap) {
 
 		for (final JsonNode edge : edges) {
@@ -97,24 +100,31 @@ public class CytoscapejsMapper implements JSONMapper {
 
 			final CyNode sourceNode = nodeMap.get(source.textValue());
 			final CyNode targetNode = nodeMap.get(target.textValue());
-
 			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
+			
+			// Add edge table data
+			addTableData(data, newEdge, network);
 		}
 	}
 
-	private final void addTableData(JsonNode data, CyIdentifiable graphObject, CyNetwork network) {
 
+	private final void addTableData(final JsonNode data, final CyIdentifiable graphObject, final CyNetwork network) {
 		final Iterator<String> fieldNames = data.fieldNames();
+
 		while (fieldNames.hasNext()) {
 			final String fieldName = fieldNames.next();
-			if (fieldName.equals(ID.getTag()) == false && fieldName.equals(CyIdentifiable.SUID) == false
-					&& fieldName.equals(CyNetwork.SELECTED) == false) {
+			
+			// Ignore unnecessary fields (ID, SUID, SELECTED)
+			if (fieldName.equals(CyIdentifiable.SUID) == false
+				&& fieldName.equals(CyNetwork.SELECTED) == false) {
 
-				CyTable table = network.getRow(graphObject).getTable();
+				final CyTable table = network.getRow(graphObject).getTable();
 				if (table.getColumn(fieldName) == null) {
+					// Create new column if necessary
 					final Class<?> dataType = getDataType(data.get(fieldName));
 					if (dataType == List.class) {
-						table.createListColumn(fieldName, getListDataType(data.get(fieldName)), false);
+						final Class<?> listDataType = getListDataType(data.get(fieldName));
+						table.createListColumn(fieldName, listDataType, false);
 					} else {
 						table.createColumn(fieldName, dataType, false);
 					}
@@ -124,14 +134,16 @@ public class CytoscapejsMapper implements JSONMapper {
 			}
 		}
 	}
-	
-	private final Class<?> getListDataType(JsonNode arrayNode) {
-		
+
+
+	private final Class<?> getListDataType(final JsonNode arrayNode) {
+		// For empty lists, use as String.
 		if(arrayNode.size() == 0) {
 			return String.class;
 		}
-		JsonNode entry = arrayNode.get(0);
 		
+		final JsonNode entry = arrayNode.get(0);
+
 		if (entry.isLong()) {
 			return Long.class;
 		} else if (entry.isBoolean()) {
@@ -147,7 +159,8 @@ public class CytoscapejsMapper implements JSONMapper {
 		}
 	}
 
-	private final Class<?> getDataType(JsonNode entry) {
+
+	private final Class<?> getDataType(final JsonNode entry) {
 		if (entry.isArray()) {
 			return List.class;
 		} else if (entry.isLong()) {
@@ -165,33 +178,38 @@ public class CytoscapejsMapper implements JSONMapper {
 		}
 	}
 
-	private final Object getValue(JsonNode entry) {
+	private final Object getValue(final JsonNode entry) {
+		// Check the data is list or not.
 		if (entry.isArray()) {
-			Iterator<JsonNode> values = entry.elements();
-			final List<String> list = new ArrayList<String>();
+			final Iterator<JsonNode> values = entry.elements();
+			final List<Object> list = new ArrayList<Object>();
 			while (values.hasNext()) {
-				list.add(values.next().asText());
+				list.add(parseValue(values.next()));
 			}
 			return list;
-		} else if (entry.isLong()) {
+		} else {
+			return parseValue(entry);
+		}
+	}
+
+
+	private final Object parseValue(final JsonNode entry) {
+		if (entry.isLong()) {
 			return entry.longValue();
-		} else if (entry.isBoolean()) {
-			return entry.booleanValue();
 		} else if (entry.isInt()) {
 			return entry.intValue();
 		} else if (entry.isFloat()) {
 			return entry.floatValue();
 		} else if (entry.isDouble()) {
 			return entry.doubleValue();
+		} else if (entry.isBoolean()) {
+			return entry.booleanValue();
 		} else {
 			return entry.asText();
 		}
 	}
 
-	private final void createList(JsonNode arrayData) {
-		
-	}
-	
+
 	protected Map<CyNode, Double[]> getNodePosition() {
 		return this.positionMap;
 	}

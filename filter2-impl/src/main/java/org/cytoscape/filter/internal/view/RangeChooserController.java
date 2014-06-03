@@ -1,5 +1,10 @@
 package org.cytoscape.filter.internal.view;
 
+import java.text.ParseException;
+
+import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+
 import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
 
 public abstract class RangeChooserController {
@@ -8,6 +13,7 @@ public abstract class RangeChooserController {
 	private Number high;
 	private Number minimum;
 	private Number maximum;
+	private boolean disableListeners;
 	
 	public RangeChooserController() {
 		sliderModel = new NumberRangeModel(0, 0, 0, 0);
@@ -21,9 +27,27 @@ public abstract class RangeChooserController {
 		return sliderModel;
 	}
 	
+	Number clampByFormat(AbstractFormatter format, Number value) {
+		if (format == null) {
+			return value;
+		}
+		if (value == null) {
+			return null;
+		}
+		try {
+			return (Number) format.stringToValue(format.valueToString(value));
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
 	public void sliderChanged(RangeChooser chooser) {
-		Number newLow = (Number) sliderModel.getLowValue();
-		Number newHigh = (Number) sliderModel.getHighValue();
+		JFormattedTextField minimumField = chooser.getMinimumField();
+		JFormattedTextField maximumField = chooser.getMaximumField();
+		
+		// Ensure that what we display is what actually makes it into the model
+		Number newLow = clampByFormat(minimumField.getFormatter(), (Number) sliderModel.getLowValue());
+		Number newHigh = clampByFormat(maximumField.getFormatter(), (Number) sliderModel.getHighValue());
 		
 		if (newLow != null && newLow.equals(low) && newHigh != null && newHigh.equals(high)) {
 			return;
@@ -32,19 +56,37 @@ public abstract class RangeChooserController {
 		low = newLow ;
 		high = newHigh;
 		
-		chooser.getMinimumField().setValue(low);
-		chooser.getMaximumField().setValue(high);
-		
+		disableListeners = true;
+		try {
+			minimumField.setValue(low);
+			maximumField.setValue(high);
+		} finally {
+			disableListeners = false;
+		}
 		handleRangeChanged(low, high);
 	}
 	
 	public void minimumChanged(RangeChooser chooser) {
 		low = (Number) chooser.getMinimumField().getValue();
+		if (low == null) {
+			low = minimum;
+		}
+		sliderModel.setValueRange(low, high, minimum, maximum);
+		if (disableListeners) {
+			return;
+		}
 		handleRangeChanged(low, high);
 	}
 
 	public void maximumChanged(RangeChooser chooser) {
 		high = (Number) chooser.getMaximumField().getValue();
+		if (high == null) {
+			high = maximum;
+		}
+		sliderModel.setValueRange(low, high, minimum, maximum);
+		if (disableListeners) {
+			return;
+		}
 		handleRangeChanged(low, high);
 	}
 
@@ -75,6 +117,14 @@ public abstract class RangeChooserController {
 			high = maximum;
 		}
 		setRange(low, high, minimum, maximum);
+	}
+	
+	public Number getMinimum() {
+		return minimum;
+	}
+
+	public Number getMaximum() {
+		return maximum;
 	}
 	
 	protected abstract void handleRangeChanged(Number low, Number high);

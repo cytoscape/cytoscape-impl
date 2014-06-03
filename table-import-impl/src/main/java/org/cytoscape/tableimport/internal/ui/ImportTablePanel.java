@@ -292,7 +292,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		setPreviewPanel(null, useFirstRow);
 		
 		// Hide the alias Panel, we will do the table join somewhere else, not in this GUI
-		aliasScrollPane.setVisible(false);
+		if (dialogType != ONTOLOGY_AND_ANNOTATION_IMPORT)
+			aliasScrollPane.setVisible(false);
 
 	}
 
@@ -1272,7 +1273,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			arrowButton1.setVisible(false);
 			networkImportOptionPanel.setVisible(false);
 		}
-		//pack();
 	} // </editor-fold>
 
 	/**
@@ -1366,8 +1366,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (dialogType == ImportTablePanel.SIMPLE_ATTRIBUTE_IMPORT) {
 			ontology2annotationPanel.setVisible(false);
 		}
-		JDialog dlg = (JDialog)SwingUtilities.getWindowAncestor(this);
-		dlg.pack();
+		
+		Window parent = SwingUtilities.getWindowAncestor(this);
+		if(parent != null)
+			parent.pack();
 	}
 
 	/**
@@ -1575,9 +1577,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			textImportOptionPanel.setVisible(false);
 		}
 
-		JDialog dlg = (JDialog)SwingUtilities.getWindowAncestor(this);
-		dlg.pack();
-		
+		Window parent = SwingUtilities.getWindowAncestor(this);
+		if(parent != null)
+			parent.pack();
 	}
 
 
@@ -1695,7 +1697,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		startRowLabel.setEnabled(false);
 		previewPanel.getPreviewTable().getTableHeader().setReorderingAllowed(false);
 		setRadioButtonGroup();
-		//pack();
 
 		if (dialogType == NETWORK_IMPORT){
 			// do nothing
@@ -1705,6 +1706,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 
 		setStatusBar("-", "-", "File Size: Unknown");
+		
+		Window parent = SwingUtilities.getWindowAncestor(this);
+		if(parent != null)
+			parent.pack();
 	}
 
 	private void updatePrimaryKeyComboBox() {
@@ -1820,7 +1825,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final String commentChar = commentLineTextField.getText();
 		int startLine = getStartLineNumber();
 		InputStream tempIs = URLUtil.getInputStream(sourceURL);
-		previewPanel.setPreviewTable( workbook, this.fileType,  tempIs, delimiters, null, previewSize,
+		previewPanel.setPreviewTable( workbook, this.fileType,sourceURL.toString(),  tempIs, delimiters, null, previewSize,
 				commentChar, startLine - 1);
 		
 		tempIs.close();
@@ -1861,11 +1866,23 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				initializeAliasTable(columnCount, null, i);
 			}
 
+			advancedOptionCheckBox.setEnabled(true);
+			textImportCheckBox.setEnabled(true);
 			updatePrimaryKeyComboBox();
 			
 			setOntologyInAnnotationComboBox();
+			
+			if(DB_OBJECT_SYMBOL.getPosition() < primaryKeyComboBox.getItemCount())
+				primaryKeyComboBox.setSelectedIndex(DB_OBJECT_SYMBOL.getPosition());
+			
+			if(GO_ID.getPosition() < ontologyInAnnotationComboBox.getItemCount())
+				ontologyInAnnotationComboBox.setSelectedIndex(GO_ID.getPosition());
 
 			attributeRadioButtonActionPerformed(null);
+			
+			Window parent = SwingUtilities.getWindowAncestor(this);
+			if(parent != null)
+				parent.pack();
 		}
 		
 	}
@@ -1923,8 +1940,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (tempFile != null)
 			 tempIs2 =  new FileInputStream(tempFile);
 
-
-		previewPanel.setPreviewTable( workbook, this.fileType,  tempIs2, delimiters, null, previewSize,
+		previewPanel.setPreviewTable( workbook, this.fileType,"",  tempIs2, delimiters, null, previewSize,
 				commentChar, startLine - 1);
 
 		if (tempIs2 != null){
@@ -2022,6 +2038,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		reloadButton.setEnabled(true);
 		startRowSpinner.setEnabled(true);
 		startRowLabel.setEnabled(true);
+		
+		Window parent = SwingUtilities.getWindowAncestor(this);
+		if(parent != null)
+			parent.pack();
 	}
 
 	private void disableComponentsForGA() {
@@ -2136,11 +2156,17 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 			if (objType == NODE) {
 				for ( CyNode node : network.getNodeList() ) {
-					valueSet.add(network.getRow(node).get(ID, String.class)); // ID = "name"
+          final String name = network.getRow(node).get(ID, String.class);
+          if (name == null)
+            continue;
+					valueSet.add(name); // ID = "name"
 				}
 			} else if (objType == EDGE) {
 				for ( CyEdge edge : network.getEdgeList() ) {
-					valueSet.add(network.getRow(edge).get(ID, String.class)); // ID = "name"
+          final String name = network.getRow(edge).get(ID, String.class);
+          if (name == null)
+            continue;
+					valueSet.add(name); // ID = "name"
 				}
 			} 
 		} 
@@ -2505,7 +2531,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 									.add(statusBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 											org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 											org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap()));
-			// pack();
 		} else if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
 			layout.setHorizontalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
 			                                .add(layout.createSequentialGroup().addContainerGap()

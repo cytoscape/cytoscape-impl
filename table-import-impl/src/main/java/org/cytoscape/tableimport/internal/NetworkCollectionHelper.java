@@ -40,7 +40,6 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -67,18 +66,9 @@ public class NetworkCollectionHelper extends AbstractTask {
 		}
 		targetColumnList = getTargetColumns(name2RootMap.get(rootNetworkList.getSelectedValue()));
 	}
-
-	public ListSingleSelection<String> sourceColumnList;
-	@Tunable(description = "Mapping Column for New Network:", groups="Select a Network Collection")
-	public ListSingleSelection<String> getSourceColumnList(){
-		return sourceColumnList;
-	}
-	public void setSourceColumnList(ListSingleSelection<String> colList){
-		this.sourceColumnList = colList;
-	}
 	
 	public ListSingleSelection<String> targetColumnList;
-	@Tunable(description = "Mapping Column for Existing Network:",groups="Select a Network Collection", listenForChange={"RootNetworkList"})
+	@Tunable(description = "Node Identifier Mapping Column:",groups="Select a Network Collection", listenForChange={"RootNetworkList"})
 	public ListSingleSelection<String> getTargetColumnList(){
 		return targetColumnList;
 	}
@@ -144,11 +134,6 @@ public class NetworkCollectionHelper extends AbstractTask {
 		List<String> colNames_target = new ArrayList<String>();
 		colNames_target.add("shared name");
 		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
-			
-		// initialize source attribute list
-		List<String> colNames_source = new ArrayList<String>();
-		colNames_source.add("shared name");
-		this.sourceColumnList = new ListSingleSelection<String>(colNames_source);
 	}
 	
 	// Return the rootNetwork based on user selection, if not existed yet, create a new one

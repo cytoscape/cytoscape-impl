@@ -43,19 +43,18 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 
 	@Override
 	public CyNetwork[] getNetworks() {
-
-		CyNetwork[] result = new CyNetwork[1];
+		final CyNetwork[] result = new CyNetwork[1];
 		result[0] = network;
 		return result;
 	}
+
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
 
-		// TODO: Apply (X, Y) to the nodes
 		final Map<CyNode, Double[]> positionMap = mapper.getNodePosition();
-		for (CyNode node : positionMap.keySet()) {
+		for (final CyNode node : positionMap.keySet()) {
 			final Double[] position = positionMap.get(node);
 			view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, position[0]);
 			view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, position[1]);
@@ -64,13 +63,12 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 		return view;
 	}
 
+
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-
 		final ObjectMapper objMapper = new ObjectMapper();
 		final JsonNode rootNode = objMapper.readValue(is, JsonNode.class);
 
 		this.network = this.mapper.createNetwork(rootNode);
 	}
-
 }

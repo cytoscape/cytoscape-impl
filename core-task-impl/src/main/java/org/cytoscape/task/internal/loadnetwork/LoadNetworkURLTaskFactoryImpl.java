@@ -25,19 +25,17 @@ package org.cytoscape.task.internal.loadnetwork;
  */
 
 
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
+import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -45,7 +43,6 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.TunableSetter;
 
 
 /**
@@ -63,7 +60,6 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 	
 	private final SynchronousTaskManager<?> syncTaskManager;
 	
-	private final TunableSetter tunableSetter;
 	
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
@@ -73,8 +69,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 					     final CyNetworkViewManager networkViewManager,
 					     CyProperty<Properties> cyProps, CyNetworkNaming cyNetworkNaming,
 					     StreamUtil streamUtil, final SynchronousTaskManager<?> syncTaskManager,
-						 TunableSetter tunableSetter, final VisualMappingManager vmm,
-						 final CyNetworkViewFactory nullNetworkViewFactory)
+						 final VisualMappingManager vmm,final CyNetworkViewFactory nullNetworkViewFactory)
 	{
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -82,7 +77,6 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		this.props = cyProps.getProperties();
 		this.cyNetworkNaming = cyNetworkNaming;
 		this.streamUtil = streamUtil;
-		this.tunableSetter = tunableSetter;
 		this.syncTaskManager = syncTaskManager;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
@@ -98,18 +92,25 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 	}
 
 	public TaskIterator createTaskIterator(final URL url, TaskObserver observer) {
-		final Map<String,Object> m = new HashMap<String,Object>();
-		m.put("url", url);
-	
-		return tunableSetter.createTaskIterator( this.createTaskIterator(), m, observer);
+		return loadCyNetworks(url);
 	}
 	
 	@Override
 	public TaskIterator loadCyNetworks(final URL url) {
+		// Code adapted from LoadNetworkURLTask
+		// TODO: Refactor to avoid duplication of code
+		final String urlString = url.getFile();
+		final String[] parts = urlString.split("/");
+		final String name = parts[parts.length-1];
+		CyNetworkReader reader = null;
 		
-		final Map<String,Object> m = new HashMap<String,Object>();
-		m.put("url", url);
-	
-		return tunableSetter.createTaskIterator( this.createTaskIterator(), m);
+		try {
+			reader = mgr.getReader(url.toURI(), url.toURI().toString());
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return new TaskIterator(2,new LoadNetworkTask(mgr, netmgr, reader, name, networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
 	}
 }

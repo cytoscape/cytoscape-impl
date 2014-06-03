@@ -61,7 +61,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager,ts, vmm, nullNetworkViewFactory);
+				streamUtil, synchronousTaskManager, vmm, nullNetworkViewFactory);
 		assertNotNull(networkViewManager);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
@@ -90,7 +90,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager,ts, vmm, nullNetworkViewFactory);
+				streamUtil, synchronousTaskManager, vmm, nullNetworkViewFactory);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
@@ -113,7 +113,7 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager,ts, vmm, nullNetworkViewFactory);
+				streamUtil, synchronousTaskManager, vmm, nullNetworkViewFactory);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;

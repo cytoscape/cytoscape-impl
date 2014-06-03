@@ -72,7 +72,7 @@ public abstract class AbstractGroupTask extends AbstractTask {
 		Set<CyGroup> allGroups = groupMgr.getGroupSet(net);
 		for (CyGroup group: allGroups) {
 			CyRow groupRow = rootNet.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
-			if (groupName.equals(groupRow.get(CyRootNetwork.SHARED_NAME, String.class)));
+			if (groupName.equals(groupRow.get(CyRootNetwork.SHARED_NAME, String.class)))
 				return group;
 		}
 		return null;

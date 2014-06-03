@@ -59,9 +59,11 @@ public class UiScaffold {
 		CyNetwork network = networkTestSupport.getNetwork();
 		CyTable nodeTable = network.getDefaultNodeTable();
 		nodeTable.createColumn("Score", Double.class, false);
+		nodeTable.createColumn("IsSpecial", Boolean.class, false);
 		for (int i = 0; i < TOTAL_NODES; i++) {
 			CyNode node = network.addNode();
 			network.getRow(node).set("Score", random.nextGaussian());
+			network.getRow(node).set("IsSpecial", i % 2 == 0);
 		}
 		
 		List<CyNode> nodes = network.getNodeList();

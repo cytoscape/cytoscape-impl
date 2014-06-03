@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
@@ -56,14 +57,13 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 	private Properties props;
 	
 	private CyNetworkNaming cyNetworkNaming;
-	private final TunableSetter tunableSetter;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
 
 
 	public LoadNetworkFileTaskFactoryImpl(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, CyProperty<Properties> cyProp,
-			CyNetworkNaming cyNetworkNaming, TunableSetter tunableSetter, final VisualMappingManager vmm,
+			CyNetworkNaming cyNetworkNaming, final VisualMappingManager vmm,
 			final CyNetworkViewFactory nullNetworkViewFactory) {
 		
 		this.mgr = mgr;
@@ -71,7 +71,6 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.networkViewManager = networkViewManager;
 		this.props = cyProp.getProperties();
 		this.cyNetworkNaming = cyNetworkNaming;
-		this.tunableSetter = tunableSetter;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
 	}
@@ -83,17 +82,18 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("file", file);
+		
+		CyNetworkReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		return new TaskIterator(3, new LoadNetworkTask(mgr, netmgr, reader, file.getName(),networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("file", file);
+		CyNetworkReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer); 
+		return new TaskIterator(3,new LoadNetworkTask(mgr, netmgr, reader, file.getName(),networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
+
+		
 	}
 }

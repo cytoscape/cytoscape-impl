@@ -101,10 +101,10 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
 	                                 Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
-		this.font = getArgFont(argMap);
+		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
     this.textColor = getColor(argMap, COLOR, Color.BLACK);
-		this.text = argMap.get(TEXT);
-		this.fontSize = font.getSize2D();
+		this.text = getString(argMap, TEXT, "");
+ 		this.fontSize = font.getSize2D();
 		if (!argMap.containsKey(ShapeAnnotationImpl.WIDTH)) {
 			double width = getTextWidth((Graphics2D)this.getGraphics())+8;
 			double height = getTextHeight((Graphics2D)this.getGraphics())+8;

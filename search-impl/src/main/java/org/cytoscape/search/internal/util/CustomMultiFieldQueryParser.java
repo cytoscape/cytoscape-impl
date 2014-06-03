@@ -62,7 +62,10 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 		if (attrFields.getType(field) == Integer.class) {
 			try {
 				int num1 = Integer.parseInt(queryText);
-				return super.getFieldQuery(field, NumericUtils.longToPrefixCoded(num1));
+				
+				Query q = NumericRangeQuery.newIntRange(field, num1, num1, true, true);
+				return q;
+				
 			} catch (NumberFormatException e) {
 				// Do nothing. When using a MultiFieldQueryParser, queryText is
 				// searched in each one of the fields. This exception occurs

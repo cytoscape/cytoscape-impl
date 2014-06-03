@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -203,12 +204,18 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	@Override
 	public void addNamedTransformers(final FilterPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					addNamedTransformers(panel, namedTransformers);
-				}
-			});
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					@Override
+					public void run() {
+						addNamedTransformers(panel, namedTransformers);
+					}
+				});
+			} catch (InterruptedException e) {
+				logger.error("An unexpected error occurred", e);
+			} catch (InvocationTargetException e) {
+				logger.error("An unexpected error occurred", e);
+			}
 			return;
 		}
 		
@@ -225,12 +232,16 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			
 			String name = findUniqueName(namedTransformer.getName());
 			FilterElement element = addNewElement(name);
-			for (Transformer<CyNetwork, CyIdentifiable> transformer : namedTransformer.getTransformers()) {
-				if (!(transformer instanceof Filter)) {
-					continue;
+			List<Transformer<CyNetwork, CyIdentifiable>> transformers = namedTransformer.getTransformers();
+			if (transformers.size() == 1) {
+				Transformer<CyNetwork, CyIdentifiable> first = transformers.get(0);
+				if (first instanceof CompositeFilter) {
+					addCompositeFilter(element, (CompositeFilter<CyNetwork, CyIdentifiable>) first);
+				} else {
+					addTransformers(element, transformers);
 				}
-				Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
-				element.filter.append(filter);
+			} else {
+				addTransformers(element, transformers);
 			}
 		}
 		FilterElement selected = (FilterElement) namedElementComboBoxModel.getSelectedItem();
@@ -240,6 +251,36 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		setFilter(selected.filter, panel);
 	}
 	
+	private void addCompositeFilter(FilterElement element, CompositeFilter<CyNetwork, CyIdentifiable> composite) {
+		element.filter.setType(composite.getType());
+		for (int i = 0; i < composite.getLength(); i++) {
+			Filter<CyNetwork, CyIdentifiable> filter = composite.get(i);
+			addListeners(filter);
+			element.filter.append(filter);
+		}
+	}
+
+	private void addTransformers(FilterElement element, List<Transformer<CyNetwork, CyIdentifiable>> transformers) {
+		for (Transformer<CyNetwork, CyIdentifiable> transformer : transformers) {
+			if (!(transformer instanceof Filter)) {
+				continue;
+			}
+			Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
+			addListeners(filter);
+			element.filter.append(filter);
+		}
+	}
+	
+	private void addListeners(Filter<CyNetwork, CyIdentifiable> filter) {
+		filter.addListener(worker);
+		if (filter instanceof CompositeFilter) {
+			CompositeFilter<CyNetwork, CyIdentifiable> composite = (CompositeFilter<CyNetwork, CyIdentifiable>) filter;
+			for (int i = 0; i < composite.getLength(); i++) {
+				addListeners(composite.get(i));
+			}
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers() {
@@ -252,10 +293,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 				continue;
 			}
 			
-			Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[element.filter.getLength()];
-			for (int j = 0; j < transformers.length; j++) {
-				transformers[j] = element.filter.get(j);
-			}
+			Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[] { element.filter };
 			namedTransformers[i] = (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
 			i++;
 		}

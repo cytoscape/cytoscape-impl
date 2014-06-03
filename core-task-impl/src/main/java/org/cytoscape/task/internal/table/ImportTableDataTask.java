@@ -271,7 +271,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 		List<String> colNames = new ArrayList<String>();
 		for (CyColumn col : selectedTable.getColumns())
+		{
+			if(col.getName().matches(CyNetwork.SUID))
+				continue;
 			colNames.add(col.getName());
+		}
 
 		ListSingleSelection<String> columns = new ListSingleSelection<String>(colNames);
 		columns.setSelectedValue(CyRootNetwork.SHARED_NAME);

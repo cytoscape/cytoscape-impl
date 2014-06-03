@@ -607,7 +607,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void clearValueLock(final VisualProperty<?> vp) {
-		final boolean isDefault = !visualProperties.containsKey(vp);
+		final boolean isDefault;
+		synchronized (graphView.m_lock) {
+			isDefault = !visualProperties.containsKey(vp);
+		}
 		super.clearValueLock(vp);
 		
 		// Reset to the visual style default if visualProperties map doesn't contain this vp
@@ -703,5 +706,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	@Override
 	protected <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return graphView.m_edgeDetails.getDefaultValue(vp);
+	}
+	
+	@Override
+	protected DGraphView getDGraphView() {
+		return graphView;
 	}
 }

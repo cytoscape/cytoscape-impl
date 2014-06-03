@@ -4,13 +4,13 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.1.0</version>
+		<version>3.1.1</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
     <groupId>org.cytoscape</groupId>
     <artifactId>search-impl</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1</version>
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.search-impl</bundle.symbolicName>

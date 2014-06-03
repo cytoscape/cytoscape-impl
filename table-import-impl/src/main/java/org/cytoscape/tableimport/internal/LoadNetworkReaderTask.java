@@ -73,8 +73,7 @@ import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
 
 public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkReader, TunableValidator {
-	private  InputStream isStart;
-	private  InputStream isEnd;
+	private  InputStream is;
 	private String fileType;
 	private CyNetwork[] networks;
 	private String inputName;
@@ -84,6 +83,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private PreviewTablePanel previewPanel;
 	private String networkName;
 	private URI uri;
+	private File tempFile;
 	private TaskMonitor taskMonitor;
 	
 	private static int numImports = 0;
@@ -135,7 +135,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	
 	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName)
 	{
-		this.isStart           = is;
+		this.is           = is;
 		this.fileType     = fileType;
 		this.inputName    = inputName;
 		this.uri = uriName;
@@ -143,7 +143,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		previewPanel = new PreviewTablePanel();
 
 		try{
-			File tempFile = File.createTempFile("temp", this.fileType);
+			tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
 			int read = 0;
@@ -156,10 +156,9 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			os.close();
 			
 			
-			this.isStart = new FileInputStream(tempFile);
-			this.isEnd = new FileInputStream(tempFile);
+			this.is = new FileInputStream(tempFile);
 		}catch(Exception e){
-			this.isStart = null;
+			this.is = null;
 			e.printStackTrace();
 		}
 		
@@ -187,8 +186,8 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		String[] attributeNames;
 		
 		
-		if(isEnd != null)
-			netReader = networkReaderManager.getReader(isEnd, inputName);
+		if(is != null)
+			netReader = networkReaderManager.getReader(is, inputName);
 		
 		if(netReader == null)				
 			netReader = networkReaderManager.getReader(uri, inputName);
@@ -203,14 +202,12 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					|| fileType.equalsIgnoreCase(
 							SupportedFileType.OOXML.getExtension())) && workbook == null) {
 				try {
-					workbook = WorkbookFactory.create(isStart);
+					workbook = WorkbookFactory.create(new FileInputStream(tempFile));
 				} catch (InvalidFormatException e) {
 					//e.printStackTrace();
 					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?" , e);
 				} finally {
-					if (isStart != null) {
-						isStart.close();
-					}
+					
 				}
 			}
 			
@@ -221,7 +218,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			if(firstRowAsColumnNames)
 				startLoadRowTemp = 0;
 			
-			previewPanel.setPreviewTable(workbook, fileType, isStart, delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
+			previewPanel.setPreviewTable(workbook, fileType,tempFile.getAbsolutePath(), new FileInputStream(tempFile), delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
 			
 			colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
 			importFlag = new boolean[colCount];
@@ -295,7 +292,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, this.nMap, this.rootNetwork);
 			} else {
 				networkName = this.inputName;
-				reader = new NetworkTableReader(networkName, this.isEnd, ntmp, this.nMap, this.rootNetwork);
+				reader = new NetworkTableReader(networkName, new FileInputStream(tempFile), ntmp, this.nMap, this.rootNetwork);
 			}
 			loadNetwork(monitor);
 	

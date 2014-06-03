@@ -264,8 +264,12 @@ public class AttributeLineParser {
 		if (entry == null) {
 			return null;
 		}
-
-		final String[] parts = (entry.replace("\"", "")).split(mapping.getListDelimiter());
+		String delimiter = mapping.getListDelimiter();
+		
+		if(delimiter.isEmpty())
+			delimiter = " ";
+		
+		final String[] parts = (entry.replace("\"", "")).split(delimiter);
 
 		final List listAttr = new ArrayList();
 

@@ -24,12 +24,27 @@ package org.cytoscape.internal;
  * #L%
  */
 
-import static org.cytoscape.application.swing.CytoPanelName.*;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
+import static org.cytoscape.application.swing.CytoPanelName.EAST;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
+import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -40,8 +55,8 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CyHelpBroker;
+import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.event.CyEventHelper;
@@ -68,9 +83,9 @@ import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.undo.UndoMonitor;
 import org.cytoscape.internal.view.BirdsEyeViewHandler;
+import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CyHelpBrokerImpl;
 import org.cytoscape.internal.view.CytoscapeDesktop;
-import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
@@ -478,6 +493,21 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void setLookAndFeel() {
 		Logger logger = LoggerFactory.getLogger(getClass());
+		if (!SwingUtilities.isEventDispatchThread()) {
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					@Override
+					public void run() {
+						setLookAndFeel();
+					}
+				});
+				return;
+			} catch (InterruptedException e) {
+				logger.error("Unexpected error", e);
+			} catch (InvocationTargetException e) {
+				logger.error("Unexpected error", e);
+			}
+		}
 		String lookAndFeel;
 		// update look and feel
 		if (System.getProperty("os.name").startsWith("Mac OS X") ||

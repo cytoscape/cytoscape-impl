@@ -20,6 +20,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 import org.cytoscape.filter.internal.view.DragHandler;
@@ -27,6 +28,7 @@ import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.IconManager;
+import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.CompositeFilter;
@@ -83,6 +85,13 @@ public class CompositeFilterPanel extends JPanel {
 			}
 		});
 		
+		DynamicComboBoxModel.select(combiningMethodComboBox, 0, new Matcher<CombiningMethodElement>() {
+			@Override
+			public boolean matches(CombiningMethodElement item) {
+				return model.getType().equals(item.combiningMethod);
+			}
+		});
+		
 		addButton = createAddConditionButton();
 		
 		for (int i = 0; i < model.getLength(); i++) {
@@ -102,6 +111,15 @@ public class CompositeFilterPanel extends JPanel {
 	}
 
 	public void updateLayout() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					updateLayout();
+				}
+			});
+			return;
+		}
 		removeAll();
 
 		final ParallelGroup checkBoxGroup = layout.createParallelGroup(Alignment.LEADING);

@@ -24,7 +24,9 @@ package org.cytoscape.ding.impl.cyannotator;
  * #L%
  */
 
+import java.awt.Rectangle;
 import java.util.List;
+import javax.swing.JComponent;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -32,6 +34,7 @@ import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 /**
  * This class is essentially a wrapper around each network's CyAnnotator.
@@ -48,10 +51,20 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	 **********************************************************************************/
 	@Override
 	public void addAnnotation(Annotation annotation) {
+		if (annotation == null || !(annotation instanceof DingAnnotation))
+			return;
+
+		DingAnnotation dAnnotation = (DingAnnotation)annotation;
+
 		CyNetworkView view = annotation.getNetworkView();
 		for (CyNetworkView networkView: viewManager.getNetworkViewSet()) {
-			if (view.equals(networkView))
+			if (view.equals(networkView)) {
 				((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
+				if (dAnnotation.getCanvas() != null)
+					dAnnotation.getCanvas().add(dAnnotation.getComponent());
+				else
+					((DGraphView)view).getCyAnnotator().getForeGroundCanvas().add(dAnnotation.getComponent());
+			}
 		}
 	}
 

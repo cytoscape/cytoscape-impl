@@ -232,7 +232,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 		if(firstRowAsColumnNames)
 			startLoadRowTemp = 0;
 		
-		previewPanel.setPreviewTable(workbook, fileType, isStart, delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
+		previewPanel.setPreviewTable(workbook, fileType,inputName, isStart, delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
 		
 		colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
 		importFlag = new boolean[colCount];

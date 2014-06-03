@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.io.write.CyTableWriterFactory;
@@ -62,6 +63,19 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 			}
 		}
 		options = new ListSingleSelection<String>(availableFormats);
+	}
+	
+	void setDefaultFileFormatUsingFileExt(File file) {
+		String ext = FilenameUtils.getExtension(file.getName());
+		ext = ext.toLowerCase().trim();
+		String searchDesc = "*." + ext;
+		//Use the EXT to determine the default file format
+		for(String fileTypeDesc: this.getFileFilterDescriptions() )
+			if(fileTypeDesc.contains(searchDesc) )
+			{
+				options.setSelectedValue(fileTypeDesc);
+				break;
+			}
 	}
 
 	/**

@@ -110,10 +110,10 @@ public class NumberRangeModel extends DefaultBoundedRangeModel implements Valued
 			         m_max.intValue());
 		} else {
 			double range = m_max.doubleValue() - m_min.doubleValue();
-			int v = (int) Math.round(10000 *  ((m_lo.doubleValue() - m_min.doubleValue()) / range));
-			int e = (int) Math.round(10000 *  ((m_hi.doubleValue() - m_min.doubleValue()) / range)) - v;
+			int v = (int) Math.ceil(Integer.MAX_VALUE * ((m_lo.doubleValue() - m_min.doubleValue()) / range));
+			int e = (int) Math.ceil(Integer.MAX_VALUE * ((m_hi.doubleValue() - m_min.doubleValue()) / range)) - v;
 			
-			setRange(v, e, 0, 10000);
+			setRange(v, e, 0, Integer.MAX_VALUE);
 		}
 	}
 

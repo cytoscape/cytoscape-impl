@@ -31,6 +31,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.column.ColumnFilterFactory;
 import org.cytoscape.filter.internal.column.ColumnFilterViewFactory;
+import org.cytoscape.filter.internal.composite.CompositeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
 import org.cytoscape.filter.internal.interaction.InteractionTransformerFactory;
@@ -54,7 +55,10 @@ import org.cytoscape.filter.model.TransformerSource;
 import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.io.read.CyTransformerReader;
 import org.cytoscape.io.write.CyTransformerWriter;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.work.TaskManager;
@@ -79,6 +83,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(context, new DegreeFilterFactory(), FilterFactory.class, new Properties());
 		registerService(context, new ColumnFilterFactory(), FilterFactory.class, new Properties());
 		registerService(context, new TopologyFilterFactory(), FilterFactory.class, new Properties());
+		registerService(context, new CompositeFilterFactory<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class), FilterFactory.class, new Properties());
 		
 		// Transformers
 		registerService(context, new InteractionTransformerFactory(), ElementTransformerFactory.class, new Properties());
@@ -115,6 +120,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		FilterSettingsManager settingsManager = new FilterSettingsManager(filterPanel, transformerPanel, filterIo);
 		registerService(context, settingsManager, SessionAboutToBeSavedListener.class, new Properties());
+		registerService(context, settingsManager, SessionAboutToBeLoadedListener.class, new Properties());
 		registerService(context, settingsManager, SessionLoadedListener.class, new Properties());
 	}
 }

@@ -132,6 +132,13 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 		this.m_layoutPass = context.m_layoutPass;
 		this.edgeWeighter = context.edgeWeighter;
 		this.edgeWeighter.setWeightAttribute(layoutAttribute);
+		this.m_averageIterationsPerNode = context.m_averageIterationsPerNode;
+		this.m_nodeDistanceStrengthConstant=context.m_nodeDistanceStrengthConstant;
+		this.m_nodeDistanceRestLengthConstant=context.m_nodeDistanceRestLengthConstant;
+		this.m_disconnectedNodeDistanceSpringStrength=context.m_disconnectedNodeDistanceSpringStrength;
+		this.m_disconnectedNodeDistanceSpringRestLength=context.m_disconnectedNodeDistanceSpringRestLength;
+		this.m_anticollisionSpringStrength = context.m_anticollisionSpringStrength;
+		this.m_layoutPass = 2;
 	}
 
 	/**
@@ -315,8 +322,8 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 		for (int i = 1; i < m_numLayoutPasses; i++)
 			m_anticollisionSpringScalars[i] = 1.0;
 
-		System.out.println("BioLayoutKK Algorithm.  Laying out " + m_nodeCount + " nodes and "
-		                   + partition.edgeCount() + " edges: ");
+		//System.out.println("BioLayoutKK Algorithm.  Laying out " + m_nodeCount + " nodes and "
+		//                   + partition.edgeCount() + " edges: ");
 
 		/*
 		        for (Iterator diter = partition.nodeIterator(); diter.hasNext(); ) {
@@ -470,6 +477,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 		final LayoutPoint finalLocation = partition.getAverageLocation();
 		xDelta = finalLocation.getX() - initialLocation.getX();
 		yDelta = finalLocation.getY() - initialLocation.getY();
+		partition.resetNodes();
 		for (LayoutNode v: partition.getNodeList()) {
 			if (!v.isLocked()) {
 				v.decrement(xDelta, yDelta);

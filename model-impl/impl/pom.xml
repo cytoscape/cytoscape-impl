@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>model-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.1.0</version>
+		<version>3.1.1</version>
 	</parent>
 
 	<properties>
@@ -16,7 +16,7 @@
 	<artifactId>model-impl</artifactId>
 
     <name>Cytoscape Model Impl (${project.artifactId})</name>
-	<version>3.1.0</version>
+	<version>3.1.1</version>
 	<packaging>bundle</packaging>
 
 	<build>

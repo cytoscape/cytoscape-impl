@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.cytoscape.equations.Equation;
+import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
@@ -52,9 +53,10 @@ public class CSVCyWriter implements CyWriter {
 	private boolean isCanceled;
 	private final boolean handleEquations;
 	private final boolean includeVirtualColumns;
+	private final CyFileFilter fileFilter;
 	private String encoding;
 
-	public CSVCyWriter(final OutputStream outputStream, final CyTable table,
+	public CSVCyWriter(final OutputStream outputStream, final CyTable table,final CyFileFilter fileFilter,
 			   final boolean writeSchema, final boolean handleEquations, final boolean includeVirtualColumns, final String encoding)
 	{
 		this.outputStream    = outputStream;
@@ -63,6 +65,7 @@ public class CSVCyWriter implements CyWriter {
 		this.handleEquations = handleEquations;
 		this.includeVirtualColumns = includeVirtualColumns;
 		this.encoding = encoding;
+		this.fileFilter = fileFilter;
 	}
 
 	@Override
@@ -174,7 +177,10 @@ public class CSVCyWriter implements CyWriter {
 					if (list != null) {
 						for (Object value : list) {
 							if (!first) {
-								builder.append("\r");
+								if(fileFilter.getExtensions().contains("csv"))
+									builder.append("|");
+								else
+									builder.append("\r");
 							}
 							if (value != null) {
 								builder.append(value);

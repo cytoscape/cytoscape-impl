@@ -20,6 +20,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractPanelController<T extends NamedElement, V extends SelectPanelComponent> {
 	public static final int PROGRESS_BAR_MAXIMUM = Integer.MAX_VALUE;
@@ -36,11 +38,15 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	protected FilterIO filterIo;
 	TaskManager<?, ?> taskManager;
 	JComponent lastHoveredComponent;
+	
+	final Logger logger;
 
 	public AbstractPanelController(AbstractWorker<?, ?> worker, FilterIO filterIo, TaskManager<?, ?> taskManager) {
 		this.worker = worker;
 		this.filterIo = filterIo;
 		this.taskManager = taskManager;
+		
+		logger = LoggerFactory.getLogger(getClass());
 		
 		List<T> modelItems = new ArrayList<T>();
 		namedElementComboBoxModel = new DynamicComboBoxModel<T>(modelItems);
@@ -206,9 +212,10 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return element;
 	}
 	
-	public void reset() {
-		while (namedElementComboBoxModel.getSize() > 1) {
-			notifyRemoved(namedElementComboBoxModel.items.remove(1)); 
+	public void reset(V view) {
+		view.reset();
+		while (namedElementComboBoxModel.getSize() > 0) {
+			notifyRemoved(namedElementComboBoxModel.items.remove(0)); 
 		}
 		namedElementComboBoxModel.notifyChanged(0, 0);
 	}
