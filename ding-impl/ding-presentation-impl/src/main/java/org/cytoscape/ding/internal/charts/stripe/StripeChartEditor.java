@@ -137,7 +137,9 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 							for (final CyNode node : allNodes) {
 								final CyRow row = network.getRow(node);
 								final List<?> values = row.getList(columnName, column.getListElementType());
-								set.addAll(values);
+								
+								if (values != null)
+									set.addAll(values);
 							}
 						}
 					}

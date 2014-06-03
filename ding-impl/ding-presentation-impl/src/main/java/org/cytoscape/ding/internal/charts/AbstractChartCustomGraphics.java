@@ -4,13 +4,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.model.CyColumn;
@@ -18,10 +15,11 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> extends
-		AbstractEnhancedCustomGraphics<T> {
+		AbstractEnhancedCustomGraphics<T> implements CyChart<T> {
 
 	protected AbstractChartCustomGraphics(final String displayName) {
 		super(displayName);
@@ -32,7 +30,8 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	}
 	
 	protected AbstractChartCustomGraphics(final AbstractChartCustomGraphics<T> chart) {
-		super(chart);
+		this(chart.getDisplayName());
+		this.properties.putAll(chart.getProperties());
 	}
 	
 	protected AbstractChartCustomGraphics(final String displayName, final Map<String, Object> properties) {
@@ -41,6 +40,11 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	
 	public List<Double> convertInputToDouble(String input) {
 		return parseStringList((String) input);
+	}
+	
+	@Override
+	public Map<String, Object> getProperties() {
+		return new HashMap<String, Object>(properties);
 	}
 
 	/**
@@ -201,6 +205,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	 * @throws NumberFormatException
 	 *             is the value is illegal
 	 */
+	@Override
 	public double getDoubleValue(Object input) throws NumberFormatException {
 		if (input instanceof Double)
 			return ((Double) input).doubleValue();
@@ -267,10 +272,11 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	 * Serialize an object that might be a list to a string
 	 */
 	private String serializeObject(Object obj) {
-		String result;
+		String result = null;;
+		
 		if (obj instanceof List) {
 			result = "";
-			for (Object o : (List) obj) {
+			for (Object o : (List<?>) obj) {
 				result += o.toString() + ",";
 			}
 			result = result.substring(0, result.length() - 1);
@@ -279,86 +285,4 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 
 		return result;
 	}
-
-//	public List<Color> convertInputToColor(final String input, final Map<String, ? extends List<?>> data,
-//			final boolean normalize) {
-//		int nColors = 0;
-//		
-//		for (final List<?> values : data.values())
-//			nColors = Math.max(nColors, values.size());
-//
-//		if (input != null) {
-//			// OK, we have three possibilities. The input could be a keyword, a
-//			// comma-separated list of colors, or a list of Color objects. We need to figure this out first...
-//			// See if we have a csv
-//			String[] colorArray = input.split(",");
-//			
-//			// Look for up/down special case
-//			if (colorArray.length == 2
-//					&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN))) {
-//				return parseUpDownColor(colorArray, values, normalize);
-//			} else if (colorArray.length == 3
-//					&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN) || colorArray[0]
-//							.toLowerCase().startsWith(ZERO))) {
-//				return parseUpDownColor(colorArray, values, normalize);
-//			} else if (colorArray.length > 1) {
-//				return parseColorList(colorArray);
-//			}
-//		}
-//		
-//		// Return the default
-//		return ColorUtil.generateContrastingColors(nColors);
-//	}
-
-	public String serialize(final String attName, final Object attValue) {
-		return " " + attName + "=\"" + serialize(attValue) + "\"";
-	}
-
-	public String serialize(final Object value) {
-		String s = "";
-		
-		if (value instanceof Collection)
-			s = serialize((Collection<?>)value);
-		else if (value instanceof Color)
-			s = serialize((Color)value);
-		else if (value != null)
-			s = value.toString();
-		
-		return s;
-	}
-	
-	public String serialize(final Collection<?> list) {
-		final StringBuilder sb = new StringBuilder();
-		
-		for (final Iterator<?> i = list.iterator(); i.hasNext();) {
-			Object value = serialize(i.next());
-	        sb.append(value).append(i.hasNext() ? "," : "");
-		}
-		
-		return sb.toString();
-	}
-	
-	public String serialize(final Color color) {
-		String hex = Integer.toHexString(color.getRGB());
-		hex = hex.substring(2, hex.length()); // remove alpha bits
-
-		return "#" + hex;
-	}
-	
-	@Override
-	public String toSerializableString() {
-		final StringBuilder sb = new StringBuilder(getId() + ":");
-		
-		for (final Entry<String, Object> entry : properties.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			
-			if (key != null && value != null)
-				sb.append(serialize(key, value));
-		}
-		
-		return sb.toString();
-	}
-	
-	public abstract String getId();
 }

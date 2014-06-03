@@ -19,7 +19,7 @@ public class StripeChartEditorFactory implements CyChartEditorFactory<StripeLaye
 	
 	@Override
 	public Class<? extends CyChart<StripeLayer>> getSupportedClass() {
-		return StripeChart.class;
+		return (Class<? extends CyChart<StripeLayer>>) StripeChart.class;
 	}
 
 	@Override

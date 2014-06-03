@@ -89,7 +89,7 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 	
 	@Override
 	protected Class<?> getSettingType(final String key) {
-		if (key.equals(LINE_WIDTH)) return Float.class;
+		if (key.equalsIgnoreCase(LINE_WIDTH)) return Float.class;
 		
 		return super.getSettingType(key);
 	}

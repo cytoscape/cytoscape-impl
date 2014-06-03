@@ -84,8 +84,8 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 	
 	@Override
 	protected Class<?> getSettingType(final String key) {
-		if (key.equals(START_ANGLE)) return Double.class;
-		if (key.equals(HOLE_SIZE)) return Double.class;
+		if (key.equalsIgnoreCase(START_ANGLE)) return Double.class;
+		if (key.equalsIgnoreCase(HOLE_SIZE)) return Double.class;
 		
 		return super.getSettingType(key);
 	}

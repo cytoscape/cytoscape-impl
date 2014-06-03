@@ -32,6 +32,7 @@ import org.cytoscape.ding.customgraphicsmgr.internal.CGComparator;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.gradients.CyGradient;
 
 @SuppressWarnings("rawtypes")
 public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
@@ -71,6 +72,7 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 	@Override
 	public boolean inRange(CyCustomGraphics value) {
 		// CyCharts don't have to be added to the manager
-		return value instanceof CyChart || manager.getAllCustomGraphics().contains(value);
+		return value instanceof CyChart || value instanceof CyGradient
+				|| manager.getAllCustomGraphics().contains(value);
 	}
 }

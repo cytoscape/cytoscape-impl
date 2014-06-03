@@ -19,7 +19,7 @@ public class LineChartEditorFactory implements CyChartEditorFactory<LineLayer> {
 	
 	@Override
 	public Class<? extends CyChart<LineLayer>> getSupportedClass() {
-		return LineChart.class;
+		return (Class<? extends CyChart<LineLayer>>) LineChart.class;
 	}
 
 	@Override

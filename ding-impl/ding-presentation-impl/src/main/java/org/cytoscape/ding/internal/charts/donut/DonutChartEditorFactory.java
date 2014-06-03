@@ -19,7 +19,7 @@ public class DonutChartEditorFactory implements CyChartEditorFactory<DonutLayer>
 	
 	@Override
 	public Class<? extends CyChart<DonutLayer>> getSupportedClass() {
-		return DonutChart.class;
+		return (Class<? extends CyChart<DonutLayer>>) DonutChart.class;
 	}
 
 	@Override

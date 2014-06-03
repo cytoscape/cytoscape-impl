@@ -235,7 +235,9 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 						for (final CyNode node : allNodes) {
 							final CyRow row = network.getRow(node);
 							final List<?> values = row.getList(columnName, column.getListElementType());
-							nColors = Math.max(nColors, values.size());
+							
+							if (values != null)
+								nColors = Math.max(nColors, values.size());
 						}
 					}
 				}

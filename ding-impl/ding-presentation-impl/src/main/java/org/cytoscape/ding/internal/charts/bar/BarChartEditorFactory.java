@@ -19,7 +19,7 @@ public class BarChartEditorFactory implements CyChartEditorFactory<BarLayer> {
 	
 	@Override
 	public Class<? extends CyChart<BarLayer>> getSupportedClass() {
-		return BarChart.class;
+		return (Class<? extends CyChart<BarLayer>>) BarChart.class;
 	}
 
 	@Override

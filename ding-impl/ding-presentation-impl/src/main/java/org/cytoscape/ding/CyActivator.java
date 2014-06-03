@@ -24,7 +24,23 @@ package org.cytoscape.ding;
  * #L%
  */
 
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.net.URL;
 import java.util.Enumeration;
@@ -87,12 +103,10 @@ import org.cytoscape.ding.impl.cyannotator.tasks.ResizeAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.SelectAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
-import org.cytoscape.ding.impl.editor.CyCustomGraphicsPropertyEditor;
 import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
-import org.cytoscape.ding.internal.charts.ChartTranslator;
 import org.cytoscape.ding.internal.charts.CyChartFactoryManagerImpl;
 import org.cytoscape.ding.internal.charts.bar.BarChartEditorFactory;
 import org.cytoscape.ding.internal.charts.bar.BarChartFactory;
@@ -108,6 +122,9 @@ import org.cytoscape.ding.internal.charts.pie.PieChartEditorFactory;
 import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
 import org.cytoscape.ding.internal.charts.stripe.StripeChartEditorFactory;
 import org.cytoscape.ding.internal.charts.stripe.StripeChartFactory;
+import org.cytoscape.ding.internal.gradients.CyGradientFactoryManagerImpl;
+import org.cytoscape.ding.internal.gradients.linear.LinearGradientEditorFactory;
+import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconManagerImpl;
 import org.cytoscape.event.CyEventHelper;
@@ -142,11 +159,13 @@ import org.cytoscape.view.presentation.charts.CyChartFactory;
 import org.cytoscape.view.presentation.charts.CyChartFactoryManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
+import org.cytoscape.view.presentation.gradients.CyGradientEditorFactory;
+import org.cytoscape.view.presentation.gradients.CyGradientFactory;
+import org.cytoscape.view.presentation.gradients.CyGradientFactoryManager;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
-import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
@@ -172,6 +191,7 @@ public class CyActivator extends AbstractCyActivator {
 		startSpacial(bc); 
 		startCustomGraphicsMgr(bc);
 		startCyChartFactoryManager(bc);
+		startCyGradientFactoryManager(bc);
 		startPresentationImpl(bc);
 	}
 
@@ -181,6 +201,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CustomGraphicsManager customGraphicsManagerServiceRef = getService(bc, CustomGraphicsManager.class);
 		CyChartFactoryManager cyChartFactoryManagerServiceRef = getService(bc, CyChartFactoryManager.class);
+		CyGradientFactoryManager cyGradientFactoryManagerServiceRef = getService(bc, CyGradientFactoryManager.class);
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc, CyRootNetworkManager.class);
 		UndoSupport undoSupportServiceRef = getService(bc, UndoSupport.class);
@@ -195,8 +216,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkFactory cyNetworkFactory = getService(bc, CyNetworkFactory.class);
 
-		final IconManager iconManager = new IconManagerImpl();
-		
 		DVisualLexicon dVisualLexicon = new DVisualLexicon(customGraphicsManagerServiceRef);
 
 		NVLTFActionSupport nvltfActionSupport = 
@@ -560,11 +579,8 @@ public class CyActivator extends AbstractCyActivator {
 		dVisualLexicon.addBendFactory(bendFactory, new HashMap());
 		
 		// Translators for Passthrough
-		final CustomGraphicsTranslator cgTranslator = new CustomGraphicsTranslator(customGraphicsManagerServiceRef);
+		final CustomGraphicsTranslator cgTranslator = new CustomGraphicsTranslator(customGraphicsManagerServiceRef, cyChartFactoryManagerServiceRef, cyGradientFactoryManagerServiceRef);
 		registerService(bc, cgTranslator, ValueTranslator.class, new Properties());
-		
-		final ChartTranslator chartTranslator = new ChartTranslator(cyChartFactoryManagerServiceRef);
-		registerService(bc, chartTranslator, ValueTranslator.class, new Properties());
 		
 		// Factories for Visual Property Dependency
 		final NodeSizeDependencyFactory nodeSizeDependencyFactory = new NodeSizeDependencyFactory(dVisualLexicon);
@@ -577,47 +593,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, customGraphicsSizeDependencyFactory, VisualPropertyDependencyFactory.class, new Properties());
 		
 		// Custom Graphics Editors
-		final CyCustomGraphicsValueEditor customGraphicsValueEditor = new CyCustomGraphicsValueEditor(customGraphicsManagerServiceRef, cyChartFactoryManagerServiceRef, cyServiceRegistrarRef);
+		final CyCustomGraphicsValueEditor customGraphicsValueEditor = new CyCustomGraphicsValueEditor(customGraphicsManagerServiceRef, cyChartFactoryManagerServiceRef, cyGradientFactoryManagerServiceRef, cyServiceRegistrarRef);
 		registerAllServices(bc, customGraphicsValueEditor, new Properties());
 		
 		final CustomGraphicsVisualPropertyEditor customGraphicsVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, customGraphicsValueEditor, continuousMappingCellRendererFactory);
 		registerService(bc, customGraphicsVisualPropertyEditor, VisualPropertyEditor.class, new Properties());
-		
-		// Register CyChart Factories
-		final BarChartFactory barChartFactory = new BarChartFactory();
-		registerService(bc, barChartFactory, CyChartFactory.class, new Properties());
-		final BarChartEditorFactory barChartEditorFactory = new BarChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
-		registerService(bc, barChartEditorFactory, CyChartEditorFactory.class, new Properties());
-		
-		final BoxChartFactory boxChartFactory = new BoxChartFactory();
-		registerService(bc, boxChartFactory, CyChartFactory.class, new Properties());
-		final BoxChartEditorFactory boxChartEditorFactory = new BoxChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
-		registerService(bc, boxChartEditorFactory, CyChartEditorFactory.class, new Properties());
-		
-		final PieChartFactory pieChartFactory = new PieChartFactory();
-		registerService(bc, pieChartFactory, CyChartFactory.class, new Properties());
-		final PieChartEditorFactory pieChartEditorFactory = new PieChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
-		registerService(bc, pieChartEditorFactory, CyChartEditorFactory.class, new Properties());
-		
-		final DonutChartFactory donutChartFactory = new DonutChartFactory();
-		registerService(bc, donutChartFactory, CyChartFactory.class, new Properties());
-		final DonutChartEditorFactory donutChartEditorFactory = new DonutChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
-		registerService(bc, donutChartEditorFactory, CyChartEditorFactory.class, new Properties());
-		
-		final LineChartFactory lineChartFactory = new LineChartFactory();
-		registerService(bc, lineChartFactory, CyChartFactory.class, new Properties());
-		final LineChartEditorFactory lineChartEditorFactory = new LineChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
-		registerService(bc, lineChartEditorFactory, CyChartEditorFactory.class, new Properties());
-		
-		final StripeChartFactory stripeChartFactory = new StripeChartFactory();
-		registerService(bc, stripeChartFactory, CyChartFactory.class, new Properties());
-		final StripeChartEditorFactory stripeChartEditorFactory = new StripeChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
-		registerService(bc, stripeChartEditorFactory, CyChartEditorFactory.class, new Properties());
-		
-		final HeatMapChartFactory heatMapChartFactory = new HeatMapChartFactory();
-		registerService(bc, heatMapChartFactory, CyChartFactory.class, new Properties());
-		final HeatMapChartEditorFactory heatMapChartEditorFactory = new HeatMapChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
-		registerService(bc, heatMapChartEditorFactory, CyChartEditorFactory.class, new Properties());
 	}
 
 	private void startCustomGraphicsMgr(BundleContext bc) {
@@ -670,6 +650,59 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, chartFactoryManager, new Properties());
 		registerServiceListener(bc, chartFactoryManager, "addCyChartFactory", "removeCyChartFactory", CyChartFactory.class);
 		registerServiceListener(bc, chartFactoryManager, "addCyChartEditorFactory", "removeCyChartEditorFactory", CyChartEditorFactory.class);
+		
+		// Register CyChart Factories
+		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
+		final IconManager iconManager = new IconManagerImpl();
+		
+		final BarChartFactory barChartFactory = new BarChartFactory();
+		registerService(bc, barChartFactory, CyChartFactory.class, new Properties());
+		final BarChartEditorFactory barChartEditorFactory = new BarChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		registerService(bc, barChartEditorFactory, CyChartEditorFactory.class, new Properties());
+		
+		final BoxChartFactory boxChartFactory = new BoxChartFactory();
+		registerService(bc, boxChartFactory, CyChartFactory.class, new Properties());
+		final BoxChartEditorFactory boxChartEditorFactory = new BoxChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		registerService(bc, boxChartEditorFactory, CyChartEditorFactory.class, new Properties());
+		
+		final PieChartFactory pieChartFactory = new PieChartFactory();
+		registerService(bc, pieChartFactory, CyChartFactory.class, new Properties());
+		final PieChartEditorFactory pieChartEditorFactory = new PieChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		registerService(bc, pieChartEditorFactory, CyChartEditorFactory.class, new Properties());
+		
+		final DonutChartFactory donutChartFactory = new DonutChartFactory();
+		registerService(bc, donutChartFactory, CyChartFactory.class, new Properties());
+		final DonutChartEditorFactory donutChartEditorFactory = new DonutChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		registerService(bc, donutChartEditorFactory, CyChartEditorFactory.class, new Properties());
+		
+		final LineChartFactory lineChartFactory = new LineChartFactory();
+		registerService(bc, lineChartFactory, CyChartFactory.class, new Properties());
+		final LineChartEditorFactory lineChartEditorFactory = new LineChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		registerService(bc, lineChartEditorFactory, CyChartEditorFactory.class, new Properties());
+		
+		final StripeChartFactory stripeChartFactory = new StripeChartFactory();
+		registerService(bc, stripeChartFactory, CyChartFactory.class, new Properties());
+		final StripeChartEditorFactory stripeChartEditorFactory = new StripeChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		registerService(bc, stripeChartEditorFactory, CyChartEditorFactory.class, new Properties());
+		
+		final HeatMapChartFactory heatMapChartFactory = new HeatMapChartFactory();
+		registerService(bc, heatMapChartFactory, CyChartFactory.class, new Properties());
+		final HeatMapChartEditorFactory heatMapChartEditorFactory = new HeatMapChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		registerService(bc, heatMapChartEditorFactory, CyChartEditorFactory.class, new Properties());
+	}
+	
+	private void startCyGradientFactoryManager(BundleContext bc) {
+		// Register this service listener so that app writers can provide their own CyChart factories
+		final CyGradientFactoryManager gradientFactoryManager = CyGradientFactoryManagerImpl.getInstance();
+		registerAllServices(bc, gradientFactoryManager, new Properties());
+		registerServiceListener(bc, gradientFactoryManager, "addCyGradientFactory", "removeCyGradientFactory", CyGradientFactory.class);
+		registerServiceListener(bc, gradientFactoryManager, "addCyGradientEditorFactory", "removeCyGradientEditorFactory", CyGradientEditorFactory.class);
+		
+		// Register CyGradient Factories
+		final LinearGradientFactory linearGradientFactory = new LinearGradientFactory();
+		registerService(bc, linearGradientFactory, CyGradientFactory.class, new Properties());
+		final LinearGradientEditorFactory linearGradientEditorFactory = new LinearGradientEditorFactory();
+		registerService(bc, linearGradientEditorFactory, CyGradientEditorFactory.class, new Properties());
 	}
 	
 	/**

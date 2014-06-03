@@ -19,7 +19,7 @@ public class HeatMapChartEditorFactory implements CyChartEditorFactory<HeatMapLa
 	
 	@Override
 	public Class<? extends CyChart<HeatMapLayer>> getSupportedClass() {
-		return HeatMapChart.class;
+		return (Class<? extends CyChart<HeatMapLayer>>) HeatMapChart.class;
 	}
 
 	@Override

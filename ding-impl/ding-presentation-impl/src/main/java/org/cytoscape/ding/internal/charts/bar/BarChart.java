@@ -40,6 +40,8 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		}
 	}
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public BarChart(final Map<String, Object> properties) {
 		super(DISPLAY_NAME, properties);
 	}
@@ -52,6 +54,8 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		super(DISPLAY_NAME, input);
 	}
 
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
 	@Override 
 	public List<BarLayer> getLayers(final CyNetworkView networkView, final View<? extends CyIdentifiable> view) {
 		final CyNetwork network = networkView.getModel();
@@ -93,4 +97,6 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	public String getId() {
 		return FACTORY_ID;
 	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
 }

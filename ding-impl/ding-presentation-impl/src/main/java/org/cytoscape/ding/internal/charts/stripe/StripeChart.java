@@ -109,13 +109,13 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 	
 	@Override
 	protected Class<?> getSettingType(final String key) {
-		if (key.equals(DISTINCT_VALUES)) return List.class;
+		if (key.equalsIgnoreCase(DISTINCT_VALUES)) return List.class;
 		return super.getSettingType(key);
 	}
 	
 	@Override
 	protected Class<?> getSettingListType(final String key) {
-		if (key.equals(DISTINCT_VALUES)) return Object.class;
+		if (key.equalsIgnoreCase(DISTINCT_VALUES)) return Object.class;
 		return super.getSettingListType(key);
 	}
 	

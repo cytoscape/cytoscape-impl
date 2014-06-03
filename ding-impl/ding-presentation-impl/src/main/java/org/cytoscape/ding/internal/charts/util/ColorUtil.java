@@ -236,4 +236,11 @@ public final class ColorUtil {
 
 		return new Color(d, d, d);
 	}
+	
+	public static String toHexString(final Color color) {
+		String hex = Integer.toHexString(color.getRGB());
+		hex = hex.substring(2, hex.length()); // remove alpha bits
+
+		return "#" + hex;
+	}
 }

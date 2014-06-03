@@ -19,7 +19,7 @@ public class PieChartEditorFactory implements CyChartEditorFactory<PieLayer> {
 	
 	@Override
 	public Class<? extends CyChart<PieLayer>> getSupportedClass() {
-		return PieChart.class;
+		return (Class<? extends CyChart<PieLayer>>) PieChart.class;
 	}
 
 	@Override

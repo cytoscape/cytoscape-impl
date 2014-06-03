@@ -91,6 +91,7 @@ import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
+import org.cytoscape.view.presentation.gradients.CyGradient;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -208,6 +209,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
 	private CustomGraphicLayer customGraphicLayer;
 	private CyChart cyChart;
+	private CyGradient cyGradient;
 	private ArrowShape arrowShape;
 	private VizMapGUI vizMapGui;
 	private DiscreteMappingGenerator<?> discreteMappingGenerator;

@@ -6,8 +6,10 @@ import java.awt.geom.Rectangle2D;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,21 +17,32 @@ import java.util.Map.Entry;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.ViewUtils.Position;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
-import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * 
  */
-public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLayer> implements CyChart<T> {
+public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLayer> implements CyCustomGraphics<T> {
 
+	/**
+	 * 
+	 */
 	public static final String DATA_COLUMNS = "datacolumns";
-	public static final String YBASE = "ybase";
+//	/**
+//	 * The vertical base of the chart as a proportion of the height.
+//	 * By default, this is 0.5 (the center of the node), to allow for both positive and negative values.
+//	 * If, however, you only have positive values, you might want to set this to 1.0 (the bottom of the node).
+//	 * Note that this goes backwards from what might be expected, with 0.0 being the top of the node and 
+//	 * 1.0 being the bottom of the node. The keyword bottom is also supported.
+//	 */
+//	public static final String YBASE = "ybase";
 	public static final String ITEM_LABELS_COLUMN = "itemlabelscolumn";
 	public static final String DOMAIN_LABELS_COLUMN = "domainlabelscolumn";
 	public static final String RANGE_LABELS_COLUMN = "rangelabelscolumn";
+	
 	public static final String POSITION = "position";
 	public static final String GLOBAL_RANGE = "globalrange";
 	public static final String AUTO_RANGE = "autorange";
@@ -40,10 +53,55 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	public static final String SHOW_DOMAIN_AXIS = "showdomainaxis";
 	public static final String SHOW_RANGE_AXIS = "showrangeaxis";
 	public static final String VALUES = "valuelist";
+	/**
+	 * The list of colors, one for each chart element
+	 */
 	public static final String COLORS = "colorlist";
 	public static final String COLOR_SCHEME = "colorscheme";
 	public static final String ORIENTATION = "orientation";
 	public static final String STACKED = "stacked";
+	
+	
+/*
+attributelist
+If the values are going to be specified by node attributes,
+this list provides the attribute or attributes to be used as a comma-separated list.
+
+colorlist
+The list of colors, one for each bar. colorlist also supports the following keywords:
+contrasting: Select colors base on a contrasting color scheme
+modulated: Select colors base on a modulated rainbow color scheme
+rainbow: Select colors base on the rainbow color scheme
+random: Select colors randomly
+up:color: Use color if the value is positive
+down:color: Use color if the value is negative
+
+labellist
+This list provides the labels to be associated with each bar, point, or pie slice on the resulting graph. The values should contain a comma-separated list of labels, one for each value.
+
+position
+The position of the graphic relative to the center of the node. This can be expressed as either an "x,y" pair, or using the main compas points: north, northeast, east, southeast, south, southwest, west, northwest or center.
+
+range
+A comma-separated pair of values that indicates the range of the input values. This may be used to force all charts across a number of nodes to have the same value range. Otherwise each charts will utilize it's own set of values to determine the hight of the bars.
+
+scale
+A scale factor for the size of the chart. A scale of 1.0 is the same size as the node, whereas a scale of 0.5 is 50% of the node size.
+
+separation
+The separation between any two bars
+
+showlabels
+A true/false value to enable or disable the creation of labels.
+
+size
+This specifies the size of the chart as a widthXheight pair. If only one value is given, it is assumed that the chart is square, otherwise the string is assumed to contain a width followed by an "X" followed by a height.
+
+valuelist
+The list of values (as a comma-separated list) for each point, bar, or pie slice.
+
+ybase
+	 */
 	
 	protected static final double DEFAULT_YBASE = 0.5;
 	
@@ -68,21 +126,11 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		addProperties(parseInput(input));
 	}
 	
-	protected AbstractEnhancedCustomGraphics(final AbstractEnhancedCustomGraphics<T> chart) {
-		this(chart.getDisplayName());
-		this.properties.putAll(chart.getProperties());
-	}
-	
 	protected AbstractEnhancedCustomGraphics(final String displayName, final Map<String, Object> properties) {
 		this(displayName);
 		addProperties(properties);
 	}
 
-	@Override
-	public Map<String, Object> getProperties() {
-		return new HashMap<String, Object>(properties);
-	}
-	
 	@Override
 	public Long getIdentifier() {
 		return id;
@@ -138,6 +186,23 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		return displayName;
 	}
 
+	@Override
+	public String toSerializableString() {
+		final StringBuilder sb = new StringBuilder(getId() + ":");
+		
+		for (final Entry<String, Object> entry : properties.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			
+			if (key != null && value != null)
+				sb.append(serialize(key, value));
+		}
+		
+		return sb.toString();
+	}
+	
+	public abstract String getId();
+	
 	public synchronized void set(final String key, Object value) {
 		if (key == null)
 			throw new IllegalArgumentException("'key' must not be null.");
@@ -170,6 +235,64 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		
 		return obj instanceof List ? (List)obj : Collections.emptyList();
 	}
+	
+	public String serialize(final String key, final Object value) {
+		return " " + key + "=\"" + serializeValue(key, value) + "\"";
+	}
+
+	public String serializeValue(final String key, final Object value) {
+		String s = "";
+		
+		if (value instanceof Collection)
+			s = serializeList(key, (Collection<?>)value);
+		else if (value instanceof Color)
+			s = ColorUtil.toHexString((Color)value);
+		else if (value != null)
+			s = value.toString();
+		
+		return s;
+	}
+	
+	public String serializeList(final String key, final Collection<?> list) {
+		final StringBuilder sb = new StringBuilder();
+		
+		for (final Iterator<?> i = list.iterator(); i.hasNext();) {
+			Object value = serializeValue(key, i.next());
+	        sb.append(value).append(i.hasNext() ? getListSeparator(key) : "");
+		}
+		
+		return sb.toString();
+	}
+	
+//	public List<Color> convertInputToColor(final String input, final Map<String, ? extends List<?>> data,
+//	final boolean normalize) {
+//int nColors = 0;
+//
+//for (final List<?> values : data.values())
+//	nColors = Math.max(nColors, values.size());
+//
+//if (input != null) {
+//	// OK, we have three possibilities. The input could be a keyword, a
+//	// comma-separated list of colors, or a list of Color objects. We need to figure this out first...
+//	// See if we have a csv
+//	String[] colorArray = input.split(",");
+//	
+//	// Look for up/down special case
+//	if (colorArray.length == 2
+//			&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN))) {
+//		return parseUpDownColor(colorArray, values, normalize);
+//	} else if (colorArray.length == 3
+//			&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN) || colorArray[0]
+//					.toLowerCase().startsWith(ZERO))) {
+//		return parseUpDownColor(colorArray, values, normalize);
+//	} else if (colorArray.length > 1) {
+//		return parseColorList(colorArray);
+//	}
+//}
+//
+//// Return the default
+//return ColorUtil.generateContrastingColors(nColors);
+//}
 	
 	protected Map<String, Object> parseInput(final String input) {
 		final Map<String, Object> props = new HashMap<String, Object>();
@@ -227,33 +350,33 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	}
 	
 	protected Class<?> getSettingType(final String key) {
-		if (key.equals(DATA_COLUMNS)) return List.class;
-		if (key.equals(ITEM_LABELS_COLUMN)) return String.class;
-		if (key.equals(DOMAIN_LABELS_COLUMN)) return String.class;
-		if (key.equals(RANGE_LABELS_COLUMN)) return String.class;
-		if (key.equals(VALUES)) return List.class;
-		if (key.equals(COLORS)) return List.class;
-		if (key.equals(COLOR_SCHEME)) return String.class;
-		if (key.equals(SCALE)) return Double.class;
-		if (key.equals(SHOW_ITEM_LABELS)) return Boolean.class;
-		if (key.equals(SHOW_RANGE_AXIS)) return Boolean.class;
-		if (key.equals(SHOW_DOMAIN_AXIS)) return Boolean.class;
-		if (key.equals(GLOBAL_RANGE)) return Boolean.class;
-		if (key.equals(AUTO_RANGE)) return Boolean.class;
-		if (key.equals(RANGE)) return DoubleRange.class;
-		if (key.equals(SIZE)) return Rectangle2D.class;
-		if (key.equals(YBASE)) return Double.class;
-		if (key.equals(POSITION)) return Position.class;
-		if (key.equals(ORIENTATION)) return Orientation.class;
-		if (key.equals(STACKED)) return Boolean.class;
+		if (key.equalsIgnoreCase(DATA_COLUMNS)) return List.class;
+		if (key.equalsIgnoreCase(ITEM_LABELS_COLUMN)) return String.class;
+		if (key.equalsIgnoreCase(DOMAIN_LABELS_COLUMN)) return String.class;
+		if (key.equalsIgnoreCase(RANGE_LABELS_COLUMN)) return String.class;
+		if (key.equalsIgnoreCase(VALUES)) return List.class;
+		if (key.equalsIgnoreCase(COLORS)) return List.class;
+		if (key.equalsIgnoreCase(COLOR_SCHEME)) return String.class;
+		if (key.equalsIgnoreCase(SCALE)) return Double.class;
+		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
+		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
+		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
+		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
+		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
+		if (key.equalsIgnoreCase(RANGE)) return DoubleRange.class;
+		if (key.equalsIgnoreCase(SIZE)) return Rectangle2D.class;
+//		if (key.equalsIgnoreCase(YBASE)) return Double.class;
+		if (key.equalsIgnoreCase(POSITION)) return Position.class;
+		if (key.equalsIgnoreCase(ORIENTATION)) return Orientation.class;
+		if (key.equalsIgnoreCase(STACKED)) return Boolean.class;
 			
 		return null;
 	}
 	
 	protected Class<?> getSettingListType(final String key) {
-		if (key.equals(DATA_COLUMNS)) return String.class;
-		if (key.equals(VALUES)) return Double.class;
-		if (key.equals(COLORS)) return Color.class;
+		if (key.equalsIgnoreCase(DATA_COLUMNS)) return String.class;
+		if (key.equalsIgnoreCase(VALUES)) return Double.class;
+		if (key.equalsIgnoreCase(COLORS)) return Color.class;
 		
 		return Object.class;
 	}
@@ -286,8 +409,9 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 				} else if (type == Float.class) {
 					value = Double.valueOf(value.toString()).floatValue();
 				} else if (type == Double.class || type == Number.class) {
-					value = key.equalsIgnoreCase(YBASE) ? 
-							parseYBase(value.toString()) : Double.valueOf(value.toString());
+//					value = key.equalsIgnoreCase(YBASE) ? 
+//							parseYBase(value.toString()) : Double.valueOf(value.toString());
+					value = Double.valueOf(value.toString());
 				} else if (type == Color.class) {
 					value = ColorUtil.parseColor(value.toString());
 				} else if (type == Rectangle2D.class) {
@@ -298,6 +422,10 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 					value = parseRange(value.toString());
 				} else if (type == Orientation.class) {
 					value = Orientation.valueOf(value.toString());
+				} else if (type == Point2D.class) {
+					value = parsePoint(value.toString());
+				} else if (type == ControlPoint.class) {
+					value = ControlPoint.parse(value.toString());
 				} else {
 					value = null;
 				}
@@ -319,14 +447,19 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 			if (List.class.isAssignableFrom(value.getClass())) {
 				for (final Object listValue : (List<?>)value) {
 					final S parsedValue = parseValue(key, listValue, type);
-					list.add(parsedValue);
+					
+					if (parsedValue != null)
+						list.add(parsedValue);
 				}
 			} else if (value instanceof String) {
-				String[] split = value.toString().split(",");
+				final String separator = getListSeparator(key);
+				final String[] split = value.toString().split(separator);
 				
 				for (String s : split) {
 					final S parsedValue = parseValue(key, s.trim(), type);
-					list.add(parsedValue);
+					
+					if (parsedValue != null)
+						list.add(parsedValue);
 				}
 			}
 		} catch (Exception e) {
@@ -335,6 +468,10 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		return list;
 	}
 	
+	protected String getListSeparator(final String key) {
+		return ",";
+	}
+
 	protected DoubleRange parseRange(final String input) {
 		if (input != null) {
 			String[] split = input.split(",");
@@ -393,43 +530,10 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		String tokens[] = input.split(",");
 		float x = Float.parseFloat(tokens[0].trim());
 		float y = Float.parseFloat(tokens[1].trim());
+		
 		return new Point2D.Float(x, y);
 	}
 
-	// Parse out a stop list. The stoplist is of the form:
-	// r,g,b,a,stop|r,g,b,a,stop...
-	protected int parseStopList(String stoplist, List<Color> colors, List<Float> stops) {
-		if (stoplist == null || stoplist.length() == 0)
-			return 0;
-		
-		int nStops = 0;
-
-		String[] tokens = stoplist.split("\\|");
-		
-		for (String token : tokens) {
-			String[] components = token.split(",");
-			if (components.length != 4 && components.length != 5)
-				continue;
-
-			int r = Integer.parseInt(components[0]);
-			int g = Integer.parseInt(components[1]);
-			int b = Integer.parseInt(components[2]);
-			int a = 255;
-			float stop;
-			if (components.length == 5) {
-				a = Integer.parseInt(components[3]);
-				stop = Float.parseFloat(components[4]);
-			} else {
-				stop = Float.parseFloat(components[3]);
-			}
-			colors.add(new Color(r, g, b, a));
-			stops.add(stop);
-			nStops++;
-		}
-		
-		return nStops;
-	}
-	
 	/**
  	 * Return the double equivalent of the input
  	 *

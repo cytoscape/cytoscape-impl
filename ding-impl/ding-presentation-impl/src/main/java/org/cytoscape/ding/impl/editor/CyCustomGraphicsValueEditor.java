@@ -13,9 +13,13 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -30,6 +34,10 @@ import org.cytoscape.view.presentation.charts.CyChartFactory;
 import org.cytoscape.view.presentation.charts.CyChartFactoryManager;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.gradients.CyGradient;
+import org.cytoscape.view.presentation.gradients.CyGradientEditorFactory;
+import org.cytoscape.view.presentation.gradients.CyGradientFactory;
+import org.cytoscape.view.presentation.gradients.CyGradientFactoryManager;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
@@ -42,8 +50,9 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	
 	private JTabbedPane cgTypeTpn;
 	private JPanel bottomPnl;
-	private GraphicsEditor graphicsEditor;
-	private ChartEditor chartEditor;
+	private GraphicsPanel graphicsPnl;
+	private ChartPanel chartPnl;
+	private GradientPanel gradientPnl;
 	private JButton cancelBtn;
 	private JButton applyBtn;
 	
@@ -54,15 +63,18 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 
 	private final CustomGraphicsManager customGraphicsMgr;
 	private final CyChartFactoryManager chartFactoryMgr;
+	private final CyGradientFactoryManager gradientFactoryMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public CyCustomGraphicsValueEditor(final CustomGraphicsManager customGraphicsMgr,
 									   final CyChartFactoryManager chartFactoryMgr,
+									   final CyGradientFactoryManager gradientFactoryMgr,
 									   final CyServiceRegistrar serviceRegistrar) {
 		this.customGraphicsMgr = customGraphicsMgr;
 		this.chartFactoryMgr = chartFactoryMgr;
+		this.gradientFactoryMgr = gradientFactoryMgr;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
@@ -112,13 +124,16 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	}
 	
 	private void updateUI() {
-		getGraphicsEditor().updateList();
-		getChartEditor().update();
+		getGraphicsPnl().updateList();
+		getChartPnl().update();
+		getGradientPnl().update();
 		
 		if (oldCustomGraphics instanceof CyChart) {
-			getCgTypeTpn().setSelectedComponent(getChartEditor());
+			getCgTypeTpn().setSelectedComponent(getChartPnl());
+		} else if (oldCustomGraphics instanceof CyGradient) {
+			getCgTypeTpn().setSelectedComponent(getGradientPnl());
 		} else {
-			getCgTypeTpn().setSelectedComponent(getGraphicsEditor());
+			getCgTypeTpn().setSelectedComponent(getGraphicsPnl());
 		}
 		
 		pack();
@@ -133,10 +148,12 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		editCancelled = false;
 		final Component c = getCgTypeTpn().getSelectedComponent();
 		
-		if (c instanceof GraphicsEditor)
-			newCustomGraphics = ((GraphicsEditor)c).getCustomGraphics();
-		else if (c instanceof ChartEditor)
-			newCustomGraphics = ((ChartEditor)c).getChart();
+		if (c instanceof GraphicsPanel)
+			newCustomGraphics = ((GraphicsPanel)c).getCustomGraphics();
+		else if (c instanceof ChartPanel)
+			newCustomGraphics = ((ChartPanel)c).getChart();
+		else if (c instanceof GradientPanel)
+			newCustomGraphics = ((GradientPanel)c).getGradient();
 		
 		dispose();
 	}
@@ -144,8 +161,9 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	private JTabbedPane getCgTypeTpn() {
 		if (cgTypeTpn == null) {
 			cgTypeTpn = new JTabbedPane();
-			cgTypeTpn.addTab("Images", getGraphicsEditor());
-			cgTypeTpn.addTab("Charts", getChartEditor());
+			cgTypeTpn.addTab("Images", getGraphicsPnl());
+			cgTypeTpn.addTab("Charts", getChartPnl());
+			cgTypeTpn.addTab("Gradients", getGradientPnl());
 		}
 		
 		return cgTypeTpn;
@@ -161,21 +179,30 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		return bottomPnl;
 	}
 	
-	private GraphicsEditor getGraphicsEditor() {
-		if (graphicsEditor == null) {
-			graphicsEditor = new GraphicsEditor();
+	private GraphicsPanel getGraphicsPnl() {
+		if (graphicsPnl == null) {
+			graphicsPnl = new GraphicsPanel();
 		}
 		
-		return graphicsEditor;
+		return graphicsPnl;
 	}
 	
-	private ChartEditor getChartEditor() {
-		if (chartEditor == null) {
-			chartEditor = new ChartEditor();
-			chartEditor.setOpaque(false);
+	private ChartPanel getChartPnl() {
+		if (chartPnl == null) {
+			chartPnl = new ChartPanel();
+			chartPnl.setOpaque(false);
 		}
 		
-		return chartEditor;
+		return chartPnl;
+	}
+	
+	public GradientPanel getGradientPnl() {
+		if (gradientPnl == null) {
+			gradientPnl = new GradientPanel();
+			gradientPnl.setOpaque(false);
+		}
+		
+		return gradientPnl;
 	}
 	
 	private JButton getCancelBtn() {
@@ -209,13 +236,13 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	// ==[ CLASSES ]====================================================================================================
 	
 	@SuppressWarnings("rawtypes")
-	private class GraphicsEditor extends JPanel {
+	private class GraphicsPanel extends JPanel {
 		
 		private static final long serialVersionUID = 1157288441507073705L;
 		
 		private DiscreteValueList<CyCustomGraphics> graphicsList;
 		
-		public GraphicsEditor() {
+		public GraphicsPanel() {
 			JScrollPane scrollPane = new JScrollPane();
 			scrollPane.setViewportView(getGraphicsList());
 			
@@ -251,7 +278,7 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		}
 	}
 	
-	private class ChartEditor extends JPanel {
+	private class ChartPanel extends JPanel {
 		
 		private static final long serialVersionUID = 6669567626195325838L;
 
@@ -262,7 +289,7 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		
 		private JTabbedPane chartTypeTpn;
 		
-		public ChartEditor() {
+		public ChartPanel() {
 			this.setLayout(new BorderLayout());
 			this.add(getChartTypeTpn(), BorderLayout.CENTER);
 		}
@@ -317,6 +344,9 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 					} else {
 						initialChart = cf.getInstance(new HashMap<String, Object>());
 					}
+					
+					if (chart == null)
+						chart = initialChart;
 					
 					if (initialChart != null) // Just so this panel's dimensions are set correctly
 						chartEditorPn.update(initialChart);
@@ -393,6 +423,107 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 			JComponent getEditor() {
 				return editor;
 			}
+		}
+	}
+	
+	private class GradientPanel extends JPanel {
+
+		private static final long serialVersionUID = 740722017387521227L;
+		
+		private JComboBox gradientTypeCmb;
+		private JComponent editor;
+		
+		private CyGradient<?> gradient;
+		private boolean updatingGradientTypes;
+		
+		@SuppressWarnings("serial")
+		GradientPanel() {
+			this.setLayout(new BorderLayout());
+			
+			gradientTypeCmb = new JComboBox(new DefaultComboBoxModel());
+			gradientTypeCmb.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (!updatingGradientTypes) {
+						if (editor != null)
+							GradientPanel.this.remove(editor);
+						
+						final CyGradientFactory factory = (CyGradientFactory) gradientTypeCmb.getSelectedItem();
+						
+						if (factory != null) {
+							if (oldCustomGraphics instanceof CyGradient)
+								gradient = factory.getInstance((CyGradient)oldCustomGraphics);
+							else
+								gradient = factory.getInstance("");
+							
+							final CyGradientEditorFactory gef =
+									gradientFactoryMgr.getCyGradientEditorFactory(factory.getSupportedClass());
+							
+							if (gef != null) {
+								editor = gef.createEditor(gradient);
+								GradientPanel.this.add(editor);
+							}
+						}
+					}
+				}
+			});
+			gradientTypeCmb.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+						boolean cellHasFocus) {
+					if (value == null)
+						this.setText("-- none --");
+					else if (value instanceof CyGradientFactory)
+						this.setText(((CyGradientFactory<?>)value).getDisplayName());
+					else
+						this.setText("[ invalid gradient type ]"); // Should never happen
+					
+					return this;
+				}
+			});
+			
+			this.add(gradientTypeCmb, BorderLayout.NORTH);
+		}
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		void update() {
+			if (oldCustomGraphics instanceof CyGradient) {
+				final CyGradientFactory factory =
+						gradientFactoryMgr.getCyGradientFactory((Class<CyGradient<?>>)oldCustomGraphics.getClass());
+
+				if (factory != null)
+					gradient = factory.getInstance((CyGradient<?>)oldCustomGraphics);
+			}
+			
+			updateGradientTypes();
+		}
+		
+		CyGradient<?> getGradient() {
+			return gradient;
+		}
+		
+		@SuppressWarnings("rawtypes")
+		private void updateGradientTypes() {
+			updatingGradientTypes = true;
+			CyGradientFactory selectedFactory = null;
+			
+			final DefaultComboBoxModel cmbModel = (DefaultComboBoxModel) gradientTypeCmb.getModel();
+			cmbModel.removeAllElements();
+			
+			try {
+				final Collection<CyGradientFactory<?>> factories = gradientFactoryMgr.getAllCyGradientFactories();
+				
+				for (final CyGradientFactory<?> gf : factories) {
+					cmbModel.addElement(gf);
+					
+					if (gradient != null && gf.getSupportedClass().isAssignableFrom(gradient.getClass()))
+						selectedFactory = gf;
+				}
+			} finally {
+				updatingGradientTypes = false;
+			}
+			
+			gradientTypeCmb.setSelectedItem(selectedFactory);
 		}
 	}
 }

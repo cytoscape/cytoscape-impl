@@ -19,7 +19,7 @@ public class BoxChartEditorFactory implements CyChartEditorFactory<BoxLayer> {
 	
 	@Override
 	public Class<? extends CyChart<BoxLayer>> getSupportedClass() {
-		return BoxChart.class;
+		return (Class<? extends CyChart<BoxLayer>>) BoxChart.class;
 	}
 
 	@Override
