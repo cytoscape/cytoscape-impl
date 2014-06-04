@@ -451,8 +451,11 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 						final CyGradientFactory factory = (CyGradientFactory) gradientTypeCmb.getSelectedItem();
 						
 						if (factory != null) {
-							if (oldCustomGraphics instanceof CyGradient)
+							if (oldCustomGraphics != null &&
+									factory.getSupportedClass().isAssignableFrom(oldCustomGraphics.getClass()))
 								gradient = factory.getInstance((CyGradient)oldCustomGraphics);
+							else if (oldCustomGraphics instanceof CyGradient)
+								gradient = factory.getInstance(((CyGradient)oldCustomGraphics).getProperties());
 							else
 								gradient = factory.getInstance("");
 							
@@ -504,15 +507,14 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		
 		@SuppressWarnings("rawtypes")
 		private void updateGradientTypes() {
+			final Collection<CyGradientFactory<?>> factories = gradientFactoryMgr.getAllCyGradientFactories();
+			CyGradientFactory selectedFactory = factories.isEmpty() ? null : factories.iterator().next();
 			updatingGradientTypes = true;
-			CyGradientFactory selectedFactory = null;
 			
 			final DefaultComboBoxModel cmbModel = (DefaultComboBoxModel) gradientTypeCmb.getModel();
 			cmbModel.removeAllElements();
 			
 			try {
-				final Collection<CyGradientFactory<?>> factories = gradientFactoryMgr.getAllCyGradientFactories();
-				
 				for (final CyGradientFactory<?> gf : factories) {
 					cmbModel.addElement(gf);
 					

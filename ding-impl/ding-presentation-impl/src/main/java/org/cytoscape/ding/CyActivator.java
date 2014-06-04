@@ -125,6 +125,8 @@ import org.cytoscape.ding.internal.charts.stripe.StripeChartFactory;
 import org.cytoscape.ding.internal.gradients.CyGradientFactoryManagerImpl;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientEditorFactory;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
+import org.cytoscape.ding.internal.gradients.radial.RadialGradientEditorFactory;
+import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconManagerImpl;
 import org.cytoscape.event.CyEventHelper;
@@ -703,6 +705,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, linearGradientFactory, CyGradientFactory.class, new Properties());
 		final LinearGradientEditorFactory linearGradientEditorFactory = new LinearGradientEditorFactory();
 		registerService(bc, linearGradientEditorFactory, CyGradientEditorFactory.class, new Properties());
+		
+		final RadialGradientFactory radialGradientFactory = new RadialGradientFactory();
+		registerService(bc, radialGradientFactory, CyGradientFactory.class, new Properties());
+		final RadialGradientEditorFactory radialGradientEditorFactory = new RadialGradientEditorFactory();
+		registerService(bc, radialGradientEditorFactory, CyGradientEditorFactory.class, new Properties());
 	}
 	
 	/**
