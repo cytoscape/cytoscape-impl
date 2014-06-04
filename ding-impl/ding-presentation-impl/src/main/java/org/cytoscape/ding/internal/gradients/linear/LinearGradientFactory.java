@@ -8,20 +8,18 @@ import org.cytoscape.view.presentation.gradients.CyGradientFactory;
 public class LinearGradientFactory implements CyGradientFactory<LinearGradientLayer> {
 	
 	@Override
-	public CyGradient<LinearGradientLayer> getInstance(String input) {
+	public CyGradient<LinearGradientLayer> getInstance(final String input) {
 		return new LinearGradient(input);
 	}
 
 	@Override
-	public CyGradient<LinearGradientLayer> getInstance(CyGradient<LinearGradientLayer> gradient) {
-		// TODO Auto-generated method stub
-		return new LinearGradient("");
+	public CyGradient<LinearGradientLayer> getInstance(final CyGradient<LinearGradientLayer> gradient) {
+		return new LinearGradient((LinearGradient)gradient);
 	}
 
 	@Override
-	public CyGradient<LinearGradientLayer> getInstance(Map<String, Object> properties) {
-		// TODO Auto-generated method stub
-		return new LinearGradient("");
+	public CyGradient<LinearGradientLayer> getInstance(final Map<String, Object> properties) {
+		return new LinearGradient(properties);
 	}
 
 	@Override

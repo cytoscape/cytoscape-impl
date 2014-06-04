@@ -1,7 +1,5 @@
 package org.cytoscape.ding.internal.gradients.linear;
 
-import static org.cytoscape.ding.internal.gradients.linear.LinearGradient.END;
-import static org.cytoscape.ding.internal.gradients.linear.LinearGradient.START;
 import static org.cytoscape.ding.internal.gradients.linear.LinearGradient.STOP_LIST;
 
 import java.awt.Color;
@@ -44,19 +42,15 @@ public class LinearGradientEditor extends JPanel {
 	
 	private GradientEditor getGrEditor() {
 		if (grEditor == null) {
-			grEditor = new GradientEditor();
+			final List<ControlPoint> points = gradient.getList(STOP_LIST, ControlPoint.class);
+			grEditor = new GradientEditor(points);
 			grEditor.setOpaque(true);
 			
 			// Set current values
-			final List<ControlPoint> points = gradient.getList(STOP_LIST, ControlPoint.class);
-			
-			for (final ControlPoint cp : points)
-				grEditor.addPoint(cp.position, cp.color);
-			
-			final Color start = gradient.get(START, Color.class, Color.DARK_GRAY);
-			grEditor.setStart(start);
-			final Color end = gradient.get(END, Color.class, Color.WHITE);
-			grEditor.setEnd(end);
+//			final Color start = gradient.get(START, Color.class, Color.DARK_GRAY);
+//			grEditor.setStart(start);
+//			final Color end = gradient.get(END, Color.class, Color.WHITE);
+//			grEditor.setEnd(end);
 			
 			// Add listener--update gradient when user interacts with the UI
 			grEditor.addActionListener(new ActionListener() {
@@ -71,8 +65,8 @@ public class LinearGradientEditor extends JPanel {
 	}
 	
 	private void updateGradient() {
-		gradient.set(START, getGrEditor().getStart());
-		gradient.set(END, getGrEditor().getEnd());
+//		gradient.set(START, getGrEditor().getStart());
+//		gradient.set(END, getGrEditor().getEnd());
 		gradient.set(STOP_LIST, getGrEditor().getControlPoints());
 	}
 }

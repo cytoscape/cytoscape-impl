@@ -44,7 +44,7 @@ public class GradientEditor extends JPanel {
 	/** A button to edit a control point */
 	private JButton edit = new JButton("Edit");
 	/** A button to delete a control point */
-	private JButton del = new JButton("Del");
+	private JButton del = new JButton("Delete");
 	
 	/** The x position of the gradient bar */
 	private int x;
@@ -60,10 +60,15 @@ public class GradientEditor extends JPanel {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
+	@SuppressWarnings("unchecked")
+	public GradientEditor() {
+		this(Collections.EMPTY_LIST);
+	}
+	
 	/**
 	 * Create a new editor for gradients
 	 */
-	public GradientEditor() {
+	public GradientEditor(final List<ControlPoint> points) {
 		setLayout(null);
 		
 		add.setBounds(20, 70, 75, 20);
@@ -92,8 +97,20 @@ public class GradientEditor extends JPanel {
 			}
 		});
 		
-		controlPoints.add(new ControlPoint(Color.WHITE, 0));
-		controlPoints.add(new ControlPoint(Color.BLACK, 1));
+		if (points == null || points.isEmpty()) {
+			controlPoints.add(new ControlPoint(Color.WHITE, 0));
+			controlPoints.add(new ControlPoint(Color.BLACK, 1));
+		} else {
+			for (int i = 0; i < points.size() - 1; i++) {
+				if (i == 0) {
+					controlPoints.add(new ControlPoint(points.get(i).color, 0)); // start
+					controlPoints.add(new ControlPoint(points.get(points.size() - 1).color, 1)); // end
+				} else {
+					final ControlPoint cp = points.get(i);
+					addPoint(cp.position, cp.color);
+				}
+			}
+		}
 		
 		poly.addPoint(0, 0);
 		poly.addPoint(5, 10);
@@ -105,9 +122,8 @@ public class GradientEditor extends JPanel {
 				selectPoint(e.getX(), e.getY());
 				repaint(0);
 				
-				if (e.getClickCount() == 2) {
+				if (e.getClickCount() == 2)
 					editPoint();
-				}
 			}
 		});
 		
@@ -196,15 +212,15 @@ public class GradientEditor extends JPanel {
 	 * @param position The position in the gradient (0 -> 1)
 	 * @param color The color at the new control point
 	 */
-	public void addPoint(float pos, Color col) {
-		ControlPoint point = new ControlPoint(col, pos);
+	public void addPoint(final float pos, final Color col) {
+		final ControlPoint point = new ControlPoint(col, pos);
 		
 		for (int i = 0; i < controlPoints.size() - 1; i++) {
-			ControlPoint now = controlPoints.get(i);
-			ControlPoint next = controlPoints.get(i+1);
+			final ControlPoint now = controlPoints.get(i);
+			final ControlPoint next = controlPoints.get(i+1);
 			
-			if ((now.position <= 0.5f) && (next.position >=0.5f)) {
-				controlPoints.add(i+1,point);
+			if ((now.position <= pos) && (next.position >= pos)) {
+				controlPoints.add(i+1, point);
 				break;
 			}
 		}
@@ -230,14 +246,6 @@ public class GradientEditor extends JPanel {
 	public void setEnd(Color col) {
 		(controlPoints.get(controlPoints.size()-1)).color = col;
 		repaint(0);
-	}
-	
-	public Color getStart() {
-		return controlPoints.size() > 0 ? controlPoints.get(0).color : null;
-	}
-	
-	public Color getEnd() {
-		return controlPoints.size() > 0 ? controlPoints.get(controlPoints.size()-1).color : null;
 	}
 	
 	/**
