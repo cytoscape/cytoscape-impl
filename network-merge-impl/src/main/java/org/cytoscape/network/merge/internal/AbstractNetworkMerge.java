@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.jar.Attributes.Name;
+
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -49,6 +49,9 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	
 	protected boolean withinNetworkMerge = false;
 	protected final TaskMonitor taskMonitor;
+	protected Map<CyNode,Integer> mapNodesIndex;
+	protected Map<String,Map<Long,Integer>> mapEdgeDirectedInteractions;
+	protected Map<String,Map<Long,Integer>> mapEdgeInteractions;
 	
 	// For canceling task
 	private volatile boolean interrupted;
@@ -56,6 +59,9 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	public AbstractNetworkMerge(final TaskMonitor taskMonitor) {
 		this.taskMonitor = taskMonitor;
 		interrupted = false;
+		mapNodesIndex = new HashMap<CyNode,Integer>();
+		mapEdgeDirectedInteractions = new HashMap<String,Map<Long,Integer>>();
+		mapEdgeInteractions = new HashMap<String,Map<Long,Integer>>();
 	}
 
 	public void setWithinNetworkMerge(boolean withinNetworkMerge) {
@@ -107,46 +113,101 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	 * 
 	 * @return true if n1 and n2 matches
 	 */
-	protected boolean matchEdge(CyNetwork network1, CyNetwork network2, CyEdge e1, CyEdge e2,
-			Set<Set<CyNode>> matchedNodes) {
-		if (e1 == null || e2 == null) {
+	protected int matchEdge( CyNetwork network1, CyEdge e1, int position) {
+		
+		int index = -1;
+		long id1, id2 = 0;
+		Map<Long,Integer> mapNodesEdges = null;
+		Map<Long,Integer> mapNodesDirectedEdges = null;
+		if (e1 == null ) {
 			throw new NullPointerException();
 		}
-
-		// TODO should interaction be considered or not?
+		
 		String i1 = network1.getRow(e1).get("interaction", String.class);
-		String i2 = network2.getRow(e2).get("interaction", String.class);
-
-		if ((i1 == null && i2 != null) || (i1 != null && i2 == null)) {
-			return false;
+		
+		if(i1 == null)
+			return index;
+		
+		CyNode source = e1.getSource();
+		CyNode target = e1.getTarget();
+		
+		if (source == null || target == null ) {
+			throw new NullPointerException();
 		}
-
-		if (i1 != null && !i1.equals(i2))
-			return false;
-
-		if (e1.isDirected()) { // directed
-			if (!e2.isDirected())
-				return false;
-			return matchedNodes.contains(getNodePair(e1.getSource(), e2.getSource()))
-					&& matchedNodes.contains(getNodePair(e1.getTarget(), e2.getTarget()));
-		} else { // non directed
-			if (e2.isDirected())
-				return false;
-			if (matchedNodes.contains(getNodePair(e1.getSource(), e2.getSource()))
-					&& matchedNodes.contains(getNodePair(e1.getTarget(), e2.getTarget())))
-				return true;
-			if (matchedNodes.contains(getNodePair(e1.getSource(), e2.getTarget()))
-					&& matchedNodes.contains(getNodePair(e1.getTarget(), e2.getSource())))
-				return true;
-			return false;
+		
+		int iSource = mapNodesIndex.get(source);
+		
+		int iTarget = mapNodesIndex.get(target);
+		
+		if (e1.isDirected())
+		{
+			mapNodesDirectedEdges = mapEdgeDirectedInteractions.get(i1);
+			id1 = getUniqueIdNumber(iSource, iTarget);
+			if( mapNodesDirectedEdges != null)
+			{	
+				//System.out.println("same interaction directed edge: " + i1);
+				if(mapNodesDirectedEdges.get(id1) != null)
+					index = mapNodesDirectedEdges.get(id1);
+			}
+				
 		}
+		else
+		{
+			mapNodesEdges = mapEdgeInteractions.get(i1);
+			id1 = getUniqueIdNumber(iSource, iTarget);
+			id2 = getUniqueIdNumber(iTarget,iSource);
+			if(mapNodesEdges != null)
+			{
+				//System.out.println("same interaction edge: " + i1);
+				if(mapNodesEdges.get(id1) != null && mapNodesEdges.get(id2) != null && mapNodesEdges.get(id1) == mapNodesEdges.get(id2))
+					index = mapNodesEdges.get(id1);
+			}
+		}
+		
+		
+		if(index == -1)
+		{			
+			if (e1.isDirected())
+			{
+				if( mapNodesDirectedEdges != null)
+					mapNodesDirectedEdges.put(id1, position);
+				else
+				{
+					mapNodesDirectedEdges = new HashMap<Long,Integer>();
+					mapNodesDirectedEdges.put(id1, position);
+					mapEdgeDirectedInteractions.put(i1, mapNodesDirectedEdges);
+				}
+			}
+			else
+			{
+				if( mapNodesEdges != null)
+				{
+					mapNodesEdges.put(id1, position);
+					mapNodesEdges.put(id2, position);
+				}
+				else
+				{
+					mapNodesEdges = new HashMap<Long,Integer>();
+					mapNodesEdges.put(id1, position);
+					mapNodesEdges.put(id2, position);
+					mapEdgeInteractions.put(i1, mapNodesEdges);
+				}
+				
+			}
+		}
+		
+		return index;
 	}
-
-	private Set<CyNode> getNodePair(CyNode n1, CyNode n2) {
-		Set<CyNode> mn = new HashSet<CyNode>(2);
-		mn.add(n1);
-		mn.add(n2);
-		return mn;
+	
+	private long getUniqueIdNumber(int a, int b)
+	{
+		long id;
+		if(a > b)
+			id = b | ((long) a << 32);
+		else
+			id = a | ((long) b << 32);
+		
+		return id;
 	}
 
 	protected abstract void proprocess(CyNetwork toNetwork);
@@ -164,11 +225,14 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 			throw new IllegalArgumentException("No source networks!");
 		}
 
+		//long startTime = System.currentTimeMillis();
 		proprocess(mergedNetwork);
-
+		
+		mapNodesIndex.clear();
+		mapEdgeDirectedInteractions.clear();
+		mapEdgeInteractions.clear();
 		// get node matching list
-		final Set<Set<CyNode>> matchedNodes = new HashSet<Set<CyNode>>();
-		List<Map<CyNetwork, Set<CyNode>>> matchedNodeList = getMatchedList(fromNetworks, true, matchedNodes);
+		List<Map<CyNetwork, Set<CyNode>>> matchedNodeList = getMatchedList(fromNetworks, true);
 		
 		// Check cancel status
 		if(interrupted) {
@@ -207,7 +271,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 		
 		// match edges
 		taskMonitor.setStatusMessage("Merging edges...");
-		List<Map<CyNetwork, Set<CyEdge>>> matchedEdgeList = getMatchedList(fromNetworks, false, matchedNodes);
+		List<Map<CyNetwork, Set<CyEdge>>> matchedEdgeList = getMatchedList(fromNetworks, false);
 
 		// Check cancel status
 		if(interrupted) {
@@ -277,6 +341,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 			CyEdge edge = mergedNetwork.addEdge(source, target, directed);
 			mergeEdge(mapNetEdge, edge, mergedNetwork);
 		}
+		//System.out.println("Run time: " + (System.currentTimeMillis() - startTime));
 
 		return mergedNetwork;
 	}
@@ -309,7 +374,8 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	 * @return list of map from network to node/edge
 	 */
 	private <T extends CyIdentifiable> List<Map<CyNetwork, Set<T>>> getMatchedList(final List<CyNetwork> networks,
-			final boolean isNode, Set<Set<CyNode>> matchedNodes) {
+			final boolean isNode) {
+		int index = 0;
 		if (networks == null)
 			throw new NullPointerException();
 
@@ -336,42 +402,51 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 				// this node if yes, add to the list, else add a new map to the list
 				boolean matched = false;
 				final int n = matchedList.size();
-				int j = 0;
-				for (; j < n; j++) {
-					final Map<CyNetwork, Set<T>> matchedGO = matchedList.get(j);
-					final Iterator<CyNetwork> itNet = matchedGO.keySet().iterator();
-					while (itNet.hasNext()) {
-						final CyNetwork net2 = itNet.next();
-						// if (net1==net2) continue; // assume the same network
-						// don't have nodes match to each other
-						if (!withinNetworkMerge && net1 == net2)
-							continue;
-
-						final Set<T> gos2 = matchedGO.get(net2);
-						if (gos2 != null) {
-							CyIdentifiable go2 = gos2.iterator().next();
-							if (isNode) { // NODE
+				if(isNode)
+				{
+					
+					int j = 0;
+					for (; j < n; j++) {
+						final Map<CyNetwork, Set<T>> matchedGO = matchedList.get(j);
+						final Iterator<CyNetwork> itNet = matchedGO.keySet().iterator();
+						while (itNet.hasNext()) {
+							final CyNetwork net2 = itNet.next();
+							// if (net1==net2) continue; // assume the same network
+							// don't have nodes match to each other
+							if (!withinNetworkMerge && net1 == net2)
+								continue;
+	
+							final Set<T> gos2 = matchedGO.get(net2);
+							if (gos2 != null) 
+							{
+								CyIdentifiable go2 = gos2.iterator().next();
+								
 								matched = matchNode(net1, (CyNode) go1, net2, (CyNode) go2);
+								
 								if (matched) {
-									matchedNodes.add(getNodePair((CyNode) go1, (CyNode) go2));
+									index = j;
+									mapNodesIndex.put((CyNode) go1, index);
+									break;
 								}
-							} else {// EDGE
-								matched = matchEdge(net1, net2, (CyEdge) go1, (CyEdge) go2, matchedNodes);
-							}
-							if (matched) {
-								Set<T> gos1 = matchedGO.get(net1);
-								if (gos1 == null) {
-									gos1 = new HashSet<T>();
-									matchedGO.put(net1, gos1);
-								}
-								gos1.add(go1);
-								break;
 							}
 						}
+						if (matched) {
+							break;
+						}
 					}
-					if (matched) {
-						break;
+				}
+				else
+				{
+					index = matchEdge(net1,(CyEdge) go1,n);
+					if(index >= 0)
+					{
+						if(matchedList.get(index).containsKey(net1) && matchedList.get(index).keySet().size() == 1 && !withinNetworkMerge)
+							matched = false;
+						else
+							matched = true;
 					}
+					else
+						matched = false;
 				}
 				if (!matched) {
 					// no matched node found, add new map to the list
@@ -379,7 +454,18 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 					Set<T> gos1 = new HashSet<T>();
 					gos1.add(go1);
 					matchedGO.put(net1, gos1);
+					if(isNode)
+						mapNodesIndex.put((CyNode) go1, n);
 					matchedList.add(matchedGO);
+				}
+				else
+				{
+					Set<T> gos1 = matchedList.get(index).get(net1);
+					if (gos1 == null) {
+						gos1 = new HashSet<T>();
+						matchedList.get(index).put(net1, gos1);
+					}
+					gos1.add(go1);
 				}
 			}
 		}
