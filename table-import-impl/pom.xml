@@ -142,7 +142,7 @@
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId> 
 			<artifactId>xmlbeans</artifactId> 
-			<version>2.3.0</version> 
+			<version>2.4.0</version> 
 		</dependency>
 
 		<!-- 
@@ -180,8 +180,8 @@
         -->
         
         <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>com.springsource.org.dom4j</artifactId>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
             <version>1.6.1</version>
         </dependency>
 

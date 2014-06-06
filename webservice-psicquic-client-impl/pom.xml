@@ -105,8 +105,8 @@
 
 		<!-- MI Cluster dependency -->
 		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>uk.ac.ebi.enfin.mi.cluster.micluster</artifactId>
+			<groupId>uk.ac.ebi.enfin.mi.cluster</groupId>
+			<artifactId>micluster</artifactId>
 			<version>1.6</version>
 		</dependency>
 
