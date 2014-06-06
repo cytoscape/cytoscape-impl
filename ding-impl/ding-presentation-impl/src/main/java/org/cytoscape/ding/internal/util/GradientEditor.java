@@ -1,5 +1,6 @@
 package org.cytoscape.ding.internal.util;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GradientPaint;
@@ -39,12 +40,12 @@ public class GradientEditor extends JPanel {
 	private ControlPoint selected;
 	/** The polygon used for the markers */
 	private Polygon poly = new Polygon();
-	/** A button to add a control point */
-	private JButton add = new JButton("Add");
-	/** A button to edit a control point */
-	private JButton edit = new JButton("Edit");
+	/** A button to addBtn a control point */
+	private JButton addBtn = new JButton("Add");
+	/** A button to editBtn a control point */
+	private JButton editBtn = new JButton("Edit");
 	/** A button to delete a control point */
-	private JButton del = new JButton("Delete");
+	private JButton delBtn = new JButton("Delete");
 	
 	/** The x position of the gradient bar */
 	private int x;
@@ -71,26 +72,30 @@ public class GradientEditor extends JPanel {
 	public GradientEditor(final List<ControlPoint> points) {
 		setLayout(null);
 		
-		add.setBounds(20, 70, 75, 20);
-		add(add);
-		edit.setBounds(100, 70, 75, 20);
-		add(edit);
-		del.setBounds(180, 70, 75, 20);
-		add(del);
+		addBtn.setBounds(20, 70, 75, 20);
+		add(addBtn);
 		
-		add.addActionListener(new ActionListener() {
+		editBtn.setBounds(100, 70, 75, 20);
+		editBtn.setEnabled(false);
+		add(editBtn);
+		
+		delBtn.setBounds(180, 70, 75, 20);
+		delBtn.setEnabled(false);
+		add(delBtn);
+		
+		addBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				addPoint();
 			}
 		});
-		del.addActionListener(new ActionListener() {
+		delBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				delPoint();
 			}
 		});
-		edit.addActionListener(new ActionListener() {
+		editBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				editPoint();
@@ -148,6 +153,8 @@ public class GradientEditor extends JPanel {
 		
 		for (int i = 0; i < components.length; i++)
 			components[i].setEnabled(enabled);
+		
+		repaint(0);
 	}
 	
 	/**
@@ -169,40 +176,40 @@ public class GradientEditor extends JPanel {
 	}
 	
 	@Override
-	public void paintComponent(Graphics g1d) {
+	public void paintComponent(final Graphics g1d) {
 		super.paintComponent(g1d);
 		
-		Graphics2D g = (Graphics2D) g1d;
+		final Graphics2D g = (Graphics2D) g1d;
 		width = getWidth() - 30;
 		x = 10;
 		y = 20;
 		barHeight = 25;
+		
+		final Color lineColor = isEnabled() ? Color.DARK_GRAY : Color.LIGHT_GRAY;
 		
 		for (int i = 0; i < controlPoints.size() - 1; i++) {
 			ControlPoint now = controlPoints.get(i);
 			ControlPoint next = controlPoints.get(i+1);
 			
 			int size = (int) ((next.position - now.position) * width);
-			g.setPaint(new GradientPaint(x,y,now.color,x+size,y,next.color));
+			g.setPaint(new GradientPaint(x, y, now.color, x + size, y, next.color));
 			g.fillRect(x, y, size + 1, barHeight);
 			x += size;
 		}
 		
-		g.setColor(Color.BLACK);
+		g.setColor(lineColor);
 		g.drawRect(10, y, width, barHeight - 1);
 		
 		for (int i = 0; i < controlPoints.size(); i++) {
 			ControlPoint pt = controlPoints.get(i);
-			g.translate(10+(width * pt.position),y+barHeight);
+			g.translate(10 + (width * pt.position), y + barHeight);
 			g.setColor(pt.color);
 			g.fillPolygon(poly);
-			g.setColor(Color.BLACK);
+			g.setColor(pt == selected? Color.BLACK : lineColor);
+			g.setStroke(new BasicStroke(pt == selected ? 1.5f : 1.0f));
 			g.drawPolygon(poly);
 			
-			if (pt == selected)
-				g.drawLine(-5, 12, 5, 12);
-			
-			g.translate(-10-(width * pt.position),-y-barHeight);
+			g.translate(-10 - (width * pt.position), -y - barHeight);
 		}
 	}
 	
@@ -313,8 +320,8 @@ public class GradientEditor extends JPanel {
 	 * 
 	 * @param mx The mouse x coordinate 
 	 * @param my The mouse y coordinate
-	 * @param pt The point to check agianst
-	 * @return True if the mouse point conincides with the control point
+	 * @param pt The point to check against
+	 * @return True if the mouse point coincides with the control point
 	 */
 	private boolean checkPoint(int mx, int my, ControlPoint pt) {
 		int dx = (int) Math.abs((10+(width * pt.position)) - mx);
@@ -342,7 +349,8 @@ public class GradientEditor extends JPanel {
 			}
 			
 		}
-		selected = point;
+		
+		setSelected(point);
 		sortPoints();
 		repaint(0);
 		
@@ -374,7 +382,6 @@ public class GradientEditor extends JPanel {
 	
 	/**
 	 * Edit the currently selected control point
-	 *
 	 */
 	private void editPoint() {
 		if (selected == null)
@@ -400,24 +407,36 @@ public class GradientEditor extends JPanel {
 			return;
 		}
 		
-		for (int i=1;i<controlPoints.size()-1;i++) {
-			if (checkPoint(mx,my,controlPoints.get(i))) {
-				selected = controlPoints.get(i);
+		for (int i = 1; i < controlPoints.size() - 1; i++) {
+			if (checkPoint(mx, my, controlPoints.get(i))) {
+				setSelected(controlPoints.get(i));
 				return;
 			}
 		}
-		if (checkPoint(mx,my,controlPoints.get(0))) {
-			selected = controlPoints.get(0);
+		if (checkPoint(mx, my, controlPoints.get(0))) {
+			setSelected(controlPoints.get(0));
 			return;
 		}
-		if (checkPoint(mx,my,controlPoints.get(controlPoints.size()-1))) {
-			selected = controlPoints.get(controlPoints.size()-1);
+		if (checkPoint(mx, my, controlPoints.get(controlPoints.size() - 1))) {
+			setSelected(controlPoints.get(controlPoints.size()-1));
 			return;
 		}
 		
-		selected = null;
+		setSelected(null);
 	}
 	
+	private void setSelected(final ControlPoint selected) {
+		this.selected = selected;
+		updateButtons();
+	}
+	
+	private void updateButtons() {
+		editBtn.setEnabled(selected != null);
+		delBtn.setEnabled(selected != null
+				&& selected != controlPoints.get(0)
+				&& selected != controlPoints.get(controlPoints.size()-1));
+	}
+
 	/**
 	 * Delete the currently selected point
 	 */
@@ -432,6 +451,7 @@ public class GradientEditor extends JPanel {
 			return;
 		
 		controlPoints.remove(selected);
+		setSelected(null);
 		sortPoints();
 		repaint(0);
 		fireUpdate();
