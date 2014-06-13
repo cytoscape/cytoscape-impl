@@ -1,6 +1,6 @@
 package org.cytoscape.ding.internal.charts.stripe;
 
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.DATA_COLUMNS;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DATA_COLUMNS;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,6 +26,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 
@@ -33,8 +35,9 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public StripeChartEditor(final StripeChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
-		super(chart, Object.class, false, 1, false, true, false, false, false, false, appMgr, iconMgr);
+	public StripeChartEditor(final StripeChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
+			final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, Object.class, false, 1, false, true, false, false, false, false, appMgr, iconMgr, colIdFactory);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -52,18 +55,18 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 	}
 	
 	@Override
-	protected JComboBox createDataColumnComboBox(final Collection<CyColumn> columns, final boolean acceptsNull) {
+	protected JComboBox createDataColumnComboBox(final Collection<CyColumnIdentifier> columns, final boolean acceptsNull) {
 		final JComboBox cmb = new CyColumnComboBox(columns, false);
 		cmb.setSelectedItem(null);
 		cmb.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final List<String> colNames = getDataPnl().getDataColumnNames();
-				chart.set(DATA_COLUMNS, colNames);
+				final List<CyColumnIdentifier> colIds = getDataPnl().getDataColumnNames();
+				chart.set(DATA_COLUMNS, colIds);
 				
-				if (!colNames.isEmpty()) {
+				if (!colIds.isEmpty()) {
 					final SortedSet<Object> distinctValues = 
-							getDistinctValues(appMgr.getCurrentNetwork(), colNames.get(0));
+							getDistinctValues(appMgr.getCurrentNetwork(), colIds.get(0));
 					chart.set(StripeChart.DISTINCT_VALUES, new ArrayList<Object>(distinctValues));
 				}
 			}
@@ -72,12 +75,12 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 		return cmb;
 	}
 	
-	private static SortedSet<Object> getDistinctValues(final CyNetwork network, final String columnName) {
+	private static SortedSet<Object> getDistinctValues(final CyNetwork network, final CyColumnIdentifier columnId) {
 		final SortedSet<Object> values;
 		
 		final List<CyNode> allNodes = network.getNodeList();
 		final CyTable table = network.getDefaultNodeTable();
-		final CyColumn column = table.getColumn(columnName);
+		final CyColumn column = table.getColumn(columnId.getColumnName());
 		
 		if (column != null && column.getType() == List.class) {
 			final Class<?> listElementType = column.getListElementType();
@@ -100,7 +103,7 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 			});
 			
 			for (final CyNode node : allNodes)
-				values.addAll(StripeChart.getDistinctValuesFromRow(network, node, columnName));
+				values.addAll(StripeChart.getDistinctValuesFromRow(network, node, columnId));
 		} else {
 			values = new TreeSet<Object>();
 		}
@@ -122,7 +125,7 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 		@Override
 		protected int getTotal() {
 			if (total <= 0) {
-				final List<String> columns = chart.getList(DATA_COLUMNS, String.class);
+				final List<CyColumnIdentifier> dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
 				
 				if (network != null) {
 					final Set<Object> set = new HashSet<Object>();
@@ -130,13 +133,13 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 					final List<CyNode> allNodes = network.getNodeList();
 					final CyTable table = network.getDefaultNodeTable();
 					
-					for (final String columnName : columns) {
-						final CyColumn column = table.getColumn(columnName);
+					for (final CyColumnIdentifier colId : dataColumns) {
+						final CyColumn column = table.getColumn(colId.getColumnName());
 						
 						if (column != null && column.getType() == List.class) {
 							for (final CyNode node : allNodes) {
 								final CyRow row = network.getRow(node);
-								final List<?> values = row.getList(columnName, column.getListElementType());
+								final List<?> values = row.getList(colId.getColumnName(), column.getListElementType());
 								
 								if (values != null)
 									set.addAll(values);

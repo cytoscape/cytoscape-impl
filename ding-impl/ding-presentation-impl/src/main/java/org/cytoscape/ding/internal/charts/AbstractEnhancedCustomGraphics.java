@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.ViewUtils.Position;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
@@ -27,39 +26,16 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLayer> implements CyCustomGraphics<T> {
 
-	/**
-	 * 
-	 */
-	public static final String DATA_COLUMNS = "datacolumns";
-//	/**
-//	 * The vertical base of the chart as a proportion of the height.
-//	 * By default, this is 0.5 (the center of the node), to allow for both positive and negative values.
-//	 * If, however, you only have positive values, you might want to set this to 1.0 (the bottom of the node).
-//	 * Note that this goes backwards from what might be expected, with 0.0 being the top of the node and 
-//	 * 1.0 being the bottom of the node. The keyword bottom is also supported.
-//	 */
-//	public static final String YBASE = "ybase";
-	public static final String ITEM_LABELS_COLUMN = "itemlabelscolumn";
-	public static final String DOMAIN_LABELS_COLUMN = "domainlabelscolumn";
-	public static final String RANGE_LABELS_COLUMN = "rangelabelscolumn";
-	
 	public static final String POSITION = "position";
-	public static final String GLOBAL_RANGE = "globalrange";
-	public static final String AUTO_RANGE = "autorange";
-	public static final String RANGE = "range";
 	public static final String SCALE = "scale";
 	public static final String SIZE = "size";
-	public static final String SHOW_ITEM_LABELS = "showitemlabels";
-	public static final String SHOW_DOMAIN_AXIS = "showdomainaxis";
-	public static final String SHOW_RANGE_AXIS = "showrangeaxis";
-	public static final String VALUES = "valuelist";
+	
 	/**
 	 * The list of colors, one for each chart element
 	 */
 	public static final String COLORS = "colorlist";
 	public static final String COLOR_SCHEME = "colorscheme";
 	public static final String ORIENTATION = "orientation";
-	public static final String STACKED = "stacked";
 	
 	
 /*
@@ -350,32 +326,17 @@ ybase
 	}
 	
 	protected Class<?> getSettingType(final String key) {
-		if (key.equalsIgnoreCase(DATA_COLUMNS)) return List.class;
-		if (key.equalsIgnoreCase(ITEM_LABELS_COLUMN)) return String.class;
-		if (key.equalsIgnoreCase(DOMAIN_LABELS_COLUMN)) return String.class;
-		if (key.equalsIgnoreCase(RANGE_LABELS_COLUMN)) return String.class;
-		if (key.equalsIgnoreCase(VALUES)) return List.class;
 		if (key.equalsIgnoreCase(COLORS)) return List.class;
 		if (key.equalsIgnoreCase(COLOR_SCHEME)) return String.class;
 		if (key.equalsIgnoreCase(SCALE)) return Double.class;
-		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
-		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
-		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
-		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
-		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
-		if (key.equalsIgnoreCase(RANGE)) return DoubleRange.class;
 		if (key.equalsIgnoreCase(SIZE)) return Rectangle2D.class;
-//		if (key.equalsIgnoreCase(YBASE)) return Double.class;
 		if (key.equalsIgnoreCase(POSITION)) return Position.class;
 		if (key.equalsIgnoreCase(ORIENTATION)) return Orientation.class;
-		if (key.equalsIgnoreCase(STACKED)) return Boolean.class;
 			
 		return null;
 	}
 	
 	protected Class<?> getSettingListType(final String key) {
-		if (key.equalsIgnoreCase(DATA_COLUMNS)) return String.class;
-		if (key.equalsIgnoreCase(VALUES)) return Double.class;
 		if (key.equalsIgnoreCase(COLORS)) return Color.class;
 		
 		return Object.class;
@@ -384,8 +345,6 @@ ybase
 	@SuppressWarnings("unchecked")
 	protected <S> S parseValue(final String key, Object value, final Class<S> type) {
 		if (value == null) {
-			if (type == Boolean.class && key.equalsIgnoreCase(SHOW_ITEM_LABELS))
-				return (S) Boolean.TRUE;
 			if (type == Double.class && key.equalsIgnoreCase(SCALE))
 				return (S) new Double(0.9);
 			
@@ -409,8 +368,6 @@ ybase
 				} else if (type == Float.class) {
 					value = Double.valueOf(value.toString()).floatValue();
 				} else if (type == Double.class || type == Number.class) {
-//					value = key.equalsIgnoreCase(YBASE) ? 
-//							parseYBase(value.toString()) : Double.valueOf(value.toString());
 					value = Double.valueOf(value.toString());
 				} else if (type == Color.class) {
 					value = ColorUtil.parseColor(value.toString());
@@ -418,8 +375,6 @@ ybase
 					value = parseRectangle(value.toString());
 				} else if (type == Position.class) {
 					value = ViewUtils.getPosition(value.toString());
-				} else if (type == DoubleRange.class) {
-					value = parseRange(value.toString());
 				} else if (type == Orientation.class) {
 					value = Orientation.valueOf(value.toString());
 				} else if (type == Point2D.class) {
@@ -472,30 +427,6 @@ ybase
 		return ",";
 	}
 
-	protected DoubleRange parseRange(final String input) {
-		if (input != null) {
-			String[] split = input.split(",");
-			
-			try {
-				return new DoubleRange(getDoubleValue(split[0]), getDoubleValue(split[1]));
-			} catch (NumberFormatException e) {
-			}
-		}
-		
-		return null;
-	}
-	
-	protected Double parseYBase(final String input) {
-		if (input != null) {
-			try {
-				return input.equalsIgnoreCase("bottom") ? 1.0 : Double.valueOf(input);
-			} catch (NumberFormatException e) {
-			}
-		}
-		
-		return DEFAULT_YBASE;
-	}
-	
 	/**
 	 * Return the size specified by the user in the width and height fields of
 	 * the Rectangle The size can be either "sss" where "sss" will be both the

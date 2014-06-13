@@ -7,22 +7,29 @@ import javax.swing.Icon;
 import org.cytoscape.ding.internal.charts.ViewUtils;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class PieChartFactory  implements CyChartFactory<PieLayer> {
 
+	private final CyColumnIdentifierFactory colIdFactory;
+	
+	public PieChartFactory(final CyColumnIdentifierFactory colIdFactory) {
+		this.colIdFactory = colIdFactory;
+	}
+	
 	@Override
 	public CyChart<PieLayer> getInstance(final String input) {
-		return new PieChart(input);
+		return new PieChart(input, colIdFactory);
 	}
 
 	@Override
 	public CyChart<PieLayer> getInstance(final CyChart<PieLayer> chart) {
-		return new PieChart((PieChart)chart);
+		return new PieChart((PieChart)chart, colIdFactory);
 	}
 	
 	@Override
 	public CyChart<PieLayer> getInstance(final Map<String, Object> properties) {
-		return new PieChart(properties);
+		return new PieChart(properties, colIdFactory);
 	}
 
 	@Override

@@ -165,6 +165,7 @@ import org.cytoscape.view.presentation.gradients.CyGradientEditorFactory;
 import org.cytoscape.view.presentation.gradients.CyGradientFactory;
 import org.cytoscape.view.presentation.gradients.CyGradientFactoryManager;
 import org.cytoscape.view.presentation.property.values.BendFactory;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
@@ -657,39 +658,41 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		final IconManager iconManager = new IconManagerImpl();
 		
-		final BarChartFactory barChartFactory = new BarChartFactory();
+		final CyColumnIdentifierFactory colIdFactory = getService(bc, CyColumnIdentifierFactory.class) ;
+		
+		final BarChartFactory barChartFactory = new BarChartFactory(colIdFactory);
 		registerService(bc, barChartFactory, CyChartFactory.class, new Properties());
-		final BarChartEditorFactory barChartEditorFactory = new BarChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		final BarChartEditorFactory barChartEditorFactory = new BarChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 		registerService(bc, barChartEditorFactory, CyChartEditorFactory.class, new Properties());
 		
-		final BoxChartFactory boxChartFactory = new BoxChartFactory();
+		final BoxChartFactory boxChartFactory = new BoxChartFactory(colIdFactory);
 		registerService(bc, boxChartFactory, CyChartFactory.class, new Properties());
-		final BoxChartEditorFactory boxChartEditorFactory = new BoxChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		final BoxChartEditorFactory boxChartEditorFactory = new BoxChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 		registerService(bc, boxChartEditorFactory, CyChartEditorFactory.class, new Properties());
 		
-		final PieChartFactory pieChartFactory = new PieChartFactory();
+		final PieChartFactory pieChartFactory = new PieChartFactory(colIdFactory);
 		registerService(bc, pieChartFactory, CyChartFactory.class, new Properties());
-		final PieChartEditorFactory pieChartEditorFactory = new PieChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		final PieChartEditorFactory pieChartEditorFactory = new PieChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 		registerService(bc, pieChartEditorFactory, CyChartEditorFactory.class, new Properties());
 		
-		final DonutChartFactory donutChartFactory = new DonutChartFactory();
+		final DonutChartFactory donutChartFactory = new DonutChartFactory(colIdFactory);
 		registerService(bc, donutChartFactory, CyChartFactory.class, new Properties());
-		final DonutChartEditorFactory donutChartEditorFactory = new DonutChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		final DonutChartEditorFactory donutChartEditorFactory = new DonutChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 		registerService(bc, donutChartEditorFactory, CyChartEditorFactory.class, new Properties());
 		
-		final LineChartFactory lineChartFactory = new LineChartFactory();
+		final LineChartFactory lineChartFactory = new LineChartFactory(colIdFactory);
 		registerService(bc, lineChartFactory, CyChartFactory.class, new Properties());
-		final LineChartEditorFactory lineChartEditorFactory = new LineChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		final LineChartEditorFactory lineChartEditorFactory = new LineChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 		registerService(bc, lineChartEditorFactory, CyChartEditorFactory.class, new Properties());
 		
-		final StripeChartFactory stripeChartFactory = new StripeChartFactory();
+		final StripeChartFactory stripeChartFactory = new StripeChartFactory(colIdFactory);
 		registerService(bc, stripeChartFactory, CyChartFactory.class, new Properties());
-		final StripeChartEditorFactory stripeChartEditorFactory = new StripeChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		final StripeChartEditorFactory stripeChartEditorFactory = new StripeChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 		registerService(bc, stripeChartEditorFactory, CyChartEditorFactory.class, new Properties());
 		
-		final HeatMapChartFactory heatMapChartFactory = new HeatMapChartFactory();
+		final HeatMapChartFactory heatMapChartFactory = new HeatMapChartFactory(colIdFactory);
 		registerService(bc, heatMapChartFactory, CyChartFactory.class, new Properties());
-		final HeatMapChartEditorFactory heatMapChartEditorFactory = new HeatMapChartEditorFactory(cyApplicationManagerServiceRef, iconManager);
+		final HeatMapChartEditorFactory heatMapChartEditorFactory = new HeatMapChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 		registerService(bc, heatMapChartEditorFactory, CyChartEditorFactory.class, new Properties());
 	}
 	

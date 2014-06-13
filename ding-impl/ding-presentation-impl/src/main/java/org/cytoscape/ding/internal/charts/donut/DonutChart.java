@@ -17,6 +17,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 
@@ -37,16 +39,16 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		}
 	}
 	
-	public DonutChart(final Map<String, Object> properties) {
-		super(DISPLAY_NAME, properties);
+	public DonutChart(final Map<String, Object> properties, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, properties, colIdFactory);
 	}
 	
-	public DonutChart(final DonutChart chart) {
-		super(chart);
+	public DonutChart(final DonutChart chart, final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, colIdFactory);
 	}
 	
-	public DonutChart(final String input) {
-		super(DISPLAY_NAME, input);
+	public DonutChart(final String input, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, input, colIdFactory);
 	}
 	
 	@Override
@@ -54,8 +56,9 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
-		final String labelsColumn = get(ITEM_LABELS_COLUMN, String.class);
+		final List<CyColumnIdentifier> dataColumns =
+				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
+		final CyColumnIdentifier labelsColumn = get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class);
 		final List<Color> colors = getList(COLORS, Color.class);
 		final double startAngle = get(START_ANGLE, Double.class, 90.0);
 		final double hole = get(HOLE_SIZE, Double.class, 0.2);

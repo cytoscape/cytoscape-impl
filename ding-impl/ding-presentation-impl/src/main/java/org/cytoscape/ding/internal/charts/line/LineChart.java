@@ -18,6 +18,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 /**
  *
@@ -41,16 +43,16 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 		}
 	}
 
-	public LineChart(final Map<String, Object> properties) {
-		super(DISPLAY_NAME, properties);
+	public LineChart(final Map<String, Object> properties, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, properties, colIdFactory);
 	}
 	
-	public LineChart(final LineChart chart) {
-		super(chart);
+	public LineChart(final LineChart chart, final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, colIdFactory);
 	}
 	
-	public LineChart(final String input) {
-		super(DISPLAY_NAME, input);
+	public LineChart(final String input, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, input, colIdFactory);
 	}
 
 	@Override 
@@ -58,11 +60,15 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
+		final List<CyColumnIdentifier> dataColumns =
+				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
+		final List<String> itemLabels =
+				getLabelsFromColumn(network, model, get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
+		final List<String> domainLabels =
+				getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
+		final List<String> rangeLabels =
+				getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
 		final List<Color> colors = getList(COLORS, Color.class);
-		final List<String> itemLabels = getLabelsFromColumn(network, model, get(ITEM_LABELS_COLUMN, String.class));
-		final List<String> domainLabels = getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, String.class));
-		final List<String> rangeLabels = getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, String.class));
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
 		

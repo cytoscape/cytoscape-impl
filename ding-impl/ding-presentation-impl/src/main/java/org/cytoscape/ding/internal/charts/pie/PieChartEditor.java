@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class PieChartEditor extends AbstractChartEditor<PieChart> {
 
@@ -23,8 +24,9 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public PieChartEditor(final PieChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
-		super(chart, Number.class, false, 1, false, false, true, false, false, false, appMgr, iconMgr);
+	public PieChartEditor(final PieChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
+			final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, Number.class, false, 1, false, false, true, false, false, false, appMgr, iconMgr, colIdFactory);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

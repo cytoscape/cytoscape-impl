@@ -7,22 +7,29 @@ import javax.swing.Icon;
 import org.cytoscape.ding.internal.charts.ViewUtils;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class DonutChartFactory  implements CyChartFactory<DonutLayer> {
 
+	private final CyColumnIdentifierFactory colIdFactory;
+	
+	public DonutChartFactory(final CyColumnIdentifierFactory colIdFactory) {
+		this.colIdFactory = colIdFactory;
+	}
+	
 	@Override
 	public CyChart<DonutLayer> getInstance(final String input) {
-		return new DonutChart(input);
+		return new DonutChart(input, colIdFactory);
 	}
 
 	@Override
 	public CyChart<DonutLayer> getInstance(final CyChart<DonutLayer> chart) {
-		return new DonutChart((DonutChart)chart);
+		return new DonutChart((DonutChart)chart, colIdFactory);
 	}
 	
 	@Override
 	public CyChart<DonutLayer> getInstance(final Map<String, Object> properties) {
-		return new DonutChart(properties);
+		return new DonutChart(properties, colIdFactory);
 	}
 
 	@Override

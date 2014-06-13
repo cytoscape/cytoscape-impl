@@ -27,6 +27,7 @@ package org.cytoscape.internal.select;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
@@ -34,7 +35,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.internal.view.NetworkViewManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -46,10 +46,15 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.cytoscape.view.presentation.property.values.MappableVisualPropertyValue;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 
+// TODO move to NetworkViewManager?
 /**
  * Once table values are modified, this object updates the views if necessary.
  * 
@@ -61,16 +66,17 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	private final CyApplicationManager am;
 	private final NetworkViewManager viewManager;
 	private final RowViewTracker tracker;
-
-	private VisualMappingFunction<?, ?> targetFunction;
+	private final CyColumnIdentifierFactory colIdFactory;
 
 	public RowsSetViewUpdater(final CyApplicationManager am, final CyNetworkViewManager vm,
-			final VisualMappingManager vmm, final RowViewTracker tracker, final NetworkViewManager viewManager) {
+			final VisualMappingManager vmm, final RowViewTracker tracker, final NetworkViewManager viewManager,
+			final CyColumnIdentifierFactory colIdFactory) {
 		this.am = am;
 		this.vm = vm;
 		this.vmm = vmm;
 		this.viewManager = viewManager;
 		this.tracker = tracker;
+		this.colIdFactory = colIdFactory;
 	}
 
 	/**
@@ -124,35 +130,28 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			if (v == null)
 				continue;
 
-			VisualProperty<?> vp = null;
-
 			if (v.getModel() instanceof CyNode) {
 				final CyNode node = (CyNode) v.getModel();
-				if (network.containsNode(node))
-					vp = getVPfromVS(vs, columnName);
+				
+				if (network.containsNode(node) && isStyleAffected(vs, columnName))
+					refreshView = true;
 			} else if (v.getModel() instanceof CyEdge) {
 				final CyEdge edge = (CyEdge) v.getModel();
-				if (network.containsEdge(edge))
-					vp = getVPfromVS(vs, columnName);
-			} else {
-				// FIXME: NETWORK?
+				
+				if (network.containsEdge(edge) && isStyleAffected(vs, columnName))
+					refreshView = true;
 			}
 
-			if (vp != null) {
-				targetFunction.apply(record.getRow(), (View<? extends CyIdentifiable>) v);
-				refreshView = true;
-				
-				// If virtual, it may be used in other networks.
-				if(virtual)
-					refreshOtherViews = true;
-			}
+			// If virtual, it may be used in other networks.
+			if (refreshView && virtual)
+				refreshOtherViews = true;
 			
-			if (refreshView)
-				vs.apply(record.getRow(), (View<? extends CyIdentifiable>) v);
+//			if (refreshView)
+//				vs.apply(record.getRow(), (View<? extends CyIdentifiable>) v);
 		}
 
 		if (refreshView) {
-			// vs.apply(networkView);
+			vs.apply(networkView);
 			networkView.updateView();
 			
 			if (refreshOtherViews) {
@@ -171,19 +170,41 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		}
 	}
 
-	// Check if the columnName is the name of mapping attribute in visualStyle,
-	// If yes, return the VisualProperty associated with this columnName
-	private VisualProperty<?> getVPfromVS(VisualStyle vs, String columnName) {
-		VisualProperty<?> vp = null;
-		final Collection<VisualMappingFunction<?, ?>> vmfs = vs.getAllVisualMappingFunctions();
-
-		for (final VisualMappingFunction<?, ?> f : vmfs) {
-			if (f.getMappingColumnName().equalsIgnoreCase(columnName)) {
-				vp = f.getVisualProperty();
-				targetFunction = f;
-				break;
+	/**
+	 * Check if the columnName is used by any property of the passed Visual Style.
+	 * @param vs
+	 * @param columnName
+	 * @return
+	 */
+	private boolean isStyleAffected(final VisualStyle vs, final String columnName) {
+		boolean result = false;
+		final RenderingEngine<CyNetwork> renderer = am.getCurrentRenderingEngine();
+		
+		if (renderer != null) {
+			final CyColumnIdentifier colId = colIdFactory.createColumnIdentifier(columnName);
+			final Set<VisualProperty<?>> properties = renderer.getVisualLexicon().getAllVisualProperties();
+			
+			for (final VisualProperty<?> vp : properties) {
+				final VisualMappingFunction<?, ?> f = vs.getVisualMappingFunction(vp);
+				
+				if (f != null && f.getMappingColumnName().equalsIgnoreCase(columnName)) {
+					result = true;
+					break;
+				}
+				
+				final Object defValue = vs.getDefaultValue(vp);
+				
+				if (defValue instanceof MappableVisualPropertyValue) {
+					final Set<CyColumnIdentifier> mappedColIds = ((MappableVisualPropertyValue)defValue).getMappedColumnNames();
+					
+					if (mappedColIds.contains(colId)) {
+						result = true;
+						break;
+					}
+				}
 			}
 		}
-		return vp;
+		
+		return result;
 	}
 }

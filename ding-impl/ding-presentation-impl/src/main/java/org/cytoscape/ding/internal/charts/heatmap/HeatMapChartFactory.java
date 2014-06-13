@@ -7,22 +7,29 @@ import javax.swing.Icon;
 import org.cytoscape.ding.internal.charts.ViewUtils;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class HeatMapChartFactory implements CyChartFactory<HeatMapLayer> {
 	
+	private final CyColumnIdentifierFactory colIdFactory;
+	
+	public HeatMapChartFactory(final CyColumnIdentifierFactory colIdFactory) {
+		this.colIdFactory = colIdFactory;
+	}
+	
 	@Override
 	public CyChart<HeatMapLayer> getInstance(final String input) {
-		return new HeatMapChart(input);
+		return new HeatMapChart(input, colIdFactory);
 	}
 
 	@Override
 	public CyChart<HeatMapLayer> getInstance(final CyChart<HeatMapLayer> chart) {
-		return new HeatMapChart((HeatMapChart)chart);
+		return new HeatMapChart((HeatMapChart)chart, colIdFactory);
 	}
 	
 	@Override
 	public CyChart<HeatMapLayer> getInstance(final Map<String, Object> properties) {
-		return new HeatMapChart(properties);
+		return new HeatMapChart(properties, colIdFactory);
 	}
 
 	@Override

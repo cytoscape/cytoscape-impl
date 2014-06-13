@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 
@@ -25,8 +26,9 @@ public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public DonutChartEditor(final DonutChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
-		super(chart, Number.class, false, 5, false, false, true, false, false, false, appMgr, iconMgr);
+	public DonutChartEditor(final DonutChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
+			final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, Number.class, false, 5, false, false, true, false, false, false, appMgr, iconMgr, colIdFactory);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

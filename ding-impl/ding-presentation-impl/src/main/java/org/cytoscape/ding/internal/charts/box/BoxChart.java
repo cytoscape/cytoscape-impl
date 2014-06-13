@@ -19,6 +19,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 /**
  * 
@@ -39,16 +41,16 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		}
 	}
 
-	public BoxChart(final Map<String, Object> properties) {
-		super(DISPLAY_NAME, properties);
+	public BoxChart(final Map<String, Object> properties, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, properties, colIdFactory);
 	}
 	
-	public BoxChart(final BoxChart chart) {
-		super(chart);
+	public BoxChart(final BoxChart chart, final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, colIdFactory);
 	}
 	
-	public BoxChart(final String input) {
-		super(DISPLAY_NAME, input);
+	public BoxChart(final String input, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, input, colIdFactory);
 	}
 
 	@Override 
@@ -56,7 +58,8 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
+		final List<CyColumnIdentifier> dataColumns =
+				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
 		final List<Color> colors = getList(COLORS, Color.class);
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;

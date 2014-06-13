@@ -56,6 +56,7 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsPositionCalculator;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -174,9 +175,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	
 	private final CyNetworkViewManager netViewMgr; 
 	
-	DNodeView(final VisualLexicon lexicon, final DGraphView graphView, final CyNode model, final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr) {
-		super(model, lexicon);
+	DNodeView(final VisualLexicon lexicon,
+			  final DGraphView graphView,
+			  final CyNode model,
+			  final VisualMappingManager vmm,
+			  final CyNetworkViewManager netViewMgr,
+			  final CyEventHelper eventHelper) {
+		super(model, lexicon, eventHelper);
 		
 		if (graphView == null)
 			throw new NullPointerException("View must never be null.");

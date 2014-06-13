@@ -30,6 +30,13 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.internal.charts.bar.BarChart;
+import org.cytoscape.ding.internal.charts.donut.DonutChart;
+import org.cytoscape.ding.internal.charts.line.LineChart;
+import org.cytoscape.ding.internal.charts.pie.PieChart;
+import org.cytoscape.ding.internal.charts.stripe.StripeChart;
+import org.cytoscape.ding.internal.gradients.linear.LinearGradient;
+import org.cytoscape.ding.internal.gradients.radial.RadialGradient;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.charts.CyChartFactory;
 import org.cytoscape.view.presentation.charts.CyChartFactoryManager;
@@ -61,7 +68,11 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		CyCustomGraphics cg = translateURL(inputValue);
 		if (cg != null) return cg;
 		
-		// Nope, so hand it to each factory that has a matching prefix
+		// Nope, so hand it to each factory that has a matching prefix:
+		
+		// Convert the Enhanced Graphics app format, if that's the case
+		inputValue = convertEnhancedGraphics(inputValue);
+		
 		// CyChart?
 		for (CyChartFactory<?> factory: chartMgr.getAllCyChartFactories()) {
 			if (factory.getId() != null && inputValue.startsWith(factory.getId() + ":")) {
@@ -113,6 +124,31 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		} catch (IOException e) {
 		}
 		return null;
+	}
+	
+	private String convertEnhancedGraphics(final String input) {
+		final StringBuilder sb = new StringBuilder();
+		
+//		if (input.startsWith("barchart:")) {
+//			sb.append(BarChart.FACTORY_ID + ": ");
+//		} else if (input.startsWith("circoschart:")) {
+//			sb.append(DonutChart.FACTORY_ID + ": ");
+//		} else if (input.startsWith("heatstripchart:")) {
+//			sb.append(BarChart.FACTORY_ID + ": ");
+//		} else if (input.startsWith("linechart:")) {
+//			sb.append(LineChart.FACTORY_ID + ": ");
+//		} else if (input.startsWith("lingrad:")) {
+//			sb.append(LinearGradient.FACTORY_ID + ": ");
+//		} else if (input.startsWith("piechart:")) {
+//			sb.append(PieChart.FACTORY_ID + ": ");
+//		} else if (input.startsWith("radgrad:")) {
+//			sb.append(RadialGradient.FACTORY_ID + ": ");
+//		} else if (input.startsWith("stripechart:")) {
+//			sb.append(StripeChart.FACTORY_ID + ": ");
+//		}
+//		
+//		return sb.toString();
+		return input;
 	}
 	
 //	/**

@@ -23,6 +23,8 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 /**
  * 
@@ -45,16 +47,16 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		}
 	}
 
-	public StripeChart(final Map<String, Object> properties) {
-		super(DISPLAY_NAME, properties);
+	public StripeChart(final Map<String, Object> properties, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, properties, colIdFactory);
 	}
 	
-	public StripeChart(final StripeChart chart) {
-		super(chart);
+	public StripeChart(final StripeChart chart, final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, colIdFactory);
 	}
 	
-	public StripeChart(final String input) {
-		super(DISPLAY_NAME, input);
+	public StripeChart(final String input, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, input, colIdFactory);
 	}
 
 	@Override 
@@ -62,29 +64,34 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
+		final List<CyColumnIdentifier> dataColumns = 
+				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
 		final List<String> distinctValues = getList(DISTINCT_VALUES, String.class);
-		final List<Color> colors = getList(COLORS, Color.class);
+		List<Color> colors = getList(COLORS, Color.class);
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		final List<String> labels = Collections.emptyList();
 		
-		final String columnName = dataColumns.isEmpty() ? null : dataColumns.get(0);
+		final CyColumnIdentifier columnId = dataColumns.isEmpty() ? null : dataColumns.get(0);
 		final Map<String, List<Double>> data;
 		
-		if (columnName != null) {
-			final Set<Object> rowValues = getDistinctValuesFromRow(network, model, columnName);
+		if (columnId != null) {
+			final Set<Object> rowValues = getDistinctValuesFromRow(network, model, columnId);
 			
-			// Create dummy data
-			final List<Double> values = new ArrayList<Double>();
-			
-			for (int i = 0; i < distinctValues.size(); i++) {
-				// 1: Has the value/color at this index
-				// 0: Does not have that value
-				final double v = rowValues.contains(distinctValues.get(i)) ? 1.0 : 0.0;
-				values.add(v);
+			if (rowValues.isEmpty()) {
+				data = Collections.emptyMap();
+			} else {
+				// Create dummy data
+				final List<Double> values = new ArrayList<Double>();
+				
+				for (int i = 0; i < distinctValues.size(); i++) {
+					// 1: Has the value/color at this index
+					// 0: Does not have that value
+					final double v = rowValues.contains(distinctValues.get(i)) ? 1.0 : 0.0;
+					values.add(v);
+				}
+				
+				data = Collections.singletonMap(columnId.getColumnName(), values);
 			}
-			
-			data = Collections.singletonMap(columnName, values);
 		} else {
 			data = Collections.emptyMap();
 		}
@@ -92,7 +99,7 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
-		StripeLayer layer = new StripeLayer(data, labels, false, colors, orientation, bounds);
+		final StripeLayer layer = new StripeLayer(data, labels, false, colors, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}
@@ -120,7 +127,7 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 	}
 	
 	public static Set<Object> getDistinctValuesFromRow(final CyNetwork network, final CyIdentifiable model,
-			final String columnName) {
+			final CyColumnIdentifier columnId) {
 		final Set<Object> values = new LinkedHashSet<Object>();
 		final CyRow row = network.getRow(model);
 		
@@ -128,10 +135,10 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 			return values;
 
 		final CyTable table = row.getTable();
-		final CyColumn column = table.getColumn(columnName);
+		final CyColumn column = table.getColumn(columnId.getColumnName());
 		
 		if (column != null && column.getType() == List.class) {
-			final List<?> list = row.getList(columnName, column.getListElementType());
+			final List<?> list = row.getList(columnId.getColumnName(), column.getListElementType());
 			
 			if (list != null)
 				values.addAll(list);

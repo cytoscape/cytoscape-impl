@@ -17,6 +17,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 
@@ -36,16 +38,16 @@ public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 		}
 	}
 	
-	public PieChart(final Map<String, Object> properties) {
-		super(DISPLAY_NAME, properties);
+	public PieChart(final Map<String, Object> properties, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, properties, colIdFactory);
 	}
 	
-	public PieChart(final PieChart chart) {
-		super(chart);
+	public PieChart(final PieChart chart, final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, colIdFactory);
 	}
 	
-	public PieChart(final String input) {
-		super(DISPLAY_NAME, input);
+	public PieChart(final String input, final CyColumnIdentifierFactory colIdFactory) {
+		super(DISPLAY_NAME, input, colIdFactory);
 	}
 	
 	@Override
@@ -53,8 +55,9 @@ public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<String> dataColumns = new ArrayList<String>(getList(DATA_COLUMNS, String.class));
-		final String labelsColumn = get(ITEM_LABELS_COLUMN, String.class);
+		final List<CyColumnIdentifier> dataColumns = 
+				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
+		final CyColumnIdentifier labelsColumn = get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class);
 		final List<Color> colors = getList(COLORS, Color.class);
 		final double startAngle = get(START_ANGLE, Double.class, 90.0);
 		final List<String> labels = getLabelsFromColumn(network, model, labelsColumn);

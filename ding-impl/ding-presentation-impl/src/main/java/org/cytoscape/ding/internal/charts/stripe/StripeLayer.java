@@ -85,8 +85,11 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
         
 		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);
+		rangeAxis.setAxisLineVisible(false);
 		rangeAxis.setLowerMargin(0.0);
 		rangeAxis.setUpperMargin(0.0);
+		
+		final List<?> keys = dataset.getRowKeys();
 		
 		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
 		renderer.setBarPainter(new StandardBarPainter());
@@ -95,13 +98,11 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
 		renderer.setBaseItemLabelPaint(labelColor);
 		renderer.setShadowVisible(false);
-		renderer.setDrawBarOutline(true);
+		renderer.setDrawBarOutline(!keys.isEmpty());
 		renderer.setItemMargin(0.0);
 		
 		final BasicStroke stroke =
 				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-		
-		final List<?> keys = dataset.getRowKeys();
 		
 		for (int i = 0; i < keys.size(); i++) {
 			renderer.setSeriesOutlineStroke(i, stroke);

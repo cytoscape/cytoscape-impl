@@ -7,22 +7,29 @@ import javax.swing.Icon;
 import org.cytoscape.ding.internal.charts.ViewUtils;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class BoxChartFactory implements CyChartFactory<BoxLayer> {
 	
+	private final CyColumnIdentifierFactory colIdFactory;
+	
+	public BoxChartFactory(final CyColumnIdentifierFactory colIdFactory) {
+		this.colIdFactory = colIdFactory;
+	}
+	
 	@Override
 	public CyChart<BoxLayer> getInstance(final String input) {
-		return new BoxChart(input);
+		return new BoxChart(input, colIdFactory);
 	}
 
 	@Override
 	public CyChart<BoxLayer> getInstance(final CyChart<BoxLayer> chart) {
-		return new BoxChart((BoxChart)chart);
+		return new BoxChart((BoxChart)chart, colIdFactory);
 	}
 	
 	@Override
 	public CyChart<BoxLayer> getInstance(final Map<String, Object> properties) {
-		return new BoxChart(properties);
+		return new BoxChart(properties, colIdFactory);
 	}
 
 	@Override

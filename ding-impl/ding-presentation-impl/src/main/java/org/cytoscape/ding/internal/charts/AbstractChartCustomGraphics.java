@@ -5,10 +5,13 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
@@ -17,25 +20,65 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.cytoscape.view.presentation.property.values.MappableVisualPropertyValue;
 
 public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> extends
-		AbstractEnhancedCustomGraphics<T> implements CyChart<T> {
+		AbstractEnhancedCustomGraphics<T> implements CyChart<T>, MappableVisualPropertyValue {
 
-	protected AbstractChartCustomGraphics(final String displayName) {
+	public static final String DATA_COLUMNS = "datacolumns";
+	public static final String ITEM_LABELS_COLUMN = "itemlabelscolumn";
+	public static final String DOMAIN_LABELS_COLUMN = "domainlabelscolumn";
+	public static final String RANGE_LABELS_COLUMN = "rangelabelscolumn";
+	public static final String GLOBAL_RANGE = "globalrange";
+	public static final String AUTO_RANGE = "autorange";
+	public static final String RANGE = "range";
+	public static final String SHOW_ITEM_LABELS = "showitemlabels";
+	public static final String SHOW_DOMAIN_AXIS = "showdomainaxis";
+	public static final String SHOW_RANGE_AXIS = "showrangeaxis";
+	public static final String VALUES = "valuelist";
+	public static final String STACKED = "stacked";
+//	/**
+//	 * The vertical base of the chart as a proportion of the height.
+//	 * By default, this is 0.5 (the center of the node), to allow for both positive and negative values.
+//	 * If, however, you only have positive values, you might want to set this to 1.0 (the bottom of the node).
+//	 * Note that this goes backwards from what might be expected, with 0.0 being the top of the node and 
+//	 * 1.0 being the bottom of the node. The keyword bottom is also supported.
+//	 */
+//	public static final String YBASE = "ybase";
+	
+	private final CyColumnIdentifierFactory colIdFactory;
+	
+	protected AbstractChartCustomGraphics(final String displayName, final CyColumnIdentifierFactory colIdFactory) {
 		super(displayName);
+		
+		if (colIdFactory == null)
+			throw new IllegalArgumentException("'colIdFactory' must not be null.");
+		
+		this.colIdFactory = colIdFactory;
 	}
 	
-	protected AbstractChartCustomGraphics(final String displayName, final String input) {
-		super(displayName, input);
+	protected AbstractChartCustomGraphics(final String displayName, final String input,
+			final CyColumnIdentifierFactory colIdFactory) {
+		this(displayName, colIdFactory);
+		addProperties(parseInput(input));
 	}
 	
-	protected AbstractChartCustomGraphics(final AbstractChartCustomGraphics<T> chart) {
-		this(chart.getDisplayName());
-		this.properties.putAll(chart.getProperties());
+	protected AbstractChartCustomGraphics(final AbstractChartCustomGraphics<T> chart,
+			final CyColumnIdentifierFactory colIdFactory) {
+		this(chart.getDisplayName(), colIdFactory);
+		
+		if (chart.getProperties() != null)
+			this.properties.putAll(chart.getProperties());
 	}
 	
-	protected AbstractChartCustomGraphics(final String displayName, final Map<String, Object> properties) {
-		super(displayName, properties);
+	protected AbstractChartCustomGraphics(final String displayName, final Map<String, Object> properties,
+			final CyColumnIdentifierFactory colIdFactory) {
+		this(displayName, colIdFactory);
+		
+		if (properties != null)
+			this.properties.putAll(properties);
 	}
 	
 	public List<Double> convertInputToDouble(String input) {
@@ -47,6 +90,28 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		return new HashMap<String, Object>(properties);
 	}
 
+	@Override
+	public Set<CyColumnIdentifier> getMappedColumnNames() {
+		final Set<CyColumnIdentifier> set = new HashSet<CyColumnIdentifier>();
+		set.addAll(getList(DATA_COLUMNS, CyColumnIdentifier.class));
+		
+		if (get(SHOW_ITEM_LABELS, Boolean.class, Boolean.FALSE))
+			set.addAll(getList(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
+		
+		if (get(SHOW_DOMAIN_AXIS, Boolean.class, Boolean.FALSE) && get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class) != null)
+			set.add(get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
+		
+		if (get(SHOW_RANGE_AXIS, Boolean.class, Boolean.FALSE) && get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class) != null)
+			set.add(get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
+		
+		return set;
+	}
+	
+	@Override
+	public String getSerializableString() {
+		return toSerializableString();
+	}
+	
 	/**
 	 * Get values from a list of attributes. The attributesList can either be a
 	 * single list attribute with numeric values or a list of integer or
@@ -58,7 +123,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	 * @return the lists of values @ if the attributes aren't numeric
 	 */
 	public Map<String, List<Double>> getDataFromColumns(final CyNetwork network, final CyIdentifiable model,
-			final List<String> columnNames) {
+			final List<CyColumnIdentifier> columnNames) {
 		final LinkedHashMap<String, List<Double>> data = new LinkedHashMap<String, List<Double>>();
 		final CyRow row = network.getRow(model);
 		
@@ -67,36 +132,36 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 
 		final CyTable table = row.getTable();
 
-		for (final String name : columnNames) {
-			final CyColumn column = table.getColumn(name);
+		for (final CyColumnIdentifier colId : columnNames) {
+			final CyColumn column = table.getColumn(colId.getColumnName());
 			
 			if (column != null && column.getType() == List.class) {
 				final List<Double> values = new ArrayList<Double>();
 				final Class<?> type = column.getListElementType();
 				
 				if (type == Double.class) {
-					List<Double> dlist = row.getList(name, Double.class);
+					List<Double> dlist = row.getList(colId.getColumnName(), Double.class);
 					if (dlist != null)
 						values.addAll(dlist);
 				} else if (type == Integer.class) {
-					List<Integer> iList = row.getList(name, Integer.class);
+					List<Integer> iList = row.getList(colId.getColumnName(), Integer.class);
 					for (Integer i : iList)
 						values.add(i.doubleValue());
 				} else if (type == Long.class) {
-					List<Long> lList = row.getList(name, Long.class);
+					List<Long> lList = row.getList(colId.getColumnName(), Long.class);
 					for (Long l : lList)
 						values.add(l.doubleValue());
 				} else if (type == Float.class) {
-					List<Float> fList = row.getList(name, Float.class);
+					List<Float> fList = row.getList(colId.getColumnName(), Float.class);
 					for (Float f : fList)
 						values.add(f.doubleValue());
 				} else if (type == String.class) {
-					List<String> sList = row.getList(name, String.class);
+					List<String> sList = row.getList(colId.getColumnName(), String.class);
 					for (String s : sList)
 						values.add(Double.valueOf(s));
 				}
 				
-				data.put(name, values);
+				data.put(colId.getColumnName(), values);
 			}
 		}
 
@@ -105,17 +170,17 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	
 	@SuppressWarnings("unchecked")
 	public List<String> getLabelsFromColumn(final CyNetwork network, final CyIdentifiable model,
-			final String columnName) {
+			final CyColumnIdentifier columnId) {
 		final List<String> labels = new ArrayList<String>();
 		final CyRow row = network.getRow(model);
 		
-		if (row != null && columnName != null) {
+		if (row != null && columnId != null) {
 			final CyTable table = row.getTable();
-			final CyColumn column = table.getColumn(columnName);
+			final CyColumn column = table.getColumn(columnId.getColumnName());
 			
 			if (column != null && column.getType() == List.class) {
 				final Class<?> type = column.getListElementType();
-				final List<?> values = row.getList(columnName, type);
+				final List<?> values = row.getList(columnId.getColumnName(), type);
 				
 				if (type == String.class) {
 					labels.addAll((List<String>) values);
@@ -268,6 +333,84 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		return sMap;
 	}
 
+	@Override
+	protected Class<?> getSettingType(final String key) {
+		if (key.equalsIgnoreCase(DATA_COLUMNS)) return List.class;
+		if (key.equalsIgnoreCase(ITEM_LABELS_COLUMN)) return CyColumnIdentifier.class;
+		if (key.equalsIgnoreCase(DOMAIN_LABELS_COLUMN)) return CyColumnIdentifier.class;
+		if (key.equalsIgnoreCase(RANGE_LABELS_COLUMN)) return CyColumnIdentifier.class;
+		if (key.equalsIgnoreCase(VALUES)) return List.class;
+		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
+		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
+		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
+		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
+		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
+		if (key.equalsIgnoreCase(RANGE)) return DoubleRange.class;
+//		if (key.equalsIgnoreCase(YBASE)) return Double.class;
+		if (key.equalsIgnoreCase(STACKED)) return Boolean.class;
+			
+		return super.getSettingType(key);
+	}
+	
+	@Override
+	protected Class<?> getSettingListType(final String key) {
+		if (key.equalsIgnoreCase(DATA_COLUMNS)) return CyColumnIdentifier.class;
+		if (key.equalsIgnoreCase(VALUES)) return Double.class;
+		
+		return super.getSettingListType(key);
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	protected <S> S parseValue(final String key, Object value, final Class<S> type) {
+		try {
+			if (!type.isAssignableFrom(value.getClass())) {
+				if (type == DoubleRange.class) {
+					value = parseRange(value.toString());
+				} else if (type == CyColumnIdentifier.class) {
+					value = parseColumnIdentifier(value.toString());
+//				} else if (type == Double.class || type == Number.class) {
+//					value = key.equalsIgnoreCase(YBASE) ? 
+//							parseYBase(value.toString()) : Double.valueOf(value.toString());
+				} else {
+					value = super.parseValue(key, value, type);
+				}
+			}
+			
+			return (S) value;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	private Object parseColumnIdentifier(final String input) {
+		return colIdFactory.createColumnIdentifier(input);
+	}
+	
+	private DoubleRange parseRange(final String input) {
+		if (input != null) {
+			String[] split = input.split(",");
+			
+			try {
+				return new DoubleRange(getDoubleValue(split[0]), getDoubleValue(split[1]));
+			} catch (NumberFormatException e) {
+			}
+		}
+		
+		return null;
+	}
+	
+//	private Double parseYBase(final String input) {
+//		if (input != null) {
+//			try {
+//				return input.equalsIgnoreCase("bottom") ? 1.0 : Double.valueOf(input);
+//			} catch (NumberFormatException e) {
+//			}
+//		}
+//		
+//		return DEFAULT_YBASE;
+//	}
+	
 	/**
 	 * Serialize an object that might be a list to a string
 	 */

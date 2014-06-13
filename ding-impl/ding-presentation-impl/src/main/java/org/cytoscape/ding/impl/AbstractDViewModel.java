@@ -33,18 +33,24 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.LockedValueSetRecord;
+import org.cytoscape.view.model.events.LockedValuesSetEvent;
 
-public abstract class AbstractDViewModel<M> implements View<M> {
+public abstract class AbstractDViewModel<M extends CyIdentifiable> implements View<M> {
 
 	// Both of them are immutable.
 	protected final M model;
 	protected final Long suid;
 	protected final VisualLexicon lexicon;
+	protected final CyEventHelper eventHelper;
 
 	protected final Map<VisualProperty<?>, Object> visualProperties;
 	protected final Map<VisualProperty<?>, Object> directLocks;
@@ -55,13 +61,14 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	 * 
 	 * @param model
 	 */
-	public AbstractDViewModel(final M model, final VisualLexicon lexicon) {
+	public AbstractDViewModel(final M model, final VisualLexicon lexicon, final CyEventHelper eventHelper) {
 		if (model == null)
 			throw new IllegalArgumentException("Data model cannot be null.");
 
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
 		this.model = model;
 		this.lexicon = lexicon;
+		this.eventHelper = eventHelper;
 
 		// All access to these maps should go through "lock" field
 		this.visualProperties = new IdentityHashMap<VisualProperty<?>, Object>();
@@ -131,6 +138,9 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 			VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
 			propagateLockedVisualProperty(vp, node.getChildren(), value);
 		}
+		
+		eventHelper.addEventPayload((CyNetworkView)getDGraphView(),
+				new LockedValueSetRecord(this, vp, value), LockedValuesSetEvent.class);
 	}
 
 	@Override

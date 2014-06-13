@@ -5,6 +5,7 @@ import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
@@ -12,8 +13,9 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public HeatMapChartEditor(final HeatMapChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
-		super(chart, Number.class, false, 10, true, false, false, true, true, true, appMgr, iconMgr);
+	public HeatMapChartEditor(final HeatMapChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
+			final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, Number.class, false, 10, true, false, false, true, true, true, appMgr, iconMgr, colIdFactory);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

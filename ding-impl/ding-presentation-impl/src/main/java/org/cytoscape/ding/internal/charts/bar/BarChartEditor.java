@@ -12,6 +12,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class BarChartEditor extends AbstractChartEditor<BarChart> {
 
@@ -26,8 +27,9 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public BarChartEditor(final BarChart chart, final CyApplicationManager appMgr, final IconManager iconMgr) {
-		super(chart, Number.class, false, 10, true, true, true, true, false, true, appMgr, iconMgr);
+	public BarChartEditor(final BarChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
+			final CyColumnIdentifierFactory colIdFactory) {
+		super(chart, Number.class, false, 10, true, true, true, true, false, true, appMgr, iconMgr, colIdFactory);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

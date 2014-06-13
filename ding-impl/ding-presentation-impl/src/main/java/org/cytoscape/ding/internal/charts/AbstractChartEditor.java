@@ -1,15 +1,15 @@
 package org.cytoscape.ding.internal.charts;
 
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.AUTO_RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.DATA_COLUMNS;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.DOMAIN_LABELS_COLUMN;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.GLOBAL_RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.ITEM_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.AUTO_RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DATA_COLUMNS;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DOMAIN_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.GLOBAL_RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.ITEM_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.RANGE_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.SHOW_ITEM_LABELS;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.STACKED;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.ORIENTATION;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.RANGE_LABELS_COLUMN;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.SHOW_ITEM_LABELS;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.STACKED;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -64,6 +64,8 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphics<?>> extends JPanel {
 
@@ -114,11 +116,12 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	protected final boolean setDomainLabels;
 	protected final boolean setRangeLabels;
 	protected final boolean hasAxes;
-	protected final Map<String, CyColumn> columns;
+	protected final Map<CyColumnIdentifier, CyColumn> columns;
 	protected final T chart;
 	protected final Class<?> dataType;
 	protected final CyApplicationManager appMgr;
 	protected final IconManager iconMgr;
+	protected final CyColumnIdentifierFactory colIdFactory;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -133,7 +136,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 								  final boolean setRangeLabels,
 								  final boolean hasAxes,
 								  final CyApplicationManager appMgr,
-								  final IconManager iconMgr) {
+								  final IconManager iconMgr,
+								  final CyColumnIdentifierFactory colIdFactory) {
 		if (chart == null)
 			throw new IllegalArgumentException("'chart' argument must not be null.");
 		if (dataType == null)
@@ -142,6 +146,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			throw new IllegalArgumentException("'appMgr' argument must not be null.");
 		if (iconMgr == null)
 			throw new IllegalArgumentException("'iconMgr' argument must not be null.");
+		if (colIdFactory == null)
+			throw new IllegalArgumentException("'colIdFactory' argument must not be null.");
 		
 		this.chart = chart;
 		this.columnIsSeries = columnIsSeries;
@@ -155,15 +161,17 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		this.hasAxes = hasAxes;
 		this.appMgr = appMgr;
 		this.iconMgr = iconMgr;
+		this.colIdFactory = colIdFactory;
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
-		columns = new TreeMap<String, CyColumn>(new Comparator<String>() {
+		columns = new TreeMap<CyColumnIdentifier, CyColumn>(new Comparator<CyColumnIdentifier>() {
 			@Override
-			public int compare(final String s1, final String s2) {
-				return collator.compare(s1, s2);
+			public int compare(final CyColumnIdentifier c1, final CyColumnIdentifier c2) {
+				return collator.compare(c1.getColumnName(), c2.getColumnName());
 			}
 		});
 		
+		// TODO Move it to a shared "Chart Column Manager"
 		final CyNetwork net = appMgr.getCurrentNetwork();
 		
 		if (net != null) {
@@ -172,7 +180,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			
 			for (final CyColumn c : cols) {
 				if (Collection.class.isAssignableFrom(c.getType()))
-					columns.put(c.getName(), c);
+					columns.put(colIdFactory.createColumnIdentifier(c.getName()), c);
 			}
 		}
 		
@@ -497,8 +505,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getItemLabelsColumnCmb() {
 		if (itemLabelsColumnCmb == null) {
-			itemLabelsColumnCmb = new CyColumnComboBox(columns.values(), true);
-			selectCyColumnItem(itemLabelsColumnCmb, chart.get(ITEM_LABELS_COLUMN, String.class));
+			itemLabelsColumnCmb = new CyColumnComboBox(columns.keySet(), true);
+			selectColumnIdItem(itemLabelsColumnCmb, chart.get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
 			
 			itemLabelsColumnCmb.addActionListener(new ActionListener() {
 				@Override
@@ -514,8 +522,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getDomainLabelsColumnCmb() {
 		if (domainLabelsColumnCmb == null) {
-			domainLabelsColumnCmb = new CyColumnComboBox(columns.values(), true);
-			selectCyColumnItem(domainLabelsColumnCmb, chart.get(DOMAIN_LABELS_COLUMN, String.class));
+			domainLabelsColumnCmb = new CyColumnComboBox(columns.keySet(), true);
+			selectColumnIdItem(domainLabelsColumnCmb, chart.get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
 			
 			domainLabelsColumnCmb.addActionListener(new ActionListener() {
 				@Override
@@ -531,8 +539,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getRangeLabelsColumnCmb() {
 		if (rangeLabelsColumnCmb == null) {
-			rangeLabelsColumnCmb = new CyColumnComboBox(columns.values(), true);
-			selectCyColumnItem(rangeLabelsColumnCmb, chart.get(RANGE_LABELS_COLUMN, String.class));
+			rangeLabelsColumnCmb = new CyColumnComboBox(columns.keySet(), true);
+			selectColumnIdItem(rangeLabelsColumnCmb, chart.get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
 			
 			rangeLabelsColumnCmb.addActionListener(new ActionListener() {
 				@Override
@@ -761,11 +769,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		if (net != null) {
 			final boolean stacked = chart.get(STACKED, Boolean.class, false);
 			final List<CyNode> nodes = net.getNodeList();
-			final Set<CyColumn> dataColumns = getDataPnl().getDataColumns();
+			final Set<CyColumnIdentifier> dataColumns = getDataPnl().getDataColumns();
 			double min = Double.POSITIVE_INFINITY;
 			double max = Double.NEGATIVE_INFINITY;
 			
-			for (final CyColumn column : dataColumns) {
+			for (final CyColumnIdentifier colId : dataColumns) {
+				final CyColumn column = columns.get(colId);
+				
 				if (column != null
 						&& List.class.isAssignableFrom(column.getType())
 						&& Number.class.isAssignableFrom(column.getListElementType())) {
@@ -878,7 +888,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		}
 	}
 	
-	protected JComboBox createDataColumnComboBox(final Collection<CyColumn> columns, final boolean acceptsNull) {
+	protected JComboBox createDataColumnComboBox(final Collection<CyColumnIdentifier> columns, final boolean acceptsNull) {
 		final JComboBox cmb = new CyColumnComboBox(columns, false);
 		cmb.setSelectedItem(null);
 		cmb.addActionListener(new ActionListener() {
@@ -897,13 +907,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		return BASIC_COLOR_SCHEMES;
 	}
 	
-	protected static void selectCyColumnItem(final JComboBox cmb, final String columnName) {
-		if (columnName != null) {
+	protected static void selectColumnIdItem(final JComboBox cmb, final CyColumnIdentifier columnId) {
+		if (columnId != null) {
 			for (int i = 0; i < cmb.getItemCount(); i++) {
-				final CyColumn column = (CyColumn) cmb.getItemAt(i);
+				final CyColumnIdentifier colId = (CyColumnIdentifier) cmb.getItemAt(i);
 				
-				if (column != null && column.getName().equals(columnName)) {
-					cmb.setSelectedItem(column);
+				if (colId != null && colId.equals(columnId)) {
+					cmb.setSelectedItem(colId);
 					break;
 				}
 			}
@@ -916,19 +926,21 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		
 		private static final long serialVersionUID = 3695410711435506554L;
 
-		private final int maxColumns;
-		private final Set<CyColumn> dataColumns;
+		private int maxColumns;
+		private final Set<CyColumnIdentifier> dataColumns;
 		private final Set<DataColumnSelector> columnSelectors;
 		private JButton addDataColumnBtn;
 
 		protected DataPanel() {
-			dataColumns = new LinkedHashSet<CyColumn>();
+			dataColumns = new LinkedHashSet<CyColumnIdentifier>();
 			columnSelectors = new LinkedHashSet<DataColumnSelector>();
 			
 			// Filter all columns that are list of numbers
-			for (final CyColumn c : columns.values()) {
+			for (final CyColumnIdentifier colId : columns.keySet()) {
+				final CyColumn c = columns.get(colId);
+				
 				if (List.class.isAssignableFrom(c.getType()) && dataType.isAssignableFrom(c.getListElementType()))
-					dataColumns.add(c);
+					dataColumns.add(colId);
 			}
 			
 			maxColumns = Math.min(maxDataColumns, dataColumns.size());
@@ -948,13 +960,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				removeDataColumnSelector(sel);
 			
 			if (maxColumns > 0) {
-				final List<String> dataColumns = chart.getList(DATA_COLUMNS, String.class);
+				final List<CyColumnIdentifier> dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
 				int count = 0;
 				
 				if (dataColumns != null) {
-					for (final String name : dataColumns) {
+					for (final CyColumnIdentifier colId : dataColumns) {
 						if (count++ < maxColumns)
-							addDataColumnSelector(name, false);
+							addDataColumnSelector(colId, false);
 					}
 				}
 				
@@ -985,8 +997,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			return addDataColumnBtn;
 		}
 		
-		protected void addDataColumnSelector(final String columnName, final boolean resetColorScheme) {
-			final DataColumnSelector selector = new DataColumnSelector(columnName);
+		protected void addDataColumnSelector(final CyColumnIdentifier columnId, final boolean resetColorScheme) {
+			final DataColumnSelector selector = new DataColumnSelector(columnId);
 			columnSelectors.add(selector);
 			
 			final int index = getComponentCount() > 0 ? getComponentCount() - 2 : 0;
@@ -1017,11 +1029,11 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			getColorSchemeEditor().reset();
 		}
 		
-		protected Set<CyColumn> getDataColumns() {
-			final Set<CyColumn> dataColumns = new LinkedHashSet<CyColumn>();
+		protected Set<CyColumnIdentifier> getDataColumns() {
+			final Set<CyColumnIdentifier> dataColumns = new LinkedHashSet<CyColumnIdentifier>();
 			
 			for (final DataColumnSelector selector : columnSelectors) {
-				final CyColumn selectedColumn = (CyColumn) selector.cmb.getSelectedItem();
+				final CyColumnIdentifier selectedColumn = (CyColumnIdentifier) selector.cmb.getSelectedItem();
 				
 				if (selectedColumn != null)
 					dataColumns.add(selectedColumn);
@@ -1030,30 +1042,30 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			return dataColumns;
 		}
 		
-		public List<String> getDataColumnNames() {
-			final List<String> names = new ArrayList<String>();
+		public List<CyColumnIdentifier> getDataColumnNames() {
+			final List<CyColumnIdentifier> names = new ArrayList<CyColumnIdentifier>();
 			
 			for (final DataColumnSelector selector : columnSelectors) {
-				final CyColumn selectedColumn = (CyColumn) selector.cmb.getSelectedItem();
+				final CyColumnIdentifier selectedColumn = (CyColumnIdentifier) selector.cmb.getSelectedItem();
 				
 				if (selectedColumn != null)
-					names.add(selectedColumn.getName());
+					names.add(selectedColumn);
 			}
 			
 			return names;
 		}
 		
-		private String getNextDefaultColumnName() {
-			final Set<CyColumn> set = new LinkedHashSet<CyColumn>(dataColumns);
+		private CyColumnIdentifier getNextDefaultColumnId() {
+			final Set<CyColumnIdentifier> set = new LinkedHashSet<CyColumnIdentifier>(dataColumns);
 			
 			for (final DataColumnSelector selector : columnSelectors) {
-				final CyColumn selectedColumn = (CyColumn) selector.cmb.getSelectedItem();
+				final CyColumnIdentifier selectedColumn = (CyColumnIdentifier) selector.cmb.getSelectedItem();
 				
 				if (selectedColumn != null)
 					set.remove(selectedColumn);
 			}
 			
-			return set.isEmpty() ? null : set.iterator().next().getName();
+			return set.isEmpty() ? null : set.iterator().next();
 		}
 		
 		private void updateAddDataColumnBtn() {
@@ -1067,7 +1079,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			final JComboBox cmb;
 			final JButton delBtn;
 			
-			DataColumnSelector(String columnName) {
+			DataColumnSelector(CyColumnIdentifier columnId) {
 				setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 				setOpaque(false);
 				setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -1088,10 +1100,10 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				add(cmb);
 				add(delBtn);
 				
-				if (columnName == null)
-					columnName = getNextDefaultColumnName();
+				if (columnId == null)
+					columnId = getNextDefaultColumnId();
 				
-				selectCyColumnItem(cmb, columnName);
+				selectColumnIdItem(cmb, columnId);
 			}
 		}
 	}
@@ -1126,8 +1138,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		
 		private static final long serialVersionUID = 8890884100875883324L;
 
-		public CyColumnComboBox(final Collection<CyColumn> columns, final boolean acceptsNull) {
-			final List<CyColumn> values = new ArrayList<CyColumn>(columns);
+		public CyColumnComboBox(final Collection<CyColumnIdentifier> columnIds, final boolean acceptsNull) {
+			final List<CyColumnIdentifier> values = new ArrayList<CyColumnIdentifier>(columnIds);
 			
 			if (acceptsNull && !values.contains(null))
 				values.add(0, null);
@@ -1150,8 +1162,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			
 			if (value == null)
 				c.setText("-- none --");
-			else if (value instanceof CyColumn)
-				c.setText(((CyColumn)value).getName());
+			else if (value instanceof CyColumnIdentifier)
+				c.setText(((CyColumnIdentifier)value).getColumnName());
 			else
 				c.setText("[ invalid column ]"); // Should never happen
 				

@@ -1,8 +1,8 @@
 package org.cytoscape.ding.internal.charts;
 
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DATA_COLUMNS;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLORS;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLOR_SCHEME;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.DATA_COLUMNS;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -37,6 +37,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
 public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> extends JPanel {
 
@@ -216,11 +217,11 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	
 	protected int getTotal() {
 		if (total <= 0) {
-			final List<String> columns = chart.getList(DATA_COLUMNS, String.class);
+			final List<CyColumnIdentifier> dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
 			
 			if (columnIsSeries) {
 				// Each column represents a data series
-				total = columns.size();
+				total = dataColumns.size();
 			} else if (network != null) {
 				// Columns represent data categories--each list element is an item/color
 				int nColors = 0;
@@ -228,13 +229,13 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 				final List<CyNode> allNodes = network.getNodeList();
 				final CyTable table = network.getDefaultNodeTable();
 				
-				for (final String columnName : columns) {
-					final CyColumn column = table.getColumn(columnName);
+				for (final CyColumnIdentifier colId : dataColumns) {
+					final CyColumn column = table.getColumn(colId.getColumnName());
 					
 					if (column != null && column.getType() == List.class) {
 						for (final CyNode node : allNodes) {
 							final CyRow row = network.getRow(node);
-							final List<?> values = row.getList(columnName, column.getListElementType());
+							final List<?> values = row.getList(column.getName(), column.getListElementType());
 							
 							if (values != null)
 								nColors = Math.max(nColors, values.size());
