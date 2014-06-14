@@ -298,11 +298,11 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		// Special handling for various types
 		if (clazz.equals(NodeList.class)) {
 			String args = "["+variable("nodeColumn:value")+"|"+
-			              variable("node name")+"|"+keyword(",")+"...]"+keywords;
+			              variable("node name")+keyword(",")+"...]|"+keywords;
 			return fixedSpan(args);
 		} else if (clazz.equals(EdgeList.class)) {
-			String args = "["+variable("nodeColumn:value")+"|"+
-			              variable("node name")+"|"+keyword(",")+"...]"+keywords;
+			String args = "["+variable("edgeColumn:value")+"|"+
+			              variable("edge name")+keyword(",")+"...]|"+keywords;
 			return fixedSpan(args);
 		} else if (clazz.equals(CyNetwork.class)) {
 			return fixedSpan(keyword("current")+"|["+variable("column:value")+"|"+variable("network name")+"]");
