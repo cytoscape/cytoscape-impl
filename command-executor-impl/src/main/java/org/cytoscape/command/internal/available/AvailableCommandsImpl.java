@@ -47,8 +47,10 @@ import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.AbstractTunableHandler;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.Tunable;
 import org.cytoscape.command.AvailableCommands;
 
 import org.slf4j.Logger;
@@ -62,7 +64,8 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private final static Logger logger = LoggerFactory.getLogger(AvailableCommandsImpl.class);
 
 	private final Map<String, TaskFactory> commands;
-	private final Map<String,Map<String,List<String>>> argStrings;
+	// private final Map<String,Map<String,List<String>>> argStrings;
+	private final Map<String,Map<String,Map<String, ArgHandler>>> argHandlers;
 	private final ArgRecorder argRec;
 	private final StaticTaskFactoryProvisioner factoryProvisioner;
 	private final Map<Object, TaskFactory> provisioners;
@@ -71,7 +74,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	public AvailableCommandsImpl(ArgRecorder argRec, CyApplicationManager appMgr) {
 		this.argRec = argRec;
 		this.commands = new HashMap<String, TaskFactory>();
-		this.argStrings = new HashMap<String,Map<String,List<String>>>();
+		this.argHandlers = new HashMap<String,Map<String,Map<String, ArgHandler>>>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
 		this.provisioners = new IdentityHashMap<Object, TaskFactory>();
 		this.appMgr = appMgr;
@@ -79,14 +82,14 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 	@Override
 	public List<String> getNamespaces() {
-		List<String> l = new ArrayList<String>( argStrings.keySet() );
+		List<String> l = new ArrayList<String>( argHandlers.keySet() );
 		Collections.sort(l);
 		return l;
 	}
 
 	@Override
 	public List<String> getCommands(String namespace) {
-		Map<String,List<String>> mm = argStrings.get(namespace);
+		Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
 		if ( mm == null ) {
 			return Collections.emptyList();
 		} else {
@@ -98,27 +101,81 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 	@Override
 	public List<String> getArguments(String namespace,String command) {
-		Map<String,List<String>> mm = argStrings.get(namespace);
+		Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
 		if ( mm == null ) {
 			return Collections.emptyList();
 		} else {
-			List<String> ll = mm.get(command);
+			Map<String, ArgHandler> ll = mm.get(command);
 			if ( ll == null ) {
 				if (commands.containsKey(namespace+" "+command)) {
-					List<String> args = getArgs(commands.get(namespace+" "+command));
-					mm.put(command, args);
-					// Make a private copy
-					List<String> l = new ArrayList<String>(args);
-					Collections.sort(l);
-					return l;
+					ll = getArgs(commands.get(namespace+" "+command));
+					mm.put(command, ll);
+				} else {
+					return Collections.emptyList();
 				}
-				return Collections.emptyList();
-			} else {
-				List<String> l = new ArrayList<String>(ll);
-				Collections.sort(l);
-				return l;
+			}
+
+			// At this point, we should definitely have everything to create the arguments
+			List<String> l = new ArrayList<String>();
+			for (ArgHandler ah: ll.values()) {
+				l.add(ah.getName());
+			}
+			Collections.sort(l);
+			return l;
+		}
+	}
+
+	@Override
+	public boolean getArgRequired(String namespace,String command,String argument) {
+		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
+		if (map != null && map.containsKey(argument))
+			return map.get(argument).getRequired();
+		return false;
+	}
+
+	@Override
+	public String getArgTooltip(String namespace,String command,String argument) {
+		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
+		if (map != null && map.containsKey(argument))
+			return map.get(argument).getTooltip();
+		return null;
+	}
+
+	@Override
+	public String getArgDescription(String namespace,String command,String argument) {
+		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
+		if (map != null && map.containsKey(argument))
+			return map.get(argument).getDescription();
+		return null;
+	}
+
+	@Override
+	public Class<?> getArgType(String namespace,String command,String argument) {
+		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
+		if (map != null && map.containsKey(argument))
+			return map.get(argument).getType();
+		return null;
+	}
+
+	@Override
+	public Object getArgValue(String namespace,String command,String argument) {
+		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
+		if (map != null && map.containsKey(argument)) {
+			try {
+				return map.get(argument).getValue();
+			} catch (Exception e) {
+				return null;
 			}
 		}
+		return null;
+	}
+
+	@Override
+	public String getArgTypeString(String namespace,String command,String argument) {
+		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
+		if (map != null && map.containsKey(argument))
+			return map.get(argument).getDesc();
+		return null;
 	}
 
 	public void addTaskFactory(TaskFactory tf, Map props) { addCommand(tf,props); }
@@ -162,11 +219,11 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 		commands.put(namespace+" "+command, tf);
 		// List<String> args = getArgs(tf);
-		List<String> args = null;
-		Map<String,List<String>> mm = argStrings.get(namespace);
+		Map<String, ArgHandler> args = null;
+		Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
 		if ( mm == null ) {
-			mm = new HashMap<String,List<String>>();
-			argStrings.put(namespace,mm);
+			mm = new HashMap<String,Map<String, ArgHandler>>();
+			argHandlers.put(namespace,mm);
 		}
 		mm.put(command,args);
 	}
@@ -179,29 +236,71 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		TaskFactory l = commands.remove(namespace+" "+command);
 		if (l == null)
 			return;
-		Map<String,List<String>> m = argStrings.get(namespace);
+		Map<String,Map<String, ArgHandler>> m = argHandlers.get(namespace);
 		if ( m != null )
 			m.remove(command);
 		if (m.isEmpty())
-			argStrings.remove(namespace);
+			argHandlers.remove(namespace);
 	}
 
-	private List<String> getArgs(TaskFactory tf) {
+	private List<ArgHandler> getHandlers(TaskFactory tf) {
 		try { 
 			TaskIterator ti = tf.createTaskIterator();
-			List<String> args = new ArrayList<String>();
+			List<ArgHandler> args = new ArrayList<ArgHandler>();
+			while ( ti.hasNext() ) {	
+				Object task = ti.next();
+				List<ArgHandler> handlers = argRec.getHandlers(task);
+				for (ArgHandler handler: handlers) {
+					String context = handler.getContext();
+					// Only add commands appropriate for nogui
+					if (!context.equals(Tunable.GUI_CONTEXT))
+						args.add(handler);
+				}
+			}
+			return args;
+		} catch (Exception e) {
+			logger.debug("Could not get handler for command.",e);
+			return new ArrayList<ArgHandler>();
+		}
+	}
 
-			while ( ti.hasNext() )	
-				args.addAll( argRec.findArgs( ti.next() ) );
+	private Map<String, ArgHandler> getArgMap(String namespace, String command, String arg) {
+		if (!argHandlers.containsKey(namespace))
+			return null;
 
-			return args;	
+		if (!argHandlers.get(namespace).containsKey(command))
+			return null;
+
+		Map<String, ArgHandler> map = argHandlers.get(namespace).get(command);
+		if (map == null) {
+			map = getArgs(commands.get(namespace+" "+command));
+			argHandlers.get(namespace).put(command, map);
+		}
+		return map;
+	}
+
+	private Map<String, ArgHandler> getArgs(TaskFactory tf) {
+		try { 
+			TaskIterator ti = tf.createTaskIterator();
+			if (ti == null)
+				return Collections.emptyMap();
+
+			Map<String, ArgHandler> argMap = new HashMap<String, ArgHandler>();
+
+			while ( ti.hasNext() ) {	
+				List<ArgHandler> handlers = argRec.getHandlers(ti.next());
+				for (ArgHandler h: handlers)
+					argMap.put(h.getName(), h);
+			}
+
+			return argMap;	
 		} catch (Exception e) {
 			logger.debug("Could not create invocation string for command.",e);
 			e.printStackTrace();
-			return Arrays.asList("<unknown args>");
+			return Collections.emptyMap();
 		}
 	}
-	
+
 	class StaticTaskFactoryProvisioner {
 		TaskFactory createFor(final NetworkTaskFactory factory) {
 			return new AbstractTaskFactory() {

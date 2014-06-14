@@ -44,21 +44,50 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.Element;
+
 
 import org.cytoscape.commandDialog.internal.handlers.MessageHandler;
 
 public class JResultsPane extends JTextPane implements MessageHandler {
-	private SimpleAttributeSet commandAttributes;
-	private SimpleAttributeSet messageAttributes;
-	private SimpleAttributeSet resultAttributes;
-	private SimpleAttributeSet errorAttributes;
-	private SimpleAttributeSet warningAttributes;
+	// private SimpleAttributeSet commandAttributes;
+	// private SimpleAttributeSet messageAttributes;
+	// private SimpleAttributeSet resultAttributes;
+	// private SimpleAttributeSet errorAttributes;
+	// private SimpleAttributeSet warningAttributes;
+	private String commandAttributes;
+	private String messageAttributes;
+	private String resultAttributes;
+	private String errorAttributes;
+	private String warningAttributes;
+	private HTMLDocument currentDocument;
+	private Element rootElement;
+	private static String BLUE = "color:blue";
+	private static String RED = "color:red";
+	private static String GREEN = "color:green";
+	private static String ORANGE = "color:orange";
+	private static String BLACK = "color:black";
+	private static String BOLD = "font-weight:bold";
+	private static String ITALICS = "font-style:italic";
+	private static String DEFAULT_STYLE = "margin-top:0px;margin-bottom:0px";
+
 	public JResultsPane() {
 		super();
 
 		DefaultCaret caret = (DefaultCaret)getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		setContentType("text/html");
+		currentDocument = (HTMLDocument) getDocument();
+		rootElement = currentDocument.getDefaultRootElement();
 
+		commandAttributes = BLUE+";"+BOLD+";"+ITALICS;
+		messageAttributes = BLUE+";margin-left:10px";
+		errorAttributes = RED;
+		warningAttributes = ORANGE;
+		resultAttributes = GREEN+";"+BOLD+";"+ITALICS;
+
+		/*
 		commandAttributes = new SimpleAttributeSet();
 		commandAttributes.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.BLUE);
 		commandAttributes.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
@@ -83,14 +112,17 @@ public class JResultsPane extends JTextPane implements MessageHandler {
 		resultAttributes.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.GREEN);
 		resultAttributes.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
 		resultAttributes.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
+		*/
 	}
 
 	public void appendCommand(String s) {
-		updateString(commandAttributes, s+"\n");
+		// updateString(commandAttributes, s+"\n");
+		updateString(commandAttributes, s);
 	}
 
 	public void appendError(String s) {
-		updateString(errorAttributes, s+"\n");
+		// updateString(errorAttributes, s+"\n");
+		updateString(errorAttributes, s);
 	}
 
 	public void appendResult(String s) {
@@ -105,24 +137,36 @@ public class JResultsPane extends JTextPane implements MessageHandler {
 	}
 
 	public void appendWarning(String s) {
-		updateString(warningAttributes, s+"\n");
+		// updateString(warningAttributes, s+"\n");
+		updateString(warningAttributes, s);
 	}
 
 	public void appendMessage(String s) {
-		updateString(messageAttributes, "    "+s+"\n");
+		// updateString(messageAttributes, "    "+s+"\n");
+		updateString(messageAttributes, s);
 	}
 
 	public void clear() {
-		setStyledDocument(new DefaultStyledDocument());
+		// setStyledDocument(new DefaultStyledDocument());
+		currentDocument = new HTMLDocument();
+		setStyledDocument(currentDocument);
+		rootElement = currentDocument.getDefaultRootElement();
 	}
 
-	private void updateString(final AttributeSet set, final String s) {
+	private void updateString(final String style, final String s) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				StyledDocument doc = getStyledDocument();
+				/* StyledDocument doc = getStyledDocument();
 				try {
 					doc.insertString(doc.getLength(), s, set);
 				} catch (BadLocationException badLocationException) {
+				}
+				*/
+				try {
+					String p = "<p style='"+DEFAULT_STYLE+";"+style+"'>"+s+"</p>\n";
+					currentDocument.insertBeforeEnd(rootElement, p);
+					setCaretPosition(currentDocument.getLength());
+				} catch (Exception badLocationException) {
 				}
 			}
 		});

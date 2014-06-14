@@ -50,11 +50,22 @@ import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.command.util.NodeList;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.Task;
+import org.cytoscape.work.util.AbstractBounded;
+import org.cytoscape.work.util.BoundedDouble;
+import org.cytoscape.work.util.BoundedFloat;
+import org.cytoscape.work.util.BoundedInteger;
+import org.cytoscape.work.util.BoundedLong;
+import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSingleSelection;
 
 public class CommandHandler implements PaxAppender, TaskObserver {
 	boolean processingCommand = false;
@@ -257,14 +268,96 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 				return;
 			}
 
-			List<String> argList = availableCommands.getArguments(tokens[1], command);
-			String commandArgs = "    "+tokens[1]+" "+command+" ";
-			for (String arg: argList) {
-				commandArgs += arg+" ";
-			}
-			resultsText.appendMessage(commandArgs);
+			generateArgumentHelp(tokens[1], command);
 		}
+	}
 
+	private void generateArgumentHelp(String namespace, String command) {
+		List<String> argList = availableCommands.getArguments(namespace, command);
+		String message = "<b>"+namespace+" "+command+"</b> arguments:";
+		// resultsText.appendMessage(commandArgs);
+		message += "<ul style='list-style-type:none;margin-top:0px;color:blue'>";
+		for (String arg: argList) {
+			message += "<li>";
+			if (availableCommands.getArgRequired(namespace, command, arg)) {
+				message += "<b>"+arg+"</b>";
+			} else {
+				message += arg;
+			}
+			message += "="+getTypeString(namespace, command, arg);
+			message += ": "+availableCommands.getArgDescription(namespace, command, arg);
+			message += "</li>\n";
+		}
+		resultsText.appendMessage(message+"</ul>");
+	}
+
+	private String getTypeString(String namespace, String command, String arg) {
+		Class<?> clazz = availableCommands.getArgType(namespace, command, arg);
+		Object object = availableCommands.getArgValue(namespace, command, arg);
+		String keywords = keyword("all")+"|"+keyword("selected")+"|"+keyword("unselected");
+		// Special handling for various types
+		if (clazz.equals(NodeList.class)) {
+			String args = "["+variable("nodeColumn:value")+"|"+
+			              variable("node name")+"|"+keyword(",")+"...]"+keywords;
+			return fixedSpan(args);
+		} else if (clazz.equals(EdgeList.class)) {
+			String args = "["+variable("nodeColumn:value")+"|"+
+			              variable("node name")+"|"+keyword(",")+"...]"+keywords;
+			return fixedSpan(args);
+		} else if (clazz.equals(CyNetwork.class)) {
+			return fixedSpan(keyword("current")+"|["+variable("column:value")+"|"+variable("network name")+"]");
+		} else if (clazz.equals(CyTable.class)) {
+			String args = keyword("Node:")+variable("network name")+"|"+
+			              keyword("Edge:")+variable("network name")+"|"+
+			              keyword("Network:")+variable("network name")+"|"+
+			              variable("table name");
+			return fixedSpan(args);
+		} else if (clazz.equals(boolean.class) || clazz.equals(Boolean.class)) {
+			return fixedSpan(keyword("true")+"|"+keyword("false"));
+		} else if (clazz.equals(ListSingleSelection.class)) {
+			if (object != null) {
+				ListSingleSelection lss = (ListSingleSelection)object;
+				String str = "&lt;"+classString(clazz.getSimpleName())+"&nbsp(";
+				List<Object> list = lss.getPossibleValues();
+				for (int index = 0; index < list.size()-1; index++) { 
+					str += keyword(list.get(index).toString())+"|"; 
+				}
+				str += keyword(list.get(list.size()-1).toString())+")&gt;"; 
+				return fixedSpan(str);
+			}
+		} else if (clazz.equals(ListMultipleSelection.class)) {
+			if (object != null) {
+				ListMultipleSelection lss = (ListMultipleSelection)object;
+				String str = "&lt;"+classString(clazz.getSimpleName())+"&nbsp[";
+				List<Object> list = lss.getPossibleValues();
+				for (int index = 0; index < list.size()-1; index++) { 
+					str += keyword(list.get(index).toString())+","; 
+				}
+				str += keyword(list.get(list.size()-1).toString())+"]&gt;"; 
+				return fixedSpan(str);
+			}
+		} else if (clazz.equals(BoundedDouble.class) || clazz.equals(BoundedFloat.class) ||
+	 	          clazz.equals(BoundedInteger.class) || clazz.equals(BoundedLong.class)) {
+			if (object != null)
+				return boundedTypeString(clazz, object);
+		}
+		return fixedSpan("&lt;"+classString(clazz.getSimpleName())+"&gt;");
+	}
+
+	private String fixedSpan(String s) {
+		return "<span style='font-family:Courier;color:black'>"+s+"</span>";
+	}
+
+	private String keyword(String s) {
+		return "<span style='font-family:Courier;color:#CC00CC'>"+s+"</span>";
+	}
+
+	private String variable(String s) {
+		return "<span style='font-family:Courier;color:#A000A0;font-style:italics'>"+s+"</span>";
+	}
+
+	private String classString(String s) {
+		return "<span style='font-family:Courier;color:#FF00FF;font-style:italics'>"+s+"</span>";
 	}
 
 	private void helpAll() {
@@ -272,13 +365,31 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 			resultsText.appendMessage(namespace);
 			for (String command: availableCommands.getCommands(namespace)) {
 				command = command.trim();
-				List<String> argList = availableCommands.getArguments(namespace, command);
-				String commandArgs = "    "+namespace+" "+command+" ";
-				for (String arg: argList) {
-					commandArgs += arg+" ";
-				}
-				resultsText.appendMessage(commandArgs);
+				generateArgumentHelp(namespace, command);
+				resultsText.appendMessage("<br/>");
 			}
+		}
+	}
+
+	private String boundedTypeString(Class<?> type, Object object) {
+		if (object instanceof AbstractBounded) {
+			AbstractBounded ab = (AbstractBounded)object;
+			String str = "&lt;"+classString(type.getSimpleName())+"&nbsp;(";
+			str += ab.getLowerBound().toString() + "&lt;";
+			if (!ab.isLowerBoundStrict())
+				str += "=";
+			if (ab.getValue() != null) {
+				str += ab.getValue().toString();
+			} else {
+				str += classString(ab.getLowerBound().getClass().getSimpleName());
+			}
+			str += "&lt;";
+			if (!ab.isUpperBoundStrict())
+				str += "=";
+			str += ab.getUpperBound().toString() + ")&gt;";
+			return fixedSpan(str);
+		} else {
+			return fixedSpan("&lt;"+classString(type.getSimpleName())+"&gt;");
 		}
 	}
 

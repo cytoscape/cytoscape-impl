@@ -29,6 +29,7 @@ import java.util.*;
 import javax.swing.JPanel;
 
 import org.cytoscape.work.AbstractTunableInterceptor;
+import org.cytoscape.work.Tunable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,16 +40,20 @@ public class ArgRecorder extends AbstractTunableInterceptor<ArgHandler> {
 
 	public List<String> findArgs(Object o) {
 		List<String> desc = new ArrayList<String>();
-		for (final ArgHandler p : getHandlers(o))
+		for (final ArgHandler p : getHandlers(o)) {
+			if (p instanceof BasicArgHandler &&
+			    ((BasicArgHandler)p).getContext() == Tunable.GUI_CONTEXT)
+				continue;
 			desc.add( p.getDesc() );
+		}
 		return desc;
 	}
 
 	public void addTunableHandlerFactory(ArgHandlerFactory f, Map p) {
-        super.addTunableHandlerFactory(f,p);
-    }
-    public void removeTunableHandlerFactory(ArgHandlerFactory f, Map p) {
-        super.removeTunableHandlerFactory(f,p);
-    }
+		super.addTunableHandlerFactory(f,p);
+	}
+	public void removeTunableHandlerFactory(ArgHandlerFactory f, Map p) {
+		super.removeTunableHandlerFactory(f,p);
+	}
 
 }
