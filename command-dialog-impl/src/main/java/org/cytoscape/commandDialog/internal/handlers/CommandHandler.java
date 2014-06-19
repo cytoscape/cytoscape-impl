@@ -144,15 +144,22 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		for (String inputArg: settings.keySet()) {
 			boolean found = false;
 			for (String arg: argList) {
-				String[] bareArg = arg.split("=");
-				if (bareArg[0].equalsIgnoreCase(inputArg)) {
+				if (arg.equalsIgnoreCase(inputArg)) {
 					found = true;
-					modifiedSettings.put(bareArg[0], settings.get(inputArg));
+					modifiedSettings.put(arg, settings.get(inputArg));
 					break;
 				}
 			}
 			if (!found)
-				throw new RuntimeException("Argument: '"+inputArg+" isn't applicable to command: '"+ns+" "+comm+"'");
+				throw new RuntimeException("Error: argument '"+inputArg+" isn't applicable to command: '"+ns+" "+comm+"'");
+		}
+
+		// Now we have all of the possible arguments and the arguments that the user
+		// has provided.  Check to make sure all required arguments are available
+		for (String arg: argList) {
+			if (availableCommands.getArgRequired(ns, sub, arg) &&
+			    !modifiedSettings.containsKey(arg))
+				throw new RuntimeException("Error: argument '"+arg+"' is required for command: '"+ns+" "+comm+"'");
 		}
 		
 		processingCommand = true;
@@ -247,7 +254,11 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 			resultsText.appendMessage("Available commands:");
 			// TODO: Need to get the description for this command
 			for (String command: commands) {
-				resultsText.appendMessage("    "+tokens[1]+" "+command);
+				String desc = availableCommands.getDescription(tokens[1], command);
+				if (desc != null && desc.length() > 0)
+					resultsText.appendMessage("    "+tokens[1]+" "+command+"      :"+desc);
+				else
+					resultsText.appendMessage("    "+tokens[1]+" "+command);
 			}
 		} else if (tokens.length > 2) {
 			// Get all of the arguments for a specific command

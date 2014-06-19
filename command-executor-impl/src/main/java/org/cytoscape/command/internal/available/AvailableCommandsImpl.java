@@ -48,6 +48,7 @@ import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.AbstractTunableHandler;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
@@ -64,6 +65,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private final static Logger logger = LoggerFactory.getLogger(AvailableCommandsImpl.class);
 
 	private final Map<String, TaskFactory> commands;
+	private final Map<String, String> descriptions;
 	// private final Map<String,Map<String,List<String>>> argStrings;
 	private final Map<String,Map<String,Map<String, ArgHandler>>> argHandlers;
 	private final ArgRecorder argRec;
@@ -74,6 +76,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	public AvailableCommandsImpl(ArgRecorder argRec, CyApplicationManager appMgr) {
 		this.argRec = argRec;
 		this.commands = new HashMap<String, TaskFactory>();
+		this.descriptions = new HashMap<String, String>();
 		this.argHandlers = new HashMap<String,Map<String,Map<String, ArgHandler>>>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
 		this.provisioners = new IdentityHashMap<Object, TaskFactory>();
@@ -97,6 +100,14 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			Collections.sort(l);
 			return l;
 		}
+	}
+
+	@Override
+	public String getDescription(String namespace, String command) {
+		if (descriptions.containsKey(namespace+" "+command)) {
+			return descriptions.get(namespace+" "+command);
+		}
+		return "";
 	}
 
 	@Override
@@ -211,13 +222,15 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	public void removeTableTaskFactory(TableTaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
 
 	private void addCommand(TaskFactory tf, Map properties) {
-		String namespace = (String)(properties.get("commandNamespace"));
-		String command = (String)(properties.get("command"));
+		String namespace = (String)(properties.get(ServiceProperties.COMMAND_NAMESPACE));
+		String command = (String)(properties.get(ServiceProperties.COMMAND));
+		String description = (String)(properties.get(ServiceProperties.COMMAND_DESCRIPTION));
 
 		if (command == null || namespace == null) 
 			return;
 
 		commands.put(namespace+" "+command, tf);
+		descriptions.put(namespace+" "+command, description);
 		// List<String> args = getArgs(tf);
 		Map<String, ArgHandler> args = null;
 		Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
@@ -230,9 +243,11 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 
 	private void removeCommand(TaskFactory tf, Map properties) {
-		String namespace = (String)(properties.get("commandNamespace"));
-		String command = (String)(properties.get("command"));
+		String namespace = (String)(properties.get(ServiceProperties.COMMAND_NAMESPACE));
+		String command = (String)(properties.get(ServiceProperties.COMMAND));
+		String description = (String)(properties.get(ServiceProperties.COMMAND_DESCRIPTION));
 
+		descriptions.remove(namespace+" "+command);
 		TaskFactory l = commands.remove(namespace+" "+command);
 		if (l == null)
 			return;
