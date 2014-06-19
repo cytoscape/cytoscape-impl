@@ -256,9 +256,9 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 			for (String command: commands) {
 				String desc = availableCommands.getDescription(tokens[1], command);
 				if (desc != null && desc.length() > 0)
-					resultsText.appendMessage("    "+tokens[1]+" "+command+"      :"+desc);
+					resultsText.appendMessage("&nbsp;&nbsp;<b>"+tokens[1]+" "+command+"</b>&nbsp;&nbsp;<i>"+desc+"</i>");
 				else
-					resultsText.appendMessage("    "+tokens[1]+" "+command);
+					resultsText.appendMessage("&nbsp;&nbsp;<b>"+tokens[1]+" "+command+"</b>");
 			}
 		} else if (tokens.length > 2) {
 			// Get all of the arguments for a specific command
