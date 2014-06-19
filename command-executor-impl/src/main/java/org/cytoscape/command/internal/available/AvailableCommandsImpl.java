@@ -258,27 +258,6 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			argHandlers.remove(namespace);
 	}
 
-	private List<ArgHandler> getHandlers(TaskFactory tf) {
-		try { 
-			TaskIterator ti = tf.createTaskIterator();
-			List<ArgHandler> args = new ArrayList<ArgHandler>();
-			while ( ti.hasNext() ) {	
-				Object task = ti.next();
-				List<ArgHandler> handlers = argRec.getHandlers(task);
-				for (ArgHandler handler: handlers) {
-					String context = handler.getContext();
-					// Only add commands appropriate for nogui
-					if (!context.equals(Tunable.GUI_CONTEXT))
-						args.add(handler);
-				}
-			}
-			return args;
-		} catch (Exception e) {
-			logger.debug("Could not get handler for command.",e);
-			return new ArrayList<ArgHandler>();
-		}
-	}
-
 	private Map<String, ArgHandler> getArgMap(String namespace, String command, String arg) {
 		if (!argHandlers.containsKey(namespace))
 			return null;
@@ -304,8 +283,12 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 			while ( ti.hasNext() ) {	
 				List<ArgHandler> handlers = argRec.getHandlers(ti.next());
-				for (ArgHandler h: handlers)
-					argMap.put(h.getName(), h);
+				for (ArgHandler h: handlers) {
+					String context = h.getContext();
+					// Only add commands appropriate for nogui
+					if (!context.equals(Tunable.GUI_CONTEXT))
+						argMap.put(h.getName(), h);
+				}
 			}
 
 			return argMap;	
