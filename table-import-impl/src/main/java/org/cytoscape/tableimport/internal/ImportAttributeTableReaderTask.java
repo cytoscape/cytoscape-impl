@@ -53,6 +53,7 @@ import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.util.AttributeTypes;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -177,12 +178,30 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		TextTableReader reader = this.reader;
 		AttributeMappingParameters readerAMP = (AttributeMappingParameters) reader.getMappingParameter();
 		String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
+		Byte type = readerAMP.getAttributeTypes()[readerAMP.getKeyIndex()];
+		Class<?> keyType;
+		switch (type) {
+			case AttributeTypes.TYPE_BOOLEAN:
+				keyType = Boolean.class;
+				break;
+			case AttributeTypes.TYPE_INTEGER:
+				keyType = Integer.class;
+				break;
+			case AttributeTypes.TYPE_FLOATING:
+				keyType = Double.class;
+				break;
+			case AttributeTypes.TYPE_STRING:
+				keyType = String.class;
+				break;
+			default:
+				keyType = String.class;
+		}
 		tm.setProgress(0.1);
 
 		final CyTable table =
 			CytoscapeServices.cyTableFactory.createTable("AttrTable " + inputName.substring(inputName.lastIndexOf('/') + 1) + " "
 			                                           + Integer.toString(numImports++),
-			                                           primaryKey, String.class, true,
+			                                           primaryKey,keyType, true,
 			                                           true);
 		cyTables = new CyTable[] { table };
 		tm.setProgress(0.2);
