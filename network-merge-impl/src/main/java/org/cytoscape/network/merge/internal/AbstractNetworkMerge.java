@@ -49,7 +49,12 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	
 	protected boolean withinNetworkMerge = false;
 	protected final TaskMonitor taskMonitor;
+	//Maps a node and its position in the match list
 	protected Map<CyNode,Integer> mapNodesIndex;
+	//There are two different maps to differentiate directed and undirected edges
+	//Each map does a first map based on type of interactions and then a second map that maps
+	//a Long index made of combination of two integer indexes from the two nodes and the
+	//index of that edge in the matched list
 	protected Map<String,Map<Long,Integer>> mapEdgeDirectedInteractions;
 	protected Map<String,Map<Long,Integer>> mapEdgeInteractions;
 	
@@ -106,12 +111,14 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	protected abstract void mergeEdge(Map<CyNetwork, Set<CyEdge>> mapNetEdge, CyEdge newEdge, CyNetwork newNetwork);
 
 	/**
-	 * Check whether two edges match
+	 * Check whether an edge match the other edges already considered, if so it will 
+	 * return the position in the match list
 	 * 
-	 * @param e1
-	 *            ,e2 two edges belongs to net1 and net2 respectively
+	 * @param network1 The source network of the edge to evaluate
+	 * @param e1 The edge to check if it has a match
+	 * @param position The position in the match list that the new edge belong if no match is found
 	 * 
-	 * @return true if n1 and n2 matches
+	 * @return the index in the match list where this edge has found a match or -1 if no match found
 	 */
 	protected int matchEdge( CyNetwork network1, CyEdge e1, int position) {
 		
@@ -368,8 +375,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	 *            Networks to be merged
 	 * @param isNode
 	 *            true if for node
-	 * @param matchedNode
-	 *            store matched node pares
+	 * 
 	 * 
 	 * @return list of map from network to node/edge
 	 */
@@ -402,6 +408,8 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 				// this node if yes, add to the list, else add a new map to the list
 				boolean matched = false;
 				final int n = matchedList.size();
+				//The search for a match has been split for nodes and edges. Edges don't need to go through the loop
+				//since they can take advantage of node's information in the previous found node match list
 				if(isNode)
 				{
 					
@@ -440,6 +448,8 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 					index = matchEdge(net1,(CyEdge) go1,n);
 					if(index >= 0)
 					{
+						//check if the edge belongs to the same network
+						//if so, the match is not valid
 						if(matchedList.get(index).containsKey(net1) && matchedList.get(index).keySet().size() == 1 && !withinNetworkMerge)
 							matched = false;
 						else
@@ -449,7 +459,7 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 						matched = false;
 				}
 				if (!matched) {
-					// no matched node found, add new map to the list
+					// no matched node/edge found, add new map to the list
 					final Map<CyNetwork, Set<T>> matchedGO = new HashMap<CyNetwork, Set<T>>();
 					Set<T> gos1 = new HashSet<T>();
 					gos1.add(go1);
