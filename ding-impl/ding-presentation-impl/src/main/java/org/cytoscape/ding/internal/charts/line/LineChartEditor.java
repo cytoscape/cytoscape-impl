@@ -34,9 +34,13 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
-	protected JPanel getOtherAdvancedOptionsPnl() {
+	protected void createLabels() {
+		super.createLabels();
 		lineWidthLbl = new JLabel("Line Width");
-		
+	}
+	
+	@Override
+	protected JPanel getOtherAdvancedOptionsPnl() {
 		final JPanel p = super.getOtherAdvancedOptionsPnl();
 		p.setVisible(true);
 		
@@ -64,6 +68,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 			lineWidthTxt = new JTextField("" + chart.get(LineChart.LINE_WIDTH, Float.class, 1.0f));
 			lineWidthTxt.setInputVerifier(new DoubleInputVerifier());
 			lineWidthTxt.setPreferredSize(new Dimension(40, lineWidthTxt.getMinimumSize().height));
+			lineWidthTxt.setHorizontalAlignment(JTextField.TRAILING);
 			
 			lineWidthTxt.addFocusListener(new FocusAdapter() {
 				@Override

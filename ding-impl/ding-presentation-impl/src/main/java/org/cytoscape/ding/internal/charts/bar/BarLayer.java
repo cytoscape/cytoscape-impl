@@ -12,10 +12,10 @@ import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.Orientation;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
+import org.cytoscape.ding.internal.util.MathUtil;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
-import org.jfree.chart.axis.AxisSpace;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.ItemLabelAnchor;
@@ -32,8 +32,11 @@ import org.jfree.ui.TextAnchor;
 public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
 	private final boolean upAndDown;
+	private final boolean heatStrips;
 	private final boolean stacked;
+	private final double separation;
 	private final Orientation orientation;
+	private final boolean singleCategory;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -47,21 +50,32 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showRangeAxis,
 					final List<Color> colors,
 					final boolean upAndDown,
+					final boolean heatStrips,
+					final double separation,
 					final DoubleRange range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
         		range, bounds);
-        this.upAndDown = upAndDown;
-        this.stacked = stacked;
-        this.orientation = orientation;
+		this.upAndDown = upAndDown;
+		this.heatStrips = heatStrips;
+		this.stacked = stacked;
+		this.separation = separation;
+		this.orientation = orientation;
+		singleCategory = data.size() == 1;
+
+		if (heatStrips && this.range == null) // Range cannot be null
+			this.range = calculateRange(data.values(), false);
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
 	protected CategoryDataset createDataset() {
-		return createCategoryDataset(data, false, domainLabels);
+		final boolean listIsSeries = (singleCategory && !stacked);
+		final List<String> labels = listIsSeries ? itemLabels : domainLabels;
+		
+		return createCategoryDataset(data, listIsSeries, labels);
 	}
     
 	@Override
@@ -112,20 +126,26 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 //		das.setLeft(0.0);
 //		das.setBottom(0.5);
 //		plot.setFixedDomainAxisSpace(das);
+		plot.setNoDataMessage(NO_DATA_TEXT);
 		
 		final BasicStroke axisStroke =
 				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
+		// Show item labels and there is only one category?
+        final boolean showItemLabelsAsDomain = showItemLabels && singleCategory;
+		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
-        domainAxis.setVisible(showDomainAxis);
+        domainAxis.setVisible(showDomainAxis || showItemLabelsAsDomain);
+        domainAxis.setAxisLineVisible(showDomainAxis && !showItemLabelsAsDomain);
         domainAxis.setAxisLineStroke(axisStroke);
         domainAxis.setAxisLinePaint(axisColor);
         domainAxis.setTickMarkStroke(axisStroke);
         domainAxis.setTickMarkPaint(axisColor);
+        domainAxis.setTickMarksVisible(showDomainAxis && !showItemLabelsAsDomain);
         domainAxis.setTickLabelsVisible(true);
         domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize));
         domainAxis.setTickLabelPaint(axisColor);
-        domainAxis.setCategoryMargin(.1);
+        domainAxis.setCategoryMargin((stacked || singleCategory) ? separation : 0.1);
         
 //        if (!showDomainAxis && !showRangeAxis) {
 //        	// Prevent bars from being cropped
@@ -156,23 +176,28 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 //	        rangeAxis.setUpperMargin(.01);
 //        }
 		
-		BarRenderer renderer = (BarRenderer) plot.getRenderer();
-		
-		if (upAndDown && !stacked) {
-			final Color up = colors.size() > 0 ? colors.get(0) : Color.LIGHT_GRAY;
-			final Color down = colors.size() > 1 ? colors.get(colors.size() - 1) : Color.DARK_GRAY;
-			renderer = new UpDownColorBarRenderer(up, down);
-			plot.setRenderer(renderer);
+		if (!stacked) {
+			if (heatStrips || upAndDown) {
+				final Color up =   (colors.size() > 0) ? colors.get(0) : Color.LIGHT_GRAY;
+				final Color zero = (colors.size() > 2) ? colors.get(1) : Color.BLACK;
+				final Color down = (colors.size() > 2) ? colors.get(2) : (colors.size() > 1 ? colors.get(1) : Color.GRAY);
+				plot.setRenderer(new UpDownColorBarRenderer(up, zero, down));
+			} else if (singleCategory) {
+				plot.setRenderer(new SingleCategoryRenderer());
+			}
 		}
 		
+		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
 		renderer.setBarPainter(new StandardBarPainter());
 		renderer.setShadowVisible(false);
 		renderer.setDrawBarOutline(true);
-		renderer.setItemMargin(0.0);
-		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
+		renderer.setBaseItemLabelGenerator(
+				(showItemLabels && !showItemLabelsAsDomain) ?
+				new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
 		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
 		renderer.setBaseItemLabelPaint(labelColor);
+		renderer.setItemMargin(separation);
 		
 		if (!stacked && showItemLabels) {
 			double angle = orientation == Orientation.HORIZONTAL ? 0 : -Math.PI/2;
@@ -182,7 +207,6 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			renderer.setBaseNegativeItemLabelPosition(new ItemLabelPosition(
 					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, angle));
 		}
-		
 		
 		final BasicStroke borderStroke =
 				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
@@ -194,9 +218,9 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			renderer.setSeriesOutlinePaint(i, borderColor);
 			
 			if (stacked || !upAndDown) {
-				Color c = Color.LIGHT_GRAY;
+				Color c = DEFAULT_ITEM_BG_COLOR;
 				
-				if (colors.size() > i)
+				if (colors != null && colors.size() > i)
 					c = colors.get(i);
 				
 				renderer.setSeriesPaint(i, c);
@@ -213,10 +237,12 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		private static final long serialVersionUID = -1827868101222293644L;
 		
 		private Color upColor;
+		private Color zeroColor;
 		private Color downColor;
 
-		UpDownColorBarRenderer(final Color up, final Color down) {
+		UpDownColorBarRenderer(final Color up, final Color zero, Color down) {
 			this.upColor = up;
+			this.zeroColor = zero;
 			this.downColor = down;
 		}
 		
@@ -226,8 +252,29 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			final String rowKey = (String) dataset.getRowKey(row);
 			final String colKey = (String) dataset.getColumnKey(column);
 			final double value = dataset.getValue(rowKey, colKey).doubleValue();
+			final Color color = value < 0.0 ? downColor : upColor;
 			
-			return (value < 0.0) ? downColor : upColor;
+			if (heatStrips) {
+				// Linearly interpolate the value
+				final double f = value < 0.0 ?
+						MathUtil.invLinearInterp(value, range.min, 0) : MathUtil.invLinearInterp(value, 0, range.max);
+				final double t = value < 0.0 ?
+						MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0);
+				
+				return org.jdesktop.swingx.color.ColorUtil.interpolate(zeroColor, color, (float)t);
+			}
+			
+			return color;
 		}
 	}
+	
+	class SingleCategoryRenderer extends BarRenderer {
+
+		private static final long serialVersionUID = 1138264028943798008L;
+
+		@Override
+        public Paint getItemPaint(final int row, final int column) {
+            return (colors != null && colors.size() > column) ? colors.get(column) : DEFAULT_ITEM_BG_COLOR;
+        }
+    }
 }

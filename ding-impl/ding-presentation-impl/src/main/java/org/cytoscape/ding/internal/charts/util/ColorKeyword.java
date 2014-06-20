@@ -692,7 +692,7 @@ public enum ColorKeyword {
 		cMap.put(col.getLabel(), col);
 	}
 
-	static Color getColor(String label) {
+	public static Color getColor(String label) {
 		if (!cMap.containsKey(label))
 			return null;
 		return new Color(cMap.get(label).getColorCode());

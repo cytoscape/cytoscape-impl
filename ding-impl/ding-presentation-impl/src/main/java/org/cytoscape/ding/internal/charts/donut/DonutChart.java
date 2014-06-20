@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -13,11 +12,11 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
 import org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics;
+import org.cytoscape.ding.internal.charts.Rotation;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
@@ -56,21 +55,19 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<CyColumnIdentifier> dataColumns =
-				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
-		final CyColumnIdentifier labelsColumn = get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class);
-		final List<Color> colors = getList(COLORS, Color.class);
-		final double startAngle = get(START_ANGLE, Double.class, 90.0);
+		final double startAngle = get(START_ANGLE, Double.class, 0.0);
 		final double hole = get(HOLE_SIZE, Double.class, 0.2);
-		final List<String> labels = getLabelsFromColumn(network, model, labelsColumn);
+		final Rotation rotation = get(ROTATION, Rotation.class, Rotation.ANTICLOCKWISE);
+		final List<String> labels = getItemLabels(network, model);
 		
-		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
+		final Map<String, List<Double>> data = getData(network, model);
 
+		final List<Color> colors = getColors(data);
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		
-		final DonutLayer layer = new DonutLayer(data, labels, showLabels, colors, startAngle, hole, bounds);
+		final DonutLayer layer = new DonutLayer(data, labels, showLabels, colors, startAngle, hole, rotation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

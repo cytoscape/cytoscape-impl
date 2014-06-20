@@ -76,6 +76,7 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+		plot.setNoDataMessage(NO_DATA_TEXT);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(false);

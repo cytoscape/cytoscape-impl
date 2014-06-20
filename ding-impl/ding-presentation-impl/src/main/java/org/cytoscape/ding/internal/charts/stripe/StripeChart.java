@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,38 +65,12 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<CyColumnIdentifier> dataColumns = 
-				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
-		final List<String> distinctValues = getList(DISTINCT_VALUES, String.class);
-		List<Color> colors = getList(COLORS, Color.class);
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		final List<String> labels = Collections.emptyList();
 		
-		final CyColumnIdentifier columnId = dataColumns.isEmpty() ? null : dataColumns.get(0);
-		final Map<String, List<Double>> data;
+		final Map<String, List<Double>> data = getData(network, model);
 		
-		if (columnId != null) {
-			final Set<Object> rowValues = getDistinctValuesFromRow(network, model, columnId);
-			
-			if (rowValues.isEmpty()) {
-				data = Collections.emptyMap();
-			} else {
-				// Create dummy data
-				final List<Double> values = new ArrayList<Double>();
-				
-				for (int i = 0; i < distinctValues.size(); i++) {
-					// 1: Has the value/color at this index
-					// 0: Does not have that value
-					final double v = rowValues.contains(distinctValues.get(i)) ? 1.0 : 0.0;
-					values.add(v);
-				}
-				
-				data = Collections.singletonMap(columnId.getColumnName(), values);
-			}
-		} else {
-			data = Collections.emptyMap();
-		}
-		
+		final List<Color> colors = getColors(data);
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
@@ -112,6 +87,49 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 	@Override
 	public String getId() {
 		return FACTORY_ID;
+	}
+	
+	@Override
+	protected Map<String, List<Double>> getData(final CyNetwork network, final CyIdentifiable model) {
+		final Map<String, List<Double>> data = new HashMap<String, List<Double>>();
+		
+		final List<CyColumnIdentifier> dataColumns = 
+				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
+		final CyColumnIdentifier columnId = dataColumns.isEmpty() ? null : dataColumns.get(0);
+		
+		if (columnId != null) {
+			final Set<Object> rowValues = getDistinctValuesFromRow(network, model, columnId);
+			
+			if (!rowValues.isEmpty()) {
+				// Create dummy data
+				final List<Double> values = new ArrayList<Double>();
+				final List<String> distinctValues = getList(DISTINCT_VALUES, String.class);
+				
+				for (int i = 0; i < distinctValues.size(); i++) {
+					// 1: Has the value/color at this index
+					// 0: Does not have that value
+					final double v = rowValues.contains(distinctValues.get(i)) ? 1.0 : 0.0;
+					values.add(v);
+				}
+				
+				data.put(columnId.getColumnName(), values);
+			}
+		}
+		
+		if (data.isEmpty()) {
+			final List<Color> colors = getList(COLORS, Color.class);
+			
+			if (colors != null && !colors.isEmpty()) {
+				final List<Double> values = new ArrayList<Double>();
+				
+				for (final Color c : colors)
+					values.add(1.0);
+				
+				data.put("Values", values);
+			}
+		}
+		
+		return data;
 	}
 	
 	@Override

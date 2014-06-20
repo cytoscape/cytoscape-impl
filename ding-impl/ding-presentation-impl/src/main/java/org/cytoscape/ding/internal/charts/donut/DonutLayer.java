@@ -14,19 +14,20 @@ import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
 import java.awt.image.RGBImageFilter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomPieSectionLabelGenerator;
+import org.cytoscape.ding.internal.charts.Rotation;
 import org.cytoscape.ding.internal.charts.pie.PieLayer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.RingPlot;
 import org.jfree.data.general.PieDataset;
 import org.jfree.ui.RectangleInsets;
-import org.jfree.util.Rotation;
 
 public class DonutLayer extends AbstractChartLayer<PieDataset> {
 	
@@ -38,6 +39,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
     private final double startAngle;
     /** Where to begin the first circle, as a proportion of the entire node */
     private final double hole;
+    private final Rotation rotation;
 	
     // ==[ CONSTRUCTORS ]===============================================================================================
     
@@ -47,10 +49,12 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 					 final List<Color> colors,
 					 final double startAngle,
 					 final double hole,
+					 final Rotation rotation,
 					 final Rectangle2D bounds) {
         super(data, labels, null, null, showLabels, false, false, colors, null, bounds);
-        this.startAngle = startAngle;
+        this.startAngle = 360 - startAngle;
         this.hole = hole;
+        this.rotation = rotation;
         this.labels = new HashMap<String, String>();
 	}
 	
@@ -112,6 +116,10 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 					chartList.add(chart);
 					count++;
 				}
+			} else {
+				// Just to show the "no data" text
+				final JFreeChart chart = createChart(createPieDataset(Collections.EMPTY_LIST), 1.0, 0.0);
+				chartList.add(chart);
 			}
 		}
 		
@@ -159,9 +167,10 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
         chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
 		final RingPlot plot = (RingPlot) chart.getPlot();
-		plot.setCircular(false);
+		plot.setCircular(true);
 		plot.setStartAngle(startAngle);
-		plot.setDirection(Rotation.CLOCKWISE);
+		plot.setDirection(rotation == Rotation.ANTICLOCKWISE ?
+				org.jfree.util.Rotation.ANTICLOCKWISE : org.jfree.util.Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
 		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
@@ -181,6 +190,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		plot.setLabelOutlinePaint(TRANSPARENT_COLOR);
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
+		plot.setNoDataMessage(NO_DATA_TEXT);
 		
 		final BasicStroke stroke =
 				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
@@ -191,7 +201,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		
 		for (int i = 0; i < keys.size(); i++) {
 			final String k = (String) keys.get(i);
-			final Color c = colors.size() > i ? colors.get(i) : Color.LIGHT_GRAY;
+			final Color c = colors.size() > i ? colors.get(i) : DEFAULT_ITEM_BG_COLOR;
 			plot.setSectionPaint(k, c);
 			plot.setSectionOutlinePaint(k, borderColor);
 			plot.setSectionOutlineStroke(k, stroke);

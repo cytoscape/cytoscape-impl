@@ -29,6 +29,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 
 	public static final String DATA_COLUMNS = "datacolumns";
 	public static final String ITEM_LABELS_COLUMN = "itemlabelscolumn";
+	public static final String ITEM_LABELS = "itemlabels";
 	public static final String DOMAIN_LABELS_COLUMN = "domainlabelscolumn";
 	public static final String RANGE_LABELS_COLUMN = "rangelabelscolumn";
 	public static final String GLOBAL_RANGE = "globalrange";
@@ -78,7 +79,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		this(displayName, colIdFactory);
 		
 		if (properties != null)
-			this.properties.putAll(properties);
+			addProperties(properties);
 	}
 	
 	public List<Double> convertInputToDouble(String input) {
@@ -131,39 +132,67 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 			return data;
 
 		final CyTable table = row.getTable();
+		final List<Double> singleSeriesValues = new ArrayList<Double>();
+		final StringBuilder singleSeriesKey = new StringBuilder();
 
 		for (final CyColumnIdentifier colId : columnNames) {
 			final CyColumn column = table.getColumn(colId.getColumnName());
 			
-			if (column != null && column.getType() == List.class) {
-				final List<Double> values = new ArrayList<Double>();
+			if (column == null)
+				continue;
+			
+			final List<Double> values = new ArrayList<Double>();
+			
+			if (column.getType() == List.class) {
 				final Class<?> type = column.getListElementType();
 				
 				if (type == Double.class) {
-					List<Double> dlist = row.getList(colId.getColumnName(), Double.class);
+					List<Double> dlist = row.getList(column.getName(), Double.class);
 					if (dlist != null)
 						values.addAll(dlist);
 				} else if (type == Integer.class) {
-					List<Integer> iList = row.getList(colId.getColumnName(), Integer.class);
+					List<Integer> iList = row.getList(column.getName(), Integer.class);
 					for (Integer i : iList)
 						values.add(i.doubleValue());
 				} else if (type == Long.class) {
-					List<Long> lList = row.getList(colId.getColumnName(), Long.class);
+					List<Long> lList = row.getList(column.getName(), Long.class);
 					for (Long l : lList)
 						values.add(l.doubleValue());
 				} else if (type == Float.class) {
-					List<Float> fList = row.getList(colId.getColumnName(), Float.class);
+					List<Float> fList = row.getList(column.getName(), Float.class);
 					for (Float f : fList)
 						values.add(f.doubleValue());
 				} else if (type == String.class) {
-					List<String> sList = row.getList(colId.getColumnName(), String.class);
+					List<String> sList = row.getList(column.getName(), String.class);
 					for (String s : sList)
 						values.add(Double.valueOf(s));
 				}
 				
-				data.put(colId.getColumnName(), values);
+				data.put(column.getName(), values);
+			} else {
+				final Class<?> type = column.getType();
+				
+				if (type == Double.class) {
+					singleSeriesValues.add(row.get(column.getName(), Double.class));
+					singleSeriesKey.append(column.getName() + ",");
+				} else if (type == Integer.class) {
+					Integer i = row.get(column.getName(), Integer.class);
+					singleSeriesValues.add(i.doubleValue());
+					singleSeriesKey.append(column.getName() + ",");
+				} else if (type == Float.class) {
+					Float f = row.get(column.getName(), Float.class);
+					singleSeriesValues.add(f.doubleValue());
+					singleSeriesKey.append(column.getName() + ",");
+				} else if (type == String.class) {
+					String s = row.get(column.getName(), String.class);
+					singleSeriesValues.add(Double.valueOf(s));
+					singleSeriesKey.append(column.getName() + ",");
+				}
 			}
 		}
+		
+		if (!singleSeriesValues.isEmpty())
+			data.put(singleSeriesKey.deleteCharAt(singleSeriesKey.length()-1).toString(), singleSeriesValues);
 
 		return data;
 	}
@@ -281,25 +310,6 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		throw new NumberFormatException("input can not be converted to double");
 	}
 
-	/**
-	 * Return the integer equivalent of the input
-	 * 
-	 * @param input
-	 *            an input value that is supposed to be a integer
-	 * @return the a integer value it represents
-	 * @throws NumberFormatException
-	 *             is the value is illegal
-	 */
-	public int getIntegerValue(Object input) throws NumberFormatException {
-		if (input instanceof Integer)
-			return ((Integer) input).intValue();
-		else if (input instanceof Integer)
-			return ((Integer) input).intValue();
-		else if (input instanceof String)
-			return Integer.parseInt((String) input);
-		throw new NumberFormatException("input can not be converted to integer");
-	}
-
 	public List<Double> arrayMax(List<Double> maxValues, List<Double> values) {
 		// Initialize, if necessary
 		if (maxValues == null) {
@@ -332,14 +342,62 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		}
 		return sMap;
 	}
+	
+	protected Map<String, List<Double>> getData(final CyNetwork network, final CyIdentifiable model) {
+		final Map<String, List<Double>> data;
+		final List<Double> values = getList(VALUES, Double.class);
+		
+		if (values == null || values.isEmpty()) {
+			final List<CyColumnIdentifier> dataColumns = getList(DATA_COLUMNS, CyColumnIdentifier.class);
+			data = getDataFromColumns(network, model, dataColumns);
+		} else {
+			data = new HashMap<String, List<Double>>();
+			data.put("Values", values);
+		}
+		
+		return data;
+	}
+	
+	protected List<String> getItemLabels(final CyNetwork network, final CyIdentifiable model) {
+		List<String> labels = getList(ITEM_LABELS, String.class);
+		
+		if (labels == null || labels.isEmpty()) {
+			final CyColumnIdentifier labelsColumn = get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class);
+			labels = getLabelsFromColumn(network, model, labelsColumn);
+		}
+		
+		return labels;
+	}
+	
+	protected List<Color> getColors(final Map<String, List<Double>> data) {
+		List<Color> colors = getList(COLORS, Color.class);
+		
+		if (colors == null || colors.isEmpty()) {
+			final String scheme = get(COLOR_SCHEME, String.class);
+			
+			if (scheme != null && data != null && !data.isEmpty()) {
+				int nColors = 0;
+				
+				for (final List<Double> values : data.values()) {
+					if (values != null)
+						nColors = Math.max(nColors, values.size());
+				}
+				
+				colors = ColorUtil.getColors(scheme, nColors);
+			}
+		}
+		
+		return colors;
+	}
 
 	@Override
 	protected Class<?> getSettingType(final String key) {
 		if (key.equalsIgnoreCase(DATA_COLUMNS)) return List.class;
+		if (key.equalsIgnoreCase(VALUES)) return List.class;
 		if (key.equalsIgnoreCase(ITEM_LABELS_COLUMN)) return CyColumnIdentifier.class;
+		if (key.equalsIgnoreCase(ITEM_LABELS)) return List.class;
 		if (key.equalsIgnoreCase(DOMAIN_LABELS_COLUMN)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(RANGE_LABELS_COLUMN)) return CyColumnIdentifier.class;
-		if (key.equalsIgnoreCase(VALUES)) return List.class;
 		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
@@ -356,6 +414,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	protected Class<?> getSettingListType(final String key) {
 		if (key.equalsIgnoreCase(DATA_COLUMNS)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(VALUES)) return Double.class;
+		if (key.equalsIgnoreCase(ITEM_LABELS)) return String.class;
 		
 		return super.getSettingListType(key);
 	}

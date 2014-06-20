@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,11 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.chart.Bar";
 	public static final String DISPLAY_NAME = "Bar Chart";
+	
+	public static final String SEPARATION = "separation";
+	public static final String HEAT_STRIPS = "heatstrips";
+	
+	public static final double MAX_SEPARATION = 0.5;
 	
 	public static ImageIcon ICON;
 	
@@ -63,20 +67,17 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<CyColumnIdentifier> dataColumns =
-				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
-		final List<String> itemLabels =
-				getLabelsFromColumn(network, model, get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
+		final List<String> itemLabels = getItemLabels(network, model);
 		final List<String> domainLabels =
 				getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
 		final List<String> rangeLabels =
 				getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
-		final List<Color> colors = getList(COLORS, Color.class);
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
 		
-		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
+		final Map<String, List<Double>> data = getData(network, model);
 		
+		final List<Color> colors = getColors(data);
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
@@ -87,9 +88,13 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
 		final String colorScheme = get(COLOR_SCHEME, String.class, "");
 		final boolean upAndDown = ColorUtil.UP_DOWN.equalsIgnoreCase(colorScheme);
+		final boolean heatStrips = get(HEAT_STRIPS, Boolean.class, false);
 		
-		final BarLayer layer = new BarLayer(data, stacked, itemLabels, domainLabels, rangeLabels,
-				showLabels, showDomainAxis, showRangeAxis, colors, upAndDown, range, orientation, bounds);
+		double separation = get(SEPARATION, Double.class, 0.0);
+		separation = (separation > MAX_SEPARATION) ? MAX_SEPARATION : (separation < 0.0 ? 0.0 : separation);
+		
+		final BarLayer layer = new BarLayer(data, stacked, itemLabels, domainLabels, rangeLabels, showLabels,
+				showDomainAxis, showRangeAxis, colors, upAndDown, heatStrips, separation, range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}
@@ -105,4 +110,12 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	@Override
+	protected Class<?> getSettingType(final String key) {
+		if (key.equalsIgnoreCase(SEPARATION)) return Double.class;
+		if (key.equalsIgnoreCase(HEAT_STRIPS)) return Boolean.class;
+		
+		return super.getSettingType(key);
+	}
 }

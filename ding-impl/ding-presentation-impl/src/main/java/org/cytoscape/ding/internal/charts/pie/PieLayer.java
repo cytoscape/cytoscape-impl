@@ -9,12 +9,12 @@ import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomPieSectionLabelGenerator;
+import org.cytoscape.ding.internal.charts.Rotation;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.PieDataset;
 import org.jfree.ui.RectangleInsets;
-import org.jfree.util.Rotation;
 
 public class PieLayer extends AbstractChartLayer<PieDataset> {
 	
@@ -23,6 +23,7 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 	
 	private final Map<String, String> labels;
 	private final double startAngle;
+	private final Rotation rotation;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -31,9 +32,11 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 					final boolean showLabels,
 					final List<Color> colors,
 					final double startAngle,
+					final Rotation rotation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, null, null, showLabels, false, false, colors, null, bounds);
-        this.startAngle = startAngle;
+        this.startAngle = 360 - startAngle;
+        this.rotation = rotation;
         this.labels = new HashMap<String, String>();
 	}
 	
@@ -73,9 +76,10 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
         chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
 		final PiePlot plot = (PiePlot) chart.getPlot();
-		plot.setCircular(false);
+		plot.setCircular(true);
 		plot.setStartAngle(startAngle);
-		plot.setDirection(Rotation.CLOCKWISE);
+		plot.setDirection(rotation == Rotation.ANTICLOCKWISE ?
+				org.jfree.util.Rotation.ANTICLOCKWISE : org.jfree.util.Rotation.CLOCKWISE);
 		plot.setOutlineVisible(false);
 		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		plot.setInteriorGap(INTERIOR_GAP);
@@ -92,6 +96,7 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setLabelPaint(labelColor);
 		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
+		plot.setNoDataMessage(NO_DATA_TEXT);
 		
 		final BasicStroke stroke =
 				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
@@ -100,7 +105,7 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 		
 		for (int i = 0; i < keys.size(); i++) {
 			final String k = (String) keys.get(i);
-			final Color c = colors.size() > i ? colors.get(i) : Color.LIGHT_GRAY;
+			final Color c = colors.size() > i ? colors.get(i) : DEFAULT_ITEM_BG_COLOR;
 			plot.setSectionPaint(k, c);
 			plot.setSectionOutlinePaint(k, borderColor);
 			plot.setSectionOutlineStroke(k, stroke);

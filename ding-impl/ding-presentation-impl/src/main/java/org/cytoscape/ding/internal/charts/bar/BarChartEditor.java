@@ -1,12 +1,17 @@
 package org.cytoscape.ding.internal.charts.bar;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
@@ -24,6 +29,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	};
 	
 	private JCheckBox stackedCkb;
+	private JLabel separationLbl;
+	private JTextField separationTxt;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -35,6 +42,12 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	// ==[ PUBLIC METHODS ]=============================================================================================
 
 	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	@Override
+	protected void createLabels() {
+		super.createLabels();
+		separationLbl = new JLabel("Separation (0.0-0.5)");
+	}
 	
 	@Override
 	protected String[] getColorSchemes() {
@@ -52,9 +65,16 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addComponent(getStackedCkb())
+				.addGroup(layout.createSequentialGroup()
+					.addComponent(separationLbl)
+					.addComponent(getSeparationTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+				          GroupLayout.PREFERRED_SIZE))
 				);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(getStackedCkb())
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(separationLbl)
+					.addComponent(getSeparationTxt()))
 				);
 		
 		return p;
@@ -74,5 +94,28 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		}
 		
 		return stackedCkb;
+	}
+	
+	private JTextField getSeparationTxt() {
+		if (separationTxt == null) {
+			separationTxt = new JTextField("" + chart.get(BarChart.SEPARATION, Double.class, 0.0));
+			separationTxt.setToolTipText("Percentage of the available space for all bars (0.1 is 10%)");
+			separationTxt.setInputVerifier(new DoubleInputVerifier());
+			separationTxt.setPreferredSize(new Dimension(60, separationTxt.getMinimumSize().height));
+			separationTxt.setHorizontalAlignment(JTextField.TRAILING);
+			
+			separationTxt.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(final FocusEvent e) {
+					try {
+			            double sep = Double.parseDouble(separationTxt.getText());
+			            chart.set(BarChart.SEPARATION, sep);
+			        } catch (NumberFormatException nfe) {
+			        }
+				}
+			});
+		}
+		
+		return separationTxt;
 	}
 }

@@ -192,14 +192,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	protected void init() {
-		dataColumnLbl = new JLabel("Data Column" + (maxDataColumns > 1 ? "s" : ""));
-		itemLabelsColumnLbl = new JLabel("Item Labels Column");
-		domainLabelsColumnLbl = new JLabel("Domain Labels Column");
-		rangeLabelsColumnLbl = new JLabel("Range Labels Column");
-		rangeMinLbl = new JLabel("Min");
-		rangeMaxLbl = new JLabel("Max");
-		orientationLbl = new JLabel("Plot Orientation");
-		
+		createLabels();
 		setOpaque(false);
 		setLayout(new BorderLayout());
 		add(getOptionsTpn(), BorderLayout.CENTER);
@@ -207,6 +200,16 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		update(false);
 	}
 	
+	protected void createLabels() {
+		dataColumnLbl = new JLabel("Data Column" + (maxDataColumns > 1 ? "s" : ""));
+		itemLabelsColumnLbl = new JLabel("Item Labels Column");
+		domainLabelsColumnLbl = new JLabel("Domain Labels Column");
+		rangeLabelsColumnLbl = new JLabel("Range Labels Column");
+		rangeMinLbl = new JLabel("Min");
+		rangeMaxLbl = new JLabel("Max");
+		orientationLbl = new JLabel("Plot Orientation");
+	}
+
 	protected JTabbedPane getOptionsTpn() {
 		if (optionsTpn == null) {
 			optionsTpn = new JTabbedPane(JTabbedPane.LEFT);
@@ -511,8 +514,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			itemLabelsColumnCmb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final CyColumn column = (CyColumn) itemLabelsColumnCmb.getSelectedItem();
-					chart.set(ITEM_LABELS_COLUMN, column != null ? column.getName() : null);
+					final CyColumnIdentifier colId = (CyColumnIdentifier) itemLabelsColumnCmb.getSelectedItem();
+					chart.set(ITEM_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
 				}
 			});
 		}
@@ -528,8 +531,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			domainLabelsColumnCmb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final CyColumn column = (CyColumn) domainLabelsColumnCmb.getSelectedItem();
-					chart.set(DOMAIN_LABELS_COLUMN, column != null ? column.getName() : null);
+					final CyColumnIdentifier colId = (CyColumnIdentifier) domainLabelsColumnCmb.getSelectedItem();
+					chart.set(DOMAIN_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
 				}
 			});
 		}
@@ -545,8 +548,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			rangeLabelsColumnCmb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final CyColumn column = (CyColumn) rangeLabelsColumnCmb.getSelectedItem();
-					chart.set(RANGE_LABELS_COLUMN, column != null ? column.getName() : null);
+					final CyColumnIdentifier colId = (CyColumnIdentifier) rangeLabelsColumnCmb.getSelectedItem();
+					chart.set(RANGE_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
 				}
 			});
 		}
@@ -603,6 +606,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			rangeMinTxt.setEnabled(!auto);
 			rangeMinTxt.setInputVerifier(new DoubleInputVerifier());
 			rangeMinTxt.setMinimumSize(new Dimension(60, rangeMinTxt.getMinimumSize().height));
+			rangeMinTxt.setHorizontalAlignment(JTextField.TRAILING);
 			
 			rangeMinTxt.addFocusListener(new FocusAdapter() {
 				@Override
@@ -623,6 +627,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			rangeMaxTxt.setEnabled(!auto);
 			rangeMaxTxt.setInputVerifier(new DoubleInputVerifier());
 			rangeMaxTxt.setMinimumSize(new Dimension(60, rangeMaxTxt.getMinimumSize().height));
+			rangeMaxTxt.setHorizontalAlignment(JTextField.TRAILING);
 			
 			rangeMaxTxt.addFocusListener(new FocusAdapter() {
 				@Override

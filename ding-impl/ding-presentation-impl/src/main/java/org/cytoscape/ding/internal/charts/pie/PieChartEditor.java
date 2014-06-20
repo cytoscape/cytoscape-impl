@@ -34,9 +34,13 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
-	protected JPanel getOtherAdvancedOptionsPnl() {
+	protected void createLabels() {
+		super.createLabels();
 		startAngleLbl = new JLabel("Start Angle (degrees)");
-		
+	}
+	
+	@Override
+	protected JPanel getOtherAdvancedOptionsPnl() {
 		final JPanel p = super.getOtherAdvancedOptionsPnl();
 		p.setVisible(true);
 		
@@ -61,9 +65,9 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	
 	public JTextField getStartAngleTxt() {
 		if (startAngleTxt == null) {
-			startAngleTxt = new JTextField("" + chart.get(PieChart.START_ANGLE, Double.class, 90.0));
+			startAngleTxt = new JTextField("" + chart.get(PieChart.START_ANGLE, Double.class, 0.0));
 			startAngleTxt.setToolTipText(
-					"Starting from 3 o'clock and measuring anti-clockwise (90\u00B0 = 12 o'clock)");
+					"Starting from 3 o'clock and measuring clockwise (90\u00B0 = 6 o'clock)");
 			startAngleTxt.setInputVerifier(new DoubleInputVerifier());
 			startAngleTxt.setPreferredSize(new Dimension(60, startAngleTxt.getMinimumSize().height));
 			startAngleTxt.setHorizontalAlignment(JTextField.TRAILING);

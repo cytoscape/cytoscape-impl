@@ -20,7 +20,6 @@ public final class ColorUtil {
 	public static final Color[] UP_DOWN_PUOR = new Color[] { new Color(241, 163, 64), new Color(153, 142, 195) };
 	
 	public static final String ZERO = "zero:";
-	private static final double EPSILON = 1E-8f;
 
 	private ColorUtil() {}
 	
@@ -122,66 +121,6 @@ public final class ColorUtil {
 		return values;
 	}
 
-//	public static List<Color> parseUpDownColor(String[] colorArray) {
-//		if (colorArray.length < 2)
-//			return null;
-//
-//		String[] colors = new String[3];
-//		colors[2] = "black";
-//		
-//		for (int index = 0; index < colorArray.length; index++) {
-//			if (colorArray[index].toLowerCase().startsWith(UP)) {
-//				colors[0] = colorArray[index].substring(UP.length());
-//			} else if (colorArray[index].toLowerCase().startsWith(DOWN)) {
-//				colors[1] = colorArray[index].substring(DOWN.length());
-//			} else if (colorArray[index].toLowerCase().startsWith(ZERO)) {
-//				colors[2] = colorArray[index].substring(ZERO.length());
-//			}
-//		}
-//		
-//		return ColorUtil.parseColorList(colors);
-//	}
-	
-//	private List<Color> parseUpDownColor(String[] colorArray, List<Double> values, final boolean normalize) {
-//	List<Color> upDownColors = parseUpDownColor(colorArray);
-//	Color up = upDownColors.get(0);
-//	Color down = upDownColors.get(1);
-//	Color zero = upDownColors.get(2);
-//
-//	List<Color> results = new ArrayList<Color>(values.size());
-//	
-//	for (Double v : values) {
-//		if (v == null)
-//			return null;
-//		
-//		double vn = v;
-//		
-//		if (normalize)
-//			vn = normalize(v, rangeMin, rangeMax);
-//		
-//		if (vn < (-EPSILON))
-//			results.add(scaleColor(-vn, zero, down));
-//		else if (vn > EPSILON)
-//			results.add(scaleColor(vn, zero, up));
-//		else
-//			results.add(zero);
-//	}
-//	
-//	return results;
-//}
-//
-//private Color scaleColor(double v, Color zero, Color c) {
-//	if (rangeMin == 0.0 && rangeMax == 0.0)
-//		return c;
-//
-//	// We want to scale our color to be between "zero" and "c"
-//	int b = (int) (Math.abs(c.getBlue() - zero.getBlue()) * v);
-//	int r = (int) (Math.abs(c.getRed() - zero.getRed()) * v);
-//	int g = (int) (Math.abs(c.getGreen() - zero.getGreen()) * v);
-//	
-//	return new Color(r, g, b);
-//}
-	
 	public static Color parseColor(final String input) {
 		Color color = null;
 		
@@ -206,20 +145,33 @@ public final class ColorUtil {
 	}
 
 	public static List<Color> parseColorKeyword(final String input, final int nColors) {
-		if (input.equals(RANDOM) || input.equals(CUSTOM))
-			return generateRandomColors(nColors);
-		if (input.equals(RAINBOW))
-			return generateRainbowColors(nColors);
-		if (input.equals(MODULATED))
-			return generateModulatedRainbowColors(nColors);
-		if (input.equals(CONTRASTING))
-			return generateContrastingColors(nColors);
-		if (input.equals(UP_DOWN))
-			return Arrays.asList(UP_DOWN_PUOR);
+		List<Color> colors = null;
 		
-		String[] colorArray = new String[1];
-		colorArray[0] = input;
-		List<Color> colors = parseColorList(colorArray);
+		if (nColors > 0) {
+			if (input.equals(RANDOM) || input.equals(CUSTOM))
+				colors = generateRandomColors(nColors);
+			if (input.equals(RAINBOW))
+				colors = generateRainbowColors(nColors);
+			if (input.equals(MODULATED))
+				colors = generateModulatedRainbowColors(nColors);
+			if (input.equals(CONTRASTING))
+				colors = generateContrastingColors(nColors);
+		} 
+
+		if (colors == null || colors.isEmpty()) {
+			// Perhaps it's one of the predefined color gradients for up-zero-down
+			colors = ColorGradients.getGradient(input);
+		}
+		
+		if (colors == null || colors.isEmpty()) {
+			if (input.equals(UP_DOWN)) {
+				colors = Arrays.asList(UP_DOWN_PUOR);
+			} else {
+				String[] colorArray = new String[1];
+				colorArray[0] = input;
+				colors = parseColorList(colorArray);
+			}
+		}
 		
 		return colors;
 	}
@@ -235,6 +187,17 @@ public final class ColorUtil {
 			d = 255; // dark colors - white font
 
 		return new Color(d, d, d);
+	}
+	
+	public static List<Color> getContrastingColors(final List<Color> colors) {
+		final List<Color> list = new ArrayList<Color>();
+		
+		if (colors != null) {
+			for (final Color c : colors)
+				list.add(getContrastingColor(c));
+		}
+		
+		return list;
 	}
 	
 	public static String toHexString(final Color color) {

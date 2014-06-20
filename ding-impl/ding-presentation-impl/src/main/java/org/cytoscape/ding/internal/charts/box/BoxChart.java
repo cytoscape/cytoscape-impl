@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 /**
@@ -58,14 +56,12 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
-		final List<CyColumnIdentifier> dataColumns =
-				new ArrayList<CyColumnIdentifier>(getList(DATA_COLUMNS, CyColumnIdentifier.class));
-		final List<Color> colors = getList(COLORS, Color.class);
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
 		
-		final Map<String, List<Double>> data = getDataFromColumns(network, model, dataColumns);
+		final Map<String, List<Double>> data = getData(network, model);
 
+		final List<Color> colors = getColors(data);
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		

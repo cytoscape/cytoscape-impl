@@ -41,7 +41,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
         		range, bounds);
         
         // Range cannot be null
-        if (range == null)
+        if (this.range == null)
         	this.range = calculateRange(data.values(), false);
         
         // x/y Labels are mandatory
@@ -136,6 +136,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setInsets(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
 		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
+		plot.setNoDataMessage(NO_DATA_TEXT);
 
 		final JFreeChart chart = new JFreeChart(null, plot);
 		chart.removeLegend();

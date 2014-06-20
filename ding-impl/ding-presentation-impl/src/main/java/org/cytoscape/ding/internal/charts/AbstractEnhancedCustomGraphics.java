@@ -36,48 +36,7 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	public static final String COLORS = "colorlist";
 	public static final String COLOR_SCHEME = "colorscheme";
 	public static final String ORIENTATION = "orientation";
-	
-	
-/*
-attributelist
-If the values are going to be specified by node attributes,
-this list provides the attribute or attributes to be used as a comma-separated list.
-
-colorlist
-The list of colors, one for each bar. colorlist also supports the following keywords:
-contrasting: Select colors base on a contrasting color scheme
-modulated: Select colors base on a modulated rainbow color scheme
-rainbow: Select colors base on the rainbow color scheme
-random: Select colors randomly
-up:color: Use color if the value is positive
-down:color: Use color if the value is negative
-
-labellist
-This list provides the labels to be associated with each bar, point, or pie slice on the resulting graph. The values should contain a comma-separated list of labels, one for each value.
-
-position
-The position of the graphic relative to the center of the node. This can be expressed as either an "x,y" pair, or using the main compas points: north, northeast, east, southeast, south, southwest, west, northwest or center.
-
-range
-A comma-separated pair of values that indicates the range of the input values. This may be used to force all charts across a number of nodes to have the same value range. Otherwise each charts will utilize it's own set of values to determine the hight of the bars.
-
-scale
-A scale factor for the size of the chart. A scale of 1.0 is the same size as the node, whereas a scale of 0.5 is 50% of the node size.
-
-separation
-The separation between any two bars
-
-showlabels
-A true/false value to enable or disable the creation of labels.
-
-size
-This specifies the size of the chart as a widthXheight pair. If only one value is given, it is assumed that the chart is square, otherwise the string is assumed to contain a width followed by an "X" followed by a height.
-
-valuelist
-The list of values (as a comma-separated list) for each point, bar, or pie slice.
-
-ybase
-	 */
+	public static final String ROTATION = "rotation";
 	
 	protected static final double DEFAULT_YBASE = 0.5;
 	
@@ -102,7 +61,7 @@ ybase
 		addProperties(parseInput(input));
 	}
 	
-	protected AbstractEnhancedCustomGraphics(final String displayName, final Map<String, Object> properties) {
+	protected AbstractEnhancedCustomGraphics(final String displayName, final Map<String, ?> properties) {
 		this(displayName);
 		addProperties(properties);
 	}
@@ -240,38 +199,8 @@ ybase
 		return sb.toString();
 	}
 	
-//	public List<Color> convertInputToColor(final String input, final Map<String, ? extends List<?>> data,
-//	final boolean normalize) {
-//int nColors = 0;
-//
-//for (final List<?> values : data.values())
-//	nColors = Math.max(nColors, values.size());
-//
-//if (input != null) {
-//	// OK, we have three possibilities. The input could be a keyword, a
-//	// comma-separated list of colors, or a list of Color objects. We need to figure this out first...
-//	// See if we have a csv
-//	String[] colorArray = input.split(",");
-//	
-//	// Look for up/down special case
-//	if (colorArray.length == 2
-//			&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN))) {
-//		return parseUpDownColor(colorArray, values, normalize);
-//	} else if (colorArray.length == 3
-//			&& (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN) || colorArray[0]
-//					.toLowerCase().startsWith(ZERO))) {
-//		return parseUpDownColor(colorArray, values, normalize);
-//	} else if (colorArray.length > 1) {
-//		return parseColorList(colorArray);
-//	}
-//}
-//
-//// Return the default
-//return ColorUtil.generateContrastingColors(nColors);
-//}
-	
-	protected Map<String, Object> parseInput(final String input) {
-		final Map<String, Object> props = new HashMap<String, Object>();
+	public static Map<String, String> parseInput(final String input) {
+		final Map<String, String> props = new HashMap<String, String>();
 		
 		if (input == null)
 			return props;
@@ -332,6 +261,7 @@ ybase
 		if (key.equalsIgnoreCase(SIZE)) return Rectangle2D.class;
 		if (key.equalsIgnoreCase(POSITION)) return Position.class;
 		if (key.equalsIgnoreCase(ORIENTATION)) return Orientation.class;
+		if (key.equalsIgnoreCase(ROTATION)) return Rotation.class;
 			
 		return null;
 	}
@@ -381,6 +311,8 @@ ybase
 					value = parsePoint(value.toString());
 				} else if (type == ControlPoint.class) {
 					value = ControlPoint.parse(value.toString());
+				} else if (type == Rotation.class) {
+					value = parseRotation(value.toString());
 				} else {
 					value = null;
 				}
@@ -464,7 +396,37 @@ ybase
 		
 		return new Point2D.Float(x, y);
 	}
+	
+	protected Object parseRotation(final String input) {
+		int intValue = -1;
+		
+		try {
+			intValue = getIntegerValue(input);
+		} catch (NumberFormatException e) {
+		}
+		
+		return intValue == -1 ? Rotation.ANTICLOCKWISE : Rotation.CLOCKWISE;
+	}
 
+	/**
+	 * Return the integer equivalent of the input
+	 * 
+	 * @param input
+	 *            an input value that is supposed to be a integer
+	 * @return the a integer value it represents
+	 * @throws NumberFormatException
+	 *             is the value is illegal
+	 */
+	protected int getIntegerValue(Object input) throws NumberFormatException {
+		if (input instanceof Integer)
+			return ((Integer) input).intValue();
+		else if (input instanceof Integer)
+			return ((Integer) input).intValue();
+		else if (input instanceof String)
+			return Integer.parseInt((String) input);
+		throw new NumberFormatException("input can not be converted to integer");
+	}
+	
 	/**
  	 * Return the double equivalent of the input
  	 *
@@ -482,9 +444,9 @@ ybase
 		throw new NumberFormatException("input can not be converted to double");
 	}
 	
-	protected void addProperties(final Map<String, Object> properties) {
+	protected void addProperties(final Map<String, ?> properties) {
 		if (properties != null) {
-			for (final Entry<String, Object> entry : properties.entrySet()) {
+			for (final Entry<String, ?> entry : properties.entrySet()) {
 				if (getSettingType(entry.getKey()) != null)
 					set(entry.getKey(), entry.getValue());
 			}
