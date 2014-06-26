@@ -37,13 +37,14 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
 import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
@@ -58,7 +59,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * for addNodes/addEdges that is missing from SimpleNetwork and provides support 
  * for subnetworks.
  */
-public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork {
+public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork, NetworkAddedListener {
 
 	private final long suid;
 	private SavePolicy savePolicy;
@@ -119,15 +120,12 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		interactionSetListener = new InteractionSetListener();
 		serviceRegistrar.registerService(interactionSetListener, RowsSetListener.class, new Properties());
 		networkAddedListenerDelegator = new NetworkAddedListenerDelegator();
+		networkAddedListenerDelegator.addListener(this);
 		serviceRegistrar.registerService(networkAddedListenerDelegator, NetworkAddedListener.class, new Properties());
 
 		networkNameSetListener = new NetworkNameSetListener(this);
 		serviceRegistrar.registerService(networkNameSetListener, RowsSetListener.class, new Properties());		
 		serviceRegistrar.registerService(networkNameSetListener, NetworkAddedListener.class, new Properties());		
-
-		registerAllTables(networkTableMgr.getTables(this, CyNetwork.class).values());
-		registerAllTables(networkTableMgr.getTables(this, CyNode.class).values());
-		registerAllTables(networkTableMgr.getTables(this, CyEdge.class).values());
 		
 		base = addSubNetwork();
 	}
@@ -443,6 +441,26 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 				if ( l != null )
 					l.handleEvent(e);
 			}
+		}
+	}
+
+	@Override
+	public void handleEvent(NetworkAddedEvent e) {
+		if(e.getNetwork() == this || subNetworks.contains(e.getNetwork())) {
+			// Check if another network from this root was already registered - return if so
+			CyNetworkManager netManager = e.getSource();
+			List<CyNetwork> networks = new ArrayList<CyNetwork>();
+			networks.add(this);
+			networks.addAll(subNetworks);
+			networks.remove(e.getNetwork());
+			for(CyNetwork network: networks) {
+				if(netManager.networkExists(network.getSUID())) 
+					return;
+			}
+			
+			registerAllTables(networkTableMgr.getTables(this, CyNetwork.class).values());
+			registerAllTables(networkTableMgr.getTables(this, CyNode.class).values());
+			registerAllTables(networkTableMgr.getTables(this, CyEdge.class).values());
 		}
 	}
 }
