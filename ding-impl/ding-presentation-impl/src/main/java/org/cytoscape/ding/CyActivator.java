@@ -59,7 +59,6 @@ import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsTranslator;
-import org.cytoscape.ding.customgraphics.NullCustomGraphicsFactory;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphicsFactory;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalFactory;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleFactory;
@@ -628,9 +627,6 @@ public class CyActivator extends AbstractCyActivator {
 		// Create and register our built-in factories.
 		// TODO:  When the CustomGraphicsFactory service stuff is set up, just
 		// register these as services
-		NullCustomGraphicsFactory nullFactory = new NullCustomGraphicsFactory(customGraphicsManager);
-		customGraphicsManager.addCustomGraphicsFactory(nullFactory, new Properties());
-
 		URLImageCustomGraphicsFactory imageFactory = new URLImageCustomGraphicsFactory(customGraphicsManager);
 		customGraphicsManager.addCustomGraphicsFactory(imageFactory, new Properties());
 

@@ -33,7 +33,7 @@ public class HeatMapChart extends AbstractChartCustomGraphics<HeatMapLayer> {
 	static {
 		try {
 			ICON = new ImageIcon(ImageIO.read(
-					HeatMapChart.class.getClassLoader().getResource("images/charts/line-chart.png")));
+					HeatMapChart.class.getClassLoader().getResource("images/charts/heatmap-chart.png")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

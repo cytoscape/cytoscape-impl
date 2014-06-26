@@ -78,8 +78,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<URL, Long>();
 
 	// Null Object
-	private static final CyCustomGraphics NULL = NullCustomGraphics.getNullObject();
-
 	private final File imageHomeDirectory;
 	private final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
@@ -122,10 +120,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 		// Usually, this is USER_HOME/.cytoscape/images3
 		this.imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
-
-		// Add NULL graphics.  This will be used to reset Custom Graphics.
-		graphicsMap.put(NULL.getIdentifier(), NULL);
-		this.isUsedCustomGraphics.put(NULL, false);
 
 		// Restore Custom Graphics from the directory.
 		final RestoreImageTaskFactory taskFactory = 
@@ -201,7 +195,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	@Override
 	public void removeCustomGraphics(final Long id) {
 		final CyCustomGraphics cg = graphicsMap.get(id);
-		if (cg != null && cg != NULL) {
+		if (cg != null && cg != NullCustomGraphics.getNullObject()) {
 			graphicsMap.remove(id);
 			this.isUsedCustomGraphics.remove(cg);
 		}
@@ -289,10 +283,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		this.graphicsMap.clear();
 		this.sourceMap.clear();
 		this.isUsedCustomGraphics.clear();
-
-		// Null Graphics should not be removed.
-		this.graphicsMap.put(NULL.getIdentifier(), NULL);
-
 	}
 
 	/**
@@ -302,9 +292,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	 */
 	@Override
 	public Properties getMetadata() {
-		// Null graphics object should not be in this property.
-		graphicsMap.remove(NULL.getIdentifier());
-
 		final Properties props = new Properties();
 		// Use hash code as the key, and value will be a string returned by
 		// toString() method.
@@ -314,7 +301,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 			props.setProperty(graphics.getIdentifier().toString(), 
 			                  graphics.getClass().getCanonicalName()+","+graphics.toSerializableString());
 		}
-		graphicsMap.put(NULL.getIdentifier(), NULL);
+		
 		return props;
 	}
 

@@ -73,6 +73,7 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 	public boolean inRange(CyCustomGraphics value) {
 		// CyCharts don't have to be added to the manager
 		return value instanceof CyChart || value instanceof CyGradient
+				|| value == NullCustomGraphics.getNullObject()
 				|| manager.getAllCustomGraphics().contains(value);
 	}
 }

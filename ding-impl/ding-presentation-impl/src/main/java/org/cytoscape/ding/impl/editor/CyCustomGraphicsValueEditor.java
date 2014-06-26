@@ -13,6 +13,8 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -27,6 +29,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.charts.CyChartEditorFactory;
@@ -53,6 +56,7 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	private GraphicsPanel graphicsPnl;
 	private ChartPanel chartPnl;
 	private GradientPanel gradientPnl;
+	private JButton removeBtn;
 	private JButton cancelBtn;
 	private JButton applyBtn;
 	
@@ -139,6 +143,12 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		pack();
 	}
 	
+	private void remove() {
+		editCancelled = false;
+		newCustomGraphics = NullCustomGraphics.getNullObject();
+		dispose();
+	}
+	
 	private void cancel() {
 		editCancelled = true;
 		dispose();
@@ -172,6 +182,10 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	private JPanel getBottomPnl() {
 		if (bottomPnl == null) {
 			bottomPnl = new JPanel();
+			bottomPnl.setLayout(new BoxLayout(bottomPnl, BoxLayout.X_AXIS));
+			bottomPnl.add(getRemoveBtn());
+			bottomPnl.add(Box.createVerticalStrut(35));
+			bottomPnl.add(Box.createHorizontalGlue());
 			bottomPnl.add(getCancelBtn());
 			bottomPnl.add(getApplyBtn());
 		}
@@ -203,6 +217,21 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		}
 		
 		return gradientPnl;
+	}
+	
+	public JButton getRemoveBtn() {
+		if (removeBtn == null) {
+			removeBtn = new JButton("Remove");
+			removeBtn.setToolTipText("Remove Graphics");
+			removeBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					remove();
+				}
+			});
+		}
+		
+		return removeBtn;
 	}
 	
 	private JButton getCancelBtn() {
