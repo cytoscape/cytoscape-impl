@@ -276,6 +276,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		eventHelper.fireEvent(new ColumnNameChangedEvent(this, oldColumnName, newColumnName));
 	}
+	
+	boolean eventsEnabled() {
+		return fireEvents;
+	}
 
 	@Override
 	public Long getSUID() {
@@ -764,7 +768,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				final List list = (List)value;
 				if (!list.isEmpty())
 					checkType(list.get(0));
-				rawValue = new CyListImpl(type, new ArrayList(list), eventHelper, row, column);
+				rawValue = new CyListImpl(type, new ArrayList(list), eventHelper, row, column, this);
 			} else if (!(value instanceof Equation)) {
 				throw new IllegalArgumentException("value is a " + value.getClass().getName()
 								   + " and not a List for column '"
