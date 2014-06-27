@@ -141,52 +141,66 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 			if (column == null)
 				continue;
 			
+			final String colName = column.getName();
 			final List<Double> values = new ArrayList<Double>();
 			
 			if (column.getType() == List.class) {
 				final Class<?> type = column.getListElementType();
 				
 				if (type == Double.class) {
-					List<Double> dlist = row.getList(column.getName(), Double.class);
+					List<Double> dlist = row.getList(colName, Double.class);
 					if (dlist != null)
 						values.addAll(dlist);
 				} else if (type == Integer.class) {
-					List<Integer> iList = row.getList(column.getName(), Integer.class);
+					List<Integer> iList = row.getList(colName, Integer.class);
 					for (Integer i : iList)
 						values.add(i.doubleValue());
 				} else if (type == Long.class) {
-					List<Long> lList = row.getList(column.getName(), Long.class);
+					List<Long> lList = row.getList(colName, Long.class);
 					for (Long l : lList)
 						values.add(l.doubleValue());
 				} else if (type == Float.class) {
-					List<Float> fList = row.getList(column.getName(), Float.class);
+					List<Float> fList = row.getList(colName, Float.class);
 					for (Float f : fList)
 						values.add(f.doubleValue());
 				} else if (type == String.class) {
-					List<String> sList = row.getList(column.getName(), String.class);
-					for (String s : sList)
-						values.add(Double.valueOf(s));
+					List<String> sList = row.getList(colName, String.class);
+					for (String s : sList) {
+						try {
+							values.add(Double.valueOf(s));
+						} catch (Exception e) {
+							values.add(0.0);
+						}
+					}
 				}
 				
-				data.put(column.getName(), values);
+				data.put(colName, values);
 			} else {
 				final Class<?> type = column.getType();
+				final boolean isSet = row.isSet(colName);
+				
+				if (!isSet)
+					continue;
 				
 				if (type == Double.class) {
-					singleSeriesValues.add(row.get(column.getName(), Double.class));
-					singleSeriesKey.append(column.getName() + ",");
+					singleSeriesValues.add(row.get(colName, Double.class));
+					singleSeriesKey.append(colName + ",");
 				} else if (type == Integer.class) {
-					Integer i = row.get(column.getName(), Integer.class);
+					Integer i = row.get(colName, Integer.class);
 					singleSeriesValues.add(i.doubleValue());
-					singleSeriesKey.append(column.getName() + ",");
+					singleSeriesKey.append(colName + ",");
 				} else if (type == Float.class) {
-					Float f = row.get(column.getName(), Float.class);
+					Float f = row.get(colName, Float.class);
 					singleSeriesValues.add(f.doubleValue());
-					singleSeriesKey.append(column.getName() + ",");
+					singleSeriesKey.append(colName + ",");
 				} else if (type == String.class) {
-					String s = row.get(column.getName(), String.class);
-					singleSeriesValues.add(Double.valueOf(s));
-					singleSeriesKey.append(column.getName() + ",");
+					String s = row.get(colName, String.class);
+					
+					try {
+						singleSeriesValues.add(Double.valueOf(s));
+						singleSeriesKey.append(colName + ",");
+					} catch (Exception e) {
+					}
 				}
 			}
 		}

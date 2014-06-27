@@ -23,6 +23,7 @@ import java.awt.event.ItemListener;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,8 +62,10 @@ import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
@@ -117,11 +120,14 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	protected final boolean setRangeLabels;
 	protected final boolean hasAxes;
 	protected final Map<CyColumnIdentifier, CyColumn> columns;
+	protected final Map<CyColumnIdentifier, CyColumn> labelColumns;
 	protected final T chart;
 	protected final Class<?> dataType;
 	protected final CyApplicationManager appMgr;
 	protected final IconManager iconMgr;
 	protected final CyColumnIdentifierFactory colIdFactory;
+
+	protected boolean initializing;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -164,12 +170,14 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		this.colIdFactory = colIdFactory;
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
-		columns = new TreeMap<CyColumnIdentifier, CyColumn>(new Comparator<CyColumnIdentifier>() {
+		final Comparator<CyColumnIdentifier> columnComparator = new Comparator<CyColumnIdentifier>() {
 			@Override
 			public int compare(final CyColumnIdentifier c1, final CyColumnIdentifier c2) {
 				return collator.compare(c1.getColumnName(), c2.getColumnName());
 			}
-		});
+		};
+		columns = new TreeMap<CyColumnIdentifier, CyColumn>(columnComparator);
+		labelColumns = new TreeMap<CyColumnIdentifier, CyColumn>(columnComparator);
 		
 		// TODO Move it to a shared "Chart Column Manager"
 		final CyNetwork net = appMgr.getCurrentNetwork();
@@ -179,8 +187,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			final Collection<CyColumn> cols = table.getColumns();
 			
 			for (final CyColumn c : cols) {
-				if (Collection.class.isAssignableFrom(c.getType()))
-					columns.put(colIdFactory.createColumnIdentifier(c.getName()), c);
+				if (c.getName() != CyIdentifiable.SUID) {
+					final CyColumnIdentifier colId = colIdFactory.createColumnIdentifier(c.getName());
+					columns.put(colId, c);
+					
+					if (List.class.isAssignableFrom(c.getType()))
+						labelColumns.put(colId, c);
+				}
 			}
 		}
 		
@@ -192,10 +205,16 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	protected void init() {
-		createLabels();
-		setOpaque(false);
-		setLayout(new BorderLayout());
-		add(getOptionsTpn(), BorderLayout.CENTER);
+		initializing = true;
+		
+		try {
+			createLabels();
+			setOpaque(false);
+			setLayout(new BorderLayout());
+			add(getOptionsTpn(), BorderLayout.CENTER);
+		} finally {
+			initializing = false;
+		}
 		
 		update(false);
 	}
@@ -508,7 +527,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getItemLabelsColumnCmb() {
 		if (itemLabelsColumnCmb == null) {
-			itemLabelsColumnCmb = new CyColumnComboBox(columns.keySet(), true);
+			itemLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(itemLabelsColumnCmb, chart.get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
 			
 			itemLabelsColumnCmb.addActionListener(new ActionListener() {
@@ -525,7 +544,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getDomainLabelsColumnCmb() {
 		if (domainLabelsColumnCmb == null) {
-			domainLabelsColumnCmb = new CyColumnComboBox(columns.keySet(), true);
+			domainLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(domainLabelsColumnCmb, chart.get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
 			
 			domainLabelsColumnCmb.addActionListener(new ActionListener() {
@@ -542,7 +561,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JComboBox getRangeLabelsColumnCmb() {
 		if (rangeLabelsColumnCmb == null) {
-			rangeLabelsColumnCmb = new CyColumnComboBox(columns.keySet(), true);
+			rangeLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(rangeLabelsColumnCmb, chart.get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
 			
 			rangeLabelsColumnCmb.addActionListener(new ActionListener() {
@@ -614,7 +633,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 					setGlobalRange();
 				}
 			});
-			// TODO set value from chart first. If null, calculate from data. If calculated range different from chart's range, enable "update" button
 		}
 		
 		return rangeMinTxt;
@@ -781,18 +799,28 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			for (final CyColumnIdentifier colId : dataColumns) {
 				final CyColumn column = columns.get(colId);
 				
-				if (column != null
-						&& List.class.isAssignableFrom(column.getType())
-						&& Number.class.isAssignableFrom(column.getListElementType())) {
+				if (column == null)
+					continue;
+				
+				final Class<?> colType = column.getType();
+				final Class<?> colListType = column.getListElementType();
+				
+				if (Number.class.isAssignableFrom(colType) ||
+						(List.class.isAssignableFrom(colType) && Number.class.isAssignableFrom(colListType))) {
 					for (final CyNode n : nodes) {
-						final List<? extends Number> list =
-								(List<? extends Number>) net.getRow(n).getList(column.getName(), column.getListElementType());
+						List<? extends Number> values = null;
+						final CyRow row = net.getRow(n);
 						
-						if (list != null) {
+						if (List.class.isAssignableFrom(colType))
+							values = (List<? extends Number>) row.getList(column.getName(), colListType);
+						else if (row.isSet(column.getName()))
+							values = Collections.singletonList((Number)row.get(column.getName(), colType));
+						
+						if (values != null) {
 							double sum = 0;
 							
-							for (final Number value : list) {
-								final double dv = value.doubleValue();
+							for (final Number v : values) {
+								final double dv = v.doubleValue();
 								
 								if (stacked) {
 									sum += dv;
@@ -848,9 +876,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			final boolean auto = chart.get(AUTO_RANGE, Boolean.class, Boolean.TRUE);
 			DoubleRange range = chart.get(RANGE, DoubleRange.class);
 			
-			if (auto && recalculate) {
-				range = calculateAutoRange();
-				getRefreshRangeBtn().setEnabled(false);
+			if (auto) {
+				if (recalculate) {
+					range = calculateAutoRange();
+					getRefreshRangeBtn().setEnabled(false);
+				} else {
+					updateRefreshRangeBtn();
+				}
 			}
 			
 			if (range != null) {
@@ -859,8 +891,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				getRangeMaxTxt().setText(""+range.max);
 			}
 		}
-		
-		updateRefreshRangeBtn();
 	}
 	
 	private void updateRefreshRangeBtn() {
@@ -900,8 +930,11 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				chart.set(DATA_COLUMNS, getDataPnl().getDataColumnNames());
-				updateRangeMinMax(true);
-				getColorSchemeEditor().reset();
+				
+				if (!initializing) {
+					updateRangeMinMax(true);
+					getColorSchemeEditor().reset();
+				}
 			}
 		});
 		
@@ -910,6 +943,14 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected String[] getColorSchemes() {
 		return BASIC_COLOR_SCHEMES;
+	}
+	
+	protected boolean isDataColumn(final CyColumn c) {
+		final Class<?> colType = c.getType();
+		final Class<?> colListType = c.getListElementType();
+		
+		return dataType.isAssignableFrom(colType) ||
+				(List.class.isAssignableFrom(colType) && dataType.isAssignableFrom(colListType));
 	}
 	
 	protected static void selectColumnIdItem(final JComboBox cmb, final CyColumnIdentifier columnId) {
@@ -944,7 +985,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			for (final CyColumnIdentifier colId : columns.keySet()) {
 				final CyColumn c = columns.get(colId);
 				
-				if (List.class.isAssignableFrom(c.getType()) && dataType.isAssignableFrom(c.getListElementType()))
+				if (isDataColumn(c))
 					dataColumns.add(colId);
 			}
 			
@@ -1011,9 +1052,11 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			
 			chart.set(DATA_COLUMNS, getDataColumnNames());
 			updateAddDataColumnBtn();
-			updateRangeMinMax(true);
 			
-			if (resetColorScheme)
+			if (!initializing)
+				updateRangeMinMax(true);
+			
+			if (!initializing && resetColorScheme)
 				getColorSchemeEditor().reset();
 			
 			invalidate();

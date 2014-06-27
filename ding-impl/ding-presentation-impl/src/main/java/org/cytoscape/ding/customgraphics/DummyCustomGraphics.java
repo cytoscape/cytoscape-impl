@@ -29,6 +29,7 @@ import java.awt.Image;
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public final class DummyCustomGraphics extends AbstractDCustomGraphics {
 	
 	public DummyCustomGraphics(Long id, String displayName) {
