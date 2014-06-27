@@ -221,8 +221,7 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	
 	public JButton getRemoveBtn() {
 		if (removeBtn == null) {
-			removeBtn = new JButton("Remove");
-			removeBtn.setToolTipText("Remove Graphics");
+			removeBtn = new JButton("Remove Graphics");
 			removeBtn.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {

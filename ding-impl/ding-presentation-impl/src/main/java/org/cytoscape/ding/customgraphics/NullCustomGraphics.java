@@ -25,33 +25,18 @@ package org.cytoscape.ding.customgraphics;
  */
 
 import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
-
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 /**
- * Null object for Custom Graphics. This is used to reset custom graphics on
- * node views.
+ * Null object for Custom Graphics. This is used to reset custom graphics on node views.
  */
 public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphicLayer> {
 	
-	private static final String DEF_IMAGE_FILE = "images/no_image.png";
-	public static BufferedImage DEF_IMAGE;
+	public static Image DEF_IMAGE = IconUtil.emptyIcon(24, 24).getImage();
 	
-	static  {
-		try {
-			DEF_IMAGE =ImageIO.read(URLImageCustomGraphics.class
-					.getClassLoader().getResource(DEF_IMAGE_FILE));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	static final CyCustomGraphics<CustomGraphicLayer> NULL = new NullCustomGraphics();
 
 	public static CyCustomGraphics<CustomGraphicLayer> getNullObject() {
