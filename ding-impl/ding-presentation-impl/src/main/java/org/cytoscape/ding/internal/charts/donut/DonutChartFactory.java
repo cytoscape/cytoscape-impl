@@ -9,7 +9,7 @@ import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.charts.CyChartFactory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class DonutChartFactory  implements CyChartFactory<DonutLayer> {
+public class DonutChartFactory implements CyChartFactory<DonutLayer> {
 
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -44,7 +44,7 @@ public class DonutChartFactory  implements CyChartFactory<DonutLayer> {
 
 	@Override
 	public String getDisplayName() {
-		return "Donut";
+		return "Ring";
 	}
 	
 	@Override

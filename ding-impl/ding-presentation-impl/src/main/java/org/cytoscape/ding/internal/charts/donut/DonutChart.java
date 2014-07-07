@@ -21,8 +21,8 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
 
 public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 
-	public static final String FACTORY_ID = "org.cytoscape.chart.Donut";
-	public static final String DISPLAY_NAME = "Donut Chart";
+	public static final String FACTORY_ID = "org.cytoscape.chart.Ring";
+	public static final String DISPLAY_NAME = "Ring Chart";
 	
 	public static final String START_ANGLE = "startangle";
 	public static final String HOLE_SIZE = "holesize";

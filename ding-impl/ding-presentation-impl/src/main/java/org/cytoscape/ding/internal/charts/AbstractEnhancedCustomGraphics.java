@@ -3,8 +3,6 @@ package org.cytoscape.ding.internal.charts;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +18,9 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -47,6 +48,7 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	protected int height = 50;
 	
 	protected final Map<String, Object> properties;
+	protected final ObjectMapper mapper;
 	
 	protected static Logger logger;
 
@@ -54,6 +56,8 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		logger = LoggerFactory.getLogger(this.getClass());
 		this.displayName = displayName;
 		this.properties = new HashMap<String, Object>();
+		
+		mapper = new ObjectMapper();
 	}
 	
 	protected AbstractEnhancedCustomGraphics(final String displayName, final String input) {
@@ -123,17 +127,32 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 
 	@Override
 	public String toSerializableString() {
-		final StringBuilder sb = new StringBuilder(getId() + ":");
+		final Map<String, Object> map = new HashMap<String, Object>();
 		
 		for (final Entry<String, Object> entry : properties.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			
-			if (key != null && value != null)
-				sb.append(serialize(key, value));
+			if (key != null && value != null) {
+				if (value instanceof Collection)
+					value = serializeList(key, (Collection<?>)value);
+				else
+					value = serializeValue(key, value);
+				
+				map.put(key, value);
+			}
 		}
 		
-		return sb.toString();
+		String output = "";
+		
+		try {
+			output = mapper.writeValueAsString(map);
+			output = getId() + ":" + output;
+		} catch (JsonProcessingException e) {
+			logger.error("Cannot create JSON from graphics", e);
+		}
+		
+		return output;
 	}
 	
 	public abstract String getId();
@@ -171,16 +190,10 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		return obj instanceof List ? (List)obj : Collections.emptyList();
 	}
 	
-	public String serialize(final String key, final Object value) {
-		return " " + key + "=\"" + serializeValue(key, value) + "\"";
-	}
-
 	public String serializeValue(final String key, final Object value) {
 		String s = "";
 		
-		if (value instanceof Collection)
-			s = serializeList(key, (Collection<?>)value);
-		else if (value instanceof Color)
+		if (value instanceof Color)
 			s = ColorUtil.toHexString((Color)value);
 		else if (value != null)
 			s = value.toString();
@@ -188,67 +201,35 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		return s;
 	}
 	
-	public String serializeList(final String key, final Collection<?> list) {
-		final StringBuilder sb = new StringBuilder();
+	public List<String> serializeList(final String key, final Collection<?> collection) {
+		final List<String> list = new ArrayList<String>();
 		
-		for (final Iterator<?> i = list.iterator(); i.hasNext();) {
-			Object value = serializeValue(key, i.next());
-	        sb.append(value).append(i.hasNext() ? getListSeparator(key) : "");
+		for (final Iterator<?> iter = collection.iterator(); iter.hasNext();) {
+			final String value = serializeValue(key, iter.next());
+			list.add(value);
 		}
 		
-		return sb.toString();
+		return list;
 	}
 	
-	public static Map<String, String> parseInput(final String input) {
-		final Map<String, String> props = new HashMap<String, String>();
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object> parseInput(final String input) {
+		final Map<String, Object> props = new HashMap<String, Object>();
 		
-		if (input == null)
-			return props;
-		
-		// Tokenize
-		StringReader reader = new StringReader(input);
-		StreamTokenizer st = new StreamTokenizer(reader);
-
-		// We don't really want to parse numbers as numbers...
-		st.ordinaryChar('/');
-		st.ordinaryChar('_');
-		st.ordinaryChar('-');
-		st.ordinaryChar('.');
-		st.ordinaryChars('0', '9');
-
-		st.wordChars('/', '/');
-		st.wordChars('_', '_');
-		st.wordChars('-', '-');
-		st.wordChars('.', '.');
-		st.wordChars('0', '9');
-
-		List<String> tokenList = new ArrayList<String>();
-		int tokenIndex = 0;
-		int i;
-		
-		try {
-			while ((i = st.nextToken()) != StreamTokenizer.TT_EOF) {
-				switch (i) {
-				case '=':
-					// Get the next token
-					i = st.nextToken();
-					if (i == StreamTokenizer.TT_WORD || i == '"') {
-						tokenIndex--;
-						String key = tokenList.get(tokenIndex);
-						props.put(key, st.sval);
-						tokenList.remove(tokenIndex);
+		if (input != null && !input.isEmpty()) {
+			try {
+				final Map<String, Object> map = mapper.readValue(input, Map.class);
+				
+				if (map != null) {
+					for (final Entry<String, Object> entry : map.entrySet()) {
+						final String key = entry.getKey();
+						final Object value = entry.getValue();
+						props.put(key, value);
 					}
-					break;
-				case '"':
-				case StreamTokenizer.TT_WORD:
-					tokenList.add(st.sval);
-					tokenIndex++;
-					break;
-				default:
-					break;
 				}
+			} catch (Exception e) {
+				logger.error("Cannot parse JSON: " + input, e);
 			}
-		} catch (Exception e) {
 		}
 		
 		return props;

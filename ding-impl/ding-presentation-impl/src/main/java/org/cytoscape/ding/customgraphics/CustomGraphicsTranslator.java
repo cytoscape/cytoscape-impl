@@ -29,6 +29,8 @@ import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -39,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics;
-import org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics;
 import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.ding.internal.charts.Rotation;
 import org.cytoscape.ding.internal.charts.ViewUtils;
@@ -212,7 +213,7 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 			type = StripeChart.class;
 		
 		if (type != null) {
-			final Map<String, String> args = AbstractEnhancedCustomGraphics.parseInput(input);
+			final Map<String, String> args = parseInput(input);
 			final Map<String, Object> props = populateValues(args, type);
 			
 			// Heat Strip is handled as a special case of Bar Chart
@@ -233,6 +234,61 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		}
 		
 		return cg;
+	}
+	
+	private static Map<String, String> parseInput(final String input) {
+		final Map<String, String> props = new HashMap<String, String>();
+		
+		if (input == null)
+			return props;
+		
+		// Tokenize
+		StringReader reader = new StringReader(input);
+		StreamTokenizer st = new StreamTokenizer(reader);
+
+		// We don't really want to parse numbers as numbers...
+		st.ordinaryChar('/');
+		st.ordinaryChar('_');
+		st.ordinaryChar('-');
+		st.ordinaryChar('.');
+		st.ordinaryChars('0', '9');
+
+		st.wordChars('/', '/');
+		st.wordChars('_', '_');
+		st.wordChars('-', '-');
+		st.wordChars('.', '.');
+		st.wordChars('0', '9');
+
+		List<String> tokenList = new ArrayList<String>();
+		int tokenIndex = 0;
+		int i;
+		
+		try {
+			while ((i = st.nextToken()) != StreamTokenizer.TT_EOF) {
+				switch (i) {
+				case '=':
+					// Get the next token
+					i = st.nextToken();
+					if (i == StreamTokenizer.TT_WORD || i == '"') {
+						tokenIndex--;
+						String key = tokenList.get(tokenIndex);
+						props.put(key, st.sval);
+						tokenList.remove(tokenIndex);
+					}
+					break;
+				case '"':
+				case StreamTokenizer.TT_WORD:
+					tokenList.add(st.sval);
+					tokenIndex++;
+					break;
+				default:
+					break;
+				}
+			}
+		} catch (Exception e) {
+		}
+		
+		return props;
 	}
 
 	private static final Map<String, Object> populateValues(final Map<String, String> args, final Class type) {
@@ -440,15 +496,6 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 			} catch (NumberFormatException e) {
 				return null;
 			}
-		}
-		return values;
-	}
-	
-	private static List<Double> convertIntegerList(List<Integer> input) {
-		List<Double> values = new ArrayList<Double>(input.size());
-		for (Integer s: input) {
-			double d = s.doubleValue();
-			values.add(d);
 		}
 		return values;
 	}
