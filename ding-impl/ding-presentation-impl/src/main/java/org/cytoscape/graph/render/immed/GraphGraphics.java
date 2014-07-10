@@ -73,7 +73,7 @@ import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.Java2DLayer;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 
 
@@ -2061,9 +2061,9 @@ public final class GraphGraphics {
 			}
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
-		} else if (cg instanceof Java2DLayer) {
-			Java2DLayer layer = (Java2DLayer)cg;
-			layer.draw(m_g2d, nodeShape.getBounds2D());
+		} else if (cg instanceof Cy2DGraphicLayer) {
+			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
+			layer.draw(m_g2d, nodeShape.getBounds2D(), nodeShape);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
 			m_g2d.translate(xOffset, yOffset);
 			Rectangle2D b = cg.getBounds2D();

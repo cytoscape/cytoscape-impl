@@ -15,9 +15,8 @@ import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
-import org.cytoscape.ding.internal.charts.pie.PieLayer;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.Java2DLayer;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.StandardEntityCollection;
@@ -27,7 +26,7 @@ import org.jfree.data.general.Dataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 
-public abstract class AbstractChartLayer<T extends Dataset> implements Java2DLayer {
+public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraphicLayer {
 
 	public static final int MAX_IMG_RESOLUTION = 3145728;
 	public static final Color TRANSPARENT_COLOR = new Color(0x00, 0x00, 0x00, 0);
@@ -103,14 +102,14 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Java2DLay
 	}
 
 	@Override
-	public void draw(final Graphics2D g, Rectangle2D area) {
+	public void draw(final Graphics2D g, final Rectangle2D area, final Shape shape) {
 //		AffineTransform t = new AffineTransform();
 //		t.scale(10.0, 10.0);
 //		g.transform(t);
 		ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
 		final Rectangle2D chartArea =
 				new Rectangle2D.Double(area.getX(), area.getY(), area.getWidth()*1000, area.getHeight()*1000);
-		System.out.println(">>> [ AREA ]: "+ chartArea);
+//		System.out.println(">>> [ AREA ]: "+ chartArea);
 		info.getPlotInfo().setPlotArea(chartArea);
 		info.getPlotInfo().setDataArea(chartArea);
 		info.setChartArea(chartArea);
@@ -119,11 +118,11 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Java2DLay
 		
 		getChart().draw(g, area, info);
 		
-		if (this instanceof PieLayer) {
-			System.out.println("[ CHART AREA ]: "+ info.getChartArea());
-			System.out.println("[ PLOT AREA ] : "+ info.getPlotInfo().getPlotArea());
-			System.out.println("[ DATA AREA ] : "+ info.getPlotInfo().getDataArea());
-		}
+//		if (this instanceof PieLayer) {
+//			System.out.println("[ CHART AREA ]: "+ info.getChartArea());
+//			System.out.println("[ PLOT AREA ] : "+ info.getPlotInfo().getPlotArea());
+//			System.out.println("[ DATA AREA ] : "+ info.getPlotInfo().getDataArea());
+//		}
 		
 //		try {
 //			g.transform(t.createInverse());

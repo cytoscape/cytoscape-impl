@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -61,11 +62,11 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
 	@Override
-	public void draw(final Graphics2D g, final Rectangle2D area) {
+	public void draw(final Graphics2D g, final Rectangle2D area, final Shape shape) {
 		getChart(); // Make sure charts have been created
 		
 		if (chartList.size() == 1) {
-			super.draw(g, area);
+			super.draw(g, area, shape);
 		} else {
 	        for (final JFreeChart chart : chartList) {
 	        	chart.draw(g, area);
