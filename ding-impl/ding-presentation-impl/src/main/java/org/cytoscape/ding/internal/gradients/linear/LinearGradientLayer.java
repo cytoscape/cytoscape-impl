@@ -14,24 +14,15 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public class LinearGradientLayer extends GradientLayer {
 	
-	protected Point2D start;
-	protected Point2D end;
+	protected double angle;
 	protected Rectangle2D rectangle;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public LinearGradientLayer(final Point2D start,
-							   final Point2D end,
+	public LinearGradientLayer(final double angle,
 							   final List<ControlPoint> controlPoints) {
 		super(controlPoints);
-		this.start = start;
-		this.end = end;
-		
-		if (this.start == null)
-			this.start = new Point2D.Float(0f, 0f);
-		if (this.end == null)
-			this.end = new Point2D.Float(1f, 0f);
-
+		this.angle = angle;
 		rectangle = new Rectangle(0, 0, 100, 100);
 	}
 
@@ -39,7 +30,16 @@ public class LinearGradientLayer extends GradientLayer {
 	
 	@Override
 	public Paint getPaint(final Rectangle2D bounds) {
-		this.paint = new LinearGradientPaint(scale(start, bounds), scale(end, bounds), positions, colors);
+		double r = Math.max(bounds.getWidth(), bounds.getHeight()) / 2;
+		double x1 = bounds.getX() + r * Math.cos(angle);
+		double y1 = bounds.getY() + r * Math.sin(angle);
+		double x2 = bounds.getX() + r * Math.cos(angle + 180);
+		double y2 = bounds.getY() + r * Math.sin(angle + 180);
+		final Point2D start = new Point2D.Double(x1, y1);
+		final Point2D end = new Point2D.Double(x2, y2);
+		System.out.println(start + " :: " + end);
+		
+		this.paint = new LinearGradientPaint(start, end, positions, colors);
 		
 		return this.paint;
 	}
@@ -51,7 +51,7 @@ public class LinearGradientLayer extends GradientLayer {
 
 	@Override
 	public CustomGraphicLayer transform(final AffineTransform xform) {
-		final LinearGradientLayer newLayer = new LinearGradientLayer(start, end, controlPoints);
+		final LinearGradientLayer newLayer = new LinearGradientLayer(angle, controlPoints);
 		newLayer.rectangle = xform.createTransformedShape(rectangle) .getBounds2D();
 		
 		return newLayer;

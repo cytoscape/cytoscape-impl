@@ -20,9 +20,8 @@ public class LinearGradient extends AbstractGradientCustomGraphics<LinearGradien
 	public static final String FACTORY_ID = "org.cytoscape.LinearGradient";
 	public static final String DISPLAY_NAME = "Linear Gradient";
 	
-	public static final String START = "start";
-	public static final String END = "end";
 	public static final String STOP_LIST = "stoplist";
+	public static final String ANGLE = "angle";
 	
 	private BufferedImage renderedImg;
 	private volatile boolean dirty = true;
@@ -71,7 +70,7 @@ public class LinearGradient extends AbstractGradientCustomGraphics<LinearGradien
 	public synchronized void set(String key, Object value) {
 		super.set(key, value);
 		
-		if (START.equalsIgnoreCase(key) || END.equalsIgnoreCase(key) || STOP_LIST.equalsIgnoreCase(key))
+		if (ANGLE.equalsIgnoreCase(key) || STOP_LIST.equalsIgnoreCase(key))
 			dirty = true;
 	}
 	
@@ -79,8 +78,7 @@ public class LinearGradient extends AbstractGradientCustomGraphics<LinearGradien
 	
 	@Override
 	protected Class<?> getSettingType(final String key) {
-		if (key.equalsIgnoreCase(START)) return Point2D.class;
-		if (key.equalsIgnoreCase(END)) return Point2D.class;
+		if (key.equalsIgnoreCase(ANGLE)) return Double.class;
 		if (key.equalsIgnoreCase(STOP_LIST)) return List.class;
 		
 		return super.getSettingType(key);
@@ -95,12 +93,11 @@ public class LinearGradient extends AbstractGradientCustomGraphics<LinearGradien
 	
 	private LinearGradientLayer createLayer() {
 		LinearGradientLayer layer = null;
-		final Point2D start = get(START, Point2D.class, new Point2D.Float(0.0f, 0.0f));
-		final Point2D end = get(END, Point2D.class, new Point2D.Float(1.0f, 0.0f));
+		final Double angle = get(ANGLE, Double.class, 0.0);
 		final List<ControlPoint> controlPoints = getList(STOP_LIST, ControlPoint.class);
 		
-		if (start != null && end != null && controlPoints.size() > 1)
-			layer = new LinearGradientLayer(start, end, controlPoints);
+		if (angle != null && controlPoints.size() > 1)
+			layer = new LinearGradientLayer(angle, controlPoints);
 		
 		return layer;
 	}
