@@ -126,8 +126,8 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		CyCustomGraphics cg = translateURL(inputValue);
 		
 		// Bypass format?
-		if (cg == null)
-			cg = parseAsEnhancedGraphics(inputValue);
+//		if (cg == null)
+//			cg = parseAsEnhancedGraphics(inputValue);
 		
 		// Nope, so hand it to each factory that has a matching prefix...
 		
@@ -430,8 +430,8 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 				stopList.add(new ControlPoint(new Color(100, 100, 100, 100), 1.0f));
 			}
 			
-			props.put(LinearGradient.START, start);
-			props.put(LinearGradient.END, end);
+//			props.put(LinearGradient.START, start);
+//			props.put(LinearGradient.END, end);
 			props.put(LinearGradient.STOP_LIST, stopList);
 		} else if (type == BarChart.class) {
 			double separation = 0;
