@@ -50,6 +50,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	private final CyProperty<Properties> cyProp;
 
 	private final CyApplicationManager appManager;
+	private boolean drawEdges = true;
 
 
 	public DingGraphLOD(final CyProperty<Properties> defaultProps, final CyApplicationManager appManager) {
@@ -83,6 +84,16 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		return value;
 	}
 
+	/**
+	 * For dense networks we don't want to draw edges during
+	 * pan and zoom operations.  This flag controls that.
+	 *
+	 * @param drawEdges if true edges will not be drawn
+	 */
+	@Override
+	public void setDrawEdges(boolean drawEdges) {
+		this.drawEdges = drawEdges;
+	}
 
 	@Override
 	public void handleEvent(PropertyUpdatedEvent e) {
@@ -94,6 +105,9 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		appManager.getCurrentNetworkView().updateView();
 
 	}
+
+	@Override
+	public boolean getDrawEdges() { return drawEdges; }
 
 	/**
 	 * Determines whether or not to render all edges in a graph, no edges, or
@@ -123,7 +137,11 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 */
 	public byte renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
 		if (totalEdgeCount >= Math.min(edgeArrowThreshold, edgeLabelThreshold)) {
-			return (byte) 0;
+			// Since we don't know the visible edge count, use visible node count as a proxy
+			if (drawEdges || visibleNodeCount <= Math.max(edgeArrowThreshold, edgeLabelThreshold)/2 ) {
+				return (byte) 0;
+			}
+			return (byte) (-1);
 		} else {
 			return (byte) 1;
 		}

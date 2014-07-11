@@ -506,6 +506,14 @@ public final class GraphGraphics {
 		m_gMinimal = (Graphics2D) image.getGraphics();
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING,
 				RenderingHints.VALUE_RENDER_SPEED);
+		// m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+		// 		RenderingHints.VALUE_RENDER_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+				RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 	}
 
 	/**

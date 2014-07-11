@@ -117,16 +117,6 @@ public interface GraphView {
 	public List<CyEdge> getSelectedEdges();
 
 	/**
-	 * Adds a new GraphViewChangeListener to this GraphViews list of listeners.
-	 */
-	public void addGraphViewChangeListener(GraphViewChangeListener listener);
-
-	/**
-	 * Removes a GraphViewChangeListener from this GraphViews list of listeners.
-	 */
-	public void removeGraphViewChangeListener(GraphViewChangeListener listener);
-
-	/**
 	 * @param paint
 	 *            the new Paint for the background
 	 */

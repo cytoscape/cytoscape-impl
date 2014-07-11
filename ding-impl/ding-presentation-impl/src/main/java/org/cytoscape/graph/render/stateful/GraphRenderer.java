@@ -190,6 +190,7 @@ public final class GraphRenderer {
 		final int renderNodeCount;
 		final int renderEdgeCount;
 		final byte renderEdges;
+		long start = System.currentTimeMillis();
 
 		{
 			final SpacialEntry2DEnumerator nodeHits = nodePositions.queryOverlap(xMin, yMin, xMax,
@@ -251,7 +252,9 @@ public final class GraphRenderer {
 				renderEdgeCount = runningEdgeCount;
 				nodeBuff.empty();
 			}
-		}
+		}	
+		// System.out.println("renderEdgeCount: "+renderEdgeCount);
+		// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
 		// Based on number of objects we are going to render, determine LOD.
 		final int lodBits;
@@ -292,7 +295,8 @@ public final class GraphRenderer {
 		}
 		// Clear the background.
 		{
-			grafx.clear(bgPaint, xCenter, yCenter, scaleFactor);
+			if (bgPaint != null)
+				grafx.clear(bgPaint, xCenter, yCenter, scaleFactor);
 		}
 
 		// Render the edges first.  No edge shall be rendered twice.  Render edge
@@ -300,6 +304,9 @@ public final class GraphRenderer {
 		// on top of the edge it belongs to.
 		if (renderEdges >= 0) {
 			final SpacialEntry2DEnumerator nodeHits;
+
+			// System.out.println("Rendering edges: high detail = "+(lodBits & LOD_HIGH_DETAIL));
+			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
 			if (renderEdges > 0)
 				// We want to render edges in the same order (back to front) that
@@ -628,6 +635,8 @@ public final class GraphRenderer {
 			final SpacialEntry2DEnumerator nodeHits = nodePositions.queryOverlap(xMin, yMin, xMax,
 			                                                                     yMax, null, 0,
 			                                                                     false);
+			// System.out.println("Rendering nodes: high detail = "+(lodBits & LOD_HIGH_DETAIL));
+			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
 			if ((lodBits & LOD_HIGH_DETAIL) == 0) { // Low detail.
 
@@ -707,6 +716,7 @@ public final class GraphRenderer {
 				}
 			}
 		}
+		// System.out.println("total time: "+(System.currentTimeMillis()-start)+"ms");
 		return lodBits;
 	}
 

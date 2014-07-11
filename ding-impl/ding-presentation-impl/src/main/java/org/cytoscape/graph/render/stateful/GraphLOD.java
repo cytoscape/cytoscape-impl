@@ -225,4 +225,7 @@ public class GraphLOD {
 	}
 
 	public double getNestedNetworkImageScaleFactor() { return 1.0; }
+
+	public boolean getDrawEdges() { return true; }
+	public void setDrawEdges(boolean drawEdges) {  }
 }

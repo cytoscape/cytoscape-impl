@@ -565,6 +565,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	 * @return true if selected.
 	 */
 	boolean selectInternal() {
+		// Thread.dumpStack();
 		if (selected)
 			return false;
 
