@@ -96,7 +96,6 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setLabelPaint(labelColor);
 		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
-		plot.setNoDataMessage(NO_DATA_TEXT);
 		
 		final BasicStroke stroke =
 				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);

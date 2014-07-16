@@ -77,7 +77,6 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
-		plot.setNoDataMessage(NO_DATA_TEXT);
 		
 		final BasicStroke gridLineStroke =
 				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,

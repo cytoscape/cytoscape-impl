@@ -191,7 +191,6 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		plot.setLabelOutlinePaint(TRANSPARENT_COLOR);
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
-		plot.setNoDataMessage(NO_DATA_TEXT);
 		
 		final BasicStroke stroke =
 				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);

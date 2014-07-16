@@ -34,7 +34,6 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	/** Divisor which should be applied to chart lines so they have the same thickness as Cytoscape lines */
 	public static final float LINE_WIDTH_FACTOR = 2.0f;
 	public static final Color DEFAULT_ITEM_BG_COLOR = Color.LIGHT_GRAY;
-	public static final String NO_DATA_TEXT = "No chart data!";
 	
 	/** Category ID -> list of values */
 	protected final Map<String, List<Double>> data;

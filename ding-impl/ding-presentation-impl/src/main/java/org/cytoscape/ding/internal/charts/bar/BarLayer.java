@@ -126,7 +126,6 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 //		das.setLeft(0.0);
 //		das.setBottom(0.5);
 //		plot.setFixedDomainAxisSpace(das);
-		plot.setNoDataMessage(NO_DATA_TEXT);
 		
 		final BasicStroke axisStroke =
 				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
