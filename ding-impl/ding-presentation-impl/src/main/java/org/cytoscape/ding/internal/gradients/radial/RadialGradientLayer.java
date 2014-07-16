@@ -9,10 +9,10 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import org.cytoscape.ding.internal.charts.ControlPoint;
-import org.cytoscape.ding.internal.gradients.GradientLayer;
+import org.cytoscape.ding.internal.gradients.AbstractGradientLayer;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
-public class RadialGradientLayer extends GradientLayer {
+public class RadialGradientLayer extends AbstractGradientLayer {
 	
 	protected Point2D center;
 	protected float radius;

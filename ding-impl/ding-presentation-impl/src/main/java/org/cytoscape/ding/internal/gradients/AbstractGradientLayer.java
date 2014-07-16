@@ -1,16 +1,18 @@
 package org.cytoscape.ding.internal.gradients;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.ding.internal.charts.ControlPoint;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 
-public abstract class GradientLayer implements CustomGraphicLayer {
+public abstract class AbstractGradientLayer implements Cy2DGraphicLayer {
 	
 	protected final List<ControlPoint> controlPoints;
 	protected final Color[] colors;
@@ -18,7 +20,7 @@ public abstract class GradientLayer implements CustomGraphicLayer {
 
 	protected Paint paint;
 
-	public GradientLayer(final List<ControlPoint> controlPoints) {
+	public AbstractGradientLayer(final List<ControlPoint> controlPoints) {
 		this.controlPoints = controlPoints != null ? controlPoints : new ArrayList<ControlPoint>();
 		
 		colors = new Color[controlPoints.size()];
@@ -30,6 +32,12 @@ public abstract class GradientLayer implements CustomGraphicLayer {
 			positions[i] = cp.position;
 			i++;
 		}
+	}
+	
+	@Override
+	public void draw(final Graphics2D g, final Rectangle2D area, final Shape shape) {
+		g.setPaint(getPaint(area));
+		g.fill(shape);
 	}
 
 	protected Point2D scale(Point2D point, Rectangle2D bound) { 
