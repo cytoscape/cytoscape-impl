@@ -21,8 +21,9 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 	private JLabel angleLbl;
 	private JComboBox angleCmb;
 	
-	private static Double[] ANGLES = new Double[] { 315.0, 270.0, 225.0, 180.0, 135.0, 90.0, 45.0,
-		                                            0.0, -45.0, -90.0, -135.0, -180.0, -225.0, -270.0, -315.0  };
+	private static Double[] ANGLES = new Double[] { -315.0, -270.0, -225.0, -180.0, -135.0, -90.0, -45.0,
+		                                            0.0,
+		                                            45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0  };
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	

@@ -59,12 +59,6 @@ public abstract class AbstractGradientEditor<T extends AbstractEnhancedCustomGra
 			grEditor = new GradientEditor(points);
 			grEditor.setOpaque(true);
 			
-			// Set current values
-//			final Color start = gradient.get(START, Color.class, Color.DARK_GRAY);
-//			grEditor.setStart(start);
-//			final Color end = gradient.get(END, Color.class, Color.WHITE);
-//			grEditor.setEnd(end);
-			
 			// Add listener--update gradient when user interacts with the UI
 			grEditor.addActionListener(new ActionListener() {
 				@Override
@@ -72,6 +66,9 @@ public abstract class AbstractGradientEditor<T extends AbstractEnhancedCustomGra
 					updateGradient();
 				}
 			});
+			
+			if (points.isEmpty())
+				gradient.set(STOP_LIST, getGrEditor().getControlPoints());
 		}
 		
 		return grEditor;
