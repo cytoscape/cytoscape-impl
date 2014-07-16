@@ -129,7 +129,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		if (colorSchemeCmb == null) {
 			colorSchemeCmb = new JComboBox(colorSchemes);
 			
-			String scheme = chart.get(COLOR_SCHEME, String.class, "");
+			String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
 			
 			if (Arrays.asList(colorSchemes).contains(scheme)) {
 				colorSchemeCmb.setSelectedItem(scheme);
@@ -164,7 +164,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	
 	private void updateColorList(final boolean newScheme) {
 		List<Color> colors = chart.getList(COLORS, Color.class);
-		final String scheme = chart.get(COLOR_SCHEME, String.class, "");
+		final String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
 		final int nColors =
 				ColorUtil.UP_DOWN.equals(scheme) && Arrays.asList(colorSchemes).contains(scheme) ? 2 : getTotal();
 		
@@ -175,7 +175,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 					colors = new ArrayList<Color>(newSize);
 					
 					for (int i = 0; i < newSize; i++)
-						colors.add(DEFAULT_COLOR);
+						colors.add(i%2 == 0 ? DEFAULT_COLOR : DEFAULT_COLOR.darker());
 				} else {
 					colors = ColorUtil.getColors(scheme, nColors);
 				}
@@ -224,26 +224,30 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 				total = dataColumns.size();
 			} else if (network != null) {
 				// Columns represent data categories--each list element is an item/color
-				int nColors = 0;
+				int nColors1 = 0;
+				int nColors2 = 0;
 				
 				final List<CyNode> allNodes = network.getNodeList();
 				final CyTable table = network.getDefaultNodeTable();
 				
 				for (final CyColumnIdentifier colId : dataColumns) {
 					final CyColumn column = table.getColumn(colId.getColumnName());
+					if (column == null) continue;
 					
-					if (column != null && column.getType() == List.class) {
+					if (column.getType() == List.class) {
 						for (final CyNode node : allNodes) {
 							final CyRow row = network.getRow(node);
 							final List<?> values = row.getList(column.getName(), column.getListElementType());
 							
 							if (values != null)
-								nColors = Math.max(nColors, values.size());
+								nColors1 = Math.max(nColors1, values.size());
 						}
+					} else {
+						nColors2++;
 					}
 				}
 				
-				total = nColors;
+				total = Math.max(nColors1, nColors2);
 			}
 		}
 		
@@ -258,10 +262,13 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		
 		private Color color;
 
-		ColorPanel(final Color color, final String label) {
+		ColorPanel(Color color, final String label) {
 			super(label, IconUtil.emptyIcon(20, 20), JLabel.CENTER);
 			
-			this.color = color != null ? color : Color.LIGHT_GRAY;
+			if (color == null)
+				color = Color.LIGHT_GRAY;
+			
+			this.color = color;
 			
 			this.setFont(this.getFont().deriveFont(10.0f));
 			this.setHorizontalTextPosition(JLabel.CENTER);
