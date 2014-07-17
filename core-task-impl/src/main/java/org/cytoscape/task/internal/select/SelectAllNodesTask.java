@@ -60,7 +60,7 @@ public class SelectAllNodesTask extends AbstractSelectTask {
 			new SelectionEdit(eventHelper, "Select All Nodes", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));
 		tm.setProgress(0.2);
-		selectUtils.setSelectedNodes(network,CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, false), true);
+		selectUtils.setSelectedNodes(network,network.getNodeList(), true);
 		tm.setProgress(0.6);
 		updateView();
 		tm.setProgress(1.0);

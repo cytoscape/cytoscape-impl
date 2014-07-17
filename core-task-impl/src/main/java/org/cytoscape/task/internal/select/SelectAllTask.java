@@ -58,9 +58,9 @@ public class SelectAllTask extends AbstractSelectTask {
 			new SelectionEdit(eventHelper, "Select All Nodes and Edges", network, view,
 			                  SelectionEdit.SelectionFilter.NODES_AND_EDGES));
 		monitor.setProgress(0.2);
-		selectUtils.setSelectedNodes(network, CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, false), true);
+		selectUtils.setSelectedEdges(network, network.getEdgeList(), true);
 		monitor.setProgress(0.5);
-		selectUtils.setSelectedEdges(network, CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, false), true);
+		selectUtils.setSelectedNodes(network, network.getNodeList(), true);
 		monitor.setProgress(0.8);
 		updateView();
 		monitor.setProgress(1.0);

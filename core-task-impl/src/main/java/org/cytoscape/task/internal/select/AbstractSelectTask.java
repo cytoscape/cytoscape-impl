@@ -46,7 +46,7 @@ public abstract class AbstractSelectTask extends AbstractTask {
 		// super(net);
 		this.network = net;
 		this.networkViewManager = networkViewManager;
-		this.selectUtils = new SelectUtils();
+		this.selectUtils = new SelectUtils(eventHelper);
 		this.eventHelper = eventHelper;
 	}
 
@@ -54,6 +54,7 @@ public abstract class AbstractSelectTask extends AbstractTask {
 		// This is necessary, otherwise, this does not update presentation!
 		eventHelper.flushPayloadEvents();
 		
+		/*
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
 		if(views.size() != 0)
@@ -61,5 +62,6 @@ public abstract class AbstractSelectTask extends AbstractTask {
 		
 		if (view != null)
 			view.updateView();
+		*/
 	}
 }
