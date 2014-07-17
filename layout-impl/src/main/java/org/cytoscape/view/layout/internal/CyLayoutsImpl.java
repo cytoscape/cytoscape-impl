@@ -41,6 +41,7 @@ import org.cytoscape.work.TaskFactory;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 
 import org.cytoscape.view.layout.internal.task.LayoutTaskFactoryWrapper;
 
@@ -96,6 +97,7 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 				Properties layoutProps = new Properties();
 				layoutProps.setProperty(COMMAND, layout.getName());
 				layoutProps.setProperty(COMMAND_NAMESPACE, "layout");
+				layoutProps.setProperty(COMMAND_DESCRIPTION, "Execute the " + layout.toString() + " on a network");
 				TaskFactory service = new LayoutTaskFactoryWrapper(appManager, viewManager, layout);
 				// Register the service as a TaskFactory for commands
 				serviceRegistrar.registerService(service, TaskFactory.class, layoutProps);

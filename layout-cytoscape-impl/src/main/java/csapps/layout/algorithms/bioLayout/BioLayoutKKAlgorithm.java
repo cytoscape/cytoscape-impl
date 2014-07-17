@@ -63,7 +63,7 @@ import org.cytoscape.work.undo.UndoSupport;
 public class BioLayoutKKAlgorithm  extends BioLayoutAlgorithm {
 	public BioLayoutKKAlgorithm(boolean supportEdgeWeights, UndoSupport undo) {
 		super((supportEdgeWeights ?  "kamada-kawai" : "kamada-kawai-noweight"),
-		      (supportEdgeWeights ?  "Edge-weighted Spring Embedded" : "Spring Embedded"),
+		      (supportEdgeWeights ?  "Edge-weighted Spring Embedded Layout" : "Spring Embedded Layout"),
 		      supportEdgeWeights, undo);
 	}
 	

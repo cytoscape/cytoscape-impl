@@ -55,6 +55,7 @@ import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactory
 import org.cytoscape.task.internal.export.network.ExportNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.export.table.ExportSelectedTableTaskFactoryImpl;
+import org.cytoscape.task.internal.export.table.ExportNoGuiSelectedTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.table.ExportTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.vizmap.ExportVizmapTaskFactoryImpl;
 import org.cytoscape.task.internal.group.*;
@@ -204,6 +205,7 @@ public class CyActivator extends AbstractCyActivator {
 		ExportNetworkTaskFactoryImpl exportNetworkTaskFactory = new ExportNetworkTaskFactoryImpl(networkViewWriterManagerServiceRef, tunableSetterServiceRef);
 		ExportNetworkViewTaskFactoryImpl exportNetworkViewTaskFactory = new ExportNetworkViewTaskFactoryImpl(networkViewWriterManagerServiceRef, tunableSetterServiceRef);
 		ExportSelectedTableTaskFactoryImpl exportCurrentTableTaskFactory = new ExportSelectedTableTaskFactoryImpl(cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef);
+		ExportNoGuiSelectedTableTaskFactoryImpl exportNoGuiCurrentTableTaskFactory = new ExportNoGuiSelectedTableTaskFactoryImpl(cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef);
 		ApplyPreferredLayoutTaskFactoryImpl applyPreferredLayoutTaskFactory = new ApplyPreferredLayoutTaskFactoryImpl(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cyLayoutsServiceRef,cyPropertyServiceRef);
 		DeleteColumnTaskFactoryImpl deleteColumnTaskFactory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef);
 		RenameColumnTaskFactoryImpl renameColumnTaskFactory = new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef);
@@ -804,11 +806,15 @@ public class CyActivator extends AbstractCyActivator {
 		exportCurrentTableTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/table_file_export.png").toString());
 		exportCurrentTableTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		exportCurrentTableTaskFactoryProps.setProperty(TOOLTIP,"Export Table to File");
-		exportCurrentTableTaskFactoryProps.setProperty(COMMAND,"export");
-		exportCurrentTableTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		exportCurrentTableTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Export a table to a file");
 		registerService(bc,exportCurrentTableTaskFactory, TaskFactory.class, exportCurrentTableTaskFactoryProps);
 		registerService(bc,exportCurrentTableTaskFactory,ExportSelectedTableTaskFactory.class, exportCurrentTableTaskFactoryProps);
+		
+		Properties exportNoGuiCurrentTableTaskFactoryProps = new Properties();
+		exportNoGuiCurrentTableTaskFactoryProps.setProperty(COMMAND,"export");
+		exportNoGuiCurrentTableTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
+		exportNoGuiCurrentTableTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Export a table to a file");
+		registerService(bc,exportNoGuiCurrentTableTaskFactory, TaskFactory.class, exportNoGuiCurrentTableTaskFactoryProps);
+
 
 		Properties exportVizmapTaskFactoryProps = new Properties();
 		exportVizmapTaskFactoryProps.setProperty(ENABLE_FOR,"vizmap");
