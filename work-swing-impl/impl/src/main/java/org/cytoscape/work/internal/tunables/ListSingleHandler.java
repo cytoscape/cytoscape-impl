@@ -104,7 +104,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 
 		//add list's items to the combobox
 		combobox = new JComboBox(getSingleSelection().getPossibleValues().toArray());
-		combobox.setPreferredSize(DEF_COMBOBOX_SIZE);
+		//combobox.setPreferredSize(DEF_COMBOBOX_SIZE);
 		combobox.setFont(COMBOBOX_FONT);
 		combobox.addActionListener(this);
 		panel.add(combobox);
