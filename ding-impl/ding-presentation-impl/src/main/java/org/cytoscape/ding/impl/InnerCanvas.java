@@ -1428,7 +1428,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					// vertically, or diagonally, depending on the slope.
 					if (e.isShiftDown()) {
 						final double slope = deltaY / deltaX;
-						System.out.println("Shift is down");
 	
 						// slope of 2.41 ~ 67.5 degrees (halfway between 45 and 90)
 						// slope of 0.41 ~ 22.5 degrees (halfway between 0 and 45)
