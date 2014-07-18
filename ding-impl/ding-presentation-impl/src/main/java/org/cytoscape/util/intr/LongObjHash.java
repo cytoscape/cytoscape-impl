@@ -24,6 +24,7 @@ package org.cytoscape.util.intr;
  * #L%
  */
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -107,6 +108,19 @@ public final class LongObjHash implements java.io.Serializable {
 
 		for (int i = 0; i < m_keys.length; i++)
 			m_keys[i] = -1L;
+
+		m_prevKey = -1L;
+		m_prevInx = -1;
+	}
+
+	/**
+	 * Copy constructor.
+	 */
+	public LongObjHash(LongObjHash source) {
+		m_keys = Arrays.copyOf(source.m_keys, source.m_keys.length);
+		m_vals = Arrays.copyOf(source.m_vals, source.m_vals.length);
+		m_elements = source.m_elements;
+		m_thresholdSize = source.m_thresholdSize;
 
 		m_prevKey = -1L;
 		m_prevInx = -1;

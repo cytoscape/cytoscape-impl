@@ -83,8 +83,13 @@ import java.awt.print.Printable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -318,6 +323,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private final CyServiceRegistrar registrar;
 	private final HandleFactory handleFactory;
 
+	private List<CyNode> nodeSelectionList;
+	private List<CyEdge> edgeSelectionList;
+	boolean largeModel = false;
+
 	/**
 	 * Create presentation from View Model
 	 * 
@@ -441,6 +450,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		
 		//Updating the snapshot for nested networks
 		this.addContentChangeListener(new DGraphViewContentChangeListener());
+
+		nodeSelectionList = new ArrayList<CyNode>();
+		edgeSelectionList = new ArrayList<CyEdge>();
+		if (!dingGraphLOD.detail(m_drawPersp.getNodeCount(), m_drawPersp.getEdgeCount()))
+			largeModel = true;
 	}
 
 	
@@ -1270,16 +1284,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				m_contentChanged = true;
 			}
 
-			/*
-			if (fireListenerEvents) {
-				final GraphViewChangeListener listener = m_lis[0];
-
-				if (listener != null) {
-					listener.graphViewChanged(new GraphViewEdgesHiddenEvent(this, makeList(eView.getCyEdge())));
-				}
-			}
-			*/
-
 			return true;
 		} else if (obj instanceof DNodeView) {
 			List<CyEdge> edges;
@@ -1312,23 +1316,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				m_spacial.delete(nodeInx);
 				m_contentChanged = true;
 			}
-
-			/*
-			if (fireListenerEvents) {
-				final GraphViewChangeListener listener = m_lis[0];
-
-				if (listener != null) {
-					if (edges != null && edges.size() > 0) {
-						listener.graphViewChanged(new GraphViewEdgesHiddenEvent(
-								this, edges));
-					}
-
-					listener.graphViewChanged(new GraphViewNodesHiddenEvent(
-							this, makeList(nnode)));
-				}
-			}
-			*/
-
 			return true;
 		} else {
 			return false;
@@ -1423,24 +1410,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 				m_contentChanged = true;
 			}
-
-			/*
-			if (fireListenerEvents) {
-				final GraphViewChangeListener listener = m_lis[0];
-
-				if (listener != null) {
-					if (sourceNode != null) {
-						listener.graphViewChanged(new GraphViewNodesRestoredEvent(this, makeList(sourceNode)));
-					}
-
-					if (targetNode != null) {
-						listener.graphViewChanged(new GraphViewNodesRestoredEvent(this, makeList(targetNode)));
-					}
-
-					listener.graphViewChanged(new GraphViewEdgesRestoredEvent(this, makeList(newEdge)));
-				}
-			}
-			*/
 
 			return true;
 		} else {
@@ -1830,7 +1799,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		try {
 		synchronized (m_lock) {
-			// System.out.println("Calling renderGraph to draw snapshot");
+			// System.out.println("Calling renderSubgraph to draw snapshot");
 			renderSubgraph(new GraphGraphics(img, false, false), lod, bgPaint, xCenter, yCenter, scaleFactor, new LongHash(), nodes, edges);
 		}
 		} catch (Exception e) { e.printStackTrace(); }
@@ -1847,6 +1816,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if ((nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4)
 			return renderGraph(graphics, lod, bgColor, xCenter, yCenter, scale, hash);
 
+		// System.out.println("DGraphView: renderSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		Color bg = (Color)bgColor;
 		if (bg != null)
 			bg = new Color(bg.getRed(), bg.getBlue(), bg.getGreen(), 0);
@@ -1888,7 +1858,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	int renderGraph(GraphGraphics graphics, final GraphLOD lod,
 	                Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash) {
-		int lastRenderDetail;
+		int lastRenderDetail = 0;
+		// System.out.println("DGraphView: renderGraph");
+		// Thread.dumpStack();
+		try {
 		synchronized (m_lock) {
 			lastRenderDetail = GraphRenderer.renderGraph(m_drawPersp,
 									       m_spacial, lod,
@@ -1897,6 +1870,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 									       graphics, bgColor, xCenter,
 									       yCenter, scale);
 		}
+		} catch (Exception e) {e.printStackTrace();}
+		m_contentChanged = false;
+		m_viewportChanged = false;
+		m_visualChanged = true;
 		return lastRenderDetail;
 	}
 
@@ -2774,8 +2751,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (!e.containsColumn(CyNetwork.SELECTED))
 			return;
 
-		List<CyNode> nodesList = new ArrayList<CyNode>();
-		List<CyEdge> edgesList = new ArrayList<CyEdge>();
+		nodeSelectionList.clear();
+		edgeSelectionList.clear();
 		if (e.getSource() == getModel().getDefaultNodeTable()) {
 			// System.out.println("Source is default node table");
 			for (RowSetRecord record: e.getColumnRecords(CyNetwork.SELECTED)) {
@@ -2792,8 +2769,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				else
 					nv.unselectInternal();
 
-				nodesList.add(node);
+				nodeSelectionList.add(node);
 			}
+			// System.out.println("RowsSetEvent with "+nodeSelectionList.size()+" nodes");
 		} else if (e.getSource() == getModel().getDefaultEdgeTable()) {
 			// System.out.println("Source is default column table");
 			for (RowSetRecord record: e.getColumnRecords(CyNetwork.SELECTED)) {
@@ -2809,19 +2787,21 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				else
 				  ev.unselectInternal();
 
-				edgesList.add(edge);
+				edgeSelectionList.add(edge);
 			}
+			// System.out.println("RowsSetEvent with "+edgeSelectionList.size()+" edges");
 		} else {
 			return;
 		}
 
-		if (nodesList.size() > 0 || edgesList.size() > 0) {
+		if (nodeSelectionList.size() > 0 || edgeSelectionList.size() > 0) {
 			// Update renderings
-			// System.out.println("Selecting "+nodesList.size()+" nodes and "+edgesList.size()+" edges");
-			m_networkCanvas.updateSubgraph(nodesList, edgesList);
+			// System.out.println("Selecting "+nodeSelectionList.size()+" nodes and "+edgeSelectionList.size()+" edges");
+			m_networkCanvas.updateSubgraph(nodeSelectionList, edgeSelectionList);
 			if (m_navigationCanvas != null)
-				m_navigationCanvas.updateSubgraph(nodesList, edgesList);
+				m_navigationCanvas.updateSubgraph(nodeSelectionList, edgeSelectionList);
 		}
+		// System.out.println("RowsSetEvent done");
 	}
 
 
@@ -2854,9 +2834,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 
 		// flag all nodes that are selected but not currently flagged
-		m_networkCanvas.select(selectedNodes, true);
+		m_networkCanvas.select(selectedNodes, CyNode.class, true);
 
 		// flag all edges that are selected but not currently flagged
-		m_networkCanvas.select(selectedEdges, true);
+		m_networkCanvas.select(selectedEdges, CyEdge.class, true);
 	}
+
 }

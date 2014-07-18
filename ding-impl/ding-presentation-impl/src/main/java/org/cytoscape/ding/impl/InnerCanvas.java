@@ -39,7 +39,11 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.util.intr.LongEnumerator;
@@ -155,7 +159,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			public void actionPerformed(ActionEvent evt) {
 				// System.out.println("hideEdgesTimer expired");
 				hideEdgesTimer.stop();
-				// System.out.println("Resetting draw edges to true");
 				m_lod[0].setDrawEdges(true);
 				m_view.m_viewportChanged = true;
 				repaint();
@@ -198,19 +201,23 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		synchronized (m_lock) {
 			if (m_view.m_contentChanged || m_view.m_viewportChanged) {
-				renderGraph(m_grafx,/* setLastRenderDetail = */ true, m_lod[0]);
+				// System.out.println("contentChanged = "+m_view.m_contentChanged+", viewportChanged = "+m_view.m_viewportChanged);
 				contentChanged = m_view.m_contentChanged;
-				m_view.m_contentChanged = false;
 				viewportChanged = m_view.m_viewportChanged;
+				renderGraph(m_grafx,/* setLastRenderDetail = */ true, m_lod[0]);
+				m_view.m_contentChanged = false;
+				m_view.m_viewportChanged = false;
 				xCenter = m_xCenter;
 				yCenter = m_yCenter;
 				scaleFactor = m_scaleFactor;
-				m_view.m_viewportChanged = false;
 			}
 		}
 
+		// System.out.println("contentChanged = "+contentChanged+", viewportChanged = "+viewportChanged);
+
 		// if canvas is visible, draw it (could be made invisible via DingCanvas api)
 		if (m_isVisible) {
+			// Should this be on the AWT thread?
 			g.drawImage(m_img, 0, 0, null);
 		}
 
@@ -222,13 +229,16 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		if (contentChanged) {
 			final ContentChangeListener lis = m_view.m_cLis[0];
+			// System.out.println("Firing contentChanged");
 
-			if (lis != null)
+			if (lis != null) {
 				lis.contentChanged();
+			}
 		}
 
 		if (viewportChanged) {
 			final ViewportChangeListener lis = m_view.m_vLis[0];
+			// System.out.println("Firing viewportChanged");
 
 			if (lis != null)
 				lis.viewportChanged(getWidth(), getHeight(), xCenter, yCenter, scaleFactor);
@@ -396,14 +406,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		long [] unselectedNodes;
 		if (m_view.m_nodeSelection) { // Unselect all selected nodes.
 			unselectedNodes = m_view.getSelectedNodeIndices();
-
-/*
-			// Adding this line to speed things up from O(n*log(n)) to O(n).
-			m_view.m_selectedNodes.empty();
-
-			for (int i = 0; i < unselectedNodes.length; i++)
-				((DNodeView) m_view.getDNodeView(unselectedNodes[i])).unselectInternal();
-*/
 		} else
 			unselectedNodes = new long[0];
 		return unselectedNodes;
@@ -414,14 +416,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		long[] unselectedEdges;
 		if (m_view.m_edgeSelection) { // Unselect all selected edges.
 			unselectedEdges = m_view.getSelectedEdgeIndices();
-
-/*
-			// Adding this line to speed things up from O(n*log(n)) to O(n).
-			m_view.m_selectedEdges.empty();
-
-			for (int i = 0; i < unselectedEdges.length; i++)
-				((DEdgeView) m_view.getDEdgeView(unselectedEdges[i])).unselectInternal();
-*/
 		} else
 			unselectedEdges = new long[0];
 		return unselectedEdges;
@@ -432,18 +426,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		final boolean wasSelected = m_view.getDNodeView(chosenNode).isSelected();
 		//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
 		if (wasSelected && (e.isShiftDown() || (e.isControlDown() && !e.isAltDown()))) {
-			// ((DNodeView) m_view.getDNodeView(chosenNode)).unselectInternal();
-			// unselect in model?
 			chosenNodeSelected = -1;
 		} else if (!wasSelected) {
-			// ((DNodeView) m_view.getDNodeView(chosenNode)).selectInternal();
-			// select in model?
 			chosenNodeSelected = 1;
 		}
 
 		m_button1NodeDrag = true;
-		// m_view.m_contentChanged = true;	
-		// m_lod[0].setDrawEdges(false);
 		return chosenNodeSelected;
 	}
 	
@@ -522,8 +510,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			final int chosenInx = ev.addHandlePoint(newHandlePoint);
 			
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
-			// final GraphViewChangeListener listener = m_view.m_lis[0];
-			// listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 		}
 
 
@@ -597,9 +583,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		for (int i = 0; i < selectedNodes.length; i++)
 			selectedNodes[i] = nodes.nextLong();
 
-		// for (int i = 0; i < selectedNodes.length; i++)
-		// 	((DNodeView) m_view.getDNodeView(selectedNodes[i])) .selectInternal();
-
 		if (selectedNodes.length > 0)
 			m_view.m_contentChanged = true;	
 		return selectedNodes;
@@ -661,9 +644,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		for (int i = 0; i < selectedEdges.length; i++)
 			selectedEdges[i] = edges.nextLong();
-
-		// for (int i = 0; i < selectedEdges.length; i++)
-		// 	((DEdgeView) m_view.getDEdgeView(selectedEdges[i])).selectInternal(false);
 
 		if (selectedEdges.length > 0)
 			m_view.m_contentChanged = true;
@@ -962,7 +942,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 
 	public void updateSubgraph(List<CyNode> nodes, List<CyEdge> edges) {
-		renderSubgraph(m_grafx, true, m_lod[0], nodes, edges);
+		renderSubgraph(m_grafx, false, m_lod[0], nodes, edges);
 	}
 
 	// TODO: Move to DGraphView
@@ -991,7 +971,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		if (setLastRenderDetail)
 			m_lastRenderDetail = lastRenderDetail;
-		repaint();
+		// repaint();
 	}
 
 	private void handleEscapeKey() {
@@ -1070,8 +1050,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					{
 						ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)ev.getBend()) );
 					}
-					// final GraphViewChangeListener listener = m_view.m_lis[0];
-					// listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 				}
 				final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
 				final Handle handle = bend.getAllHandles().get(anchorInx);
@@ -1164,9 +1142,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				
 						unselectedNodes = getUnselectedNodes();
 						unselectedEdges = getUnselectedEdges();
-	
-					// if ((unselectedNodes.length > 0) || (unselectedEdges.length > 0))
-					// 	m_view.m_contentChanged = true;
 				}
 				
 	
@@ -1187,56 +1162,40 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				}
 			}
 	
-			List<CyNode> nodeRepaintList = new ArrayList<CyNode>();
-			List<CyEdge> edgeRepaintList = new ArrayList<CyEdge>();
-	
-
 			if ((unselectedNodes != null) && (unselectedNodes.length > 0)) {
 				List<CyNode> unselectedNodeList = DGraphView.makeNodeList(unselectedNodes, m_view);
-				nodeRepaintList.addAll(unselectedNodeList);
-				select(unselectedNodeList, false);
+				select(unselectedNodeList, CyNode.class, false);
 			}
 	
 			if ((unselectedEdges != null) && (unselectedEdges.length > 0)) {
 				List<CyEdge> unselectedEdgeList = DGraphView.makeEdgeList(unselectedEdges, m_view);
-				edgeRepaintList.addAll(unselectedEdgeList);
-				select(unselectedEdgeList, false);
+				select(unselectedEdgeList, CyEdge.class, false);
 			}
 	
 			if (chosenNode >= 0) {
 				CyNode node = ((DNodeView)m_view.getDNodeView(chosenNode)).getModel();
-				nodeRepaintList.add(node);
 				if (chosenNodeSelected > 0) {
-					select(Collections.singletonList(node), true);
+					select(Collections.singletonList(node), CyNode.class, true);
 				} else if (chosenNodeSelected < 0) {
-					select(Collections.singletonList(node), false);
+					select(Collections.singletonList(node), CyNode.class, false);
 				}
 			}
 	
 			if (chosenEdge >= 0) {
 				CyEdge edge = m_view.getDEdgeView(chosenEdge).getCyEdge();
-				edgeRepaintList.add(edge);
 				if (chosenEdgeSelected > 0) {
-					select(Collections.singletonList(edge), true);
+					select(Collections.singletonList(edge), CyEdge.class, true);
 				} else if (chosenEdgeSelected < 0) {
-					select(Collections.singletonList(edge), false);
+					select(Collections.singletonList(edge), CyEdge.class, false);
 				}
 			}
 
-			// Repaint after listener events are fired because listeners may change
-			// something in the graph view.
-			/*if (nodeRepaintList.size() > 0 || edgeRepaintList.size() > 0) {
-				// We just changed selection. Only repaint those nodes and edges that
-				// we changed
-				renderSubgraph(m_grafx, true, m_lod[0], nodeRepaintList, edgeRepaintList);
-				return;
-			} */
 			repaint();
 		}
 	
 		@Override
 		void singleMiddleClick(MouseEvent e) {
-			//System.out.println("MousePressed ----> singleMiddleClick");
+			// System.out.println("MousePressed ----> singleMiddleClick");
 			// Save all node positions
 			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.NODES,"Move",m_undo);
 			m_currMouseButton = 2;
@@ -1267,7 +1226,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 		@Override
 		void singleRightClick(MouseEvent e) {
-			//System.out.println("MousePressed ----> singleRightClick");
+			// System.out.println("MousePressed ----> singleRightClick");
 			// Save all node positions
 			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.NODES,"Move",m_undo);
 			m_currMouseButton = 3;
@@ -1379,11 +1338,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 	
 					if ((selectedNodes != null) && (selectedNodes.length > 0)) {
-						select(DGraphView.makeNodeList(selectedNodes,m_view), true);
+						select(DGraphView.makeNodeList(selectedNodes,m_view), CyNode.class, true);
 					}
 	
 					if ((selectedEdges != null) && (selectedEdges.length > 0)) {
-						select(DGraphView.makeEdgeList(selectedEdges,m_view), true);
+						select(DGraphView.makeEdgeList(selectedEdges,m_view), CyNode.class, true);
 					}
 					
 					m_view.m_contentChanged = false;
@@ -1469,6 +1428,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					// vertically, or diagonally, depending on the slope.
 					if (e.isShiftDown()) {
 						final double slope = deltaY / deltaX;
+						System.out.println("Shift is down");
 	
 						// slope of 2.41 ~ 67.5 degrees (halfway between 45 and 90)
 						// slope of 0.41 ~ 22.5 degrees (halfway between 0 and 45)
@@ -1518,8 +1478,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							{
 								ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)ev.getBend()) );
 							}
-							// final GraphViewChangeListener listener = m_view.m_lis[0];
-							// listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 						}
 						final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
 						//TODO: Refactor to fix this ordering problem.
@@ -1553,7 +1511,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				final int h = Math.abs(m_lastYMousePos - e.getY());
 				m_selectionRect.setBounds(x, y, w, h);
 			}
-	
+
 			repaint();
 		}
 
@@ -1601,12 +1559,43 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		hideEdgesTimer.start();
 	}
 
-	public void select(final Collection<? extends CyIdentifiable> nodesOrEdges, final boolean selected) {
+	public void select(final Collection<? extends CyIdentifiable> nodesOrEdges, 
+	                   final Class<? extends CyIdentifiable> type, final boolean selected) {
 		if (nodesOrEdges.isEmpty())
 			return;
 		
-		for (final CyIdentifiable nodeOrEdge : nodesOrEdges)
-			m_view.getModel().getRow(nodeOrEdge).set(CyNetwork.SELECTED, selected);		
+		CyTable table;
+		Boolean value;
+		if (selected)
+			value = Boolean.TRUE;
+		else
+			value = Boolean.FALSE;
+
+		// Figure out if we're nodes or edges
+		if (type.equals(CyNode.class))
+			table = m_view.getModel().getDefaultNodeTable();
+		else
+			table = m_view.getModel().getDefaultEdgeTable();
+
+		// Disable events
+		m_view.cyEventHelper.silenceEventSource(table);
+
+		// Create RowsSetEvent
+		List<RowSetRecord> rowsChanged = new ArrayList<RowSetRecord>();
+		
+		for (final CyIdentifiable nodeOrEdge : nodesOrEdges) {
+			CyRow row = m_view.getModel().getRow(nodeOrEdge);
+			
+			row.set(CyNetwork.SELECTED, value);		
+			// Add to paylod
+			rowsChanged.add(new RowSetRecord(row, CyNetwork.SELECTED, value, value));
+		}
+
+		m_view.cyEventHelper.unsilenceEventSource(table);
+
+		// Fire event
+		RowsSetEvent event = new RowsSetEvent(table, rowsChanged);
+		m_view.cyEventHelper.fireEvent(event);
 	}
 
 }

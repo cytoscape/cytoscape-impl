@@ -27,6 +27,7 @@ package org.cytoscape.ding.impl;
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,6 +39,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public abstract class AbstractDViewModel<M> implements View<M> {
 
@@ -64,9 +66,9 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 		this.lexicon = lexicon;
 
 		// All access to these maps should go through "lock" field
-		this.visualProperties = new IdentityHashMap<VisualProperty<?>, Object>();
-		this.directLocks = new IdentityHashMap<VisualProperty<?>, Object>();
-		allLocks = new IdentityHashMap<VisualProperty<?>, Object>();
+		this.visualProperties = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
+		this.directLocks = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
+		allLocks = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
 	}
 
 	@Override
@@ -81,15 +83,21 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
-		synchronized (getDGraphView().m_lock) {
-			if (value == null)
-				visualProperties.remove(vp);
-			else
-				visualProperties.put(vp, value);
-		}
+		if (value == null)
+			visualProperties.remove(vp);
+		else
+			visualProperties.put(vp, value);
 
-		if (!isValueLocked(vp))
-			applyVisualProperty(vp, value);
+		// Ding has it's own listener for selection events.  If we
+		// don't do this, we might get into a deadlock state
+		if (vp == BasicVisualLexicon.NODE_SELECTED || vp == BasicVisualLexicon.EDGE_SELECTED)
+			return;
+
+		if (!isValueLocked(vp)) {
+			synchronized (getDGraphView().m_lock) {
+				applyVisualProperty(vp, value);
+			}
+		}
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -116,9 +124,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public boolean isDirectlyLocked(VisualProperty<?> visualProperty) {
-		synchronized (getDGraphView().m_lock) {
-			return directLocks.get(visualProperty) != null;
-		}
+		return directLocks.get(visualProperty) != null;
 	}
 	
 	@Override
@@ -135,9 +141,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 
 	@Override
 	public boolean isValueLocked(final VisualProperty<?> vp) {
-		synchronized (getDGraphView().m_lock) {
-			return allLocks.get(vp) != null;
-		}
+		return allLocks.get(vp) != null;
 	}
 
 	@Override

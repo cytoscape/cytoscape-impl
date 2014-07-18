@@ -63,6 +63,20 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		init();
 	}
 
+	// Copy constructor.
+	public DingGraphLOD(DingGraphLOD source) {
+		this.props = source.props;
+		this.cyProp = source.cyProp;
+		this.appManager = source.appManager;
+
+		this.coarseDetailThreshold = source.coarseDetailThreshold;
+		this.nodeBorderThreshold = source.nodeBorderThreshold;
+		this.nodeLabelThreshold = source.nodeLabelThreshold;
+		this.edgeArrowThreshold = source.edgeArrowThreshold;
+		this.edgeLabelThreshold = source.edgeLabelThreshold;
+		this.drawEdges = source.drawEdges;
+	}
+
 	private void init() {
 
 		coarseDetailThreshold = parseInt(props.getProperty("render.coarseDetailThreshold"), 4000);
@@ -138,6 +152,8 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	public byte renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
 		if (totalEdgeCount >= Math.min(edgeArrowThreshold, edgeLabelThreshold)) {
 			// Since we don't know the visible edge count, use visible node count as a proxy
+			// System.out.println("DingGraphLOD: renderEdges("+visibleNodeCount+","+totalNodeCount+","+totalEdgeCount+")");
+			// System.out.println("DingGraphLOD: drawEdges = "+drawEdges);
 			if (drawEdges || visibleNodeCount <= Math.max(edgeArrowThreshold, edgeLabelThreshold)/2 ) {
 				return (byte) 0;
 			}

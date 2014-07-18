@@ -41,6 +41,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.List;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
@@ -87,6 +89,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private boolean imageUpdated;
 	private boolean boundChanged;
+	private boolean imageDirty;  // The image might be dirty due to subgraph drawing
+	private boolean drawEdges;  // Remember what the last drawEdges setting was
 	
 	private double m_myXCenter;
 	private double m_myYCenter;
@@ -101,9 +105,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private int imageWidth;
 	private int imageHeight;
-	private ExecutorService executorService;
-	private UpdateImage uiThread = null;
-	private UpdateImage uiThreadNext = null;
+	// private Timer redrawTimer;
+	// private UpdateImage redrawTask = null;
 
 	/**
 	 * Creates a new BirdsEyeView object.
@@ -131,7 +134,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		initializeView(viewModel);
 
 		// Create thread pool
-		executorService = Executors.newSingleThreadExecutor();
+		// redrawTimer = new Timer("Bird's Eye View Timer");
 
 		this.viewModel.m_navigationCanvas = this;
 	}
@@ -154,6 +157,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		
 		boundChanged = true;
 		imageUpdated = true;		
+		imageDirty = false;
+		drawEdges = viewModel.getGraphLOD().getDrawEdges();
 	}
 
 	private void updateBounds() {
@@ -221,8 +226,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 		updateBounds();
 
-		// TODO: handle selection
-		// Listen for RowsSetChanged and handle selection that way?
 		if (imageUpdated || boundChanged) {
 			if (viewModel.getExtents(m_extents)) {				
 
@@ -247,20 +250,22 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 			// Create "background" network image.
 			if (imageUpdated) {
-				if ((viewModel.getNodeViewCount() + viewModel.getEdgeViewCount()) > 100000) {
+/* NOT USED
+				// This should work, but because of all of the m_locks everywhere, it
+				// actually is slower
+				// TODO: at some point, we need to implement a different model of drawSnapshot that doesn't
+				// use the RTree, which isn't needed since we redraw everything anyways
+				if (viewModel.largeModel) {
 						// Run as a thread
-						if (uiThread != null) {
-							synchronized(uiThread) {
-								// System.out.println("Creating thread.next");
-								uiThreadNext = new UpdateImage(g, m_extents, m_myXCenter, m_myYCenter, m_myScaleFactor);
-							}
-						} else {
-							uiThread = new UpdateImage(g, m_extents, m_myXCenter, m_myYCenter, m_myScaleFactor);
-							// System.out.println("Executing uiThread");
-							executorService.execute(uiThread);
-							// System.out.println("uiThread execution done");
+						if (redrawTask != null) {
+							redrawTask.cancel();
 						}
+						redrawTask = new UpdateImage(g, m_extents, m_myXCenter, m_myYCenter, m_myScaleFactor);
+						// System.out.println("Executing redraw");
+						redrawTimer.schedule(redrawTask, 200);
+						// System.out.println("redrawTask execution done");
 				} else {
+*/
 					// Need to create new image.  This is VERY expensive operation.
 					final GraphicsConfiguration gc = getGraphicsConfiguration();
 					networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
@@ -268,12 +273,14 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 					// Now draw the network
 					viewModel.drawSnapshot(networkImage, viewModel.getGraphLOD(), viewModel.getBackgroundPaint(),
 							m_extents[0], m_extents[1], m_myXCenter, m_myYCenter, m_myScaleFactor);
-				}
+					if (imageDirty) imageDirty = false;
+//				}
 			}
 		}
 
 		if (networkImage != null) {
 			// Render network graphics.
+			// System.out.println("Rendering network image");
 			g.drawImage(networkImage, 0, 0, null);
 		}
 
@@ -295,7 +302,12 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	}
 
 	public void updateSubgraph(List<CyNode> nodes, List<CyEdge> edges) {
+		// System.out.println("BirdsEyeView: updateSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		try {
+		if (networkImage == null) {
+			final GraphicsConfiguration gc = getGraphicsConfiguration();
+			networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
+		}
 		// Now draw the network
 		viewModel.drawSnapshot(networkImage, new BirdsEyeViewLOD(viewModel.getGraphLOD()), viewModel.getBackgroundPaint(),
 							m_extents[0], m_extents[1], m_myXCenter, m_myYCenter, m_myScaleFactor, nodes, edges);
@@ -303,7 +315,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			e.printStackTrace();
 		}
 
-		boundChanged = false; imageUpdated = false;
+		boundChanged = false; imageUpdated = false; imageDirty = true;
 		repaint();
 	}
 
@@ -317,7 +329,9 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		 * Will be called when something is changed in the main view.
 		 */
 		public void contentChanged() {
+			// System.out.println("ContentChanged: ");
 			imageUpdated = true;
+			drawEdges = viewModel.getGraphLOD().getDrawEdges();
 			repaint();
 		}
 	}
@@ -333,6 +347,10 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			m_viewXCenter = newXCenter;
 			m_viewYCenter = newYCenter;
 			m_viewScaleFactor = newScaleFactor;			
+			if ((viewModel.getGraphLOD().getDrawEdges() && !drawEdges) || imageDirty) {
+				imageUpdated = true;
+			}
+			drawEdges = viewModel.getGraphLOD().getDrawEdges();
 			repaint();
 		}
 	}
@@ -440,7 +458,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		return DingRenderer.ID;
 	}
 
-	class UpdateImage implements Runnable {
+	/* NOT USED
+	class UpdateImage extends TimerTask {
 		private final double[] extents;
 		private final double xCenter;
 		private final double yCenter;
@@ -456,32 +475,28 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		}
 
 		public void run() {
-			final GraphicsConfiguration gc = getGraphicsConfiguration();
-			networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
-
-			long timeBegin = System.currentTimeMillis();
-			// Now draw the network
-			viewModel.drawSnapshot(networkImage, new BirdsEyeViewLOD(viewModel.getGraphLOD()), viewModel.getBackgroundPaint(),
-					extents[0], extents[1], xCenter, yCenter, scale);
-
 			try {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						g.drawImage(networkImage, 0, 0, null);
-					}
-				});
-			} catch (Exception e) {}
+				final GraphicsConfiguration gc = getGraphicsConfiguration();
+				networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
 
-			synchronized(uiThread) {
-				if (uiThreadNext != null) {
-					uiThread = uiThreadNext;
-					uiThreadNext = null;
-				} else {
-					uiThread = null;
-				}
+				long timeBegin = System.currentTimeMillis();
+				// Now draw the network
+				// System.out.println("Drawing snapshot");
+				BirdsEyeViewLOD bevLOD = new BirdsEyeViewLOD(new DingGraphLOD((DingGraphLOD)viewModel.getGraphLOD()));
+				if (imageDirty)
+					bevLOD.setDrawEdges(true);
+				viewModel.drawSnapshot(networkImage, bevLOD, viewModel.getBackgroundPaint(),
+						extents[0], extents[1], xCenter, yCenter, scale);
+				imageDirty = false;
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			if (uiThread != null)
-				executorService.execute(uiThread);
+			// System.out.println("...done");
+			imageUpdated = false;
+			boundChanged = false;
+			repaint();
+
 		}
 	}
+	*/
 }

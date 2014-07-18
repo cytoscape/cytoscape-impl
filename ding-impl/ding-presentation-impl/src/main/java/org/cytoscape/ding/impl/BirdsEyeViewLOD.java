@@ -45,8 +45,13 @@ public class BirdsEyeViewLOD extends GraphLOD {
 		this.source = source;
 	}
 
-	@Override
-	public boolean getDrawEdges() { return source.getDrawEdges(); }
+	public boolean getDrawEdges() { 
+		return source.getDrawEdges(); 
+	}
+
+	public void setDrawEdges(boolean drawEdges) { 
+		source.setDrawEdges(drawEdges); 
+	}
 
 	public byte renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
 		return source.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);

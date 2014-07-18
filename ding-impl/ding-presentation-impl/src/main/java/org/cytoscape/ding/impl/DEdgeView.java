@@ -208,8 +208,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		synchronized (graphView.m_lock) {
 			somethingChanged = selectInternal(false);
 
-			if (somethingChanged)
-				graphView.m_contentChanged = true;
+			// if (somethingChanged)
+			// 	graphView.m_contentChanged = true;
 		}
 	}
 
@@ -246,8 +246,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		synchronized (graphView.m_lock) {
 			somethingChanged = unselectInternal();
 
-			if (somethingChanged)
-				graphView.m_contentChanged = true;
+			// if (somethingChanged)
+			// 	graphView.m_contentChanged = true;
 		}
 	}
 

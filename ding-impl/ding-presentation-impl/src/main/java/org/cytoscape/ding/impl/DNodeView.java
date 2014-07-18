@@ -554,8 +554,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		synchronized (graphView.m_lock) {
 			somethingChanged = selectInternal();
 
-			if (somethingChanged)
-				graphView.m_contentChanged = true;
+			// if (somethingChanged)
+			// 	graphView.m_contentChanged = true;
 		}
 	}
 
@@ -583,8 +583,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		synchronized (graphView.m_lock) {
 			somethingChanged = unselectInternal();
 
-			if (somethingChanged)
-				graphView.m_contentChanged = true;
+			// if (somethingChanged)
+			// 	graphView.m_contentChanged = true;
 		}
 	}
 
