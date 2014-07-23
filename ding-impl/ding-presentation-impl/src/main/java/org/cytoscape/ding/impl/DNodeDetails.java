@@ -476,7 +476,10 @@ class DNodeDetails extends NodeDetails {
 		if (trans != null) // New transparency? Recreate the paint object
 			paint = dGraphView.getTransparentColor(paint, trans);
 		
-		return paint;
+		if (paint != null)
+			return paint;
+
+		return DVisualLexicon.NODE_BORDER_PAINT.getDefault();
 	}
 
 	void setBorderPaintDefault(Paint p) {

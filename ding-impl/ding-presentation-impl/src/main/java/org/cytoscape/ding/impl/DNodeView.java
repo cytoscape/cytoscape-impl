@@ -173,6 +173,15 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	private final VisualMappingManager vmm;
 	
 	private final CyNetworkViewManager netViewMgr; 
+
+	// Cached extent information
+	float m_xMin = Float.MIN_VALUE;
+	float m_yMin = Float.MIN_VALUE;
+	float m_xMax = Float.MAX_VALUE;
+	float m_yMax = Float.MAX_VALUE;
+
+	// Cached visibility information
+	private boolean isVisible = true;
 	
 	DNodeView(final VisualLexicon lexicon, final DGraphView graphView, final CyNode model, final VisualMappingManager vmm,
 			final CyNetworkViewManager netViewMgr) {
@@ -345,8 +354,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		resizeCustomGraphics(width/getWidth(), 1.0);
 
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0)) {
+				isVisible = false;
 				return false;
+			}
+			isVisible = true;
 
 			final double xCenter = (graphView.m_extentsBuff[0] + graphView.m_extentsBuff[2]) / 2.0d;
 			final double wDiv2 = width / 2.0d;
@@ -361,18 +373,29 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 					graphView.m_extentsBuff[3]);
 			graphView.m_contentChanged = true;
 
+			m_xMin = xMin;
+			m_yMin = graphView.m_extentsBuff[1];
+			m_xMax = xMax;
+			m_yMax = graphView.m_extentsBuff[3];
+
 			return true;
 		}
 	}
 
 	@Override
 	public double getWidth() {
+		if (!isVisible)
+			return -1.0d;
+
+		return (double)(m_xMax - m_xMin);
+		/*
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return -1.0d;
 
 			return ((double) graphView.m_extentsBuff[2]) - graphView.m_extentsBuff[0];
 		}
+		*/
 	}
 
 	@Override
@@ -387,8 +410,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		resizeCustomGraphics(1.0, height/getHeight());
 		
 		synchronized (graphView.m_lock) {
-			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
+			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0)) {
+				isVisible = false;
 				return false;
+			}
+			isVisible = true;
 
 			final double yCenter = ((graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
 			final double hDiv2 = height / 2.0d;
@@ -403,18 +429,29 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
 			graphView.m_contentChanged = true;
 
+			m_xMin = graphView.m_extentsBuff[0];
+			m_yMin = yMin;
+			m_xMax = graphView.m_extentsBuff[2];
+			m_yMax = yMax;
+
 			return true;
 		}
 	}
 
 	@Override
 	public double getHeight() {
+		if (!isVisible)
+			return -1.0d;
+		else
+			return (double)(m_yMax - m_yMin);
+		/*
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return -1.0d;
 
 			return ((double) graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1];
 		}
+		*/
 	}
 
 
@@ -464,9 +501,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final double wDiv2;
 		
 		synchronized (graphView.m_lock) {
-			final boolean nodeVisible = graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0);
+			isVisible = graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0);
 
-			if (nodeVisible)
+			if (isVisible)
 				wDiv2 = (graphView.m_extentsBuff[2] - graphView.m_extentsBuff[0]) / 2.0d;
 			else
 				wDiv2 = 	(m_hiddenXMax - m_hiddenXMin) / 2.0d;
@@ -478,10 +515,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				throw new IllegalStateException("width of node has degenerated to zero after rounding");
 
 			// If the node is visible, set the extents.
-			if (nodeVisible) {
+			if (isVisible) {
 				graphView.m_spacial.delete(modelIdx);
 				graphView.m_spacial.insert(modelIdx, xMin, graphView.m_extentsBuff[1], xMax, graphView.m_extentsBuff[3]);
 				graphView.m_contentChanged = true;
+				m_xMin = xMin;
+				m_yMin = graphView.m_extentsBuff[1];
+				m_xMax = xMax;
+				m_yMax = graphView.m_extentsBuff[3];
 
 				// If the node is NOT visible (hidden), then update the hidden
 				// extents. Doing
@@ -496,12 +537,19 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	public double getXPosition() {
+		if (isVisible)
+			return (m_xMin + m_xMax) / 2.0;
+		else
+			return (double) (m_hiddenXMin + m_hiddenXMax) / 2.0;
+
+		/*
 		synchronized (graphView.m_lock) {
 			if (graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return (((double) graphView.m_extentsBuff[0]) + graphView.m_extentsBuff[2]) / 2.0d;
 			else
 				return (double) (m_hiddenXMin + m_hiddenXMax) / 2.0;
 		}
+		*/
 	}
 
 	public void setYPosition(final double yPos) {
@@ -509,9 +557,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		
 		synchronized (graphView.m_lock) {
 			
-			final boolean nodeVisible = graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0);
+			isVisible = graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0);
 
-			if (nodeVisible)
+			if (isVisible)
 				hDiv2 = ((graphView.m_extentsBuff[3]) - graphView.m_extentsBuff[1]) / 2.0d;
 			else
 				hDiv2 = (m_hiddenYMax - m_hiddenYMin) / 2.0d;
@@ -523,10 +571,15 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				throw new IllegalStateException("height of node has degenerated to zero after " + "rounding");
 
 			// If the node is visible, set the extents.
-			if (nodeVisible) {
+			if (isVisible) {
 				graphView.m_spacial.delete(modelIdx);
 				graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
 				graphView.m_contentChanged = true;
+
+				m_xMin = graphView.m_extentsBuff[0];
+				m_yMin = yMin;
+				m_xMax = graphView.m_extentsBuff[2];
+				m_yMax = yMax;
 
 				// If the node is NOT visible (hidden), then update the hidden
 				// extents. Doing this will mean that the node view will be properly scaled and
@@ -539,12 +592,18 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	public double getYPosition() {
+		if (isVisible)
+			return (m_yMax + m_yMin) / 2.0d;
+		else
+			return ((m_hiddenYMin + m_hiddenYMax)) / 2.0d;
+		/*
 		synchronized (graphView.m_lock) {
 			if (graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0))
 				return ((graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
 			else
 				return ((m_hiddenYMin + m_hiddenYMax)) / 2.0d;
 		}
+		*/
 	}
 
 	@Override
@@ -1071,10 +1130,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == BasicVisualLexicon.NODE_SELECTED) {
 			setSelected((Boolean) value);
 		} else if (vp == BasicVisualLexicon.NODE_VISIBLE) {
-			if (((Boolean) value).booleanValue())
+			if (((Boolean) value).booleanValue()) {
 				graphView.showGraphObject(this);
-			else
+				isVisible = true;
+			} else {
 				graphView.hideGraphObject(this);
+				isVisible = false;
+			}
 		} else if (vp == BasicVisualLexicon.NODE_FILL_COLOR) {
 			setUnselectedPaint((Paint) value);
 		} else if (vp == DVisualLexicon.NODE_BORDER_PAINT) {
@@ -1124,6 +1186,15 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp instanceof ObjectPositionVisualProperty) {
 			applyCustomGraphicsPosition(vp, (ObjectPosition) value);
 		}
+	}
+
+	public boolean getExtents(float[] extents, int offset) {
+		if (!isVisible) return false;
+		extents[offset] = m_xMin;
+		extents[offset+1] = m_yMin;
+		extents[offset+2] = m_xMax;
+		extents[offset+3] = m_yMax;
+		return true;
 	}
 
 	private void applyCustomGraphics(final VisualProperty<?> vp, 

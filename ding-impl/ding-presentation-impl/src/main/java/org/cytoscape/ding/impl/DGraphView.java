@@ -47,6 +47,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
+//FIXME
+import org.cytoscape.spacial.internal.dummy.DummySpacialFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -134,6 +136,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	/**
 	 * Common object used for synchronization.
+	 *
+	 * Change this to a readwrite lock!
 	 */
 	final Object m_lock = new Object();
 
@@ -156,6 +160,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final CySubNetwork m_drawPersp;
 
 	SpacialIndex2DFactory spacialFactory;
+
+	// FIXME
+	DummySpacialFactory dummySpacialFactory;
 
 	/**
 	 * RTree used for querying node positions.
@@ -455,6 +462,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		edgeSelectionList = new ArrayList<CyEdge>();
 		if (!dingGraphLOD.detail(m_drawPersp.getNodeCount(), m_drawPersp.getEdgeCount()))
 			largeModel = true;
+
+		dummySpacialFactory = new DummySpacialFactory(this);
 	}
 
 	
@@ -1323,17 +1332,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	final boolean isHidden(final DEdgeView edgeView) {
-		synchronized (m_lock) {
+		// synchronized (m_lock) {
 			final long edgeIndex = edgeView.getCyEdge().getSUID();
 			return !m_drawPersp.containsEdge(m_drawPersp.getEdge(edgeIndex));
-		}
+		// }
 	}
 
 	final boolean isHidden(final DNodeView nodeView) {
-		synchronized (m_lock) {
+		// synchronized (m_lock) {
 			final long nodeIndex = nodeView.getCyNode().getSUID();
 			return !m_drawPersp.containsNode(m_drawPersp.getNode(nodeIndex));
-		}
+		// }
 	}
 
 	/**
@@ -1777,12 +1786,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// First paint the background
 		m_backgroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
 
-		synchronized (m_lock) {
+		// synchronized (m_lock) {
+		try {
 			// System.out.println("Calling renderGraph to draw snapshot");
-			GraphRenderer.renderGraph(m_drawPersp, m_spacial, lod, m_nodeDetails,
+			GraphRenderer.renderGraph(m_drawPersp, dummySpacialFactory.createSpacialIndex2D(), lod, m_nodeDetails,
 			                          m_edgeDetails, m_hash, new GraphGraphics(img, false, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor);
-		}
+		} catch (Exception e) { e.printStackTrace(); }
+		// }
 
 		// Finally, draw the foreground
 		m_foregroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
@@ -1816,12 +1827,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if ((nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4)
 			return renderGraph(graphics, lod, bgColor, xCenter, yCenter, scale, hash);
 
+		// Make sure the graphics is initialized
+		if (!graphics.isInitialized())
+			graphics.clear(bgColor, xCenter, yCenter, scale);
+
 		// System.out.println("DGraphView: renderSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		Color bg = (Color)bgColor;
 		if (bg != null)
 			bg = new Color(bg.getRed(), bg.getBlue(), bg.getGreen(), 0);
 
 		SpacialIndex2D sub_spacial = spacialFactory.createSpacialIndex2D();
+		// System.out.println("DGraphView.renderSubgraph: sub_spacial = "+sub_spacial);
 		CySubNetwork net = new MinimalNetwork(SUIDFactory.getNextSUID());
 		for (CyEdge edge: edges) {
 			nodes.add(edge.getTarget());
@@ -1841,11 +1857,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		int lastRenderDetail = 0;
 		try {
-		synchronized (m_lock) {
+		// synchronized (m_lock) {
 			lastRenderDetail = GraphRenderer.renderGraph(net, sub_spacial, lod, m_nodeDetails,
  			                                             m_edgeDetails, hash, graphics, bg, xCenter,
  			                                             yCenter, scale);
-		}
+		// }
 		} catch (Exception e) { e.printStackTrace(); }
 		m_contentChanged = false;
 		m_viewportChanged = false;
@@ -2529,7 +2545,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
-	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
+	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, final V value) {
 		if (value == null) 
 			return;
 
@@ -2568,9 +2584,21 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		} else if (vp == BasicVisualLexicon.NETWORK_SCALE_FACTOR) {
 			setZoom(((Double) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NETWORK_WIDTH) {
-			m_networkCanvas.setSize(((Double)value).intValue(), m_networkCanvas.getHeight());
+			// This actually sets the size on the canvas, so we need to make sure
+			// this runs on the AWT thread
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					m_networkCanvas.setSize(((Double)value).intValue(), m_networkCanvas.getHeight());
+				}
+			});
 		} else if (vp == BasicVisualLexicon.NETWORK_HEIGHT) {
-			m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
+			// This actually sets the size on the canvas, so we need to make sure
+			// this runs on the AWT thread
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
+				}
+			});
 		}
 	}
 

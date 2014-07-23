@@ -1064,14 +1064,14 @@ public final class GraphRenderer {
 			// Compute node border information.
 			final float borderWidth;
 			final Paint borderPaint;
-			Stroke borserStroke = null;
+			Stroke borderStroke = null;
 
 			if ((lodBits & LOD_NODE_BORDERS) == 0) { // Not rendering borders.
 				borderWidth = 0.0f;
 				borderPaint = null;
 			} else { // Rendering node borders.
 				borderWidth = nodeDetails.getBorderWidth(cyNode);
-				borserStroke = nodeDetails.getBorderStroke(cyNode);
+				borderStroke = nodeDetails.getBorderStroke(cyNode);
 				if (borderWidth == 0.0f)
 					borderPaint = null;
 				else
@@ -1080,7 +1080,7 @@ public final class GraphRenderer {
 
 			// Draw the node.
 			nodeShape = grafx.drawNodeFull(shape, floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], 
-			                               fillPaint, borderWidth, borserStroke, borderPaint);
+			                               fillPaint, borderWidth, borderStroke, borderPaint);
 		}
 
 		// Take care of custom graphic rendering.
