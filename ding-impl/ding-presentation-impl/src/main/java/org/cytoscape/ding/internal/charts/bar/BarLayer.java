@@ -12,6 +12,7 @@ import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.Orientation;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
+import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.util.MathUtil;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -32,8 +33,7 @@ import org.jfree.ui.TextAnchor;
 public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
 	private final boolean upAndDown;
-	private final boolean heatStrips;
-	private final boolean stacked;
+	private final BarChartType type;
 	private final double separation;
 	private final Orientation orientation;
 	private final boolean singleCategory;
@@ -41,7 +41,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public BarLayer(final Map<String/*category*/, List<Double>/*values*/> data,
-					final boolean stacked,
+					final BarChartType type,
 					final List<String> itemLabels,
 					final List<String> domainLabels,
 					final List<String> rangeLabels,
@@ -50,7 +50,6 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showRangeAxis,
 					final List<Color> colors,
 					final boolean upAndDown,
-					final boolean heatStrips,
 					final double separation,
 					final DoubleRange range,
 					final Orientation orientation,
@@ -58,13 +57,12 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
         		range, bounds);
 		this.upAndDown = upAndDown;
-		this.heatStrips = heatStrips;
-		this.stacked = stacked;
+		this.type = type;
 		this.separation = separation;
 		this.orientation = orientation;
 		singleCategory = data.size() == 1;
 
-		if (heatStrips && this.range == null) // Range cannot be null
+		if (type == BarChartType.HEAT_STRIPS && this.range == null) // Range cannot be null
 			this.range = calculateRange(data.values(), false);
 	}
 	
@@ -72,7 +70,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
 	@Override
 	protected CategoryDataset createDataset() {
-		final boolean listIsSeries = (singleCategory && !stacked);
+		final boolean listIsSeries = (singleCategory && type != BarChartType.STACKED);
 		final List<String> labels = listIsSeries ? itemLabels : domainLabels;
 		
 		return createCategoryDataset(data, listIsSeries, labels);
@@ -84,7 +82,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
 		final JFreeChart chart;
 		
-		if (stacked)
+		if (type == BarChartType.STACKED)
 			chart = ChartFactory.createStackedBarChart(
 					null, // chart title
 					null, // domain axis label
@@ -144,7 +142,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         domainAxis.setTickLabelsVisible(true);
         domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize));
         domainAxis.setTickLabelPaint(axisColor);
-        domainAxis.setCategoryMargin((stacked || singleCategory) ? separation : 0.1);
+        domainAxis.setCategoryMargin((type == BarChartType.STACKED || singleCategory) ? separation : 0.1);
         
 //        if (!showDomainAxis && !showRangeAxis) {
 //        	// Prevent bars from being cropped
@@ -175,8 +173,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 //	        rangeAxis.setUpperMargin(.01);
 //        }
 		
-		if (!stacked) {
-			if (heatStrips || upAndDown) {
+		if (type != BarChartType.STACKED) {
+			if (type == BarChartType.HEAT_STRIPS || upAndDown) {
 				final Color up =   (colors.size() > 0) ? colors.get(0) : Color.LIGHT_GRAY;
 				final Color zero = (colors.size() > 2) ? colors.get(1) : Color.BLACK;
 				final Color down = (colors.size() > 2) ? colors.get(2) : (colors.size() > 1 ? colors.get(1) : Color.GRAY);
@@ -198,7 +196,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		renderer.setBaseItemLabelPaint(labelColor);
 		renderer.setItemMargin(separation);
 		
-		if (!stacked && showItemLabels) {
+		if (type != BarChartType.STACKED && showItemLabels) {
 			double angle = orientation == Orientation.HORIZONTAL ? 0 : -Math.PI/2;
 			
 			renderer.setBasePositiveItemLabelPosition(new ItemLabelPosition(
@@ -216,7 +214,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			renderer.setSeriesOutlineStroke(i, borderStroke);
 			renderer.setSeriesOutlinePaint(i, borderColor);
 			
-			if (stacked || !upAndDown) {
+			if (type == BarChartType.STACKED || !upAndDown) {
 				Color c = DEFAULT_ITEM_BG_COLOR;
 				
 				if (colors != null && colors.size() > i)
@@ -253,7 +251,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			final double value = dataset.getValue(rowKey, colKey).doubleValue();
 			final Color color = value < 0.0 ? downColor : upColor;
 			
-			if (heatStrips) {
+			if (type == BarChartType.HEAT_STRIPS) {
 				// Linearly interpolate the value
 				final double f = value < 0.0 ?
 						MathUtil.invLinearInterp(value, range.min, 0) : MathUtil.invLinearInterp(value, 0, range.max);

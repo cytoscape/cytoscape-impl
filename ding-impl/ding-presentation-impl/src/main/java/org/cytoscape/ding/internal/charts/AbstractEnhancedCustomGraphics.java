@@ -34,12 +34,10 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	/**
 	 * The list of colors, one for each chart element
 	 */
-	public static final String COLORS = "colorlist";
+	public static final String COLORS = "colors";
 	public static final String COLOR_SCHEME = "colorscheme";
 	public static final String ORIENTATION = "orientation";
 	public static final String ROTATION = "rotation";
-	
-	protected static final double DEFAULT_YBASE = 0.5;
 	
 	protected Long id;
 	protected float fitRatio = 0.9f;
@@ -287,7 +285,7 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 				} else if (type == Position.class) {
 					value = ViewUtils.getPosition(value.toString());
 				} else if (type == Orientation.class) {
-					value = Orientation.valueOf(value.toString());
+					value = Orientation.valueOf(value.toString().toUpperCase());
 				} else if (type == Point2D.class) {
 					value = parsePoint(value.toString());
 				} else if (type == ControlPoint.class) {

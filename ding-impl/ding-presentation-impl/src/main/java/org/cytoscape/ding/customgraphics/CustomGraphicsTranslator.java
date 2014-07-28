@@ -50,7 +50,7 @@ import org.cytoscape.ding.internal.charts.donut.DonutChart;
 import org.cytoscape.ding.internal.charts.line.LineChart;
 import org.cytoscape.ding.internal.charts.pie.PieChart;
 import org.cytoscape.ding.internal.charts.stripe.StripeChart;
-import org.cytoscape.ding.internal.charts.util.ColorGradients;
+import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.ding.internal.charts.util.ColorKeyword;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradient;
@@ -218,10 +218,10 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 			
 			// Heat Strip is handled as a special case of Bar Chart
 			if (input.startsWith("heatstripchart:")) {
-				props.put(BarChart.HEAT_STRIPS, true);
+				props.put(BarChart.TYPE, BarChart.BarChartType.HEAT_STRIPS);
 				
 				if (props.get(BarChart.COLORS) == null)
-					props.put(BarChart.COLORS, ColorGradients.YELLOWBLACKCYAN.getColors());
+					props.put(BarChart.COLORS, ColorGradient.CYAN_BLACK_YELLOW.getColors());
 			}
 			
 			if (CyChart.class.isAssignableFrom(type)) {

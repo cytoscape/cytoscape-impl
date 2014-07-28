@@ -30,10 +30,12 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	public static final String FACTORY_ID = "org.cytoscape.chart.Bar";
 	public static final String DISPLAY_NAME = "Bar Chart";
 	
+	public static final String TYPE = "type";
 	public static final String SEPARATION = "separation";
-	public static final String HEAT_STRIPS = "heatstrips";
 	
 	public static final double MAX_SEPARATION = 0.5;
+	
+	public static enum BarChartType { GROUPED, STACKED, HEAT_STRIPS };
 	
 	public static ImageIcon ICON;
 	
@@ -81,20 +83,19 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
-		final boolean stacked = get(STACKED, Boolean.class, false);
+		final BarChartType type = get(TYPE, BarChartType.class, BarChartType.GROUPED);
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
 		final String colorScheme = get(COLOR_SCHEME, String.class, "");
 		final boolean upAndDown = ColorUtil.UP_DOWN.equalsIgnoreCase(colorScheme);
-		final boolean heatStrips = get(HEAT_STRIPS, Boolean.class, false);
 		
 		double separation = get(SEPARATION, Double.class, 0.0);
 		separation = (separation > MAX_SEPARATION) ? MAX_SEPARATION : (separation < 0.0 ? 0.0 : separation);
 		
-		final BarLayer layer = new BarLayer(data, stacked, itemLabels, domainLabels, rangeLabels, showLabels,
-				showDomainAxis, showRangeAxis, colors, upAndDown, heatStrips, separation, range, orientation, bounds);
+		final BarLayer layer = new BarLayer(data, type, itemLabels, domainLabels, rangeLabels, showLabels,
+				showDomainAxis, showRangeAxis, colors, upAndDown, separation, range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}
@@ -113,9 +114,27 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	
 	@Override
 	protected Class<?> getSettingType(final String key) {
+		if (key.equalsIgnoreCase(TYPE)) return BarChartType.class;
 		if (key.equalsIgnoreCase(SEPARATION)) return Double.class;
-		if (key.equalsIgnoreCase(HEAT_STRIPS)) return Boolean.class;
 		
 		return super.getSettingType(key);
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	protected <S> S parseValue(final String key, Object value, final Class<S> type) {
+		try {
+			if (!type.isAssignableFrom(value.getClass())) {
+				if (type == BarChartType.class) {
+					value = BarChartType.valueOf(value.toString().toUpperCase());
+				} else {
+					value = super.parseValue(key, value, type);
+				}
+			}
+			
+			return (S) value;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }

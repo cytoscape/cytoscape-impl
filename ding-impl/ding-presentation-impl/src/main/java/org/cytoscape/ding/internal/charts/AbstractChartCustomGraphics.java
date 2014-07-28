@@ -39,15 +39,6 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	public static final String SHOW_DOMAIN_AXIS = "showdomainaxis";
 	public static final String SHOW_RANGE_AXIS = "showrangeaxis";
 	public static final String VALUES = "valuelist";
-	public static final String STACKED = "stacked";
-//	/**
-//	 * The vertical base of the chart as a proportion of the height.
-//	 * By default, this is 0.5 (the center of the node), to allow for both positive and negative values.
-//	 * If, however, you only have positive values, you might want to set this to 1.0 (the bottom of the node).
-//	 * Note that this goes backwards from what might be expected, with 0.0 being the top of the node and 
-//	 * 1.0 being the bottom of the node. The keyword bottom is also supported.
-//	 */
-//	public static final String YBASE = "ybase";
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -339,23 +330,6 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		}
 		return maxValues;
 	}
-
-	/**
-	 * Takes a map of objects indexed by a string keyword and returns a map of
-	 * strings indexed by that keyword. This involves figuring out if the object
-	 * is a list, and if so converting it to a comma separated string
-	 * 
-	 * @param argMap
-	 *            the map of objects indexed by strings
-	 * @return the serialized map
-	 */
-	public Map<String, String> serializeArgMap(Map<String, Object> argMap) {
-		Map<String, String> sMap = new HashMap<String, String>();
-		for (String key : argMap.keySet()) {
-			sMap.put(key, serializeObject(argMap.get(key)));
-		}
-		return sMap;
-	}
 	
 	protected Map<String, List<Double>> getData(final CyNetwork network, final CyIdentifiable model) {
 		final Map<String, List<Double>> data;
@@ -418,8 +392,6 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(RANGE)) return DoubleRange.class;
-//		if (key.equalsIgnoreCase(YBASE)) return Double.class;
-		if (key.equalsIgnoreCase(STACKED)) return Boolean.class;
 			
 		return super.getSettingType(key);
 	}
@@ -442,9 +414,6 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 					value = parseRange(value.toString());
 				} else if (type == CyColumnIdentifier.class) {
 					value = parseColumnIdentifier(value.toString());
-//				} else if (type == Double.class || type == Number.class) {
-//					value = key.equalsIgnoreCase(YBASE) ? 
-//							parseYBase(value.toString()) : Double.valueOf(value.toString());
 				} else {
 					value = super.parseValue(key, value, type);
 				}
@@ -471,34 +440,5 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		}
 		
 		return null;
-	}
-	
-//	private Double parseYBase(final String input) {
-//		if (input != null) {
-//			try {
-//				return input.equalsIgnoreCase("bottom") ? 1.0 : Double.valueOf(input);
-//			} catch (NumberFormatException e) {
-//			}
-//		}
-//		
-//		return DEFAULT_YBASE;
-//	}
-	
-	/**
-	 * Serialize an object that might be a list to a string
-	 */
-	private String serializeObject(Object obj) {
-		String result = null;;
-		
-		if (obj instanceof List) {
-			result = "";
-			for (Object o : (List<?>) obj) {
-				result += o.toString() + ",";
-			}
-			result = result.substring(0, result.length() - 1);
-		} else
-			result = obj.toString();
-
-		return result;
 	}
 }

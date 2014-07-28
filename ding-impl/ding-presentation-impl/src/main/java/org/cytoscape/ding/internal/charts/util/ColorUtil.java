@@ -160,7 +160,7 @@ public final class ColorUtil {
 
 		if (colors == null || colors.isEmpty()) {
 			// Perhaps it's one of the predefined color gradients for up-zero-down
-			colors = ColorGradients.getGradient(input);
+			colors = ColorGradient.getGradient(input);
 		}
 		
 		if (colors == null || colors.isEmpty()) {

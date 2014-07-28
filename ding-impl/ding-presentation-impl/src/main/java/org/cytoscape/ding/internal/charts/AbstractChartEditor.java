@@ -8,7 +8,6 @@ import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.ITE
 import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.RANGE;
 import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.RANGE_LABELS_COLUMN;
 import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.SHOW_ITEM_LABELS;
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.STACKED;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.ORIENTATION;
 
 import java.awt.BorderLayout;
@@ -790,7 +789,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		final CyNetwork net = appMgr.getCurrentNetwork();
 		
 		if (net != null) {
-			final boolean stacked = chart.get(STACKED, Boolean.class, false);
 			final List<CyNode> nodes = net.getNodeList();
 			final Set<CyColumnIdentifier> dataColumns = getDataPnl().getDataColumns();
 			double min = Double.POSITIVE_INFINITY;
@@ -816,25 +814,9 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 						else if (row.isSet(column.getName()))
 							values = Collections.singletonList((Number)row.get(column.getName(), colType));
 						
-						if (values != null) {
-							double sum = 0;
-							
-							for (final Number v : values) {
-								final double dv = v.doubleValue();
-								
-								if (stacked) {
-									sum += dv;
-								} else {
-									min = Math.min(min, dv);
-									max = Math.max(max, dv);
-								}
-							}
-							
-							if (stacked) {
-								min = Math.min(min, sum);
-								max = Math.max(max, sum);
-							}
-						}
+						double[] mm = minMax(min, max, values);
+						min = mm[0];
+						max = mm[1];
 					}
 					
 					if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY)
@@ -844,6 +826,18 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		}
 		
 		return range;
+	}
+	
+	protected double[] minMax(double min, double max, final List<? extends Number> values) {
+		if (values != null) {
+			for (final Number v : values) {
+				final double dv = v.doubleValue();
+				min = Math.min(min, dv);
+				max = Math.max(max, dv);
+			}
+		}
+		
+		return new double[]{ min, max };
 	}
 	
 	protected void update(final boolean recalculateRange) {

@@ -29,6 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.border.Border;
 
+import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -54,7 +55,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	private JPanel colorListPnl;
 	
 	protected final T chart;
-	protected final String[] colorSchemes;
+	protected String[] colorSchemes;
 	protected final boolean columnIsSeries;
 	protected final CyNetwork network;
 	protected final IconManager iconMgr;
@@ -85,6 +86,17 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
 
+	public void setColorSchemes(final String[] colorSchemes) {
+		this.colorSchemes = colorSchemes;
+		getColorSchemeCmb().removeAllItems();
+		
+		for (String scheme : colorSchemes)
+			getColorSchemeCmb().addItem(scheme);
+		
+		updateColorSchemeCmb();
+		reset();
+	}
+	
 	public void reset() {
 		total = 0;
 		updateColorList(false);
@@ -128,16 +140,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	protected JComboBox getColorSchemeCmb() {
 		if (colorSchemeCmb == null) {
 			colorSchemeCmb = new JComboBox(colorSchemes);
-			
-			String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
-			
-			if (Arrays.asList(colorSchemes).contains(scheme)) {
-				colorSchemeCmb.setSelectedItem(scheme);
-			} else {
-				scheme = ColorUtil.CUSTOM;
-				colorSchemeCmb.setSelectedItem(scheme);
-				chart.set(COLOR_SCHEME, scheme);
-			}
+			updateColorSchemeCmb();
 			
 			colorSchemeCmb.addActionListener(new ActionListener() {
 				@Override
@@ -162,11 +165,22 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		return colorListPnl;
 	}
 	
+	private void updateColorSchemeCmb() {
+		String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
+		
+		if (Arrays.asList(colorSchemes).contains(scheme)) {
+			colorSchemeCmb.setSelectedItem(scheme);
+		} else {
+			scheme = ColorUtil.CUSTOM;
+			colorSchemeCmb.setSelectedItem(scheme);
+			chart.set(COLOR_SCHEME, scheme);
+		}
+	}
+	
 	private void updateColorList(final boolean newScheme) {
 		List<Color> colors = chart.getList(COLORS, Color.class);
 		final String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
-		final int nColors =
-				ColorUtil.UP_DOWN.equals(scheme) && Arrays.asList(colorSchemes).contains(scheme) ? 2 : getTotal();
+		final int nColors = getTotal();
 		
 		if (nColors > 0) {
 			if (newScheme || colors.isEmpty()) {
@@ -216,7 +230,11 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	}
 	
 	protected int getTotal() {
-		if (total <= 0) {
+		final String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
+		
+		if (ColorUtil.UP_DOWN.equals(scheme) && Arrays.asList(colorSchemes).contains(scheme)) {
+			return 2;
+		} else if (total <= 0) {
 			final List<CyColumnIdentifier> dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
 			
 			if (columnIsSeries) {
