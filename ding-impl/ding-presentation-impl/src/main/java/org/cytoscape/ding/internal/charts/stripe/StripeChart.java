@@ -32,7 +32,7 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
  */
 public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 	
-	public static final String FACTORY_ID = "org.cytoscape.chart.Stripe";
+	public static final String FACTORY_ID = "org.cytoscape.StripeChart";
 	public static final String DISPLAY_NAME = "Stripe Chart";
 	
 	public static final String DISTINCT_VALUES = "distinctvalues";

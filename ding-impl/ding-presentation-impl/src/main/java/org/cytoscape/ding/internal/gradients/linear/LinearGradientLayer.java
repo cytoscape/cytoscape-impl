@@ -47,7 +47,7 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 			final AffineTransform tx = new AffineTransform();
 			tx.rotate(Math.toRadians(-angle), ax, ay);
 			
-			Shape txArea = tx.createTransformedShape(area);
+//			Shape txArea = tx.createTransformedShape(area);
 			
 	//		if (txArea.getBounds().getHeight() > area.getHeight()) {
 	//			final AffineTransform tx2 = new AffineTransform();
@@ -56,8 +56,8 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 	//			txArea = tx2.createTransformedShape(txArea);
 	//		}
 			
-			g.setColor(Color.blue);
-			g.draw(txArea);
+//			g.setColor(Color.blue);
+//			g.draw(txArea);
 			
 			g.transform(tx);
 			
@@ -70,19 +70,18 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 			
 			super.draw(g, area, tx.createTransformedShape(shape));
 			g.transform(tx);
-			
-			
+// DEBUG:			
 	//		final PathIterator pi = line.getPathIterator(at);
 			
 	//		g.setColor(Color.blue);
 	//		g.drawOval((int)area.getX(), (int)area.getY(), (int)area.getWidth(), (int)area.getHeight());
 	//		
-			Line2D line = getGradientAxis(area, angle);
-			
-			g.setColor(Color.red);
-			g.drawOval((int)line.getX1(), (int)line.getY1(), 1, 1);
-			g.setColor(Color.green);
-			g.drawOval((int)line.getX2(), (int)line.getY2(), 1, 1);
+//			Line2D line = getGradientAxis(area, angle);
+//			
+//			g.setColor(Color.red);
+//			g.drawOval((int)line.getX1(), (int)line.getY1(), 1, 1);
+//			g.setColor(Color.green);
+//			g.drawOval((int)line.getX2(), (int)line.getY2(), 1, 1);
 		}
 	}
 	

@@ -19,7 +19,6 @@ public class LinearGradient extends AbstractGradientCustomGraphics<LinearGradien
 	public static final String FACTORY_ID = "org.cytoscape.LinearGradient";
 	public static final String DISPLAY_NAME = "Linear Gradient";
 	
-	public static final String STOP_LIST = "stoplist";
 	public static final String ANGLE = "angle";
 	
 	private BufferedImage renderedImg;

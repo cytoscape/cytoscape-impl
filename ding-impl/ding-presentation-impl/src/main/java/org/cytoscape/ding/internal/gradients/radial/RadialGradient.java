@@ -24,7 +24,6 @@ public class RadialGradient extends AbstractGradientCustomGraphics<RadialGradien
 	
 	public static final String CENTER = "center";
 	public static final String RADIUS = "radius";
-	public static final String STOP_LIST = "stoplist";
 	
 	private BufferedImage renderedImg;
 	private volatile boolean dirty = true;

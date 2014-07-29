@@ -25,7 +25,7 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
  */
 public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 	
-	public static final String FACTORY_ID = "org.cytoscape.chart.Line";
+	public static final String FACTORY_ID = "org.cytoscape.LineChart";
 	public static final String DISPLAY_NAME = "Line Chart";
 	
 	

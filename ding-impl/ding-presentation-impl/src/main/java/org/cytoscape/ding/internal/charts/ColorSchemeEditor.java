@@ -29,7 +29,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.border.Border;
 
-import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconUtil;

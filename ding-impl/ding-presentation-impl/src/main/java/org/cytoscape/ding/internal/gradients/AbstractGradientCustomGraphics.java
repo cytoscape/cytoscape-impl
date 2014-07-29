@@ -9,6 +9,8 @@ import org.cytoscape.view.presentation.gradients.CyGradient;
 public abstract class AbstractGradientCustomGraphics<T extends CustomGraphicLayer>
 		extends AbstractEnhancedCustomGraphics<T> implements CyGradient<T> {
 
+	public static final String STOP_LIST = "stoplist";
+	
 	protected AbstractGradientCustomGraphics(final String displayName) {
 		super(displayName);
 	}

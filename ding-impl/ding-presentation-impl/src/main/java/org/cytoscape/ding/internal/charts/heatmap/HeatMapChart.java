@@ -25,7 +25,7 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
  */
 public class HeatMapChart extends AbstractChartCustomGraphics<HeatMapLayer> {
 	
-	public static final String FACTORY_ID = "org.cytoscape.chart.HeatMap";
+	public static final String FACTORY_ID = "org.cytoscape.HeatMapChart";
 	public static final String DISPLAY_NAME = "Heat Map Chart";
 	
 	public static ImageIcon ICON;

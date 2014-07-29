@@ -27,8 +27,6 @@ import org.cytoscape.ding.internal.charts.ControlPoint;
  * A generic editor for configuring a multiple point varying gradient.
  * Adapted from: 
  * https://www.assembla.com/code/ascent_game/git/node/blob/Slick/tools/org/newdawn/slick/tools/peditor/GradientEditor.java?raw=1&rev=c1b50b1c68bcb1d1eea464c7e507154ecf51e748
- *
- * @author kevin
  */
 public class GradientEditor extends JPanel {
 	

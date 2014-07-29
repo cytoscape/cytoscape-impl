@@ -29,8 +29,8 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 		
 		if (this.center == null)
 			this.center = new Point2D.Float(0.5f, 0.5f);
-		if (this.radius == 0.0f)
-			this.radius = 1.0f;
+		if (this.radius <= 0.0f)
+			this.radius = 1.0f; // 100%
 
 		rectangle = new Rectangle(0, 0, 1, 1);
 	}
@@ -40,10 +40,15 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 	@Override
 	public Paint getPaint(final Rectangle2D bounds) {
 		// Assuming radius and center are of a unit circle, scale appropriately
-		double xCenter = bounds.getWidth() * center.getX() + bounds.getX();
-		double yCenter = bounds.getHeight() * center.getY() + bounds.getY();
-		final Point2D newCenter = new Point2D.Float((float)xCenter, (float)yCenter);
-		final double newRadius = radius * Math.min(bounds.getWidth(), bounds.getHeight());
+		double w = bounds.getWidth();
+		double h = bounds.getHeight();
+		double cx = w * center.getX() + bounds.getX();
+		double cy = h * center.getY() + bounds.getY();
+		final Point2D newCenter = new Point2D.Double(cx, cy);
+		
+		double delta = newCenter.distance(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
+		final double r =  Math.sqrt(w*w + h*h) / 2;
+		final double newRadius = delta + r * radius;
 		
 		paint = new RadialGradientPaint(newCenter, (float)newRadius, positions, colors);
 		

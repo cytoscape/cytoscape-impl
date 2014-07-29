@@ -27,7 +27,7 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
  */
 public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	
-	public static final String FACTORY_ID = "org.cytoscape.chart.Bar";
+	public static final String FACTORY_ID = "org.cytoscape.BarChart";
 	public static final String DISPLAY_NAME = "Bar Chart";
 	
 	public static final String TYPE = "type";

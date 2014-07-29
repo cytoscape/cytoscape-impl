@@ -25,7 +25,7 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
  */
 public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 	
-	public static final String FACTORY_ID = "org.cytoscape.chart.Box";
+	public static final String FACTORY_ID = "org.cytoscape.BoxChart";
 	public static final String DISPLAY_NAME = "Box Chart";
 	
 	public static ImageIcon ICON;
