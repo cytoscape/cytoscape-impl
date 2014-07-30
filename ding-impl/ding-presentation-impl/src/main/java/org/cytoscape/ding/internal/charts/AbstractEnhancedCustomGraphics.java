@@ -235,7 +235,7 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	
 	protected Class<?> getSettingType(final String key) {
 		if (key.equalsIgnoreCase(COLORS)) return List.class;
-		if (key.equalsIgnoreCase(COLOR_SCHEME)) return String.class;
+		if (key.equalsIgnoreCase(COLOR_SCHEME)) return ColorScheme.class;
 		if (key.equalsIgnoreCase(SCALE)) return Double.class;
 		if (key.equalsIgnoreCase(SIZE)) return Rectangle2D.class;
 		if (key.equalsIgnoreCase(POSITION)) return Position.class;
@@ -280,6 +280,8 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 					value = Double.valueOf(value.toString());
 				} else if (type == Color.class) {
 					value = ColorUtil.parseColor(value.toString());
+				} else if (type == ColorScheme.class) {
+					value = ColorScheme.parse(value.toString());
 				} else if (type == Rectangle2D.class) {
 					value = parseRectangle(value.toString());
 				} else if (type == Position.class) {

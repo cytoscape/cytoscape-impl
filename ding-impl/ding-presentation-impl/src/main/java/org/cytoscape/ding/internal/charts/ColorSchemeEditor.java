@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts;
 
+import static org.cytoscape.ding.internal.charts.ColorScheme.*;
+
 import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DATA_COLUMNS;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLORS;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLOR_SCHEME;
@@ -19,6 +21,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -54,7 +57,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	private JPanel colorListPnl;
 	
 	protected final T chart;
-	protected String[] colorSchemes;
+	protected ColorScheme[] colorSchemes;
 	protected final boolean columnIsSeries;
 	protected final CyNetwork network;
 	protected final IconManager iconMgr;
@@ -63,7 +66,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public ColorSchemeEditor(final T chart, final String[] colorSchemes, final boolean columnIsSeries,
+	public ColorSchemeEditor(final T chart, final ColorScheme[] colorSchemes, final boolean columnIsSeries,
 			final CyNetwork network, final IconManager iconMgr) {
 		this.chart = chart;
 		this.colorSchemes = colorSchemes;
@@ -85,11 +88,11 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
 
-	public void setColorSchemes(final String[] colorSchemes) {
+	public void setColorSchemes(final ColorScheme[] colorSchemes) {
 		this.colorSchemes = colorSchemes;
 		getColorSchemeCmb().removeAllItems();
 		
-		for (String scheme : colorSchemes)
+		for (final ColorScheme scheme : colorSchemes)
 			getColorSchemeCmb().addItem(scheme);
 		
 		updateColorSchemeCmb();
@@ -139,12 +142,13 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	protected JComboBox getColorSchemeCmb() {
 		if (colorSchemeCmb == null) {
 			colorSchemeCmb = new JComboBox(colorSchemes);
+			colorSchemeCmb.setRenderer(new ColorSchemeComboBoxRenderer());
 			updateColorSchemeCmb();
 			
 			colorSchemeCmb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final String newScheme = (String) colorSchemeCmb.getSelectedItem();
+					final ColorScheme newScheme = (ColorScheme) colorSchemeCmb.getSelectedItem();
 					chart.set(COLOR_SCHEME, newScheme);
 					updateColorList(true);
 				}
@@ -165,12 +169,12 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	}
 	
 	private void updateColorSchemeCmb() {
-		String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
+		ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
 		
 		if (Arrays.asList(colorSchemes).contains(scheme)) {
 			colorSchemeCmb.setSelectedItem(scheme);
 		} else {
-			scheme = ColorUtil.CUSTOM;
+			scheme = CUSTOM;
 			colorSchemeCmb.setSelectedItem(scheme);
 			chart.set(COLOR_SCHEME, scheme);
 		}
@@ -178,23 +182,23 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	
 	private void updateColorList(final boolean newScheme) {
 		List<Color> colors = chart.getList(COLORS, Color.class);
-		final String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
+		final ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
 		final int nColors = getTotal();
 		
 		if (nColors > 0) {
 			if (newScheme || colors.isEmpty()) {
-				if (ColorUtil.CUSTOM.equalsIgnoreCase(scheme)) {
+				if (CUSTOM.equals(scheme)) {
 					int newSize = Math.max(colors.size(), nColors);
 					colors = new ArrayList<Color>(newSize);
 					
 					for (int i = 0; i < newSize; i++)
 						colors.add(i%2 == 0 ? DEFAULT_COLOR : DEFAULT_COLOR.darker());
 				} else {
-					colors = ColorUtil.getColors(scheme, nColors);
+					colors = scheme.getColors(nColors);
 				}
 			} else if (colors.size() < nColors) {
 				// Just update existing list of colors (add new ones if there are more values now)
-				final List<Color> newColors = ColorUtil.getColors(scheme, nColors);
+				final List<Color> newColors = scheme.getColors(nColors);
 				
 				if (newColors.size() > colors.size())
 					colors.addAll(newColors.subList(colors.size(), newColors.size()));
@@ -209,7 +213,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 			final ColorPanel cp = new ColorPanel(c, "");
 			String label = "";
 			
-			if (ColorUtil.UP_DOWN.equals(scheme) && count < 2) {
+			if (UP_DOWN.equals(scheme) && count < 2) {
 				label = count == 0 ? IconManager.ICON_ARROW_UP : IconManager.ICON_ARROW_DOWN;
 				cp.setFont(iconMgr.getIconFont(11));
 			} else {
@@ -229,9 +233,9 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	}
 	
 	protected int getTotal() {
-		final String scheme = chart.get(COLOR_SCHEME, String.class, ColorUtil.CONTRASTING);
+		final ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
 		
-		if (ColorUtil.UP_DOWN.equals(scheme) && Arrays.asList(colorSchemes).contains(scheme)) {
+		if (UP_DOWN.equals(scheme) && Arrays.asList(colorSchemes).contains(scheme)) {
 			return 2;
 		} else if (total <= 0) {
 			final List<CyColumnIdentifier> dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
@@ -347,6 +351,29 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 			}
 			
 			chart.set(COLORS, newColors);
+		}
+	}
+	
+	private static class ColorSchemeComboBoxRenderer extends DefaultListCellRenderer {
+
+		private static final long serialVersionUID = -1404555196529207425L;
+
+		@Override
+		public Component getListCellRendererComponent(final JList list, final Object value, final int index,
+				final boolean isSelected, final boolean cellHasFocus) {
+			final DefaultListCellRenderer c = (DefaultListCellRenderer) super.getListCellRendererComponent(
+					list, value, index, isSelected, cellHasFocus);
+			
+			if (value == null)
+				c.setText("-- none --");
+			else if (value instanceof ColorScheme)
+				c.setText(((ColorScheme)value).getLabel());
+			else if (value instanceof String)
+				c.setText((String)value);
+			else
+				c.setText("[ invalid value ]"); // Should never happen
+				
+			return c;
 		}
 	}
 }

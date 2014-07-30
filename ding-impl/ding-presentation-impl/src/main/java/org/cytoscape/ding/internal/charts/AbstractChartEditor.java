@@ -9,6 +9,11 @@ import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.RAN
 import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.RANGE_LABELS_COLUMN;
 import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.SHOW_ITEM_LABELS;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.ORIENTATION;
+import static org.cytoscape.ding.internal.charts.ColorScheme.CONTRASTING;
+import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
+import static org.cytoscape.ding.internal.charts.ColorScheme.MODULATED;
+import static org.cytoscape.ding.internal.charts.ColorScheme.RAINBOW;
+import static org.cytoscape.ding.internal.charts.ColorScheme.RANDOM;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -58,7 +63,6 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
-import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
@@ -73,8 +77,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 
 	private static final long serialVersionUID = 2022740799541917592L;
 	
-	private static final String[] BASIC_COLOR_SCHEMES = new String[] {
-		ColorUtil.CONTRASTING, ColorUtil.MODULATED, ColorUtil.RAINBOW, ColorUtil.RANDOM, ColorUtil.CUSTOM
+	private static final ColorScheme[] BASIC_COLOR_SCHEMES = new ColorScheme[] {
+		CONTRASTING, MODULATED, RAINBOW, RANDOM, CUSTOM
 	};
 	
 	private JTabbedPane optionsTpn;
@@ -935,7 +939,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		return cmb;
 	}
 	
-	protected String[] getColorSchemes() {
+	protected ColorScheme[] getColorSchemes() {
 		return BASIC_COLOR_SCHEMES;
 	}
 	

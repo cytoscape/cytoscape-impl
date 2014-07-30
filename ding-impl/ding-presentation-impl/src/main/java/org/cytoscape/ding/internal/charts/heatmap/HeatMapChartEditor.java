@@ -2,6 +2,7 @@ package org.cytoscape.ding.internal.charts.heatmap;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.charts.ColorScheme;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
@@ -38,7 +39,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
 		private static final long serialVersionUID = -1978465682553210535L;
 
-		public HeatMapColorSchemeEditor(final HeatMapChart chart, final String[] colorSchemes, final CyNetwork network,
+		public HeatMapColorSchemeEditor(final HeatMapChart chart, final ColorScheme[] colorSchemes, final CyNetwork network,
 				final IconManager iconMgr) {
 			super(chart, colorSchemes, false, network, iconMgr);
 		}

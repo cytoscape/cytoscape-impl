@@ -19,6 +19,7 @@ import javax.swing.JComboBox;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.charts.ColorScheme;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;
@@ -117,7 +118,7 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 
 		private static final long serialVersionUID = -4721595280722442047L;
 		
-		public StripeColorSchemeEditor(final StripeChart chart, final String[] colorSchemes, final CyNetwork network,
+		public StripeColorSchemeEditor(final StripeChart chart, final ColorScheme[] colorSchemes, final CyNetwork network,
 				final IconManager iconMgr) {
 			super(chart, colorSchemes, false, network, iconMgr);
 		}

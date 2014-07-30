@@ -24,6 +24,13 @@ package org.cytoscape.ding.customgraphics;
  * #L%
  */
 
+import static org.cytoscape.ding.internal.charts.ColorScheme.CONTRASTING;
+import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
+import static org.cytoscape.ding.internal.charts.ColorScheme.MODULATED;
+import static org.cytoscape.ding.internal.charts.ColorScheme.RAINBOW;
+import static org.cytoscape.ding.internal.charts.ColorScheme.RANDOM;
+import static org.cytoscape.ding.internal.charts.ColorScheme.UP_DOWN;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Point2D;
@@ -41,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics;
+import org.cytoscape.ding.internal.charts.ColorScheme;
 import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.ding.internal.charts.Rotation;
 import org.cytoscape.ding.internal.charts.ViewUtils;
@@ -52,7 +60,6 @@ import org.cytoscape.ding.internal.charts.pie.PieChart;
 import org.cytoscape.ding.internal.charts.stripe.StripeChart;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.ding.internal.charts.util.ColorKeyword;
-import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradient;
 import org.cytoscape.ding.internal.gradients.radial.RadialGradient;
 import org.cytoscape.view.presentation.charts.CyChart;
@@ -298,7 +305,7 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		List<String> labels = getStringList(args.get(LABELS));
 		List<String> attributes = null;
 		List<Color> colorList = null;
-		String colorScheme = null;
+		ColorScheme colorScheme = null;
 		DoubleRange range = null;
 		double ybase = 0.5;
 		Color labelColor = Color.BLACK;
@@ -505,7 +512,7 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		
 		// give the default: contrasting colors
 		if (input == null && nColors > 0)
-			return ColorUtil.generateContrastingColors(nColors);
+			return ColorScheme.CONTRASTING.getColors(nColors);
 
 		// OK, we have three possibilities.  The input could be a keyword, a comma-separated list of colors, or
 		// a list of Color objects.  We need to figure this out first...
@@ -523,13 +530,43 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		} else if (colorArray.length > 1) {
 			return parseColorList(colorArray);
 		} else {
-			return ColorUtil.parseColorKeyword(input.trim(), nColors);
+			return parseColorKeyword(input.trim(), nColors);
 		}
 	}
 	
-	private static String convertInputToColorScheme(final String input)  {
+	private static List<Color> parseColorKeyword(final String input, final int nColors) {
+		List<Color> colors = null;
+		
+		if (nColors > 0) {
+			if (RANDOM.getKey().equalsIgnoreCase(input) || CUSTOM.getKey().equalsIgnoreCase(input))
+				colors = RANDOM.getColors(nColors);
+			if (RAINBOW.getKey().equalsIgnoreCase(input))
+				colors = RAINBOW.getColors(nColors);
+			if (MODULATED.getKey().equalsIgnoreCase(input))
+				colors = MODULATED.getColors(nColors);
+			if (CONTRASTING.getKey().equalsIgnoreCase(input))
+				colors = CONTRASTING.getColors(nColors);
+			if (UP_DOWN.getKey().equalsIgnoreCase(input))
+				colors = UP_DOWN.getColors(2);
+		}
+
+		if (colors == null || colors.isEmpty()) {
+			// Perhaps it's one of the predefined color gradients
+			colors = ColorGradient.getColors(input);
+		}
+		
+		if (colors == null || colors.isEmpty()) {
+			String[] colorArray = new String[1];
+			colorArray[0] = input;
+			colors = parseColorList(colorArray);
+		}
+		
+		return colors;
+	}
+	
+	private static ColorScheme convertInputToColorScheme(final String input)  {
 		if (input == null)
-			return ColorUtil.CONTRASTING;
+			return ColorScheme.CONTRASTING;
 
 		// OK, we have three possibilities.  The input could be a keyword, a comma-separated list of colors, or
 		// a list of Color objects.  We need to figure this out first...
@@ -539,15 +576,15 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		// Look for up/down special case
 		if (colorArray.length == 2 &&
 		    (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN))) {
-			return ColorUtil.UP_DOWN;
+			return ColorScheme.UP_DOWN;
 		} else if (colorArray.length == 3 &&
 		    (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN) ||
 		     colorArray[0].toLowerCase().startsWith(ZERO))) {
-			return ColorUtil.UP_DOWN;
+			return ColorScheme.UP_DOWN;
 		} else if (colorArray.length > 1) {
-			return ColorUtil.CUSTOM;
+			return ColorScheme.CUSTOM;
 		} else {
-			return input.trim();
+			return null;
 		}
 	}
 	

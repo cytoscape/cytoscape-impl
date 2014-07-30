@@ -1,5 +1,12 @@
 package org.cytoscape.ding.internal.charts.bar;
 
+import static org.cytoscape.ding.internal.charts.ColorScheme.CONTRASTING;
+import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
+import static org.cytoscape.ding.internal.charts.ColorScheme.MODULATED;
+import static org.cytoscape.ding.internal.charts.ColorScheme.RAINBOW;
+import static org.cytoscape.ding.internal.charts.ColorScheme.RANDOM;
+import static org.cytoscape.ding.internal.charts.ColorScheme.UP_DOWN;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,10 +25,10 @@ import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.charts.ColorScheme;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
-import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
@@ -30,28 +37,27 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 
 	private static final long serialVersionUID = 2428987302044041051L;
 	
-	private static final String[] GROUPED_COLOR_SCHEMES = new String[] {
-		ColorUtil.CONTRASTING, ColorUtil.MODULATED, ColorUtil.RAINBOW, ColorUtil.RANDOM, ColorUtil.UP_DOWN,
-		ColorUtil.CUSTOM
+	private static final ColorScheme[] GROUPED_COLOR_SCHEMES = new ColorScheme[] {
+		CONTRASTING, MODULATED, RAINBOW, RANDOM, UP_DOWN, CUSTOM
 	};
 	
-	private static final String[] STACKED_COLOR_SCHEMES = new String[] {
-		ColorUtil.CONTRASTING, ColorUtil.MODULATED, ColorUtil.RAINBOW, ColorUtil.RANDOM, ColorUtil.CUSTOM
+	private static final ColorScheme[] STACKED_COLOR_SCHEMES = new ColorScheme[] {
+		CONTRASTING, MODULATED, RAINBOW, RANDOM, CUSTOM
 	};
 	
-	private static final String[] HEAT_STRIP_COLOR_SCHEMES;
+	private static final ColorScheme[] HEAT_STRIP_COLOR_SCHEMES;
 	
 	static {
-		final List<String> heatStripSchemeList = new ArrayList<String>();
+		final List<ColorScheme> heatStripSchemeList = new ArrayList<ColorScheme>();
 		
 		for (final ColorGradient cg : ColorGradient.values()) {
 			if (cg.getColors().size() == 3)
-				heatStripSchemeList.add(cg.getLabel());
+				heatStripSchemeList.add(new ColorScheme(cg));
 		}
 		
-		heatStripSchemeList.add(ColorUtil.CUSTOM);
+		heatStripSchemeList.add(CUSTOM);
 		
-		HEAT_STRIP_COLOR_SCHEMES = heatStripSchemeList.toArray(new String[heatStripSchemeList.size()]);
+		HEAT_STRIP_COLOR_SCHEMES = heatStripSchemeList.toArray(new ColorScheme[heatStripSchemeList.size()]);
 	}
 	
 	private JLabel typeLbl;
@@ -81,7 +87,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	}
 	
 	@Override
-	protected String[] getColorSchemes() {
+	protected ColorScheme[] getColorSchemes() {
 		final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 		
 		return type == BarChartType.HEAT_STRIPS ? 
@@ -293,7 +299,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 
 		private static final long serialVersionUID = 1174473101447051638L;
 
-		public BarColorSchemeEditor(final BarChart chart, final String[] colorSchemes, final CyNetwork network,
+		public BarColorSchemeEditor(final BarChart chart, final ColorScheme[] colorSchemes, final CyNetwork network,
 				final IconManager iconMgr) {
 			super(chart, colorSchemes, false, network, iconMgr);
 		}

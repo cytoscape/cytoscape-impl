@@ -361,7 +361,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		List<Color> colors = getList(COLORS, Color.class);
 		
 		if (colors == null || colors.isEmpty()) {
-			final String scheme = get(COLOR_SCHEME, String.class);
+			final ColorScheme scheme = get(COLOR_SCHEME, ColorScheme.class);
 			
 			if (scheme != null && data != null && !data.isEmpty()) {
 				int nColors = 0;
@@ -371,7 +371,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 						nColors = Math.max(nColors, values.size());
 				}
 				
-				colors = ColorUtil.getColors(scheme, nColors);
+				colors = scheme.getColors(nColors);
 			}
 		}
 		
