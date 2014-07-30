@@ -28,32 +28,32 @@ public enum ColorGradient {
 	
 	// 3-color ColorBrewer schemes (color-blind safe and print friendly):
 	// Sequential - Multi-hue
-	BU_GN("3-class BuGn", new Color(44,162,95), new Color(153,216,201), new Color(229,245,249)),
-	BU_PU("3-class BuPu", new Color(136,86,167), new Color(158,188,218), new Color(224,236,244)),
-	GN_BU("3-class GnBu", new Color(67,162,202), new Color(168,221,181), new Color(224,243,219)),
-	OR_RD("3-class OrRd", new Color(227,74,51), new Color(253,187,132), new Color(254,232,200)),
-	PU_BU("3-class PuBu", new Color(43,140,190), new Color(166,189,219), new Color(236,231,242)),
-	PU_BU_GN("3-class PuBuGn", new Color(28,144,153), new Color(166,189,219), new Color(236,226,240)),
-	PU_RD("3-class PuRd", new Color(221,28,119), new Color(201,148,199), new Color(231,225,239)),
-	RD_PU("3-class RdPu", new Color(197,27,138), new Color(250,159,181), new Color(253,224,221)),
-	YL_GN("3-class YlGn", new Color(49,163,84), new Color(173,221,142), new Color(247,252,185)),
-	YL_GN_B("3-class YlGnB", new Color(44,127,184), new Color(127,205,187), new Color(237,248,177)),
-	YL_OR_BR("3-class YlOrBr", new Color(217,95,14), new Color(254,196,79), new Color(255,247,188)),
-	YL_OR_RD("3-class YlOrRd", new Color(240,59,32), new Color(254,178,76), new Color(255,237,160)),
+	BU_GN("ColorBrewer: BuGn", new Color(44,162,95), new Color(153,216,201), new Color(229,245,249)),
+	BU_PU("ColorBrewer: BuPu", new Color(136,86,167), new Color(158,188,218), new Color(224,236,244)),
+	GN_BU("ColorBrewer: GnBu", new Color(67,162,202), new Color(168,221,181), new Color(224,243,219)),
+	OR_RD("ColorBrewer: OrRd", new Color(227,74,51), new Color(253,187,132), new Color(254,232,200)),
+	PU_BU("ColorBrewer: PuBu", new Color(43,140,190), new Color(166,189,219), new Color(236,231,242)),
+	PU_BU_GN("ColorBrewer: PuBuGn", new Color(28,144,153), new Color(166,189,219), new Color(236,226,240)),
+	PU_RD("ColorBrewer: PuRd", new Color(221,28,119), new Color(201,148,199), new Color(231,225,239)),
+	RD_PU("ColorBrewer: RdPu", new Color(197,27,138), new Color(250,159,181), new Color(253,224,221)),
+	YL_GN("ColorBrewer: YlGn", new Color(49,163,84), new Color(173,221,142), new Color(247,252,185)),
+	YL_GN_B("ColorBrewer: YlGnB", new Color(44,127,184), new Color(127,205,187), new Color(237,248,177)),
+	YL_OR_BR("ColorBrewer: YlOrBr", new Color(217,95,14), new Color(254,196,79), new Color(255,247,188)),
+	YL_OR_RD("ColorBrewer: YlOrRd", new Color(240,59,32), new Color(254,178,76), new Color(255,237,160)),
 	// Sequential - Single-Hue
-	BLUES("3-class Blues", new Color(49,130,189), new Color(158,202,225), new Color(222,235,247)),
-	GREENS("3-class Greens", new Color(49,163,84), new Color(161,217,155), new Color(229,245,224)),
-	GREYS("3-class Greys", new Color(99,99,99), new Color(189,189,189), new Color(240,240,240)),
-	ORANGES("3-class Oranges", new Color(230,85,13), new Color(253,174,107), new Color(254,230,206)),
-	PURPLES("3-class Purples", new Color(117,107,177), new Color(188,189,220), new Color(239,237,245)),
-	REDS("3-class Reds", new Color(222,45,38), new Color(252,146,114), new Color(254,224,210)),
-//	// Diverging
-//	BR_BG("3-class BrBG", new Color(90,180,172), new Color(245,245,245), new Color(216,179,101)),
-//	PI_YG("3-class PiYG", new Color(161,215,106), new Color(247,247,247), new Color(233,163,201)),
-//	PR_GN("3-class PRGn", new Color(127,191,123), new Color(247,247,247), new Color(175,141,195)),
-//	PU_OR("3-class PuOr", new Color(153,142,195), new Color(247,247,247), new Color(241,163,64)),
-//	RD_BU("3-class RdBu", new Color(103,169,207), new Color(247,247,247), new Color(239,138,98)),
-//	RD_YL_BU("3-class RdYlBu", new Color(145,191,219), new Color(255,255,191), new Color(252,141,89))
+	BLUES("ColorBrewer: Blues", new Color(49,130,189), new Color(158,202,225), new Color(222,235,247)),
+	GREENS("ColorBrewer: Greens", new Color(49,163,84), new Color(161,217,155), new Color(229,245,224)),
+	GREYS("ColorBrewer: Greys", new Color(99,99,99), new Color(189,189,189), new Color(240,240,240)),
+	ORANGES("ColorBrewer: Oranges", new Color(230,85,13), new Color(253,174,107), new Color(254,230,206)),
+	PURPLES("ColorBrewer: Purples", new Color(117,107,177), new Color(188,189,220), new Color(239,237,245)),
+	REDS("ColorBrewer: Reds", new Color(222,45,38), new Color(252,146,114), new Color(254,224,210)),
+	// Diverging
+	BR_BG("ColorBrewer: BrBG", new Color(90,180,172), null/*new Color(245,245,245)*/, new Color(216,179,101)),
+	PI_YG("ColorBrewer: PiYG", new Color(161,215,106), null/*new Color(247,247,247)*/, new Color(233,163,201)),
+	PR_GN("ColorBrewer: PRGn", new Color(127,191,123), null/*new Color(247,247,247)*/, new Color(175,141,195)),
+	PU_OR("ColorBrewer: PuOr", new Color(153,142,195), null/*new Color(247,247,247)*/, new Color(241,163,64)),
+	RD_BU("ColorBrewer: RdBu", new Color(103,169,207), null/*new Color(247,247,247)*/, new Color(239,138,98)),
+	RD_YL_BU("ColorBrewer: RdYlBu", new Color(145,191,219), null/*new Color(255,255,191)*/, new Color(252,141,89))
 	;
 
 	private String label;

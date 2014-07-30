@@ -5,7 +5,6 @@ import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
 import static org.cytoscape.ding.internal.charts.ColorScheme.MODULATED;
 import static org.cytoscape.ding.internal.charts.ColorScheme.RAINBOW;
 import static org.cytoscape.ding.internal.charts.ColorScheme.RANDOM;
-import static org.cytoscape.ding.internal.charts.ColorScheme.UP_DOWN;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -37,20 +36,19 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 
 	private static final long serialVersionUID = 2428987302044041051L;
 	
-	private static final ColorScheme[] GROUPED_COLOR_SCHEMES = new ColorScheme[] {
-		CONTRASTING, MODULATED, RAINBOW, RANDOM, UP_DOWN, CUSTOM
-	};
-	
-	private static final ColorScheme[] STACKED_COLOR_SCHEMES = new ColorScheme[] {
+	private static final ColorScheme[] REGULAR_COLOR_SCHEMES = new ColorScheme[] {
 		CONTRASTING, MODULATED, RAINBOW, RANDOM, CUSTOM
 	};
-	
 	private static final ColorScheme[] HEAT_STRIP_COLOR_SCHEMES;
+	private static final ColorScheme[] UP_DOWN_COLOR_SCHEMES;
 	
 	static {
 		final List<ColorScheme> heatStripSchemeList = new ArrayList<ColorScheme>();
+		final List<ColorScheme> upDownSchemeList = new ArrayList<ColorScheme>();
 		
 		for (final ColorGradient cg : ColorGradient.values()) {
+			upDownSchemeList.add(new ColorScheme(cg));
+			
 			if (cg.getColors().size() == 3)
 				heatStripSchemeList.add(new ColorScheme(cg));
 		}
@@ -58,6 +56,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		heatStripSchemeList.add(CUSTOM);
 		
 		HEAT_STRIP_COLOR_SCHEMES = heatStripSchemeList.toArray(new ColorScheme[heatStripSchemeList.size()]);
+		UP_DOWN_COLOR_SCHEMES = upDownSchemeList.toArray(new ColorScheme[heatStripSchemeList.size()]);
 	}
 	
 	private JLabel typeLbl;
@@ -65,6 +64,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	private JRadioButton groupedRd;
 	private JRadioButton stackedRd;
 	private JRadioButton heatStripsRd;
+	private JRadioButton upDownRd;
 	private JLabel separationLbl;
 	private JTextField separationTxt;
 	
@@ -92,7 +92,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		
 		return type == BarChartType.HEAT_STRIPS ? 
 				HEAT_STRIP_COLOR_SCHEMES : 
-				(type == BarChartType.STACKED ? STACKED_COLOR_SCHEMES : GROUPED_COLOR_SCHEMES);
+				(type == BarChartType.UP_DOWN ? UP_DOWN_COLOR_SCHEMES : REGULAR_COLOR_SCHEMES);
 	}
 	
 	@Override
@@ -109,14 +109,16 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(getGroupedRd())
 						.addComponent(getStackedRd())
-						.addComponent(getHeatStripsRd()))
+						.addComponent(getHeatStripsRd())
+						.addComponent(getUpDownRd()))
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(typeLbl)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(getGroupedRd())
 						.addComponent(getStackedRd())
-						.addComponent(getHeatStripsRd()))
+						.addComponent(getHeatStripsRd())
+						.addComponent(getUpDownRd()))
 		);
 		
 		return p;
@@ -150,6 +152,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 			typeGrp.add(getGroupedRd());
 			typeGrp.add(getStackedRd());
 			typeGrp.add(getHeatStripsRd());
+			typeGrp.add(getUpDownRd());
 		}
 		
 		return typeGrp;
@@ -200,6 +203,21 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		return heatStripsRd;
 	}
 	
+	public JRadioButton getUpDownRd() {
+		if (upDownRd == null) {
+			upDownRd = new JRadioButton("Up-Down");
+			
+			upDownRd.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setType();
+				}
+			});
+		}
+		
+		return upDownRd;
+	}
+	
 	private JTextField getSeparationTxt() {
 		if (separationTxt == null) {
 			separationTxt = new JTextField("" + chart.get(BarChart.SEPARATION, Double.class, 0.0));
@@ -230,6 +248,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 			type = BarChartType.STACKED;
 		else if (getHeatStripsRd().isSelected())
 			type = BarChartType.HEAT_STRIPS;
+		else if (getUpDownRd().isSelected())
+			type = BarChartType.UP_DOWN;
 		else
 			type = BarChartType.GROUPED;
 		
@@ -246,6 +266,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 			typeRd = getStackedRd();
 		else if (type == BarChartType.HEAT_STRIPS)
 			typeRd = getHeatStripsRd();
+		else if (type == BarChartType.UP_DOWN)
+			typeRd = getUpDownRd();
 		else
 			typeRd = getGroupedRd();
 		
@@ -308,7 +330,12 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		protected int getTotal() {
 			final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 			
-			return type == BarChartType.HEAT_STRIPS ? 3 : super.getTotal();
+			if (type == BarChartType.HEAT_STRIPS)
+				return 3;
+			if (type == BarChartType.UP_DOWN)
+				return 2;
+			
+			return super.getTotal();
 		}
 	}
 }

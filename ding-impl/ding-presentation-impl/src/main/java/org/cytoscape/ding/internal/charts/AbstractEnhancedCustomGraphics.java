@@ -193,6 +193,8 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		
 		if (value instanceof Color)
 			s = ColorUtil.toHexString((Color)value);
+		else if (value instanceof ColorScheme)
+			s = ((ColorScheme)value).getKey();
 		else if (value != null)
 			s = value.toString();
 		

@@ -32,7 +32,6 @@ import org.jfree.ui.TextAnchor;
 
 public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
-	private final boolean upAndDown;
 	private final BarChartType type;
 	private final double separation;
 	private final Orientation orientation;
@@ -49,14 +48,12 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final List<Color> colors,
-					final boolean upAndDown,
 					final double separation,
 					final DoubleRange range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
         		range, bounds);
-		this.upAndDown = upAndDown;
 		this.type = type;
 		this.separation = separation;
 		this.orientation = orientation;
@@ -174,7 +171,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 //        }
 		
 		if (type != BarChartType.STACKED) {
-			if (type == BarChartType.HEAT_STRIPS || upAndDown) {
+			if (type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN) {
 				final Color up =   (colors.size() > 0) ? colors.get(0) : Color.LIGHT_GRAY;
 				final Color zero = (colors.size() > 2) ? colors.get(1) : Color.BLACK;
 				final Color down = (colors.size() > 2) ? colors.get(2) : (colors.size() > 1 ? colors.get(1) : Color.GRAY);
@@ -214,7 +211,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			renderer.setSeriesOutlineStroke(i, borderStroke);
 			renderer.setSeriesOutlinePaint(i, borderColor);
 			
-			if (type == BarChartType.STACKED || !upAndDown) {
+			if (type != BarChartType.UP_DOWN) {
 				Color c = DEFAULT_ITEM_BG_COLOR;
 				
 				if (colors != null && colors.size() > i)

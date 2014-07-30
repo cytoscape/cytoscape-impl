@@ -1,10 +1,9 @@
 package org.cytoscape.ding.internal.charts;
 
-import static org.cytoscape.ding.internal.charts.ColorScheme.*;
-
 import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DATA_COLUMNS;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLORS;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLOR_SCHEME;
+import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -19,9 +18,9 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -32,6 +31,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.border.Border;
 
+import org.cytoscape.ding.internal.charts.bar.BarChart;
+import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -182,6 +183,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	
 	private void updateColorList(final boolean newScheme) {
 		List<Color> colors = chart.getList(COLORS, Color.class);
+		final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 		final ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
 		final int nColors = getTotal();
 		
@@ -210,10 +212,15 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 		int count = 0;
 		
 		for (final Color c : colors) {
+			if (BarChartType.UP_DOWN.equals(type) && colors.size() > 2 && count != 0 && count != colors.size()-1) {
+				count++;
+				continue;
+			}
+			
 			final ColorPanel cp = new ColorPanel(c, "");
 			String label = "";
 			
-			if (UP_DOWN.equals(scheme) && count < 2) {
+			if (BarChartType.UP_DOWN.equals(type) && (count == 0 || count == colors.size()-1)) {
 				label = count == 0 ? IconManager.ICON_ARROW_UP : IconManager.ICON_ARROW_DOWN;
 				cp.setFont(iconMgr.getIconFont(11));
 			} else {
@@ -233,11 +240,7 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 	}
 	
 	protected int getTotal() {
-		final ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
-		
-		if (UP_DOWN.equals(scheme) && Arrays.asList(colorSchemes).contains(scheme)) {
-			return 2;
-		} else if (total <= 0) {
+		if (total <= 0) {
 			final List<CyColumnIdentifier> dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
 			
 			if (columnIsSeries) {

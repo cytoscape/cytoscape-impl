@@ -2,7 +2,6 @@ package org.cytoscape.ding.internal.charts;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -16,14 +15,10 @@ public class ColorScheme {
 	public static final ColorScheme MODULATED = new ColorScheme("modulated", "Modulated");
 	public static final ColorScheme RAINBOW = new ColorScheme("rainbow", "Rainbow");
 	public static final ColorScheme RANDOM = new ColorScheme("random", "Random");
-	public static final ColorScheme UP_DOWN = new ColorScheme("updown", "Up-Down");
 	public static final ColorScheme CUSTOM = new ColorScheme("custom", "Custom");
 	
 	public static ColorScheme DEFAULT = CONTRASTING;
 	
-	// From http://colorbrewer2.org/
-	private static List<Color> RD_BU = Arrays.asList(new Color[]{ new Color(239,138,98), new Color(103,169,207) });
-
 	private final String key;
 	private final String label;
 	private ColorGradient gradient;
@@ -50,21 +45,26 @@ public class ColorScheme {
 	public List<Color> getColors(final int nColors) {
 		List<Color> colors = null;
 		
-		if (gradient != null) {
-			colors = gradient.getColors();
-		} else if (nColors > 0) {
-			if (RANDOM.getKey().equalsIgnoreCase(key) || CUSTOM.getKey().equalsIgnoreCase(key))
-				colors = generateRandomColors(nColors);
-			if (RAINBOW.getKey().equalsIgnoreCase(key))
-				colors = generateRainbowColors(nColors);
-			if (MODULATED.getKey().equalsIgnoreCase(key))
-				colors = generateModulatedRainbowColors(nColors);
-			if (CONTRASTING.getKey().equalsIgnoreCase(key))
-				colors = generateContrastingColors(nColors);
+		if (nColors > 0) {
+			if (gradient != null) {
+				colors = gradient.getColors();
+				
+				if (colors.size() > nColors && nColors == 2) {
+					List<Color> newColors = new ArrayList<Color>();
+					newColors.add(colors.get(0));
+					newColors.add(colors.get(2));
+				}
+			} else if (nColors > 0) {
+				if (RANDOM.getKey().equalsIgnoreCase(key) || CUSTOM.getKey().equalsIgnoreCase(key))
+					colors = generateRandomColors(nColors);
+				if (RAINBOW.getKey().equalsIgnoreCase(key))
+					colors = generateRainbowColors(nColors);
+				if (MODULATED.getKey().equalsIgnoreCase(key))
+					colors = generateModulatedRainbowColors(nColors);
+				if (CONTRASTING.getKey().equalsIgnoreCase(key))
+					colors = generateContrastingColors(nColors);
+			}
 		}
-		
-		if (colors == null && UP_DOWN.getKey().equalsIgnoreCase(key))
-			colors = RD_BU;
 		
 		if (colors == null)
 			colors = Collections.emptyList();
@@ -94,7 +94,6 @@ public class ColorScheme {
 		if (RAINBOW.getKey().equalsIgnoreCase(input))     return RAINBOW;
 		if (MODULATED.getKey().equalsIgnoreCase(input))   return MODULATED;
 		if (CONTRASTING.getKey().equalsIgnoreCase(input)) return CONTRASTING;
-		if (UP_DOWN.getKey().equalsIgnoreCase(input))     return UP_DOWN;
 		
 		if (ColorGradient.contains(input))
 			return new ColorScheme(ColorGradient.getGradient(input));

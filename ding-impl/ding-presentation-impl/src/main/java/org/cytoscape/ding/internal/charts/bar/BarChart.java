@@ -35,7 +35,7 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 	
 	public static final double MAX_SEPARATION = 0.5;
 	
-	public static enum BarChartType { GROUPED, STACKED, HEAT_STRIPS };
+	public static enum BarChartType { GROUPED, STACKED, HEAT_STRIPS, UP_DOWN };
 	
 	public static ImageIcon ICON;
 	
@@ -89,13 +89,12 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
 		final ColorScheme colorScheme = get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
-		final boolean upAndDown = ColorScheme.UP_DOWN.equals(colorScheme);
 		
 		double separation = get(SEPARATION, Double.class, 0.0);
 		separation = (separation > MAX_SEPARATION) ? MAX_SEPARATION : (separation < 0.0 ? 0.0 : separation);
 		
 		final BarLayer layer = new BarLayer(data, type, itemLabels, domainLabels, rangeLabels, showLabels,
-				showDomainAxis, showRangeAxis, colors, upAndDown, separation, range, orientation, bounds);
+				showDomainAxis, showRangeAxis, colors, separation, range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

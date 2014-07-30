@@ -29,7 +29,6 @@ import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
 import static org.cytoscape.ding.internal.charts.ColorScheme.MODULATED;
 import static org.cytoscape.ding.internal.charts.ColorScheme.RAINBOW;
 import static org.cytoscape.ding.internal.charts.ColorScheme.RANDOM;
-import static org.cytoscape.ding.internal.charts.ColorScheme.UP_DOWN;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -546,8 +545,6 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 				colors = MODULATED.getColors(nColors);
 			if (CONTRASTING.getKey().equalsIgnoreCase(input))
 				colors = CONTRASTING.getColors(nColors);
-			if (UP_DOWN.getKey().equalsIgnoreCase(input))
-				colors = UP_DOWN.getColors(2);
 		}
 
 		if (colors == null || colors.isEmpty()) {
@@ -576,11 +573,11 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		// Look for up/down special case
 		if (colorArray.length == 2 &&
 		    (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN))) {
-			return ColorScheme.UP_DOWN;
+			return ColorScheme.CUSTOM;
 		} else if (colorArray.length == 3 &&
 		    (colorArray[0].toLowerCase().startsWith(UP) || colorArray[0].toLowerCase().startsWith(DOWN) ||
 		     colorArray[0].toLowerCase().startsWith(ZERO))) {
-			return ColorScheme.UP_DOWN;
+			return ColorScheme.CUSTOM;
 		} else if (colorArray.length > 1) {
 			return ColorScheme.CUSTOM;
 		} else {
