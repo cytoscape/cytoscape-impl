@@ -1,6 +1,7 @@
 package org.cytoscape.commandDialog.internal;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
@@ -96,12 +97,15 @@ public class CyActivator extends AbstractCyActivator {
 			commandDialogProps.setProperty(TITLE, "Command Line Dialog");
 			commandDialogProps.setProperty(COMMAND, "open dialog");
 			commandDialogProps.setProperty(COMMAND_NAMESPACE, "command");
+			commandDialogProps.setProperty(COMMAND_DESCRIPTION, "Open the command line dialog");
 			commandDialogProps.setProperty(IN_MENU_BAR, "true");
 			registerService(bc, commandDialog, TaskFactory.class, commandDialogProps);
 
 			TaskFactory pauseCommand = new PauseCommandTaskFactory(swingApp.getJFrame());
 			Properties pauseProperties = new Properties();
 			pauseProperties.setProperty(COMMAND_NAMESPACE, "command");
+			pauseProperties.setProperty(COMMAND_DESCRIPTION, 
+			                            "Display a message and pause command processing until the user continues it");
 			pauseProperties.setProperty(COMMAND, "pause");
 			registerService(bc, pauseCommand, TaskFactory.class, pauseProperties);
 		} else {
@@ -114,6 +118,7 @@ public class CyActivator extends AbstractCyActivator {
 		runCommandProps.setProperty(TITLE, "Execute Command File");
 		runCommandProps.setProperty(COMMAND, "run");
 		runCommandProps.setProperty(COMMAND_NAMESPACE, "command");
+		runCommandProps.setProperty(COMMAND_DESCRIPTION, "Run a series of commands from a file");
 		runCommandProps.setProperty(IN_MENU_BAR, "true");
 		registerService(bc, runCommand, TaskFactory.class, runCommandProps);
 
@@ -122,11 +127,13 @@ public class CyActivator extends AbstractCyActivator {
 		Properties quitCommandProps = new Properties();
 		quitCommandProps.setProperty(COMMAND, "quit");
 		quitCommandProps.setProperty(COMMAND_NAMESPACE, "command");
+		quitCommandProps.setProperty(COMMAND_DESCRIPTION, "Exit Cytoscape");
 		registerService(bc, quitCommand, TaskFactory.class, quitCommandProps);
 
 		TaskFactory sleepCommand = new SleepCommandTaskFactory();
 		Properties sleepProperties = new Properties();
 		sleepProperties.setProperty(COMMAND_NAMESPACE, "command");
+		sleepProperties.setProperty(COMMAND_DESCRIPTION, "Stop command processing for a specified time");
 		sleepProperties.setProperty(COMMAND, "sleep");
 		registerService(bc, sleepCommand, TaskFactory.class, sleepProperties);
 
