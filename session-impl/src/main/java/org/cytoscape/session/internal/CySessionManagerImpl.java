@@ -570,6 +570,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		for (CyProperty<?> cyProps : cyPropsClone) {
 			if (cyProps.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE)) {
 				registrar.unregisterAllServices(cyProps);
+				sessionProperties.remove(cyProps);
 			}
 		}
 		
