@@ -48,12 +48,14 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final List<Color> colors,
+					final double borderWidth,
+					final Color borderColor,
 					final double separation,
 					final DoubleRange range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
-        		range, bounds);
+        		borderWidth, borderColor, range, bounds);
 		this.type = type;
 		this.separation = separation;
 		this.orientation = orientation;
@@ -209,7 +211,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		
 		for (int i = 0; i < keys.size(); i++) {
 			renderer.setSeriesOutlineStroke(i, borderStroke);
-			renderer.setSeriesOutlinePaint(i, borderColor);
+			renderer.setSeriesOutlinePaint(i, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 			
 			if (type != BarChartType.UP_DOWN) {
 				Color c = DEFAULT_ITEM_BG_COLOR;

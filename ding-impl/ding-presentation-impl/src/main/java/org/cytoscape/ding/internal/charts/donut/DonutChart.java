@@ -67,7 +67,11 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		
-		final DonutLayer layer = new DonutLayer(data, labels, showLabels, colors, startAngle, hole, rotation, bounds);
+		final double borderWidth = get(BORDER_WIDTH, Double.class, 0.25);
+		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
+		
+		final DonutLayer layer = new DonutLayer(data, labels, showLabels, colors, borderWidth, borderColor, startAngle,
+				hole, rotation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

@@ -31,10 +31,12 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 					final List<String> itemLabels,
 					final boolean showLabels,
 					final List<Color> colors,
+					final double borderWidth,
+					final Color borderColor,
 					final double startAngle,
 					final Rotation rotation,
 					final Rectangle2D bounds) {
-        super(data, itemLabels, null, null, showLabels, false, false, colors, null, bounds);
+        super(data, itemLabels, null, null, showLabels, false, false, colors, borderWidth, borderColor, null, bounds);
         this.startAngle = 360 - startAngle;
         this.rotation = rotation;
         this.labels = new HashMap<String, String>();
@@ -106,7 +108,7 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 			final String k = (String) keys.get(i);
 			final Color c = colors.size() > i ? colors.get(i) : DEFAULT_ITEM_BG_COLOR;
 			plot.setSectionPaint(k, c);
-			plot.setSectionOutlinePaint(k, borderColor);
+			plot.setSectionOutlinePaint(k, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 			plot.setSectionOutlineStroke(k, stroke);
 		}
 		

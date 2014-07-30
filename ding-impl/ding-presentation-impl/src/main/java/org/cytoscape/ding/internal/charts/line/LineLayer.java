@@ -39,7 +39,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
-        		range, bounds);
+        		0.0, TRANSPARENT_COLOR, range, bounds);
         this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
 	

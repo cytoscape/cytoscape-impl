@@ -72,6 +72,19 @@ public class ColorScheme {
 		return colors;
 	}
 	
+	public static ColorScheme parse(final String input) {
+		if (RANDOM.getKey().equalsIgnoreCase(input))      return RANDOM;
+		if (CUSTOM.getKey().equalsIgnoreCase(input))      return CUSTOM;
+		if (RAINBOW.getKey().equalsIgnoreCase(input))     return RAINBOW;
+		if (MODULATED.getKey().equalsIgnoreCase(input))   return MODULATED;
+		if (CONTRASTING.getKey().equalsIgnoreCase(input)) return CONTRASTING;
+		
+		if (ColorGradient.contains(input))
+			return new ColorScheme(ColorGradient.getGradient(input));
+		
+		return CONTRASTING;
+	}
+	
 	public static List<Color> generateRandomColors(int nColors) {
 		Calendar cal = Calendar.getInstance();
 		int seed = cal.get(Calendar.SECOND);
@@ -88,19 +101,6 @@ public class ColorScheme {
 		return result;
 	}
 
-	public static ColorScheme parse(final String input) {
-		if (RANDOM.getKey().equalsIgnoreCase(input))      return RANDOM;
-		if (CUSTOM.getKey().equalsIgnoreCase(input))      return CUSTOM;
-		if (RAINBOW.getKey().equalsIgnoreCase(input))     return RAINBOW;
-		if (MODULATED.getKey().equalsIgnoreCase(input))   return MODULATED;
-		if (CONTRASTING.getKey().equalsIgnoreCase(input)) return CONTRASTING;
-		
-		if (ColorGradient.contains(input))
-			return new ColorScheme(ColorGradient.getGradient(input));
-		
-		return CONTRASTING;
-	}
-	
 	// Rainbow colors just divide the Hue wheel into n pieces and return them
 	public static List<Color> generateRainbowColors(int nColors) {
 		List<Color> values = new ArrayList<Color>();

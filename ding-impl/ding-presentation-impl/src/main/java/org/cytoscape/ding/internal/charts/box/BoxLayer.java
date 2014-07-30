@@ -35,11 +35,13 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final List<Color> colors,
+					final double borderWidth,
+					final Color borderColor,
 					final DoubleRange range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
-        		false, showDomainAxis, showRangeAxis, colors, range, bounds);
+        		false, showDomainAxis, showRangeAxis, colors, borderWidth, borderColor, range, bounds);
         this.orientation = orientation;
 	}
 	
@@ -134,7 +136,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		for (int i = 0; i < keys.size(); i++) {
 			renderer.setSeriesStroke(i, seriesStroke);
 			renderer.setSeriesOutlineStroke(i, borderStroke);
-			renderer.setSeriesOutlinePaint(i, borderColor);
+			renderer.setSeriesOutlinePaint(i, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 			
 			if (colors != null && colors.size() >= keys.size())
 				renderer.setSeriesPaint(i, colors.get(i));

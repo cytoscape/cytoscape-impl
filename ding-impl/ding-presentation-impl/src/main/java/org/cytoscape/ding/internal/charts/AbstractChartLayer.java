@@ -44,8 +44,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	protected final boolean showDomainAxis;
 	protected final boolean showRangeAxis;
 	protected final List<Color> colors;
-	protected double borderWidth = 0.25;
-	protected Color borderColor = Color.DARK_GRAY;
+	protected final double borderWidth;
+	protected final Color borderColor;
 	protected Color labelColor = Color.DARK_GRAY;
 	protected float labelFontSize = 2.0f;
 	protected double axisWidth = 0.25;
@@ -70,6 +70,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 								 final boolean showDomainAxis,
 								 final boolean showRangeAxis,
 								 final List<Color> colors,
+								 final double borderWidth,
+								 final Color borderColor,
 								 final DoubleRange range,
 								 final Rectangle2D bounds) {
 		this.data = data;
@@ -80,6 +82,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		this.showDomainAxis = showDomainAxis;
 		this.showRangeAxis = showRangeAxis;
 		this.colors = colors;
+		this.borderWidth = borderWidth;
+		this.borderColor = borderColor;
 		this.bounds = scaledBounds = bounds;
 		this.range = range;
 	}
@@ -146,62 +150,6 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		scaledBounds = r;
 		
 		return paint;
-	}
-	
-	public double getBorderWidth() {
-		return borderWidth;
-	}
-	
-	public void setBorderWidth(double borderWidth) {
-		this.borderWidth = borderWidth;
-	}
-	
-	public Color getBorderColor() {
-		return borderColor;
-	}
-	
-	public void setBorderColor(Color borderColor) {
-		this.borderColor = borderColor;
-	}
-	
-	public Color getLabelColor() {
-		return labelColor;
-	}
-	
-	public void setLabelColor(Color labelColor) {
-		this.labelColor = labelColor;
-	}
-	
-	public float getLabelFontSize() {
-		return labelFontSize;
-	}
-	
-	public void setLabelFontSize(float labelFontSize) {
-		this.labelFontSize = labelFontSize;
-	}
-	
-	public double getAxisWidth() {
-		return axisWidth;
-	}
-	
-	public void setAxisWidth(double axisWidth) {
-		this.axisWidth = axisWidth;
-	}
-	
-	public Color getAxisColor() {
-		return axisColor;
-	}
-	
-	public void setAxisColor(Color axisColor) {
-		this.axisColor = axisColor;
-	}
-	
-	public float getAxisFontSize() {
-		return axisFontSize;
-	}
-	
-	public void setAxisFontSize(float axisFontSize) {
-		this.axisFontSize = axisFontSize;
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================

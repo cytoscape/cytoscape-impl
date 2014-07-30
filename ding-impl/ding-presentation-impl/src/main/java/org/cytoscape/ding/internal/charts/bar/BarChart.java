@@ -12,7 +12,6 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
 import org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics;
-import org.cytoscape.ding.internal.charts.ColorScheme;
 import org.cytoscape.ding.internal.charts.Orientation;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.model.CyIdentifiable;
@@ -88,13 +87,14 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
-		final ColorScheme colorScheme = get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
+		final double borderWidth = get(BORDER_WIDTH, Double.class, 0.25);
+		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
 		double separation = get(SEPARATION, Double.class, 0.0);
 		separation = (separation > MAX_SEPARATION) ? MAX_SEPARATION : (separation < 0.0 ? 0.0 : separation);
 		
 		final BarLayer layer = new BarLayer(data, type, itemLabels, domainLabels, rangeLabels, showLabels,
-				showDomainAxis, showRangeAxis, colors, separation, range, orientation, bounds);
+				showDomainAxis, showRangeAxis, colors, borderWidth, borderColor, separation, range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

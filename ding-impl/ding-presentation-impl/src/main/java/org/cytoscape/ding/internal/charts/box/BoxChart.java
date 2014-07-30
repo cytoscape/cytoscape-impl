@@ -69,7 +69,11 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
 		
-		final BoxLayer layer = new BoxLayer(data, showDomainAxis, showRangeAxis, colors, range, orientation, bounds);
+		final double borderWidth = get(BORDER_WIDTH, Double.class, 0.25);
+		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
+		
+		final BoxLayer layer = new BoxLayer(data, showDomainAxis, showRangeAxis, colors, borderWidth, borderColor,
+				range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

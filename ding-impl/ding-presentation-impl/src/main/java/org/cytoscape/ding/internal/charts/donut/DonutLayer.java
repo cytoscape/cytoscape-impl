@@ -48,11 +48,13 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 					 final List<String> labels,
 					 final boolean showLabels,
 					 final List<Color> colors,
+					 final double borderWidth,
+					 final Color borderColor,
 					 final double startAngle,
 					 final double hole,
 					 final Rotation rotation,
 					 final Rectangle2D bounds) {
-        super(data, labels, null, null, showLabels, false, false, colors, null, bounds);
+        super(data, labels, null, null, showLabels, false, false, colors, borderWidth, borderColor, null, bounds);
         this.startAngle = 360 - startAngle;
         this.hole = hole;
         this.rotation = rotation;
@@ -195,7 +197,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 		final BasicStroke stroke =
 				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		plot.setSeparatorStroke(stroke);
-		plot.setSeparatorPaint(getBorderColor());
+		plot.setSeparatorPaint(borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 		
 		final List<?> keys = dataset.getKeys();
 		
@@ -203,7 +205,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 			final String k = (String) keys.get(i);
 			final Color c = colors.size() > i ? colors.get(i) : DEFAULT_ITEM_BG_COLOR;
 			plot.setSectionPaint(k, c);
-			plot.setSectionOutlinePaint(k, borderColor);
+			plot.setSectionOutlinePaint(k, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 			plot.setSectionOutlineStroke(k, stroke);
 		}
 		

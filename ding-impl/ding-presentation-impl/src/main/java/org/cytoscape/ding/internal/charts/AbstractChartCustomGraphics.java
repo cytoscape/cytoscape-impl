@@ -39,6 +39,8 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	public static final String SHOW_DOMAIN_AXIS = "showdomainaxis";
 	public static final String SHOW_RANGE_AXIS = "showrangeaxis";
 	public static final String VALUES = "valuelist";
+	public static final String BORDER_WIDTH = "borderwidth";
+	public static final String BORDER_COLOR = "bordercolor";
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -392,6 +394,8 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(RANGE)) return DoubleRange.class;
+		if (key.equalsIgnoreCase(BORDER_WIDTH)) return Double.class;
+		if (key.equalsIgnoreCase(BORDER_COLOR)) return Color.class;
 			
 		return super.getSettingType(key);
 	}

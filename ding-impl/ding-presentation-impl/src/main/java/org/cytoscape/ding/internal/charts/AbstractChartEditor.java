@@ -1,13 +1,6 @@
 package org.cytoscape.ding.internal.charts;
 
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.AUTO_RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DATA_COLUMNS;
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DOMAIN_LABELS_COLUMN;
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.GLOBAL_RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.ITEM_LABELS_COLUMN;
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.RANGE_LABELS_COLUMN;
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.SHOW_ITEM_LABELS;
+import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.*;
 import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.ORIENTATION;
 import static org.cytoscape.ding.internal.charts.ColorScheme.CONTRASTING;
 import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
@@ -16,14 +9,18 @@ import static org.cytoscape.ding.internal.charts.ColorScheme.RAINBOW;
 import static org.cytoscape.ding.internal.charts.ColorScheme.RANDOM;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,11 +42,14 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.Icon;
 import javax.swing.InputVerifier;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -63,6 +63,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
+import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
@@ -81,6 +82,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		CONTRASTING, MODULATED, RAINBOW, RANDOM, CUSTOM
 	};
 	
+	protected static final JColorChooser colorChooser = new JColorChooser();
+	
 	private JTabbedPane optionsTpn;
 	private JPanel basicOptionsPnl;
 	private JPanel advancedOptionsPnl;
@@ -89,6 +92,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JPanel labelsPnl;
 	private JPanel orientationPnl;
 	private JPanel axesPnl;
+	private JPanel borderPnl;
 	protected ColorSchemeEditor<T> colorSchemeEditor;
 	private JPanel otherBasicOptionsPnl;
 	private JPanel otherAdvancedOptionsPnl;
@@ -113,6 +117,10 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private ButtonGroup orientationGrp;
 	private JRadioButton verticalRd;
 	private JRadioButton horizontalRd;
+	private JLabel borderWidthLbl;
+	private JTextField borderWidthTxt;
+	private JLabel borderColorLbl;
+	private ColorButton borderColorBtn;
 	
 	protected final boolean columnIsSeries;
 	protected final int maxDataColumns; 
@@ -230,6 +238,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		rangeMinLbl = new JLabel("Min");
 		rangeMaxLbl = new JLabel("Max");
 		orientationLbl = new JLabel("Plot Orientation");
+		borderWidthLbl = new JLabel("Border Width");
+		borderColorLbl = new JLabel("Border Color");
 	}
 
 	protected JTabbedPane getOptionsTpn() {
@@ -296,6 +306,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 					.addComponent(getColorSchemeEditor())
 					.addComponent(getOrientationPnl())
 					.addComponent(getAxesPnl())
+					.addComponent(getBorderPnl())
 					.addComponent(getOtherAdvancedOptionsPnl())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
@@ -303,6 +314,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 					.addComponent(getColorSchemeEditor())
 					.addComponent(getOrientationPnl())
 					.addComponent(getAxesPnl())
+					.addComponent(getBorderPnl())
 					.addComponent(getOtherAdvancedOptionsPnl())
 			);
 		}
@@ -489,6 +501,45 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		}
 		
 		return axesPnl;
+	}
+	
+	protected JPanel getBorderPnl() {
+		if (borderPnl == null) {
+			borderPnl = new JPanel();
+			borderPnl.setOpaque(false);
+			
+			final GroupLayout layout = new GroupLayout(borderPnl);
+			borderPnl.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			
+			final JSeparator sep = new JSeparator();
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.TRAILING, false)
+							.addComponent(borderWidthLbl)
+							.addComponent(borderColorLbl))
+						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+							.addComponent(getBorderWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+									GroupLayout.PREFERRED_SIZE)
+							.addComponent(getBorderColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+									GroupLayout.PREFERRED_SIZE))
+					)
+					.addComponent(sep)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(borderWidthLbl)
+							.addComponent(getBorderWidthTxt()))
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(borderColorLbl)
+							.addComponent(getBorderColorBtn()))
+					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+					          GroupLayout.PREFERRED_SIZE)
+			);
+		}
+		
+		return borderPnl;
 	}
 	
 	protected ColorSchemeEditor<T> getColorSchemeEditor() {
@@ -785,6 +836,45 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	protected void setOrientation() {
 		final Orientation orientation = getHorizontalRd().isSelected() ? Orientation.HORIZONTAL : Orientation.VERTICAL;
 		chart.set(ORIENTATION, orientation);
+	}
+	
+	protected JTextField getBorderWidthTxt() {
+		if (borderWidthTxt == null) {
+			borderWidthTxt = new JTextField("" + chart.get(BORDER_WIDTH, Double.class, 1.0));
+			borderWidthTxt.setInputVerifier(new DoubleInputVerifier());
+			borderWidthTxt.setPreferredSize(new Dimension(60, borderWidthTxt.getMinimumSize().height));
+			borderWidthTxt.setHorizontalAlignment(JTextField.TRAILING);
+			
+			borderWidthTxt.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(final FocusEvent e) {
+					try {
+			            double v = Double.parseDouble(borderWidthTxt.getText());
+			            chart.set(BORDER_WIDTH, v);
+			        } catch (NumberFormatException nfe) {
+			        }
+				}
+			});
+		}
+		
+		return borderWidthTxt;
+	}
+	
+	protected ColorButton getBorderColorBtn() {
+		if (borderColorBtn == null) {
+			final Color color = chart.get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
+			borderColorBtn = new ColorButton(color);
+			
+			borderColorBtn.addPropertyChangeListener("color", new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent e) {
+					final Color newColor = (Color) e.getNewValue();
+					chart.set(BORDER_COLOR, newColor);
+				}
+			});
+		}
+		
+		return borderColorBtn;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -1214,6 +1304,76 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				c.setText("[ invalid column ]"); // Should never happen
 				
 			return c;
+		}
+	}
+	
+	protected static class ColorButton extends JButton {
+
+		private static final long serialVersionUID = 893040611762412640L;
+		
+		private Color color;
+		private Color borderColor;
+
+		public ColorButton(final Color color) {
+			super();
+			borderColor = ColorUtil.getContrastingColor(getBackground());
+			setIcon(new ColorIcon());
+			setColor(color);
+			
+			addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// Open color chooser
+					final JDialog dialog = JColorChooser.createDialog(
+							ColorButton.this,
+							"Please pick a color",
+							true,
+							colorChooser, 
+							new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									final Color c = colorChooser.getColor();
+									ColorButton.this.setColor(c);
+								}
+							}, null);
+					dialog.setVisible(true);
+				}
+			});
+		}
+
+		public void setColor(final Color color) {
+			final Color oldColor = this.color;
+			this.color = color;
+			repaint();
+			firePropertyChange("color", oldColor, color);
+		}
+		
+		public Color getColor() {
+			return color;
+		}
+		
+		class ColorIcon implements Icon {
+
+			@Override
+			public int getIconHeight() {
+				return 16;
+			}
+
+			@Override
+			public int getIconWidth() {
+				return 36;
+			}
+
+			@Override
+			public void paintIcon(Component c, Graphics g, int x, int y) {
+				int w = getIconWidth();
+				int h = getIconHeight();
+				
+				g.setColor(color);
+				g.fillRect(x, y, w, h);
+				g.setColor(borderColor);
+				g.drawRect(x, y, w, h);
+			}
 		}
 	}
 }

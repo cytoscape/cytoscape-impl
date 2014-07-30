@@ -74,7 +74,11 @@ public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
-		final StripeLayer layer = new StripeLayer(data, labels, false, colors, orientation, bounds);
+		final double borderWidth = get(BORDER_WIDTH, Double.class, 0.25);
+		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
+		
+		final StripeLayer layer = new StripeLayer(data, labels, false, colors, borderWidth, borderColor,
+				orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}
