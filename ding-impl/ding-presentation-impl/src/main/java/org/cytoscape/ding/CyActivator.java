@@ -111,14 +111,14 @@ import org.cytoscape.ding.internal.charts.bar.BarChartEditorFactory;
 import org.cytoscape.ding.internal.charts.bar.BarChartFactory;
 import org.cytoscape.ding.internal.charts.box.BoxChartEditorFactory;
 import org.cytoscape.ding.internal.charts.box.BoxChartFactory;
-import org.cytoscape.ding.internal.charts.donut.DonutChartEditorFactory;
-import org.cytoscape.ding.internal.charts.donut.DonutChartFactory;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChartEditorFactory;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChartFactory;
 import org.cytoscape.ding.internal.charts.line.LineChartEditorFactory;
 import org.cytoscape.ding.internal.charts.line.LineChartFactory;
 import org.cytoscape.ding.internal.charts.pie.PieChartEditorFactory;
 import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
+import org.cytoscape.ding.internal.charts.ring.RingChartEditorFactory;
+import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
 import org.cytoscape.ding.internal.charts.stripe.StripeChartEditorFactory;
 import org.cytoscape.ding.internal.charts.stripe.StripeChartFactory;
 import org.cytoscape.ding.internal.gradients.CyGradientFactoryManagerImpl;
@@ -671,10 +671,10 @@ public class CyActivator extends AbstractCyActivator {
 		final PieChartEditorFactory pieChartEditorFactory = new PieChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 		registerService(bc, pieChartEditorFactory, CyChartEditorFactory.class, new Properties());
 		
-		final DonutChartFactory donutChartFactory = new DonutChartFactory(colIdFactory);
-		registerService(bc, donutChartFactory, CyChartFactory.class, new Properties());
-		final DonutChartEditorFactory donutChartEditorFactory = new DonutChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
-		registerService(bc, donutChartEditorFactory, CyChartEditorFactory.class, new Properties());
+		final RingChartFactory ringChartFactory = new RingChartFactory(colIdFactory);
+		registerService(bc, ringChartFactory, CyChartFactory.class, new Properties());
+		final RingChartEditorFactory ringChartEditorFactory = new RingChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+		registerService(bc, ringChartEditorFactory, CyChartEditorFactory.class, new Properties());
 		
 		final LineChartFactory lineChartFactory = new LineChartFactory(colIdFactory);
 		registerService(bc, lineChartFactory, CyChartFactory.class, new Properties());

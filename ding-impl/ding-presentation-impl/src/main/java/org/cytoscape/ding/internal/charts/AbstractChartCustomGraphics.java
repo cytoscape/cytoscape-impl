@@ -38,6 +38,8 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	public static final String SHOW_ITEM_LABELS = "showitemlabels";
 	public static final String SHOW_DOMAIN_AXIS = "showdomainaxis";
 	public static final String SHOW_RANGE_AXIS = "showrangeaxis";
+	public static final String AXIS_WIDTH = "axiswidth";
+	public static final String AXIS_COLOR = "axiscolor";
 	public static final String VALUES = "valuelist";
 	public static final String BORDER_WIDTH = "borderwidth";
 	public static final String BORDER_COLOR = "bordercolor";
@@ -391,6 +393,8 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
+		if (key.equalsIgnoreCase(AXIS_WIDTH)) return Double.class;
+		if (key.equalsIgnoreCase(AXIS_COLOR)) return Color.class;
 		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(RANGE)) return DoubleRange.class;

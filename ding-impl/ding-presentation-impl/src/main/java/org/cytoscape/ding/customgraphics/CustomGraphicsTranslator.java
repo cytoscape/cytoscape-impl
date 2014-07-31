@@ -53,9 +53,9 @@ import org.cytoscape.ding.internal.charts.Rotation;
 import org.cytoscape.ding.internal.charts.ViewUtils;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.bar.BarChart;
-import org.cytoscape.ding.internal.charts.donut.DonutChart;
 import org.cytoscape.ding.internal.charts.line.LineChart;
 import org.cytoscape.ding.internal.charts.pie.PieChart;
+import org.cytoscape.ding.internal.charts.ring.RingChart;
 import org.cytoscape.ding.internal.charts.stripe.StripeChart;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.ding.internal.charts.util.ColorKeyword;
@@ -204,7 +204,7 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		if (input.startsWith("barchart:"))
 			type = BarChart.class;
 		else if (input.startsWith("circoschart:"))
-			type = DonutChart.class;
+			type = RingChart.class;
 		else if (input.startsWith("heatstripchart:"))
 			type = BarChart.class;
 		else if (input.startsWith("linechart:"))
@@ -379,7 +379,7 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 			}
 		}
 
-		if (type == PieChart.class || type == DonutChart.class) {
+		if (type == PieChart.class || type == RingChart.class) {
 			double arcStart = 0.0;
 			boolean sortSlices = true;
 			double minimumSlice = 2.0;
@@ -394,7 +394,7 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 			if (args.containsKey(LABELCIRCLES))
 				showLabels = getBooleanValue(args.get(LABELCIRCLES));
 			
-			if (type == DonutChart.class) {
+			if (type == RingChart.class) {
 				double firstArc = 0.2; // 20% out for first inner arc
 				double arcWidth = 0.1; // 10% of node width for arcs
 				double firstArcWidth = 0.1; // 10% of node width for arcs
@@ -409,9 +409,9 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 				else
 					firstArcWidth = arcWidth;
 				
-				props.put(DonutChart.START_ANGLE, arcStart);
-				props.put(DonutChart.HOLE_SIZE, firstArc);
-				props.put(DonutChart.ROTATION, Rotation.ANTICLOCKWISE);
+				props.put(RingChart.START_ANGLE, arcStart);
+				props.put(RingChart.HOLE_SIZE, firstArc);
+				props.put(RingChart.ROTATION, Rotation.ANTICLOCKWISE);
 			} else {
 				props.put(PieChart.START_ANGLE, arcStart);
 				props.put(PieChart.ROTATION, Rotation.ANTICLOCKWISE);

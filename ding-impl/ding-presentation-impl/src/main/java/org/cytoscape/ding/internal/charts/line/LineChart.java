@@ -76,10 +76,12 @@ public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
 		final boolean showItemLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
+		final double axisWidth = get(AXIS_WIDTH, Double.class, 0.25);
+		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
 		final float lineWidth = get(LINE_WIDTH, Float.class, 1.0f);
 		
 		LineLayer layer = new LineLayer(data, itemLabels, domainLabels, rangeLabels, showItemLabels, 
-				showDomainAxis, showRangeAxis, colors, range, lineWidth, bounds);
+				showDomainAxis, showRangeAxis, colors, axisWidth, axisColor, range, lineWidth, bounds);
 		
 		return Collections.singletonList(layer);
 	}

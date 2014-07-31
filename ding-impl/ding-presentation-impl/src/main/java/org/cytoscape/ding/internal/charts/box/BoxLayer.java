@@ -32,16 +32,17 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 	
 	@SuppressWarnings("unchecked")
 	public BoxLayer(final Map<String/*series*/, List<Double>/*values*/> data,
-					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final List<Color> colors,
+					final double axisWidth,
+					final Color axisColor,
 					final double borderWidth,
 					final Color borderColor,
 					final DoubleRange range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
-        		false, showDomainAxis, showRangeAxis, colors, borderWidth, borderColor, range, bounds);
+        		false, false, showRangeAxis, colors, axisWidth, axisColor, borderWidth, borderColor, range, bounds);
         this.orientation = orientation;
 	}
 	
@@ -100,12 +101,8 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
         domainAxis.setTickMarkPaint(axisColor);
         domainAxis.setTickLabelsVisible(false);
         domainAxis.setCategoryMargin(.1);
-        
-        if (!showDomainAxis && !showRangeAxis) {
-        	// Prevent bars from being cropped
-	        domainAxis.setLowerMargin(.01);
-	        domainAxis.setUpperMargin(.01);
-        }
+        domainAxis.setLowerMargin(.025);
+        domainAxis.setUpperMargin(.025);
         
 		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(showRangeAxis);
@@ -115,6 +112,8 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		rangeAxis.setTickMarkPaint(axisColor);
 		rangeAxis.setTickLabelFont(rangeAxis.getLabelFont().deriveFont(axisFontSize).deriveFont(Font.PLAIN));
 		rangeAxis.setTickLabelPaint(axisColor);
+		rangeAxis.setLowerMargin(0.1);
+		rangeAxis.setUpperMargin(0.1);
         
 		// Set axis range		
 		if (range != null) {
@@ -127,15 +126,14 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		renderer.setMeanVisible(false);
 		renderer.setBaseItemLabelsVisible(false); // Box chart does not support item labels, anyway
 		
-		final BasicStroke seriesStroke = new BasicStroke(0.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-		final BasicStroke borderStroke =
+		final BasicStroke stroke =
 				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final List<?> keys = dataset.getRowKeys();
 		
 		for (int i = 0; i < keys.size(); i++) {
-			renderer.setSeriesStroke(i, seriesStroke);
-			renderer.setSeriesOutlineStroke(i, borderStroke);
+			renderer.setSeriesStroke(i, stroke);
+			renderer.setSeriesOutlineStroke(i, stroke);
 			renderer.setSeriesOutlinePaint(i, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 			
 			if (colors != null && colors.size() >= keys.size())

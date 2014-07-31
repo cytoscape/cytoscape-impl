@@ -1,4 +1,4 @@
-package org.cytoscape.ding.internal.charts.donut;
+package org.cytoscape.ding.internal.charts.ring;
 
 import java.awt.Dimension;
 import java.awt.event.FocusAdapter;
@@ -15,7 +15,7 @@ import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
+public class RingChartEditor extends AbstractChartEditor<RingChart> {
 
 	private static final long serialVersionUID = -1867268965571724061L;
 	
@@ -26,7 +26,7 @@ public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public DonutChartEditor(final DonutChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
+	public RingChartEditor(final RingChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
 		super(chart, Number.class, false, 5, false, false, true, false, false, false, appMgr, iconMgr, colIdFactory);
 	}
@@ -75,7 +75,7 @@ public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 	
 	private JTextField getStartAngleTxt() {
 		if (startAngleTxt == null) {
-			startAngleTxt = new JTextField("" + chart.get(DonutChart.START_ANGLE, Double.class, 0.0));
+			startAngleTxt = new JTextField("" + chart.get(RingChart.START_ANGLE, Double.class, 0.0));
 			startAngleTxt.setToolTipText(
 					"Starting from 3 o'clock and measuring clockwise (90\u00B0 = 6 o'clock)");
 			startAngleTxt.setInputVerifier(new DoubleInputVerifier());
@@ -87,7 +87,7 @@ public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 				public void focusLost(final FocusEvent e) {
 					try {
 			            double angle = Double.valueOf(startAngleTxt.getText().trim()).doubleValue();
-			            chart.set(DonutChart.START_ANGLE, angle);
+			            chart.set(RingChart.START_ANGLE, angle);
 			        } catch (NumberFormatException ex) {
 			        }
 				}
@@ -99,8 +99,8 @@ public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 	
 	public JTextField getHoleTxt() {
 		if (holeTxt == null) {
-			holeTxt = new JTextField("" + chart.get(DonutChart.HOLE_SIZE, Double.class, 0.2));
-			holeTxt.setToolTipText("Diameter of the donut hole, as a proportion of the entire plot");
+			holeTxt = new JTextField("" + chart.get(RingChart.HOLE_SIZE, Double.class, 0.2));
+			holeTxt.setToolTipText("Diameter of the ring hole, as a proportion of the entire plot");
 			holeTxt.setInputVerifier(new DoubleInputVerifier());
 			holeTxt.setPreferredSize(new Dimension(60, holeTxt.getMinimumSize().height));
 			holeTxt.setHorizontalAlignment(JTextField.TRAILING);
@@ -110,7 +110,7 @@ public class DonutChartEditor extends AbstractChartEditor<DonutChart> {
 				public void focusLost(final FocusEvent e) {
 					try {
 			            double angle = Double.valueOf(holeTxt.getText().trim()).doubleValue();
-			            chart.set(DonutChart.HOLE_SIZE, angle);
+			            chart.set(RingChart.HOLE_SIZE, angle);
 			        } catch (NumberFormatException ex) {
 			        }
 				}

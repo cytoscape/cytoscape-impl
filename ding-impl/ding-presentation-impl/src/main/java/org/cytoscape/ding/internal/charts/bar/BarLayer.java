@@ -48,6 +48,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final List<Color> colors,
+					final double axisWidth,
+					final Color axisColor,
 					final double borderWidth,
 					final Color borderColor,
 					final double separation,
@@ -55,7 +57,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
-        		borderWidth, borderColor, range, bounds);
+        		axisWidth, axisColor, borderWidth, borderColor, range, bounds);
 		this.type = type;
 		this.separation = separation;
 		this.orientation = orientation;
@@ -117,12 +119,13 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
-//		final AxisSpace das = new AxisSpace();
-//		das.setTop(1.5);
-//		das.setRight(0.0);
-//		das.setLeft(0.0);
-//		das.setBottom(0.5);
-//		plot.setFixedDomainAxisSpace(das);
+		
+//		final AxisSpace as = new AxisSpace();
+//		as.setTop(0.0);
+//		as.setRight(0.0);
+//		as.setLeft(0.0);
+//		as.setBottom(5.0);
+//		plot.setFixedDomainAxisSpace(as);
 		
 		final BasicStroke axisStroke =
 				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
@@ -137,17 +140,13 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         domainAxis.setAxisLinePaint(axisColor);
         domainAxis.setTickMarkStroke(axisStroke);
         domainAxis.setTickMarkPaint(axisColor);
-        domainAxis.setTickMarksVisible(showDomainAxis && !showItemLabelsAsDomain);
+        domainAxis.setTickMarksVisible(false);
         domainAxis.setTickLabelsVisible(true);
         domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize));
         domainAxis.setTickLabelPaint(axisColor);
         domainAxis.setCategoryMargin((type == BarChartType.STACKED || singleCategory) ? separation : 0.1);
-        
-//        if (!showDomainAxis && !showRangeAxis) {
-//        	// Prevent bars from being cropped
-//	        domainAxis.setLowerMargin(.01);
-//	        domainAxis.setUpperMargin(.01);
-//        }
+        domainAxis.setLowerMargin(.025);
+        domainAxis.setUpperMargin(.025);
         
 		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(showRangeAxis);
@@ -165,12 +164,6 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			rangeAxis.setLowerBound(range.min);
 			rangeAxis.setUpperBound(range.max);
 		}
-		
-//		if (!showRangeAxis) {
-//			// Prevent bars from being cropped
-//	        rangeAxis.setLowerMargin(.01);
-//	        rangeAxis.setUpperMargin(.01);
-//        }
 		
 		if (type != BarChartType.STACKED) {
 			if (type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN) {

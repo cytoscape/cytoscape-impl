@@ -220,9 +220,11 @@ public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> exte
 			final ColorPanel cp = new ColorPanel(c, "");
 			String label = "";
 			
-			if (BarChartType.UP_DOWN.equals(type) && (count == 0 || count == colors.size()-1)) {
-				label = count == 0 ? IconManager.ICON_ARROW_UP : IconManager.ICON_ARROW_DOWN;
-				cp.setFont(iconMgr.getIconFont(11));
+			if (BarChartType.UP_DOWN.equals(type) || BarChartType.HEAT_STRIPS.equals(type)) {
+				if (count == 0 || count == colors.size() - 1) {
+					label = count == 0 ? IconManager.ICON_ARROW_UP : IconManager.ICON_ARROW_DOWN;
+					cp.setFont(iconMgr.getIconFont(11));
+				}
 			} else {
 				label = "" + (count + 1);
 			}

@@ -73,9 +73,10 @@ public class HeatMapChart extends AbstractChartCustomGraphics<HeatMapLayer> {
 		
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
+		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
 		
 		final HeatMapLayer layer = new HeatMapLayer(data, itemLabels, domainLabels, rangeLabels,
-				showDomainAxis, showRangeAxis, colors, range, bounds);
+				showDomainAxis, showRangeAxis, colors, axisColor, range, bounds);
 		
 		return Collections.singletonList(layer);
 	}

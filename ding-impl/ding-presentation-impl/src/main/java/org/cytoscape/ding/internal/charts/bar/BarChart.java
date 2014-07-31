@@ -87,6 +87,8 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
+		final double axisWidth = get(AXIS_WIDTH, Double.class, 0.25);
+		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
 		final double borderWidth = get(BORDER_WIDTH, Double.class, 0.25);
 		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
@@ -94,7 +96,8 @@ public class BarChart extends AbstractChartCustomGraphics<BarLayer> {
 		separation = (separation > MAX_SEPARATION) ? MAX_SEPARATION : (separation < 0.0 ? 0.0 : separation);
 		
 		final BarLayer layer = new BarLayer(data, type, itemLabels, domainLabels, rangeLabels, showLabels,
-				showDomainAxis, showRangeAxis, colors, borderWidth, borderColor, separation, range, orientation, bounds);
+				showDomainAxis, showRangeAxis, colors, axisWidth, axisColor, borderWidth, borderColor, separation,
+				range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

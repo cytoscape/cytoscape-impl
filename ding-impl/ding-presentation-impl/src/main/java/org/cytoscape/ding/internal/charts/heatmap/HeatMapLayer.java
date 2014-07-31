@@ -35,10 +35,11 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 						final boolean showDomainAxis,
 						final boolean showRangeAxis,
 						final List<Color> colors,
+						final Color axisColor,
 						final DoubleRange range,
 						final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, colors,
-        		0.0, TRANSPARENT_COLOR, range, bounds);
+        		0.0, axisColor, 0.0, TRANSPARENT_COLOR, range, bounds);
         
         // Range cannot be null
         if (this.range == null)

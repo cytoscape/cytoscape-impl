@@ -35,11 +35,13 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final boolean showDomainAxis,
 					 final boolean showRangeAxis,
 					 final List<Color> colors,
+					 final double axisWidth,
+					 final Color axisColor,
 					 final DoubleRange range,
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
-        		0.0, TRANSPARENT_COLOR, range, bounds);
+        		axisWidth, axisColor, 0.0, TRANSPARENT_COLOR, range, bounds);
         this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
 	
@@ -73,7 +75,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
 		plot.setDomainGridlinesVisible(false);
-	    plot.setRangeGridlinesVisible(showRangeAxis);
+	    plot.setRangeGridlinesVisible(false);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);

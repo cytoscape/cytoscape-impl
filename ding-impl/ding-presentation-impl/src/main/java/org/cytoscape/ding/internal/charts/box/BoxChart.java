@@ -66,13 +66,13 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
-		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
-		
+		final double axisWidth = get(AXIS_WIDTH, Double.class, 0.25);
+		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
 		final double borderWidth = get(BORDER_WIDTH, Double.class, 0.25);
 		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
-		final BoxLayer layer = new BoxLayer(data, showDomainAxis, showRangeAxis, colors, borderWidth, borderColor,
+		final BoxLayer layer = new BoxLayer(data, showRangeAxis, colors, axisWidth, axisColor, borderWidth, borderColor,
 				range, orientation, bounds);
 		
 		return Collections.singletonList(layer);

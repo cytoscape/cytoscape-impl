@@ -36,8 +36,8 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 					   final Color borderColor,
 					   final Orientation orientation,
 					   final Rectangle2D bounds) {
-        super(data, itemLabels, null, null, showItemLabels, false, false, colors, borderWidth, borderColor,
-        		null, bounds);
+        super(data, itemLabels, null, null, showItemLabels, false, false, colors, 0.0, TRANSPARENT_COLOR,
+        		borderWidth, borderColor, null, bounds);
         this.orientation = orientation;
 	}
 	

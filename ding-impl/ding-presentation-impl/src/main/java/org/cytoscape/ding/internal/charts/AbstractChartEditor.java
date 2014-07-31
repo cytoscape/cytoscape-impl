@@ -113,6 +113,10 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JCheckBox itemLabelsVisibleCkb;
 	private JCheckBox domainAxisVisibleCkb;
 	private JCheckBox rangeAxisVisibleCkb;
+	private JLabel axisWidthLbl;
+	private JTextField axisWidthTxt;
+	private JLabel axisColorLbl;
+	private ColorButton axisColorBtn;
 	protected JLabel orientationLbl;
 	private ButtonGroup orientationGrp;
 	private JRadioButton verticalRd;
@@ -232,11 +236,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected void createLabels() {
 		dataColumnLbl = new JLabel("Data Column" + (maxDataColumns > 1 ? "s" : ""));
-		itemLabelsColumnLbl = new JLabel("Item Labels Column");
+		itemLabelsColumnLbl = new JLabel("Column");
 		domainLabelsColumnLbl = new JLabel("Domain Labels Column");
 		rangeLabelsColumnLbl = new JLabel("Range Labels Column");
 		rangeMinLbl = new JLabel("Min");
 		rangeMaxLbl = new JLabel("Max");
+		axisWidthLbl = new JLabel("Axis Width");
+		axisColorLbl = new JLabel("Axis Color");
 		orientationLbl = new JLabel("Plot Orientation");
 		borderWidthLbl = new JLabel("Border Width");
 		borderColorLbl = new JLabel("Border Color");
@@ -302,16 +308,16 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			layout.setAutoCreateContainerGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(getLabelsPnl())
 					.addComponent(getColorSchemeEditor())
+					.addComponent(getLabelsPnl())
 					.addComponent(getOrientationPnl())
 					.addComponent(getAxesPnl())
 					.addComponent(getBorderPnl())
 					.addComponent(getOtherAdvancedOptionsPnl())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(getLabelsPnl())
 					.addComponent(getColorSchemeEditor())
+					.addComponent(getLabelsPnl())
 					.addComponent(getOrientationPnl())
 					.addComponent(getAxesPnl())
 					.addComponent(getBorderPnl())
@@ -357,8 +363,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 							.addComponent(getRangeMinTxt())
 							.addComponent(rangeMaxLbl)
 							.addComponent(getRangeMaxTxt())
-							.addComponent(getRefreshRangeBtn()))
-							.addComponent(sep)
+							.addComponent(getRefreshRangeBtn())
+					).addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getGlobalRangeCkb())
@@ -368,8 +374,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 							.addComponent(getRangeMinTxt())
 							.addComponent(rangeMaxLbl)
 							.addComponent(getRangeMaxTxt())
-							.addComponent(getRefreshRangeBtn()))
-					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+							.addComponent(getRefreshRangeBtn())
+					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 				          GroupLayout.PREFERRED_SIZE)
 			);
 		}
@@ -397,10 +403,13 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			
 			if (setItemLabels) {
 				hGroup.addGroup(layout.createSequentialGroup()
+						.addComponent(getItemLabelsVisibleCkb())
+						.addPreferredGap(ComponentPlacement.UNRELATED)
 						.addComponent(itemLabelsColumnLbl)
 						.addComponent(getItemLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						          GroupLayout.PREFERRED_SIZE));
+								GroupLayout.PREFERRED_SIZE));
 				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(getItemLabelsVisibleCkb())
 						.addComponent(itemLabelsColumnLbl)
 						.addComponent(getItemLabelsColumnCmb()));
 			}
@@ -454,15 +463,15 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 					.addComponent(orientationLbl)
 					.addGroup(layout.createSequentialGroup()
 							.addComponent(getVerticalRd())
-							.addComponent(getHorizontalRd()))
-					.addComponent(sep)
+							.addComponent(getHorizontalRd())
+					).addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(orientationLbl)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(getVerticalRd())
-							.addComponent(getHorizontalRd()))
-					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+							.addComponent(getHorizontalRd())
+					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
 			);
 		}
@@ -486,16 +495,29 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			final JSeparator sep = new JSeparator();
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(getItemLabelsVisibleCkb())
-					.addComponent(getDomainAxisVisibleCkb())
-					.addComponent(getRangeAxisVisibleCkb())
-					.addComponent(sep)
+					.addGroup(layout.createSequentialGroup()
+						.addComponent(getDomainAxisVisibleCkb())
+						.addComponent(getRangeAxisVisibleCkb())
+					).addGroup(layout.createSequentialGroup()
+						.addComponent(axisWidthLbl)
+						.addComponent(getAxisWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(axisColorLbl)
+						.addComponent(getAxisColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.PREFERRED_SIZE)
+					).addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(getItemLabelsVisibleCkb())
-					.addComponent(getDomainAxisVisibleCkb())
-					.addComponent(getRangeAxisVisibleCkb())
-					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(getDomainAxisVisibleCkb())
+						.addComponent(getRangeAxisVisibleCkb())
+					).addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(axisWidthLbl)
+						.addComponent(getAxisWidthTxt())
+						.addComponent(axisColorLbl)
+						.addComponent(getAxisColorBtn())
+					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
 			);
 		}
@@ -516,25 +538,22 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addGroup(layout.createSequentialGroup()
-						.addGroup(layout.createParallelGroup(Alignment.TRAILING, false)
-							.addComponent(borderWidthLbl)
-							.addComponent(borderColorLbl))
-						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
-							.addComponent(getBorderWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-									GroupLayout.PREFERRED_SIZE)
-							.addComponent(getBorderColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-									GroupLayout.PREFERRED_SIZE))
-					)
-					.addComponent(sep)
+						.addComponent(borderWidthLbl)
+						.addComponent(getBorderWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(borderColorLbl)
+						.addComponent(getBorderColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.PREFERRED_SIZE)
+					).addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(borderWidthLbl)
-							.addComponent(getBorderWidthTxt()))
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(borderColorLbl)
-							.addComponent(getBorderColorBtn()))
-					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						.addComponent(borderWidthLbl)
+						.addComponent(getBorderWidthTxt())
+						.addComponent(borderColorLbl)
+						.addComponent(getBorderColorBtn())
+					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
 			);
 		}
@@ -741,6 +760,9 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						chart.set(SHOW_ITEM_LABELS, itemLabelsVisibleCkb.isSelected());
+						
+						itemLabelsColumnLbl.setEnabled(itemLabelsVisibleCkb.isSelected());
+						getItemLabelsColumnCmb().setEnabled(itemLabelsVisibleCkb.isSelected());
 					}
 				});
 			}
@@ -785,6 +807,47 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		}
 		
 		return rangeAxisVisibleCkb;
+	}
+	
+	protected JTextField getAxisWidthTxt() {
+		if (axisWidthTxt == null) {
+			axisWidthTxt = new JTextField("" + chart.get(AXIS_WIDTH, Double.class, 0.25));
+			axisWidthTxt.setInputVerifier(new DoubleInputVerifier());
+			axisWidthTxt.setPreferredSize(new Dimension(60, axisWidthTxt.getMinimumSize().height));
+			axisWidthTxt.setHorizontalAlignment(JTextField.TRAILING);
+			axisWidthTxt.setVisible(hasAxes);
+			
+			axisWidthTxt.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(final FocusEvent e) {
+					try {
+			            double v = Double.parseDouble(axisWidthTxt.getText());
+			            chart.set(AXIS_WIDTH, v);
+			        } catch (NumberFormatException nfe) {
+			        }
+				}
+			});
+		}
+		
+		return axisWidthTxt;
+	}
+	
+	protected ColorButton getAxisColorBtn() {
+		if (axisColorBtn == null) {
+			final Color color = chart.get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
+			axisColorBtn = new ColorButton(color);
+			axisColorBtn.setVisible(hasAxes);
+			
+			axisColorBtn.addPropertyChangeListener("color", new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent e) {
+					final Color newColor = (Color) e.getNewValue();
+					chart.set(AXIS_COLOR, newColor);
+				}
+			});
+		}
+		
+		return axisColorBtn;
 	}
 	
 	private ButtonGroup getOrientationGrp() {
@@ -840,7 +903,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JTextField getBorderWidthTxt() {
 		if (borderWidthTxt == null) {
-			borderWidthTxt = new JTextField("" + chart.get(BORDER_WIDTH, Double.class, 1.0));
+			borderWidthTxt = new JTextField("" + chart.get(BORDER_WIDTH, Double.class, 0.25));
 			borderWidthTxt.setInputVerifier(new DoubleInputVerifier());
 			borderWidthTxt.setPreferredSize(new Dimension(60, borderWidthTxt.getMinimumSize().height));
 			borderWidthTxt.setHorizontalAlignment(JTextField.TRAILING);
@@ -939,6 +1002,10 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			updateOrientation();
 		updateGlobalRange();
 		updateRangeMinMax(recalculateRange);
+		
+		final boolean showItemLabels = chart.get(SHOW_ITEM_LABELS, Boolean.class, Boolean.FALSE);
+		itemLabelsColumnLbl.setEnabled(showItemLabels);
+		getItemLabelsColumnCmb().setEnabled(showItemLabels);
 	}
 	
 	protected void updateOrientation() {
@@ -1315,7 +1382,9 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		private Color borderColor;
 
 		public ColorButton(final Color color) {
-			super();
+			super(" ");
+			setHorizontalTextPosition(JButton.CENTER);
+			setVerticalTextPosition(JButton.CENTER);
 			borderColor = ColorUtil.getContrastingColor(getBackground());
 			setIcon(new ColorIcon());
 			setColor(color);
@@ -1361,7 +1430,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 
 			@Override
 			public int getIconWidth() {
-				return 36;
+				return 44;
 			}
 
 			@Override

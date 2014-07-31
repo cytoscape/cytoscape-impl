@@ -48,8 +48,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	protected final Color borderColor;
 	protected Color labelColor = Color.DARK_GRAY;
 	protected float labelFontSize = 2.0f;
-	protected double axisWidth = 0.25;
-	protected Color axisColor = Color.DARK_GRAY;
+	protected double axisWidth;
+	protected Color axisColor;
 	protected float axisFontSize = 2.0f;
 	protected DoubleRange range;
 	
@@ -70,6 +70,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 								 final boolean showDomainAxis,
 								 final boolean showRangeAxis,
 								 final List<Color> colors,
+								 final double axisWidth,
+								 final Color axisColor,
 								 final double borderWidth,
 								 final Color borderColor,
 								 final DoubleRange range,
@@ -82,6 +84,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		this.showDomainAxis = showDomainAxis;
 		this.showRangeAxis = showRangeAxis;
 		this.colors = colors;
+		this.axisWidth = axisWidth;
+		this.axisColor = axisColor;
 		this.borderWidth = borderWidth;
 		this.borderColor = borderColor;
 		this.bounds = scaledBounds = bounds;

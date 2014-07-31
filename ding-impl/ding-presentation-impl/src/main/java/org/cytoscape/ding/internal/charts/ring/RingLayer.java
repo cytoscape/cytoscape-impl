@@ -1,4 +1,4 @@
-package org.cytoscape.ding.internal.charts.donut;
+package org.cytoscape.ding.internal.charts.ring;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -30,7 +30,7 @@ import org.jfree.chart.plot.RingPlot;
 import org.jfree.data.general.PieDataset;
 import org.jfree.ui.RectangleInsets;
 
-public class DonutLayer extends AbstractChartLayer<PieDataset> {
+public class RingLayer extends AbstractChartLayer<PieDataset> {
 	
 	private List<PieDataset> datasetList;
     private List<JFreeChart> chartList;
@@ -44,7 +44,7 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 	
     // ==[ CONSTRUCTORS ]===============================================================================================
     
-	public DonutLayer(final Map<String, List<Double>> data,
+	public RingLayer(final Map<String, List<Double>> data,
 					 final List<String> labels,
 					 final boolean showLabels,
 					 final List<Color> colors,
@@ -54,7 +54,8 @@ public class DonutLayer extends AbstractChartLayer<PieDataset> {
 					 final double hole,
 					 final Rotation rotation,
 					 final Rectangle2D bounds) {
-        super(data, labels, null, null, showLabels, false, false, colors, borderWidth, borderColor, null, bounds);
+        super(data, labels, null, null, showLabels, false, false, colors, 0.0, TRANSPARENT_COLOR,
+        		borderWidth, borderColor, null, bounds);
         this.startAngle = 360 - startAngle;
         this.hole = hole;
         this.rotation = rotation;

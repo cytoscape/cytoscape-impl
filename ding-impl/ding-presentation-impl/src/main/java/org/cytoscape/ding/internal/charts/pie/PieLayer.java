@@ -36,7 +36,8 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 					final double startAngle,
 					final Rotation rotation,
 					final Rectangle2D bounds) {
-        super(data, itemLabels, null, null, showLabels, false, false, colors, borderWidth, borderColor, null, bounds);
+        super(data, itemLabels, null, null, showLabels, false, false, colors, 0.0, TRANSPARENT_COLOR,
+        		borderWidth, borderColor, null, bounds);
         this.startAngle = 360 - startAngle;
         this.rotation = rotation;
         this.labels = new HashMap<String, String>();

@@ -1,4 +1,4 @@
-package org.cytoscape.ding.internal.charts.donut;
+package org.cytoscape.ding.internal.charts.ring;
 
 import java.awt.Color;
 import java.awt.Image;
@@ -19,7 +19,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
+public class RingChart extends AbstractChartCustomGraphics<RingLayer> {
 
 	public static final String FACTORY_ID = "org.cytoscape.RingChart";
 	public static final String DISPLAY_NAME = "Ring Chart";
@@ -32,26 +32,26 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 	static {
 		try {
 			ICON = new ImageIcon(ImageIO.read(
-					DonutChart.class.getClassLoader().getResource("images/charts/donut-chart.png")));
+					RingChart.class.getClassLoader().getResource("images/charts/ring-chart.png")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public DonutChart(final Map<String, Object> properties, final CyColumnIdentifierFactory colIdFactory) {
+	public RingChart(final Map<String, Object> properties, final CyColumnIdentifierFactory colIdFactory) {
 		super(DISPLAY_NAME, properties, colIdFactory);
 	}
 	
-	public DonutChart(final DonutChart chart, final CyColumnIdentifierFactory colIdFactory) {
+	public RingChart(final RingChart chart, final CyColumnIdentifierFactory colIdFactory) {
 		super(chart, colIdFactory);
 	}
 	
-	public DonutChart(final String input, final CyColumnIdentifierFactory colIdFactory) {
+	public RingChart(final String input, final CyColumnIdentifierFactory colIdFactory) {
 		super(DISPLAY_NAME, input, colIdFactory);
 	}
 	
 	@Override
-	public List<DonutLayer> getLayers(final CyNetworkView networkView, final View<? extends CyIdentifiable> view) {
+	public List<RingLayer> getLayers(final CyNetworkView networkView, final View<? extends CyIdentifiable> view) {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
@@ -70,7 +70,7 @@ public class DonutChart extends AbstractChartCustomGraphics<DonutLayer> {
 		final double borderWidth = get(BORDER_WIDTH, Double.class, 0.25);
 		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
-		final DonutLayer layer = new DonutLayer(data, labels, showLabels, colors, borderWidth, borderColor, startAngle,
+		final RingLayer layer = new RingLayer(data, labels, showLabels, colors, borderWidth, borderColor, startAngle,
 				hole, rotation, bounds);
 		
 		return Collections.singletonList(layer);
