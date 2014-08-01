@@ -55,8 +55,12 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	//Each map does a first map based on type of interactions and then a second map that maps
 	//a Long index made of combination of two integer indexes from the two nodes and the
 	//index of that edge in the matched list
+	//There is also a second set of maps for the case when the edges do not have a value 
+	//in the interaction column. This would be a special case that needs to be considered too
 	protected Map<String,Map<Long,Integer>> mapEdgeDirectedInteractions;
 	protected Map<String,Map<Long,Integer>> mapEdgeInteractions;
+	protected Map<Long,Integer> mapEdgeNoInteractions;
+	protected Map<Long,Integer> mapEdgeDirectedNoInteractions;
 	
 	// For canceling task
 	private volatile boolean interrupted;
@@ -67,6 +71,8 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 		mapNodesIndex = new HashMap<CyNode,Integer>();
 		mapEdgeDirectedInteractions = new HashMap<String,Map<Long,Integer>>();
 		mapEdgeInteractions = new HashMap<String,Map<Long,Integer>>();
+		mapEdgeNoInteractions = new HashMap<Long,Integer>();
+		mapEdgeDirectedNoInteractions = new HashMap<Long,Integer>();
 	}
 
 	public void setWithinNetworkMerge(boolean withinNetworkMerge) {
@@ -132,8 +138,6 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 		
 		String i1 = network1.getRow(e1).get("interaction", String.class);
 		
-		if(i1 == null)
-			return index;
 		
 		CyNode source = e1.getSource();
 		CyNode target = e1.getTarget();
@@ -148,7 +152,10 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 		
 		if (e1.isDirected())
 		{
-			mapNodesDirectedEdges = mapEdgeDirectedInteractions.get(i1);
+			if(i1 == null)
+				mapNodesDirectedEdges = mapEdgeDirectedNoInteractions;
+			else
+				mapNodesDirectedEdges = mapEdgeDirectedInteractions.get(i1);
 			id1 = getUniqueIdNumber(iSource, iTarget);
 			if( mapNodesDirectedEdges != null)
 			{	
@@ -160,7 +167,10 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 		}
 		else
 		{
-			mapNodesEdges = mapEdgeInteractions.get(i1);
+			if(i1 == null)
+				mapNodesEdges = mapEdgeNoInteractions;
+			else
+				mapNodesEdges = mapEdgeInteractions.get(i1);
 			id1 = getUniqueIdNumber(iSource, iTarget);
 			id2 = getUniqueIdNumber(iTarget,iSource);
 			if(mapNodesEdges != null)
@@ -238,6 +248,8 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 		mapNodesIndex.clear();
 		mapEdgeDirectedInteractions.clear();
 		mapEdgeInteractions.clear();
+		mapEdgeDirectedNoInteractions.clear();
+		mapEdgeNoInteractions.clear();
 		// get node matching list
 		List<Map<CyNetwork, Set<CyNode>>> matchedNodeList = getMatchedList(fromNetworks, true);
 		
