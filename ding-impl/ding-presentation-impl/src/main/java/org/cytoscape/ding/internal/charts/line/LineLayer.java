@@ -35,13 +35,13 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final boolean showDomainAxis,
 					 final boolean showRangeAxis,
 					 final List<Color> colors,
-					 final double axisWidth,
+					 final float axisWidth,
 					 final Color axisColor,
 					 final DoubleRange range,
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
-        		axisWidth, axisColor, 0.0, TRANSPARENT_COLOR, range, bounds);
+        		axisWidth, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
         this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
 	
@@ -81,13 +81,12 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
 		final BasicStroke gridLineStroke =
-				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
+				new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
 						 0.5f, new float[]{ 0.5f }, 0.0f);
 		
 		plot.setRangeGridlineStroke(gridLineStroke);
 		
-		final BasicStroke axisStroke =
-				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
@@ -126,8 +125,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
 		renderer.setBaseItemLabelPaint(labelColor);
 		
-		final BasicStroke seriesStroke =
-				new BasicStroke(lineWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke seriesStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final List<?> keys = dataset.getRowKeys();
 		

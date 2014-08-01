@@ -34,9 +34,9 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 	public BoxLayer(final Map<String/*series*/, List<Double>/*values*/> data,
 					final boolean showRangeAxis,
 					final List<Color> colors,
-					final double axisWidth,
+					final float axisWidth,
 					final Color axisColor,
-					final double borderWidth,
+					final float borderWidth,
 					final Color borderColor,
 					final DoubleRange range,
 					final Orientation orientation,
@@ -89,8 +89,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
 		plot.setOrientation(plotOrientation);
 		
-		final BasicStroke axisStroke =
-				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
@@ -126,8 +125,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		renderer.setMeanVisible(false);
 		renderer.setBaseItemLabelsVisible(false); // Box chart does not support item labels, anyway
 		
-		final BasicStroke stroke =
-				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final List<?> keys = dataset.getRowKeys();
 		

@@ -39,6 +39,8 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 	public StripeChartEditor(final StripeChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
 		super(chart, Object.class, false, 1, false, true, false, false, false, false, appMgr, iconMgr, colIdFactory);
+		
+		setDistinctValues();
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -64,16 +66,17 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 			public void actionPerformed(ActionEvent e) {
 				final List<CyColumnIdentifier> colIds = getDataPnl().getDataColumnNames();
 				chart.set(DATA_COLUMNS, colIds);
-				
-				if (!colIds.isEmpty()) {
-					final SortedSet<Object> distinctValues = 
-							getDistinctValues(appMgr.getCurrentNetwork(), colIds.get(0));
-					chart.set(StripeChart.DISTINCT_VALUES, new ArrayList<Object>(distinctValues));
-				}
+				setDistinctValues();
 			}
 		});
 		
 		return cmb;
+	}
+	
+	@Override
+	protected boolean isDataColumn(final CyColumn c) {
+		// This chart can only be mapped to List-typed columns
+		return List.class.isAssignableFrom(c.getType()) && super.isDataColumn(c);
 	}
 	
 	private static SortedSet<Object> getDistinctValues(final CyNetwork network, final CyColumnIdentifier columnId) {
@@ -110,6 +113,16 @@ public class StripeChartEditor extends AbstractChartEditor<StripeChart> {
 		}
 		
 		return values;
+	}
+	
+	private void setDistinctValues() {
+		final List<CyColumnIdentifier> colIds = getDataPnl().getDataColumnNames();
+		
+		if (!colIds.isEmpty()) {
+			final SortedSet<Object> distinctValues = 
+					getDistinctValues(appMgr.getCurrentNetwork(), colIds.get(0));
+			chart.set(StripeChart.DISTINCT_VALUES, new ArrayList<Object>(distinctValues));
+		}
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

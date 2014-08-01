@@ -48,13 +48,13 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 					 final List<String> labels,
 					 final boolean showLabels,
 					 final List<Color> colors,
-					 final double borderWidth,
+					 final float borderWidth,
 					 final Color borderColor,
 					 final double startAngle,
 					 final double hole,
 					 final Rotation rotation,
 					 final Rectangle2D bounds) {
-        super(data, labels, null, null, showLabels, false, false, colors, 0.0, TRANSPARENT_COLOR,
+        super(data, labels, null, null, showLabels, false, false, colors, 0.0f, TRANSPARENT_COLOR,
         		borderWidth, borderColor, null, bounds);
         this.startAngle = 360 - startAngle;
         this.hole = hole;
@@ -195,8 +195,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
 		
-		final BasicStroke stroke =
-				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		plot.setSeparatorStroke(stroke);
 		plot.setSeparatorPaint(borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 		

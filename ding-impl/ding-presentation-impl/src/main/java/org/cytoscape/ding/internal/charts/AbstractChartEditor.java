@@ -117,7 +117,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	private JTextField axisWidthTxt;
 	private JLabel axisColorLbl;
 	private ColorButton axisColorBtn;
-	protected JLabel orientationLbl;
 	private ButtonGroup orientationGrp;
 	private JRadioButton verticalRd;
 	private JRadioButton horizontalRd;
@@ -243,7 +242,6 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		rangeMaxLbl = new JLabel("Max");
 		axisWidthLbl = new JLabel("Axis Width");
 		axisColorLbl = new JLabel("Axis Color");
-		orientationLbl = new JLabel("Plot Orientation");
 		borderWidthLbl = new JLabel("Border Width");
 		borderColorLbl = new JLabel("Border Color");
 	}
@@ -460,14 +458,12 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			final JSeparator sep = new JSeparator();
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(orientationLbl)
 					.addGroup(layout.createSequentialGroup()
 							.addComponent(getVerticalRd())
 							.addComponent(getHorizontalRd())
 					).addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(orientationLbl)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(getVerticalRd())
 							.addComponent(getHorizontalRd())
@@ -483,7 +479,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 		if (axesPnl == null) {
 			axesPnl = new JPanel();
 			axesPnl.setOpaque(false);
-			axesPnl.setVisible(hasAxes || setItemLabels);
+			axesPnl.setVisible(hasAxes);
 			
 			if (!axesPnl.isVisible())
 				return axesPnl;
@@ -492,31 +488,48 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 			axesPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			
+			final JSeparator vsep = new JSeparator(JSeparator.VERTICAL);
 			final JSeparator sep = new JSeparator();
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addGroup(layout.createSequentialGroup()
-						.addComponent(getDomainAxisVisibleCkb())
-						.addComponent(getRangeAxisVisibleCkb())
-					).addGroup(layout.createSequentialGroup()
-						.addComponent(axisWidthLbl)
-						.addComponent(getAxisWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+							.addComponent(getDomainAxisVisibleCkb())
+							.addComponent(getRangeAxisVisibleCkb())
+						)
 						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(axisColorLbl)
-						.addComponent(getAxisColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
+						.addComponent(vsep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						          GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+							.addGroup(layout.createSequentialGroup()
+								.addComponent(axisWidthLbl)
+								.addComponent(getAxisWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE)
+							).addGroup(layout.createSequentialGroup()
+								.addComponent(axisColorLbl)
+								.addComponent(getAxisColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE)
+							)
+						)
 					).addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(getDomainAxisVisibleCkb())
-						.addComponent(getRangeAxisVisibleCkb())
-					).addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(axisWidthLbl)
-						.addComponent(getAxisWidthTxt())
-						.addComponent(axisColorLbl)
-						.addComponent(getAxisColorBtn())
+						.addGroup(layout.createSequentialGroup()
+							.addComponent(getDomainAxisVisibleCkb())
+							.addComponent(getRangeAxisVisibleCkb())
+						)
+						.addComponent(vsep)
+						.addGroup(layout.createSequentialGroup()
+							.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+								.addComponent(axisWidthLbl)
+								.addComponent(getAxisWidthTxt())
+							).addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+								.addComponent(axisColorLbl)
+								.addComponent(getAxisColorBtn())
+							)
+						)
 					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
 			);
@@ -541,7 +554,8 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 						.addComponent(borderWidthLbl)
 						.addComponent(getBorderWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 								GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
+					)
+					.addGroup(layout.createSequentialGroup()
 						.addComponent(borderColorLbl)
 						.addComponent(getBorderColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 								GroupLayout.PREFERRED_SIZE)
@@ -551,6 +565,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(borderWidthLbl)
 						.addComponent(getBorderWidthTxt())
+					).addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(borderColorLbl)
 						.addComponent(getBorderColorBtn())
 					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
@@ -811,17 +826,17 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JTextField getAxisWidthTxt() {
 		if (axisWidthTxt == null) {
-			axisWidthTxt = new JTextField("" + chart.get(AXIS_WIDTH, Double.class, 0.25));
+			axisWidthTxt = new JTextField("" + chart.get(AXIS_WIDTH, Float.class, 0.25f));
 			axisWidthTxt.setInputVerifier(new DoubleInputVerifier());
 			axisWidthTxt.setPreferredSize(new Dimension(60, axisWidthTxt.getMinimumSize().height));
 			axisWidthTxt.setHorizontalAlignment(JTextField.TRAILING);
-			axisWidthTxt.setVisible(hasAxes);
+			
 			
 			axisWidthTxt.addFocusListener(new FocusAdapter() {
 				@Override
 				public void focusLost(final FocusEvent e) {
 					try {
-			            double v = Double.parseDouble(axisWidthTxt.getText());
+						float v = Float.parseFloat(axisWidthTxt.getText());
 			            chart.set(AXIS_WIDTH, v);
 			        } catch (NumberFormatException nfe) {
 			        }
@@ -862,7 +877,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JRadioButton getVerticalRd() {
 		if (verticalRd == null) {
-			verticalRd = new JRadioButton("Vertical");
+			verticalRd = new JRadioButton("Vertical Orientation");
 			verticalRd.setVisible(setOrientation);
 			
 			if (setOrientation) {
@@ -880,7 +895,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JRadioButton getHorizontalRd() {
 		if (horizontalRd == null) {
-			horizontalRd = new JRadioButton("Horizontal");
+			horizontalRd = new JRadioButton("Horizontal Orientation");
 			horizontalRd.setVisible(setOrientation);
 			
 			if (setOrientation) {
@@ -903,7 +918,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 	
 	protected JTextField getBorderWidthTxt() {
 		if (borderWidthTxt == null) {
-			borderWidthTxt = new JTextField("" + chart.get(BORDER_WIDTH, Double.class, 0.25));
+			borderWidthTxt = new JTextField("" + chart.get(BORDER_WIDTH, Float.class, 0.25f));
 			borderWidthTxt.setInputVerifier(new DoubleInputVerifier());
 			borderWidthTxt.setPreferredSize(new Dimension(60, borderWidthTxt.getMinimumSize().height));
 			borderWidthTxt.setHorizontalAlignment(JTextField.TRAILING);
@@ -912,7 +927,7 @@ public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphi
 				@Override
 				public void focusLost(final FocusEvent e) {
 					try {
-			            double v = Double.parseDouble(borderWidthTxt.getText());
+						float v = Float.parseFloat(borderWidthTxt.getText());
 			            chart.set(BORDER_WIDTH, v);
 			        } catch (NumberFormatException nfe) {
 			        }

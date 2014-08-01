@@ -67,9 +67,9 @@ public class BoxChart extends AbstractChartCustomGraphics<BoxLayer> {
 		
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
-		final double axisWidth = get(AXIS_WIDTH, Double.class, 0.25);
+		final float axisWidth = get(AXIS_WIDTH, Float.class, 0.25f);
 		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
-		final double borderWidth = get(BORDER_WIDTH, Double.class, 0.25);
+		final float borderWidth = get(BORDER_WIDTH, Float.class, 0.25f);
 		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
 		final BoxLayer layer = new BoxLayer(data, showRangeAxis, colors, axisWidth, axisColor, borderWidth, borderColor,

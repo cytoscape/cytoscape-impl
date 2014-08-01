@@ -6,6 +6,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -17,9 +18,7 @@ import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
-import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.entity.StandardEntityCollection;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
@@ -32,7 +31,6 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	public static final Color TRANSPARENT_COLOR = new Color(0x00, 0x00, 0x00, 0);
 	
 	/** Divisor which should be applied to chart lines so they have the same thickness as Cytoscape lines */
-	public static final float LINE_WIDTH_FACTOR = 2.0f;
 	public static final Color DEFAULT_ITEM_BG_COLOR = Color.LIGHT_GRAY;
 	
 	/** Category ID -> list of values */
@@ -44,11 +42,11 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	protected final boolean showDomainAxis;
 	protected final boolean showRangeAxis;
 	protected final List<Color> colors;
-	protected final double borderWidth;
+	protected final float borderWidth;
 	protected final Color borderColor;
 	protected Color labelColor = Color.DARK_GRAY;
 	protected float labelFontSize = 2.0f;
-	protected double axisWidth;
+	protected float axisWidth;
 	protected Color axisColor;
 	protected float axisFontSize = 2.0f;
 	protected DoubleRange range;
@@ -70,9 +68,9 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 								 final boolean showDomainAxis,
 								 final boolean showRangeAxis,
 								 final List<Color> colors,
-								 final double axisWidth,
+								 final float axisWidth,
 								 final Color axisColor,
-								 final double borderWidth,
+								 final float borderWidth,
 								 final Color borderColor,
 								 final DoubleRange range,
 								 final Rectangle2D bounds) {
@@ -102,49 +100,39 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	@Override
 	public CustomGraphicLayer transform(final AffineTransform xform) {
 		final Shape s = xform.createTransformedShape(bounds);
-		System.out.println("[ transform ]: "+ s.getBounds2D());
 		bounds = s.getBounds2D();
 		
 		return this;
 	}
 
 	@Override
-	public void draw(final Graphics2D g, final Rectangle2D area, final Shape shape) {
-//		AffineTransform t = new AffineTransform();
-//		t.scale(10.0, 10.0);
-//		g.transform(t);
-		ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
-		final Rectangle2D chartArea =
-				new Rectangle2D.Double(area.getX(), area.getY(), area.getWidth()*1000, area.getHeight()*1000);
-//		System.out.println(">>> [ AREA ]: "+ chartArea);
-		info.getPlotInfo().setPlotArea(chartArea);
-		info.getPlotInfo().setDataArea(chartArea);
-		info.setChartArea(chartArea);
-//		getChart().getPlot().setInsets(new RectangleInsets((int)area.getX(), (int)area.getY(), (int)area.getWidth()*1000, (int)area.getHeight()*1000));
-//		getChart().draw(g, area, info);
+	public void draw(final Graphics2D g, Rectangle2D area, final Shape shape) {
+		// Give JFreeChart a larger area to draw into, so the proportions of the chart elements looks better
+		final double scale = 2.0;
+		area = new Rectangle2D.Double(area.getX() * scale, area.getY() * scale,
+				area.getWidth() * scale, area.getHeight() * scale);
+		// Of course, we also have to ask Graphics2D to apply the inverse transformation
+		final double invScale = 1.0 / scale;
+		final AffineTransform at = new AffineTransform();
+		at.scale(invScale, invScale);
+		g.transform(at);
 		
-		getChart().draw(g, area, info);
+		getChart().draw(g, area);
 		
-//		if (this instanceof PieLayer) {
-//			System.out.println("[ CHART AREA ]: "+ info.getChartArea());
-//			System.out.println("[ PLOT AREA ] : "+ info.getPlotInfo().getPlotArea());
-//			System.out.println("[ DATA AREA ] : "+ info.getPlotInfo().getDataArea());
-//		}
+		// Make sure Graphics2D is "back to normal" before returning
+		try {
+			at.invert();
+		} catch (NoninvertibleTransformException e) {
+			e.printStackTrace();
+		}
 		
-//		try {
-//			g.transform(t.createInverse());
-//		} catch (NoninvertibleTransformException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		g.transform(at);
 	}
 	
 	@Override
 	public TexturePaint getPaint(final Rectangle2D r) {
-		System.out.println("> getPaint:  " + r);
 		// If the bounds are the same as before, there is no need to recreate the "same" image again
 		if (img == null || paint == null || !r.equals(scaledBounds)) {
-			System.out.println("\tNEW IMAGE");
 			// Recreate and cache Image and TexturePaint
 			img = createImage(r);
 			paint = new TexturePaintFactory(img).getPaint(

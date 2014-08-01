@@ -48,9 +48,9 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final List<Color> colors,
-					final double axisWidth,
+					final float axisWidth,
 					final Color axisColor,
-					final double borderWidth,
+					final float borderWidth,
 					final Color borderColor,
 					final double separation,
 					final DoubleRange range,
@@ -120,15 +120,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
-//		final AxisSpace as = new AxisSpace();
-//		as.setTop(0.0);
-//		as.setRight(0.0);
-//		as.setLeft(0.0);
-//		as.setBottom(5.0);
-//		plot.setFixedDomainAxisSpace(as);
-		
-		final BasicStroke axisStroke =
-				new BasicStroke((float)axisWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		// Show item labels and there is only one category?
         final boolean showItemLabelsAsDomain = showItemLabels && singleCategory;
@@ -197,8 +189,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, angle));
 		}
 		
-		final BasicStroke borderStroke =
-				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke borderStroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final List<?> keys = dataset.getRowKeys();
 		

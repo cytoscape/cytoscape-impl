@@ -39,7 +39,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 						final DoubleRange range,
 						final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, colors,
-        		0.0, axisColor, 0.0, TRANSPARENT_COLOR, range, bounds);
+        		0.0f, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
         
         // Range cannot be null
         if (this.range == null)

@@ -31,12 +31,12 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 					final List<String> itemLabels,
 					final boolean showLabels,
 					final List<Color> colors,
-					final double borderWidth,
+					final float borderWidth,
 					final Color borderColor,
 					final double startAngle,
 					final Rotation rotation,
 					final Rectangle2D bounds) {
-        super(data, itemLabels, null, null, showLabels, false, false, colors, 0.0, TRANSPARENT_COLOR,
+        super(data, itemLabels, null, null, showLabels, false, false, colors, 0.0f, TRANSPARENT_COLOR,
         		borderWidth, borderColor, null, bounds);
         this.startAngle = 360 - startAngle;
         this.rotation = rotation;
@@ -100,8 +100,7 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 		plot.setLabelPaint(labelColor);
 		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
 		
-		final BasicStroke stroke =
-				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final List<?> keys = dataset.getKeys();
 		

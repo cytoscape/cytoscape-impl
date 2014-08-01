@@ -393,12 +393,12 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
-		if (key.equalsIgnoreCase(AXIS_WIDTH)) return Double.class;
+		if (key.equalsIgnoreCase(AXIS_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(AXIS_COLOR)) return Color.class;
 		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(RANGE)) return DoubleRange.class;
-		if (key.equalsIgnoreCase(BORDER_WIDTH)) return Double.class;
+		if (key.equalsIgnoreCase(BORDER_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(BORDER_COLOR)) return Color.class;
 			
 		return super.getSettingType(key);

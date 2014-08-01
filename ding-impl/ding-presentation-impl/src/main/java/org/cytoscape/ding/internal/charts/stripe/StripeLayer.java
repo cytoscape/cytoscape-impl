@@ -32,11 +32,11 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 					   final List<String> itemLabels,
 					   final boolean showItemLabels,
 					   final List<Color> colors,
-					   final double borderWidth,
+					   final float borderWidth,
 					   final Color borderColor,
 					   final Orientation orientation,
 					   final Rectangle2D bounds) {
-        super(data, itemLabels, null, null, showItemLabels, false, false, colors, 0.0, TRANSPARENT_COLOR,
+        super(data, itemLabels, null, null, showItemLabels, false, false, colors, 0.0f, TRANSPARENT_COLOR,
         		borderWidth, borderColor, null, bounds);
         this.orientation = orientation;
 	}
@@ -104,8 +104,7 @@ public class StripeLayer extends AbstractChartLayer<CategoryDataset> {
 		renderer.setDrawBarOutline(!keys.isEmpty());
 		renderer.setItemMargin(0.0);
 		
-		final BasicStroke stroke =
-				new BasicStroke((float)borderWidth/LINE_WIDTH_FACTOR, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		final BasicStroke stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		for (int i = 0; i < keys.size(); i++) {
 			renderer.setSeriesOutlineStroke(i, stroke);
