@@ -334,6 +334,7 @@ public final class GraphGraphics {
 
 		m_g2d = (Graphics2D) image.getGraphics();
 
+
 		if (m_clear) {
 			final Composite origComposite = m_g2d.getComposite();
 			m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
@@ -506,12 +507,12 @@ public final class GraphGraphics {
 		m_gMinimal = (Graphics2D) image.getGraphics();
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING,
 				RenderingHints.VALUE_RENDER_SPEED);
-		// m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-		// 		RenderingHints.VALUE_RENDER_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+		 		RenderingHints.VALUE_COLOR_RENDER_SPEED);
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
 				RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+				RenderingHints.VALUE_ANTIALIAS_OFF);
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 	}
@@ -1971,6 +1972,11 @@ public final class GraphGraphics {
 
 		m_g2d.setPaint(paint);
 
+		// NOTE: Java 7 seems to have broken the antialiasing of text
+		// on translucent backgrounds.  In our case, the network canvas
+		// is transparent, so we fall into this category.  For the monment
+		// the "drawTextAsShape" path is the default path as it avoids
+		// this problem.
 		if (drawTextAsShape) {
 			final GlyphVector glyphV;
 

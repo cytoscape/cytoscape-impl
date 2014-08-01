@@ -94,7 +94,7 @@ public class BirdsEyeViewLOD extends GraphLOD {
 	}
 
 	public boolean textAsShape(final int renderNodeCount, final int renderEdgeCount) {
-		return source.textAsShape(renderNodeCount, renderEdgeCount);
+		return false;
 	}
 
 	public double getNestedNetworkImageScaleFactor() {

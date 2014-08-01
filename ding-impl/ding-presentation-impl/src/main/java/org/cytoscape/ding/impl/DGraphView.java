@@ -400,10 +400,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.manager = manager;
 		this.cyEventHelper = cyEventHelper;
 
-		// creating empty subnetworks
-//		m_drawPersp = cyRoot.getRootNetwork(model).addSubNetwork(SavePolicy.DO_NOT_SAVE);
-//		cyEventHelper.silenceEventSource(m_drawPersp);
-		
 		// New simple implementation of the graph to keep track of visible nodes/edges.
 		m_drawPersp = new MinimalNetwork(SUIDFactory.getNextSUID());
 
@@ -672,6 +668,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		synchronized (m_lock) {
 			if (paint instanceof Color) {
 				m_backgroundCanvas.setBackground((Color) paint);
+				m_networkCanvas.setBackground((Color)paint); // for antialiasing...
+				m_foregroundCanvas.setBackground((Color)paint); // for antialiasing...
 				m_contentChanged = true;
 			} else {
 				logger.debug("DGraphView.setBackgroundPaint(), Color not found.");

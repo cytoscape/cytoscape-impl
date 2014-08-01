@@ -367,7 +367,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @see #edgeLabels(int, int)
 	 */
 	public boolean textAsShape(final int renderNodeCount, final int renderEdgeCount) {
-		return false;
+		return true;
 	}
 
 	public double getNestedNetworkImageScaleFactor() {
