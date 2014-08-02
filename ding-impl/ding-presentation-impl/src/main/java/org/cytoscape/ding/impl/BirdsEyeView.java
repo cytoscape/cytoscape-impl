@@ -107,6 +107,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private int imageHeight;
 	private Timer redrawTimer;
 	private UpdateImage redrawTask = null;
+	private	BirdsEyeViewLOD bevLOD = null;
 
 	/**
 	 * Creates a new BirdsEyeView object.
@@ -480,7 +481,11 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				long timeBegin = System.currentTimeMillis();
 				// Now draw the network
 				// System.out.println("Drawing snapshot");
-				BirdsEyeViewLOD bevLOD = new BirdsEyeViewLOD(new DingGraphLOD((DingGraphLOD)viewModel.getGraphLOD()));
+				if (viewModel.getGraphLOD() instanceof DingGraphLOD)
+					bevLOD = new BirdsEyeViewLOD(new DingGraphLOD((DingGraphLOD)viewModel.getGraphLOD()));
+				else if (bevLOD == null)
+					bevLOD = new BirdsEyeViewLOD(viewModel.getGraphLOD());
+
 				if (imageDirty)
 					bevLOD.setDrawEdges(true);
 				viewModel.drawSnapshot(networkImage2, bevLOD, viewModel.getBackgroundPaint(),

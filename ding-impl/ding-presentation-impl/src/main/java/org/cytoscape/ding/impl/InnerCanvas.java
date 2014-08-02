@@ -967,7 +967,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		final Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
 							m_backgroundColor.getBlue(), alpha);
 
+		// long timeBegin = System.currentTimeMillis();
 		int lastRenderDetail = m_view.renderGraph(graphics, lod, backgroundColor, m_xCenter, m_yCenter, m_scaleFactor, m_hash);
+		// System.out.println("Rendered graph in "+(System.currentTimeMillis()-timeBegin)+"ms");
 
 		if (setLastRenderDetail)
 			m_lastRenderDetail = lastRenderDetail;
