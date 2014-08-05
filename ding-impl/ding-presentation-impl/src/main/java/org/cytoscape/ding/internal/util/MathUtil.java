@@ -1,5 +1,6 @@
 package org.cytoscape.ding.internal.util;
 
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -174,5 +175,17 @@ public final class MathUtil {
 		if (angle < 0) value = value + 360;
 		
 		return value;
+	}
+	
+	public static int getQuadrant(double angle) {
+		return (int)(normalizeAngle(angle) / 90) % 4 + 1;
+	}
+	
+	public static Line2D rotate(final Line2D line, final double angle, final double anchorx, final double anchory) {
+		final AffineTransform at = AffineTransform.getRotateInstance(Math.toRadians(angle), anchorx, anchory);
+		final Point2D p1 = at.transform(line.getP1(), new Point2D.Double());
+		final Point2D p2 = at.transform(line.getP2(), new Point2D.Double());
+		
+		return new Line2D.Double(p1, p2);
 	}
 }
