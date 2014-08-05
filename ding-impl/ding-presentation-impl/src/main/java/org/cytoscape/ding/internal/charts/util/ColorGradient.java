@@ -18,7 +18,6 @@ public enum ColorGradient {
 	BLUE_GREEN_YELLOW("Blue-Green-Yellow", Color.BLUE, Color.GREEN, Color.YELLOW),
 	GREEN_PURPLE("Green-Purple", Color.GREEN, null, Color.MAGENTA),
 	GREEN_BLACK_PURPLE("Green-Black_Purple", Color.GREEN, Color.BLACK, Color.MAGENTA),
-	GREEN_BLACK_RED("Green-Black-Red", Color.GREEN, Color.BLACK, Color.RED),
 	ORANGE_PURPLE("Orange-Purple", Color.ORANGE, null, Color.MAGENTA),
 	PURPLE_YELLOW("Purple-Yellow", Color.MAGENTA, null, Color.YELLOW),
 	PURPLE_BLACK_YELLOW("Purple-Black-Yellow", Color.MAGENTA, Color.BLACK, Color.YELLOW),
