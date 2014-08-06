@@ -47,21 +47,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.Taggable;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
-import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -74,7 +71,7 @@ public class RestoreImageTask implements Task {
 	// Preset image location.
 	private static final String DEF_IMAGE_LOCATION = "images/sampleCustomGraphics";
 
-	private final CustomGraphicsManagerImpl manager;
+	private final CustomGraphicsManager manager;
 
 	private final ExecutorService imageLoaderService;
 
@@ -104,7 +101,7 @@ public class RestoreImageTask implements Task {
 	}
 	
 	RestoreImageTask(final Set<URL> defaultImageURLs, final File imageLocaiton, 
-	                 final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
+	                 final CustomGraphicsManager manager, final CyEventHelper eventHelper) {
 		this.manager = manager;
 		this.eventHelper = eventHelper;
 

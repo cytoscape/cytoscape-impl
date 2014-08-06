@@ -121,7 +121,6 @@ final class CyColumnImpl implements CyColumn {
 
 	@Override
 	public String toString() {
-		return "CyColumn{ " + (isPrimaryKey ? "[PK] " : "") + columnName + " (" + columnType.getSimpleName() + ")"
-				+ (isImmutable ? " IMMUTABLE" : "") + " }";
+		return columnName;
 	}
 }

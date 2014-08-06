@@ -24,7 +24,6 @@ package org.cytoscape.ding.customgraphics.paint;
  * #L%
  */
 
-import java.awt.Paint;
 import java.awt.TexturePaint;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -39,9 +38,12 @@ public class TexturePaintFactory implements PaintFactory {
 		this.img = img;
 	}
 
-
+	@Override
 	public TexturePaint getPaint(Rectangle2D bound) {
 		return new TexturePaint(img, bound);
 	}
 
+	public BufferedImage getImage() {
+		return img;
+	}
 }

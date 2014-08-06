@@ -39,7 +39,10 @@ public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> 
 	
 	public CustomGraphicsIcon(final CyCustomGraphics<?> value, int width, int height, String name) {
 		super(value, width, height, name);
-		this.setImage(value.getRenderedImage());
+		Image img = value.getRenderedImage();
+		
+		if (img != null)
+			this.setImage(img);
 	}
 	
 	@Override
@@ -49,8 +52,10 @@ public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> 
 		// AA on
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		Image img = this.getImage();
-		img = img.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
 		
-		g2d.drawImage(img, x, y, width, height, c);
+		if (img != null) {
+			img = img.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
+			g2d.drawImage(img, x, y, width, height, c);
+		}
 	}
 }

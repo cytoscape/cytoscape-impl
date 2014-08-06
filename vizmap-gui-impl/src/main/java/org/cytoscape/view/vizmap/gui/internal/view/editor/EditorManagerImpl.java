@@ -32,11 +32,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -99,6 +101,8 @@ public class EditorManagerImpl implements EditorManager {
 	private final PropertyEditor mappingTypeEditor;
 	private final ContinuousMappingCellRendererFactory cellRendererFactory;
 	private final ServicesUtil servicesUtil;
+	
+	private final Object mutex = new Object();
 
 	/**
 	 * Creates a new EditorFactory object.
@@ -158,35 +162,47 @@ public class EditorManagerImpl implements EditorManager {
 	@Override
 	@SuppressWarnings("rawtypes")
 	public void addValueEditor(final ValueEditor<?> ve, final Map properties) {
-		this.valueEditors.put(ve.getValueType(), ve);
+		synchronized (mutex) {
+			this.valueEditors.put(ve.getValueType(), ve);
+		}
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
 	public void removeValueEditor(final ValueEditor<?> ve, final Map properties) {
-		valueEditors.remove(ve.getValueType());
+		synchronized (mutex) {
+			valueEditors.remove(ve.getValueType());
+		}
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
 	public void addVisualPropertyValueEditor(final VisualPropertyValueEditor<?> ve, final Map properties) {
-		this.vizPropValueEditors.put(ve.getValueType(), ve);
+		synchronized (mutex) {
+			this.vizPropValueEditors.put(ve.getValueType(), ve);
+		}
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
 	public void removeVisualPropertyValueEditor(final VisualPropertyValueEditor<?> ve, final Map properties) {
-		vizPropValueEditors.remove(ve.getValueType());
+		synchronized (mutex) {
+			vizPropValueEditors.remove(ve.getValueType());
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
 	public void addVisualPropertyEditor(final VisualPropertyEditor<?> vpEditor, final Map properties) {
-		editors.put(vpEditor.getType(), vpEditor);
+		synchronized (mutex) {
+			editors.put(vpEditor.getType(), vpEditor);
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
 	public void removeVisualPropertyEditor(final VisualPropertyEditor<?> vpEditor, final Map properties) {
-		editors.remove(vpEditor.getType());
+		synchronized (mutex) {
+			editors.remove(vpEditor.getType());
+		}
 	}
 
 	@Override
@@ -225,7 +241,9 @@ public class EditorManagerImpl implements EditorManager {
 
 	@SuppressWarnings("unchecked")
 	public <V> VisualPropertyEditor<V> getVisualPropertyEditor(final VisualProperty<V> vp) {
-		return (VisualPropertyEditor<V>) editors.get(vp.getRange().getType());
+		synchronized (mutex) {
+			return (VisualPropertyEditor<V>) editors.get(vp.getRange().getType());
+		}
 	}
 
 	@Override
@@ -253,7 +271,9 @@ public class EditorManagerImpl implements EditorManager {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> ValueEditor<V> getValueEditor(final Class<V> dataType) {
-		return (ValueEditor<V>) this.valueEditors.get(dataType);
+		synchronized (mutex) {
+			return (ValueEditor<V>) this.valueEditors.get(dataType);
+		}
 	}
 
 	/**
@@ -290,37 +310,39 @@ public class EditorManagerImpl implements EditorManager {
 		for (final VisualProperty<V> vp : vps) {
 			final Range<?> range = vp.getRange();
 
-			// If data type is basic (String, Boolean, etc.), custom editor
-			// is not necessary.
+			// If data type is basic (String, Boolean, etc.), custom editor is not necessary.
 			final Class<?> targetDataType = range.getType();
-			if (REGISTRY.getEditor(targetDataType) != null)
-				continue;
-
-			if (this.getVisualPropertyEditor(vp) != null)
-				continue;
-
-			if (range instanceof DiscreteRange<?>) {
-				if (this.getValueEditor(range.getType()) == null) {
-					final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(range.getType(),
-							((DiscreteRange) range).values(), vp, servicesUtil);
-					this.addValueEditor(valEditor, null);
+			
+			synchronized (mutex) {
+				if (REGISTRY.getEditor(targetDataType) != null)
+					continue;
+	
+				if (this.getVisualPropertyEditor(vp) != null)
+					continue;
+	
+				if (range instanceof DiscreteRange<?>) {
+					if (this.getValueEditor(range.getType()) == null) {
+						final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(range.getType(),
+								((DiscreteRange) range).values(), vp, servicesUtil);
+						this.addValueEditor(valEditor, null);
+					}
+	
+					final CyDiscreteValuePropertyEditor<?> discretePropEditor = new CyDiscreteValuePropertyEditor(
+							(DiscreteValueEditor) this.getValueEditor(range.getType()));
+					
+					final Set values = ((DiscreteRange)range).values();
+					// FIXME how can we manage the custom icon size based on value type?
+					Integer width = ICON_WIDTH_MAP.get(range.getType());
+					
+					if (width == null)
+						width = ICON_W;
+					
+					final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
+							discretePropEditor, cellRendererFactory, values, width, ICON_H);
+					
+					this.addVisualPropertyEditor(vpEditor, null);
+					servicesUtil.registerService(vpEditor, SetCurrentRenderingEngineListener.class, new Properties());
 				}
-
-				final CyDiscreteValuePropertyEditor<?> discretePropEditor = new CyDiscreteValuePropertyEditor(
-						(DiscreteValueEditor) this.getValueEditor(range.getType()));
-				
-				final Set values = ((DiscreteRange)range).values();
-				// FIXME how can we manage the custom icon size based on value type?
-				Integer width = ICON_WIDTH_MAP.get(range.getType());
-				
-				if (width == null)
-					width = ICON_W;
-				
-				final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
-						discretePropEditor, cellRendererFactory, values, width, ICON_H);
-				
-				servicesUtil.registerAllServices(vpEditor);
-				this.addVisualPropertyEditor(vpEditor, null);
 			}
 		}
 	}

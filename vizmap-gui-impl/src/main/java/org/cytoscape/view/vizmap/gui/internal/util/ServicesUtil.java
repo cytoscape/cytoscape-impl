@@ -35,6 +35,10 @@ public class ServicesUtil {
 		return cyServiceRegistrar.getService(serviceClass, filter);
 	}
 	
+	public void registerService(final Object service, final Class<?> serviceClass, final Properties props) {
+		cyServiceRegistrar.registerService(service, serviceClass, props);
+	}
+
 	public void registerAllServices(final Object service) {
 		cyServiceRegistrar.registerAllServices(service, new Properties());
 	}

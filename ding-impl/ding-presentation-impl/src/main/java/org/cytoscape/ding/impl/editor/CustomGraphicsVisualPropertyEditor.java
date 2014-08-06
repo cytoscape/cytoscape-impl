@@ -1,8 +1,8 @@
-package org.cytoscape.view.vizmap.gui.internal.view.editor;
+package org.cytoscape.ding.impl.editor;
 
 /*
  * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -25,17 +25,18 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor;
  */
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
-import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.FontTableCellRenderer;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyFontPropertyEditor;
 
-public class CustomGraphicsVisualPropertyEditor extends BasicVisualPropertyEditor<CyCustomGraphics<?>> {
+
+@SuppressWarnings("rawtypes")
+public class CustomGraphicsVisualPropertyEditor extends AbstractVisualPropertyEditor<CyCustomGraphics> {
 	
-	public CustomGraphicsVisualPropertyEditor(final Class<CyCustomGraphics<?>> type,
-											  final CyFontPropertyEditor fontPropEditor,
+	public CustomGraphicsVisualPropertyEditor(final Class<CyCustomGraphics> type,
+											  final CyCustomGraphicsValueEditor valueEditor,
 											  final ContinuousMappingCellRendererFactory cellRendererFactory) {
-		super(type, fontPropEditor, ContinuousEditorType.DISCRETE, cellRendererFactory);
-		discreteTableCellRenderer = new FontTableCellRenderer();
+		super(type, new CyCustomGraphicsPropertyEditor(valueEditor), ContinuousEditorType.DISCRETE, cellRendererFactory);
+		discreteTableCellRenderer = new CyCustomGraphicsCellRenderer();
 	}
 }

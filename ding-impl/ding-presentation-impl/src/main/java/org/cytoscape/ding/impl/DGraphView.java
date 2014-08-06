@@ -380,7 +380,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final CyNetworkViewManager netViewMgr,
 			final HandleFactory handleFactory,
 			final CyServiceRegistrar registrar) {
-		super(model, dingLexicon);
+		super(model, dingLexicon, cyEventHelper);
 		this.props = new Properties();
 		this.vmm = vmm;
 		this.registrar = registrar;
@@ -744,7 +744,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		m_drawPersp.addNode(node);
 
-		final DNodeView dNodeView = new DNodeView(lexicon, this, node, vmm, netViewMgr);
+		final DNodeView dNodeView = new DNodeView(lexicon, this, node, vmm, netViewMgr, cyEventHelper);
 		
 		// WARNING: DO not call the following in view creation.  This is VERY slow.
 		//Boolean selected = getModel().getRow(node).get(CyNetwork.SELECTED, Boolean.class);
@@ -787,7 +787,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			m_drawPersp.addEdge(edge);
 
-			dEdgeView = new DEdgeView(this, edge, handleFactory, lexicon);
+			dEdgeView = new DEdgeView(this, edge, handleFactory, lexicon, cyEventHelper);
 
 			edgeViewMap.put(edge, dEdgeView);
 			m_contentChanged = true;

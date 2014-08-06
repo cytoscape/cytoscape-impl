@@ -51,10 +51,6 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.PaintedShape;
-
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
 import org.cytoscape.graph.render.immed.arrow.DeltaArrow;
@@ -75,6 +71,10 @@ import org.cytoscape.graph.render.immed.nodeshape.RectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 
 
 /**
@@ -2051,9 +2051,11 @@ public final class GraphGraphics {
 	 * @param yOffset
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
+	 * @param scaleFactor
+	 *            current zoom factor.
 	 */
 	public final void drawCustomGraphicFull(final Shape nodeShape, final CustomGraphicLayer cg,
-	                                        final float xOffset, final float yOffset) {
+	                                        final float xOffset, final float yOffset, final double scaleFactor) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
@@ -2073,11 +2075,20 @@ public final class GraphGraphics {
 			}
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
-		} else if(cg instanceof ImageCustomGraphicLayer) {
+		} else if (cg instanceof Cy2DGraphicLayer) {
+			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
+			layer.draw(m_g2d, nodeShape.getBounds2D(), nodeShape);
+		} else if (cg instanceof ImageCustomGraphicLayer) {
 			m_g2d.translate(xOffset, yOffset);
-			Rectangle bounds = cg.getBounds2D().getBounds();
+			Rectangle2D b = cg.getBounds2D();
+			Rectangle2D bounds = new Rectangle2D.Double(b.getX(), b.getY(), b.getWidth() * scaleFactor, b.getHeight() * scaleFactor);
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
-			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
+			m_g2d.drawImage(bImg,
+							(int)Math.round(b.getX()),
+							(int)Math.round(b.getY()),
+							(int)Math.round(b.getWidth()),
+							(int)Math.round(b.getHeight()),
+							null);
 		} else {
 			Rectangle2D bounds = nodeShape.getBounds2D();
 			m_g2d.setPaint(cg.getPaint(bounds));
