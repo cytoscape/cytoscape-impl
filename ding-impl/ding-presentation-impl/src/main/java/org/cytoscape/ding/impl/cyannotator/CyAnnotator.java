@@ -136,16 +136,15 @@ public class CyAnnotator {
 		// System.out.println("Loading annotations");
 		CyNetwork network = view.getModel();
 		// Now, see if this network has any existing annotations
-		final CyTable networkAttributes = network.getDefaultNetworkTable();
+		final CyTable networkAttributes = 
+			network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 
-		// This should be in the HIDDEN_ATTRS namespace, but we can't get to it
-		// without a pointer to the CyNetworkTableManager
 		if (networkAttributes.getColumn(ANNOTATION_ATTRIBUTE) == null) {
 			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE,
 			                                   String.class,false,Collections.EMPTY_LIST);
 		}
 
-		List<String> annotations = network.getRow(network).
+		List<String> annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).
 		                                          getList(ANNOTATION_ATTRIBUTE,String.class);
 
 		List<Map<String,String>> arrowList = 
@@ -361,7 +360,7 @@ public class CyAnnotator {
 		}
 		// Save it in the network attributes
 		List<String>networkAnnotation = convertAnnotationMap(networkAnnotations);
-		network.getRow(network).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
+		network.getRow(network, CyNetwork.LOCAL_ATTRS).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
 	}
 
 	private List<String> convertAnnotationMap(List<Map<String, String>>networkAnnotations) {
