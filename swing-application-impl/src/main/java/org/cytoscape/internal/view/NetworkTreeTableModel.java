@@ -33,21 +33,18 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.AbstractTreeTableModel;
 import org.cytoscape.util.swing.TreeTableModel;
-import org.cytoscape.view.model.CyNetworkViewManager;
 
 
 final class NetworkTreeTableModel extends AbstractTreeTableModel {
 	
-	private static final String[] COLUMNS = { "Network", "Views", "Nodes", "Edges" };
-	private static final Class<?>[] COLUMN_CLASSES = { TreeTableModel.class, String.class, String.class, String.class };
+	private static final String[] COLUMNS = { "Network", "Nodes", "Edges" };
+	private static final Class<?>[] COLUMN_CLASSES = { TreeTableModel.class, String.class, String.class };
 
 	private final NetworkPanel networkPanel;
-	private final CyNetworkViewManager netViewMgr;
 	
-	NetworkTreeTableModel(NetworkPanel networkPanel, Object root, CyNetworkViewManager netViewMgr) {
+	NetworkTreeTableModel(NetworkPanel networkPanel, Object root) {
 		super(root);
 		this.networkPanel = networkPanel;
-		this.netViewMgr = netViewMgr;
 	}
 
 	@Override
@@ -116,11 +113,9 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 				return null;
 			
 			if (column == 1) {
-				return "" + netViewMgr.getNetworkViews(net).size();
-			} else if (column == 2) {
 				return "" + net.getNodeCount() + "("
 				+ net.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
-			} else if (column == 3) {
+			} else if (column == 2) {
 				return "" + net.getEdgeCount() + "("
 					+ net.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
 			}
