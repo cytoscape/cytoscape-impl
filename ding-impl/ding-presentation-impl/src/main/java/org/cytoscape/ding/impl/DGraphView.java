@@ -333,6 +333,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private List<CyNode> nodeSelectionList;
 	private List<CyEdge> edgeSelectionList;
 	boolean largeModel = false;
+	boolean haveZOrder = false;
 
 	/**
 	 * Create presentation from View Model
@@ -751,7 +752,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		//	dNodeView.select();
 
 		nodeViewMap.put(node, dNodeView);
-		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, m_defaultNodeXMax, m_defaultNodeYMax);
+		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, 
+		                  m_defaultNodeXMax, m_defaultNodeYMax, dNodeView.getZPosition());
 		
 		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyNode>) dNodeView, AddedNodeViewsEvent.class);
 		return dNodeView;
@@ -1367,7 +1369,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					return false;
 
 				m_spacial.insert(nodeInx, nView.m_hiddenXMin, nView.m_hiddenYMin, nView.m_hiddenXMax,
-						nView.m_hiddenYMax);
+						nView.m_hiddenYMax, nView.getZPosition());
 				m_contentChanged = true;
 			}
 
@@ -1789,7 +1791,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			// System.out.println("Calling renderGraph to draw snapshot");
 			GraphRenderer.renderGraph(m_drawPersp, dummySpacialFactory.createSpacialIndex2D(), lod, m_nodeDetails,
 			                          m_edgeDetails, m_hash, new GraphGraphics(img, false, false),
-			                          bgPaint, xCenter, yCenter, scaleFactor);
+			                          bgPaint, xCenter, yCenter, scaleFactor, haveZOrder);
 		} catch (Exception e) { e.printStackTrace(); }
 		// }
 
@@ -1845,7 +1847,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			long idx = node.getSUID();
 			if (m_spacial.exists(idx, m_extentsBuff, 0)) {
 				if (!sub_spacial.exists(idx, new float[4], 0))
-					sub_spacial.insert(idx, m_extentsBuff[0], m_extentsBuff[1], m_extentsBuff[2], m_extentsBuff[3]);
+					sub_spacial.insert(idx, m_extentsBuff[0], m_extentsBuff[1], 
+				                     m_extentsBuff[2], m_extentsBuff[3], 0.0);
 				net.addNode(node);
 			}
 		}
@@ -1858,7 +1861,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// synchronized (m_lock) {
 			lastRenderDetail = GraphRenderer.renderGraph(net, sub_spacial, lod, m_nodeDetails,
  			                                             m_edgeDetails, hash, graphics, bg, xCenter,
- 			                                             yCenter, scale);
+ 			                                             yCenter, scale, haveZOrder);
 		// }
 		} catch (Exception e) { e.printStackTrace(); }
 		m_contentChanged = false;
@@ -1882,7 +1885,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 									       m_nodeDetails,
 									       m_edgeDetails, hash,
 									       graphics, bgColor, xCenter,
-									       yCenter, scale);
+									       yCenter, scale, haveZOrder);
 		}
 		} catch (Exception e) {e.printStackTrace();}
 		m_contentChanged = false;
@@ -2830,6 +2833,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// System.out.println("RowsSetEvent done");
 	}
 
+	public void setHaveZOrder(boolean z) {
+		haveZOrder = z;
+	}
 
 	// This is expensive and should only be called at initialization!!!
 	private void syncFilterAndView() {

@@ -69,9 +69,20 @@ public class DummySpacial implements SpacialIndex2D {
 
 	public void empty() {}
 
-	public void insert(long objKey, float xMin, float yMin, float xMax, float yMax) {} 
+	public void insert(long objKey, float xMin, float yMin, float xMax, float yMax, double z) {} 
 
 	public boolean delete(long objKey) { return true; }
+
+	public void setZOrder(long objKey, double z) {}
+
+	public double getZOrder(long objKey) {
+		CyNode node = networkView.getModel().getNode(objKey);
+		if (node == null)
+			return 0.0;
+
+		DNodeView nodeView = (DNodeView)networkView.getNodeView(node);
+		return nodeView.getZPosition();
+	}
 
 	private final class NetworkEnumerator implements SpacialEntry2DEnumerator {
 		int index = 0;

@@ -180,6 +180,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	float m_xMax = Float.MAX_VALUE;
 	float m_yMax = Float.MAX_VALUE;
 
+	// Cached node depth.
+	double m_zOrder = 0.0f;
+
 	// Cached visibility information
 	private boolean isVisible = true;
 	
@@ -370,7 +373,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 			graphView.m_spacial.delete(modelIdx);
 			graphView.m_spacial.insert(modelIdx, xMin, graphView.m_extentsBuff[1], xMax,
-					graphView.m_extentsBuff[3]);
+					graphView.m_extentsBuff[3], m_zOrder);
 			graphView.m_contentChanged = true;
 
 			m_xMin = xMin;
@@ -426,7 +429,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 						+ yCenter + " height:" + height);
 
 			graphView.m_spacial.delete(modelIdx);
-			graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
+			graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax, m_zOrder);
 			graphView.m_contentChanged = true;
 
 			m_xMin = graphView.m_extentsBuff[0];
@@ -475,7 +478,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				throw new IllegalStateException("height of node has degenerated to zero after " + "rounding");
 
 			graphView.m_spacial.delete(modelIdx);
-			graphView.m_spacial.insert(modelIdx, xMin, yMin, xMax, yMax);
+			graphView.m_spacial.insert(modelIdx, xMin, yMin, xMax, yMax, m_zOrder);
 			graphView.m_contentChanged = true;
 			setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,x);
 			setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,y);
@@ -517,7 +520,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			// If the node is visible, set the extents.
 			if (isVisible) {
 				graphView.m_spacial.delete(modelIdx);
-				graphView.m_spacial.insert(modelIdx, xMin, graphView.m_extentsBuff[1], xMax, graphView.m_extentsBuff[3]);
+				graphView.m_spacial.insert(modelIdx, xMin, graphView.m_extentsBuff[1], xMax, graphView.m_extentsBuff[3], m_zOrder);
 				graphView.m_contentChanged = true;
 				m_xMin = xMin;
 				m_yMin = graphView.m_extentsBuff[1];
@@ -552,6 +555,23 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		*/
 	}
 
+	public void setZPosition(final double z) {
+		if (m_zOrder == z)
+			return;
+
+		m_zOrder = z;
+		if (m_zOrder != 0.0)
+			graphView.setHaveZOrder(true);
+
+		synchronized (graphView.m_lock) {
+			graphView.m_spacial.setZOrder(modelIdx, m_zOrder);
+		}
+	}
+
+	public double getZPosition() {
+		return (double)m_zOrder;
+	}
+
 	public void setYPosition(final double yPos) {
 		final double hDiv2;
 		
@@ -573,7 +593,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			// If the node is visible, set the extents.
 			if (isVisible) {
 				graphView.m_spacial.delete(modelIdx);
-				graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax);
+				graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax, m_zOrder);
 				graphView.m_contentChanged = true;
 
 				m_xMin = graphView.m_extentsBuff[0];
@@ -1164,6 +1184,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setXPosition(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_Y_LOCATION) {
 			setYPosition(((Number) value).doubleValue());
+		} else if (vp == BasicVisualLexicon.NODE_Z_LOCATION) {
+			setZPosition(((Number) value).doubleValue());
 		} else if (vp == DVisualLexicon.NODE_TOOLTIP) {
 			setToolTip(value.toString());
 		} else if (vp == BasicVisualLexicon.NODE_LABEL_COLOR) {

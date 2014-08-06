@@ -88,6 +88,7 @@ class DNodeDetails extends NodeDetails {
 	Map<CyNode, Integer> m_nodeTansparencies = new WeakHashMap<CyNode, Integer>();
 	Map<CyNode, Integer> m_nodeBorderTansparencies = new WeakHashMap<CyNode, Integer>();
 	Map<CyNode, Integer> m_nodeLabelTansparencies = new WeakHashMap<CyNode, Integer>();
+	Map<CyNode, Double> m_nodeZ = new WeakHashMap<CyNode, Double>();
 
 	private final Set<CyNode> selected = new HashSet<CyNode>();
 
@@ -149,6 +150,7 @@ class DNodeDetails extends NodeDetails {
 		this.m_nodeTansparencies = new WeakHashMap<CyNode, Integer>();
 		this.m_nodeBorderTansparencies = new WeakHashMap<CyNode, Integer>();
 		this.m_nodeLabelTansparencies = new WeakHashMap<CyNode, Integer>();
+		m_nodeZ = new WeakHashMap<CyNode, Double>();
 
 		// Clear all Custom Graphics
 		for (final View<CyNode> nv : dGraphView.getNodeViews())
@@ -187,6 +189,7 @@ class DNodeDetails extends NodeDetails {
 		m_nodeTansparencies.remove(nodeIdx);
 		m_nodeBorderTansparencies.remove(nodeIdx);
 		m_nodeLabelTansparencies.remove(nodeIdx);
+		m_nodeZ.remove(nodeIdx);
 	}
 
 	@Override
@@ -993,6 +996,18 @@ class DNodeDetails extends NodeDetails {
 			isCleared = false;
 		}
 	}
+
+	public Double getNodeDepth(final CyNode node) {
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		if (dnv.isValueLocked(DVisualLexicon.NODE_DEPTH))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_DEPTH);
+
+		Double depth = m_nodeZ.get(node);
+		if (depth == null)
+			return 0.0;
+		return depth;
+	}
+
 
 	@Override
 	public TexturePaint getNestedNetworkTexturePaint(final CyNode node) {

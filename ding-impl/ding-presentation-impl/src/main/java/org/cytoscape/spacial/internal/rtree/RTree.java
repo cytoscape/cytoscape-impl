@@ -33,7 +33,9 @@ import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongObjHash;
 import org.cytoscape.util.intr.LongStack;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 
 /**
@@ -54,6 +56,11 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	private final Object m_deletedEntry = ""; // except when "deleted".
 	private int m_deletedEntries;
 	private int m_mapExpansionThreshold;
+
+	// HACK Alert:  We don't want the overhead of a 3D RTree, but we *do* want
+	// to support Z-Order.  This allows us to cache the Z-Order information
+	// which will be sorted when the detail is high enough
+	private Map<Long,Double> m_zOrderMap; // Keys are objKey, values are of type Double,
 
 	// These buffers are used during node splitting.
 	private final long[] m_objKeyBuff;
@@ -93,6 +100,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 		m_minBranches = Math.max(2, (int) (((double) (m_maxBranches + 1)) * 0.4d));
 		m_root = new Node(m_maxBranches, true);
 		m_entryMap = new LongObjHash();
+		m_zOrderMap = new HashMap<Long,Double>();
 		m_deletedEntries = 0;
 		m_mapExpansionThreshold = LongObjHash.maxCapacity(m_entryMap.size());
 		m_objKeyBuff = new long[m_maxBranches + 1];
@@ -118,6 +126,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	public final void empty() {
 		m_root = new Node(m_maxBranches, true);
 		m_entryMap = new LongObjHash();
+		m_zOrderMap = new HashMap<Long,Double>();
 		m_deletedEntries = 0;
 		m_mapExpansionThreshold = LongObjHash.maxCapacity(m_entryMap.size());
 	}
@@ -161,7 +170,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	 *   if yMin is not less than or equal to yMax.
 	 */
 	public final void insert(final long objKey, final float xMin, final float yMin,
-	                         final float xMax, final float yMax) {
+	                         final float xMax, final float yMax, final double z) {
 		if (objKey < 0)
 			throw new IllegalArgumentException("objKey is negative");
 
@@ -242,6 +251,24 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 			m_MBR[2] = Math.max(m_root.xMaxs[0], m_root.xMaxs[1]);
 			m_MBR[3] = Math.max(m_root.yMaxs[0], m_root.yMaxs[1]);
 		}
+
+		// OK, now that we've done all *that*, add z
+		if (z != 0.0 || m_zOrderMap.get(objKey) != null) {
+			if (z == 0.0)
+				m_zOrderMap.remove(objKey);
+			else
+				m_zOrderMap.put(objKey, Double.valueOf(z));
+		}
+	}
+
+	public final double getZOrder(long objKey) {
+		Double z = m_zOrderMap.get(objKey);
+		if (z == null) return 0.0;
+		return z.doubleValue();
+	}
+
+	public final void setZOrder(long objKey, double zOrder) {
+		m_zOrderMap.put(objKey, zOrder);
 	}
 
 	/*

@@ -32,7 +32,10 @@ import java.awt.Stroke;
 import java.awt.TexturePaint;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -135,7 +138,7 @@ public final class GraphRenderer {
 	                                    final EdgeDetails edgeDetails, final LongHash nodeBuff,
 	                                    final GraphGraphics grafx, final Paint bgPaint,
 	                                    final double xCenter, final double yCenter,
-	                                    final double scaleFactor) {
+	                                    final double scaleFactor, final boolean haveZOrder) {
 	
 		nodeBuff.empty(); // Make sure we keep our promise.
 
@@ -351,7 +354,7 @@ public final class GraphRenderer {
 				}
 			} else { // High detail.
 				while (nodeHits.numRemaining() > 0) {
-					final long node = nodeHits.nextExtents(floatBuff1, 0);
+					final long node =nodeHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
 					final byte nodeShape = nodeDetails.getShape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
@@ -650,8 +653,12 @@ public final class GraphRenderer {
 						                  floatBuff1[3], nodeDetails.getColorLowDetail(node));
 				}
 			} else { // High detail.
-				while (nodeHits.numRemaining() > 0) {
-					final long node = nodeHits.nextExtents(floatBuff1, 0);
+				SpacialEntry2DEnumerator zHits = nodeHits;
+				if (haveZOrder) {
+					zHits = new SpacialEntry2DEnumeratorZSort(nodePositions, nodeHits);
+				}
+				while (zHits.numRemaining() > 0) {
+					final long node =zHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
 					
 					renderNodeHigh(graph, grafx, node, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, lodBits);
@@ -1120,6 +1127,61 @@ public final class GraphRenderer {
 					graphicInx++;
 				}
 			}
+		}
+	}
+
+	private static class SpacialEntry2DEnumeratorZSort implements SpacialEntry2DEnumerator {
+		List<ZSpacialEntry> entryList;
+		int nextEntry = 0;
+
+		public SpacialEntry2DEnumeratorZSort (SpacialIndex2D nodePositions, SpacialEntry2DEnumerator nodeHits) {
+			// Get arrays of SUIDs, extents, Z
+			this.entryList = new ArrayList<ZSpacialEntry>();
+			while (nodeHits.numRemaining() > 0) {
+				float[] extents = new float[4];
+				long suid = nodeHits.nextExtents(extents, 0);
+				// Create an index
+				ZSpacialEntry entry = new ZSpacialEntry(suid, extents, nodePositions.getZOrder(suid));
+				entryList.add(entry);
+			}
+			// System.out.println("Sorting list: "+entryList);
+			Collections.sort(entryList);
+			// System.out.println("Sorted list: "+entryList);
+		}
+
+		public long nextLong() { return entryList.get(nextEntry++).getSUID(); }
+		public int numRemaining() { return (entryList.size()-nextEntry); }
+		public long nextExtents(final float[] extentsArr, final int offset) {
+			ZSpacialEntry entry = entryList.get(nextEntry++);
+			float[] extents = entry.getExtents();
+			extentsArr[offset] = extents[0];
+			extentsArr[offset+1] = extents[1];
+			extentsArr[offset+2] = extents[2];
+			extentsArr[offset+3] = extents[3];
+			return entry.getSUID();
+		}
+	}
+
+	private static class ZSpacialEntry implements Comparable<ZSpacialEntry> {
+		private long suid;
+		private float[] extentsArr;
+		private double z;
+
+		public ZSpacialEntry(long suid, float[] extentsArr, double z) {
+			this.suid = suid;
+			this.extentsArr = extentsArr;
+			this.z = z;
+		}
+
+		public long getSUID() { return this.suid; }
+		public float[] getExtents() { return this.extentsArr; }
+		public double getZ() { return this.z; }
+		public String toString() { return "Suid: "+suid+" z = "+z; }
+
+		public int compareTo(ZSpacialEntry other) {
+			if (other == null || z == other.getZ()) return 0;
+			if (z < other.getZ()) return -1;
+			return 1;
 		}
 	}
 }

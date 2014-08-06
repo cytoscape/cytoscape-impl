@@ -232,7 +232,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			
 			graphView.m_spacialA.insert((model.getSUID() << 6) | j,
 					(float) (x - halfSize), (float) (y - halfSize),
-					(float) (x + halfSize), (float) (y + halfSize));
+					(float) (x + halfSize), (float) (y + halfSize), 0.0);
 
 			if (selectAnchors)
 				graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
@@ -376,7 +376,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					(float) (x - (graphView.getAnchorSize() / 2.0d)),
 					(float) (y - (graphView.getAnchorSize() / 2.0d)),
 					(float) (x + (graphView.getAnchorSize() / 2.0d)),
-					(float) (y + (graphView.getAnchorSize() / 2.0d)));
+					(float) (y + (graphView.getAnchorSize() / 2.0d)), 0.0);
 	}
 
 	/**
@@ -455,7 +455,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					graphView.m_spacialA.delete((model.getSUID() << 6) | (j - 1));
 					graphView.m_spacialA.insert((model.getSUID() << 6) | j,
 							graphView.m_extentsBuff[0], graphView.m_extentsBuff[1],
-							graphView.m_extentsBuff[2], graphView.m_extentsBuff[3]);
+							graphView.m_extentsBuff[2], graphView.m_extentsBuff[3], 0.0);
 
 					if (graphView.m_selectedAnchors.delete((model.getSUID() << 6) | (j - 1)))
 						graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
@@ -465,7 +465,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 						(float) (handleLocation.getX() - (graphView.getAnchorSize() / 2.0d)),
 						(float) (handleLocation.getY() - (graphView.getAnchorSize() / 2.0d)),
 						(float) (handleLocation.getX() + (graphView.getAnchorSize() / 2.0d)),
-						(float) (handleLocation.getY() + (graphView.getAnchorSize() / 2.0d)));
+						(float) (handleLocation.getY() + (graphView.getAnchorSize() / 2.0d)), 0.0);
 			}
 
 			graphView.m_contentChanged = true;
@@ -488,7 +488,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					graphView.m_spacialA.delete((model.getSUID() << 6) | (j + 1));
 					graphView.m_spacialA.insert((model.getSUID() << 6) | j,
 							graphView.m_extentsBuff[0], graphView.m_extentsBuff[1],
-							graphView.m_extentsBuff[2], graphView.m_extentsBuff[3]);
+							graphView.m_extentsBuff[2], graphView.m_extentsBuff[3], 0.0);
 
 					if (graphView.m_selectedAnchors.delete((model.getSUID() << 6) | (j + 1)))
 						graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);

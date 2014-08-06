@@ -56,7 +56,7 @@ public final class LongObjHash implements java.io.Serializable {
 	                                        4194287, 8388587, 16777183, 33554393, 67108837,
 	                                        134217689, 268435399, 536870879, 1073741789, 2147483647
 	                                    };
-	private static final int INITIAL_SIZE = PRIMES[0];
+	private static final int INITIAL_SIZE = PRIMES[10];
 	private static final double THRESHOLD_FACTOR = 0.77;
 
 	/**

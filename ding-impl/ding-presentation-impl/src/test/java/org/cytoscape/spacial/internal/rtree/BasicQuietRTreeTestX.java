@@ -78,16 +78,16 @@ public class BasicQuietRTreeTestX {
 				final int stop = (j + 1) * 1000;
 
 				for (int k = j * 1000; k < stop; k++)
-					tree.insert(k, k, k, k + 1, k + 1);
+					tree.insert(k, k, k, k + 1, k + 1, 0.0);
 
 				for (int k = j * 1000; k < stop; k++)
 					tree.delete(k);
 			}
 		} // END EMPTY TREE TESTS.
 
-		tree.insert(0, 0.0f, 0.0f, 1.0f, 1.0f);
-		tree.insert(1, 2.0f, 2.0f, 3.0f, 3.0f);
-		tree.insert(2, 0.5f, 1.0f, 1.5f, 2.0f);
+		tree.insert(0, 0.0f, 0.0f, 1.0f, 1.0f, 0.0);
+		tree.insert(1, 2.0f, 2.0f, 3.0f, 3.0f, 0.0);
+		tree.insert(2, 0.5f, 1.0f, 1.5f, 2.0f, 0.0);
 
 		for (int a = 0;; a++) { // BEGIN ROOT LEAF TEST: Still before any split.
 
@@ -168,14 +168,14 @@ public class BasicQuietRTreeTestX {
 				final int stop = ((j + 1) * 1000) + 3;
 
 				for (int k = (j * 1000) + 3; k < stop; k++)
-					tree.insert(k, -(k + 1), -(k + 1), -k, -k);
+					tree.insert(k, -(k + 1), -(k + 1), -k, -k, 0.0);
 
 				for (int k = (j * 1000) + 3; k < stop; k++)
 					tree.delete(k);
 			}
 		} // END ROOT LEAF TEST.
 
-		tree.insert(3, 2.5f, 0.5f, 3.5f, 1.5f);
+		tree.insert(3, 2.5f, 0.5f, 3.5f, 1.5f, 0.0);
 
 		for (int a = 0;; a++) { // BEGIN SIMPLE ROOT SPLIT TEST: Minimum # entries with a split.
 
@@ -292,7 +292,7 @@ public class BasicQuietRTreeTestX {
 				final int stop = ((j + 1) * 1000) + 4;
 
 				for (int k = (j * 1000) + 4; k < stop; k++)
-					tree.insert(k, k, -(k + 1), k + 3, -(k - 2));
+					tree.insert(k, k, -(k + 1), k + 3, -(k - 2), 0.0);
 
 				for (int k = (j * 1000) + 4; k < stop; k++)
 					tree.delete(k);
@@ -304,7 +304,7 @@ public class BasicQuietRTreeTestX {
 			boolean exceptionCaught = false;
 
 			try {
-				tree.insert(0, 0.0f, 0.0f, 1.0f, 1.0f);
+				tree.insert(0, 0.0f, 0.0f, 1.0f, 1.0f, 0.0);
 			} catch (IllegalStateException e) {
 				exceptionCaught = true;
 			}
@@ -315,7 +315,7 @@ public class BasicQuietRTreeTestX {
 			exceptionCaught = false;
 
 			try {
-				tree.insert(-1, 0.0f, 0.0f, 1.0f, 1.0f);
+				tree.insert(-1, 0.0f, 0.0f, 1.0f, 1.0f, 0.0);
 			} catch (IllegalArgumentException e) {
 				exceptionCaught = true;
 			}
@@ -326,7 +326,7 @@ public class BasicQuietRTreeTestX {
 			exceptionCaught = false;
 
 			try {
-				tree.insert(5, 1.0f, 1.0f, 0.0f, 0.0f);
+				tree.insert(5, 1.0f, 1.0f, 0.0f, 0.0f, 0.0);
 			} catch (IllegalArgumentException e) {
 				exceptionCaught = true;
 			}
@@ -335,12 +335,12 @@ public class BasicQuietRTreeTestX {
 				throw new IllegalStateException("expected exception for min > max");
 		} // END EXCEPTION HANDLING TEST.
 
-		tree.insert(4, 3.0f, -0.25f, 4.0f, 0.75f);
-		tree.insert(5, -0.5f, 2.5f, 0.5f, 3.5f);
-		tree.insert(6, 2.75f, 2.25f, 3.75f, 3.25f);
-		tree.insert(7, 1.25f, 1.75f, 2.25f, 2.75f);
-		tree.insert(8, 1.0f, 6.0f, 2.0f, 7.0f);
-		tree.insert(9, -2.0f, 1.0f, -1.0f, 2.0f);
+		tree.insert(4, 3.0f, -0.25f, 4.0f, 0.75f, 0.0);
+		tree.insert(5, -0.5f, 2.5f, 0.5f, 3.5f, 0.0);
+		tree.insert(6, 2.75f, 2.25f, 3.75f, 3.25f, 0.0);
+		tree.insert(7, 1.25f, 1.75f, 2.25f, 2.75f, 0.0);
+		tree.insert(8, 1.0f, 6.0f, 2.0f, 7.0f, 0.0);
+		tree.insert(9, -2.0f, 1.0f, -1.0f, 2.0f, 0.0);
 
 		for (int a = 0;; a++) { // BEGIN DEPTH THREE TEST.
 
@@ -487,7 +487,7 @@ public class BasicQuietRTreeTestX {
 				final int stop = ((j + 1) * 1000) + 10;
 
 				for (int k = (j * 1000) + 10; k < stop; k++)
-					tree.insert(k, k, k, k + 2, k + 2);
+					tree.insert(k, k, k, k + 2, k + 2, 0.0);
 
 				for (int k = (j * 1000) + 10; k < stop; k++)
 					tree.delete(k);
@@ -495,24 +495,24 @@ public class BasicQuietRTreeTestX {
 		} // END DEPTH THREE TEST.
 
 		for (int a = 0;; a++) {
-			tree.insert(10, 2.0f, 4.0f, 3.0f, 5.0f);
-			tree.insert(11, 1.5f, 3.75f, 3.5f, 4.25f);
-			tree.insert(12, 2.5f, 3.5f, 3.0f, 5.5f);
-			tree.insert(13, -4.0f, 6.0f, -2.0f, 8.0f);
-			tree.insert(14, -4.25f, 5.75f, 2.25f, 8.25f);
-			tree.insert(15, 2.0f, -1.0f, 2.0f, -1.0f);
-			tree.insert(16, -1.25f, 0.5f, -1.25f, 3.0f);
-			tree.insert(17, -0.5f, -0.5f, 1.5f, 0.5f);
-			tree.insert(18, 0.25f, 4.0f, 1.25f, 5.0f);
-			tree.insert(19, 4.0f, 1.0f, 5.0f, 2.0f);
-			tree.insert(20, 4.0f, 3.0f, 5.0f, 4.0f);
-			tree.insert(21, 4.25f, -1.5f, 4.75f, 5.0f);
-			tree.insert(22, 3.0f, -1.75f, 5.0f, -1.0f);
-			tree.insert(23, 1.25f, 0.25f, 2.25f, 1.25f);
-			tree.insert(24, -2.0f, 9.0f, -1.0f, 10.0f);
-			tree.insert(25, 1.0f, 9.0f, 2.0f, 10.0f);
-			tree.insert(26, -2.0f, 5.0f, -1.0f, 6.0f);
-			tree.insert(27, -2.5f, 5.25f, -1.75f, 9.25f);
+			tree.insert(10, 2.0f, 4.0f, 3.0f, 5.0f, 0.0);
+			tree.insert(11, 1.5f, 3.75f, 3.5f, 4.25f, 0.0);
+			tree.insert(12, 2.5f, 3.5f, 3.0f, 5.5f, 0.0);
+			tree.insert(13, -4.0f, 6.0f, -2.0f, 8.0f, 0.0);
+			tree.insert(14, -4.25f, 5.75f, 2.25f, 8.25f, 0.0);
+			tree.insert(15, 2.0f, -1.0f, 2.0f, -1.0f, 0.0);
+			tree.insert(16, -1.25f, 0.5f, -1.25f, 3.0f, 0.0);
+			tree.insert(17, -0.5f, -0.5f, 1.5f, 0.5f, 0.0);
+			tree.insert(18, 0.25f, 4.0f, 1.25f, 5.0f, 0.0);
+			tree.insert(19, 4.0f, 1.0f, 5.0f, 2.0f, 0.0);
+			tree.insert(20, 4.0f, 3.0f, 5.0f, 4.0f, 0.0);
+			tree.insert(21, 4.25f, -1.5f, 4.75f, 5.0f, 0.0);
+			tree.insert(22, 3.0f, -1.75f, 5.0f, -1.0f, 0.0);
+			tree.insert(23, 1.25f, 0.25f, 2.25f, 1.25f, 0.0);
+			tree.insert(24, -2.0f, 9.0f, -1.0f, 10.0f, 0.0);
+			tree.insert(25, 1.0f, 9.0f, 2.0f, 10.0f, 0.0);
+			tree.insert(26, -2.0f, 5.0f, -1.0f, 6.0f, 0.0);
+			tree.insert(27, -2.5f, 5.25f, -1.75f, 9.25f, 0.0);
 
 			if (a == 1)
 				break;
@@ -821,7 +821,7 @@ public class BasicQuietRTreeTestX {
 				final int stop = ((j + 1) * 1000) + 28;
 
 				for (int k = (j * 1000) + 28; k < stop; k++)
-					tree.insert(k, k, k, k + 5, k + 5);
+					tree.insert(k, k, k, k + 5, k + 5, 0.0);
 
 				for (int k = (j * 1000) + 28; k < stop; k++)
 					tree.delete(k);
