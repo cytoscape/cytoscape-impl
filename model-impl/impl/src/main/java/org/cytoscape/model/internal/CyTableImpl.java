@@ -99,7 +99,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private Map<String, VirtualColumn> virtualColumnMap;
 
 	private SavePolicy savePolicy;
-	private Boolean fireEvents;
+	private boolean fireEvents;
 	
 	/**
 	 * Creates a new CyTableImpl object.
@@ -148,7 +148,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		colList.add(getColumn(normalizedPKName));
 		// Using a ConcurrentHashMap for attributes because this speeds up initial access times
 		// for getMatchingRows()
-		attributes.put(normalizedPKName, new ConcurrentHashMap<Object, Object>(defaultInitSize));
+		attributes.put(normalizedPKName, new HashMap<Object, Object>(defaultInitSize));
 
 		virtualColumnMap = new HashMap<String, VirtualColumn>();
 	}
@@ -437,7 +437,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							                              /* isPrimaryKey = */ false,
 							                              isImmutable,
 							                              defaultValue));
-			attributes.put(normalizedColName, new ConcurrentHashMap<Object, Object>(defaultInitSize));
+			attributes.put(normalizedColName, new HashMap<Object, Object>(defaultInitSize));
 			colList.add(types.get(normalizedColName));
 		}
 		
@@ -477,7 +477,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       /* isPrimaryKey = */ false,
 							       isImmutable,
 								   defaultValue));
-			attributes.put(normalizedColName, new ConcurrentHashMap<Object, Object>(defaultInitSize));
+			attributes.put(normalizedColName, new HashMap<Object, Object>(defaultInitSize));
 			colList.add(types.get(normalizedColName));
 		}
 
@@ -1022,7 +1022,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			final String normalizedTargetName = normalizeColumnName(targetName);
 			types.put(normalizedTargetName, targetColumn);
-			attributes.put(normalizedTargetName, new ConcurrentHashMap<Object, Object>(defaultInitSize));
+			attributes.put(normalizedTargetName, new HashMap<Object, Object>(defaultInitSize));
 			virtualColumnMap.put(normalizedTargetName, virtualColumn);
 			colList.add(types.get(normalizedTargetName));
 		}
