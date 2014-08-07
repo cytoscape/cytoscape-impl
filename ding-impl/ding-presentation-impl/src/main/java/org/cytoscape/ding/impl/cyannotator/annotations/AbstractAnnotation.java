@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -536,6 +537,15 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		final ContentChangeListener lis = view.getContentChangeListener();
 		if (lis != null)
 			lis.contentChanged();
+	}
+
+	/**
+	 * Adjust the the size to correspond to the aspect ratio of the
+	 * current annotation.  This should be overloaded by annotations that
+	 * have an aspect ratio (e.g. Shape, Image, etc.)
+	 */
+	public Dimension adjustAspectRatio(Dimension d) {
+		return d;
 	}
 
 }

@@ -25,6 +25,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  */
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.Rectangle;
@@ -250,9 +251,29 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
 	}
 
+	public void setSize(Dimension d) {
+		setSize(d.getWidth(), d.getHeight());
+	}
+
 	public void setCustomShape(Shape shape) {
 		this.shapeType = ShapeType.CUSTOM;
 		this.shape = shape;
+	}
+
+	@Override
+	public Dimension adjustAspectRatio(Dimension d) {
+		double ratio = d.getWidth() / d.getHeight();
+		double aspectRatio = shapeWidth/shapeHeight;
+		double width, height;
+		if (aspectRatio >= ratio) {
+			width = d.getWidth();
+			height = width / aspectRatio;
+		} else {
+			height = d.getHeight();
+			width = height * aspectRatio;
+		}
+		d.setSize(width, height);
+		return d;
 	}
 
 	public JDialog getModifyDialog() {

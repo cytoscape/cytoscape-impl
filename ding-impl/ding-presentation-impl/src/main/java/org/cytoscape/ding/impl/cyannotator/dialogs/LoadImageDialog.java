@@ -126,18 +126,31 @@ public class LoadImageDialog extends JDialog {
 			                                                   url, image, 
  			                                                   view.getZoom(),cgm);
 
+			newOne.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
 			newOne.addComponent(null);
-			cyAnnotator.addAnnotation(newOne);
-			newOne.getCanvas().repaint();
+			newOne.update();
+
+			// Update the canvas
+			view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
 
 			// Set this shape to be resized
 			cyAnnotator.resizeShape(newOne);
 
 			try {
 				// Warp the mouse to the starting location (if supported)
+				// But, we want to preserve the aspect ratio, at least initially
+				double width = (double)image.getWidth();
+				double height = (double)image.getHeight();
+				if (height > width) {
+					width = 100.0*width/height;
+					height = 100;
+				} else {
+					height = 100.0*height/width;
+					width = 100;
+				}
 				Point start = newOne.getComponent().getLocationOnScreen();
 				Robot robot = new Robot();
-				robot.mouseMove((int)start.getX()+100, (int)start.getY()+100);
+				robot.mouseMove((int)start.getX()+(int)width, (int)start.getY()+(int)height);
 			} catch (Exception e) {}
 
 			this.dispose();

@@ -25,6 +25,8 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
  */
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
@@ -74,6 +76,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 			moveAnnotation.getCanvas().repaint();
 		} else if (resizeAnnotation != null) {
 			Component resizeComponent = resizeAnnotation.getComponent();
+
 			int cornerX1 = resizeComponent.getX();
 			int cornerY1 = resizeComponent.getY();
 			int cornerX2 = cornerX1 + resizeComponent.getWidth();
@@ -89,7 +92,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 				cornerX2 = mouseX;
 			}
 
-			int width = cornerX2-cornerX1-(int)(borderWidth*2*resizeAnnotation.getZoom());
+			double width = (double)cornerX2-(double)cornerX1-(borderWidth*2*resizeAnnotation.getZoom());
 
 			// if (Math.abs(mouseY-cornerY1) < Math.abs(mouseY-cornerY2)) {
 			if (mouseY <= cornerY1) {
@@ -100,13 +103,21 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 				cornerY2 = mouseY;
 			}
 
-			int height = cornerY2-cornerY1-(int)(borderWidth*2*resizeAnnotation.getZoom());
+			double height = (double)cornerY2-(double)cornerY1-(borderWidth*2*resizeAnnotation.getZoom());
 
-			if (width == 0) width = 2;
-			if (height == 0) height = 2;
+			if (width == 0.0) width = 2;
+			if (height == 0.0) height = 2;
+
+			Dimension d = new Dimension();
+			d.setSize(width, height);
+
+			// If shift is down, adjust to preserve the aspect ratio
+			if (e.isShiftDown()) {
+				d = resizeAnnotation.adjustAspectRatio(d);
+			}
 
 			resizeComponent.setLocation(cornerX1, cornerY1);
-			resizeAnnotation.setSize((double)width, (double)height);
+			resizeAnnotation.setSize(d);
 			resizeAnnotation.update();
 			resizeAnnotation.getCanvas().repaint();
 		} else if (repositionAnnotation != null) {
