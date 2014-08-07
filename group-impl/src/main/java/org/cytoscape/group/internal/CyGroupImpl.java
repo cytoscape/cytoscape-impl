@@ -97,7 +97,7 @@ class CyGroupImpl implements CyGroup {
 			this.groupNode = node;
 		}
 
-		// logger.debug("Creating new group: "+this.groupNode);
+		// System.out.println("Creating new group: "+this.groupNode);
 
 		this.externalEdges = new HashSet<CyEdge>();
 		this.metaEdges = new HashMap<CyEdge, CyEdge>();
@@ -193,7 +193,6 @@ class CyGroupImpl implements CyGroup {
 		timeStamp = System.currentTimeMillis();
 		updateCountAttributes(rootNetwork);
 		// System.out.println("Group attribute update took "+(System.currentTimeMillis()-timeStamp)+"ms");
-
 		// printGroup();
 	}
 
@@ -241,7 +240,7 @@ class CyGroupImpl implements CyGroup {
 	 * @see org.cytoscape.group.CyGroup#addNode()
 	 */
 	private synchronized void addNode(CyNode node) {
-		// logger.debug("node "+node+" added to "+this.toString());
+		// System.out.println("node "+node+" added to "+this.toString());
 		if (!rootNetwork.containsNode(node))
 			throwIllegalArgumentException("Can only add a node in the same network tree");
 		getGroupNetwork().addNode(node);
@@ -251,7 +250,7 @@ class CyGroupImpl implements CyGroup {
 	 * @see org.cytoscape.group.CyGroup#addInternalEdge()
 	 */
 	private synchronized void addInternalEdge(CyEdge edge) {
-		// logger.debug("edge "+edge+" added as internal edge to "+this.toString());
+		// System.out.println("edge "+edge+" added as internal edge to "+this.toString());
 		if (!rootNetwork.containsEdge(edge))
 			throwIllegalArgumentException("Can only add an edge in the same network tree");
 		getGroupNetwork().addEdge(edge);
@@ -261,7 +260,7 @@ class CyGroupImpl implements CyGroup {
 	 * @see org.cytoscape.group.CyGroup#addExternalEdge()
 	 */
 	protected synchronized void addExternalEdge(CyEdge edge) {
-		// logger.debug("edge "+edge+" added as external edge to "+this.toString());
+		// System.out.println("edge "+edge+" added as external edge to "+this.toString());
 		if (!rootNetwork.containsEdge(edge))
 			throwIllegalArgumentException("Can only add an edge in the same network tree");
 		if (!externalEdges.contains(edge)) {
@@ -271,7 +270,7 @@ class CyGroupImpl implements CyGroup {
 	}
 
 	private synchronized void addMemberEdge(CyEdge edge) {
-		// logger.debug("edge "+edge+" added as member edge to "+this.toString());
+		// System.out.println("edge "+edge+" added as member edge to "+this.toString());
 		if (!rootNetwork.containsEdge(edge))
 			throwIllegalArgumentException("Can only add an edge in the same network tree");
 		if (groupNode == null)
@@ -293,24 +292,36 @@ class CyGroupImpl implements CyGroup {
 				throwIllegalArgumentException("Can only add a node in the same network tree");
 
 			addNode(n);
-			edgeSet.addAll(rootNetwork.getAdjacentEdgeList(n, CyEdge.Type.ANY));
-		}
 
-		for (CyEdge e: edgeSet) {
-			final CyNode source = e.getSource();
-			final CyNode target = e.getTarget();
-			if (getGroupNetwork().containsNode(source) && getGroupNetwork().containsNode(target)) {
-				addInternalEdge(e);
-			} else if (groupNode != null && (source.equals(groupNode) || target.equals(groupNode))) {
-				addMemberEdge(e);
-			} else {
-				addExternalEdge(e);
+			List<CyEdge> adjacentEdges = 
+				new ArrayList<CyEdge>(rootNetwork.getAdjacentEdgeList(n, CyEdge.Type.ANY));
+
+			for (CyEdge edge: adjacentEdges) {
+				final CyNode source = edge.getSource();
+				final CyNode target = edge.getTarget();
+				if (metaEdges.containsValue(edge)) {
+					rootNetwork.removeEdges(Collections.singletonList(edge));
+					continue;
+				}
+				if (getGroupNetwork().containsNode(source) && getGroupNetwork().containsNode(target)) {
+					addInternalEdge(edge);
+					if (externalEdges.contains(edge)) {
+						// This was an external edge, now it's internal
+						externalEdges.remove(edge);
+					}
+				} else if (groupNode != null && (source.equals(groupNode) || target.equals(groupNode))) {
+					addMemberEdge(edge);
+				} else {
+					addExternalEdge(edge);
+				}
 			}
 		}
-		updateMetaEdges(false);
+		updateMetaEdges(true);
 		for (CyNetwork net: networkSet) {
 			updateCountAttributes(net);
 		}
+
+		cyEventHelper.flushPayloadEvents();
 		cyEventHelper.fireEvent(new GroupNodesAddedEvent(CyGroupImpl.this, nodes));
 	}
 
@@ -447,7 +458,7 @@ class CyGroupImpl implements CyGroup {
 	 */
 	@Override
 	public void collapse(CyNetwork net) {
-		// logger.debug("collapse "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
+		// System.out.println("collapse "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
 
 		// printGroup();
 		if (isCollapsed(net))
@@ -611,7 +622,7 @@ class CyGroupImpl implements CyGroup {
 	 */
 	@Override
 	public void expand(CyNetwork net) {
-		// logger.debug("expand "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
+		// System.out.println("expand "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
 
 		if (!isCollapsed(net))
 			return; // Already expanded
@@ -727,7 +738,7 @@ class CyGroupImpl implements CyGroup {
 	}
 
 	protected synchronized void addMetaEdge(CyEdge edge, CyEdge metaEdge) {
-		// logger.debug("Adding edge "+edge.toString()+" as meta edge for group: "+this.toString());
+		// System.out.println("Adding edge "+edge.toString()+" as meta edge for group: "+this.toString());
 		if (!metaEdges.containsKey(edge))
 			metaEdges.put(edge, metaEdge);
 	}
@@ -752,7 +763,8 @@ class CyGroupImpl implements CyGroup {
 
 	@Override
 	public String toString() {
-		return "Group: groupNode: " + groupNode;
+		return "Group: groupNode: "+groupNode+" with "+getGroupNetwork().getNodeCount()+" nodes, "+
+						getGroupNetwork().getEdgeCount()+" internal edges and "+externalEdges.size()+" external edges";
 	}
 
 	private boolean inSameRoot(CyNetwork network) {
@@ -788,7 +800,7 @@ class CyGroupImpl implements CyGroup {
 		long recursiveMeta1 = 0L;
 		long recursiveMeta2 = 0L;
 
-		// logger.debug(this.toString()+" updating meta edges");
+		// System.out.println(this.toString()+" updating meta edges");
 
 		// We need to use a list iterator because we might need to add new
 		// edges to our outer edge list and we want to add them to the
@@ -799,10 +811,10 @@ class CyGroupImpl implements CyGroup {
 			CyEdge edge = iterator.next();
 			CyNode node = getPartner(edge);
 
-			// logger.debug(this.toString()+" outer edge = "+edge.toString());
+			// System.out.println(this.toString()+" outer edge = "+edge.toString());
 
 			if (ignoreMetaEdges && isMeta(edge)) {
-				// logger.debug("...ignoring");
+				// System.out.println("...ignoring");
 				this.addMetaEdge(edge, edge);
 				continue;
 			}
@@ -876,11 +888,11 @@ class CyGroupImpl implements CyGroup {
 	protected void addPartnerEdges(CyGroup metaPartner, CyNetwork net, Set<CyGroup> partnersSeen) {
 		Set<CyEdge> partnerEdges = metaPartner.getExternalEdgeList();
 		Set<CyEdge> newEdges = new HashSet<CyEdge>();
-		// logger.debug("Group "+this.toString()+" adding partner edges for "+metaPartner.toString());
+		// System.out.println("Group "+this.toString()+" adding partner edges for "+metaPartner.toString());
 
 		// XXX Performance hog XXX
 		for (CyEdge edge: partnerEdges) {
-			// logger.debug("Looking at partner edge: "+edge.toString());
+			// System.out.println("Looking at partner edge: "+edge.toString());
 			CyNode source = edge.getSource();
 			CyNode target = edge.getTarget();
 			CyNode partner = null;
@@ -905,15 +917,15 @@ class CyGroupImpl implements CyGroup {
 				newEdges.add(newEdge);
 			}
 
-			// logger.debug("   ... it points to us -- created new edge: "+newEdge.toString());
+			// System.out.println("   ... it points to us -- created new edge: "+newEdge.toString());
 			externalEdges.add(edge);
 
 			CyGroup partnerMeta = mgr.getGroup(partner, net);
 			if (partnerMeta != null && !partnersSeen.contains(partnerMeta)) {
-				// logger.debug("Adding partner edges for "+partnerMeta.toString());
+				// System.out.println("Adding partner edges for "+partnerMeta.toString());
 				partnersSeen.add(partnerMeta);
 				addPartnerEdges(partnerMeta, net, partnersSeen);
-				// logger.debug("Done adding partner edges for "+partnerMeta.toString());
+				// System.out.println("Done adding partner edges for "+partnerMeta.toString());
 			}
 
 			if (newEdge != null)
@@ -921,7 +933,7 @@ class CyGroupImpl implements CyGroup {
 		}
 
 		for (CyEdge edge: newEdges) { ((CyGroupImpl)metaPartner).addExternalEdge(edge); }
-		// logger.debug("Group "+this.toString()+" done adding partner edges for "+metaPartner.toString());
+		// System.out.println("Group "+this.toString()+" done adding partner edges for "+metaPartner.toString());
 	}
 
 	private CyEdge createMetaEdge(CyEdge edge, CyNode node, CyNode groupNode) {
@@ -947,7 +959,7 @@ class CyGroupImpl implements CyGroup {
 
 	private void addPartnerMetaEdges(CyNetwork net, CyEdge connectingEdge, 
 									                 CyGroup partnerGroup, CyEdge metaEdge) {
-		// logger.debug("Group "+this.toString()+" adding meta edges for parter "+partnerNode.toString());
+		// System.out.println("Group "+this.toString()+" adding meta edges for parter "+partnerNode.toString());
 
 		// Are we partners in this network?
 		if (!partnerGroup.getNetworkSet().contains(net))
@@ -1054,26 +1066,30 @@ class CyGroupImpl implements CyGroup {
 	}
 
 	protected void printGroup() {
-		logger.debug("Group "+this);
-		logger.debug("Nodes:");
+		System.out.println("Group "+this);
+		System.out.println("Nodes:");
 		for (CyNode n: getNodeList()) {
-			logger.debug("	"+n);
+			System.out.println("	"+n);
 		}
-		logger.debug("Networks:");
+		System.out.println("Networks:");
 		for (CyNetwork n: networkSet) {
-			logger.debug("	"+n);
+			System.out.println("	"+n);
 		}
-		logger.debug("Internal edges:");
+		System.out.println("Internal edges:");
 		for (CyEdge edge: getInternalEdgeList()) {
-			logger.debug("	"+edge);
+			System.out.println("	"+edge);
 		}
-		logger.debug("External edges:");
+		System.out.println("External edges:");
 		for (CyEdge edge: getExternalEdgeList()) {
-			logger.debug("	"+edge);
+			System.out.println("	"+edge);
 		}
-		logger.debug("Meta edges:");
+		System.out.println("Meta edges:");
 		for (CyEdge edge: getMetaEdgeList()) {
-			logger.debug("	"+edge);
+			System.out.println("	"+edge);
+		}
+		System.out.println("Member edges:");
+		for (CyEdge edge: memberEdges) {
+			System.out.println("	"+edge);
 		}
 	}
 }
