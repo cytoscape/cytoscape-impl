@@ -24,6 +24,7 @@ package org.cytoscape.spacial.internal.dummy;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,11 +40,15 @@ import org.cytoscape.ding.impl.DNodeView;
 
 public class DummySpacial implements SpacialIndex2D {
 	DGraphView networkView;
-	List<NodeView> nodeViews;
+	List<DNodeView> nodeViews;
 
 	public DummySpacial(DGraphView networkView) {
 		this.networkView = networkView;
-		nodeViews = networkView.getNodeViewsList();
+		nodeViews = new ArrayList<DNodeView>();
+		for (CyNode node: networkView.getModel().getNodeList()) {
+			DNodeView v = (DNodeView)networkView.getNodeView(node);
+			if (v != null) nodeViews.add(v);
+		}
 	}
 
 	public int size() {
@@ -86,9 +91,9 @@ public class DummySpacial implements SpacialIndex2D {
 
 	private final class NetworkEnumerator implements SpacialEntry2DEnumerator {
 		int index = 0;
-		List<NodeView> nodeViews;
+		List<DNodeView> nodeViews;
 
-		NetworkEnumerator(List<NodeView> nodeViews) {
+		NetworkEnumerator(List<DNodeView> nodeViews) {
 			this.nodeViews = nodeViews;
 		}
 
@@ -97,7 +102,7 @@ public class DummySpacial implements SpacialIndex2D {
 		}
 
 		public final long nextExtents(final float[] extentsArr, final int offset) {
-			DNodeView nodeView = (DNodeView)nodeViews.get(index++);
+			DNodeView nodeView = nodeViews.get(index++);
 			nodeView.getExtents(extentsArr, offset);
 			return nodeView.getModel().getSUID();
 		}

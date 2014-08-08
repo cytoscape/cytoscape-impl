@@ -366,7 +366,7 @@ public final class GraphRenderer {
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 
 							if (!nodePositions.exists(otherNode, floatBuff2, 0))
-								throw new IllegalStateException("nodePositions not recognizing node that exists in graph");
+								throw new IllegalStateException("nodePositions not recognizing node that exists in graph: "+otherCyNode.toString());
 
 							final byte otherNodeShape = nodeDetails.getShape(otherCyNode);
 
@@ -660,7 +660,7 @@ public final class GraphRenderer {
 				while (zHits.numRemaining() > 0) {
 					final long node =zHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
-					
+
 					renderNodeHigh(graph, grafx, node, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails,
 							lodBits, scaleFactor);
 

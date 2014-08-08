@@ -287,6 +287,8 @@ class CyGroupImpl implements CyGroup {
 	@Override
 	public synchronized void addNodes(List<CyNode> nodes) {
 		Set<CyEdge> edgeSet = new HashSet<CyEdge>();
+		// System.out.println("Adding nodes: "+nodes+" to group "+this.toString());
+		// printGroup();
 		for (CyNode n: nodes) {
 			if (!rootNetwork.containsNode(n))
 				throwIllegalArgumentException("Can only add a node in the same network tree");
@@ -297,6 +299,7 @@ class CyGroupImpl implements CyGroup {
 				new ArrayList<CyEdge>(rootNetwork.getAdjacentEdgeList(n, CyEdge.Type.ANY));
 
 			for (CyEdge edge: adjacentEdges) {
+				// System.out.println("Looking at edge: "+edge);
 				final CyNode source = edge.getSource();
 				final CyNode target = edge.getTarget();
 				if (metaEdges.containsValue(edge)) {
@@ -309,17 +312,21 @@ class CyGroupImpl implements CyGroup {
 						// This was an external edge, now it's internal
 						externalEdges.remove(edge);
 					}
-				} else if (groupNode != null && (source.equals(groupNode) || target.equals(groupNode))) {
+				} else if (groupNode != null && (source.equals(groupNode) || target.equals(groupNode)) && !isMeta(edge)) {
+					// System.out.println("Adding "+edge+" as member edge");
 					addMemberEdge(edge);
 				} else {
 					addExternalEdge(edge);
 				}
 			}
 		}
-		updateMetaEdges(true);
+		updateMetaEdges(false);
 		for (CyNetwork net: networkSet) {
 			updateCountAttributes(net);
 		}
+
+		// System.out.println("Added nodes: "+nodes+" to group "+this.toString());
+		// printGroup();
 
 		cyEventHelper.flushPayloadEvents();
 		cyEventHelper.fireEvent(new GroupNodesAddedEvent(CyGroupImpl.this, nodes));
@@ -501,6 +508,7 @@ class CyGroupImpl implements CyGroup {
 				net.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
 		}
 
+
 		Set<CyGroup> partnersSeen = new HashSet<CyGroup>();
 
 		// Deselect all of our external edges, and check for any possible
@@ -581,6 +589,10 @@ class CyGroupImpl implements CyGroup {
 		// System.out.println(nodes.size()+" nodes to collapse: "+nodes);
 		collapsedNodes.put(net.getSUID(), nodes);
 
+		// We flush our events to renderers can process the selection
+		// events before we start removing things...
+		cyEventHelper.flushPayloadEvents();
+
 		// Remove all of the nodes from the target network
 		subnet.removeNodes(nodes);
 
@@ -649,12 +661,15 @@ class CyGroupImpl implements CyGroup {
 		// Remove the group node from the target network only if
 		// there are no member edges. If there were member edges,
 		// the group node did not go away.
-		if (memberEdges.size() == 0)
+		if (memberEdges.size() == 0) {
 			subnet.removeNodes(Collections.singletonList(groupNode));
+		}
 
 		// Add all of the member nodes and edges in
 		for (CyNode n: nodes)
 			subnet.addNode(n);
+
+		cyEventHelper.flushPayloadEvents(); // Make sure everyone knows about all of our changes!
 
 		// Add all of the interior edges in
 		for (CyEdge e: getInternalEdgeList()) {
@@ -685,6 +700,8 @@ class CyGroupImpl implements CyGroup {
 		// Add all of the member edges in
 		for (CyEdge e: memberEdges)
 			subnet.addEdge(e);
+
+		cyEventHelper.flushPayloadEvents(); // Make sure everyone knows about all of our changes!
 
 		collapseSet.remove(net.getSUID());
 		collapsedNodes.remove(net.getSUID());
@@ -943,8 +960,10 @@ class CyGroupImpl implements CyGroup {
 				return rootNetwork.getConnectingEdgeList(node, groupNode, CyEdge.Type.ANY).get(0);
 			metaEdge = rootNetwork.addEdge(node, groupNode, edge.isDirected());
 		} else {
-			if (rootNetwork.containsEdge(groupNode, node))
+			if (rootNetwork.containsEdge(groupNode, node)) {
+				// System.out.println("Found metaEdge(s): "+rootNetwork.getConnectingEdgeList(groupNode, node, CyEdge.Type.ANY));
 				return rootNetwork.getConnectingEdgeList(groupNode, node, CyEdge.Type.ANY).get(0);
+			}
 			metaEdge = rootNetwork.addEdge(groupNode, node, edge.isDirected());
 		}
 
@@ -953,6 +972,7 @@ class CyGroupImpl implements CyGroup {
 		rootNetwork.getRow(metaEdge).set(CyNetwork.NAME, "meta-"+edgeName);
 		createIfNecessary(metaEdge, CyNetwork.HIDDEN_ATTRS, ISMETA_EDGE_ATTR, Boolean.class);
 		rootNetwork.getRow(metaEdge, CyNetwork.HIDDEN_ATTRS).set(ISMETA_EDGE_ATTR, Boolean.TRUE);
+		// System.out.println("Created metaEdge: "+metaEdge);
 
 		return metaEdge;
 	}

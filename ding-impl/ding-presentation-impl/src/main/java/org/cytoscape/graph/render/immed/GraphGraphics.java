@@ -616,6 +616,10 @@ public final class GraphGraphics {
 			m_g2d.draw(sx);
 		}
 
+		// System.out.println("Node shape = "+sx);
+		// System.out.println("Node bounds = "+sx.getBounds2D());
+		// System.out.println("Paint = "+fillPaint);
+
 		m_g2d.setPaint(fillPaint);
 		m_g2d.fill(sx);
 		return sx;

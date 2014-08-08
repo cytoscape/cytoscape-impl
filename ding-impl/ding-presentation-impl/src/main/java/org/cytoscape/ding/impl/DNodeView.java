@@ -1217,6 +1217,15 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	public boolean getExtents(float[] extents, int offset) {
 		if (!isVisible) return false;
+
+		if (m_xMin == Float.MIN_VALUE &&
+		    m_yMin == Float.MIN_VALUE &&
+				m_xMax == Float.MAX_VALUE &&
+				m_yMax == Float.MAX_VALUE) {
+			// Whatever we think, we're not really here...
+			return false;
+		}
+
 		extents[offset] = m_xMin;
 		extents[offset+1] = m_yMin;
 		extents[offset+2] = m_xMax;
