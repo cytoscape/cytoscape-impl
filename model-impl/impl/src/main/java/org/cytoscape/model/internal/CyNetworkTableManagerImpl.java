@@ -27,6 +27,7 @@ package org.cytoscape.model.internal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -39,6 +40,8 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 
 	private final Map<CyNetwork, Map<Class<? extends CyIdentifiable>, Map<String, CyTable>>> tables;
 	
+	private final Object lock = new Object();
+	
 	public CyNetworkTableManagerImpl() {
 		// Use WeakReferences for CyNetworks because we can't get notified
 		// when detached networks are no longer in use.  Use WeakReferences
@@ -50,30 +53,35 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 
 	@Override
 	public Class<? extends CyIdentifiable> getTableType(CyTable table) {
-		for (Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> typeMap: tables.values()) {
-			for (Class<? extends CyIdentifiable> classType: typeMap.keySet()) {
-				for (CyTable tab: typeMap.get(classType).values()) {
-					if (tab.equals(table)) {
-						return classType;
+		synchronized (lock) {
+			for (Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> typeMap: tables.values()) {
+				for (Entry<Class<? extends CyIdentifiable>, Map<String, CyTable>> entry: typeMap.entrySet()) {
+					Class<? extends CyIdentifiable> classType = entry.getKey();
+					for (CyTable tab: entry.getValue().values()) {
+						if (tab.equals(table)) {
+							return classType;
+						}
 					}
 				}
 			}
+			return null;
 		}
-		return null;
 	}
 
 	@Override
 	public String getTableNamespace(CyTable table) {
-		for (Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> typeMap: tables.values()) {
-			for (Map<String, CyTable> stMap: typeMap.values()) {
-				for (String ns: stMap.keySet()) {
-					if (stMap.get(ns).equals(table)) {
-						return ns;
+		synchronized (lock) {
+			for (Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> typeMap: tables.values()) {
+				for (Map<String, CyTable> stMap: typeMap.values()) {
+					for (String ns: stMap.keySet()) {
+						if (stMap.get(ns).equals(table)) {
+							return ns;
+						}
 					}
 				}
 			}
+			return null;
 		}
-		return null;
 	}
 	
 	@Override
@@ -91,52 +99,56 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 		if (table == null)
 			throw new IllegalArgumentException("table cannot be null");
 		
-		Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
-		if (byType == null) {
-			byType = new HashMap<Class<? extends CyIdentifiable>, Map<String,CyTable>>();
-			final Map<String, CyTable> type2Tables = new HashMap<String, CyTable>();
-			type2Tables.put(namespace, table);
-			byType.put(type, type2Tables);
-			tables.put(network, byType);
-			return;
+		synchronized (lock) {
+			Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
+			if (byType == null) {
+				byType = new HashMap<Class<? extends CyIdentifiable>, Map<String,CyTable>>();
+				final Map<String, CyTable> type2Tables = new HashMap<String, CyTable>();
+				type2Tables.put(namespace, table);
+				byType.put(type, type2Tables);
+				tables.put(network, byType);
+				return;
+			}
+			
+			Map<String, CyTable> reference = byType.get(type);
+			if (reference == null) {
+				final Map<String, CyTable> type2Tables = new HashMap<String, CyTable>();
+				type2Tables.put(namespace, table);
+				byType.put(type, type2Tables);
+				tables.put(network, byType);
+				return;
+			
+			}
+	
+			if (namespace.equals(CyNetwork.DEFAULT_ATTRS) && reference.get(CyNetwork.DEFAULT_ATTRS) != null)
+				throw new IllegalArgumentException("cannot overwrite default tables");
+			
+			reference.put(namespace, table);
 		}
-		
-		Map<String, CyTable> reference = byType.get(type);
-		if (reference == null) {
-			final Map<String, CyTable> type2Tables = new HashMap<String, CyTable>();
-			type2Tables.put(namespace, table);
-			byType.put(type, type2Tables);
-			tables.put(network, byType);
-			return;
-		
-		}
-
-		if (namespace.equals(CyNetwork.DEFAULT_ATTRS) && reference.get(CyNetwork.DEFAULT_ATTRS) != null)
-			throw new IllegalArgumentException("cannot overwrite default tables");
-		
-		reference.put(namespace, table);
 	}
 
 	@Override
 	public CyTable getTable(CyNetwork network, Class<? extends CyIdentifiable> type, String namespace) {
-		Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
-		if (network == null) {
-			throw new IllegalArgumentException("network cannot be null");
+		synchronized (lock) {
+			Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
+			if (network == null) {
+				throw new IllegalArgumentException("network cannot be null");
+			}
+			if (type == null) {
+				throw new IllegalArgumentException("type cannot be null");
+			}
+			if (namespace == null)
+				throw new IllegalArgumentException("namespace cannot be null");
+	
+			if (byType == null)
+				return null;
+	
+			final Map<String, CyTable> reference = byType.get(type);
+			if (reference == null)
+				return null;
+	
+			return reference.get(namespace);
 		}
-		if (type == null) {
-			throw new IllegalArgumentException("type cannot be null");
-		}
-		if (namespace == null)
-			throw new IllegalArgumentException("namespace cannot be null");
-
-		if (byType == null)
-			return null;
-
-		final Map<String, CyTable> reference = byType.get(type);
-		if (reference == null)
-			return null;
-
-		return reference.get(namespace);
 	}
 
 	@Override
@@ -156,16 +168,18 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 			throw new IllegalArgumentException("cannot remove default tables");
 		}
 		
-		Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
-		if (byType == null) {
-			return;
+		synchronized (lock) {
+			Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
+			if (byType == null) {
+				return;
+			}
+			Map<String, CyTable> reference = byType.get(type);
+			if (reference == null) {
+				return;
+			}
+	
+			reference.remove(namespace);
 		}
-		Map<String, CyTable> reference = byType.get(type);
-		if (reference == null) {
-			return;
-		}
-
-		reference.remove(namespace);
 	}
 
 	@Override
@@ -176,41 +190,52 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 		if (type == null)
 			throw new IllegalArgumentException("type cannot be null");
 
-		final Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
-		if (byType == null)
-			return Collections.emptyMap();
-		
-		final Map<String, CyTable> namespace2tableMap = byType.get(type);
-		
-		if (namespace2tableMap == null)
-			return Collections.emptyMap();
-		
-		return Collections.unmodifiableMap(namespace2tableMap);
+		synchronized (lock) {
+			final Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
+			if (byType == null)
+				return Collections.emptyMap();
+			
+			final Map<String, CyTable> namespace2tableMap = byType.get(type);
+			
+			if (namespace2tableMap == null)
+				return Collections.emptyMap();
+			
+			return Collections.unmodifiableMap(namespace2tableMap);
+		}
 	}
 
 	@Override
 	public CyNetwork getNetworkForTable(CyTable table) {
-		for (CyNetwork network: tables.keySet()) {
-			for (Map<String, CyTable> typeMap: tables.get(network).values()) {
-				if (typeMap.values().contains(table))
-					return network;
+		synchronized (lock) {
+			for (Entry<CyNetwork, Map<Class<? extends CyIdentifiable>, Map<String, CyTable>>> entry: tables.entrySet()) {
+				CyNetwork network = entry.getKey();
+				for (Map<String, CyTable> typeMap: entry.getValue().values()) {
+					if (typeMap.values().contains(table))
+						return network;
+				}
 			}
+			return null;
 		}
-		return null;
 	}
 
 	@Override
 	public void reset() {
-		tables.clear();
+		synchronized (lock) {
+			tables.clear();
+		}
 	}
 
 	@Override
 	public Set<CyNetwork> getNetworkSet() {
-		return Collections.unmodifiableSet(tables.keySet());
+		synchronized (lock) {
+			return Collections.unmodifiableSet(tables.keySet());
+		}
 	}
 	
 	@Override
 	public void removeAllTables(CyNetwork network) {
-		tables.remove(network);
+		synchronized (lock) {
+			tables.remove(network);
+		}
 	}
 }

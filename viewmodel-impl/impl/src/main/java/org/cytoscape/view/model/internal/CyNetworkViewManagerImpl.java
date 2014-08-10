@@ -55,6 +55,8 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	private final CyNetworkManager netMgr;
 	private final Set<CyNetworkView> viewsAboutToBeDestroyed;
 
+	private final Object lock = new Object();
+
 	/**
 	 * 
 	 * @param cyEventHelper
@@ -67,52 +69,62 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	}
 
 	@Override
-	public synchronized void reset() {
-		networkViewMap.clear();
-	}
-
-	@Override
-	public synchronized void handleEvent(final NetworkAboutToBeDestroyedEvent event) {
-		final CyNetwork network = event.getNetwork();
-		if (viewExists(network)) {
-			// Remove ALL views associated with this network model
-			for (final CyNetworkView view : networkViewMap.get(network))
-				destroyNetworkView(view);
+	public void reset() {
+		synchronized (lock) {
+			networkViewMap.clear();
 		}
 	}
 
 	@Override
-	public synchronized Set<CyNetworkView> getNetworkViewSet() {
+	public void handleEvent(final NetworkAboutToBeDestroyedEvent event) {
+		final CyNetwork network = event.getNetwork();
+		synchronized (lock) {
+			if (viewExists(network)) {
+				// Remove ALL views associated with this network model
+				for (final CyNetworkView view : networkViewMap.get(network))
+					destroyNetworkView(view);
+			}
+		}
+	}
+
+	@Override
+	public Set<CyNetworkView> getNetworkViewSet() {
 		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
 		
-		final Collection<Collection<CyNetworkView>> vals = networkViewMap.values();
-		for (Collection<CyNetworkView> setFoViews : vals)
-			views.addAll(setFoViews);
-
-		views.removeAll(viewsAboutToBeDestroyed);
+		synchronized (lock) {
+			final Collection<Collection<CyNetworkView>> vals = networkViewMap.values();
+			for (Collection<CyNetworkView> setFoViews : vals)
+				views.addAll(setFoViews);
+	
+			views.removeAll(viewsAboutToBeDestroyed);
+		}
 		return views;
 	}
 
 	@Override
-	public synchronized Collection<CyNetworkView> getNetworkViews(final CyNetwork network) {
-		final Collection<CyNetworkView> views = networkViewMap.get(network); 
-		
-		if(views != null)
-			return views;
-		else
-			return new HashSet<CyNetworkView>();
+	public Collection<CyNetworkView> getNetworkViews(final CyNetwork network) {
+		synchronized (lock) {
+			final Collection<CyNetworkView> views = networkViewMap.get(network); 
+			
+			if(views != null)
+				return views;
+			else
+				return new HashSet<CyNetworkView>();
+		}
 	}
 
 	@Override
-	public synchronized boolean viewExists(final CyNetwork network) {
-		if(networkViewMap.containsKey(network) == false)
-			return false;
-		
-		final Collection<CyNetworkView> views = networkViewMap.get(network);
-		if(views.size() == 0)
-			return false;
-		else
-			return true;
+	public boolean viewExists(final CyNetwork network) {
+		synchronized (lock) {
+			if(networkViewMap.containsKey(network) == false)
+				return false;
+			
+			final Collection<CyNetworkView> views = networkViewMap.get(network);
+			if(views.size() == 0)
+				return false;
+			else
+				return true;
+		}
 	}
 
 	@Override
@@ -126,14 +138,17 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 		final CyNetwork network = view.getModel();
 
 		// do this outside of the lock to fail early
-		if (!networkViewMap.containsKey(network))
-			throw new IllegalArgumentException("network view is not recognized by this NetworkManager");
-
-		viewsAboutToBeDestroyed.add(view);
+		synchronized (lock) {
+			if (!networkViewMap.containsKey(network))
+				throw new IllegalArgumentException("network view is not recognized by this NetworkManager");
+		
+			viewsAboutToBeDestroyed.add(view);
+		}
+		
 		// let everyone know!
 		cyEventHelper.fireEvent(new NetworkViewAboutToBeDestroyedEvent(this, view));
 
-		synchronized (this) {
+		synchronized (lock) {
 			// do this again within the lock to be safe
 			if (!networkViewMap.containsKey(network))
 				throw new IllegalArgumentException("network view is not recognized by this NetworkManager");
@@ -141,11 +156,11 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 			final Collection<CyNetworkView> views = networkViewMap.get(network);
 			views.remove(view);
 			networkViewMap.put(network, views);
+		
+			viewsAboutToBeDestroyed.remove(view);
+			view.dispose();
 		}
 		
-		viewsAboutToBeDestroyed.remove(view);
-		view.dispose();
-
 		cyEventHelper.fireEvent(new NetworkViewDestroyedEvent(this));
 		view = null;
 	}
@@ -160,7 +175,7 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 		
 		final CyNetwork network = view.getModel();
 		
-		synchronized (this) {
+		synchronized (lock) {
 			if (!netMgr.networkExists(network.getSUID()))
 				throw new IllegalArgumentException(
 						"Network view cannot be added, because its network ("

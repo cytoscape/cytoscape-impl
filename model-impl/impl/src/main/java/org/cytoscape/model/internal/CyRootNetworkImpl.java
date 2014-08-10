@@ -76,7 +76,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	private final NetworkAddedListenerDelegator networkAddedListenerDelegator;
 	private final NetworkNameSetListener networkNameSetListener;
 	private final CyServiceRegistrar serviceRegistrar;
-
+	private final Object lock = new Object();
 
 	private int nextNodeIndex;
 	private int nextEdgeIndex;
@@ -220,7 +220,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 		final CyNode node; 
 
-		synchronized (this) {
+		synchronized (lock) {
 			node = new CyNodeImpl( SUIDFactory.getNextSUID(), getNextNodeIndex(), eventHelper );
 			addNodeInternal( node );
 		}
@@ -229,17 +229,19 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 
 	@Override
-	public synchronized boolean removeNodes(final Collection<CyNode> nodes) {
-		for ( CySubNetwork sub : subNetworks ) {
-			sub.removeNodes(nodes);
-			if (nodes != null && sub instanceof CySubNetworkImpl)
-				((CySubNetworkImpl) sub).removeRows(nodes, CyNode.class);
+	public boolean removeNodes(final Collection<CyNode> nodes) {
+		synchronized (lock) {
+			for ( CySubNetwork sub : subNetworks ) {
+				sub.removeNodes(nodes);
+				if (nodes != null && sub instanceof CySubNetworkImpl)
+					((CySubNetworkImpl) sub).removeRows(nodes, CyNode.class);
+			}
+	
+			// Do we want to do this?????
+			this.removeRows(nodes, CyNode.class);
+			
+			return removeNodesInternal(nodes);
 		}
-
-		// Do we want to do this?????
-		this.removeRows(nodes, CyNode.class);
-		
-		return removeNodesInternal(nodes);
 	}
 
 	@Override
@@ -247,7 +249,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 		final CyEdge edge;
 
-		synchronized (this) {
+		synchronized (lock) {
 			edge = new CyEdgeImpl(SUIDFactory.getNextSUID(), s, t, directed, getNextEdgeIndex());
 			addEdgeInternal(s,t, directed, edge);
 		}
@@ -256,13 +258,15 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 
 	@Override
-	public synchronized boolean removeEdges(final Collection<CyEdge> edges) {
-		for ( CySubNetwork sub : subNetworks ) {
-			sub.removeEdges(edges);
-			if (edges != null && sub instanceof CySubNetworkImpl)
-				((CySubNetworkImpl) sub).removeRows(edges, CyEdge.class);
+	public boolean removeEdges(final Collection<CyEdge> edges) {
+		synchronized (lock) {
+			for ( CySubNetwork sub : subNetworks ) {
+				sub.removeEdges(edges);
+				if (edges != null && sub instanceof CySubNetworkImpl)
+					((CySubNetworkImpl) sub).removeRows(edges, CyEdge.class);
+			}
+			return removeEdgesInternal(edges);
 		}
-		return removeEdgesInternal(edges);
 	}
 
 	@Override
@@ -288,89 +292,95 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 
 	@Override
-	public synchronized CySubNetwork addSubNetwork() {
-		return addSubNetwork(savePolicy);
+	public CySubNetwork addSubNetwork() {
+		synchronized (lock) {
+			return addSubNetwork(savePolicy);
+		}
 	}
 	
 	@Override
-	public synchronized CySubNetwork addSubNetwork(SavePolicy policy) {
-		if (policy == null)
-			policy = savePolicy;
-		
-		if (savePolicy == SavePolicy.DO_NOT_SAVE && policy != savePolicy)
-			throw new IllegalArgumentException("Cannot create subnetwork with \"" + policy
-					+ "\" save policy, because this root network's policy is \"DO_NOT_SAVE\".");
-		
-		// Subnetwork's ID
-		final long newSUID = SUIDFactory.getNextSUID();
-		
-		final CySubNetworkImpl sub = new CySubNetworkImpl(this, newSUID, eventHelper, tableMgr, networkTableMgr,
-				tableFactory, publicTables, subNetworks.size(), policy);	
-		networkAddedListenerDelegator.addListener(sub);
-		
-		subNetworks.add(sub);
-		nameSetListener.addInterestedTables(sub.getDefaultNetworkTable(),networkTableMgr.getTable(this, CyNetwork.class, CyRootNetwork.SHARED_DEFAULT_ATTRS));
-		nameSetListener.addInterestedTables(sub.getDefaultNodeTable(),networkTableMgr.getTable(this, CyNode.class, CyRootNetwork.SHARED_DEFAULT_ATTRS));
-		nameSetListener.addInterestedTables(sub.getDefaultEdgeTable(),networkTableMgr.getTable(this, CyEdge.class, CyRootNetwork.SHARED_DEFAULT_ATTRS));
-		interactionSetListener.addInterestedTables(sub.getDefaultEdgeTable(), networkTableMgr.getTable(this, CyEdge.class, CyRootNetwork.SHARED_DEFAULT_ATTRS));
-
-		
-		return sub;
+	public CySubNetwork addSubNetwork(SavePolicy policy) {
+		synchronized (lock) {
+			if (policy == null)
+				policy = savePolicy;
+			
+			if (savePolicy == SavePolicy.DO_NOT_SAVE && policy != savePolicy)
+				throw new IllegalArgumentException("Cannot create subnetwork with \"" + policy
+						+ "\" save policy, because this root network's policy is \"DO_NOT_SAVE\".");
+			
+			// Subnetwork's ID
+			final long newSUID = SUIDFactory.getNextSUID();
+			
+			final CySubNetworkImpl sub = new CySubNetworkImpl(this, newSUID, eventHelper, tableMgr, networkTableMgr,
+					tableFactory, publicTables, subNetworks.size(), policy);	
+			networkAddedListenerDelegator.addListener(sub);
+			
+			subNetworks.add(sub);
+			nameSetListener.addInterestedTables(sub.getDefaultNetworkTable(),networkTableMgr.getTable(this, CyNetwork.class, CyRootNetwork.SHARED_DEFAULT_ATTRS));
+			nameSetListener.addInterestedTables(sub.getDefaultNodeTable(),networkTableMgr.getTable(this, CyNode.class, CyRootNetwork.SHARED_DEFAULT_ATTRS));
+			nameSetListener.addInterestedTables(sub.getDefaultEdgeTable(),networkTableMgr.getTable(this, CyEdge.class, CyRootNetwork.SHARED_DEFAULT_ATTRS));
+			interactionSetListener.addInterestedTables(sub.getDefaultEdgeTable(), networkTableMgr.getTable(this, CyEdge.class, CyRootNetwork.SHARED_DEFAULT_ATTRS));
+	
+			
+			return sub;
+		}
 	}
 
 	@Override
-	public synchronized void removeSubNetwork(final CySubNetwork sub) {
-		if (sub == null)
-			return;
-
-		if (!subNetworks.contains(sub))
-			throw new IllegalArgumentException("Subnetwork not a member of this RootNetwork " + sub);
-
-		if (sub.equals(base)) {
-			if (subNetworks.size() == 1)
-				throw new IllegalArgumentException(
-						"Can't remove base network from RootNetwork because it's the only subnetwork");
-
-			// Chose another base network
-			CySubNetwork oldBase = base;
-			
-			for (CySubNetwork n : subNetworks) {
-				if (!n.equals(oldBase)) {
-					base = n;
-					
-					// Better if the new base network is one that can be saved
-					if (n.getSavePolicy() == SavePolicy.SESSION_FILE)
-						break;
+	public void removeSubNetwork(final CySubNetwork sub) {
+		synchronized (lock) {
+			if (sub == null)
+				return;
+	
+			if (!subNetworks.contains(sub))
+				throw new IllegalArgumentException("Subnetwork not a member of this RootNetwork " + sub);
+	
+			if (sub.equals(base)) {
+				if (subNetworks.size() == 1)
+					throw new IllegalArgumentException(
+							"Can't remove base network from RootNetwork because it's the only subnetwork");
+	
+				// Chose another base network
+				CySubNetwork oldBase = base;
+				
+				for (CySubNetwork n : subNetworks) {
+					if (!n.equals(oldBase)) {
+						base = n;
+						
+						// Better if the new base network is one that can be saved
+						if (n.getSavePolicy() == SavePolicy.SESSION_FILE)
+							break;
+					}
 				}
 			}
+			
+			// clean up pointers for nodes in subnetwork
+			sub.removeNodes(sub.getNodeList());
+			Map<String, CyTable> tableMap;
+	
+			tableMap = networkTableMgr.getTables(sub, CyNetwork.class);
+			for (CyTable table : tableMap.values()) {
+				tableMgr.deleteTableInternal(table.getSUID(), true);
+			}
+	
+			tableMap = networkTableMgr.getTables(sub, CyNode.class);
+			for (CyTable table : tableMap.values()) {
+				tableMgr.deleteTableInternal(table.getSUID(), true);
+			}
+	
+			tableMap = networkTableMgr.getTables(sub, CyEdge.class);
+			for (CyTable table : tableMap.values()) {
+				tableMgr.deleteTableInternal(table.getSUID(), true);
+			}
+	
+			subNetworks.remove(sub);
+			sub.dispose();
 		}
-		
-		// clean up pointers for nodes in subnetwork
-		sub.removeNodes(sub.getNodeList());
-		Map<String, CyTable> tableMap;
-
-		tableMap = networkTableMgr.getTables(sub, CyNetwork.class);
-		for (CyTable table : tableMap.values()) {
-			tableMgr.deleteTableInternal(table.getSUID(), true);
-		}
-
-		tableMap = networkTableMgr.getTables(sub, CyNode.class);
-		for (CyTable table : tableMap.values()) {
-			tableMgr.deleteTableInternal(table.getSUID(), true);
-		}
-
-		tableMap = networkTableMgr.getTables(sub, CyEdge.class);
-		for (CyTable table : tableMap.values()) {
-			tableMgr.deleteTableInternal(table.getSUID(), true);
-		}
-
-		subNetworks.remove(sub);
-		sub.dispose();
 	}
 
 	@Override
 	public List<CySubNetwork> getSubNetworkList() {
-		return Collections.synchronizedList(subNetworks);
+		return new ArrayList<CySubNetwork>(subNetworks);
 	}
 
 	@Override
@@ -394,8 +404,10 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 
 	@Override
-	public synchronized boolean containsNetwork(final CyNetwork net) {
-		return subNetworks.contains(net);
+	public boolean containsNetwork(final CyNetwork net) {
+		synchronized (lock) {
+			return subNetworks.contains(net);
+		}
 	}
 	
 	@Override
@@ -422,12 +434,16 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		return name; 
 	}
 
-	private synchronized int getNextNodeIndex() {
-		return nextNodeIndex++;
+	private int getNextNodeIndex() {
+		synchronized (lock) {
+			return nextNodeIndex++;
+		}
 	}
 
-	private synchronized int getNextEdgeIndex() {
-		return nextEdgeIndex++;
+	private int getNextEdgeIndex() {
+		synchronized (lock) {
+			return nextEdgeIndex++;
+		}
 	}
 	
 	private class NetworkAddedListenerDelegator implements NetworkAddedListener {

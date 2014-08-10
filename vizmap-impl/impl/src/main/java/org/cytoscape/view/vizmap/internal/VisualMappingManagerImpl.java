@@ -78,6 +78,8 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	private final CyEventHelper cyEventHelper;
 	private final VisualLexiconManager lexManager;
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private final Object lock = new Object();
 
 	public VisualMappingManagerImpl(final CyEventHelper eventHelper, final VisualStyleFactory factory,
 			final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar) {
@@ -124,14 +126,16 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 			return getDefaultVisualStyle();	
 		}
 
-		VisualStyle style = network2VisualStyleMap.get(nv);
-		// Not registered yet. Provide default style.
-		if (style == null) {
-			style = getDefaultVisualStyle();
-			network2VisualStyleMap.put(nv, style);
-		}
+		synchronized (lock) {
+			VisualStyle style = network2VisualStyleMap.get(nv);
+			// Not registered yet. Provide default style.
+			if (style == null) {
+				style = getDefaultVisualStyle();
+				network2VisualStyleMap.put(nv, style);
+			}
 		
-		return style;
+			return style;
+		}
 	}
 
 	@Override
@@ -141,16 +145,18 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 		boolean changed = false;
 
-		if (vs == null) {
-			changed = network2VisualStyleMap.remove(nv) != null;
-		} else {
-			final VisualStyle previousStyle = network2VisualStyleMap.put(nv, vs);
-			changed = !vs.equals(previousStyle);
+		synchronized (lock) {
+			if (vs == null) {
+				changed = network2VisualStyleMap.remove(nv) != null;
+			} else {
+				final VisualStyle previousStyle = network2VisualStyleMap.put(nv, vs);
+				changed = !vs.equals(previousStyle);
+			}
+	
+			if (this.visualStyles.contains(vs) == false)
+				this.visualStyles.add(vs);
 		}
-
-		if (this.visualStyles.contains(vs) == false)
-			this.visualStyles.add(vs);
-
+		
 		if (changed) {
 			cyEventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
 			final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
@@ -172,20 +178,28 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 		logger.info("Visual Style about to be removed from VMM: " + vs.getTitle());
 		cyEventHelper.fireEvent(new VisualStyleAboutToBeRemovedEvent(this, vs));
-		visualStyles.remove(vs);
+		
+		synchronized (lock) {
+			visualStyles.remove(vs);
+		}
 		
 		// Change current style, if it is the deleted one
 		if (currentStyle == vs)
 			setCurrentVisualStyle(getDefaultVisualStyle());
 		
 		// Use default for all views using this vs.
-		if (network2VisualStyleMap.values().contains(vs)) {
-			for (final CyNetworkView view : network2VisualStyleMap.keySet()) {
-				if (network2VisualStyleMap.get(view).equals(vs))
-					setVisualStyle(defaultStyle, view);
+		HashSet<CyNetworkView> viewsToUpdate = new HashSet<CyNetworkView>();
+		synchronized (lock) {
+			if (network2VisualStyleMap.values().contains(vs)) {
+				for (final CyNetworkView view : network2VisualStyleMap.keySet()) {
+					if (network2VisualStyleMap.get(view).equals(vs))
+						viewsToUpdate.add(view);
+				}
 			}
+		}		
+		for (CyNetworkView view : viewsToUpdate) {
+			setVisualStyle(defaultStyle, view);
 		}
-		
 		logger.info("Total Number of VS in VMM after remove = " + visualStyles.size());
 	}
 
@@ -207,7 +221,10 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 			vs.setTitle(newTitle);
 		}
 
-		this.visualStyles.add(vs);
+		synchronized (lock) {
+			this.visualStyles.add(vs);
+		}
+		
 		logger.info("New visual Style registered to VMM: " + vs.getTitle());
 		logger.info("Total Number of VS in VMM = " + visualStyles.size());
 		

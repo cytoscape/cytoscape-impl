@@ -60,6 +60,8 @@ public class CommandExecutorImpl {
 
 	private final DynamicTaskFactoryProvisioner factoryProvisioner;
 	
+	private final Object lock = new Object();
+	
 	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor, 
 	                           AvailableCommands avc, DynamicTaskFactoryProvisioner factoryProvisioner) {
 		this.appMgr = appMgr;
@@ -114,12 +116,14 @@ public class CommandExecutorImpl {
 		if ( command == null && namespace == null ) 
 			return;
 
-		Map<String, Executor> map = commandExecutorMap.get(namespace);
-		if ( map == null ) {
-			map = new HashMap<String,Executor>();
-			commandExecutorMap.put(namespace, map);
+		synchronized (lock) {
+			Map<String, Executor> map = commandExecutorMap.get(namespace);
+			if ( map == null ) {
+				map = new HashMap<String,Executor>();
+				commandExecutorMap.put(namespace, map);
+			}
+			map.put(command,ex);
 		}
-		map.put(command,ex);
 	}
 
 	private void removeTF(Map props) {
@@ -128,11 +132,13 @@ public class CommandExecutorImpl {
 		if ( command == null && namespace == null ) 
 			return;
 
-		Map<String,Executor> ce = commandExecutorMap.get(namespace);
-		if ( ce != null ) {
-			ce.remove(command);
-			if ( ce.size() == 0 )
-				commandExecutorMap.remove(namespace);
+		synchronized (lock) {
+			Map<String,Executor> ce = commandExecutorMap.get(namespace);
+			if ( ce != null ) {
+				ce.remove(command);
+				if ( ce.size() == 0 )
+					commandExecutorMap.remove(namespace);
+			}
 		}
 	}
 
@@ -158,16 +164,20 @@ public class CommandExecutorImpl {
 
 	public void executeCommand(String namespace, String command, Map<String, Object> args, 
 	                           TaskMonitor tm, TaskObserver observer) throws Exception {
+			
+		Executor ex;
+		synchronized (lock) {
 			Map<String,Executor> commandMap = commandExecutorMap.get(namespace);
 
 			if ( commandMap == null )
 				throw new RuntimeException("Failed to find command namespace: '" + namespace +"'");	
 
-			Executor ex = commandMap.get(command);
-
-			if ( ex == null )
-				throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
-			ex.execute(args, observer);
+			ex = commandMap.get(command);
+		}
+		
+		if ( ex == null )
+			throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
+		ex.execute(args, observer);
 	}
 
 	private void handleCommand(String commandLine, TaskMonitor tm, TaskObserver observer) throws Exception {

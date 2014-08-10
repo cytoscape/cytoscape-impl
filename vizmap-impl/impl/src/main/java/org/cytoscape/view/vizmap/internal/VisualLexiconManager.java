@@ -25,9 +25,9 @@ package org.cytoscape.view.vizmap.internal;
  */
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -43,11 +43,11 @@ public class VisualLexiconManager {
 	private final Collection<VisualProperty<?>> networkVPs;
 
 	public VisualLexiconManager() {
-		this.lexiconSet = new HashSet<VisualLexicon>();
+		this.lexiconSet = new CopyOnWriteArraySet<VisualLexicon>();
 		
-		nodeVPs = new HashSet<VisualProperty<?>>();
-		edgeVPs = new HashSet<VisualProperty<?>>();
-		networkVPs = new HashSet<VisualProperty<?>>();
+		nodeVPs = new CopyOnWriteArraySet<VisualProperty<?>>();
+		edgeVPs = new CopyOnWriteArraySet<VisualProperty<?>>();
+		networkVPs = new CopyOnWriteArraySet<VisualProperty<?>>();
 	}
 	
 	public Collection<VisualProperty<?>> getNodeVisualProperties() {

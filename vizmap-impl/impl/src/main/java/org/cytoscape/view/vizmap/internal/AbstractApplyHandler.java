@@ -74,8 +74,8 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		else
 			rootVisualProperty = BasicVisualLexicon.NETWORK;
 		
-		dependencyParents = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>();
-		dependencyChildren = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>();
+		dependencyParents = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>(16, 0.75f, 2);
+		dependencyChildren = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>(16, 0.75f, 2);
 	}
 
 	@Override

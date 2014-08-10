@@ -130,13 +130,6 @@ public class NodeDetails {
 	private static final Stroke DEF_BORDER_STROKE = new BasicStroke(2.0f);
 
 	/**
-	 * Hashmap which records selected state of nodes - information used by
-	 * GraphRenderer.renderGraph() to render selected nodes on top of unselected
-	 * nodes.
-	 */
-	Map<Integer, Boolean> selectedMap = new HashMap<Integer, Boolean>();
-
-	/**
 	 * Returns the color of node in low detail rendering mode. By default this
 	 * method returns Color.red. It is an error to return null in this method.
 	 * <p>
@@ -477,34 +470,6 @@ public class NodeDetails {
 	 */
 	public Object customGraphicsLock(final CyNode node) {
 		return this;
-	}
-
-	/**
-	 * Used to set selected state of given node.
-	 * 
-	 * @param node
-	 *            Integer
-	 * @param selected
-	 *            Boolean
-	 */
-	public void setSelected(Integer node, Boolean selected) {
-		selectedMap.put(node, selected);
-	}
-
-	/**
-	 * Used to get selected state of given node. If node does not exist in map,
-	 * false is returned.
-	 * 
-	 * Used in GraphRenderer.renderGraph() to provide rendering of selected
-	 * nodes above unselected nodes.
-	 * 
-	 * @return boolean
-	 */
-	public boolean getSelected(Integer node) {
-		if (selectedMap.get(node) != null) {
-			return selectedMap.get(node);
-		}
-		return false;
 	}
 
 	/**

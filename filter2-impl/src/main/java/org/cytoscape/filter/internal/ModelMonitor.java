@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.swing.JComponent;
 
@@ -58,7 +56,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	Map<String, double[]> edgeColumnRanges;
 	List<ColumnComboBoxElement> columnNames;
 	
-	ReadWriteLock lock;
+	private final Object lock = new Object();
 	private ColumnComboBoxElement defaultColumnName;
 	
 	Map<DegreeFilterView, DegreeFilterController> degreeViews;
@@ -69,7 +67,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		nodeDegreeRange = new int[] { Integer.MAX_VALUE, Integer.MIN_VALUE };
 		nodeColumnRanges = new HashMap<String, double[]>();
 		edgeColumnRanges = new HashMap<String, double[]>();
-		lock = new ReentrantReadWriteLock(true);
 		
 		columnNames = new ArrayList<ColumnComboBoxElement>();
 		defaultColumnName = new ColumnComboBoxElement(null, "Choose column...");
@@ -86,8 +83,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	@Override
 	public void handleEvent(RowsSetEvent event) {
 		CyTable table = event.getSource();
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			if (!enabled) {
 				return;
 			}
@@ -95,12 +91,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			if (network == null || table != network.getDefaultNodeTable() && table != network.getDefaultEdgeTable()) {
 				return;
 			}
-		} finally {
-			lock.readLock().unlock();
-		}
-		
-		lock.writeLock().lock();
-		try {
+
 			Map<String, double[]> ranges;
 			// We may not be the first writer, so check again.
 			if (table == network.getDefaultNodeTable()) { 
@@ -134,8 +125,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			if (changed) {
 				updateColumnSliders();
 			}
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
@@ -143,17 +132,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	public void handleEvent(SetCurrentNetworkEvent event) {
 		CyNetwork model = event.getNetwork();
 
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			if (model == network) {
 				return;
 			}
-		} finally {
-			lock.readLock().unlock();
-		}
-		
-		lock.writeLock().lock();
-		try {
+
 			if (model == null) {
 				network = null;
 				return;
@@ -169,8 +152,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			boolean isInteractive = totalObjects < INTERACTIVITY_THRESHOLD;
 			setInteractive(isInteractive);
 			notifyInteractivityListeners(isInteractive);
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
@@ -257,8 +238,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			return;
 		}
 		
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			for (CyEdge edge : event.getPayloadCollection()) {
 				int degree = computeDegree(edge.getSource());
 				nodeDegreeRange[0] = Math.min(nodeDegreeRange[0], degree);
@@ -269,8 +249,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				nodeDegreeRange[1] = Math.max(nodeDegreeRange[1], degree);
 			}
 			updateDegreeSliders();
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
@@ -280,13 +258,10 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			return;
 		}
 		
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			clearDegreeData();
 			computeNodeDegreeRange();
 			updateDegreeSliders();
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
@@ -300,8 +275,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 
 	private void updateColumnNames(CyNetwork network) {
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			columnNames.clear();
 			columnNames.add(defaultColumnName);
 			if (network != null) {
@@ -310,8 +284,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				Collections.sort(columnNames);
 				updateColumnViews();
 			}
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 
@@ -340,8 +312,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	
 	@Override
 	public void handleEvent(ColumnCreatedEvent event) {
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			if (network == null) {
 				return;
 			}
@@ -361,15 +332,12 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			columnNames.add(new ColumnComboBoxElement(type, event.getColumnName()));
 			Collections.sort(columnNames);
 			updateColumnViews();
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 
 	@Override
 	public void handleEvent(ColumnDeletedEvent event) {
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			if (network == null) {
 				return;
 			}
@@ -394,15 +362,12 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				}
 			}
 			updateColumnViews();
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
 	@Override
 	public void handleEvent(ColumnNameChangedEvent event) {
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			if (network == null) {
 				return;
 			}
@@ -429,8 +394,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 			Collections.sort(columnNames);
 			updateColumnViews();
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
@@ -448,29 +411,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 	
 	public int getMinimumDegree() {
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			if (nodeDegreeRange[0] == Integer.MAX_VALUE) {
-				// Release read lock so we can get the write lock
-				lock.readLock().unlock();
-				// Someone else could've jumped the line here so we need to
-				// check later if we're the first writer.
-				lock.writeLock().lock();
-				try {
-					// Prepare to downgrade to read lock 
-					lock.readLock().lock();
-					// Check that we're the first writer
-					if (nodeDegreeRange[0] == Integer.MAX_VALUE) {
-						computeNodeDegreeRange();
-					}
-				} finally {
-					// Downgrade to read lock
-					lock.writeLock().unlock();
-				}
+				computeNodeDegreeRange();
 			}
 			return nodeDegreeRange[0];
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 
@@ -479,15 +424,12 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			return;
 		}
 		
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			for (CyNode node : network.getNodeList()) {
 				int degree = computeDegree(node);
 				nodeDegreeRange[0] = Math.min(nodeDegreeRange[0], degree);
 				nodeDegreeRange[1] = Math.max(nodeDegreeRange[1], degree);
 			}
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 
@@ -501,29 +443,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 	
 	public int getMaximumDegree() {
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			if (nodeDegreeRange[1] == Integer.MIN_VALUE) {
-				// Release read lock so we can get the write lock
-				lock.readLock().unlock();
-				// Someone else could've jumped the line here so we need to
-				// check later if we're the first writer.
-				lock.writeLock().lock();
-				try {
-					// Prepare to downgrade to read lock 
-					lock.readLock().lock();
-					// Check that we're the first writer
-					if (nodeDegreeRange[1] == Integer.MIN_VALUE) {
-						computeNodeDegreeRange();
-					}
-				} finally {
-					// Downgrade to read lock
-					lock.writeLock().unlock();
-				}
+				computeNodeDegreeRange();
 			}
 			return nodeDegreeRange[1];
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 	
@@ -532,8 +456,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 
 	public boolean checkType(String name, Class<?> columnType, Class<?> targetType) {
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			if (network == null) {
 				return false;
 			}
@@ -550,8 +473,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				return targetType.equals(column.getListElementType());
 			}
 			return targetType.equals(type);
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 
@@ -566,26 +487,19 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 	
 	public void registerDegreeFilterView(DegreeFilterView view, DegreeFilterController controller) {
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			degreeViews.put(view, controller);
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
 	public void registerColumnFilterView(ColumnFilterView view, ColumnFilterController controller) {
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			columnViews.put(view, controller);
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 	
 	public Number[] getColumnRange(String name, Class<? extends CyIdentifiable> type) {
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			if (network == null) {
 				return null;
 			}
@@ -597,8 +511,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				CyTable table = network.getDefaultEdgeTable();
 				return getColumnRange(table, name, edgeColumnRanges);
 			}
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 
@@ -653,8 +565,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 
 	public void recomputeColumnRange(String name, Class<? extends CyIdentifiable> type) {
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			if (network == null) {
 				return;
 			}
@@ -665,8 +576,6 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				ranges = edgeColumnRanges;
 			}
 			ranges.remove(name);
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 

@@ -29,7 +29,10 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipException;
@@ -49,18 +52,15 @@ import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.app.internal.ui.AppManagerDialog;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.Version;
 import org.osgi.service.startlevel.StartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.app.internal.ui.AppManagerDialog;
 
 /**
  * This class represents an App Manager, which is capable of maintaining a list of all currently installed and available apps. The class
@@ -101,7 +101,7 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 	/** The set of all apps, represented by {@link App} objects, registered to this App Manager. */
 	private Set<App> apps;
 	
-	private Set<AppsChangedListener> appListeners;
+	private List<AppsChangedListener> appListeners;
 	
 	/** An {@link AppParser} object used to parse File objects and possibly URLs into {@link App} objects
 	 * into a format we can more easily work with
@@ -140,6 +140,8 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 	private StartupMonitor startupMonitor;
 
 	private AppManagerDialog appManagerDialog = null;
+
+	private final Object lock = new Object();
 	
 	/**
 	 * A {@link FileFilter} that accepts only files in the first depth level of a given directory
@@ -175,9 +177,9 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 		
 		startupMonitor.addAppStatusChangedListener(this);
 		
-		apps = new HashSet<App>();
+		apps = new CopyOnWriteArraySet<App>();
 		appParser = new AppParser();
-		appListeners = new HashSet<AppsChangedListener>();
+		appListeners = new CopyOnWriteArrayList<AppsChangedListener>();
 		
 		// cleanKarafDeployDirectory();
 		purgeTemporaryDirectories();
@@ -215,7 +217,7 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 	}
 	
 	void attemptInitialization() {
-		synchronized (this) {
+		synchronized (lock ) {
 			if (!isInitialized && startLevel.getStartLevel() >= APP_START_LEVEL) {
 				startupMonitor.setActive(true);
 				initializeApps();
@@ -1001,6 +1003,9 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 	}
 	
 	public void addAppListener(AppsChangedListener appListener) {
+		if (appListeners.contains(appListener)) {
+			return;
+		}
 		appListeners.add(appListener);
 	}
 	

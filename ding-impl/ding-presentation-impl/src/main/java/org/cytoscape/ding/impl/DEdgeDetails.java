@@ -44,7 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
@@ -79,28 +79,28 @@ final class DEdgeDetails extends EdgeDetails {
 	// Mapped Values
 	// If value found in these map objects, the value will be used by the renderer.
 	// Otherwise, default value will be used.
-	Map<CyEdge, Object> m_colorsLowDetail = new WeakHashMap<CyEdge, Object>();
-	Map<CyEdge, Object> m_selectedColorsLowDetail = new WeakHashMap<CyEdge, Object>();
-	Map<CyEdge, Float> m_segmentThicknesses = new WeakHashMap<CyEdge, Float>();
-	Map<CyEdge, Stroke> m_segmentStrokes = new WeakHashMap<CyEdge, Stroke>();
-	Map<CyEdge, Byte> m_sourceArrows = new WeakHashMap<CyEdge, Byte>();
-	Map<CyEdge, Paint> m_sourceArrowPaints = new WeakHashMap<CyEdge, Paint>();
-	Map<CyEdge, Paint> m_sourceArrowSelectedPaints = new WeakHashMap<CyEdge, Paint>();
-	Map<CyEdge, Byte> m_targetArrows = new WeakHashMap<CyEdge, Byte>();
-	Map<CyEdge, Paint> m_targetArrowPaints = new WeakHashMap<CyEdge, Paint>();
-	Map<CyEdge, Paint> m_targetArrowSelectedPaints = new WeakHashMap<CyEdge, Paint>();
-	Map<CyEdge, Integer> m_labelCounts = new WeakHashMap<CyEdge, Integer>();
-	Map<CyEdge, String> m_labelTexts = new WeakHashMap<CyEdge, String>();
-	Map<CyEdge, Font> m_labelFonts = new WeakHashMap<CyEdge, Font>();
-	Map<CyEdge, Paint> m_labelPaints = new WeakHashMap<CyEdge, Paint>();
-	Map<CyEdge, Double> m_labelWidths = new WeakHashMap<CyEdge, Double>();
-	Map<CyEdge, Paint> m_unselectedPaints = new WeakHashMap<CyEdge, Paint>();
-	Map<CyEdge, Paint> m_selectedPaints = new WeakHashMap<CyEdge, Paint>();
-	Map<CyEdge, Integer> m_lineCurved = new WeakHashMap<CyEdge, Integer>();
-	Map<CyEdge, Bend> m_edgeBends = new WeakHashMap<CyEdge, Bend>();
-	Map<CyEdge, String> m_edgeTooltips = new WeakHashMap<CyEdge, String>();
-	Map<CyEdge, Integer> m_edgeTansparencies = new WeakHashMap<CyEdge, Integer>();
-	Map<CyEdge, Integer> m_edgeLabelTansparencies = new WeakHashMap<CyEdge, Integer>();
+	Map<CyEdge, Object> m_colorsLowDetail = new ConcurrentHashMap<CyEdge, Object>(16, 0.75f, 2);
+	Map<CyEdge, Object> m_selectedColorsLowDetail = new ConcurrentHashMap<CyEdge, Object>(16, 0.75f, 2);
+	Map<CyEdge, Float> m_segmentThicknesses = new ConcurrentHashMap<CyEdge, Float>(16, 0.75f, 2);
+	Map<CyEdge, Stroke> m_segmentStrokes = new ConcurrentHashMap<CyEdge, Stroke>(16, 0.75f, 2);
+	Map<CyEdge, Byte> m_sourceArrows = new ConcurrentHashMap<CyEdge, Byte>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_sourceArrowPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_sourceArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
+	Map<CyEdge, Byte> m_targetArrows = new ConcurrentHashMap<CyEdge, Byte>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_targetArrowPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_targetArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_labelCounts = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
+	Map<CyEdge, String> m_labelTexts = new ConcurrentHashMap<CyEdge, String>(16, 0.75f, 2);
+	Map<CyEdge, Font> m_labelFonts = new ConcurrentHashMap<CyEdge, Font>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_labelPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
+	Map<CyEdge, Double> m_labelWidths = new ConcurrentHashMap<CyEdge, Double>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_unselectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_selectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_lineCurved = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
+	Map<CyEdge, Bend> m_edgeBends = new ConcurrentHashMap<CyEdge, Bend>(16, 0.75f, 2);
+	Map<CyEdge, String> m_edgeTooltips = new ConcurrentHashMap<CyEdge, String>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_edgeTansparencies = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_edgeLabelTansparencies = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
 
 	// Default Values
 	Byte m_sourceArrowDefault;
@@ -136,27 +136,27 @@ final class DEdgeDetails extends EdgeDetails {
 		if (isCleared)
 			return;
 
-		m_segmentThicknesses = new WeakHashMap<CyEdge, Float>();
-		m_segmentStrokes = new WeakHashMap<CyEdge, Stroke>();
-		m_sourceArrows = new WeakHashMap<CyEdge, Byte>();
-		m_sourceArrowPaints = new WeakHashMap<CyEdge, Paint>();
-		m_targetArrows = new WeakHashMap<CyEdge, Byte>();
-		m_targetArrowPaints = new WeakHashMap<CyEdge, Paint>();
-		m_targetArrowSelectedPaints = new WeakHashMap<CyEdge, Paint>();
-		m_labelCounts = new WeakHashMap<CyEdge, Integer>();
-		m_labelTexts = new WeakHashMap<CyEdge, String>();
-		m_labelFonts = new WeakHashMap<CyEdge, Font>();
-		m_labelPaints = new WeakHashMap<CyEdge, Paint>();
-		m_labelWidths = new WeakHashMap<CyEdge, Double>();
-		m_unselectedPaints = new WeakHashMap<CyEdge, Paint>();
-		m_selectedPaints = new WeakHashMap<CyEdge, Paint>();
-		m_colorsLowDetail = new WeakHashMap<CyEdge, Object>();
-		m_selectedColorsLowDetail = new WeakHashMap<CyEdge, Object>();
-		m_lineCurved = new WeakHashMap<CyEdge, Integer>();
-		m_edgeBends = new WeakHashMap<CyEdge, Bend>();
-		m_edgeTooltips = new WeakHashMap<CyEdge, String>();
-		m_edgeTansparencies = new WeakHashMap<CyEdge, Integer>();
-		m_edgeLabelTansparencies = new WeakHashMap<CyEdge, Integer>();
+		m_segmentThicknesses = new ConcurrentHashMap<CyEdge, Float>();
+		m_segmentStrokes = new ConcurrentHashMap<CyEdge, Stroke>();
+		m_sourceArrows = new ConcurrentHashMap<CyEdge, Byte>();
+		m_sourceArrowPaints = new ConcurrentHashMap<CyEdge, Paint>();
+		m_targetArrows = new ConcurrentHashMap<CyEdge, Byte>();
+		m_targetArrowPaints = new ConcurrentHashMap<CyEdge, Paint>();
+		m_targetArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
+		m_labelCounts = new ConcurrentHashMap<CyEdge, Integer>();
+		m_labelTexts = new ConcurrentHashMap<CyEdge, String>();
+		m_labelFonts = new ConcurrentHashMap<CyEdge, Font>();
+		m_labelPaints = new ConcurrentHashMap<CyEdge, Paint>();
+		m_labelWidths = new ConcurrentHashMap<CyEdge, Double>();
+		m_unselectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
+		m_selectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
+		m_colorsLowDetail = new ConcurrentHashMap<CyEdge, Object>();
+		m_selectedColorsLowDetail = new ConcurrentHashMap<CyEdge, Object>();
+		m_lineCurved = new ConcurrentHashMap<CyEdge, Integer>();
+		m_edgeBends = new ConcurrentHashMap<CyEdge, Bend>();
+		m_edgeTooltips = new ConcurrentHashMap<CyEdge, String>();
+		m_edgeTansparencies = new ConcurrentHashMap<CyEdge, Integer>();
+		m_edgeLabelTansparencies = new ConcurrentHashMap<CyEdge, Integer>();
 
 		isCleared = true;
 	}

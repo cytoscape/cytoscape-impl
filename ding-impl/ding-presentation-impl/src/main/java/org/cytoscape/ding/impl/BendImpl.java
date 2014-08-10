@@ -24,11 +24,11 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Basic Implementation of edge bends.
@@ -42,12 +42,12 @@ public class BendImpl implements Bend {
 	private final List<Handle> handles;
 	
 	public BendImpl() {
-		this.handles = new ArrayList<Handle>();
+		this.handles = new CopyOnWriteArrayList<Handle>();
 	}
 
 	public BendImpl(BendImpl bend)
 	{
-		this.handles = new ArrayList<Handle>();
+		this.handles = new CopyOnWriteArrayList<Handle>();
 		for( Handle h : bend.handles)
 		{
 			HandleImpl handle = (HandleImpl)h;

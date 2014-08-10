@@ -92,7 +92,7 @@ public final class BrowserTableModel extends AbstractTableModel
 		this.tableType = tableType;
 
 		attrNames = getAttributeNames(dataTable);
-		lock = new ReentrantReadWriteLock(true);
+		lock = new ReentrantReadWriteLock();
 		
 		// add each row to an array to allow fast lookup from an index
 		final Collection<CyRow> rows = dataTable.getAllRows();

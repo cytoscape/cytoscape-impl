@@ -27,9 +27,9 @@ package org.cytoscape.io.datasource.internal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Iterator;
 
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSource;
@@ -39,6 +39,7 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 	
 	
 	private final Map<DataCategory, Map<String, DataSource>> dataSourceMap;
+	private final Object lock = new Object();
 	
 	DataSourceManagerImpl() {
 		this.dataSourceMap = new HashMap<DataCategory, Map<String, DataSource>>();
@@ -52,16 +53,18 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		if(datasource == null)
 			return;
 
-		if (dataSourceMap.containsKey(datasource.getDataCategory())){
-			Map<String, DataSource> map = dataSourceMap.get(datasource.getDataCategory());
-			map.put(datasource.getName(), datasource);
+		synchronized (lock) {
+			if (dataSourceMap.containsKey(datasource.getDataCategory())){
+				Map<String, DataSource> map = dataSourceMap.get(datasource.getDataCategory());
+				map.put(datasource.getName(), datasource);
+			}
+			else {// this DataCategory does not exist yet
+				Map<String, DataSource> map = new HashMap<String, DataSource>();
+				map.put(datasource.getName(), datasource);
+				
+				this.dataSourceMap.put(datasource.getDataCategory(), map);
+			}
 		}
-		else {// this DataCategory does not exist yet
-			Map<String, DataSource> map = new HashMap<String, DataSource>();
-			map.put(datasource.getName(), datasource);
-			
-			this.dataSourceMap.put(datasource.getDataCategory(), map);
-		}		
 	}
 	
 	
@@ -69,20 +72,24 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		if(datasource == null)
 			return;
 
-		Map<String, DataSource> map = this.dataSourceMap.get(datasource.getDataCategory());
-		if (map == null){
-			return;
+		synchronized (lock) {
+			Map<String, DataSource> map = this.dataSourceMap.get(datasource.getDataCategory());
+			if (map == null){
+				return;
+			}
+			map.remove(datasource.getName());
 		}
-		map.remove(datasource.getName());
 	}
 	
 
 	@Override
 	public Collection<DataSource> getDataSources(DataCategory category) {
-		if (this.dataSourceMap.get(category) == null){
-			return new HashSet<DataSource>();
+		synchronized (lock) {
+			if (this.dataSourceMap.get(category) == null){
+				return new HashSet<DataSource>();
+			}
+			return this.dataSourceMap.get(category).values();
 		}
-		return this.dataSourceMap.get(category).values();		
 	}
 
 	
@@ -91,19 +98,21 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		
 		final Set<DataSource> sources = new HashSet<DataSource>();
 		
-		Iterator<DataCategory> it = this.dataSourceMap.keySet().iterator();
-		Map<String, DataSource> map;
-		while (it.hasNext()){
-			map = this.dataSourceMap.get(it.next());
-			Iterator<DataSource> it_ds = map.values().iterator();
-			while (it_ds.hasNext()){
-				DataSource ds = it_ds.next(); 
-				if(ds.getProvider().equals(providerName))
-					sources.add(ds);				
-			}
-		}		
-		
-		return sources;
+		synchronized (lock) {
+			Iterator<DataCategory> it = this.dataSourceMap.keySet().iterator();
+			Map<String, DataSource> map;
+			while (it.hasNext()){
+				map = this.dataSourceMap.get(it.next());
+				Iterator<DataSource> it_ds = map.values().iterator();
+				while (it_ds.hasNext()){
+					DataSource ds = it_ds.next(); 
+					if(ds.getProvider().equals(providerName))
+						sources.add(ds);				
+				}
+			}		
+			
+			return sources;
+		}
 	}
 
 	@Override
@@ -111,9 +120,11 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		
 		final Set<DataSource> sources = new HashSet<DataSource>();
 		
-		Iterator<DataCategory> it = this.dataSourceMap.keySet().iterator();
-		while (it.hasNext()){
-			sources.addAll(this.dataSourceMap.get(it.next()).values());
+		synchronized (lock) {
+			Iterator<DataCategory> it = this.dataSourceMap.keySet().iterator();
+			while (it.hasNext()){
+				sources.addAll(this.dataSourceMap.get(it.next()).values());
+			}
 		}
 		
 		return sources;		
@@ -121,46 +132,53 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 
 	@Override
 	public Collection<DataCategory> getAllCategories(){
-		return this.dataSourceMap.keySet();
+		synchronized (lock) {
+			return new HashSet<DataCategory>(this.dataSourceMap.keySet());
+		}
 	}
 
 	
 	@Override
 	public boolean deleteDataSource(DataSource pDataSource){
-		Map<String, DataSource> map = this.dataSourceMap.get(pDataSource.getDataCategory());
-		if (map == null || map.get(pDataSource.getName()) == null){
-			return false;
-		}
-		map.remove(pDataSource.getName());
-		
+		synchronized (lock) {
+			Map<String, DataSource> map = this.dataSourceMap.get(pDataSource.getDataCategory());
+			if (map == null || map.get(pDataSource.getName()) == null){
+				return false;
+			}
+			map.remove(pDataSource.getName());
+		}		
 		return true;
 	}
 
 	
 	@Override
 	public void saveDataSource(DataSource pDataSource){
-		Map<String, DataSource> map = this.dataSourceMap.get(pDataSource.getDataCategory());
-		if (map == null){
-			map = new HashMap<String, DataSource>();
-			this.dataSourceMap.put(pDataSource.getDataCategory(), map);
+		synchronized (lock) {
+			Map<String, DataSource> map = this.dataSourceMap.get(pDataSource.getDataCategory());
+			if (map == null){
+				map = new HashMap<String, DataSource>();
+				this.dataSourceMap.put(pDataSource.getDataCategory(), map);
+			}
+			map.put(pDataSource.getName(), pDataSource);
 		}
-		map.put(pDataSource.getName(), pDataSource);
 	}
 
 	
 	@Override
 	public boolean containsDataSource(DataSource pDataSource){
-		Collection<DataSource> dataSourcesSet = this.getDataSources(pDataSource.getDataCategory());
-		
-		if (dataSourcesSet == null || dataSourcesSet.size() == 0){
-			return false;
-		}
-		
-		Iterator<DataSource> it = dataSourcesSet.iterator();
-		while (it.hasNext()){
-			DataSource ds = it.next();
-			if (ds.getName().equalsIgnoreCase(pDataSource.getName())){
-				return true;
+		synchronized (lock) {
+			Collection<DataSource> dataSourcesSet = this.getDataSources(pDataSource.getDataCategory());
+			
+			if (dataSourcesSet == null || dataSourcesSet.size() == 0){
+				return false;
+			}
+			
+			Iterator<DataSource> it = dataSourcesSet.iterator();
+			while (it.hasNext()){
+				DataSource ds = it.next();
+				if (ds.getName().equalsIgnoreCase(pDataSource.getName())){
+					return true;
+				}
 			}
 		}
 		

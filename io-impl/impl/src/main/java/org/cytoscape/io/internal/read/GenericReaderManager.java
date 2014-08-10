@@ -44,6 +44,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Task> {
 
@@ -61,7 +62,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		this.category = category;
 		this.streamUtil = streamUtil;
 
-		factories = new HashSet<T>();
+		factories = new CopyOnWriteArraySet<T>();
 	}
 
 	/**

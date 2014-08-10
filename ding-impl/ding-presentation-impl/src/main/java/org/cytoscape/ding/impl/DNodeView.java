@@ -905,9 +905,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	void removeAllCustomGraphics() {
-		if (orderedCustomGraphicLayers != null) {
-			orderedCustomGraphicLayers.clear();
-			graphicsPositions.clear();
+		synchronized (CG_LOCK) {
+			if (orderedCustomGraphicLayers != null) {
+				orderedCustomGraphicLayers.clear();
+				graphicsPositions.clear();
+			}
 		}
 		// ensureContentChanged();
 	}
@@ -1114,8 +1116,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		// Create new graphics
 		final CustomGraphicLayer newCg = CustomGraphicsPositionCalculator.transform(newPosition, this, cg);
 
-		this.addCustomGraphic(newCg);
-		graphicsPositions.put(newCg, newPosition);
+		synchronized (CG_LOCK) {
+			this.addCustomGraphic(newCg);
+			graphicsPositions.put(newCg, newPosition);
+		}
 
 		return newCg;
 	}

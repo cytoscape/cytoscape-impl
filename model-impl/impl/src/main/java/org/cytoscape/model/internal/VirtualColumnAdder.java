@@ -41,13 +41,18 @@ class VirtualColumnAdder implements ColumnCreatedListener {
 
 	private final WeakMapList<CyTable,CyTable> tables;
 
+	private final Object lock = new Object();
+	
 	VirtualColumnAdder() {
 		tables = new WeakMapList<CyTable,CyTable>(); 
 	}
 
 	public void handleEvent(ColumnCreatedEvent e) {
 		CyTable src = e.getSource();
-		List<CyTable> targets = tables.get( src );
+		List<CyTable> targets;
+		synchronized (lock) {
+			targets = tables.get( src );
+		}
 		String srcName = e.getColumnName();
 		CyColumn srcCol = src.getColumn(srcName);
 
@@ -62,7 +67,9 @@ class VirtualColumnAdder implements ColumnCreatedListener {
 			throw new NullPointerException("target table is null");
 		if ( src == tgt )
 			throw new IllegalArgumentException("source and target tables cannot be the same.");
-		tables.put(src,tgt);
+		synchronized (lock) {
+			tables.put(src,tgt);
+		}
 	}
 }
 

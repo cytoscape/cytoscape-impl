@@ -72,10 +72,10 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private static final String IMAGE_DIR_NAME = "images3";
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";
 
-	private final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>();
+	private final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>(16, 0.75f, 2);
 
 	// URL to hash code map. For images associated with URL.
-	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<URL, Long>();
+	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<URL, Long>(16, 0.75f, 2);
 
 	// Null Object
 	private final File imageHomeDirectory;

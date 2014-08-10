@@ -1,12 +1,12 @@
 package org.cytoscape.filter.internal;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -39,10 +39,10 @@ public class TransformerManagerImpl implements TransformerManager {
 		bufferedStrategy = new BufferedExecutionStrategy();
 		unbufferedStrategy = new UnbufferedExecutionStrategy(maximumThreads);
 		
-		sources = new HashMap<Class<?>, TransformerSource<?,?>>();
-		filterFactories = new HashMap<String, FilterFactory<?,?>>();
-		elementTransformerFactories = new HashMap<String, ElementTransformerFactory<?,?>>();
-		holisticTransformerFactories = new HashMap<String, HolisticTransformerFactory<?,?>>();
+		sources = new ConcurrentHashMap<Class<?>, TransformerSource<?,?>>(16, 0.75f, 2);
+		filterFactories = new ConcurrentHashMap<String, FilterFactory<?,?>>(16, 0.75f, 2);
+		elementTransformerFactories = new ConcurrentHashMap<String, ElementTransformerFactory<?,?>>(16, 0.75f, 2);
+		holisticTransformerFactories = new ConcurrentHashMap<String, HolisticTransformerFactory<?,?>>(16, 0.75f, 2);
 	}
 	
 	@Override

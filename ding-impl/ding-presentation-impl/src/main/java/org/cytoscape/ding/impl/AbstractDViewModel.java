@@ -120,7 +120,9 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 			if (!isDirectlyLocked(vp)) {
 				if (parent.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
 					// Caller should already have write lock to modify this
-					allLocks.put(vp, value);
+					synchronized (getDGraphView().m_lock) {
+						allLocks.put(vp, value);
+					}
 					applyVisualProperty(vp, value);
 				}
 				

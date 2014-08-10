@@ -27,23 +27,20 @@ package org.cytoscape.command.internal.available;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
-
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.internal.available.dummies.DummyNetwork;
-import org.cytoscape.command.internal.available.dummies.DummyNetworkView;
-import org.cytoscape.command.internal.available.dummies.DummyTable;
+import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -72,6 +69,8 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private final StaticTaskFactoryProvisioner factoryProvisioner;
 	private final Map<Object, TaskFactory> provisioners;
 	private final CyApplicationManager appMgr;
+	
+	private final Object lock = new Object();
 
 	public AvailableCommandsImpl(ArgRecorder argRec, CyApplicationManager appMgr) {
 		this.argRec = argRec;
@@ -85,20 +84,25 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 	@Override
 	public List<String> getNamespaces() {
-		List<String> l = new ArrayList<String>( argHandlers.keySet() );
+		List<String> l;
+		synchronized (lock) {
+			l = new ArrayList<String>( argHandlers.keySet() );
+		}
 		Collections.sort(l);
 		return l;
 	}
 
 	@Override
 	public List<String> getCommands(String namespace) {
-		Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
-		if ( mm == null ) {
-			return Collections.emptyList();
-		} else {
-			List<String> l = new ArrayList<String>( mm.keySet() );
-			Collections.sort(l);
-			return l;
+		synchronized (lock) {
+			Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
+			if ( mm == null ) {
+				return Collections.emptyList();
+			} else {
+				List<String> l = new ArrayList<String>( mm.keySet() );
+				Collections.sort(l);
+				return l;
+			}
 		}
 	}
 
@@ -112,27 +116,29 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 	@Override
 	public List<String> getArguments(String namespace,String command) {
-		Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
-		if ( mm == null ) {
-			return Collections.emptyList();
-		} else {
-			Map<String, ArgHandler> ll = mm.get(command);
-			if ( ll == null ) {
-				if (commands.containsKey(namespace+" "+command)) {
-					ll = getArgs(commands.get(namespace+" "+command));
-					mm.put(command, ll);
-				} else {
-					return Collections.emptyList();
+		synchronized (lock) {
+			Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
+			if ( mm == null ) {
+				return Collections.emptyList();
+			} else {
+				Map<String, ArgHandler> ll = mm.get(command);
+				if ( ll == null ) {
+					if (commands.containsKey(namespace+" "+command)) {
+						ll = getArgs(commands.get(namespace+" "+command));
+						mm.put(command, ll);
+					} else {
+						return Collections.emptyList();
+					}
 				}
+	
+				// At this point, we should definitely have everything to create the arguments
+				List<String> l = new ArrayList<String>();
+				for (ArgHandler ah: ll.values()) {
+					l.add(ah.getName());
+				}
+				Collections.sort(l);
+				return l;
 			}
-
-			// At this point, we should definitely have everything to create the arguments
-			List<String> l = new ArrayList<String>();
-			for (ArgHandler ah: ll.values()) {
-				l.add(ah.getName());
-			}
-			Collections.sort(l);
-			return l;
 		}
 	}
 
@@ -193,33 +199,67 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	
 	public void addNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(tf);
-		provisioners.put(tf, provisioner);
-		addCommand(provisioner,props);
+		
+		synchronized (lock) {
+			provisioners.put(tf, provisioner);
+			addCommand(provisioner,props);
+		}
 	}
 	
 	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(tf);
-		provisioners.put(tf, provisioner);
-		addCommand(provisioner,props);
+		
+		synchronized (lock) {
+			provisioners.put(tf, provisioner);
+			addCommand(provisioner,props);
+		}
 	}
 
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(tf);
-		provisioners.put(tf, provisioner);
-		addCommand(provisioner,props);
+		
+		synchronized (lock) {
+			provisioners.put(tf, provisioner);
+			addCommand(provisioner,props);
+		}
 	}
 	
 	public void addTableTaskFactory(TableTaskFactory tf, Map props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(tf);
-		provisioners.put(tf, provisioner);
-		addCommand(provisioner,props);
+		
+		synchronized (lock) {
+			provisioners.put(tf, provisioner);
+			addCommand(provisioner,props);
+		}
 	}
 
-	public void removeTaskFactory(TaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
-	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
-	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
-	public void removeTableTaskFactory(TableTaskFactory tf, Map props) { removeCommand(provisioners.remove(tf),props); }
+	public void removeTaskFactory(TaskFactory tf, Map props) {
+		synchronized (lock) {
+			removeCommand(provisioners.remove(tf),props);
+		}
+	}
+	
+	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
+		synchronized (lock) {
+			removeCommand(provisioners.remove(tf),props);
+		}
+	}
+	
+	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
+		synchronized (lock) {
+			removeCommand(provisioners.remove(tf),props);
+		}
+	}
+	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map props) {
+		synchronized (lock) {
+			removeCommand(provisioners.remove(tf),props);
+		}
+	}
+	public void removeTableTaskFactory(TableTaskFactory tf, Map props) {
+		synchronized (lock) {
+			removeCommand(provisioners.remove(tf),props);
+		}
+	}
 
 	private void addCommand(TaskFactory tf, Map properties) {
 		String namespace = (String)(properties.get(ServiceProperties.COMMAND_NAMESPACE));
@@ -229,16 +269,17 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		if (command == null || namespace == null) 
 			return;
 
-		commands.put(namespace+" "+command, tf);
-		descriptions.put(namespace+" "+command, description);
-		// List<String> args = getArgs(tf);
-		Map<String, ArgHandler> args = null;
-		Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
-		if ( mm == null ) {
-			mm = new HashMap<String,Map<String, ArgHandler>>();
-			argHandlers.put(namespace,mm);
+		synchronized (lock) {
+			commands.put(namespace+" "+command, tf);
+			descriptions.put(namespace+" "+command, description);
+			// List<String> args = getArgs(tf);
+			Map<String, ArgHandler> args = null;
+			Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
+			if ( mm == null ) {
+				mm = new HashMap<String,Map<String, ArgHandler>>();
+				argHandlers.put(namespace,mm);
+			}
 		}
-		mm.put(command,args);
 	}
 
 
@@ -247,30 +288,34 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		String command = (String)(properties.get(ServiceProperties.COMMAND));
 		String description = (String)(properties.get(ServiceProperties.COMMAND_DESCRIPTION));
 
-		descriptions.remove(namespace+" "+command);
-		TaskFactory l = commands.remove(namespace+" "+command);
-		if (l == null)
-			return;
-		Map<String,Map<String, ArgHandler>> m = argHandlers.get(namespace);
-		if ( m != null )
-			m.remove(command);
-		if (m.isEmpty())
-			argHandlers.remove(namespace);
+		synchronized (lock) {
+			descriptions.remove(namespace+" "+command);
+			TaskFactory l = commands.remove(namespace+" "+command);
+			if (l == null)
+				return;
+			Map<String,Map<String, ArgHandler>> m = argHandlers.get(namespace);
+			if ( m != null )
+				m.remove(command);
+			if (m.isEmpty())
+				argHandlers.remove(namespace);
+		}
 	}
 
 	private Map<String, ArgHandler> getArgMap(String namespace, String command, String arg) {
-		if (!argHandlers.containsKey(namespace))
-			return null;
-
-		if (!argHandlers.get(namespace).containsKey(command))
-			return null;
-
-		Map<String, ArgHandler> map = argHandlers.get(namespace).get(command);
-		if (map == null) {
-			map = getArgs(commands.get(namespace+" "+command));
-			argHandlers.get(namespace).put(command, map);
+		synchronized (lock) {
+			if (!argHandlers.containsKey(namespace))
+				return null;
+	
+			if (!argHandlers.get(namespace).containsKey(command))
+				return null;
+	
+			Map<String, ArgHandler> map = argHandlers.get(namespace).get(command);
+			if (map == null) {
+				map = getArgs(commands.get(namespace+" "+command));
+				argHandlers.get(namespace).put(command, map);
+			}
+			return map;
 		}
-		return map;
 	}
 
 	private Map<String, ArgHandler> getArgs(TaskFactory tf) {

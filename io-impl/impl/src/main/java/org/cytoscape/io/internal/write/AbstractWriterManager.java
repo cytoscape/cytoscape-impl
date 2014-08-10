@@ -27,9 +27,9 @@ package org.cytoscape.io.internal.write;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
@@ -46,7 +46,7 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 
 	public AbstractWriterManager(DataCategory category) {
 		this.category = category;
-		factories = new HashMap<CyFileFilter,T>();
+		factories = new ConcurrentHashMap<CyFileFilter,T>(16, 0.75f, 2);
 	}
 
 	public List<CyFileFilter> getAvailableWriterFilters() {

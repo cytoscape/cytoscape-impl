@@ -26,9 +26,8 @@ package org.cytoscape.ding.impl;
 
 
 import java.lang.ref.Reference;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
@@ -54,14 +53,14 @@ public class ViewTaskFactoryListener {
 
 	public ViewTaskFactoryListener(NVLTFActionSupport nvltfActionSupport){
 		this.nvltfActionSupport = nvltfActionSupport;
-		viewMap = new WeakHashMap<CyNetworkView, Reference<DGraphView>>();
-		nodeViewTFs = new HashMap<NodeViewTaskFactory, Map>();
-		edgeViewTFs = new HashMap<EdgeViewTaskFactory, Map>();
-		emptySpaceTFs = new HashMap<NetworkViewTaskFactory, Map>();
-		networkViewLocationTFs = new HashMap<NetworkViewLocationTaskFactory, Map>();
-		cyNodeViewContexMenuFactory = new HashMap<CyNodeViewContextMenuFactory, Map>();
-		cyEdgeViewContextMenuFactory = new HashMap<CyEdgeViewContextMenuFactory, Map>();
-		cyNetworkViewContextMenuFactory = new HashMap<CyNetworkViewContextMenuFactory, Map>();
+		viewMap = new ConcurrentHashMap<CyNetworkView, Reference<DGraphView>>(16, 0.75f, 2);
+		nodeViewTFs = new ConcurrentHashMap<NodeViewTaskFactory, Map>(16, 0.75f, 2);
+		edgeViewTFs = new ConcurrentHashMap<EdgeViewTaskFactory, Map>(16, 0.75f, 2);
+		emptySpaceTFs = new ConcurrentHashMap<NetworkViewTaskFactory, Map>(16, 0.75f, 2);
+		networkViewLocationTFs = new ConcurrentHashMap<NetworkViewLocationTaskFactory, Map>(16, 0.75f, 2);
+		cyNodeViewContexMenuFactory = new ConcurrentHashMap<CyNodeViewContextMenuFactory, Map>(16, 0.75f, 2);
+		cyEdgeViewContextMenuFactory = new ConcurrentHashMap<CyEdgeViewContextMenuFactory, Map>(16, 0.75f, 2);
+		cyNetworkViewContextMenuFactory = new ConcurrentHashMap<CyNetworkViewContextMenuFactory, Map>(16, 0.75f, 2);
 	}
 
 	
