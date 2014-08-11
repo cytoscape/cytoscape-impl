@@ -279,6 +279,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 				mm = new HashMap<String,Map<String, ArgHandler>>();
 				argHandlers.put(namespace,mm);
 			}
+			mm.put(command,args);
 		}
 	}
 
