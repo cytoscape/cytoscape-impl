@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
+import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.model.CyColumn;
@@ -18,14 +20,13 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.presentation.property.values.MappableVisualPropertyValue;
 
-public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> extends
-		AbstractEnhancedCustomGraphics<T> implements CyChart<T>, MappableVisualPropertyValue {
+public abstract class AbstractChart<T extends CustomGraphicLayer> extends AbstractCustomGraphics2<T>
+		implements MappableVisualPropertyValue {
 
 	public static final String DATA_COLUMNS = "datacolumns";
 	public static final String ITEM_LABELS_COLUMN = "itemlabelscolumn";
@@ -46,7 +47,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	
-	protected AbstractChartCustomGraphics(final String displayName, final CyColumnIdentifierFactory colIdFactory) {
+	protected AbstractChart(final String displayName, final CyColumnIdentifierFactory colIdFactory) {
 		super(displayName);
 		
 		if (colIdFactory == null)
@@ -55,13 +56,13 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 		this.colIdFactory = colIdFactory;
 	}
 	
-	protected AbstractChartCustomGraphics(final String displayName, final String input,
+	protected AbstractChart(final String displayName, final String input,
 			final CyColumnIdentifierFactory colIdFactory) {
 		this(displayName, colIdFactory);
 		addProperties(parseInput(input));
 	}
 	
-	protected AbstractChartCustomGraphics(final AbstractChartCustomGraphics<T> chart,
+	protected AbstractChart(final AbstractChart<T> chart,
 			final CyColumnIdentifierFactory colIdFactory) {
 		this(chart.getDisplayName(), colIdFactory);
 		
@@ -69,7 +70,7 @@ public abstract class AbstractChartCustomGraphics<T extends CustomGraphicLayer> 
 			this.properties.putAll(chart.getProperties());
 	}
 	
-	protected AbstractChartCustomGraphics(final String displayName, final Map<String, Object> properties,
+	protected AbstractChart(final String displayName, final Map<String, Object> properties,
 			final CyColumnIdentifierFactory colIdFactory) {
 		this(displayName, colIdFactory);
 		

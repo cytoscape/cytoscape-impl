@@ -45,6 +45,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.util.intr.LongHash;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 
@@ -104,7 +106,7 @@ public final class GraphRenderer {
 
 	/**
 	 * Renders a graph.
-	 * @param graph the graph topology; nodes in this graph must correspond to
+	 * @param netView the network view; nodes in this graph must correspond to
 	 *   objKeys in nodePositions (the SpacialIndex2D parameter) and vice versa.
 	 * @param nodePositions defines the positions and extents of nodes in graph;
 	 *   each entry (objKey) in this structure must correspond to a node in graph
@@ -133,15 +135,22 @@ public final class GraphRenderer {
 	 * @return bits representing the level of detail that was rendered; the
 	 *   return value is a bitwise-or'ed value of the LOD_* constants.
 	 */
-	public final static int renderGraph(final CyNetwork graph, final SpacialIndex2D nodePositions,
-	                                    final GraphLOD lod, final NodeDetails nodeDetails,
-	                                    final EdgeDetails edgeDetails, final LongHash nodeBuff,
-	                                    final GraphGraphics grafx, final Paint bgPaint,
-	                                    final double xCenter, final double yCenter,
-	                                    final double scaleFactor, final boolean haveZOrder) {
-	
+	public final static int renderGraph(final CyNetworkView netView,
+										final SpacialIndex2D nodePositions,
+	                                    final GraphLOD lod,
+	                                    final NodeDetails nodeDetails,
+	                                    final EdgeDetails edgeDetails,
+	                                    final LongHash nodeBuff,
+	                                    final GraphGraphics grafx,
+	                                    final Paint bgPaint,
+	                                    final double xCenter,
+	                                    final double yCenter,
+	                                    final double scaleFactor,
+	                                    final boolean haveZOrder) {
 		nodeBuff.empty(); // Make sure we keep our promise.
 
+		final CyNetwork graph = netView.getModel();
+		
 		// Define the visible window in node coordinate space.
 		final float xMin;
 
@@ -658,11 +667,12 @@ public final class GraphRenderer {
 					zHits = new SpacialEntry2DEnumeratorZSort(nodePositions, nodeHits);
 				}
 				while (zHits.numRemaining() > 0) {
-					final long node =zHits.nextExtents(floatBuff1, 0);
+					final long node = zHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
+					final View<CyNode> nodeView = netView.getNodeView(cyNode);
 
-					renderNodeHigh(graph, grafx, node, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails,
-							lodBits, scaleFactor);
+					renderNodeHigh(netView, nodeView, grafx, floatBuff1, doubleBuff1, doubleBuff2,
+							nodeDetails, lodBits, scaleFactor);
 
 					// Take care of label rendering.
 					if ((lodBits & LOD_NODE_LABELS) != 0) { // Potential label rendering.
@@ -1047,10 +1057,16 @@ public final class GraphRenderer {
 	/**
 	 * Render node view with details, including custom graphics.
 	 */
-	private static final void renderNodeHigh(final CyNetwork graph, final GraphGraphics grafx, 
-			final long node, final CyNode cyNode, final float[] floatBuff1, final double[] doubleBuff1, 
-			final double[] doubleBuff2, final NodeDetails nodeDetails, final int lodBits, final double scaleFactor) {
-
+	private static final void renderNodeHigh(final CyNetworkView netView,
+											 final View<CyNode> nodeView,
+											 final GraphGraphics grafx,
+											 final float[] floatBuff1,
+											 final double[] doubleBuff1,
+											 final double[] doubleBuff2,
+											 final NodeDetails nodeDetails,
+											 final int lodBits,
+											 final double scaleFactor) {
+		final CyNode cyNode = nodeView.getModel();
 		Shape nodeShape = null;
 
 		if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
@@ -1113,8 +1129,10 @@ public final class GraphRenderer {
 					doubleBuff1[2] = floatBuff1[2];
 					doubleBuff1[3] = floatBuff1[3];
 					lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
-					grafx.drawCustomGraphicFull(nodeShape, cg, (float) (doubleBuff2[0] + offsetVectorX), 
-					                            (float) (doubleBuff2[1] + offsetVectorY), scaleFactor);
+					grafx.drawCustomGraphicFull(netView, nodeView, nodeShape, cg,
+												(float) (doubleBuff2[0] + offsetVectorX), 
+					                            (float) (doubleBuff2[1] + offsetVectorY),
+					                            scaleFactor);
 					graphicInx++;
 				}
 			}

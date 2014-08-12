@@ -1,8 +1,8 @@
 package org.cytoscape.ding.internal.charts.heatmap;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
-import org.cytoscape.ding.internal.charts.ColorScheme;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;

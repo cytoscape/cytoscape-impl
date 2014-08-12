@@ -2,18 +2,18 @@ package org.cytoscape.ding.internal.gradients.radial;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.view.presentation.gradients.CyGradient;
-import org.cytoscape.view.presentation.gradients.CyGradientEditorFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
 
-public class RadialGradientEditorFactory implements CyGradientEditorFactory<RadialGradientLayer> {
+public class RadialGradientEditorFactory implements CyCustomGraphics2EditorFactory<RadialGradientLayer> {
 
 	@Override
-	public JComponent createEditor(final CyGradient<RadialGradientLayer> gradient) {
+	public JComponent createEditor(final CyCustomGraphics2<RadialGradientLayer> gradient) {
 		return new RadialGradientEditor((RadialGradient)gradient);
 	}
 
 	@Override
-	public Class<? extends CyGradient<RadialGradientLayer>> getSupportedClass() {
+	public Class<? extends CyCustomGraphics2<RadialGradientLayer>> getSupportedClass() {
 		return RadialGradient.class;
 	}
 }

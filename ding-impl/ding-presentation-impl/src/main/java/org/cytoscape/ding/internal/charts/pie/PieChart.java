@@ -11,15 +11,15 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
-import org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics;
-import org.cytoscape.ding.internal.charts.Rotation;
+import org.cytoscape.ding.customgraphics.Rotation;
+import org.cytoscape.ding.internal.charts.AbstractChart;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class PieChart extends AbstractChartCustomGraphics<PieLayer> {
+public class PieChart extends AbstractChart<PieLayer> {
 
 	public static final String FACTORY_ID = "org.cytoscape.PieChart";
 	public static final String DISPLAY_NAME = "Pie Chart";

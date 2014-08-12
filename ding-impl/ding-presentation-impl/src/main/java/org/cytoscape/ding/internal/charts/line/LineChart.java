@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
-import org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics;
+import org.cytoscape.ding.internal.charts.AbstractChart;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -23,7 +23,7 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
 /**
  *
  */
-public class LineChart extends AbstractChartCustomGraphics<LineLayer> {
+public class LineChart extends AbstractChart<LineLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.LineChart";
 	public static final String DISPLAY_NAME = "Line Chart";

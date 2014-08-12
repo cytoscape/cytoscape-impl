@@ -5,11 +5,11 @@ import java.util.Map;
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class RingChartFactory implements CyChartFactory<RingLayer> {
+public class RingChartFactory implements CyCustomGraphics2Factory<RingLayer> {
 
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -18,17 +18,17 @@ public class RingChartFactory implements CyChartFactory<RingLayer> {
 	}
 	
 	@Override
-	public CyChart<RingLayer> getInstance(final String input) {
+	public CyCustomGraphics2<RingLayer> getInstance(final String input) {
 		return new RingChart(input, colIdFactory);
 	}
 
 	@Override
-	public CyChart<RingLayer> getInstance(final CyChart<RingLayer> chart) {
+	public CyCustomGraphics2<RingLayer> getInstance(final CyCustomGraphics2<RingLayer> chart) {
 		return new RingChart((RingChart)chart, colIdFactory);
 	}
 	
 	@Override
-	public CyChart<RingLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<RingLayer> getInstance(final Map<String, Object> properties) {
 		return new RingChart(properties, colIdFactory);
 	}
 
@@ -38,7 +38,7 @@ public class RingChartFactory implements CyChartFactory<RingLayer> {
 	}
 	
 	@Override
-	public Class<? extends CyChart<RingLayer>> getSupportedClass() {
+	public Class<? extends CyCustomGraphics2<RingLayer>> getSupportedClass() {
 		return RingChart.class;
 	}
 

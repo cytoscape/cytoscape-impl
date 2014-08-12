@@ -29,26 +29,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.cytoscape.view.presentation.charts.CyChartFactory;
-import org.cytoscape.view.presentation.charts.CyChartFactoryManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
-import org.cytoscape.view.presentation.gradients.CyGradientFactory;
-import org.cytoscape.view.presentation.gradients.CyGradientFactoryManager;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 
 @SuppressWarnings("rawtypes")
 public class CustomGraphicsTranslator implements ValueTranslator<String, CyCustomGraphics>{
 
 	private final CustomGraphicsManager cgMgr;
-	private final CyChartFactoryManager chartMgr;
-	private final CyGradientFactoryManager gradMgr;
+	private final CyCustomGraphics2Manager cg2Mgr;
 	
-	public CustomGraphicsTranslator(final CustomGraphicsManager cgMgr, final CyChartFactoryManager chartMgr,
-			final CyGradientFactoryManager gradMgr) {
+	public CustomGraphicsTranslator(final CustomGraphicsManager cgMgr, final CyCustomGraphics2Manager cg2Mgr) {
 		this.cgMgr = cgMgr;
-		this.chartMgr = chartMgr;
-		this.gradMgr = gradMgr;
+		this.cg2Mgr = cg2Mgr;
 	}
 	
 	@Override
@@ -58,25 +52,16 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 		
 		// Nope, so hand it to each factory that has a matching prefix...
 		
-		// CyChart serialization format?
+		// CyCustomGraphics2 serialization format?
 		if (cg == null) {
-			for (CyChartFactory<?> factory: chartMgr.getAllCyChartFactories()) {
+			for (CyCustomGraphics2Factory<?> factory: cg2Mgr.getAllCyCustomGraphics2Factories()) {
 				if (factory.getId() != null && inputValue.startsWith(factory.getId() + ":")) {
 					cg = factory.getInstance(inputValue.substring(factory.getId().length() + 1));
 					break;
 				}
 			}
 		}
-		// CyGradient serialization format?
-		if (cg == null) {
-			for (CyGradientFactory<?> factory: gradMgr.getAllCyGradientFactories()) {
-				if (factory.getId() != null && inputValue.startsWith(factory.getId() + ":")) {
-					cg = factory.getInstance(inputValue.substring(factory.getId().length() + 1));
-					break;
-				}
-			}
-		}
-		// Regular CyCustomGraphics?
+		// Old CyCustomGraphics?
 		if (cg == null) {
 			for (CyCustomGraphicsFactory factory: cgMgr.getAllCustomGraphicsFactories()) {
 				if (factory.getPrefix() != null && inputValue.startsWith(factory.getPrefix() + ":")) {

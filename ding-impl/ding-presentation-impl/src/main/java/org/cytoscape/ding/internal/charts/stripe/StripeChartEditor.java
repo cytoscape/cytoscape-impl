@@ -1,6 +1,6 @@
 package org.cytoscape.ding.internal.charts.stripe;
 
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DATA_COLUMNS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.DATA_COLUMNS;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,8 +18,8 @@ import java.util.TreeSet;
 import javax.swing.JComboBox;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
-import org.cytoscape.ding.internal.charts.ColorScheme;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;

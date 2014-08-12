@@ -20,10 +20,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.ding.customgraphics.Rotation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomPieSectionLabelGenerator;
-import org.cytoscape.ding.internal.charts.Rotation;
 import org.cytoscape.ding.internal.charts.pie.PieLayer;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.RingPlot;
@@ -65,14 +68,15 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
 	@Override
-	public void draw(final Graphics2D g, final Rectangle2D area, final Shape shape) {
+	public void draw(final Graphics2D g, final Shape shape, final CyNetworkView networkView, 
+			final View<? extends CyIdentifiable> view) {
 		getChart(); // Make sure charts have been created
 		
 		if (chartList.size() == 1) {
-			super.draw(g, area, shape);
+			super.draw(g, shape, networkView, view);
 		} else {
 	        for (final JFreeChart chart : chartList) {
-	        	chart.draw(g, area);
+	        	chart.draw(g, shape.getBounds2D());
 	        }
 		}
 	}

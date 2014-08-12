@@ -10,18 +10,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -29,18 +28,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartEditorFactory;
-import org.cytoscape.view.presentation.charts.CyChartFactory;
-import org.cytoscape.view.presentation.charts.CyChartFactoryManager;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.gradients.CyGradient;
-import org.cytoscape.view.presentation.gradients.CyGradientEditorFactory;
-import org.cytoscape.view.presentation.gradients.CyGradientFactory;
-import org.cytoscape.view.presentation.gradients.CyGradientFactoryManager;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
@@ -54,8 +49,7 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	private JTabbedPane cgTypeTpn;
 	private JPanel bottomPnl;
 	private GraphicsPanel graphicsPnl;
-	private ChartPanel chartPnl;
-	private GradientPanel gradientPnl;
+	private Map<String/*group*/, CustomGraphics2Panel> cg2PnlMap;
 	private JButton removeBtn;
 	private JButton cancelBtn;
 	private JButton applyBtn;
@@ -66,20 +60,18 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	private boolean initialized;
 
 	private final CustomGraphicsManager customGraphicsMgr;
-	private final CyChartFactoryManager chartFactoryMgr;
-	private final CyGradientFactoryManager gradientFactoryMgr;
+	private final CyCustomGraphics2Manager customGraphics2Mgr;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public CyCustomGraphicsValueEditor(final CustomGraphicsManager customGraphicsMgr,
-									   final CyChartFactoryManager chartFactoryMgr,
-									   final CyGradientFactoryManager gradientFactoryMgr,
+									   final CyCustomGraphics2Manager customGraphics2Mgr,
 									   final CyServiceRegistrar serviceRegistrar) {
 		this.customGraphicsMgr = customGraphicsMgr;
-		this.chartFactoryMgr = chartFactoryMgr;
-		this.gradientFactoryMgr = gradientFactoryMgr;
+		this.customGraphics2Mgr = customGraphics2Mgr;
 		this.serviceRegistrar = serviceRegistrar;
+		cg2PnlMap = new HashMap<>();
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -129,17 +121,16 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 	
 	private void updateUI() {
 		getGraphicsPnl().updateList();
-		getChartPnl().update();
-		getGradientPnl().update();
+		Component newSelected = getGraphicsPnl();
 		
-		if (oldCustomGraphics instanceof CyChart) {
-			getCgTypeTpn().setSelectedComponent(getChartPnl());
-		} else if (oldCustomGraphics instanceof CyGradient) {
-			getCgTypeTpn().setSelectedComponent(getGradientPnl());
-		} else {
-			getCgTypeTpn().setSelectedComponent(getGraphicsPnl());
+		for (final CustomGraphics2Panel cg2Pnl : cg2PnlMap.values()) {
+			cg2Pnl.update();
+		
+			if (oldCustomGraphics instanceof CyCustomGraphics2 && cg2Pnl.canEdit((CyCustomGraphics2)oldCustomGraphics))
+				newSelected = cg2Pnl;
 		}
 		
+		getCgTypeTpn().setSelectedComponent(newSelected);
 		pack();
 	}
 	
@@ -160,10 +151,8 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		
 		if (c instanceof GraphicsPanel)
 			newCustomGraphics = ((GraphicsPanel)c).getCustomGraphics();
-		else if (c instanceof ChartPanel)
-			newCustomGraphics = ((ChartPanel)c).getChart();
-		else if (c instanceof GradientPanel)
-			newCustomGraphics = ((GradientPanel)c).getGradient();
+		else if (c instanceof CustomGraphics2Panel)
+			newCustomGraphics = ((CustomGraphics2Panel)c).getCustomGraphics2();
 		
 		dispose();
 	}
@@ -172,8 +161,9 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		if (cgTypeTpn == null) {
 			cgTypeTpn = new JTabbedPane();
 			cgTypeTpn.addTab("Images", getGraphicsPnl());
-			cgTypeTpn.addTab("Charts", getChartPnl());
-			cgTypeTpn.addTab("Gradients", getGradientPnl());
+			
+			for (final String group : customGraphics2Mgr.getGroups())
+				cgTypeTpn.addTab(group, getCG2Pnl(group));
 		}
 		
 		return cgTypeTpn;
@@ -201,22 +191,16 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		return graphicsPnl;
 	}
 	
-	private ChartPanel getChartPnl() {
-		if (chartPnl == null) {
-			chartPnl = new ChartPanel();
-			chartPnl.setOpaque(false);
+	private CustomGraphics2Panel getCG2Pnl(final String group) {
+		CustomGraphics2Panel cg2Pnl = cg2PnlMap.get(group);
+		
+		if (cg2Pnl == null) {
+			cg2Pnl = new CustomGraphics2Panel(group);
+			cg2Pnl.setOpaque(false);
+			cg2PnlMap.put(group, cg2Pnl);
 		}
 		
-		return chartPnl;
-	}
-	
-	public GradientPanel getGradientPnl() {
-		if (gradientPnl == null) {
-			gradientPnl = new GradientPanel();
-			gradientPnl.setOpaque(false);
-		}
-		
-		return gradientPnl;
+		return cg2Pnl;
 	}
 	
 	public JButton getRemoveBtn() {
@@ -306,83 +290,99 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 		}
 	}
 	
-	private class ChartPanel extends JPanel {
+	private class CustomGraphics2Panel extends JPanel {
 		
 		private static final long serialVersionUID = 6669567626195325838L;
 
-		static final int CHART_ICON_SIZE = 18;
+		static final int ICON_SIZE = 18;
 		
-		private CyChart chart;
-		private boolean updatingChartTypes;
+		private final String group;
+		Collection<CyCustomGraphics2Factory<? extends CustomGraphicLayer>> supportedFactories = Collections.emptyList();
+		private CyCustomGraphics2 cg2;
+		private boolean updatingTypes;
 		
 		private JTabbedPane chartTypeTpn;
-		
-		public ChartPanel() {
+
+		public CustomGraphics2Panel(final String group) {
+			this.group = group;
 			this.setLayout(new BorderLayout());
 			this.add(getChartTypeTpn(), BorderLayout.CENTER);
 		}
 		
-		@SuppressWarnings("rawtypes")
-		void update() {
-			CyChartFactory factory = null;
-			
-			if (oldCustomGraphics instanceof CyChart) {
-				factory = chartFactoryMgr.getCyChartFactory((Class<CyChart<?>>)oldCustomGraphics.getClass());
-
-				if (factory != null)
-					chart = factory.getInstance((CyChart)oldCustomGraphics);
-			}
-			
-			updateChartTypes();
-		}
-
-		CyChart getChart() {
-			return chart;
+		public String getGroup() {
+			return group;
 		}
 		
-		private void updateChartTypes() {
-			updatingChartTypes = true;
-			ChartEditorPane selectedEditorPn = null;
+		boolean canEdit(final CyCustomGraphics2 cg2) {
+			for (final CyCustomGraphics2Factory<?> cf : supportedFactories) {
+				if (cf.getSupportedClass().isAssignableFrom(cg2.getClass()))
+					return true;
+			}
+			
+			return false;
+		}
+		
+		@SuppressWarnings("rawtypes")
+		void update() {
+			supportedFactories = customGraphics2Mgr.getCyCustomGraphics2Factories(group);
+			CyCustomGraphics2Factory factory = null;
+			
+			if (oldCustomGraphics instanceof CyCustomGraphics2) {
+				factory = customGraphics2Mgr.getCyCustomGraphics2Factory((Class<CyCustomGraphics2<?>>)oldCustomGraphics.getClass());
+
+				if (factory != null)
+					cg2 = factory.getInstance((CyCustomGraphics2)oldCustomGraphics);
+			}
+			
+			updateTypes();
+		}
+
+		CyCustomGraphics2 getCustomGraphics2() {
+			return cg2;
+		}
+		
+		private void updateTypes() {
+			updatingTypes = true;
+			Cg2EditorPane selectedEditorPn = null;
 			int maxWidth = 100;
 			
 			try {
 				getChartTypeTpn().removeAll();
 				
-				final Collection<CyChartFactory<?>> chartFactories = chartFactoryMgr.getAllCyChartFactories();
-				
-				for (final CyChartFactory<?> cf : chartFactories) {
-					final CyChartEditorFactory<? extends CustomGraphicLayer> cef = 
-							chartFactoryMgr.getCyChartEditorFactory(cf.getSupportedClass());
-					final ChartEditorPane chartEditorPn = new ChartEditorPane(cf, cef);
+				for (final CyCustomGraphics2Factory<?> cf : supportedFactories) {
+					final CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> cef = 
+							customGraphics2Mgr.getCyCustomGraphics2EditorFactory(cf.getSupportedClass());
+					final Cg2EditorPane cg2EditorPn = new Cg2EditorPane(cf, cef);
+					final Icon icon = cf.getIcon(ICON_SIZE, ICON_SIZE);
 					getChartTypeTpn().addTab(
-							"", 
-							cf.getIcon(CHART_ICON_SIZE, CHART_ICON_SIZE), 
-							chartEditorPn,
+							icon == null ? cf.getDisplayName() : "", 
+							icon, 
+							cg2EditorPn,
 							cf.getDisplayName());
 					
-					CyChart<?> initialChart = null;
+					CyCustomGraphics2<?> initialChart = null;
 					
-					if (chart != null) {
-						if (cf.getSupportedClass().isAssignableFrom(chart.getClass())) {
-							selectedEditorPn = chartEditorPn;
-							initialChart = chart;
+					if (cg2 != null) {
+						if (cf.getSupportedClass().isAssignableFrom(cg2.getClass())) {
+							selectedEditorPn = cg2EditorPn;
+							initialChart = cg2;
 						} else {
-							initialChart = cf.getInstance(chart.getProperties());
+							initialChart = cf.getInstance(cg2.getProperties());
 						}
 					} else {
 						initialChart = cf.getInstance(new HashMap<String, Object>());
 					}
 					
-					if (chart == null)
-						chart = initialChart;
+					if (cg2 == null)
+						cg2 = initialChart;
 					
 					if (initialChart != null) // Just so this panel's dimensions are set correctly
-						chartEditorPn.update(initialChart);
+						cg2EditorPn.update(initialChart);
 					
-					maxWidth = Math.max(maxWidth, chartEditorPn.getPreferredSize().width);
+					maxWidth = Math.max(maxWidth, cg2EditorPn.getPreferredSize().width);
 				}
 			} finally {
-				updatingChartTypes = false;
+				updatingTypes = false;
 			}
 			
 			if (selectedEditorPn != null)
@@ -397,18 +397,18 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 				chartTypeTpn.addChangeListener(new ChangeListener() {
 					@Override
 					public void stateChanged(ChangeEvent e) {
-						if (updatingChartTypes) return;
+						if (updatingTypes) return;
 						
 						final Component c = chartTypeTpn.getSelectedComponent();
 						
-						if (c instanceof ChartEditorPane) {
-							final CyChartFactory<?> cf = ((ChartEditorPane)c).getChartFactory();
+						if (c instanceof Cg2EditorPane) {
+							final CyCustomGraphics2Factory<?> cf = ((Cg2EditorPane)c).getFactory();
 							
-							if (chart == null || !cf.getSupportedClass().isAssignableFrom(chart.getClass()))
-								chart = cf.getInstance(
-										chart != null ? chart.getProperties() : new HashMap<String, Object>());
+							if (cg2 == null || !cf.getSupportedClass().isAssignableFrom(cg2.getClass()))
+								cg2 = cf.getInstance(
+										cg2 != null ? cg2.getProperties() : new HashMap<String, Object>());
 								
-							((ChartEditorPane)c).update(chart);
+							((Cg2EditorPane)c).update(cg2);
 						}
 					}
 				});
@@ -417,143 +417,40 @@ public class CyCustomGraphicsValueEditor extends JDialog implements ValueEditor<
 			return chartTypeTpn;
 		}
 		
-		private class ChartEditorPane extends JScrollPane {
+		private class Cg2EditorPane extends JScrollPane {
 			
 			private static final long serialVersionUID = -5023596235150818148L;
 			
-			private final CyChartFactory<?> chartFactory;
-			private final CyChartEditorFactory<? extends CustomGraphicLayer> editorFactory;
+			private final CyCustomGraphics2Factory<?> factory;
+			private final CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> editorFactory;
 			private JComponent editor;
 
-			ChartEditorPane(final CyChartFactory<?> chartFactory,
-							final CyChartEditorFactory<? extends CustomGraphicLayer> editorFactory) {
-				this.chartFactory = chartFactory;
+			Cg2EditorPane(final CyCustomGraphics2Factory<?> factory,
+						  final CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> editorFactory) {
+				this.factory = factory;
 				this.editorFactory = editorFactory;
 				this.setBorder(BorderFactory.createEmptyBorder());
 				this.setOpaque(false);
 				this.getViewport().setOpaque(false);
 			}
 			
-			void update(CyChart chart) {
-				editor = editorFactory.createEditor(chart);
+			void update(CyCustomGraphics2 cg2) {
+				editor = editorFactory.createEditor(cg2);
 				this.setViewportView(editor);
 				this.updateUI();
 			}
 			
-			CyChartFactory<?> getChartFactory() {
-				return chartFactory;
+			CyCustomGraphics2Factory<?> getFactory() {
+				return factory;
 			}
 			
-			CyChartEditorFactory<? extends CustomGraphicLayer> getEditorFactory() {
+			CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> getEditorFactory() {
 				return editorFactory;
 			}
 			
 			JComponent getEditor() {
 				return editor;
 			}
-		}
-	}
-	
-	private class GradientPanel extends JPanel {
-
-		private static final long serialVersionUID = 740722017387521227L;
-		
-		private JComboBox gradientTypeCmb;
-		private JComponent editor;
-		
-		private CyGradient<?> gradient;
-		private boolean updatingGradientTypes;
-		
-		@SuppressWarnings("serial")
-		GradientPanel() {
-			this.setLayout(new BorderLayout());
-			
-			gradientTypeCmb = new JComboBox(new DefaultComboBoxModel());
-			gradientTypeCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if (!updatingGradientTypes) {
-						if (editor != null)
-							GradientPanel.this.remove(editor);
-						
-						final CyGradientFactory factory = (CyGradientFactory) gradientTypeCmb.getSelectedItem();
-						
-						if (factory != null) {
-							if (oldCustomGraphics != null &&
-									factory.getSupportedClass().isAssignableFrom(oldCustomGraphics.getClass()))
-								gradient = factory.getInstance((CyGradient)oldCustomGraphics);
-							else if (oldCustomGraphics instanceof CyGradient)
-								gradient = factory.getInstance(((CyGradient)oldCustomGraphics).getProperties());
-							else
-								gradient = factory.getInstance("");
-							
-							final CyGradientEditorFactory gef =
-									gradientFactoryMgr.getCyGradientEditorFactory(factory.getSupportedClass());
-							
-							if (gef != null) {
-								editor = gef.createEditor(gradient);
-								GradientPanel.this.add(editor);
-							}
-						}
-					}
-				}
-			});
-			gradientTypeCmb.setRenderer(new DefaultListCellRenderer() {
-				@Override
-				public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-						boolean cellHasFocus) {
-					if (value == null)
-						this.setText("-- none --");
-					else if (value instanceof CyGradientFactory)
-						this.setText(((CyGradientFactory<?>)value).getDisplayName());
-					else
-						this.setText("[ invalid gradient type ]"); // Should never happen
-					
-					return this;
-				}
-			});
-			
-			this.add(gradientTypeCmb, BorderLayout.NORTH);
-		}
-		
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		void update() {
-			if (oldCustomGraphics instanceof CyGradient) {
-				final CyGradientFactory factory =
-						gradientFactoryMgr.getCyGradientFactory((Class<CyGradient<?>>)oldCustomGraphics.getClass());
-
-				if (factory != null)
-					gradient = factory.getInstance((CyGradient<?>)oldCustomGraphics);
-			}
-			
-			updateGradientTypes();
-		}
-		
-		CyGradient<?> getGradient() {
-			return gradient;
-		}
-		
-		@SuppressWarnings("rawtypes")
-		private void updateGradientTypes() {
-			final Collection<CyGradientFactory<?>> factories = gradientFactoryMgr.getAllCyGradientFactories();
-			CyGradientFactory selectedFactory = factories.isEmpty() ? null : factories.iterator().next();
-			updatingGradientTypes = true;
-			
-			final DefaultComboBoxModel cmbModel = (DefaultComboBoxModel) gradientTypeCmb.getModel();
-			cmbModel.removeAllElements();
-			
-			try {
-				for (final CyGradientFactory<?> gf : factories) {
-					cmbModel.addElement(gf);
-					
-					if (gradient != null && gf.getSupportedClass().isAssignableFrom(gradient.getClass()))
-						selectedFactory = gf;
-				}
-			} finally {
-				updatingGradientTypes = false;
-			}
-			
-			gradientTypeCmb.setSelectedItem(selectedFactory);
 		}
 	}
 }

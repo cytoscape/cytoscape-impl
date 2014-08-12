@@ -2,18 +2,18 @@ package org.cytoscape.ding.internal.gradients.linear;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.view.presentation.gradients.CyGradient;
-import org.cytoscape.view.presentation.gradients.CyGradientEditorFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
 
-public class LinearGradientEditorFactory implements CyGradientEditorFactory<LinearGradientLayer> {
+public class LinearGradientEditorFactory implements CyCustomGraphics2EditorFactory<LinearGradientLayer> {
 
 	@Override
-	public JComponent createEditor(final CyGradient<LinearGradientLayer> gradient) {
+	public JComponent createEditor(final CyCustomGraphics2<LinearGradientLayer> gradient) {
 		return new LinearGradientEditor((LinearGradient)gradient);
 	}
 
 	@Override
-	public Class<? extends CyGradient<LinearGradientLayer>> getSupportedClass() {
+	public Class<? extends CyCustomGraphics2<LinearGradientLayer>> getSupportedClass() {
 		return LinearGradient.class;
 	}
 }

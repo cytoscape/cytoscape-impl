@@ -1,4 +1,4 @@
-package org.cytoscape.ding.internal.charts;
+package org.cytoscape.ding.customgraphics;
 
 import java.awt.Color;
 import java.util.ArrayList;

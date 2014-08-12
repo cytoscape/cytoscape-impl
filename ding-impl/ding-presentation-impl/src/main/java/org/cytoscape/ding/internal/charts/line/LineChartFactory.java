@@ -5,11 +5,11 @@ import java.util.Map;
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class LineChartFactory implements CyChartFactory<LineLayer> {
+public class LineChartFactory implements CyCustomGraphics2Factory<LineLayer> {
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -18,17 +18,17 @@ public class LineChartFactory implements CyChartFactory<LineLayer> {
 	}
 	
 	@Override
-	public CyChart<LineLayer> getInstance(final String input) {
+	public CyCustomGraphics2<LineLayer> getInstance(final String input) {
 		return new LineChart(input, colIdFactory);
 	}
 
 	@Override
-	public CyChart<LineLayer> getInstance(final CyChart<LineLayer> chart) {
+	public CyCustomGraphics2<LineLayer> getInstance(final CyCustomGraphics2<LineLayer> chart) {
 		return new LineChart((LineChart)chart, colIdFactory);
 	}
 	
 	@Override
-	public CyChart<LineLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<LineLayer> getInstance(final Map<String, Object> properties) {
 		return new LineChart(properties, colIdFactory);
 	}
 
@@ -38,7 +38,7 @@ public class LineChartFactory implements CyChartFactory<LineLayer> {
 	}
 	
 	@Override
-	public Class<? extends CyChart<LineLayer>> getSupportedClass() {
+	public Class<? extends CyCustomGraphics2<LineLayer>> getSupportedClass() {
 		return LineChart.class;
 	}
 

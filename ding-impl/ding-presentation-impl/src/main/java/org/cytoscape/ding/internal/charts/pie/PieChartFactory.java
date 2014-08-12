@@ -5,11 +5,11 @@ import java.util.Map;
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class PieChartFactory  implements CyChartFactory<PieLayer> {
+public class PieChartFactory  implements CyCustomGraphics2Factory<PieLayer> {
 
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -18,17 +18,17 @@ public class PieChartFactory  implements CyChartFactory<PieLayer> {
 	}
 	
 	@Override
-	public CyChart<PieLayer> getInstance(final String input) {
+	public CyCustomGraphics2<PieLayer> getInstance(final String input) {
 		return new PieChart(input, colIdFactory);
 	}
 
 	@Override
-	public CyChart<PieLayer> getInstance(final CyChart<PieLayer> chart) {
+	public CyCustomGraphics2<PieLayer> getInstance(final CyCustomGraphics2<PieLayer> chart) {
 		return new PieChart((PieChart)chart, colIdFactory);
 	}
 	
 	@Override
-	public CyChart<PieLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<PieLayer> getInstance(final Map<String, Object> properties) {
 		return new PieChart(properties, colIdFactory);
 	}
 
@@ -38,7 +38,7 @@ public class PieChartFactory  implements CyChartFactory<PieLayer> {
 	}
 	
 	@Override
-	public Class<? extends CyChart<PieLayer>> getSupportedClass() {
+	public Class<? extends CyCustomGraphics2<PieLayer>> getSupportedClass() {
 		return PieChart.class;
 	}
 

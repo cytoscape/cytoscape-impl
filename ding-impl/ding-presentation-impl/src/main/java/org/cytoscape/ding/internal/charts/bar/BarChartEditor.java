@@ -1,10 +1,10 @@
 package org.cytoscape.ding.internal.charts.bar;
 
-import static org.cytoscape.ding.internal.charts.ColorScheme.CONTRASTING;
-import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
-import static org.cytoscape.ding.internal.charts.ColorScheme.MODULATED;
-import static org.cytoscape.ding.internal.charts.ColorScheme.RAINBOW;
-import static org.cytoscape.ding.internal.charts.ColorScheme.RANDOM;
+import static org.cytoscape.ding.customgraphics.ColorScheme.CONTRASTING;
+import static org.cytoscape.ding.customgraphics.ColorScheme.CUSTOM;
+import static org.cytoscape.ding.customgraphics.ColorScheme.MODULATED;
+import static org.cytoscape.ding.customgraphics.ColorScheme.RAINBOW;
+import static org.cytoscape.ding.customgraphics.ColorScheme.RANDOM;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -23,8 +23,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
-import org.cytoscape.ding.internal.charts.ColorScheme;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;

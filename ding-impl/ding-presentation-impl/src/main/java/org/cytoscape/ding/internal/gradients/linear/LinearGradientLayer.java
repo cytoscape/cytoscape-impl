@@ -118,10 +118,10 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 			start = new Point2D.Double(cx, y1);
 			end = new Point2D.Double(cx, y2);
 		} else {
-			// To understand what it does here, see
-			// https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient
-			// and
-			// http://hugogiraudel.com/blog/css-gradients
+			// To understand what it does here, see:
+			//   https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient
+			//   http://hugogiraudel.com/blog/css-gradients
+			//   http://codepen.io/thebabydino/pen/qgoBL
 			
 			double ax;
 			double ay;

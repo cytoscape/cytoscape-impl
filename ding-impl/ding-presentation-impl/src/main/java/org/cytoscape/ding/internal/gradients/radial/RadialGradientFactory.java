@@ -2,23 +2,25 @@ package org.cytoscape.ding.internal.gradients.radial;
 
 import java.util.Map;
 
-import org.cytoscape.view.presentation.gradients.CyGradient;
-import org.cytoscape.view.presentation.gradients.CyGradientFactory;
+import javax.swing.Icon;
 
-public class RadialGradientFactory implements CyGradientFactory<RadialGradientLayer> {
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+
+public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGradientLayer> {
 	
 	@Override
-	public CyGradient<RadialGradientLayer> getInstance(final String input) {
+	public CyCustomGraphics2<RadialGradientLayer> getInstance(final String input) {
 		return new RadialGradient(input);
 	}
 
 	@Override
-	public CyGradient<RadialGradientLayer> getInstance(final CyGradient<RadialGradientLayer> gradient) {
+	public CyCustomGraphics2<RadialGradientLayer> getInstance(final CyCustomGraphics2<RadialGradientLayer> gradient) {
 		return new RadialGradient((RadialGradient)gradient);
 	}
 
 	@Override
-	public CyGradient<RadialGradientLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<RadialGradientLayer> getInstance(final Map<String, Object> properties) {
 		return new RadialGradient(properties);
 	}
 
@@ -33,7 +35,12 @@ public class RadialGradientFactory implements CyGradientFactory<RadialGradientLa
 	}
 	
 	@Override
-	public Class<? extends CyGradient<RadialGradientLayer>> getSupportedClass() {
+	public Icon getIcon(int width, int height) {
+		return null;
+	}
+	
+	@Override
+	public Class<? extends CyCustomGraphics2<RadialGradientLayer>> getSupportedClass() {
 		return RadialGradient.class;
 	}
 	

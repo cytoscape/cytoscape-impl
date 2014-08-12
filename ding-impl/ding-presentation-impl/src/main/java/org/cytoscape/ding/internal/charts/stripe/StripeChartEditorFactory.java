@@ -4,11 +4,11 @@ import javax.swing.JComponent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.util.IconManager;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartEditorFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class StripeChartEditorFactory implements CyChartEditorFactory<StripeLayer> {
+public class StripeChartEditorFactory implements CyCustomGraphics2EditorFactory<StripeLayer> {
 
 	private final CyApplicationManager appMgr;
 	private final IconManager iconMgr;
@@ -22,12 +22,12 @@ public class StripeChartEditorFactory implements CyChartEditorFactory<StripeLaye
 	}
 	
 	@Override
-	public Class<? extends CyChart<StripeLayer>> getSupportedClass() {
-		return (Class<? extends CyChart<StripeLayer>>) StripeChart.class;
+	public Class<? extends CyCustomGraphics2<StripeLayer>> getSupportedClass() {
+		return (Class<? extends CyCustomGraphics2<StripeLayer>>) StripeChart.class;
 	}
 
 	@Override
-	public JComponent createEditor(final CyChart<StripeLayer> chart) {
+	public JComponent createEditor(final CyCustomGraphics2<StripeLayer> chart) {
 		return new StripeChartEditor((StripeChart)chart, appMgr, iconMgr, colIdFactory);
 	}
 }

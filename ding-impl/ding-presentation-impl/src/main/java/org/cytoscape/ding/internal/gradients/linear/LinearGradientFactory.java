@@ -2,23 +2,25 @@ package org.cytoscape.ding.internal.gradients.linear;
 
 import java.util.Map;
 
-import org.cytoscape.view.presentation.gradients.CyGradient;
-import org.cytoscape.view.presentation.gradients.CyGradientFactory;
+import javax.swing.Icon;
 
-public class LinearGradientFactory implements CyGradientFactory<LinearGradientLayer> {
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+
+public class LinearGradientFactory implements CyCustomGraphics2Factory<LinearGradientLayer> {
 	
 	@Override
-	public CyGradient<LinearGradientLayer> getInstance(final String input) {
+	public CyCustomGraphics2<LinearGradientLayer> getInstance(final String input) {
 		return new LinearGradient(input);
 	}
 
 	@Override
-	public CyGradient<LinearGradientLayer> getInstance(final CyGradient<LinearGradientLayer> gradient) {
+	public CyCustomGraphics2<LinearGradientLayer> getInstance(final CyCustomGraphics2<LinearGradientLayer> gradient) {
 		return new LinearGradient((LinearGradient)gradient);
 	}
 
 	@Override
-	public CyGradient<LinearGradientLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<LinearGradientLayer> getInstance(final Map<String, Object> properties) {
 		return new LinearGradient(properties);
 	}
 
@@ -33,7 +35,12 @@ public class LinearGradientFactory implements CyGradientFactory<LinearGradientLa
 	}
 	
 	@Override
-	public Class<? extends CyGradient<LinearGradientLayer>> getSupportedClass() {
+	public Icon getIcon(int width, int height) {
+		return null;
+	}
+	
+	@Override
+	public Class<? extends CyCustomGraphics2<LinearGradientLayer>> getSupportedClass() {
 		return LinearGradient.class;
 	}
 	

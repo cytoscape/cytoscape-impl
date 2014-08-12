@@ -71,6 +71,9 @@ import org.cytoscape.graph.render.immed.nodeshape.RectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
@@ -2058,7 +2061,8 @@ public final class GraphGraphics {
 	 * @param scaleFactor
 	 *            current zoom factor.
 	 */
-	public final void drawCustomGraphicFull(final Shape nodeShape, final CustomGraphicLayer cg,
+	public final void drawCustomGraphicFull(final CyNetworkView netView, final View<? extends CyIdentifiable> view,
+											final Shape nodeShape, final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset, final double scaleFactor) {
 		if (m_debug) {
 			checkDispatchThread();
@@ -2081,7 +2085,7 @@ public final class GraphGraphics {
 			m_g2d.fill(shape);
 		} else if (cg instanceof Cy2DGraphicLayer) {
 			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
-			layer.draw(m_g2d, nodeShape.getBounds2D(), nodeShape);
+			layer.draw(m_g2d, nodeShape, netView, view);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
 			m_g2d.translate(xOffset, yOffset);
 			Rectangle2D b = cg.getBounds2D();

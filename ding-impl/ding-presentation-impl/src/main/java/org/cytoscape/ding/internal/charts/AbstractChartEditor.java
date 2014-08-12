@@ -1,12 +1,12 @@
 package org.cytoscape.ding.internal.charts;
 
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.*;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.ORIENTATION;
-import static org.cytoscape.ding.internal.charts.ColorScheme.CONTRASTING;
-import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
-import static org.cytoscape.ding.internal.charts.ColorScheme.MODULATED;
-import static org.cytoscape.ding.internal.charts.ColorScheme.RAINBOW;
-import static org.cytoscape.ding.internal.charts.ColorScheme.RANDOM;
+import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.ORIENTATION;
+import static org.cytoscape.ding.customgraphics.ColorScheme.CONTRASTING;
+import static org.cytoscape.ding.customgraphics.ColorScheme.CUSTOM;
+import static org.cytoscape.ding.customgraphics.ColorScheme.MODULATED;
+import static org.cytoscape.ding.customgraphics.ColorScheme.RAINBOW;
+import static org.cytoscape.ding.customgraphics.ColorScheme.RANDOM;
+import static org.cytoscape.ding.internal.charts.AbstractChart.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -61,6 +61,9 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
+import org.cytoscape.ding.customgraphics.ColorScheme;
+import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
@@ -74,7 +77,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public abstract class AbstractChartEditor<T extends AbstractEnhancedCustomGraphics<?>> extends JPanel {
+public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
 
 	private static final long serialVersionUID = 2022740799541917592L;
 	

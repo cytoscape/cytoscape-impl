@@ -5,11 +5,11 @@ import java.util.Map;
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class BarChartFactory implements CyChartFactory<BarLayer> {
+public class BarChartFactory implements CyCustomGraphics2Factory<BarLayer> {
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -18,17 +18,17 @@ public class BarChartFactory implements CyChartFactory<BarLayer> {
 	}
 
 	@Override
-	public CyChart<BarLayer> getInstance(final String input) {
+	public CyCustomGraphics2<BarLayer> getInstance(final String input) {
 		return new BarChart(input, colIdFactory);
 	}
 
 	@Override
-	public CyChart<BarLayer> getInstance(final CyChart<BarLayer> chart) {
+	public CyCustomGraphics2<BarLayer> getInstance(final CyCustomGraphics2<BarLayer> chart) {
 		return new BarChart((BarChart)chart, colIdFactory);
 	}
 	
 	@Override
-	public CyChart<BarLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<BarLayer> getInstance(final Map<String, Object> properties) {
 		return new BarChart(properties, colIdFactory);
 	}
 
@@ -38,7 +38,7 @@ public class BarChartFactory implements CyChartFactory<BarLayer> {
 	}
 	
 	@Override
-	public Class<? extends CyChart<BarLayer>> getSupportedClass() {
+	public Class<? extends CyCustomGraphics2<BarLayer>> getSupportedClass() {
 		return BarChart.class;
 	}
 

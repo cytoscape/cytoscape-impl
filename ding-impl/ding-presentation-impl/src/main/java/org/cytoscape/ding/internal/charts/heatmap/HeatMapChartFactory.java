@@ -5,11 +5,11 @@ import java.util.Map;
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class HeatMapChartFactory implements CyChartFactory<HeatMapLayer> {
+public class HeatMapChartFactory implements CyCustomGraphics2Factory<HeatMapLayer> {
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -18,17 +18,17 @@ public class HeatMapChartFactory implements CyChartFactory<HeatMapLayer> {
 	}
 	
 	@Override
-	public CyChart<HeatMapLayer> getInstance(final String input) {
+	public CyCustomGraphics2<HeatMapLayer> getInstance(final String input) {
 		return new HeatMapChart(input, colIdFactory);
 	}
 
 	@Override
-	public CyChart<HeatMapLayer> getInstance(final CyChart<HeatMapLayer> chart) {
+	public CyCustomGraphics2<HeatMapLayer> getInstance(final CyCustomGraphics2<HeatMapLayer> chart) {
 		return new HeatMapChart((HeatMapChart)chart, colIdFactory);
 	}
 	
 	@Override
-	public CyChart<HeatMapLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<HeatMapLayer> getInstance(final Map<String, Object> properties) {
 		return new HeatMapChart(properties, colIdFactory);
 	}
 
@@ -38,7 +38,7 @@ public class HeatMapChartFactory implements CyChartFactory<HeatMapLayer> {
 	}
 	
 	@Override
-	public Class<? extends CyChart<HeatMapLayer>> getSupportedClass() {
+	public Class<? extends CyCustomGraphics2<HeatMapLayer>> getSupportedClass() {
 		return HeatMapChart.class;
 	}
 

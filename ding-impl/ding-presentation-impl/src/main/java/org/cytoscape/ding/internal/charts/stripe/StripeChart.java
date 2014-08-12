@@ -15,8 +15,8 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
-import org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics;
-import org.cytoscape.ding.internal.charts.Orientation;
+import org.cytoscape.ding.customgraphics.Orientation;
+import org.cytoscape.ding.internal.charts.AbstractChart;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -30,7 +30,7 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
 /**
  * 
  */
-public class StripeChart extends AbstractChartCustomGraphics<StripeLayer> {
+public class StripeChart extends AbstractChart<StripeLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.StripeChart";
 	public static final String DISPLAY_NAME = "Stripe Chart";

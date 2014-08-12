@@ -863,9 +863,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public NodeView removeNodeView(long nodeInx) {
 		final List<CyEdge> hiddenEdgeInx;
 		final DNodeView returnThis;
-		final CyNode nnode;
-
-		nnode = model.getNode(nodeInx);
+		final CyNode nnode = model.getNode(nodeInx);
 		returnThis = (DNodeView) nodeViewMap.get(nnode);
 		if (returnThis == null) {
 			return null;
@@ -1789,7 +1787,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// synchronized (m_lock) {
 		try {
 			// System.out.println("Calling renderGraph to draw snapshot");
-			GraphRenderer.renderGraph(m_drawPersp, dummySpacialFactory.createSpacialIndex2D(), lod, m_nodeDetails,
+			GraphRenderer.renderGraph(this, dummySpacialFactory.createSpacialIndex2D(), lod, m_nodeDetails,
 			                          m_edgeDetails, m_hash, new GraphGraphics(img, false, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor, haveZOrder);
 		} catch (Exception e) { e.printStackTrace(); }
@@ -1859,7 +1857,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		int lastRenderDetail = 0;
 		try {
 		// synchronized (m_lock) {
-			lastRenderDetail = GraphRenderer.renderGraph(net, sub_spacial, lod, m_nodeDetails,
+			lastRenderDetail = GraphRenderer.renderGraph(this, sub_spacial, lod, m_nodeDetails,
  			                                             m_edgeDetails, hash, graphics, bg, xCenter,
  			                                             yCenter, scale, haveZOrder);
 		// }
@@ -1880,7 +1878,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// Thread.dumpStack();
 		try {
 		synchronized (m_lock) {
-			lastRenderDetail = GraphRenderer.renderGraph(m_drawPersp,
+			lastRenderDetail = GraphRenderer.renderGraph(this,
 									       m_spacial, lod,
 									       m_nodeDetails,
 									       m_edgeDetails, hash,

@@ -4,11 +4,11 @@ import javax.swing.JComponent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.util.IconManager;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartEditorFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class RingChartEditorFactory implements CyChartEditorFactory<RingLayer> {
+public class RingChartEditorFactory implements CyCustomGraphics2EditorFactory<RingLayer> {
 
 	private final CyApplicationManager appMgr;
 	private final IconManager iconMgr;
@@ -22,12 +22,12 @@ public class RingChartEditorFactory implements CyChartEditorFactory<RingLayer> {
 	}
 	
 	@Override
-	public Class<? extends CyChart<RingLayer>> getSupportedClass() {
-		return (Class<? extends CyChart<RingLayer>>) RingChart.class;
+	public Class<? extends CyCustomGraphics2<RingLayer>> getSupportedClass() {
+		return (Class<? extends CyCustomGraphics2<RingLayer>>) RingChart.class;
 	}
 
 	@Override
-	public JComponent createEditor(final CyChart<RingLayer> chart) {
+	public JComponent createEditor(final CyCustomGraphics2<RingLayer> chart) {
 		return new RingChartEditor((RingChart)chart, appMgr, iconMgr, colIdFactory);
 	}
 }

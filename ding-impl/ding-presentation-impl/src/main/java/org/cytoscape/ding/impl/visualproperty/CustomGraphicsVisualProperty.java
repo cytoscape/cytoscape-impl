@@ -26,19 +26,16 @@ package org.cytoscape.ding.impl.visualproperty;
  */
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
+import org.cytoscape.ding.customgraphics.CyCustomGraphics2ManagerImpl;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
-import org.cytoscape.ding.internal.charts.CyChartFactoryManagerImpl;
-import org.cytoscape.ding.internal.gradients.CyGradientFactoryManagerImpl;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
-import org.cytoscape.view.presentation.gradients.CyGradient;
-import org.cytoscape.view.presentation.gradients.CyGradientFactory;
 
 @SuppressWarnings("rawtypes")
 public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCustomGraphics> {
@@ -53,7 +50,7 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 
 	@Override
 	public String toSerializableString(final CyCustomGraphics value) {
-		if (value instanceof CyChart || value instanceof CyGradient)
+		if (value instanceof CyCustomGraphics2 || value instanceof CyCustomGraphics2)
 			return value.toSerializableString();
 		
 		return value.getClass().getCanonicalName()+","+value.toSerializableString();
@@ -72,20 +69,20 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 			String[] parts = value.split(":");
 			int offset = value.indexOf(":"); // Skip over the chart/gradient factory id
 			
-			// First check if it's a CyChart
+			// First check if it's a CyCustomGraphics2
 			// ------------------------------
 			// This is hack, but we've got no other way to get our hands on the
-			// CyChartFactoryManager this way, because the DVisualLexicon is created statically
-			final CyChartFactoryManagerImpl cfMgr = CyChartFactoryManagerImpl.getInstance();
-			final CyChartFactory<? extends CustomGraphicLayer> chartFactory = cfMgr.getCyChartFactory(parts[0]);
+			// CyCustomGraphics2Manager this way, because the DVisualLexicon is created statically
+			final CyCustomGraphics2ManagerImpl cfMgr = CyCustomGraphics2ManagerImpl.getInstance();
+			final CyCustomGraphics2Factory<? extends CustomGraphicLayer> chartFactory = cfMgr.getCyCustomGraphics2Factory(parts[0]);
 			
 			if (chartFactory != null) {
 				cg = (CyCustomGraphics<CustomGraphicLayer>) chartFactory.getInstance(value.substring(offset + 1));
 			} else {
-				// Then check if it's a CyGradient
+				// Then check if it's a CyCustomGraphics2
 				// -------------------------------
-				final CyGradientFactoryManagerImpl cgMgr = CyGradientFactoryManagerImpl.getInstance();
-				final CyGradientFactory<? extends CustomGraphicLayer> gradFactory = cgMgr.getCyGradientFactory(parts[0]);
+				final CyCustomGraphics2ManagerImpl cgMgr = CyCustomGraphics2ManagerImpl.getInstance();
+				final CyCustomGraphics2Factory<? extends CustomGraphicLayer> gradFactory = cgMgr.getCyCustomGraphics2Factory(parts[0]);
 				
 				if (gradFactory != null)
 					cg = (CyCustomGraphics<CustomGraphicLayer>) gradFactory.getInstance(value.substring(offset + 1));

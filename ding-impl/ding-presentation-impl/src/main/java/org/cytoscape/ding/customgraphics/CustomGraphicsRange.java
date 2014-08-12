@@ -30,9 +30,8 @@ import java.util.TreeSet;
 
 import org.cytoscape.ding.customgraphicsmgr.internal.CGComparator;
 import org.cytoscape.view.model.DiscreteRange;
-import org.cytoscape.view.presentation.charts.CyChart;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.gradients.CyGradient;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 
 @SuppressWarnings("rawtypes")
 public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
@@ -72,7 +71,7 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 	@Override
 	public boolean inRange(CyCustomGraphics value) {
 		// CyCharts don't have to be added to the manager
-		return value instanceof CyChart || value instanceof CyGradient
+		return value instanceof CyCustomGraphics2
 				|| value == NullCustomGraphics.getNullObject()
 				|| manager.getAllCustomGraphics().contains(value);
 	}

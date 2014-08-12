@@ -1,4 +1,4 @@
-package org.cytoscape.ding.internal.charts;
+package org.cytoscape.ding.customgraphics;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.cytoscape.ding.internal.charts.ControlPoint;
+import org.cytoscape.ding.internal.charts.ViewUtils;
 import org.cytoscape.ding.internal.charts.ViewUtils.Position;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * 
  */
-public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLayer> implements CyCustomGraphics<T> {
+public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> implements CyCustomGraphics2<T> {
 
 	public static final String POSITION = "position";
 	public static final String SCALE = "scale";
@@ -50,7 +52,7 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 	
 	protected static Logger logger;
 
-	protected AbstractEnhancedCustomGraphics(final String displayName) {
+	protected AbstractCustomGraphics2(final String displayName) {
 		logger = LoggerFactory.getLogger(this.getClass());
 		this.displayName = displayName;
 		this.properties = new HashMap<String, Object>();
@@ -58,12 +60,12 @@ public abstract class AbstractEnhancedCustomGraphics<T extends CustomGraphicLaye
 		mapper = new ObjectMapper();
 	}
 	
-	protected AbstractEnhancedCustomGraphics(final String displayName, final String input) {
+	protected AbstractCustomGraphics2(final String displayName, final String input) {
 		this(displayName);
 		addProperties(parseInput(input));
 	}
 	
-	protected AbstractEnhancedCustomGraphics(final String displayName, final Map<String, ?> properties) {
+	protected AbstractCustomGraphics2(final String displayName, final Map<String, ?> properties) {
 		this(displayName);
 		addProperties(properties);
 	}

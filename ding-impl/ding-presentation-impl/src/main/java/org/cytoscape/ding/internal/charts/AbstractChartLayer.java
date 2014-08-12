@@ -16,6 +16,9 @@ import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.jfree.chart.JFreeChart;
@@ -106,18 +109,20 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	}
 
 	@Override
-	public void draw(final Graphics2D g, Rectangle2D area, final Shape shape) {
+	public void draw(final Graphics2D g, final Shape shape, final CyNetworkView networkView, 
+			final View<? extends CyIdentifiable> view) {
 		// Give JFreeChart a larger area to draw into, so the proportions of the chart elements looks better
 		final double scale = 2.0;
-		area = new Rectangle2D.Double(area.getX() * scale, area.getY() * scale,
-				area.getWidth() * scale, area.getHeight() * scale);
+		Rectangle2D bounds = shape.getBounds2D();
+		bounds = new Rectangle2D.Double(bounds.getX() * scale, bounds.getY() * scale,
+				bounds.getWidth() * scale, bounds.getHeight() * scale);
 		// Of course, we also have to ask Graphics2D to apply the inverse transformation
 		final double invScale = 1.0 / scale;
 		final AffineTransform at = new AffineTransform();
 		at.scale(invScale, invScale);
 		g.transform(at);
 		
-		getChart().draw(g, area);
+		getChart().draw(g, bounds);
 		
 		// Make sure Graphics2D is "back to normal" before returning
 		try {

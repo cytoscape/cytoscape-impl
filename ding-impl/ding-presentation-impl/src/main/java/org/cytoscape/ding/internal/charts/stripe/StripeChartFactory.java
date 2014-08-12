@@ -5,11 +5,11 @@ import java.util.Map;
 import javax.swing.Icon;
 
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.view.presentation.charts.CyChart;
-import org.cytoscape.view.presentation.charts.CyChartFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-public class StripeChartFactory implements CyChartFactory<StripeLayer> {
+public class StripeChartFactory implements CyCustomGraphics2Factory<StripeLayer> {
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	
@@ -18,17 +18,17 @@ public class StripeChartFactory implements CyChartFactory<StripeLayer> {
 	}
 	
 	@Override
-	public CyChart<StripeLayer> getInstance(final String input) {
+	public CyCustomGraphics2<StripeLayer> getInstance(final String input) {
 		return new StripeChart(input, colIdFactory);
 	}
 
 	@Override
-	public CyChart<StripeLayer> getInstance(final CyChart<StripeLayer> chart) {
+	public CyCustomGraphics2<StripeLayer> getInstance(final CyCustomGraphics2<StripeLayer> chart) {
 		return new StripeChart((StripeChart)chart, colIdFactory);
 	}
 	
 	@Override
-	public CyChart<StripeLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<StripeLayer> getInstance(final Map<String, Object> properties) {
 		return new StripeChart(properties, colIdFactory);
 	}
 
@@ -38,7 +38,7 @@ public class StripeChartFactory implements CyChartFactory<StripeLayer> {
 	}
 	
 	@Override
-	public Class<? extends CyChart<StripeLayer>> getSupportedClass() {
+	public Class<? extends CyCustomGraphics2<StripeLayer>> getSupportedClass() {
 		return StripeChart.class;
 	}
 

@@ -10,11 +10,11 @@ import javax.swing.GroupLayout;
 import javax.swing.JPanel;
 import javax.swing.GroupLayout.Alignment;
 
-import org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics;
+import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.ding.internal.util.GradientEditor;
 
-public abstract class AbstractGradientEditor<T extends AbstractEnhancedCustomGraphics<?>> extends JPanel {
+public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
 
 	private static final long serialVersionUID = 8197649738217133935L;
 	

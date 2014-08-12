@@ -1,9 +1,9 @@
 package org.cytoscape.ding.internal.charts;
 
-import static org.cytoscape.ding.internal.charts.AbstractChartCustomGraphics.DATA_COLUMNS;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLORS;
-import static org.cytoscape.ding.internal.charts.AbstractEnhancedCustomGraphics.COLOR_SCHEME;
-import static org.cytoscape.ding.internal.charts.ColorScheme.CUSTOM;
+import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLORS;
+import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLOR_SCHEME;
+import static org.cytoscape.ding.customgraphics.ColorScheme.CUSTOM;
+import static org.cytoscape.ding.internal.charts.AbstractChart.DATA_COLUMNS;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -31,6 +31,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.border.Border;
 
+import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
+import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.bar.BarChart;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
@@ -43,7 +45,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
-public class ColorSchemeEditor<T extends AbstractEnhancedCustomGraphics<?>> extends JPanel {
+public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
 
 	private static final long serialVersionUID = 4652060176779329556L;
 	

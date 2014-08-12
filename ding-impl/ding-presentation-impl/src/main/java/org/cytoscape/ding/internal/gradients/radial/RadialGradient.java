@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.ControlPoint;
-import org.cytoscape.ding.internal.gradients.AbstractGradientCustomGraphics;
+import org.cytoscape.ding.internal.gradients.AbstractGradient;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
-public class RadialGradient extends AbstractGradientCustomGraphics<RadialGradientLayer> {
+public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 
 	public static final String FACTORY_ID = "org.cytoscape.RadialGradient";
 	public static final String DISPLAY_NAME = "Radial Gradient";

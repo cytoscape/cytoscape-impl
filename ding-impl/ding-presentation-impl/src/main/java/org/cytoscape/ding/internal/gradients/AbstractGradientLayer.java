@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.ding.internal.charts.ControlPoint;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 
 public abstract class AbstractGradientLayer implements Cy2DGraphicLayer {
@@ -35,8 +38,9 @@ public abstract class AbstractGradientLayer implements Cy2DGraphicLayer {
 	}
 	
 	@Override
-	public void draw(final Graphics2D g, final Rectangle2D area, final Shape shape) {
-		g.setPaint(getPaint(area));
+	public void draw(final Graphics2D g, final Shape shape, final CyNetworkView networkView, 
+			final View<? extends CyIdentifiable> view) {
+		g.setPaint(getPaint(shape.getBounds2D()));
 		g.fill(shape);
 	}
 
