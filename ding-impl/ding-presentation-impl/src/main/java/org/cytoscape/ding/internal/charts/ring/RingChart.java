@@ -56,7 +56,7 @@ public class RingChart extends AbstractChart<RingLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final double startAngle = get(START_ANGLE, Double.class, 0.0);
-		final double hole = get(HOLE_SIZE, Double.class, 0.2);
+		final double hole = get(HOLE_SIZE, Double.class, 0.4);
 		final Rotation rotation = get(ROTATION, Rotation.class, Rotation.ANTICLOCKWISE);
 		final List<String> labels = getItemLabels(network, model);
 		

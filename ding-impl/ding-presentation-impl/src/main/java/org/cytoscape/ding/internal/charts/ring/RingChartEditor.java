@@ -99,7 +99,7 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 	
 	public JTextField getHoleTxt() {
 		if (holeTxt == null) {
-			holeTxt = new JTextField("" + chart.get(RingChart.HOLE_SIZE, Double.class, 0.2));
+			holeTxt = new JTextField("" + chart.get(RingChart.HOLE_SIZE, Double.class, 0.4));
 			holeTxt.setToolTipText("Diameter of the ring hole, as a proportion of the entire plot");
 			holeTxt.setInputVerifier(new DoubleInputVerifier());
 			holeTxt.setPreferredSize(new Dimension(60, holeTxt.getMinimumSize().height));
