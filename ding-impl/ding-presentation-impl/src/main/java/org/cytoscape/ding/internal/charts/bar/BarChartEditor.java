@@ -20,6 +20,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -54,12 +55,12 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		}
 		
 		heatStripSchemeList.add(CUSTOM);
+		upDownSchemeList.add(CUSTOM);
 		
 		HEAT_STRIP_COLOR_SCHEMES = heatStripSchemeList.toArray(new ColorScheme[heatStripSchemeList.size()]);
-		UP_DOWN_COLOR_SCHEMES = upDownSchemeList.toArray(new ColorScheme[heatStripSchemeList.size()]);
+		UP_DOWN_COLOR_SCHEMES = upDownSchemeList.toArray(new ColorScheme[upDownSchemeList.size()]);
 	}
 	
-	private JLabel typeLbl;
 	private ButtonGroup typeGrp;
 	private JRadioButton groupedRd;
 	private JRadioButton stackedRd;
@@ -82,7 +83,6 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		typeLbl = new JLabel("Type");
 		separationLbl = new JLabel("Separation (0.0-0.5)");
 	}
 	
@@ -104,21 +104,23 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-				.addComponent(typeLbl)
+		final JSeparator sep = new JSeparator();
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(getGroupedRd())
 						.addComponent(getStackedRd())
 						.addComponent(getHeatStripsRd())
-						.addComponent(getUpDownRd()))
+						.addComponent(getUpDownRd())
+				).addComponent(sep)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(typeLbl)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(getGroupedRd())
 						.addComponent(getStackedRd())
 						.addComponent(getHeatStripsRd())
-						.addComponent(getUpDownRd()))
+						.addComponent(getUpDownRd())
+				).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 		);
 		
 		return p;

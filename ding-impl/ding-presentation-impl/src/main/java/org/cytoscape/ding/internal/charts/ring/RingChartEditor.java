@@ -6,12 +6,14 @@ import java.awt.event.FocusEvent;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
+import org.cytoscape.ding.internal.charts.pie.PieChart;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
@@ -20,7 +22,7 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 	private static final long serialVersionUID = -1867268965571724061L;
 	
 	private JLabel startAngleLbl;
-	private JTextField startAngleTxt;
+	private JComboBox<Double> startAngleCmb;
 	private JLabel holeLbl;
 	private JTextField holeTxt;
 	
@@ -56,7 +58,7 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 					.addComponent(startAngleLbl)
 					.addComponent(holeLbl))
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
-					.addComponent(getStartAngleTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+					.addComponent(getStartAngleCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 							GroupLayout.PREFERRED_SIZE)
 					.addComponent(getHoleTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 							GroupLayout.PREFERRED_SIZE))
@@ -64,7 +66,7 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(startAngleLbl)
-						.addComponent(getStartAngleTxt()))
+						.addComponent(getStartAngleCmb()))
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(holeLbl)
 						.addComponent(getHoleTxt()))
@@ -73,31 +75,15 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 		return p;
 	}
 	
-	private JTextField getStartAngleTxt() {
-		if (startAngleTxt == null) {
-			startAngleTxt = new JTextField("" + chart.get(RingChart.START_ANGLE, Double.class, 0.0));
-			startAngleTxt.setToolTipText(
-					"Starting from 3 o'clock and measuring clockwise (90\u00B0 = 6 o'clock)");
-			startAngleTxt.setInputVerifier(new DoubleInputVerifier());
-			startAngleTxt.setPreferredSize(new Dimension(60, startAngleTxt.getMinimumSize().height));
-			startAngleTxt.setHorizontalAlignment(JTextField.TRAILING);
-			
-			startAngleTxt.addFocusListener(new FocusAdapter() {
-				@Override
-				public void focusLost(final FocusEvent e) {
-					try {
-			            double angle = Double.valueOf(startAngleTxt.getText().trim()).doubleValue();
-			            chart.set(RingChart.START_ANGLE, angle);
-			        } catch (NumberFormatException ex) {
-			        }
-				}
-			});
+	private JComboBox<Double> getStartAngleCmb() {
+		if (startAngleCmb == null) {
+			startAngleCmb = createAngleComboBox(chart, PieChart.START_ANGLE, ANGLES);
 		}
 		
-		return startAngleTxt;
+		return startAngleCmb;
 	}
 	
-	public JTextField getHoleTxt() {
+	private JTextField getHoleTxt() {
 		if (holeTxt == null) {
 			holeTxt = new JTextField("" + chart.get(RingChart.HOLE_SIZE, Double.class, 0.4));
 			holeTxt.setToolTipText("Diameter of the ring hole, as a proportion of the entire plot");

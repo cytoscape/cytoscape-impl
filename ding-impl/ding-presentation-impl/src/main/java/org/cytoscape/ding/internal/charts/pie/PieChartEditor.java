@@ -1,14 +1,10 @@
 package org.cytoscape.ding.internal.charts.pie;
 
-import java.awt.Dimension;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
@@ -20,7 +16,7 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	private static final long serialVersionUID = -6185083260942898226L;
 	
 	private JLabel startAngleLbl;
-	private JTextField startAngleTxt;
+	private JComboBox<Double> startAngleCmb;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -51,39 +47,23 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(startAngleLbl)
-						.addComponent(getStartAngleTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						.addComponent(getStartAngleCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 								GroupLayout.PREFERRED_SIZE))
 				);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(startAngleLbl)
-						.addComponent(getStartAngleTxt()))
+						.addComponent(getStartAngleCmb()))
 				);
 		
 		return p;
 	}
 	
-	public JTextField getStartAngleTxt() {
-		if (startAngleTxt == null) {
-			startAngleTxt = new JTextField("" + chart.get(PieChart.START_ANGLE, Double.class, 0.0));
-			startAngleTxt.setToolTipText(
-					"Starting from 3 o'clock and measuring clockwise (90\u00B0 = 6 o'clock)");
-			startAngleTxt.setInputVerifier(new DoubleInputVerifier());
-			startAngleTxt.setPreferredSize(new Dimension(60, startAngleTxt.getMinimumSize().height));
-			startAngleTxt.setHorizontalAlignment(JTextField.TRAILING);
-			
-			startAngleTxt.addFocusListener(new FocusAdapter() {
-				@Override
-				public void focusLost(final FocusEvent e) {
-					try {
-			            double angle = Double.valueOf(startAngleTxt.getText().trim()).doubleValue();
-			            chart.set(PieChart.START_ANGLE, angle);
-			        } catch (NumberFormatException ex) {
-			        }
-				}
-			});
+	private JComboBox<Double> getStartAngleCmb() {
+		if (startAngleCmb == null) {
+			startAngleCmb = createAngleComboBox(chart, PieChart.START_ANGLE, ANGLES);
 		}
 		
-		return startAngleTxt;
+		return startAngleCmb;
 	}
 }

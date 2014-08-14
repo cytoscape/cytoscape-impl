@@ -85,6 +85,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		CONTRASTING, MODULATED, RAINBOW, RANDOM, CUSTOM
 	};
 	
+	protected static Double[] ANGLES = new Double[] { 0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0 };
+	
 	protected static final JColorChooser colorChooser = new JColorChooser();
 	
 	private JTabbedPane optionsTpn;
@@ -103,9 +105,9 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JLabel itemLabelsColumnLbl;
 	protected JLabel domainLabelsColumnLbl;
 	protected JLabel rangeLabelsColumnLbl;
-	private JComboBox itemLabelsColumnCmb;
-	private JComboBox domainLabelsColumnCmb;
-	private JComboBox rangeLabelsColumnCmb;
+	private JComboBox<CyColumnIdentifier> itemLabelsColumnCmb;
+	private JComboBox<CyColumnIdentifier> domainLabelsColumnCmb;
+	private JComboBox<CyColumnIdentifier> rangeLabelsColumnCmb;
 	private JCheckBox globalRangeCkb;
 	private JCheckBox autoRangeCkb;
 	private JLabel rangeMinLbl;
@@ -283,16 +285,17 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			layout.setAutoCreateContainerGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(getOtherBasicOptionsPnl())
 					.addComponent(getDataPnl())
 					.addComponent(getRangePnl())
-					.addComponent(getOtherBasicOptionsPnl())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getOtherBasicOptionsPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+					          GroupLayout.PREFERRED_SIZE)
 					.addComponent(getDataPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
 					.addComponent(getRangePnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 					          GroupLayout.PREFERRED_SIZE)
-					.addComponent(getOtherBasicOptionsPnl())
 			);
 		}
 		
@@ -616,7 +619,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		return otherAdvancedOptionsPnl;
 	}
 	
-	protected JComboBox getItemLabelsColumnCmb() {
+	protected JComboBox<CyColumnIdentifier> getItemLabelsColumnCmb() {
 		if (itemLabelsColumnCmb == null) {
 			itemLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(itemLabelsColumnCmb, chart.get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
@@ -633,7 +636,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		return itemLabelsColumnCmb;
 	}
 	
-	protected JComboBox getDomainLabelsColumnCmb() {
+	protected JComboBox<CyColumnIdentifier> getDomainLabelsColumnCmb() {
 		if (domainLabelsColumnCmb == null) {
 			domainLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(domainLabelsColumnCmb, chart.get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
@@ -650,7 +653,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		return domainLabelsColumnCmb;
 	}
 	
-	protected JComboBox getRangeLabelsColumnCmb() {
+	protected JComboBox<CyColumnIdentifier> getRangeLabelsColumnCmb() {
 		if (rangeLabelsColumnCmb == null) {
 			rangeLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(rangeLabelsColumnCmb, chart.get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
@@ -1096,8 +1099,9 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		}
 	}
 	
-	protected JComboBox createDataColumnComboBox(final Collection<CyColumnIdentifier> columns, final boolean acceptsNull) {
-		final JComboBox cmb = new CyColumnComboBox(columns, false);
+	protected JComboBox<CyColumnIdentifier> createDataColumnComboBox(final Collection<CyColumnIdentifier> columns,
+			final boolean acceptsNull) {
+		final JComboBox<CyColumnIdentifier> cmb = new CyColumnComboBox(columns, false);
 		cmb.setSelectedItem(null);
 		cmb.addActionListener(new ActionListener() {
 			@Override
@@ -1126,10 +1130,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				(List.class.isAssignableFrom(colType) && dataType.isAssignableFrom(colListType));
 	}
 	
-	protected static void selectColumnIdItem(final JComboBox cmb, final CyColumnIdentifier columnId) {
+	protected static void selectColumnIdItem(final JComboBox<CyColumnIdentifier> cmb, final CyColumnIdentifier columnId) {
 		if (columnId != null) {
 			for (int i = 0; i < cmb.getItemCount(); i++) {
-				final CyColumnIdentifier colId = (CyColumnIdentifier) cmb.getItemAt(i);
+				final CyColumnIdentifier colId = cmb.getItemAt(i);
 				
 				if (colId != null && colId.equals(columnId)) {
 					cmb.setSelectedItem(colId);
@@ -1137,6 +1141,32 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				}
 			}
 		}
+	}
+	
+	protected JComboBox<Double> createAngleComboBox(final AbstractCustomGraphics2<?> cg2, final String propKey,
+			Double[] values) {
+		if (values == null)
+			values = ANGLES;
+		
+		final JComboBox<Double> cmb = new JComboBox<>(values);
+		cmb.setToolTipText("Starting from 3 o'clock and measuring clockwise (90\u00B0 = 6 o'clock)");
+		cmb.setEditable(true);
+		((JLabel)cmb.getRenderer()).setHorizontalAlignment(JLabel.RIGHT);
+		cmb.setSelectedItem(cg2.get(propKey, Double.class, 0.0));
+		cmb.setInputVerifier(new DoubleInputVerifier());
+		
+		cmb.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final Object angle = cmb.getSelectedItem();
+		        try {
+		        	cg2.set(propKey, angle instanceof Number ? ((Number)angle).doubleValue() : 0.0);
+		        } catch (NumberFormatException ex) {
+		        }
+			}
+		});
+		
+		return cmb;
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
@@ -1297,7 +1327,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 
 			private static final long serialVersionUID = 753659806235431081L;
 			
-			final JComboBox cmb;
+			final JComboBox<CyColumnIdentifier> cmb;
 			final JButton delBtn;
 			
 			DataColumnSelector(CyColumnIdentifier columnId) {
@@ -1355,17 +1385,17 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		}
 	}
 	
-	protected static class CyColumnComboBox extends JComboBox {
+	protected static class CyColumnComboBox extends JComboBox<CyColumnIdentifier> {
 		
 		private static final long serialVersionUID = 8890884100875883324L;
 
 		public CyColumnComboBox(final Collection<CyColumnIdentifier> columnIds, final boolean acceptsNull) {
-			final List<CyColumnIdentifier> values = new ArrayList<CyColumnIdentifier>(columnIds);
+			final List<CyColumnIdentifier> values = new ArrayList<>(columnIds);
 			
 			if (acceptsNull && !values.contains(null))
 				values.add(0, null);
 			
-			DefaultComboBoxModel model = new DefaultComboBoxModel(values.toArray());
+			DefaultComboBoxModel<CyColumnIdentifier> model = new DefaultComboBoxModel(values.toArray());
 			this.setModel(model);
 			this.setRenderer(new CyColumnComboBoxRenderer());
 		}

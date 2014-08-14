@@ -31,7 +31,7 @@ public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGra
 
 	@Override
 	public String getDisplayName() {
-		return "Radial Gradient";
+		return "Radial";
 	}
 	
 	@Override

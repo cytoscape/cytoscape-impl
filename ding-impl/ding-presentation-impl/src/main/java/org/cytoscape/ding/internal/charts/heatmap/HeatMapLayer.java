@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.util.ColorScale;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.SymbolAxis;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.data.xy.DefaultXYZDataset;
@@ -22,6 +24,7 @@ import org.jfree.ui.RectangleInsets;
 
 public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 	
+	private final Orientation orientation;
 	private final String[] xLabels;
 	private final String[] yLabels;
 	private int maxYSize;
@@ -37,9 +40,11 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 						final List<Color> colors,
 						final Color axisColor,
 						final DoubleRange range,
+						final Orientation orientation,
 						final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, colors,
         		0.0f, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
+        this.orientation = orientation;
         
         // Range cannot be null
         if (this.range == null)
@@ -100,6 +105,9 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
     
 	@Override
 	protected JFreeChart createChart(final XYZDataset dataset) {
+		final PlotOrientation plotOrientation = 
+				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
+		
 		final SymbolAxis xAxis = new SymbolAxis(null, xLabels);
 		xAxis.setVisible(showDomainAxis);
 		xAxis.setAxisLineVisible(false);
@@ -131,12 +139,14 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 		final XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
 		plot.setDomainAxis(xAxis);
         plot.setDomainAxisLocation(AxisLocation.TOP_OR_LEFT);
+        plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
         plot.setOutlineVisible(false);
 		plot.setDomainGridlinesVisible(false);
 		plot.setRangeGridlinesVisible(false);
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setInsets(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
 		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
+		plot.setOrientation(plotOrientation);
 
 		final JFreeChart chart = new JFreeChart(null, plot);
 		chart.removeLegend();

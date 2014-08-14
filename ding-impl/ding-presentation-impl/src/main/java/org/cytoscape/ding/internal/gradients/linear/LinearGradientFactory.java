@@ -31,7 +31,7 @@ public class LinearGradientFactory implements CyCustomGraphics2Factory<LinearGra
 
 	@Override
 	public String getDisplayName() {
-		return "Linear Gradient";
+		return "Linear";
 	}
 	
 	@Override

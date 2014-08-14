@@ -19,7 +19,7 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 	private static final long serialVersionUID = 5997072753907737888L;
 	
 	private JLabel angleLbl;
-	private JComboBox angleCmb;
+	private JComboBox<Double> angleCmb;
 	
 	private static Double[] ANGLES = new Double[] { -315.0, -270.0, -225.0, -180.0, -135.0, -90.0, -45.0,
 		                                            0.0,
@@ -60,9 +60,9 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 		return p;
 	}
 	
-	private JComboBox getAngleCmb() {
+	private JComboBox<Double> getAngleCmb() {
 		if (angleCmb == null) {
-			angleCmb = new JComboBox(ANGLES);
+			angleCmb = new JComboBox<>(ANGLES);
 			angleCmb.setEditable(true);
 			((JLabel)angleCmb.getRenderer()).setHorizontalAlignment(JLabel.RIGHT);
 			angleCmb.setSelectedItem(gradient.get(ANGLE, Double.class, 0.0));
