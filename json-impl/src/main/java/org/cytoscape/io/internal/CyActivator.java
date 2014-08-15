@@ -33,8 +33,8 @@ public class CyActivator extends AbstractCyActivator {
 		super();
 	}
 
+
 	public void start(BundleContext bc) {
-		
 		// Importing Services
 		final CyVersion cyVersion = getService(bc, CyVersion.class);
 		final StreamUtil streamUtil = getService(bc, StreamUtil.class);
@@ -43,7 +43,6 @@ public class CyActivator extends AbstractCyActivator {
 		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		final CyNetworkManager cyNetworkManager = getService(bc, CyNetworkManager.class);
 		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
-
 		
 		
 		// ///////////////// Readers ////////////////////////////
@@ -69,12 +68,16 @@ public class CyActivator extends AbstractCyActivator {
 
 		// For Cytoscape.js
 		final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory = new CytoscapeJsNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
+		
+		// Use this ID to get this service in other bundles.
 		final Properties jsWriterFactoryProperties = new Properties();
 		jsWriterFactoryProperties.put(ID, "cytoscapejsNetworkWriterFactory");
 		registerAllServices(bc, cytoscapejsWriterFactory, jsWriterFactoryProperties);
 
 		// For Visual Style
 		final CytoscapeJsVisualStyleWriterFactory jsonVSWriterFactory = new CytoscapeJsVisualStyleWriterFactory(vizmapJsonFilter, applicationManager, cyVersion);
+		
+		// Use this ID to get this service in other bundles.
 		final Properties jsVisualStyleWriterFactoryProperties = new Properties();
 		jsWriterFactoryProperties.put(ID, "cytoscapejsVisualStyleWriterFactory");
 		registerAllServices(bc, jsonVSWriterFactory, jsVisualStyleWriterFactoryProperties);
