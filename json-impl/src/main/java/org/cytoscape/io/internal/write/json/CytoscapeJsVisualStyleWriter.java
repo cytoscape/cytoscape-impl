@@ -43,7 +43,7 @@ public class CytoscapeJsVisualStyleWriter extends AbstractTask implements CyWrit
 		taskMonitor.setProgress(0);
 
 		visualStyles2jsonMapper.writeValue(new OutputStreamWriter(os, EncodingUtil.getEncoder()), styles);
-		os.close();
+//		os.close();
 
 		// Display warning message for incompatible Visual Properties.
 		displayMessage(taskMonitor);

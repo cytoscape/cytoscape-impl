@@ -9,6 +9,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * Writer for all JSON format. Output format will be determined by ObjectMapper.
@@ -39,7 +40,8 @@ public final class JSONNetworkViewWriter extends AbstractNetworkViewTask impleme
 			taskMonitor.setTitle("Writing Network View to JSON...");
 			taskMonitor.setProgress(0);
 		}
-		networkView2jsonMapper.writeValue(new OutputStreamWriter(outputStream, EncodingUtil.getEncoder()), view);
-		outputStream.close();
+		OutputStreamWriter writer = new OutputStreamWriter(outputStream, EncodingUtil.getEncoder());
+		networkView2jsonMapper.writeValue(writer, view);
+//		outputStream.close();
 	}
 }

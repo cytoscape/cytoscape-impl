@@ -7,21 +7,30 @@ import java.util.Properties;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.BasicCyFileFilter;
+import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.read.json.CytoscapeJsNetworkReaderFactory;
 import org.cytoscape.io.internal.write.json.CytoscapeJsVisualStyleWriterFactory;
 import org.cytoscape.io.internal.write.json.CytoscapeJsNetworkWriterFactory;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
+import org.cytoscape.io.internal.write.websession.WebSessionWriterFactoryImpl;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.io.write.CySessionWriterFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.osgi.framework.BundleContext;
 
+import com.fasterxml.jackson.core.JsonFactory.Feature;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * Activator for JSON support module.
@@ -43,6 +52,8 @@ public class CyActivator extends AbstractCyActivator {
 		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		final CyNetworkManager cyNetworkManager = getService(bc, CyNetworkManager.class);
 		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
+		final CyNetworkViewManager viewManager = getService(bc, CyNetworkViewManager.class);
+		final VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
 		
 		
 		// ///////////////// Readers ////////////////////////////
@@ -81,5 +92,11 @@ public class CyActivator extends AbstractCyActivator {
 		final Properties jsVisualStyleWriterFactoryProperties = new Properties();
 		jsWriterFactoryProperties.put(ID, "cytoscapejsVisualStyleWriterFactory");
 		registerAllServices(bc, jsonVSWriterFactory, jsVisualStyleWriterFactoryProperties);
+		
+		final BasicCyFileFilter webSessionFilter = new BasicCyFileFilter(new String[]{"zip"}, new String[]{"application/plain"}, "Web archive file (.zip)",DataCategory.SESSION, streamUtil);
+		final CySessionWriterFactory webSessionWriterFactory = new WebSessionWriterFactoryImpl(jsonVSWriterFactory, vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter);
+		Properties webSessionWriterFactoryProps = new Properties();
+		webSessionWriterFactoryProps.put("ID", "webSessionWriterFactory");
+		registerAllServices(bc, webSessionWriterFactory, webSessionWriterFactoryProps);
 	}
 }
