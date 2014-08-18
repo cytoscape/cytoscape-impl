@@ -124,6 +124,10 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		init();
 	}
 	
+	protected DiscreteValueEditor(final Class<T> type, Set<T> values, final ServicesUtil servicesUtil) {
+		this(type, values, null, servicesUtil);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public T getValue() {
 		return canceled != true ? (T) getDiscreteValueList().getSelectedValue() : null;
@@ -383,8 +387,27 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 			private final Color BG_COLOR = Color.WHITE;
 			private final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
 
+			final JLabel iconLbl;
+			final JLabel textLbl;
+			Component iconPadding;
+			
 			public IconCellRenderer() {
+				iconLbl = new JLabel();
+				iconLbl.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+				textLbl = new JLabel();
+				iconPadding = Box.createHorizontalStrut(20);
+				
 				setOpaque(true);
+				setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+				
+				final Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR);
+				final Border paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
+				setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
+				
+				add(iconLbl);
+				add(iconPadding);
+				add(textLbl);
+				add(Box.createHorizontalGlue());
 			}
 
 			@Override
@@ -394,34 +417,23 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 														  final int index,
 														  final boolean isSelected,
 														  final boolean cellHasFocus) {
-				removeAll();
-				
 				setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
-				
-				final Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR);
-				final Border paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
-				setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
-				
-				setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-				
 				final Icon icon = iconMap.get(value);
+				final String label = getLabel((T)value);
 				
-				if (icon != null) {
-					final JLabel iconLbl = new JLabel(iconMap.get(value));
-					iconLbl.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-					add(iconLbl);
-					add(Box.createHorizontalStrut(20));
-				}
-				
-				final JLabel textLbl = new JLabel(getLabel((T)value));
+				iconLbl.setIcon(icon);
+				textLbl.setText(label);
+				textLbl.setToolTipText(label);
 				
 				if (value instanceof Font)
 					textLbl.setFont(((Font) value).deriveFont(14.0f));
 				else
 					textLbl.setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
 
-				add(textLbl);
-				add(Box.createHorizontalGlue());
+				if (icon == null && iconPadding != null) {
+					remove(iconPadding);
+					iconPadding = null;
+				}
 				
 				return this;
 			}

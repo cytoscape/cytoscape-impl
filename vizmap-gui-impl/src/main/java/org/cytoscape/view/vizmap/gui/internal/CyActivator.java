@@ -86,6 +86,7 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyCombo
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyFontPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.BooleanValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorChooser;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.FontValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.StringValueEditor;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
@@ -123,6 +124,7 @@ public class CyActivator extends AbstractCyActivator {
 		final NumericValueEditor<Float> floatValueEditor = new NumericValueEditor<Float>(Float.class);
 		final StringValueEditor stringValueEditor = new StringValueEditor();
 		final BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
+		final FontValueEditor fontValueEditor = new FontValueEditor(servicesUtil);
 		
 		final ThemeManager themeManager = new ThemeManager();
 		
@@ -164,6 +166,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, floatValueEditor, new Properties());
 		registerAllServices(bc, stringValueEditor, new Properties());
 		registerAllServices(bc, booleanValueEditor, new Properties());
+		registerAllServices(bc, fontValueEditor, new Properties());
 		
 		registerAllServices(bc, colorPropertyEditor, new Properties());
 		registerAllServices(bc, doublePropertyEditor, new Properties());
