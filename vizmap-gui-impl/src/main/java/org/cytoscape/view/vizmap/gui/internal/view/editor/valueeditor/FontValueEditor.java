@@ -11,7 +11,7 @@ public class FontValueEditor extends DiscreteValueEditor<Font> {
 
 	private static final long serialVersionUID = 4485094516198744690L;
 	
-	private static final int DEF_FONT_SIZE = 12;
+	private static final float DEF_FONT_SIZE = 14.0f;
 	private static final Set<Font> FONTS = new HashSet<Font>();
 	
 	static {

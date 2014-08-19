@@ -28,7 +28,7 @@ import java.awt.Font;
 
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
-import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.FontTableCellRenderer;
+import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.FontCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyFontPropertyEditor;
 
 public class FontVisualPropertyEditor extends BasicVisualPropertyEditor<Font> {
@@ -37,6 +37,6 @@ public class FontVisualPropertyEditor extends BasicVisualPropertyEditor<Font> {
 									final CyFontPropertyEditor fontPropEditor,
 									final ContinuousMappingCellRendererFactory cellRendererFactory) {
 		super(type, fontPropEditor, ContinuousEditorType.DISCRETE, cellRendererFactory);
-		discreteTableCellRenderer = new FontTableCellRenderer();
+		discreteTableCellRenderer = new FontCellRenderer();
 	}
 }
