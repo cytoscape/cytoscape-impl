@@ -48,7 +48,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	private String text;
 	private boolean shapeIsFit = false;
 
-	private Font scaledFont = null;
 	private double lastScaleFactor = -1;
 
 	protected float fontSize = 0.0f;
@@ -234,7 +233,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont((float)(fontSize*getSpecificZoom()));
 		updateBounds();
 	}
 
@@ -244,8 +243,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, fontSize);
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont(style, (float)(fontSize*getSpecificZoom()));
 	}
 
 	@Override
@@ -256,7 +254,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont((float)(fontSize*getSpecificZoom()));
 	}
 
 	@Override

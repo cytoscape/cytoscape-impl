@@ -24,7 +24,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -42,7 +41,7 @@ import javax.swing.ListCellRenderer;
 
 public class CyFontPropertyEditor extends CyComboBoxPropertyEditor {
 
-	protected static final float FONT_SIZE = 12.0f;
+	protected static final float FONT_SIZE = 14.0f;
 	
 	private final List<Font> fonts;
 	
@@ -83,7 +82,6 @@ public class CyFontPropertyEditor extends CyComboBoxPropertyEditor {
 		
 		private final static long serialVersionUID = 120233986931967L;
 		
-		private static final int DISPLAY_FONT_SIZE = 14;
 		private static final Dimension SIZE = new Dimension(280, 32);
 
 		@Override
@@ -91,20 +89,14 @@ public class CyFontPropertyEditor extends CyComboBoxPropertyEditor {
 				boolean cellHasFocus) {
 			this.setPreferredSize(SIZE);
 			this.setMinimumSize(SIZE);
-			
-			if (isSelected) {
-				setBackground(list.getSelectionBackground());
-				setForeground(Color.DARK_GRAY);
-			} else {
-				setBackground(list.getBackground());
-				setForeground(Color.DARK_GRAY);
-			}
+			this.setOpaque(true);
+			this.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+			this.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
 
 			if (value != null && value instanceof Font) {
 				final Font font = (Font) value;
-				final Font modFont = new Font(font.getFontName(), font.getStyle(), DISPLAY_FONT_SIZE);
-				this.setFont(modFont);
-				this.setText(modFont.getName());
+				this.setFont(font);
+				this.setText(font.getName());
 			} else {
 				this.setText("");
 			}

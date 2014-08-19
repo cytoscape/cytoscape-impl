@@ -375,7 +375,8 @@ public final class GraphRenderer {
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 
 							if (!nodePositions.exists(otherNode, floatBuff2, 0))
-								throw new IllegalStateException("nodePositions not recognizing node that exists in graph: "+otherCyNode.toString());
+								continue;
+								// throw new IllegalStateException("nodePositions not recognizing node that exists in graph: "+otherCyNode.toString());
 
 							final byte otherNodeShape = nodeDetails.getShape(otherCyNode);
 
