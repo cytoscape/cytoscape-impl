@@ -46,7 +46,6 @@ import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
 	private String text = "";
 
-	private Font scaledFont = null;
 	private double lastScaleFactor = -1;
 
 	protected float fontSize = 0.0f;
@@ -141,7 +140,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont((float)(fontSize*getSpecificZoom()));
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
@@ -152,8 +151,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, fontSize);
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont(style, (float)(fontSize*getSpecificZoom()));
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
@@ -166,7 +164,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont((float)(fontSize*getSpecificZoom()));
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
