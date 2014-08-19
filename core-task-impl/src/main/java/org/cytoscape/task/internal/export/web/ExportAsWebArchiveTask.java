@@ -10,11 +10,17 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+/**
+ * Task to export all networks and styles as Cytoscape.js style JSON.
+ * 
+ */
 public class ExportAsWebArchiveTask extends AbstractTask {
+
+	private static final String FILE_EXTENSION = ".zip";
 
 	@ProvidesTitle
 	public String getTitle() {
-		return "Export to Web Archive";
+		return "Export as Cytoscape.js Web Page";
 	}
 
 	@Tunable(description = "Export Networks and Styles As:", params = "fileCategory=session;input=false")
@@ -28,29 +34,29 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 		this.writerFactory = writerFactory;
 	}
 
+	/**
+	 * Archive the data into a zip file.
+	 */
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.05);
-		System.out.println("AAA ============File is " + file);
 
+		// Add extension if missing.
+		if (!file.getName().endsWith(FILE_EXTENSION))
+			file = new File(file.getPath() + FILE_EXTENSION);
+
+		// Compress everything as a zip archive.
 		final FileOutputStream os = new FileOutputStream(file);
-		System.out.println("============File is " + file.getName());
 		final CyWriter writer = writerFactory.createWriter(os, null);
 		writer.run(taskMonitor);
-		
 		os.close();
 
 		taskMonitor.setProgress(1.0);
-
-		// Add this session file URL as the most recent file.
-		if (!file.getName().endsWith(".zip"))
-			file = new File(file.getPath() + ".zip");
 	}
 
 	@Override
 	public void cancel() {
 		super.cancel();
-
 		if (writer != null)
 			writer.cancel();
 	}

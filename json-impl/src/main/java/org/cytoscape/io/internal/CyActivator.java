@@ -4,14 +4,14 @@ import static org.cytoscape.work.ServiceProperties.ID;
 
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.BasicCyFileFilter;
-import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.read.json.CytoscapeJsNetworkReaderFactory;
-import org.cytoscape.io.internal.write.json.CytoscapeJsVisualStyleWriterFactory;
 import org.cytoscape.io.internal.write.json.CytoscapeJsNetworkWriterFactory;
+import org.cytoscape.io.internal.write.json.CytoscapeJsVisualStyleWriterFactory;
 import org.cytoscape.io.internal.write.json.serializer.CytoscapeJsNetworkModule;
 import org.cytoscape.io.internal.write.websession.WebSessionWriterFactoryImpl;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -26,11 +26,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.osgi.framework.BundleContext;
 
-import com.fasterxml.jackson.core.JsonFactory.Feature;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * Activator for JSON support module.
@@ -45,6 +41,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 		// Importing Services
+		final CyApplicationConfiguration appConfig = getService(bc, CyApplicationConfiguration.class);
 		final CyVersion cyVersion = getService(bc, CyVersion.class);
 		final StreamUtil streamUtil = getService(bc, StreamUtil.class);
 		final CyNetworkViewFactory cyNetworkViewFactory = getService(bc, CyNetworkViewFactory.class);
@@ -94,9 +91,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, jsonVSWriterFactory, jsVisualStyleWriterFactoryProperties);
 		
 		final BasicCyFileFilter webSessionFilter = new BasicCyFileFilter(new String[]{"zip"}, new String[]{"application/plain"}, "Web archive file (.zip)",DataCategory.SESSION, streamUtil);
-		final CySessionWriterFactory webSessionWriterFactory = new WebSessionWriterFactoryImpl(jsonVSWriterFactory, vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter);
+		final CySessionWriterFactory webSessionWriterFactory = new WebSessionWriterFactoryImpl(jsonVSWriterFactory, vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter, appConfig);
 		Properties webSessionWriterFactoryProps = new Properties();
-		webSessionWriterFactoryProps.put("ID", "webSessionWriterFactory");
+		webSessionWriterFactoryProps.put(ID, "webSessionWriterFactory");
 		registerAllServices(bc, webSessionWriterFactory, webSessionWriterFactoryProps);
 	}
 }
