@@ -35,6 +35,7 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 	
 	@Override
 	protected void createLabels() {
+		super.createLabels();
 		angleLbl = new JLabel("Angle (degrees)");
 	}
 	

@@ -6,6 +6,8 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
@@ -16,6 +18,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradientEditor;
+import org.cytoscape.ding.internal.util.PointPicker;
 
 public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient> {
 	
@@ -74,8 +77,9 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 		}
 	}
 	
-	private JLabel directionLbl;
+	private JLabel centerLbl;
 	private JComboBox directionCmb;
+	private PointPicker pointPicker;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -90,7 +94,8 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 	
 	@Override
 	protected void createLabels() {
-		directionLbl = new JLabel("Direction");
+		super.createLabels();
+		centerLbl = new JLabel("Center");
 	}
 	
 	@Override
@@ -102,20 +107,20 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		
-		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addComponent(directionLbl)
-				.addComponent(getDirectionCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(centerLbl)
+				.addComponent(getPointPicker(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 						GroupLayout.PREFERRED_SIZE)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-				.addComponent(directionLbl)
-				.addComponent(getDirectionCmb())
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(centerLbl)
+				.addComponent(getPointPicker())
 		);
 		
 		return p;
 	}
 	
-	public JComboBox getDirectionCmb() {
+	private JComboBox getDirectionCmb() {
 		if (directionCmb == null) {
 			directionCmb = new JComboBox(Direction.values());
 			directionCmb.setRenderer(new DirectionComboBoxRenderer());
@@ -133,6 +138,23 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 		}
 		
 		return directionCmb;
+	}
+	
+	private PointPicker getPointPicker() {
+		if (pointPicker == null) {
+			final Point2D center = gradient.get(CENTER, Point2D.class, Direction.CENTER.getCenter());
+			pointPicker = new PointPicker(100, 16, center);
+			
+			pointPicker.addPropertyChangeListener("value", new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent e) {
+					final Point2D newCenter = (Point2D) e.getNewValue();
+		            gradient.set(CENTER, newCenter);
+				}
+			});
+		}
+		
+		return pointPicker;
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

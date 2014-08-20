@@ -69,6 +69,7 @@ public class GradientEditor extends JPanel {
 	 */
 	public GradientEditor(final List<ControlPoint> points) {
 		setLayout(null);
+		setOpaque(false);
 		
 		addBtn.setBounds(20, 70, 75, 20);
 		add(addBtn);

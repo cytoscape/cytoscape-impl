@@ -7,7 +7,9 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.GroupLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.GroupLayout.Alignment;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
@@ -18,6 +20,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 
 	private static final long serialVersionUID = 8197649738217133935L;
 	
+	private JLabel colorsLbl;
 	private GradientEditor grEditor;
 	private JPanel otherOptionsPnl;
 
@@ -41,23 +44,31 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		
+		final JSeparator sep = new JSeparator();
+		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(colorsLbl)
 				.addComponent(getGrEditor())
+				.addComponent(sep)
 				.addComponent(getOtherOptionsPnl())
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(colorsLbl)
 				.addComponent(getGrEditor(), 100, 100, GroupLayout.PREFERRED_SIZE)
+				.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+				          GroupLayout.PREFERRED_SIZE)
 				.addComponent(getOtherOptionsPnl())
 		);
 	}
 	
-	protected abstract void createLabels();
+	protected void createLabels() {
+		colorsLbl = new JLabel("Colors");
+	}
 
 	protected GradientEditor getGrEditor() {
 		if (grEditor == null) {
 			final List<ControlPoint> points = gradient.getList(STOP_LIST, ControlPoint.class);
 			grEditor = new GradientEditor(points);
-			grEditor.setOpaque(true);
 			
 			// Add listener--update gradient when user interacts with the UI
 			grEditor.addActionListener(new ActionListener() {

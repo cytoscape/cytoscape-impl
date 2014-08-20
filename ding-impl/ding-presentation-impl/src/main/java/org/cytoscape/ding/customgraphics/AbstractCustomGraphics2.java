@@ -197,6 +197,8 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 			s = ColorUtil.toHexString((Color)value);
 		else if (value instanceof ColorScheme)
 			s = ((ColorScheme)value).getKey();
+		else if (value instanceof Point2D)
+			s = ((Point2D)value).getX() + "," + ((Point2D)value).getY();
 		else if (value != null)
 			s = value.toString();
 		
