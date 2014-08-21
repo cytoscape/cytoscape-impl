@@ -36,7 +36,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSessionWriterImpl.class);
 
-	private static final String FOLDER_NAME = "/cytoscapejs/";
+	private static final String FOLDER_NAME = "/web_session/";
 	private static final String WEB_RESOURCE_NAME = "/web";
 	private static final String FILE_LIST_NAME = "filelist";
 	
@@ -66,6 +66,9 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 		this.webResourceDirectory = appConfig.getConfigurationDirectoryLocation();
 		this.name2fileMap = new HashMap<String, File>();
 	}
+	
+	
+	
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
