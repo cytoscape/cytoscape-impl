@@ -33,9 +33,6 @@ import javax.swing.border.Border;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.internal.charts.bar.BarChart;
-import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
-import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -187,9 +184,8 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		}
 	}
 	
-	private void updateColorList(final boolean newScheme) {
+	protected void updateColorList(final boolean newScheme) {
 		List<Color> colors = chart.getList(COLORS, Color.class);
-		final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 		final ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
 		final int nColors = getTotal();
 		
@@ -215,38 +211,24 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		
 		// Build list of editable colors
 		getColorListPnl().removeAll();
-		int count = 0;
 		
-		for (final Color c : colors) {
-			if (BarChartType.UP_DOWN.equals(type) && colors.size() > 2 && count != 0 && count != colors.size()-1) {
-				count++;
-				continue;
-			}
-			
+		for (int i = 0; i < total; i++) {
+			final Color c = colors.size() > i ? colors.get(i) : Color.GRAY;
 			final ColorPanel cp = new ColorPanel(c, "");
-			String label = "";
-			
-			if (chart instanceof HeatMapChart || 
-					(chart instanceof BarChart &&
-							(BarChartType.UP_DOWN.equals(type) || BarChartType.HEAT_STRIPS.equals(type)))) {
-				if (count == 0 || count == colors.size() - 1) {
-					label = count == 0 ? IconManager.ICON_ARROW_UP : IconManager.ICON_ARROW_DOWN;
-					cp.setFont(iconMgr.getIconFont(11));
-				}
-			} else {
-				label = "" + (count + 1);
-			}
-			
-			cp.setText(label);
+			style(cp, i);
 			
 			getColorListPnl().add(cp);
-			count++;
 		}
 		
 		getColorListPnl().repaint();
 	
 		if (!colors.isEmpty())
 			chart.set(COLORS, colors);
+	}
+	
+	protected void style(final ColorPanel cp, final int index) {
+		String label = "" + (index + 1);
+		cp.setText(label);
 	}
 	
 	protected int getTotal() {
@@ -290,7 +272,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	
 	// ==[ CLASSES ]====================================================================================================
 
-	class ColorPanel extends JLabel {
+	protected class ColorPanel extends JLabel {
 
 		private static final long serialVersionUID = -4506612946805038646L;
 		

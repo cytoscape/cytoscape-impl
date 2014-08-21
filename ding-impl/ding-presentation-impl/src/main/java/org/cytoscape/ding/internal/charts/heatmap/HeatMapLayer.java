@@ -91,7 +91,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 			Arrays.fill(seriesData[0], x);
 			
 			for (int y = 0; y < maxYSize; y++) {
-				final double z = zValues.size() > y ? zValues.get(y) : 0;
+				final double z = zValues.size() > y ? zValues.get(y) : Double.NaN;
 				seriesData[1][y] = y;
 				seriesData[2][y] = z;
 			}
@@ -130,17 +130,14 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 		final XYBlockRenderer renderer = new XYBlockRenderer();
 		
 		if (range != null) {
-			final boolean includeZero = range.min < 0 && range.max > 0;
 			final int colorsSize = colors != null ? colors.size() : 0;
 			
 			Color lowerColor = colorsSize > 0 ? colors.get(0) : Color.BLUE;
-			Color upperColor = colorsSize > 1 ? colors.get(colors.size() - 1) : Color.RED;
-			Color zeroColor = null;
+			Color zeroColor  = colorsSize > 1 ? colors.get(1) : Color.WHITE;
+			Color upperColor = colorsSize > 2 ? colors.get(2) : Color.RED;
+			Color nanColor   = colorsSize > 3 ? colors.get(3) : Color.GRAY;
 			
-			if (includeZero)
-				zeroColor = colorsSize > 1 ? colors.get(1) : Color.WHITE;
-			
-			final ColorScale scale = new ColorScale(range.min, range.max, lowerColor, zeroColor, upperColor);
+			final ColorScale scale = new ColorScale(range.min, range.max, lowerColor, zeroColor, upperColor, nanColor);
 			renderer.setPaintScale(scale);
 		}
 

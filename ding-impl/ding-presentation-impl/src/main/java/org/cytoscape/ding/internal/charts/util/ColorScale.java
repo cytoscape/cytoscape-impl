@@ -12,6 +12,7 @@ public class ColorScale implements PaintScale {
 	private final Color lowerColor;
 	private final Color zeroColor;
 	private final Color upperColor;
+	private final Color nanColor;
 	
 	private static double EPSILON = 1e-30;
 
@@ -19,12 +20,14 @@ public class ColorScale implements PaintScale {
 					  final double upperBound,
 					  final Color lowerColor,
 					  final Color zeroColor,
-					  final Color upperColor) {
+					  final Color upperColor,
+					  final Color nanColor) {
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
 		this.lowerColor = lowerColor;
 		this.zeroColor = zeroColor;
 		this.upperColor = upperColor;
+		this.nanColor = nanColor;
 	}
 
 	@Override
@@ -48,9 +51,16 @@ public class ColorScale implements PaintScale {
 	public Color getUpperColor() {
 		return upperColor;
 	}
+	
+	public Color getNanColor() {
+		return nanColor;
+	}
 
 	@Override
 	public Paint getPaint(double value) {
+		if (Double.isNaN(value))
+			return nanColor;
+		
 		final boolean hasZero = lowerBound < 0 && upperBound > 0 && zeroColor != null;
 		
 		if (hasZero && value < EPSILON && value > -EPSILON)

@@ -333,11 +333,37 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 			final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 			
 			if (type == BarChartType.HEAT_STRIPS)
-				return 3;
+				return total = 3;
 			if (type == BarChartType.UP_DOWN)
-				return 2;
+				return total = 2;
 			
 			return super.getTotal();
+		}
+		
+		@Override
+		protected void style(final ColorPanel cp, final int index) {
+			super.style(cp, index);
+			final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
+			
+			if (type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN) {
+				cp.setFont(iconMgr.getIconFont(11));
+				String label = "";
+				String toolTip = null;
+				
+				if (index == 0) {
+					label = IconManager.ICON_ARROW_UP;
+					toolTip = "Positive Numbers";
+				} else if (index == 1) {
+					label = type == BarChartType.UP_DOWN ? IconManager.ICON_ARROW_DOWN : "";
+					toolTip = type == BarChartType.UP_DOWN ? "Negative Numbers" : "Zero";
+				} else if (index == 2 && type == BarChartType.HEAT_STRIPS) {
+					label = IconManager.ICON_ARROW_DOWN;
+					toolTip = "Negative Numbers";
+				}
+				
+				cp.setText(label);
+				cp.setToolTipText(toolTip);
+			}
 		}
 	}
 }

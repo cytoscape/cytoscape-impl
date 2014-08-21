@@ -9,6 +9,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
+import org.cytoscape.ding.internal.charts.bar.BarChart;
+import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
@@ -74,7 +76,32 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
 		@Override
 		protected int getTotal() {
-			return total = 2;
+			return total = 4;
+		}
+		
+		@Override
+		protected void style(final ColorPanel cp, final int index) {
+			super.style(cp, index);
+			
+			cp.setFont(iconMgr.getIconFont(11));
+			String label = "";
+			String toolTip = null;
+			
+			if (index == 0) {
+				label = IconManager.ICON_ARROW_UP;
+				toolTip = "Positive Numbers";
+			} else if (index == 1) {
+				toolTip = "Zero";
+			} else if (index == 2) {
+				label = IconManager.ICON_ARROW_DOWN;
+				toolTip = "Negative Numbers";
+			} else if (index == 3) {
+				label = IconManager.ICON_BAN_CIRCLE;
+				toolTip = "Not Available";
+			}
+			
+			cp.setText(label);
+			cp.setToolTipText(toolTip);
 		}
 	}
 }
