@@ -64,7 +64,7 @@ import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.RegistryManager;
-import org.cytoscape.webservice.psicquic.task.SearchRecordsTask;
+import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
 import org.cytoscape.webservice.psicquic.ui.SelectorBuilder.Species;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -348,7 +348,7 @@ public class PSICQUICSearchUI extends JPanel {
 	}
 
 	private void search() {
-		final SearchRecordsTask searchTask = new SearchRecordsTask(client, mode);
+		final SearchRecoredsTask searchTask = new SearchRecoredsTask(client, mode);
 		final Map<String, String> activeSource = regManager.getActiveServices();
 		String query = this.queryArea.getText();
 
@@ -380,9 +380,9 @@ public class PSICQUICSearchUI extends JPanel {
 	 */
 	private final class SetTableTask extends AbstractTask {
 
-		final SearchRecordsTask searchTask;
+		final SearchRecoredsTask searchTask;
 
-		public SetTableTask(final SearchRecordsTask searchTask) {
+		public SetTableTask(final SearchRecoredsTask searchTask) {
 			this.searchTask = searchTask;
 		}
 
