@@ -101,7 +101,9 @@ public class CyActivator extends AbstractCyActivator {
 				CLIENT_DISCRIPTION, cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
 				tm, createViewTaskFactoryServiceRef, openBrowser, builder, vsBuilder, vmm, tagManager, cyPropertyServiceRef, registrar, networkMergeActionServiceRef);
 
-		registerAllServices(bc, psicquicClient, new Properties());
+		Properties psicquicClientProperties = new Properties();
+		psicquicClientProperties.put("id", "PSICQUICWebServiceClient");
+		registerAllServices(bc, psicquicClient, psicquicClientProperties);
 
 		final ExpandNodeContextMenuFactory expandNodeContextMenuFactory = new ExpandNodeContextMenuFactory(eh, vmm,
 				psicquicClient.getRestClient(), psicquicClient.getRegistryManager(), layoutManager, builder);

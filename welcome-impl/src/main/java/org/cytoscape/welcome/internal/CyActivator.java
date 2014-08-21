@@ -63,6 +63,7 @@ import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
+import org.cytoscape.io.webservice.WebServiceClient;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -116,7 +117,10 @@ public class CyActivator extends AbstractCyActivator {
 		final CyNetworkViewFactory networkViewFactory = getService(bc, CyNetworkViewFactory.class);
 		final CyLayoutAlgorithmManager layoutAlgorithmManager = getService(bc, CyLayoutAlgorithmManager.class);
 		final CyNetworkViewManager  networkViewManager = getService(bc, CyNetworkViewManager.class);
-		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, intActVSBuilder);
+
+		final WebServiceClient webServiceClient = getService(bc, WebServiceClient.class, "(id=PSICQUICWebServiceClient)");
+
+		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, intActVSBuilder, webServiceClient);
 
 		final CreateNewNetworkPanel createNewNetworkPanel = new CreateNewNetworkPanel(bc, dialogTaskManagerServiceRef,
 				importNetworkFileTF, importNetworkTF, dsManagerServiceRef, newEmptyNetworkViewFactory);

@@ -25,20 +25,30 @@ package org.cytoscape.welcome.internal.panel;
  */
 
 import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.webservice.WebServiceClient;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.welcome.internal.style.IntActXGMMLVisualStyleBuilder;
 import org.cytoscape.welcome.internal.task.BuildNetworkBasedOnGenesTaskFactory;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 
 public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements ActionListener
 {
@@ -54,9 +64,10 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 	private final VisualMappingManager visualMappingManager;
 	private final CyNetworkViewManager networkViewManager;
 	private final IntActXGMMLVisualStyleBuilder intActVSBuilder;
+	private final WebServiceClient webServiceClient;
 
 
-	public GeneSearchPanel(final DialogTaskManager taskManager, CyNetworkReaderManager networkReaderManager, CyNetworkManager networkManager, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layoutAlgorithmManager, VisualMappingManager visualMappingManager, CyNetworkViewManager networkViewManager, IntActXGMMLVisualStyleBuilder intActVSBuilder)
+	public GeneSearchPanel(final DialogTaskManager taskManager, CyNetworkReaderManager networkReaderManager, CyNetworkManager networkManager, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layoutAlgorithmManager, VisualMappingManager visualMappingManager, CyNetworkViewManager networkViewManager, IntActXGMMLVisualStyleBuilder intActVSBuilder, WebServiceClient webServiceClient)
 	{
 		this.taskManager = taskManager;
 		this.networkReaderManager = networkReaderManager;
@@ -65,6 +76,7 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 		this.layoutAlgorithmManager = layoutAlgorithmManager;
 		this.visualMappingManager = visualMappingManager;
 		this.networkViewManager = networkViewManager;
+		this.webServiceClient = webServiceClient;
 		initComponents();
 		this.intActVSBuilder = intActVSBuilder;
 	}
@@ -135,8 +147,59 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 		String selectedSpecies = species.getSelectedItem().toString();
 		java.util.List<String> geneNames = Arrays.asList(geneList.getText().split("\\s+"));
 
+		String query = "species:" + selectedSpecies;
+		if( geneNames != null && !geneNames.isEmpty() )
+		{
+			query += " AND ";
+			if( geneNames.size() > 1 )
+				query += "( ";
+			for( int i = 0; i < geneNames.size() - 1; i++ )
+			{
+				String geneName = geneNames.get(i);
+				query += "alias:" + geneName + " OR ";
+			}
+			query += "alias:" + geneNames.get(geneNames.size()-1);
+			if( geneNames.size() > 1 )
+				query += " )";
+		}
+		System.out.println("Query = " + query);
+
 		closeParentWindow();
-		BuildNetworkBasedOnGenesTaskFactory buildNetworkFactory = new BuildNetworkBasedOnGenesTaskFactory(networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, visualMappingManager, networkViewManager, intActVSBuilder, selectedSpecies, geneNames);
-		taskManager.execute( buildNetworkFactory.createTaskIterator() );
+		taskManager.execute( webServiceClient.createTaskIterator(query), new TaskObserver()
+		{
+			CyNetwork network;
+
+			@Override
+			public void taskFinished(ObservableTask task)
+			{
+				Object networks = task.getResults(Object.class);
+				if( networks instanceof Set )
+				{
+					Set networkSet = (Set)networks;
+					for( Object o : networkSet )
+					{
+						System.out.println("Hello there FOO BAR");
+						if( o instanceof CyNetwork )
+							network = (CyNetwork)o;
+						return;
+					}
+				}
+
+			}
+
+			@Override
+			public void allFinished(FinishStatus finishStatus)
+			{
+				System.out.println("All finished FOO BAR");
+				Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+				CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("force-directed");
+				for( CyNetworkView view : views )
+				{
+					taskManager.execute(layoutAlgorithm.createTaskIterator(view, layoutAlgorithm.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, ""));
+				}
+			}
+		});
+		//BuildNetworkBasedOnGenesTaskFactory buildNetworkFactory = new BuildNetworkBasedOnGenesTaskFactory(networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, visualMappingManager, networkViewManager, intActVSBuilder, selectedSpecies, geneNames);
+		//taskManager.execute( buildNetworkFactory.createTaskIterator() );
 	}
 }
