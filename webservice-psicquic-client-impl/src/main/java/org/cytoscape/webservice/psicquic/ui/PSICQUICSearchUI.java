@@ -25,14 +25,11 @@ package org.cytoscape.webservice.psicquic.ui;
  */
 
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -67,7 +64,7 @@ import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.RegistryManager;
-import org.cytoscape.webservice.psicquic.task.SearchRecoredsTask;
+import org.cytoscape.webservice.psicquic.task.SearchRecordsTask;
 import org.cytoscape.webservice.psicquic.ui.SelectorBuilder.Species;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -351,7 +348,7 @@ public class PSICQUICSearchUI extends JPanel {
 	}
 
 	private void search() {
-		final SearchRecoredsTask searchTask = new SearchRecoredsTask(client, mode);
+		final SearchRecordsTask searchTask = new SearchRecordsTask(client, mode);
 		final Map<String, String> activeSource = regManager.getActiveServices();
 		String query = this.queryArea.getText();
 
@@ -383,9 +380,9 @@ public class PSICQUICSearchUI extends JPanel {
 	 */
 	private final class SetTableTask extends AbstractTask {
 
-		final SearchRecoredsTask searchTask;
+		final SearchRecordsTask searchTask;
 
-		public SetTableTask(final SearchRecoredsTask searchTask) {
+		public SetTableTask(final SearchRecordsTask searchTask) {
 			this.searchTask = searchTask;
 		}
 

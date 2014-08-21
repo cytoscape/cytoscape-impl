@@ -47,10 +47,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
-import org.cytoscape.welcome.internal.panel.OpenPanel;
-import org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel;
+import org.cytoscape.welcome.internal.panel.*;
 
 public class WelcomeScreenDialog extends JDialog {
 	private static final long serialVersionUID = -2783045197802550425L;
@@ -74,18 +71,18 @@ public class WelcomeScreenDialog extends JDialog {
 
 	// Child Panels
 	private final CreateNewNetworkPanel importPanel;
-	private final OpenPanel openPanel;
+	private final GeneSearchPanel geneSearchPanel;
 	private final NewsAndLinkPanel helpPanel;
 
-	public WelcomeScreenDialog(final CreateNewNetworkPanel importPanel, final OpenPanel openPanel,
+	public WelcomeScreenDialog(final CreateNewNetworkPanel importPanel, final GeneSearchPanel geneSearchPanel,
 			final NewsAndLinkPanel helpPanel, final CyProperty<Properties> cyProps, final boolean hide) {
 
 		this.importPanel = importPanel;
-		this.openPanel = openPanel;
+		this.geneSearchPanel = geneSearchPanel;
 		this.helpPanel = helpPanel;
 
 		this.importPanel.setParentWindow(this);
-		this.openPanel.setParentWindow(this);
+		this.geneSearchPanel.setParentWindow(this);
 		this.helpPanel.setParentWindow(this);
 
 		this.cyProps = cyProps;
@@ -185,7 +182,7 @@ public class WelcomeScreenDialog extends JDialog {
 		newSessionPanel.setBackground(PANEL_COLOR);
 		newsPanel.setBackground(PANEL_COLOR);
 
-		setChildPanel(openSessionPanel, openPanel, "Open Recent Session");
+		setChildPanel(openSessionPanel, geneSearchPanel, "Build Network with Gene List");
 		setChildPanel(newSessionPanel, importPanel, "Start New Session");
 		setChildPanel(newsPanel, helpPanel, "News and Links");
 

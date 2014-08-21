@@ -37,7 +37,9 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.datasource.DataSourceManager;
+import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -47,14 +49,14 @@ import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
-import org.cytoscape.welcome.internal.panel.OpenPanel;
-import org.cytoscape.welcome.internal.panel.StatusPanel;
+import org.cytoscape.welcome.internal.panel.*;
+import org.cytoscape.welcome.internal.style.IntActXGMMLVisualStyleBuilder;
 import org.cytoscape.welcome.internal.task.ApplySelectedLayoutTaskFactory;
 import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
 import org.cytoscape.work.ServiceProperties;
@@ -101,8 +103,20 @@ public class CyActivator extends AbstractCyActivator {
 				"(cyPropertyName=cytoscape3.props)");
 
 		// Build Child Panels
-		final OpenPanel openPanel = new OpenPanel(recentlyOpenedTrackerServiceRef, dialogTaskManagerServiceRef,
-				openSessionTaskFactory);
+//		final OpenPanel openPanel = new OpenPanel(recentlyOpenedTrackerServiceRef, dialogTaskManagerServiceRef,
+//				openSessionTaskFactory);
+
+		//Replacing the OpenPanel with the GeneSearchPanel...
+
+		IntActXGMMLVisualStyleBuilder intActVSBuilder = new IntActXGMMLVisualStyleBuilder(vsFactoryServiceRef,
+				discreteMappingFactoryRef, passthroughMappingFactoryRef);
+
+		final CyNetworkReaderManager networkReaderManager = getService(bc, CyNetworkReaderManager.class);
+		final CyNetworkManager networkManager = getService(bc, CyNetworkManager.class);
+		final CyNetworkViewFactory networkViewFactory = getService(bc, CyNetworkViewFactory.class);
+		final CyLayoutAlgorithmManager layoutAlgorithmManager = getService(bc, CyLayoutAlgorithmManager.class);
+		final CyNetworkViewManager  networkViewManager = getService(bc, CyNetworkViewManager.class);
+		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, intActVSBuilder);
 
 		final CreateNewNetworkPanel createNewNetworkPanel = new CreateNewNetworkPanel(bc, dialogTaskManagerServiceRef,
 				importNetworkFileTF, importNetworkTF, dsManagerServiceRef, newEmptyNetworkViewFactory);
@@ -114,7 +128,7 @@ public class CyActivator extends AbstractCyActivator {
 				cyVersion);
 
 		// Show Welcome Screen
-		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, openPanel,
+		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, geneSearchPanel,
 				helpPanel, cytoscapePropertiesServiceRef, cytoscapeDesktop);
 		registerAllServices(bc, welcomeScreenAction, new Properties());
 

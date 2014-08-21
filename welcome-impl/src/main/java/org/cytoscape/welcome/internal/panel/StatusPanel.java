@@ -103,15 +103,24 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 	    news.setPreferredSize( new Dimension(this.getPreferredSize().width,500) );
 		news.setMinimumSize( new Dimension(10,10));
 		news.setEditable(false);
-		//news.setPreferredSize( new Dimension(50,5) );
-        try
+		Runnable getNews = new Runnable()
 		{
-            news.setPage(NEWS_URL);
-        }
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+
+			@Override
+			public void run()
+			{
+				try
+				{
+					news.setPage(NEWS_URL);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		};
+		(new Thread(getNews)).start();
+
 		panel.add(news);
 
 		JScrollPane sp = new JScrollPane(panel);
