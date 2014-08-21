@@ -27,6 +27,12 @@ public class PassthroughMappingSerializer implements VisualMappingSerializer<Pas
 		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_SIZE, "width,height");
 		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_WIDTH, "width");
 		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_HEIGHT, "height");
+		
+		// Colors
+		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_FILL_COLOR, "background-color");
+		COMPATIBLE_VP.put(BasicVisualLexicon.NODE_BORDER_PAINT, "border-color");
+		COMPATIBLE_VP.put(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, "line-color");
+		COMPATIBLE_VP.put(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, "line-color");
 
 		COMPATIBLE_VP.put(BasicVisualLexicon.EDGE_WIDTH, "width");
 	}
