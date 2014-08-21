@@ -44,7 +44,7 @@ public class TextTest extends TestCase {
 
 	public void testDualArgInvocation() throws Exception {
 		assertTrue(Framework.executeTest("=TEXT(0.1501,\".0###\")", ".1501"));
-		assertTrue(Framework.executeTest("=TEXT(0.1501,\".0\")", ".2"));
+		assertTrue(Framework.executeTest("=TEXT(0.1500,\".0\")", ".2"));
 		assertTrue(Framework.executeTest("=TEXT(0.1500,\".0###\")", ".15"));
 	}
 }
