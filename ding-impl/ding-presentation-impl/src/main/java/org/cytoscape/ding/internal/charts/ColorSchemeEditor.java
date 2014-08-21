@@ -35,6 +35,7 @@ import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.bar.BarChart;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
+import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -56,7 +57,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	private final Border COLOR_HOVER_BORDER;
 	
 	private JLabel colorSchemeLbl;
-	private JComboBox colorSchemeCmb;
+	private JComboBox<ColorScheme> colorSchemeCmb;
 	private JPanel colorListPnl;
 	
 	protected final T chart;
@@ -142,9 +143,9 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		);
 	}
 	
-	protected JComboBox getColorSchemeCmb() {
+	protected JComboBox<ColorScheme> getColorSchemeCmb() {
 		if (colorSchemeCmb == null) {
-			colorSchemeCmb = new JComboBox(colorSchemes);
+			colorSchemeCmb = new JComboBox<>(colorSchemes);
 			colorSchemeCmb.setRenderer(new ColorSchemeComboBoxRenderer());
 			updateColorSchemeCmb();
 			
@@ -172,6 +173,9 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	}
 	
 	private void updateColorSchemeCmb() {
+		if (colorSchemeCmb == null)
+			return;
+		
 		ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
 		
 		if (Arrays.asList(colorSchemes).contains(scheme)) {
@@ -222,7 +226,9 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 			final ColorPanel cp = new ColorPanel(c, "");
 			String label = "";
 			
-			if (BarChartType.UP_DOWN.equals(type) || BarChartType.HEAT_STRIPS.equals(type)) {
+			if (chart instanceof HeatMapChart || 
+					(chart instanceof BarChart &&
+							(BarChartType.UP_DOWN.equals(type) || BarChartType.HEAT_STRIPS.equals(type)))) {
 				if (count == 0 || count == colors.size() - 1) {
 					label = count == 0 ? IconManager.ICON_ARROW_UP : IconManager.ICON_ARROW_DOWN;
 					cp.setFont(iconMgr.getIconFont(11));

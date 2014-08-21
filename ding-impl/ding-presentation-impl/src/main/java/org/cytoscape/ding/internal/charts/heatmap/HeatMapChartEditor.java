@@ -18,19 +18,19 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
 	private static final long serialVersionUID = -8463795233540323840L;
 
-	private static final ColorScheme[] UP_DOWN_COLOR_SCHEMES;
+	private static final ColorScheme[] UP_ZERO_DOWN_COLOR_SCHEMES;
 	
 	static {
-		final List<ColorScheme> upDownSchemeList = new ArrayList<ColorScheme>();
+		final List<ColorScheme> upZeroDownSchemeList = new ArrayList<ColorScheme>();
 		
 		for (final ColorGradient cg : ColorGradient.values()) {
-			if (cg.getColors().size() == 2)
-				upDownSchemeList.add(new ColorScheme(cg));
+			if (cg.getColors().size() == 3)
+				upZeroDownSchemeList.add(new ColorScheme(cg));
 		}
 		
-		upDownSchemeList.add(CUSTOM);
+		upZeroDownSchemeList.add(CUSTOM);
 		
-		UP_DOWN_COLOR_SCHEMES = upDownSchemeList.toArray(new ColorScheme[upDownSchemeList.size()]);
+		UP_ZERO_DOWN_COLOR_SCHEMES = upZeroDownSchemeList.toArray(new ColorScheme[upZeroDownSchemeList.size()]);
 	}
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -58,7 +58,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	
 	@Override
 	protected ColorScheme[] getColorSchemes() {
-		return UP_DOWN_COLOR_SCHEMES;
+		return UP_ZERO_DOWN_COLOR_SCHEMES;
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

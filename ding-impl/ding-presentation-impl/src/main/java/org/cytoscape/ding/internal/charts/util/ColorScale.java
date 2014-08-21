@@ -9,16 +9,22 @@ public class ColorScale implements PaintScale {
 	
 	private final double lowerBound;
 	private final double upperBound;
-	private final Color color1;
-	private final Color color2;
+	private final Color lowerColor;
+	private final Color zeroColor;
+	private final Color upperColor;
 	
 	private static double EPSILON = 1e-30;
 
-	public ColorScale(final double lowerBound, final double upperBound, final Color color1, final Color color2) {
+	public ColorScale(final double lowerBound,
+					  final double upperBound,
+					  final Color lowerColor,
+					  final Color zeroColor,
+					  final Color upperColor) {
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
-		this.color1 = color1;
-		this.color2 = color2;
+		this.lowerColor = lowerColor;
+		this.zeroColor = zeroColor;
+		this.upperColor = upperColor;
 	}
 
 	@Override
@@ -31,28 +37,46 @@ public class ColorScale implements PaintScale {
 		return upperBound;
 	}
 	
-	public Color getColor1() {
-		return color1;
+	public Color getLowerColor() {
+		return lowerColor;
 	}
 	
-	public Color getColor2() {
-		return color2;
+	public Color getZeroColor() {
+		return zeroColor;
+	}
+	
+	public Color getUpperColor() {
+		return upperColor;
 	}
 
 	@Override
 	public Paint getPaint(double value) {
-		final double denom = (upperBound - lowerBound);
-		final double f = (denom < EPSILON && denom > -EPSILON ? 0 : (value - lowerBound) / denom);
+		final boolean hasZero = lowerBound < 0 && upperBound > 0 && zeroColor != null;
+		
+		if (hasZero && value < EPSILON && value > -EPSILON)
+			return zeroColor;
+		
+		final double denom;
+		
+		if (hasZero)
+			denom = value < 0 ? -lowerBound : upperBound;
+		else
+			denom = upperBound - lowerBound;
+		
+		final double f = (denom < EPSILON && denom > -EPSILON) ? 0 : (value - lowerBound) / denom;
+		
+		final Color c1 = hasZero && value > 0 ? zeroColor : lowerColor;
+		final Color c2 = hasZero && value < 0 ? zeroColor : upperColor;
         
-        int r1 = color1.getRed();
-        int g1 = color1.getGreen();
-        int b1 = color1.getBlue();
-        int a1 = color1.getAlpha();
+        int r1 = c1.getRed();
+        int g1 = c1.getGreen();
+        int b1 = c1.getBlue();
+        int a1 = c1.getAlpha();
         
-        int r2 = color2.getRed();
-        int g2 = color2.getGreen();
-        int b2 = color2.getBlue();
-        int a2 = color2.getAlpha();
+        int r2 = c2.getRed();
+        int g2 = c2.getGreen();
+        int b2 = c2.getBlue();
+        int a2 = c2.getAlpha();
         
         double q = 1.0 - f;
         
