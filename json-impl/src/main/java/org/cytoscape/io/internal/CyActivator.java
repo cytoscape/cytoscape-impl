@@ -38,7 +38,6 @@ public class CyActivator extends AbstractCyActivator {
 		super();
 	}
 
-
 	public void start(BundleContext bc) {
 		// Importing Services
 		final CyApplicationConfiguration appConfig = getService(bc, CyApplicationConfiguration.class);
@@ -51,8 +50,7 @@ public class CyActivator extends AbstractCyActivator {
 		final CyRootNetworkManager cyRootNetworkManager = getService(bc, CyRootNetworkManager.class);
 		final CyNetworkViewManager viewManager = getService(bc, CyNetworkViewManager.class);
 		final VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
-		
-		
+
 		// ///////////////// Readers ////////////////////////////
 		final BasicCyFileFilter cytoscapejsReaderFilter = new BasicCyFileFilter(new String[] { "cyjs", "json" },
 				new String[] { "application/json" }, "Cytoscape.js JSON", DataCategory.NETWORK, streamUtil);
@@ -60,10 +58,10 @@ public class CyActivator extends AbstractCyActivator {
 				cytoscapejsReaderFilter, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		final Properties cytoscapeJsNetworkReaderFactoryProps = new Properties();
 
-		// This is the unique identifier for this reader.  3rd party developer can use this service by using this ID.
+		// This is the unique identifier for this reader. 3rd party developer
+		// can use this service by using this ID.
 		cytoscapeJsNetworkReaderFactoryProps.put(ID, "cytoscapejsNetworkReaderFactory");
 		registerService(bc, jsReaderFactory, InputStreamTaskFactory.class, cytoscapeJsNetworkReaderFactoryProps);
-
 
 		// ///////////////// Writers ////////////////////////////
 		final ObjectMapper cytoscapeJsMapper = new ObjectMapper();
@@ -75,25 +73,38 @@ public class CyActivator extends AbstractCyActivator {
 				new String[] { "application/json" }, "Style for cytoscape.js", DataCategory.VIZMAP, streamUtil);
 
 		// For Cytoscape.js
-		final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory = new CytoscapeJsNetworkWriterFactory(cytoscapejsFilter, cytoscapeJsMapper);
-		
+		final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory = new CytoscapeJsNetworkWriterFactory(
+				cytoscapejsFilter, cytoscapeJsMapper);
+
 		// Use this ID to get this service in other bundles.
 		final Properties jsWriterFactoryProperties = new Properties();
 		jsWriterFactoryProperties.put(ID, "cytoscapejsNetworkWriterFactory");
 		registerAllServices(bc, cytoscapejsWriterFactory, jsWriterFactoryProperties);
 
 		// For Visual Style
-		final CytoscapeJsVisualStyleWriterFactory jsonVSWriterFactory = new CytoscapeJsVisualStyleWriterFactory(vizmapJsonFilter, applicationManager, cyVersion);
-		
+		final CytoscapeJsVisualStyleWriterFactory jsonVSWriterFactory = new CytoscapeJsVisualStyleWriterFactory(
+				vizmapJsonFilter, applicationManager, cyVersion);
+
 		// Use this ID to get this service in other bundles.
 		final Properties jsVisualStyleWriterFactoryProperties = new Properties();
 		jsWriterFactoryProperties.put(ID, "cytoscapejsVisualStyleWriterFactory");
 		registerAllServices(bc, jsonVSWriterFactory, jsVisualStyleWriterFactoryProperties);
-		
-		final BasicCyFileFilter webSessionFilter = new BasicCyFileFilter(new String[]{"zip"}, new String[]{"application/plain"}, "Web archive file (.zip)",DataCategory.UNSPECIFIED, streamUtil);
-		final CySessionWriterFactory webSessionWriterFactory = new WebSessionWriterFactoryImpl(jsonVSWriterFactory, vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter, appConfig);
+
+		final BasicCyFileFilter webSessionFilter = new BasicCyFileFilter(new String[] { "zip" },
+				new String[] { "application/plain" }, "Web archive file (.zip)", DataCategory.UNSPECIFIED, streamUtil);
+
+		final CySessionWriterFactory webSessionWriterFactory = new WebSessionWriterFactoryImpl(jsonVSWriterFactory,
+				vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter, appConfig, applicationManager,
+				WebSessionWriterFactoryImpl.FULL_EXPORT);
 		Properties webSessionWriterFactoryProps = new Properties();
-		webSessionWriterFactoryProps.put(ID, "webSessionWriterFactory");
+		webSessionWriterFactoryProps.put(ID, "fullWebSessionWriterFactory");
 		registerAllServices(bc, webSessionWriterFactory, webSessionWriterFactoryProps);
+
+		final CySessionWriterFactory simpleWebSessionWriterFactory = new WebSessionWriterFactoryImpl(
+				jsonVSWriterFactory, vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter, appConfig,
+				applicationManager, WebSessionWriterFactoryImpl.SIMPLE_EXPORT);
+		Properties simpleWebSessionWriterFactoryProps = new Properties();
+		simpleWebSessionWriterFactoryProps.put(ID, "simpleWebSessionWriterFactory");
+		registerAllServices(bc, simpleWebSessionWriterFactory, simpleWebSessionWriterFactoryProps);
 	}
 }

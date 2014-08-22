@@ -10,6 +10,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.write.json.CytoscapeJsNetworkWriterFactory;
 import org.cytoscape.io.write.CySessionWriterFactory;
@@ -29,6 +30,10 @@ public class WebSessionWriterFactoryImpl implements CyWriterFactory, CySessionWr
 
 	private static final String DEF_WEB_RESOURCE = "web.zip";
 	private static final String WEB_RESOURCE_DIR_NAME = "web";
+	
+	public static final String FULL_EXPORT = "full";
+	public static final String SIMPLE_EXPORT = "simple";
+	
 
 	private static final int BUFFER_SIZE = 4096;
 
@@ -38,11 +43,14 @@ public class WebSessionWriterFactoryImpl implements CyWriterFactory, CySessionWr
 	private final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory;
 	private final CyNetworkViewManager viewManager;
 	private final CyApplicationConfiguration appConfig;
+	private final CyApplicationManager cyApplicationManager;
+	private final String exportType;
+
 
 	public WebSessionWriterFactoryImpl(final VizmapWriterFactory jsonStyleWriterFactory,
 			final VisualMappingManager vmm, final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory,
 			final CyNetworkViewManager viewManager, final CyFileFilter filter,
-			final CyApplicationConfiguration appConfig) {
+			final CyApplicationConfiguration appConfig, final CyApplicationManager cyApplicationManager, final String exportType) {
 
 		this.jsonStyleWriterFactory = jsonStyleWriterFactory;
 		this.vmm = vmm;
@@ -50,6 +58,8 @@ public class WebSessionWriterFactoryImpl implements CyWriterFactory, CySessionWr
 		this.viewManager = viewManager;
 		this.filter = filter;
 		this.appConfig = appConfig;
+		this.exportType = exportType;
+		this.cyApplicationManager = cyApplicationManager;
 
 		try {
 			extractDefault();
@@ -101,8 +111,15 @@ public class WebSessionWriterFactoryImpl implements CyWriterFactory, CySessionWr
 
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CySession session) {
-		return new WebSessionWriterImpl(outputStream, jsonStyleWriterFactory, vmm, cytoscapejsWriterFactory,
+		if(exportType.equals(FULL_EXPORT)) {
+			return new WebSessionWriterImpl(outputStream, exportType, jsonStyleWriterFactory, vmm, cytoscapejsWriterFactory,
 				viewManager, appConfig);
+		} else if(exportType.equals(SIMPLE_EXPORT)) {
+			return new SimpleWebSessionWriterImpl(outputStream, exportType, jsonStyleWriterFactory, vmm, cytoscapejsWriterFactory,
+				viewManager, appConfig, cyApplicationManager);
+		} else {
+			throw new IllegalArgumentException("Invalid export type.");
+		}
 	}
 
 	@Override

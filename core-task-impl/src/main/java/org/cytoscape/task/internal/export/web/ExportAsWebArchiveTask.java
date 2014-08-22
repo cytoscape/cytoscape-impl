@@ -9,6 +9,8 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
+
 
 /**
  * Task to export all networks and styles as Cytoscape.js style JSON.
@@ -17,6 +19,9 @@ import org.cytoscape.work.Tunable;
 public class ExportAsWebArchiveTask extends AbstractTask {
 
 	private static final String FILE_EXTENSION = ".zip";
+	
+	private static final String AS_SPA = "Full web application";
+	private static final String AS_SIMPLE_PAGE = "Simple viewer for current network only";
 
 	@ProvidesTitle
 	public String getTitle() {
@@ -25,13 +30,21 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 
 	@Tunable(description = "Export Networks and Styles As:", params = "fileCategory=session;input=false")
 	public File file;
+	
+	@Tunable(description = "Export as:")
+	public ListSingleSelection<String> outputFormat;
 
-	private final CySessionWriterFactory writerFactory;
+	private final CySessionWriterFactory fullWriterFactory;
+	private final CySessionWriterFactory simpleWriterFactory;
+	
 	private CyWriter writer;
 
-	public ExportAsWebArchiveTask(final CySessionWriterFactory writerFactory) {
+	public ExportAsWebArchiveTask(final CySessionWriterFactory fullWriterFactory,final CySessionWriterFactory simpleWriterFactory) {
 		super();
-		this.writerFactory = writerFactory;
+		this.fullWriterFactory = fullWriterFactory;
+		this.simpleWriterFactory = simpleWriterFactory;
+		
+		this.outputFormat = new ListSingleSelection<String>(AS_SPA, AS_SIMPLE_PAGE);
 	}
 
 	/**
@@ -39,6 +52,9 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 	 */
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		// Get export type
+		final String exportType = this.outputFormat.getSelectedValue();
+		
 		taskMonitor.setProgress(0.05);
 
 		// Add extension if missing.
@@ -47,7 +63,15 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 
 		// Compress everything as a zip archive.
 		final FileOutputStream os = new FileOutputStream(file);
-		final CyWriter writer = writerFactory.createWriter(os, null);
+		CyWriter writer = null;
+		if(exportType.equals(AS_SPA)) {
+			writer = fullWriterFactory.createWriter(os, null);
+		} else if(exportType.equals(AS_SIMPLE_PAGE)) {
+			writer = simpleWriterFactory.createWriter(os, null);
+		} else {
+			os.close();
+			throw new NullPointerException("Could not find web session writer.");
+		}
 		writer.run(taskMonitor);
 		os.close();
 

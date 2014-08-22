@@ -32,20 +32,21 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
+public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebSessionWriter {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSessionWriterImpl.class);
 
-	private static final String FOLDER_NAME = "/web_session/";
-	private static final String WEB_RESOURCE_NAME = "/web";
+	protected static final String FOLDER_NAME = "/web_session/";
 	private static final String FILE_LIST_NAME = "filelist";
 	
-	private File webResourceDirectory;
+	protected static final String WEB_RESOURCE_NAME = "/web";
+
+	protected File webResourceDirectory;
 	
-	private ZipOutputStream zos;
+	protected ZipOutputStream zos;
 	private TaskMonitor taskMonitor;
 
-	private final OutputStream outputStream;
+	protected final OutputStream outputStream;
 	private final VizmapWriterFactory jsonStyleWriterFactory;
 	private final VisualMappingManager vmm;
 	private final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory;
@@ -53,8 +54,10 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 
 	private final Map<String, File> name2fileMap;
 	
+	protected final String exportType;
+	
 
-	public WebSessionWriterImpl(final OutputStream outputStream, final VizmapWriterFactory jsonStyleWriterFactory,
+	public WebSessionWriterImpl(final OutputStream outputStream, final String exportType, final VizmapWriterFactory jsonStyleWriterFactory,
 			final VisualMappingManager vmm, final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory,
 			final CyNetworkViewManager viewManager, final CyApplicationConfiguration appConfig) {
 		this.outputStream = outputStream;
@@ -65,10 +68,10 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 		
 		this.webResourceDirectory = appConfig.getConfigurationDirectoryLocation();
 		this.name2fileMap = new HashMap<String, File>();
+		this.exportType = exportType;
+
 	}
-	
-	
-	
+
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
@@ -109,16 +112,17 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 	}
 	
 
-	private void writeFiles(TaskMonitor tm) throws Exception {
+	@Override
+	public void writeFiles(TaskMonitor tm) throws Exception {
 		// Phase 0: Prepare local temp files. This is necessary because
 		// Jackson library forces to close the stream!
 
 		// Phase 1: Write all network files as Cytoscape.js-style JSON
 		tm.setProgress(0.1);
 		tm.setStatusMessage("Saving networks as Cytoscape.js JSON...");
-		final Collection<File> files = createNetworkViewFiles();
+		final Set<CyNetworkView> netViews = viewManager.getNetworkViewSet();
+		final Collection<File> files = createNetworkViewFiles(netViews);
 		tm.setProgress(0.7);
-
 		if (cancelled)
 			return;
 
@@ -139,16 +143,12 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 		files.add(fileList);
 		
 		// Phase 4: Zip everything
-		final File webResourceFiles = new File(webResourceDirectory, WEB_RESOURCE_NAME);
-		System.out.println("CONF DIR---------> " + webResourceFiles.getAbsolutePath());
+		final File webResourceFiles = new File(webResourceDirectory, WEB_RESOURCE_NAME + "/" + exportType);
 		files.add(webResourceFiles);
 		zipAll(files);
 
 		if (cancelled)
 			return;
-
-		// Phase 3: HTML and other resource files
-		tm.setStatusMessage("Saving HTML5 visualization code...");
 
 		tm.setStatusMessage("Done.");
 		tm.setProgress(1.0);
@@ -180,7 +180,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 				final String newFileName = FOLDER_NAME + "data/" + file.getName();
 				out.putNextEntry(new ZipEntry(newFileName));
 			} else {
-				final String newFileName = file.getAbsolutePath().replace(webResourceDirectory.getAbsolutePath() + WEB_RESOURCE_NAME, "");
+				final String newFileName = file.getAbsolutePath().replace(webResourceDirectory.getAbsolutePath() + WEB_RESOURCE_NAME + "/" + exportType, "");
 				out.putNextEntry(new ZipEntry(FOLDER_NAME + newFileName));
 			}
 			
@@ -199,7 +199,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 	 * 
 	 * @throws Exception
 	 */
-	private final File createStyleFile() throws Exception {
+	protected final File createStyleFile() throws Exception {
 		// Write all Styles into one JSON file.
 		final Set<VisualStyle> styles = vmm.getAllVisualStyles();
 		File styleFile = File.createTempFile("style_", ".json");
@@ -209,13 +209,11 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter {
 	}
 
 
-	/**
-	 * Writes network view JSON files to the zip archive.
-	 * 
-	 * @throws Exception
-	 */
-	private Collection<File> createNetworkViewFiles() throws Exception {
-		final Set<CyNetworkView> netViews = viewManager.getNetworkViewSet();
+	protected Collection<File> createNetworkViewFiles(final Collection<CyNetworkView> netViews) throws Exception {
+		if(netViews.isEmpty()) {
+			throw new IllegalArgumentException("No network view.");
+		}
+		
 		final Collection<File> networkFiles = new HashSet<File>();
 		for (final CyNetworkView view : netViews) {
 			if (cancelled)

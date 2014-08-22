@@ -9,7 +9,8 @@ import org.cytoscape.work.TaskIterator;
 
 public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 
-	private CySessionWriterFactory writerFactory;
+	private CySessionWriterFactory fullWriterFactory;
+	private CySessionWriterFactory simpleWriterFactory;
 
 	/**
 	 * 
@@ -20,8 +21,12 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void registerFactory(final CySessionWriterFactory writerFactory, final Map props) {
-		if (props.get(ServiceProperties.ID).equals("webSessionWriterFactory")) {
-			this.writerFactory = writerFactory;
+		if (props.get(ServiceProperties.ID).equals("fullWebSessionWriterFactory")) {
+			this.fullWriterFactory = writerFactory;
+		}
+
+		if (props.get(ServiceProperties.ID).equals("simpleWebSessionWriterFactory")) {
+			this.simpleWriterFactory = writerFactory;
 		}
 	}
 
@@ -31,6 +36,6 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ExportAsWebArchiveTask(writerFactory));
+		return new TaskIterator(new ExportAsWebArchiveTask(fullWriterFactory, simpleWriterFactory));
 	}
 }
