@@ -9,8 +9,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
-import org.cytoscape.ding.internal.charts.bar.BarChart;
-import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
@@ -89,12 +87,12 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 			
 			if (index == 0) {
 				label = IconManager.ICON_ARROW_UP;
-				toolTip = "Positive Numbers";
+				toolTip = "Upper Bound";
 			} else if (index == 1) {
 				toolTip = "Zero";
 			} else if (index == 2) {
 				label = IconManager.ICON_ARROW_DOWN;
-				toolTip = "Negative Numbers";
+				toolTip = "Lower Bound";
 			} else if (index == 3) {
 				label = IconManager.ICON_BAN_CIRCLE;
 				toolTip = "Not Available";
