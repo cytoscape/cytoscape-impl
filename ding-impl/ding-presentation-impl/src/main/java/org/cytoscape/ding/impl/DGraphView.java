@@ -1822,14 +1822,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// If we're updateing more then 1/4 of the nodes or edges, just redraw the entire network to avoid
 		// the overhead of creating the SpacialIndex2D and CySubNetwork
-		if ((nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4)
+		if (!largeModel ||
+				((nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4))
 			return renderGraph(graphics, lod, bgColor, xCenter, yCenter, scale, hash);
 
 		// Make sure the graphics is initialized
 		if (!graphics.isInitialized())
 			graphics.clear(bgColor, xCenter, yCenter, scale);
 
-		// System.out.println("DGraphView: renderSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
+		System.out.println("DGraphView: renderSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		Color bg = (Color)bgColor;
 		if (bg != null)
 			bg = new Color(bg.getRed(), bg.getBlue(), bg.getGreen(), 0);
@@ -1874,7 +1875,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	int renderGraph(GraphGraphics graphics, final GraphLOD lod,
 	                Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash) {
 		int lastRenderDetail = 0;
-		// System.out.println("DGraphView: renderGraph");
+		System.out.println("DGraphView: renderGraph");
 		// Thread.dumpStack();
 		try {
 		synchronized (m_lock) {
