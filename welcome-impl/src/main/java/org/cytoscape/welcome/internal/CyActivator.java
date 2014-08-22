@@ -56,7 +56,6 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.welcome.internal.panel.*;
-import org.cytoscape.welcome.internal.style.IntActXGMMLVisualStyleBuilder;
 import org.cytoscape.welcome.internal.task.ApplySelectedLayoutTaskFactory;
 import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
 import org.cytoscape.work.ServiceProperties;
@@ -109,9 +108,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		//Replacing the OpenPanel with the GeneSearchPanel...
 
-		IntActXGMMLVisualStyleBuilder intActVSBuilder = new IntActXGMMLVisualStyleBuilder(vsFactoryServiceRef,
-				discreteMappingFactoryRef, passthroughMappingFactoryRef);
-
 		final CyNetworkReaderManager networkReaderManager = getService(bc, CyNetworkReaderManager.class);
 		final CyNetworkManager networkManager = getService(bc, CyNetworkManager.class);
 		final CyNetworkViewFactory networkViewFactory = getService(bc, CyNetworkViewFactory.class);
@@ -120,7 +116,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		final WebServiceClient webServiceClient = getService(bc, WebServiceClient.class, "(id=PSICQUICWebServiceClient)");
 
-		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, intActVSBuilder, webServiceClient);
+		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, webServiceClient);
 
 		final CreateNewNetworkPanel createNewNetworkPanel = new CreateNewNetworkPanel(bc, dialogTaskManagerServiceRef,
 				importNetworkFileTF, importNetworkTF, dsManagerServiceRef, newEmptyNetworkViewFactory);

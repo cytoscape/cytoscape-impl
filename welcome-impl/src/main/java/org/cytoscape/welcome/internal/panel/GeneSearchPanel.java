@@ -34,8 +34,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.welcome.internal.style.IntActXGMMLVisualStyleBuilder;
-import org.cytoscape.welcome.internal.task.BuildNetworkBasedOnGenesTaskFactory;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
@@ -63,11 +61,10 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 	private final CyLayoutAlgorithmManager layoutAlgorithmManager;
 	private final VisualMappingManager visualMappingManager;
 	private final CyNetworkViewManager networkViewManager;
-	private final IntActXGMMLVisualStyleBuilder intActVSBuilder;
 	private final WebServiceClient webServiceClient;
 
 
-	public GeneSearchPanel(final DialogTaskManager taskManager, CyNetworkReaderManager networkReaderManager, CyNetworkManager networkManager, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layoutAlgorithmManager, VisualMappingManager visualMappingManager, CyNetworkViewManager networkViewManager, IntActXGMMLVisualStyleBuilder intActVSBuilder, WebServiceClient webServiceClient)
+	public GeneSearchPanel(final DialogTaskManager taskManager, CyNetworkReaderManager networkReaderManager, CyNetworkManager networkManager, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layoutAlgorithmManager, VisualMappingManager visualMappingManager, CyNetworkViewManager networkViewManager, WebServiceClient webServiceClient)
 	{
 		this.taskManager = taskManager;
 		this.networkReaderManager = networkReaderManager;
@@ -78,7 +75,6 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 		this.networkViewManager = networkViewManager;
 		this.webServiceClient = webServiceClient;
 		initComponents();
-		this.intActVSBuilder = intActVSBuilder;
 	}
 
 	private void initComponents()
