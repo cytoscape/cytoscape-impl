@@ -52,6 +52,9 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 	 */
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		if(file == null) {
+			return;
+		}
 		// Get export type
 		final String exportType = this.outputFormat.getSelectedValue();
 		
