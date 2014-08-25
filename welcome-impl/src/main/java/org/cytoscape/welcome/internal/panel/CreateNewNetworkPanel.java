@@ -25,8 +25,6 @@ package org.cytoscape.welcome.internal.panel;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -48,16 +46,17 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.io.DataCategory;
@@ -83,7 +82,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
 	
 	private static final Icon NEW_ICON;
-	private static final Icon PRESET_ICON;
 	private static final Icon DATABASE_ICON;
 	private static final Icon OPEN_ICON;
 	
@@ -99,32 +97,24 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		BufferedImage newImage = null;
 		BufferedImage databaseImage = null;
 		BufferedImage loadImage = null;
-		BufferedImage presetImage = null;
 
 		try {
-			newImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/empty.png"));
+			newImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/new-empty-32.png"));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
 
 		try {
-			databaseImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(
-					"images/Icons/remote.png"));
+			databaseImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/import-net-db-32.png"));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
 		try {
-			loadImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/open.png"));
+			loadImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/import-net-32.png"));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
 		
-		try {
-			presetImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/logo48.png"));
-		} catch (IOException e) {
-			logger.warn("Could not create Icon.", e);
-		}
-
 		if (newImage != null)
 			NEW_ICON = new ImageIcon(newImage);
 		else
@@ -140,29 +130,24 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		else
 			OPEN_ICON = null;
 		
-		if (presetImage != null)
-			PRESET_ICON = new ImageIcon(presetImage);
-		else
-			PRESET_ICON = null;
-
 		// Species ICON
 		try {
 			SPECIES_ICON.put("H. sapiens", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Homo_sapiens_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/human-32.png"))));
 			SPECIES_ICON.put("S. cerevisiae", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Saccharomyces_cerevisiae_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/yeast-32.png"))));
 			SPECIES_ICON.put("D. melanogaster", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Drosophila_melanogaster_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/fly-32.png"))));
 			SPECIES_ICON.put("M. musculus", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Mus_musculus_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/mouse-32.png"))));
 			SPECIES_ICON.put("C. elegans", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Caenorhabditis_elegans_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/worm-32.png"))));
 			SPECIES_ICON.put("A. thaliana", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Arabidopsis_thaliana_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/plant-32.png"))));
 			SPECIES_ICON.put("D. rerio", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Danio_rerio_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/fish-32.png"))));
 			SPECIES_ICON.put("E. coli", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Escherichia_coli_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/bacteria-32.png"))));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
@@ -231,7 +216,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 						final JButton button = new JButton(sourceLabel);
 						buttonMap.put(sourceLabel, button);
-						button.setPreferredSize(new Dimension(50, 20));
 						button.setHorizontalAlignment(SwingConstants.LEFT);
 						button.setToolTipText(tooltip);
 						if(sourceLabel.contains(".")) {
@@ -272,13 +256,11 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	private void initComponents() {
 		// Basic layout of this panel (2 rows)
-		this.setLayout(new GridLayout(2,1));
-		
-		// Label border
-		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
+		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		this.setBorder(BorderFactory.createEmptyBorder(5, 5, 3, 5));
 
 		final JButton createEmptySessionButton = new JButton();
-		createEmptySessionButton.setText("New/Empty Network");
+		createEmptySessionButton.setText("With Empty Network");
 		createEmptySessionButton.setIcon(NEW_ICON);
 		createEmptySessionButton.setHorizontalAlignment(SwingConstants.LEFT);
 		createEmptySessionButton.setIconTextGap(20);
@@ -302,9 +284,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 			}
 		});
 
-		JPanel dbButtonPanel = new JPanel();
-		dbButtonPanel.setLayout(new GridLayout(1,1));
-		dbButtonPanel.setOpaque(false);
 		JButton dbButton = new JButton("From Network Database...");
 		dbButton.setIcon(DATABASE_ICON);
 		dbButton.setIconTextGap(20);
@@ -325,19 +304,26 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		});
 		
 		final JPanel buttonPanel = new JPanel();
+		buttonPanel.setOpaque(false);
 		buttonPanel.setLayout(new GridLayout(3, 1));
 		buttonPanel.add(createEmptySessionButton);
 		buttonPanel.add(importFromFileButton);
 		buttonPanel.add(dbButton);
-		this.add(buttonPanel);
+		
+		final JLabel orgNetTitle = new JLabel("From Organism Network");
+		orgNetTitle.setHorizontalAlignment(JLabel.CENTER);
+		orgNetTitle.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
 
 		final JPanel presetPanel = new JPanel();
-		presetPanel.setBorder(BorderFactory.createTitledBorder("From Organism Network"));
 		presetPanel.setOpaque(false);
 		presetPanel.setLayout(new BorderLayout());
 		JScrollPane buttonScrollPane = new JScrollPane();
+		buttonScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		buttonScrollPane.setViewportView(sourceButtons);
+		presetPanel.add(orgNetTitle, BorderLayout.NORTH);
 		presetPanel.add(buttonScrollPane, BorderLayout.CENTER);
+		
+		this.add(buttonPanel);
 		this.add(presetPanel);
 		
 		createPresetTasks();

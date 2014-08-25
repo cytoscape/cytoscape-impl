@@ -27,56 +27,74 @@ package org.cytoscape.welcome.internal;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.welcome.internal.panel.*;
 
 public class WelcomeScreenDialog extends JDialog {
+	
 	private static final long serialVersionUID = -2783045197802550425L;
 
 	private static final String TITLE = "Welcome to Cytoscape";
-
 	private static final Color PANEL_COLOR = new Color(0xff, 0xff, 0xff, 200);
-	private static final Color LOGO_PANEL_COLOR = new Color(0xff, 0xff, 0xff, 100);
-
-	private static final String IMAGE_LOCATION = "images/background.png";
-	private BufferedImage bgImage;
-
 	private static final Dimension DEF_SIZE = new Dimension(668, 500);
 
-	private BackgroundImagePanel basePanel;
 	private JPanel mainPanel;
+	private JCheckBox checkBox;
 
 	private final CyProperty<Properties> cyProps;
-
-	private JCheckBox checkBox;
 
 	// Child Panels
 	private final CreateNewNetworkPanel importPanel;
 	private final GeneSearchPanel geneSearchPanel;
-	private final NewsAndLinkPanel helpPanel;
+	private JPanel linksPanel;
+	private final NewsPanel helpPanel;
+	
+	private JLabel about;
+	private JLabel manual;
+	private JLabel tutorial;
+	private JLabel bugReport;
 
-	public WelcomeScreenDialog(final CreateNewNetworkPanel importPanel, final GeneSearchPanel geneSearchPanel,
-			final NewsAndLinkPanel helpPanel, final CyProperty<Properties> cyProps, final boolean hide) {
+	private final List<JLabel> labelSet;
+	private final Map<JLabel, String> urlMap;
 
+	private final OpenBrowser openBrowser;
+	private final CyVersion version;
+	
+	public WelcomeScreenDialog(final CreateNewNetworkPanel importPanel,
+							   final GeneSearchPanel geneSearchPanel,
+							   final NewsPanel helpPanel,
+							   final CyProperty<Properties> cyProps,
+							   final boolean hide,
+							   final OpenBrowser openBrowser,
+							   final CyVersion version) {
 		this.importPanel = importPanel;
 		this.geneSearchPanel = geneSearchPanel;
 		this.helpPanel = helpPanel;
@@ -86,7 +104,12 @@ public class WelcomeScreenDialog extends JDialog {
 		this.helpPanel.setParentWindow(this);
 
 		this.cyProps = cyProps;
+		this.openBrowser = openBrowser;
+		this.version = version;
 
+		labelSet = new ArrayList<JLabel>();
+		urlMap = new HashMap<JLabel, String>();
+		
 		initComponents();
 
 		this.setTitle(TITLE);
@@ -107,34 +130,45 @@ public class WelcomeScreenDialog extends JDialog {
 	}
 
 	private void initComponents() {
-		try {
-			bgImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(IMAGE_LOCATION));
-		} catch (IOException e) {
-			e.printStackTrace();
+		linksPanel = new JPanel();
+		linksPanel.setOpaque(false);
+		
+		about = new JLabel("<html><u>About Cytoscape</u></html>");
+		manual = new JLabel("<html><u>Documentation</u></html>");
+		tutorial = new JLabel("<html><u>Tutorials</u></html>");
+		bugReport = new JLabel("<html><u>Report a bug</u></html>");
+		
+		labelSet.add(about);
+		labelSet.add(manual);
+		labelSet.add(tutorial);
+		labelSet.add(bugReport);
+		
+		// get Cytoscape version
+		String cyversion = version.getVersion();
+
+		// get OS string
+		String os_str = System.getProperty("os.name") + "_" + System.getProperty("os.version");
+		os_str = os_str.replace(" ", "_");
+		
+		urlMap.put(about, "http://www.cytoscape.org/what_is_cytoscape.html");
+		urlMap.put(manual, "http://www.cytoscape.org/documentation_users.html");
+		urlMap.put(tutorial, "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape3");
+		urlMap.put(bugReport, "http://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php?cyversion=" + cyversion
+				+ "&os=" + os_str);
+
+		for (final JLabel label : labelSet) {
+			label.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+			label.setFont(WelcomeScreenChildPanel.LINK_FONT);
+			label.setForeground(WelcomeScreenChildPanel.LINK_FONT_COLOR);
+			label.setHorizontalAlignment(SwingConstants.LEFT);
+			label.setHorizontalTextPosition(SwingConstants.LEFT);
+			label.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			label.addMouseListener(new LabelMouseListener(urlMap.get(label)));
+			linksPanel.add(label);
 		}
-
-		basePanel = new BackgroundImagePanel(bgImage);
-		basePanel.setBackground(new Color(0xaa, 0xaa, 0xaa, 30));
-		basePanel.setLayout(new BorderLayout());
-
-		checkBox = new JCheckBox();
-		checkBox.setFont(WelcomeScreenChildPanel.REGULAR_FONT);
-		checkBox.setForeground(WelcomeScreenChildPanel.REGULAR_FONT_COLOR);
-
-		mainPanel = new JPanel();
-		mainPanel.setSize(DEF_SIZE);
-		mainPanel.setLayout(new GridLayout(1, 2));
-		mainPanel.setOpaque(false);
-
-		basePanel.add(mainPanel, BorderLayout.CENTER);
-
-		final JPanel bottomPanel = new JPanel();
-		bottomPanel.setLayout(new BorderLayout());
-		bottomPanel.setBorder(new EmptyBorder(2, 10, 2, 10));
-		bottomPanel.setBackground(PANEL_COLOR);
-		bottomPanel.setPreferredSize(new Dimension(900, 30));
-
-		checkBox.setText("Don't show again");
+		
+		checkBox = new JCheckBox("Don't show again");
+		checkBox.setHorizontalAlignment(SwingConstants.LEFT);
 		checkBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
@@ -150,16 +184,33 @@ public class WelcomeScreenDialog extends JDialog {
 				dispose();
 			}
 		});
-		bottomPanel.add(checkBox, BorderLayout.CENTER);
-		bottomPanel.add(closeButton, BorderLayout.EAST);
-		checkBox.setHorizontalAlignment(SwingConstants.CENTER);
-		basePanel.add(bottomPanel, BorderLayout.SOUTH);
+		
+		final JPanel bottomPanel = new JPanel();
+		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+		bottomPanel.setBorder(new EmptyBorder(2, 10, 2, 10));
+		bottomPanel.setBackground(PANEL_COLOR);
+		bottomPanel.setPreferredSize(new Dimension(900, 30));
+		bottomPanel.add(checkBox);
+		bottomPanel.add(Box.createHorizontalGlue());
+		bottomPanel.add(closeButton);
 
+		mainPanel = new JPanel();
+		mainPanel.setSize(DEF_SIZE);
+		mainPanel.setLayout(new GridLayout(1, 2));
+		mainPanel.setOpaque(false);
+		
+		final JPanel southPanel = new JPanel();
+		southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
+		southPanel.setOpaque(false);
+		southPanel.add(linksPanel);
+		southPanel.add(bottomPanel);
+		
 		final Container pane = this.getContentPane();
 		pane.setLayout(new BorderLayout());
-		this.add(basePanel, BorderLayout.CENTER);
+		pane.add(mainPanel, BorderLayout.CENTER);
+		pane.add(southPanel, BorderLayout.SOUTH);
+		
 		createChildPanels();
-
 		pack();
 	}
 
@@ -172,8 +223,7 @@ public class WelcomeScreenDialog extends JDialog {
 		newSessionPanel.setOpaque(false);
 		newsPanel.setOpaque(false);
 
-		Color borderPaint = new Color(0xff, 0xff, 0xff, 50);
-		final LineBorder border = new LineBorder(borderPaint, 5, false);
+		final Border border = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 		openSessionPanel.setBorder(border);
 		newSessionPanel.setBorder(border);
 		newsPanel.setBorder(border);
@@ -184,21 +234,15 @@ public class WelcomeScreenDialog extends JDialog {
 
 		setChildPanel(openSessionPanel, geneSearchPanel, "Build Network with Gene List");
 		setChildPanel(newSessionPanel, importPanel, "Start New Session");
-		setChildPanel(newsPanel, helpPanel, "News and Links");
+		setChildPanel(newsPanel, helpPanel, "Latest News");
 
 		final JPanel leftPanel = new JPanel();
+		leftPanel.setOpaque(false);
+		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+		
 		final JPanel rightPanel = new JPanel();
-		leftPanel.setOpaque(false);
-		leftPanel.setLayout(new GridLayout(2, 1));
 		rightPanel.setOpaque(false);
-		rightPanel.setLayout(new GridLayout(1, 1));
-
-		leftPanel.setOpaque(false);
-		leftPanel.setLayout(new GridLayout(1, 1));
-		rightPanel.setOpaque(false);
-		rightPanel.setLayout(new GridLayout(2, 1));
-
-		mainPanel.setBorder(border);
+		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
 
 		rightPanel.add(openSessionPanel);
 		rightPanel.add(newsPanel);
@@ -225,5 +269,20 @@ public class WelcomeScreenDialog extends JDialog {
 		titlePanel.add(title);
 		panel.add(titlePanel, BorderLayout.NORTH);
 		panel.add(contentPanel, BorderLayout.CENTER);
+	}
+	
+	private final class LabelMouseListener extends MouseAdapter {
+
+		private final String url;
+
+		LabelMouseListener(final String url) {
+			this.url = url;
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			dispose();
+			openBrowser.openURL(url);
+		}
 	}
 }

@@ -24,17 +24,22 @@ package org.cytoscape.welcome.internal.panel;
  * #L%
  */
 
-import java.awt.*;
-import java.io.BufferedReader;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
 
-import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.text.BadLocationException;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.ScrollPaneConstants;
 
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.welcome.internal.WelcomeScreenDialog;
@@ -43,8 +48,8 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final long serialVersionUID = 54718654342142203L;
 	
-	private static final String UP_TO_DATE_ICON_LOCATION = "images/Icons/accept.png";
-	private static final String NEW_VER_AVAILABLE_ICON_LOCATION = "images/Icons/error.png";
+	private static final String UP_TO_DATE_ICON_LOCATION = "images/Icons/check-circle-icon.png";
+	private static final String NEW_VER_AVAILABLE_ICON_LOCATION = "images/Icons/warn-icon.png";
     private static final String NEWS_URL = "http://chianti.ucsd.edu/cytoscape-news/news.html";
 
 	private final CyVersion cyVersion;
@@ -63,46 +68,37 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 	private void initComponents() {
 		final String versionStr = cyVersion.getVersion();
 
-		this.setLayout( new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		this.setLayout(new BorderLayout());
 
-		JPanel panel = new JPanel();
-		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		panel.setLayout( new BorderLayout(0,3));
+		final JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-
-		this.setLayout( new BorderLayout(0,3) );
 		final JLabel status = new JLabel();
 		status.setAlignmentX(Component.LEFT_ALIGNMENT);
-		status.setOpaque(false);
+		status.setBackground(this.getBackground());
 		status.setFont(REGULAR_FONT);
-		status.setForeground(REGULAR_FONT_COLOR);
 
-        if(isUpToDate()) {
+        if (isUpToDate()) {
 			status.setIcon(upToDateIcon);
 			status.setText("Cytoscape " + versionStr + " is up to date.");
 		} else {
 			status.setIcon(newVersionAvailableIcon);
 			status.setText("New version is available: " + versionStr);
 		}
-		panel.add(status, BorderLayout.NORTH);
-//		this.add(status);
-//		this.add(Box.createRigidArea(new Dimension(0, 3)));
-
-
-        final JEditorPane news = new JEditorPane()
-		{
+        
+		final JEditorPane news = new JEditorPane() {
 			@Override
-			public boolean getScrollableTracksViewportHeight()
-			{
+			public boolean getScrollableTracksViewportHeight() {
 				return true;
 			}
 		};
 		news.setAlignmentX(Component.LEFT_ALIGNMENT);
-        news.setOpaque(false);
-        news.setFont(REGULAR_FONT);
-	    news.setPreferredSize( new Dimension(this.getPreferredSize().width,500) );
-		news.setMinimumSize( new Dimension(10,10));
+		news.setFont(REGULAR_FONT);
+		news.setBackground(this.getBackground());
+		news.setPreferredSize(new Dimension(this.getPreferredSize().width, 500));
+		news.setMinimumSize(new Dimension(10, 10));
 		news.setEditable(false);
+		
 		Runnable getNews = new Runnable()
 		{
 
@@ -120,18 +116,19 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 			}
 		};
 		(new Thread(getNews)).start();
-
+		
+		panel.add(status);
+		panel.add(new JSeparator());
+		panel.add(Box.createVerticalStrut(10));
 		panel.add(news);
 
-		JScrollPane sp = new JScrollPane(panel);
-		sp.setAlignmentX(Component.LEFT_ALIGNMENT);
+		final JScrollPane sp = new JScrollPane(panel);
 		sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		sp.setOpaque(false);
-		sp.setBorder( BorderFactory.createEmptyBorder() );
-		sp.getViewport().setOpaque(false);
-		sp.setViewportBorder( BorderFactory.createEmptyBorder() );
-		this.add(sp);
+		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		sp.setBorder(BorderFactory.createEmptyBorder());
+		sp.setViewportBorder(BorderFactory.createEmptyBorder());
+		
+		this.add(sp, BorderLayout.CENTER);
 	}
 	
 	private boolean isUpToDate() {
@@ -143,6 +140,4 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 		// TODO: implement this!
 		return "3.1.0";
 	}
-	
-
 }

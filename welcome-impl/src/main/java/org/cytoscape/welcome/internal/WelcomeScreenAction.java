@@ -29,13 +29,14 @@ import java.util.Properties;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
 import org.cytoscape.welcome.internal.panel.GeneSearchPanel;
-import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
-import org.cytoscape.welcome.internal.panel.OpenPanel;
+import org.cytoscape.welcome.internal.panel.NewsPanel;
 
 public class WelcomeScreenAction extends AbstractCyAction {
 
@@ -51,22 +52,30 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	// Child Panels
 	private final CreateNewNetworkPanel importPanel;
 	private final GeneSearchPanel geneSearchPanel;
-	private final NewsAndLinkPanel helpPanel;
+	private final NewsPanel newsPanel;
 
 	private final CyProperty<Properties> cyProps;
 	private final CySwingApplication cytoscapeDesktop;
+	private final OpenBrowser openBrowser;
+	private final CyVersion version;
 
-	public WelcomeScreenAction(final CreateNewNetworkPanel importPanel, final GeneSearchPanel geneSearchPanel,
-			final NewsAndLinkPanel helpPanel, final CyProperty<Properties> cyProps,
-			final CySwingApplication cytoscapeDesktop) {
+	public WelcomeScreenAction(final CreateNewNetworkPanel importPanel,
+							   final GeneSearchPanel geneSearchPanel,
+							   final NewsPanel newsPanel,
+							   final CyProperty<Properties> cyProps,
+							   final CySwingApplication cytoscapeDesktop,
+							   final OpenBrowser openBrowser,
+							   final CyVersion version) {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
 		this.setMenuGravity(1.5f);
 
 		this.importPanel = importPanel;
 		this.geneSearchPanel = geneSearchPanel;
-		this.helpPanel = helpPanel;
+		this.newsPanel = newsPanel;
 		this.cytoscapeDesktop = cytoscapeDesktop;
+		this.openBrowser = openBrowser;
+		this.version = version;
 
 		this.cyProps = cyProps;
 
@@ -80,8 +89,8 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, geneSearchPanel, helpPanel, cyProps,
-				hide);
+		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, geneSearchPanel, newsPanel, cyProps,
+				hide, openBrowser, version);
 		welcomeScreen.setLocationRelativeTo(cytoscapeDesktop.getJFrame());
 		welcomeScreen.setVisible(true);
 		welcomeScreen.setModal(true);

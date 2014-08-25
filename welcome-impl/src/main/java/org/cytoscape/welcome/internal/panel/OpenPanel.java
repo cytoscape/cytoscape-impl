@@ -26,7 +26,8 @@ package org.cytoscape.welcome.internal.panel;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -39,8 +40,10 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
@@ -59,14 +62,14 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final Logger logger = LoggerFactory.getLogger(OpenPanel.class);
 
-	private static final String ICON_LOCATION = "/images/Icons/open_session.png";
+	private static final String ICON_LOCATION = "/images/Icons/open-file-32.png";
 	private BufferedImage openIconImg;
 	private ImageIcon openIcon;
 
 	// Display up to 7 files due to space.
 	private static final int MAX_FILES = 7;
 
-	private JLabel open;
+	private JButton open;
 
 	private final RecentlyOpenedTracker fileTracker;
 	private final DialogTaskManager taskManager;
@@ -96,6 +99,7 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 			fileCount = MAX_FILES;
 
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		this.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
 		final Border padLine = BorderFactory.createEmptyBorder(3, 5, 3, 0);
 
@@ -112,10 +116,10 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 			
 			final File targetFile = new File(fileURI);
 			final JLabel fileLabel = new JLabel();
-			FontMetrics fm = fileLabel.getFontMetrics(REGULAR_FONT);
+//			FontMetrics fm = fileLabel.getFontMetrics(REGULAR_FONT);
 			fileLabel.setMaximumSize(new Dimension(300, 18));
-			fileLabel.setText(getTruncatedPath( target.toString(),250, fm ) );
-			fileLabel.setForeground(REGULAR_FONT_COLOR);
+			fileLabel.setText(" - " + targetFile.getName());
+			fileLabel.setForeground(LINK_FONT_COLOR);
 			fileLabel.setFont(LINK_FONT);
 			fileLabel.setBorder(padLine);
 			fileLabel.setHorizontalAlignment(SwingConstants.LEFT);
@@ -139,17 +143,19 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 			this.add(fileLabel);
 		}
 		
-		open = new JLabel("Open file...");
-		open.setFont(REGULAR_FONT);
-		open.setForeground(REGULAR_FONT_COLOR);
+		this.add(Box.createVerticalStrut(8));
+		this.add(Box.createVerticalGlue());
+		
+		open = new JButton("Open Session File...");
 		open.setIcon(openIcon);
-		open.setBorder(padLine);
+		open.setIconTextGap(20);
 		open.setHorizontalAlignment(SwingConstants.LEFT);
+//		open.setBorder(padLine);
+		open.setMaximumSize(new Dimension(Integer.MAX_VALUE, open.getMinimumSize().height));
 		open.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		open.addMouseListener(new MouseAdapter() {
-
+		open.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				closeParentWindow();
 				taskManager.execute(openSessionTaskFactory.createTaskIterator());
 			}
@@ -158,23 +164,23 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 		this.add(open);
 	}
 
-	private String getTruncatedPath(String path, double width, FontMetrics fm ) {
-
-		String fileName = path.substring(path.lastIndexOf('/'));
-		if (fm.stringWidth("..."+fileName) > width){
-			int startIndex = 4;
-			fileName = "..." + fileName.substring(startIndex);
-			while (fm.stringWidth(fileName) > width){
-				fileName = "..." + fileName.substring(startIndex);
-			}
-			return fileName;
-		}
-		
-		String address = path.substring(0, path.lastIndexOf('/'));
-		while (fm.stringWidth(address + fileName) > width){
-			address = address.substring(0, address.length() - 4) + "...";
-		}
-		
-		return address + fileName;
-	}
+//	private String getTruncatedPath(String path, double width, FontMetrics fm ) {
+//
+//		String fileName = path.substring(path.lastIndexOf('/'));
+//		if (fm.stringWidth("..."+fileName) > width){
+//			int startIndex = 4;
+//			fileName = "..." + fileName.substring(startIndex);
+//			while (fm.stringWidth(fileName) > width){
+//				fileName = "..." + fileName.substring(startIndex);
+//			}
+//			return fileName;
+//		}
+//		
+//		String address = path.substring(0, path.lastIndexOf('/'));
+//		while (fm.stringWidth(address + fileName) > width){
+//			address = address.substring(0, address.length() - 4) + "...";
+//		}
+//		
+//		return address + fileName;
+//	}
 }

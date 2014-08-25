@@ -39,7 +39,7 @@ public interface WelcomeScreenChildPanel {
 	public static final Color REGULAR_FONT_COLOR = new Color(0x2F, 0x4F, 0x4f);
 	public static final Color COMMAND_FONT_COLOR = new Color(0x2F, 0x4F, 0x4f);
 	public static final Color TITLE_FONT_COLOR = new Color(0xF5, 0xF5, 0xF5);
-	public static final Color TITLE_BG_COLOR = new Color(0xa0, 0xa0, 0xa0, 210);
+	public static final Color TITLE_BG_COLOR = new Color(0x66, 0x66, 0x66, 255);
 
 	 
 	public void closeParentWindow();

@@ -39,6 +39,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -55,14 +56,16 @@ import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.welcome.internal.panel.*;
+import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
+import org.cytoscape.welcome.internal.panel.GeneSearchPanel;
+import org.cytoscape.welcome.internal.panel.NewsPanel;
+import org.cytoscape.welcome.internal.panel.StatusPanel;
 import org.cytoscape.welcome.internal.task.ApplySelectedLayoutTaskFactory;
 import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
-import org.cytoscape.io.webservice.WebServiceClient;
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -124,12 +127,11 @@ public class CyActivator extends AbstractCyActivator {
 
 		// TODO: implement contents
 		final StatusPanel statusPanel = new StatusPanel(cyVersion);
-		final NewsAndLinkPanel helpPanel = new NewsAndLinkPanel(statusPanel, openBrowserServiceRef,
-				cyVersion);
+		final NewsPanel newsPanel = new NewsPanel(statusPanel);
 
 		// Show Welcome Screen
 		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, geneSearchPanel,
-				helpPanel, cytoscapePropertiesServiceRef, cytoscapeDesktop);
+				newsPanel, cytoscapePropertiesServiceRef, cytoscapeDesktop, openBrowserServiceRef, cyVersion);
 		registerAllServices(bc, welcomeScreenAction, new Properties());
 
 		// Export preset tasks
