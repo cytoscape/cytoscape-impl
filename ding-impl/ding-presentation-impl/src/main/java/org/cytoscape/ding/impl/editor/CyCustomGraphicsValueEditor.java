@@ -134,7 +134,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 		Component newSelected = getGraphicsPnl();
 		
 		for (final CustomGraphics2Panel cg2Pnl : cg2PnlMap.values()) {
-			cg2Pnl.update();
+			cg2Pnl.update(oldCustomGraphics instanceof CyCustomGraphics2 ? (CyCustomGraphics2)oldCustomGraphics : null);
 		
 			if (oldCustomGraphics instanceof CyCustomGraphics2 && cg2Pnl.canEdit((CyCustomGraphics2)oldCustomGraphics))
 				newSelected = cg2Pnl;
@@ -173,16 +173,6 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 			
 			for (final String group : customGraphics2Mgr.getGroups())
 				groupTpn.addTab(group, getCG2Pnl(group));
-			
-			groupTpn.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					final Component c = getGroupTpn().getSelectedComponent();
-					
-					if (c instanceof CustomGraphics2Panel)
-						((CustomGraphics2Panel)c).update();
-				}
-			});
 		}
 		
 		return groupTpn;
@@ -308,6 +298,9 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 		}
 	}
 	
+	/**
+	 * Panel that contains all CyCustomGraphics2 editors that belong to the same group
+	 */
 	private class CustomGraphics2Panel extends JPanel {
 		
 		private static final long serialVersionUID = 6669567626195325838L;
@@ -340,35 +333,20 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 			return false;
 		}
 		
-		void update() {
-			supportedFactories = customGraphics2Mgr.getCyCustomGraphics2Factories(group);
-			
-			if (oldCustomGraphics instanceof CyCustomGraphics2) {
-				final Component c = getTypeTpn().getSelectedComponent();
-				
-				if (c instanceof CustomGraphics2EditorPane) {
-					final CyCustomGraphics2Factory<?> cf = ((CustomGraphics2EditorPane)c).getFactory();
-					final CyCustomGraphics2 oldCg2 = (CyCustomGraphics2) oldCustomGraphics;
-					
-					cg2 = cf.getInstance(oldCg2 != null ? oldCg2.getProperties() : new HashMap<String, Object>());
-					((CustomGraphics2EditorPane)c).update(cg2);
-				}
-			}
-			
-			updateTypes();
-		}
-
 		CyCustomGraphics2 getCustomGraphics2() {
 			return cg2;
 		}
 		
-		private void updateTypes() {
+		private void update(final CyCustomGraphics2 cg2) {
 			updatingTypes = true;
+			
+			supportedFactories = customGraphics2Mgr.getCyCustomGraphics2Factories(group);
 			CustomGraphics2EditorPane selectedEditorPn = null;
 			int maxWidth = 100;
 			
 			try {
 				getTypeTpn().removeAll();
+				CyCustomGraphics2 initialCg2 = null;
 				
 				for (final CyCustomGraphics2Factory<?> cf : supportedFactories) {
 					final CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> cef = 
@@ -381,33 +359,33 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 							cg2EditorPn,
 							cf.getDisplayName());
 					
-					CyCustomGraphics2<?> initialCG2 = null;
-					
 					if (cg2 != null) {
+						initialCg2 = cf.getInstance(cg2.getProperties());
+						
 						if (cf.getSupportedClass().isAssignableFrom(cg2.getClass())) {
 							selectedEditorPn = cg2EditorPn;
-							initialCG2 = cg2;
-						} else {
-							initialCG2 = cf.getInstance(cg2.getProperties());
+							this.cg2 = initialCg2;
 						}
 					} else {
-						initialCG2 = cf.getInstance(new HashMap<String, Object>());
+						initialCg2 = cf.getInstance(new HashMap<String, Object>());
 					}
 					
-					if (cg2 == null)
-						cg2 = initialCG2;
-					
-					if (initialCG2 != null) // Just so this panel's dimensions are set correctly
-						cg2EditorPn.update(initialCG2);
-					
+					cg2EditorPn.update(initialCg2);
 					maxWidth = Math.max(maxWidth, cg2EditorPn.getPreferredSize().width);
 				}
+				
+				if (selectedEditorPn != null)
+					getTypeTpn().setSelectedComponent(selectedEditorPn);
 			} finally {
 				updatingTypes = false;
 			}
 			
-			if (selectedEditorPn != null)
-				getTypeTpn().setSelectedComponent(selectedEditorPn);
+			if (this.cg2 == null) {
+				selectedEditorPn = (CustomGraphics2EditorPane) getTypeTpn().getSelectedComponent();
+				
+				if (selectedEditorPn != null)
+					this.cg2 = selectedEditorPn.getCg2();
+			}
 			
 			getTypeTpn().setPreferredSize(new Dimension(maxWidth + 40, 400));
 		}
@@ -445,6 +423,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 			private final CyCustomGraphics2Factory<?> factory;
 			private final CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> editorFactory;
 			private JComponent editor;
+			private CyCustomGraphics2 cg2;
 
 			CustomGraphics2EditorPane(final CyCustomGraphics2Factory<?> factory,
 						  final CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> editorFactory) {
@@ -455,10 +434,15 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 				this.getViewport().setOpaque(false);
 			}
 			
-			void update(CyCustomGraphics2 cg2) {
-				editor = editorFactory.createEditor(cg2);
+			void update(final CyCustomGraphics2 initialCg2) {
+				this.cg2 = initialCg2;
+				editor = editorFactory.createEditor(initialCg2);
 				this.setViewportView(editor);
 				this.updateUI();
+			}
+			
+			CyCustomGraphics2 getCg2() {
+				return cg2;
 			}
 			
 			CyCustomGraphics2Factory<?> getFactory() {
