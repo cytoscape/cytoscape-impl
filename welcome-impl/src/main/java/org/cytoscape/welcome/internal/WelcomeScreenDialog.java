@@ -24,8 +24,10 @@ package org.cytoscape.welcome.internal;
  * #L%
  */
 
+
+import static org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel.PANEL_COLOR;
+
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -51,19 +53,20 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.welcome.internal.panel.*;
+import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
+import org.cytoscape.welcome.internal.panel.GeneSearchPanel;
+import org.cytoscape.welcome.internal.panel.NewsPanel;
+import org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel;
 
 public class WelcomeScreenDialog extends JDialog {
 	
 	private static final long serialVersionUID = -2783045197802550425L;
 
 	private static final String TITLE = "Welcome to Cytoscape";
-	private static final Color PANEL_COLOR = new Color(0xff, 0xff, 0xff, 200);
 	private static final Dimension DEF_SIZE = new Dimension(668, 500);
 
 	private JPanel mainPanel;
@@ -168,6 +171,8 @@ public class WelcomeScreenDialog extends JDialog {
 		}
 		
 		checkBox = new JCheckBox("Don't show again");
+		checkBox.setOpaque(true);
+		checkBox.setBackground(PANEL_COLOR);
 		checkBox.setHorizontalAlignment(SwingConstants.LEFT);
 		checkBox.addActionListener(new ActionListener() {
 			@Override
@@ -178,6 +183,8 @@ public class WelcomeScreenDialog extends JDialog {
 		});
 
 		JButton closeButton = new JButton("Close");
+		closeButton.setOpaque(true);
+		closeButton.setBackground(PANEL_COLOR);
 		closeButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

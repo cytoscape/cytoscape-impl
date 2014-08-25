@@ -38,7 +38,6 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.ScrollPaneConstants;
 
 import org.cytoscape.application.CyVersion;
@@ -118,7 +117,6 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 		(new Thread(getNews)).start();
 		
 		panel.add(status);
-		panel.add(new JSeparator());
 		panel.add(Box.createVerticalStrut(10));
 		panel.add(news);
 

@@ -30,6 +30,8 @@ import java.awt.Window;
 
 public interface WelcomeScreenChildPanel {
 	
+	public static final Color PANEL_COLOR = new Color(0xff, 0xff, 0xff, 200);
+	
 	public static final Font REGULAR_FONT = new Font("HelveticaNeue-UltraLight", Font.PLAIN, 12);
 	public static final Font COMMAND_FONT = new Font("HelveticaNeue-UltraLight", Font.BOLD, 12);
 	public static final Font LINK_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);

@@ -40,6 +40,7 @@ import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -79,6 +80,11 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 
 	private void initComponents()
 	{
+		species.setOpaque(true);
+		species.setBackground(PANEL_COLOR);
+		buildNetwork.setOpaque(true);
+		buildNetwork.setBackground(PANEL_COLOR);
+		
 		JLabel speciesLabel = new JLabel("Species");
 		speciesLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		species.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -90,6 +96,7 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		sp.setAlignmentX(Component.LEFT_ALIGNMENT);
 		JPanel buildNetworkPanel = new JPanel();
+		buildNetworkPanel.setOpaque(false);
 		buildNetworkPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		buildNetworkPanel.setLayout( new FlowLayout( FlowLayout.RIGHT) );
 		buildNetworkPanel.add(buildNetwork);
