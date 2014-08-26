@@ -1830,7 +1830,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (!graphics.isInitialized())
 			graphics.clear(bgColor, xCenter, yCenter, scale);
 
-		System.out.println("DGraphView: renderSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
+		// System.out.println("DGraphView: renderSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		Color bg = (Color)bgColor;
 		if (bg != null)
 			bg = new Color(bg.getRed(), bg.getBlue(), bg.getGreen(), 0);
@@ -1859,7 +1859,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		try {
 		// synchronized (m_lock) {
 			lastRenderDetail = GraphRenderer.renderGraph(this, sub_spacial, lod, m_nodeDetails,
- 			                                             m_edgeDetails, hash, graphics, bg, xCenter,
+ 			                                             m_edgeDetails, hash, graphics, null, xCenter,
  			                                             yCenter, scale, haveZOrder);
 		// }
 		} catch (Exception e) { e.printStackTrace(); }
@@ -1875,7 +1875,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	int renderGraph(GraphGraphics graphics, final GraphLOD lod,
 	                Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash) {
 		int lastRenderDetail = 0;
-		System.out.println("DGraphView: renderGraph");
+		// System.out.println("DGraphView: renderGraph.  bgColor="+bgColor);
 		// Thread.dumpStack();
 		try {
 		synchronized (m_lock) {

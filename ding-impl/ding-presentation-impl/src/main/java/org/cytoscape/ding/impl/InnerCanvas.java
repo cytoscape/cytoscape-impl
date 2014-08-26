@@ -945,11 +945,19 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		renderSubgraph(m_grafx, false, m_lod[0], nodes, edges);
 	}
 
-	// TODO: Move to DGraphView
+	// Render just a portion of the graph.  This is used for selections when we want to overwrite
+	// a limited number of nodes and edges
 	private void renderSubgraph(GraphGraphics graphics, final boolean setLastRenderDetail, final GraphLOD lod, 
 	                            List<CyNode> nodes, List<CyEdge> edges) {
 
-		int lastRenderDetail = m_view.renderSubgraph(graphics, lod, null, m_xCenter, m_yCenter, m_scaleFactor, new LongHash(), nodes, edges);
+		// Pass the color even though we won't use it if we actually only render the subgraph.  If we're
+		// not in largeModel mode, or we're only painting a small portion of the network, we'll wind up
+		// calling renderGraph anyways and we'll need to clear the image
+		final Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
+							m_backgroundColor.getBlue(), 0);
+
+		int lastRenderDetail = m_view.renderSubgraph(graphics, lod, backgroundColor, 
+		                                             m_xCenter, m_yCenter, m_scaleFactor, new LongHash(), nodes, edges);
 		if (setLastRenderDetail)
 			m_lastRenderDetail = lastRenderDetail;
 
