@@ -33,7 +33,12 @@
 package org.cytoscape.commandDialog.internal.ui;
 
 import java.awt.Color;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
@@ -50,7 +55,7 @@ import javax.swing.text.Element;
 
 import org.cytoscape.commandDialog.internal.handlers.MessageHandler;
 
-public class JResultsPane extends JTextPane implements MessageHandler {
+public class JResultsPane extends JTextPane implements MessageHandler, AdjustmentListener {
 	// private SimpleAttributeSet commandAttributes;
 	// private SimpleAttributeSet messageAttributes;
 	// private SimpleAttributeSet resultAttributes;
@@ -63,6 +68,8 @@ public class JResultsPane extends JTextPane implements MessageHandler {
 	private String warningAttributes;
 	private HTMLDocument currentDocument;
 	private Element rootElement;
+	private final JDialog parentDialog;
+	private final JPanel dataPanel;
 	private static String BLUE = "color:blue";
 	private static String RED = "color:red";
 	private static String GREEN = "color:green";
@@ -72,8 +79,11 @@ public class JResultsPane extends JTextPane implements MessageHandler {
 	private static String ITALICS = "font-style:italic";
 	private static String DEFAULT_STYLE = "margin-top:0px;margin-bottom:0px";
 
-	public JResultsPane() {
+	public JResultsPane(JDialog parentDialog, JPanel dataPanel) {
 		super();
+
+		this.parentDialog = parentDialog;
+		this.dataPanel = dataPanel;
 
 		DefaultCaret caret = (DefaultCaret)getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
@@ -86,42 +96,13 @@ public class JResultsPane extends JTextPane implements MessageHandler {
 		errorAttributes = RED;
 		warningAttributes = ORANGE;
 		resultAttributes = GREEN+";"+BOLD+";"+ITALICS;
-
-		/*
-		commandAttributes = new SimpleAttributeSet();
-		commandAttributes.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.BLUE);
-		commandAttributes.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
-		commandAttributes.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
-
-		messageAttributes = new SimpleAttributeSet();
-		messageAttributes.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.BLUE);
-		messageAttributes.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.FALSE);
-		messageAttributes.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.FALSE);
-
-		errorAttributes = new SimpleAttributeSet();
-		errorAttributes.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.RED);
-		errorAttributes.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.FALSE);
-		errorAttributes.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.FALSE);
-
-		warningAttributes = new SimpleAttributeSet();
-		warningAttributes.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.ORANGE);
-		warningAttributes.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.FALSE);
-		warningAttributes.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.FALSE);
-
-		resultAttributes = new SimpleAttributeSet();
-		resultAttributes.addAttribute(StyleConstants.CharacterConstants.Foreground, Color.GREEN);
-		resultAttributes.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
-		resultAttributes.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
-		*/
 	}
 
 	public void appendCommand(String s) {
-		// updateString(commandAttributes, s+"\n");
 		updateString(commandAttributes, s);
 	}
 
 	public void appendError(String s) {
-		// updateString(errorAttributes, s+"\n");
 		updateString(errorAttributes, s);
 	}
 
@@ -137,38 +118,46 @@ public class JResultsPane extends JTextPane implements MessageHandler {
 	}
 
 	public void appendWarning(String s) {
-		// updateString(warningAttributes, s+"\n");
 		updateString(warningAttributes, s);
 	}
 
 	public void appendMessage(String s) {
-		// updateString(messageAttributes, "    "+s+"\n");
 		updateString(messageAttributes, s);
 	}
 
 	public void clear() {
-		// setStyledDocument(new DefaultStyledDocument());
 		currentDocument = new HTMLDocument();
 		setStyledDocument(currentDocument);
 		rootElement = currentDocument.getDefaultRootElement();
 	}
 
 	private void updateString(final String style, final String s) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				/* StyledDocument doc = getStyledDocument();
-				try {
-					doc.insertString(doc.getLength(), s, set);
-				} catch (BadLocationException badLocationException) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					updateStringImmediate(style, s);
 				}
-				*/
-				try {
-					String p = "<p style='"+DEFAULT_STYLE+";"+style+"'>"+s+"</p>\n";
-					currentDocument.insertBeforeEnd(rootElement, p);
-					setCaretPosition(currentDocument.getLength());
-				} catch (Exception badLocationException) {
-				}
-			}
-		});
+			});
+		} else {
+			updateStringImmediate(style, s);
+		}
+	}
+
+	private void updateStringImmediate(final String style, final String s) {
+		try {
+			String p = "<p style='"+DEFAULT_STYLE+";"+style+"'>"+s+"</p>\n";
+			currentDocument.insertBeforeEnd(rootElement, p);
+			setCaretPosition(currentDocument.getLength());
+
+			// Force (I mean, *really* force) the dialog to repaint.
+			paintImmediately(getBounds());
+			parentDialog.revalidate();
+			dataPanel.paintImmediately(dataPanel.getBounds());
+		} catch (Exception badLocationException) {
+		}
+	}
+
+	public void adjustmentValueChanged(AdjustmentEvent e) {
+		((JScrollBar)e.getAdjustable()).setValue(currentDocument.getLength());
 	}
 }

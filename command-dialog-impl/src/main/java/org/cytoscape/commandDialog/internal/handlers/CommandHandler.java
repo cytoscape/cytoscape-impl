@@ -74,7 +74,8 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 	MessageHandler resultsText = null;
 	SynchronousTaskManager taskManager = null;
 
-	public CommandHandler(AvailableCommands availableCommands, CommandExecutorTaskFactory commandExecutor,
+	public CommandHandler(AvailableCommands availableCommands, 
+	                      CommandExecutorTaskFactory commandExecutor,
 	                      SynchronousTaskManager taskManager) {
 		this.availableCommands = availableCommands;
 		this.commandExecutor = commandExecutor;
@@ -410,6 +411,8 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		if (!processingCommand) {
 			return;
 		}
+		// System.out.println("doAppend: "+event.getMessage());
+		// System.out.println("Thread: "+Thread.currentThread().getName());
 
 		PaxLevel level = event.getLevel();
 		if (level.toInt() == 40000)
