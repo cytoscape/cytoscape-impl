@@ -125,9 +125,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 			
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.setUnselectedPaint(model, transpColor);
 			
 			if (!isSelected()) {
-				graphView.m_edgeDetails.setUnselectedPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -141,9 +141,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.setSelectedPaint(model, transpColor);
 			
 			if (isSelected()) {
-				graphView.m_edgeDetails.setSelectedPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -156,8 +156,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.overrideSourceArrowSelectedPaint(model, transpColor);
+			
 			if (isSelected()) {
-				graphView.m_edgeDetails.overrideSourceArrowSelectedPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -170,8 +171,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.overrideTargetArrowSelectedPaint(model, transpColor);
+			
 			if (isSelected()) {
-				graphView.m_edgeDetails.overrideTargetArrowSelectedPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -184,9 +186,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.overrideSourceArrowPaint(model, transpColor);
 			
 			if (!isSelected()) {
-				graphView.m_edgeDetails.overrideSourceArrowPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
