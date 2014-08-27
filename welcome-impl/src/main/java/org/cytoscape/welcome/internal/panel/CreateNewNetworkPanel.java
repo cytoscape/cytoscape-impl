@@ -25,6 +25,7 @@ package org.cytoscape.welcome.internal.panel;
  */
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -259,6 +260,8 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		this.setBorder(BorderFactory.createEmptyBorder(5, 5, 3, 5));
 
+		final int BT_HEIGHT = 52;
+		
 		final JButton createEmptySessionButton = new JButton();
 		createEmptySessionButton.setText("With Empty Network");
 		createEmptySessionButton.setIcon(NEW_ICON);
@@ -266,6 +269,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		createEmptySessionButton.setBackground(PANEL_COLOR);
 		createEmptySessionButton.setHorizontalAlignment(SwingConstants.LEFT);
 		createEmptySessionButton.setIconTextGap(20);
+		createEmptySessionButton.setPreferredSize(new Dimension(createEmptySessionButton.getPreferredSize().width, BT_HEIGHT));
 		createEmptySessionButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -281,12 +285,14 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		importFromFileButton.setBackground(PANEL_COLOR);
 		importFromFileButton.setHorizontalAlignment(SwingConstants.LEFT);
 		importFromFileButton.setIconTextGap(20);
+		importFromFileButton.setPreferredSize(new Dimension(importFromFileButton.getPreferredSize().width, BT_HEIGHT));
 		importFromFileButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				loadFromFile();
 			}
 		});
+		
 
 		JButton dbButton = new JButton("From Network Database...");
 		dbButton.setIcon(DATABASE_ICON);
@@ -294,8 +300,8 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		dbButton.setBackground(PANEL_COLOR);
 		dbButton.setIconTextGap(20);
 		dbButton.setHorizontalAlignment(SwingConstants.LEFT);
+		dbButton.setPreferredSize(new Dimension(dbButton.getPreferredSize().width, BT_HEIGHT));
 		dbButton.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Load network from web service.

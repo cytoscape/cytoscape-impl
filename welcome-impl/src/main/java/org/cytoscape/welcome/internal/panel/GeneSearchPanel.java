@@ -24,6 +24,23 @@ package org.cytoscape.welcome.internal.panel;
  * #L%
  */
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.model.CyNetwork;
@@ -38,16 +55,6 @@ import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
-
-import javax.swing.*;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
 
 public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements ActionListener
 {
@@ -80,6 +87,7 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 
 	private void initComponents()
 	{
+		this.setBorder(BorderFactory.createEmptyBorder(5, 5, 3, 5));
 		species.setOpaque(true);
 		species.setBackground(PANEL_COLOR);
 		buildNetwork.setOpaque(true);
@@ -88,19 +96,17 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 		JLabel speciesLabel = new JLabel("Species");
 		speciesLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		species.setAlignmentX(Component.LEFT_ALIGNMENT);
+		
 		JLabel genesLabel = new JLabel("Genes");
 		genesLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		geneList.setPreferredSize( new Dimension(200,200));
+		
 		JScrollPane sp = new JScrollPane( geneList );
 		sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		sp.setAlignmentX(Component.LEFT_ALIGNMENT);
-		JPanel buildNetworkPanel = new JPanel();
-		buildNetworkPanel.setOpaque(false);
-		buildNetworkPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		buildNetworkPanel.setLayout( new FlowLayout( FlowLayout.RIGHT) );
-		buildNetworkPanel.add(buildNetwork);
-
+		sp.setPreferredSize(new Dimension(sp.getPreferredSize().width, 320));
+		
 		species.addItem("human");
 		species.addItem("mouse");
 		species.addItem("yeast");
@@ -133,13 +139,27 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 		species.addItem("i97a1");
 		species.addItem("danre");
 
-		this.setLayout( new BoxLayout(this, BoxLayout.PAGE_AXIS) );
-		this.add( speciesLabel );
-		this.add( species );
-		this.add( genesLabel );
-		this.add( sp );
-		this.add( buildNetworkPanel );
-
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(speciesLabel)
+				.addComponent(species, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(genesLabel)
+				.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+					.addComponent(sp, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(buildNetwork)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(speciesLabel)
+				.addComponent(species)
+				.addComponent(genesLabel)
+				.addComponent(sp)
+				.addComponent(buildNetwork)
+		);
+		
 		buildNetwork.addActionListener(this);
 
 	}
