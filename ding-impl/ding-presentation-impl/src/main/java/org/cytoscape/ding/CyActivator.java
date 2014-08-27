@@ -120,8 +120,6 @@ import org.cytoscape.ding.internal.charts.pie.PieChartEditorFactory;
 import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
 import org.cytoscape.ding.internal.charts.ring.RingChartEditorFactory;
 import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
-import org.cytoscape.ding.internal.charts.stripe.StripeChartEditorFactory;
-import org.cytoscape.ding.internal.charts.stripe.StripeChartFactory;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientEditorFactory;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
 import org.cytoscape.ding.internal.gradients.radial.RadialGradientEditorFactory;
@@ -155,9 +153,9 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
@@ -676,11 +674,6 @@ public class CyActivator extends AbstractCyActivator {
 			final LineChartFactory factory = new LineChartFactory(colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
 			final LineChartEditorFactory editorFactory = new LineChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
-		}{
-			final StripeChartFactory factory = new StripeChartFactory(colIdFactory);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final StripeChartEditorFactory editorFactory = new StripeChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}{
 			final HeatMapChartFactory factory = new HeatMapChartFactory(colIdFactory);
