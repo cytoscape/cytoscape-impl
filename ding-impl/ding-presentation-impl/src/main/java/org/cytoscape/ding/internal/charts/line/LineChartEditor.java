@@ -26,7 +26,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	
 	public LineChartEditor(final LineChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, true, 10, true, false, true, true, false, true, appMgr, iconMgr, colIdFactory);
+		super(chart, Number.class, true, true, false, true, true, false, true, appMgr, iconMgr, colIdFactory);
 		
 		getBorderPnl().setVisible(false);
 	}

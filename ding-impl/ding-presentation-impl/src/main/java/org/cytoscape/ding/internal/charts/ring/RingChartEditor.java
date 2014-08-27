@@ -30,7 +30,7 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 	
 	public RingChartEditor(final RingChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, false, 5, false, false, true, false, false, false, appMgr, iconMgr, colIdFactory);
+		super(chart, Number.class, false, false, false, true, false, false, false, appMgr, iconMgr, colIdFactory);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

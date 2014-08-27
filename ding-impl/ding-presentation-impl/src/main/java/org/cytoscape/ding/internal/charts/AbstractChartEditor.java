@@ -6,7 +6,18 @@ import static org.cytoscape.ding.customgraphics.ColorScheme.CUSTOM;
 import static org.cytoscape.ding.customgraphics.ColorScheme.MODULATED;
 import static org.cytoscape.ding.customgraphics.ColorScheme.RAINBOW;
 import static org.cytoscape.ding.customgraphics.ColorScheme.RANDOM;
-import static org.cytoscape.ding.internal.charts.AbstractChart.*;
+import static org.cytoscape.ding.internal.charts.AbstractChart.AUTO_RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_COLOR;
+import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_WIDTH;
+import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_COLOR;
+import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_WIDTH;
+import static org.cytoscape.ding.internal.charts.AbstractChart.DATA_COLUMNS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.GLOBAL_RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_ITEM_LABELS;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -34,10 +46,12 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -59,6 +73,11 @@ import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.ListModel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
@@ -101,7 +120,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected ColorSchemeEditor<T> colorSchemeEditor;
 	private JPanel otherBasicOptionsPnl;
 	private JPanel otherAdvancedOptionsPnl;
-	protected JLabel dataColumnLbl;
 	protected JLabel itemLabelsColumnLbl;
 	protected JLabel domainLabelsColumnLbl;
 	protected JLabel rangeLabelsColumnLbl;
@@ -131,7 +149,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	private ColorButton borderColorBtn;
 	
 	protected final boolean columnIsSeries;
-	protected final int maxDataColumns; 
 	protected final boolean setRange;
 	protected final boolean setOrientation;
 	protected final boolean setItemLabels;
@@ -153,7 +170,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected AbstractChartEditor(final T chart,
 								  final Class<?> dataType,
 								  final boolean columnIsSeries,
-								  final int maxDataColumns,
 								  final boolean setRange,
 								  final boolean setOrientation,
 								  final boolean setItemLabels,
@@ -177,7 +193,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		this.chart = chart;
 		this.columnIsSeries = columnIsSeries;
 		this.dataType = dataType;
-		this.maxDataColumns = maxDataColumns;
 		this.setRange = setRange;
 		this.setOrientation = setOrientation;
 		this.setItemLabels = setItemLabels;
@@ -239,7 +254,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	}
 	
 	protected void createLabels() {
-		dataColumnLbl = new JLabel("Data Column" + (maxDataColumns > 1 ? "s" : ""));
 		itemLabelsColumnLbl = new JLabel("Column");
 		domainLabelsColumnLbl = new JLabel("Domain Labels Column");
 		rangeLabelsColumnLbl = new JLabel("Range Labels Column");
@@ -336,7 +350,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		if (dataPnl == null) {
 			dataPnl = new DataPanel();
 			dataPnl.setOpaque(false);
-			dataPnl.setVisible(maxDataColumns > 0);
 			dataPnl.refresh();
 		}
 		
@@ -968,7 +981,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		
 		if (net != null) {
 			final List<CyNode> nodes = net.getNodeList();
-			final Set<CyColumnIdentifier> dataColumns = getDataPnl().getDataColumns();
+			final List<CyColumnIdentifier> dataColumns = getDataPnl().getDataColumns();
 			double min = Double.POSITIVE_INFINITY;
 			double max = Double.NEGATIVE_INFINITY;
 			
@@ -1099,25 +1112,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		}
 	}
 	
-	protected JComboBox<CyColumnIdentifier> createDataColumnComboBox(final Collection<CyColumnIdentifier> columns,
-			final boolean acceptsNull) {
-		final JComboBox<CyColumnIdentifier> cmb = new CyColumnComboBox(columns, false);
-		cmb.setSelectedItem(null);
-		cmb.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				chart.set(DATA_COLUMNS, getDataPnl().getDataColumnNames());
-				
-				if (!initializing) {
-					updateRangeMinMax(true);
-					getColorSchemeEditor().reset();
-				}
-			}
-		});
-		
-		return cmb;
-	}
-	
 	protected ColorScheme[] getColorSchemes() {
 		return BASIC_COLOR_SCHEMES;
 	}
@@ -1175,14 +1169,18 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		
 		private static final long serialVersionUID = 3695410711435506554L;
 
-		private int maxColumns;
 		private final Set<CyColumnIdentifier> dataColumns;
-		private final Set<DataColumnSelector> columnSelectors;
-		private JButton addDataColumnBtn;
+		
+		private JList<CyColumnIdentifier> allColumnsLs;
+		private JList<CyColumnIdentifier> selColumnsLs;
+		private JPanel btnPnl;
+		private JButton addBtn;
+		private JButton addAllBtn;
+		private JButton removeBtn;
+		private JButton removeAllBtn;
 
 		protected DataPanel() {
 			dataColumns = new LinkedHashSet<CyColumnIdentifier>();
-			columnSelectors = new LinkedHashSet<DataColumnSelector>();
 			
 			// Filter all columns that are list of numbers
 			for (final CyColumnIdentifier colId : columns.keySet()) {
@@ -1192,170 +1190,267 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					dataColumns.add(colId);
 			}
 			
-			maxColumns = Math.min(maxDataColumns, dataColumns.size());
+			final JLabel allColumnsLbl = new JLabel("Available Columns");
+			final JLabel selColumnsLbl = new JLabel("Selected Columns");
 			
-			final BoxLayout layout = new BoxLayout(this, BoxLayout.Y_AXIS);
+			final JScrollPane listScr1 = new JScrollPane(getAllColumnsLs());
+			listScr1.setPreferredSize(new Dimension(200, listScr1.getPreferredSize().height));
+			final JScrollPane listScr2 = new JScrollPane(getSelColumnsLs());
+			listScr2.setPreferredSize(new Dimension(200, listScr2.getPreferredSize().height));
+			
+			final JSeparator sep = new JSeparator();
+			
+			final GroupLayout layout = new GroupLayout(this);
 			setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
 			
-			add(dataColumnLbl);
-			add(getAddDataColumnBtn());
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+							.addComponent(allColumnsLbl)
+							.addComponent(listScr1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+									Short.MAX_VALUE)
+						)
+						.addComponent(getBtnPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+									GroupLayout.PREFERRED_SIZE)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+							.addComponent(selColumnsLbl)
+							.addComponent(listScr2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+									Short.MAX_VALUE)
+						)
+					)
+					.addComponent(sep, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(Alignment.BASELINE, true)
+						.addGroup(layout.createSequentialGroup()
+							.addComponent(allColumnsLbl)
+							.addComponent(listScr1)
+						)
+						.addComponent(getBtnPnl(), GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addGroup(layout.createSequentialGroup()
+							.addComponent(selColumnsLbl)
+							.addComponent(listScr2)
+						)
+					)
+					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+			);
+			
 			add(new JSeparator());
 		}
 		
 		protected void refresh() {
-			final LinkedHashSet<DataColumnSelector> selectors = new LinkedHashSet<DataColumnSelector>(columnSelectors);
+			final List<CyColumnIdentifier> chartDataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
 			
-			for (final DataColumnSelector sel : selectors)
-				removeDataColumnSelector(sel);
-			
-			if (maxColumns > 0) {
-				final List<CyColumnIdentifier> dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
-				int count = 0;
-				
-				if (dataColumns != null) {
-					for (final CyColumnIdentifier colId : dataColumns) {
-						if (count++ < maxColumns)
-							addDataColumnSelector(colId, false);
-					}
+			final DefaultListModel<CyColumnIdentifier> allModel = 
+					(DefaultListModel<CyColumnIdentifier>) getAllColumnsLs().getModel();
+			final DefaultListModel<CyColumnIdentifier> selModel = 
+					(DefaultListModel<CyColumnIdentifier>) getSelColumnsLs().getModel();
+
+			if (dataColumns != null) {
+				for (final CyColumnIdentifier colId : dataColumns) {
+					if (chartDataColumns.contains(colId))
+						selModel.addElement(colId);
+					else
+						allModel.addElement(colId);
 				}
-				
-				if (count == 0) // Add at least one selector to begin with
-					addDataColumnSelector(null, false);
-				
-				getColorSchemeEditor().reset();
-			}
-		}
-		
-		protected JButton getAddDataColumnBtn() {
-			if (addDataColumnBtn == null) {
-				addDataColumnBtn = new JButton(IconManager.ICON_PLUS);
-				addDataColumnBtn.setFont(iconMgr.getIconFont(12.0f));
-				addDataColumnBtn.setToolTipText("Add another data column");
-				addDataColumnBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-				addDataColumnBtn.setVisible(maxColumns > 1);
-				updateAddDataColumnBtn();
-				
-				addDataColumnBtn.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						addDataColumnSelector(null, true);
-					}
-				});
 			}
 			
-			return addDataColumnBtn;
-		}
-		
-		protected void addDataColumnSelector(final CyColumnIdentifier columnId, final boolean resetColorScheme) {
-			final DataColumnSelector selector = new DataColumnSelector(columnId);
-			columnSelectors.add(selector);
-			
-			final int index = getComponentCount() > 0 ? getComponentCount() - 2 : 0;
-			add(selector, index);
-			
-			chart.set(DATA_COLUMNS, getDataColumnNames());
-			updateAddDataColumnBtn();
-			
-			if (!initializing)
-				updateRangeMinMax(true);
-			
-			if (!initializing && resetColorScheme)
-				getColorSchemeEditor().reset();
-			
-			invalidate();
-		}
-		
-		protected void removeDataColumnSelector(final DataColumnSelector sel) {
-			if (columnSelectors.size() > 1) {
-				remove(sel);
-				columnSelectors.remove(sel);
-				chart.set(DATA_COLUMNS, getDataColumnNames());
-				updateAddDataColumnBtn();
-				invalidate();
-			} else {
-				sel.cmb.setSelectedItem(null);
+			if (selModel.getSize() == 0 && allModel.getSize() > 0) {
+				// Add at least one data column to begin with
+				final CyColumnIdentifier colId = allModel.get(0);
+				allModel.removeElement(colId);
+				selModel.addElement(colId);
 			}
 			
-			updateRangeMinMax(true);
+			updateButtons();
 			getColorSchemeEditor().reset();
 		}
 		
-		protected Set<CyColumnIdentifier> getDataColumns() {
-			final Set<CyColumnIdentifier> dataColumns = new LinkedHashSet<CyColumnIdentifier>();
-			
-			for (final DataColumnSelector selector : columnSelectors) {
-				final CyColumnIdentifier selectedColumn = (CyColumnIdentifier) selector.cmb.getSelectedItem();
+		private JList<CyColumnIdentifier> getAllColumnsLs() {
+			if (allColumnsLs == null) {
+				allColumnsLs = new JList<>();
+				allColumnsLs.setModel(new DefaultListModel<CyColumnIdentifier>());
+				allColumnsLs.setCellRenderer(new CyColumnCellRenderer());
 				
-				if (selectedColumn != null)
-					dataColumns.add(selectedColumn);
-			}
-			
-			return dataColumns;
-		}
-		
-		public List<CyColumnIdentifier> getDataColumnNames() {
-			final List<CyColumnIdentifier> names = new ArrayList<CyColumnIdentifier>();
-			
-			for (final DataColumnSelector selector : columnSelectors) {
-				final CyColumnIdentifier selectedColumn = (CyColumnIdentifier) selector.cmb.getSelectedItem();
-				
-				if (selectedColumn != null)
-					names.add(selectedColumn);
-			}
-			
-			return names;
-		}
-		
-		private CyColumnIdentifier getNextDefaultColumnId() {
-			final Set<CyColumnIdentifier> set = new LinkedHashSet<CyColumnIdentifier>(dataColumns);
-			
-			for (final DataColumnSelector selector : columnSelectors) {
-				final CyColumnIdentifier selectedColumn = (CyColumnIdentifier) selector.cmb.getSelectedItem();
-				
-				if (selectedColumn != null)
-					set.remove(selectedColumn);
-			}
-			
-			return set.isEmpty() ? null : set.iterator().next();
-		}
-		
-		private void updateAddDataColumnBtn() {
-			getAddDataColumnBtn().setEnabled(columnSelectors.size() < maxColumns);
-		}
-		
-		private class DataColumnSelector extends JPanel {
-
-			private static final long serialVersionUID = 753659806235431081L;
-			
-			final JComboBox<CyColumnIdentifier> cmb;
-			final JButton delBtn;
-			
-			DataColumnSelector(CyColumnIdentifier columnId) {
-				setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-				setOpaque(false);
-				setAlignmentX(Component.LEFT_ALIGNMENT);
-				
-				cmb = createDataColumnComboBox(dataColumns, false);
-				
-				delBtn = new JButton(IconManager.ICON_REMOVE);
-				delBtn.setFont(iconMgr.getIconFont(12.0f));
-				delBtn.setToolTipText("Remove this column's data from chart");
-				delBtn.setVisible(maxColumns > 1);
-				delBtn.addActionListener(new ActionListener() {
+				allColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 					@Override
-					public void actionPerformed(ActionEvent e) {
-						removeDataColumnSelector(DataColumnSelector.this);
+					public void valueChanged(ListSelectionEvent e) {
+						updateButtons();
 					}
 				});
 				
-				add(cmb);
-				add(delBtn);
-				
-				if (columnId == null)
-					columnId = getNextDefaultColumnId();
-				
-				selectColumnIdItem(cmb, columnId);
+				allColumnsLs.getModel().addListDataListener(new ListDataListener() {
+					@Override
+					public void intervalRemoved(ListDataEvent e) {
+						updateButtons();
+					}
+					@Override
+					public void intervalAdded(ListDataEvent e) {
+						updateButtons();
+					}
+					@Override
+					public void contentsChanged(ListDataEvent e) {
+					}
+				});
 			}
+			
+			return allColumnsLs;
+		}
+		
+		private JList<CyColumnIdentifier> getSelColumnsLs() {
+			if (selColumnsLs == null) {
+				selColumnsLs = new JList<>();
+				selColumnsLs.setModel(new DefaultListModel<CyColumnIdentifier>());
+				selColumnsLs.setCellRenderer(new CyColumnCellRenderer());
+				
+				selColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+					@Override
+					public void valueChanged(ListSelectionEvent e) {
+						updateButtons();
+					}
+				});
+			}
+			
+			return selColumnsLs;
+		}
+		
+		private JPanel getBtnPnl() {
+			if (btnPnl == null) {
+				btnPnl = new JPanel();
+				btnPnl.setOpaque(false);
+				
+				final BoxLayout layout = new BoxLayout(btnPnl, BoxLayout.Y_AXIS);
+				btnPnl.setLayout(layout);
+				
+				btnPnl.add(Box.createVerticalGlue());
+				btnPnl.add(getAddBtn());
+				btnPnl.add(getAddAllBtn());
+				btnPnl.add(Box.createVerticalStrut(20));
+				btnPnl.add(getRemoveBtn());
+				btnPnl.add(getRemoveAllBtn());
+			}
+			
+			return btnPnl;
+		}
+		
+		private JButton getAddBtn() {
+			if (addBtn == null) {
+				addBtn = new JButton(IconManager.ICON_ANGLE_RIGHT);
+				addBtn.setFont(iconMgr.getIconFont(14.0f));
+				addBtn.setToolTipText("Add Selected");
+				
+				addBtn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						moveDataColumns(getAllColumnsLs(), getSelColumnsLs(), false);
+					}
+				});
+			}
+			
+			return addBtn;
+		}
+		
+		private JButton getAddAllBtn() {
+			if (addAllBtn == null) {
+				addAllBtn = new JButton(IconManager.ICON_DOUBLE_ANGLE_RIGHT);
+				addAllBtn.setFont(iconMgr.getIconFont(14.0f));
+				addAllBtn.setToolTipText("Add All");
+				
+				addAllBtn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						moveDataColumns(getAllColumnsLs(), getSelColumnsLs(), true);
+					}
+				});
+			}
+			
+			return addAllBtn;
+		}
+		
+		private JButton getRemoveBtn() {
+			if (removeBtn == null) {
+				removeBtn = new JButton(IconManager.ICON_ANGLE_LEFT);
+				removeBtn.setFont(iconMgr.getIconFont(14.0f));
+				removeBtn.setToolTipText("Remove Selected");
+				
+				removeBtn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						moveDataColumns(getSelColumnsLs(), getAllColumnsLs(), false);
+					}
+				});
+			}
+			
+			return removeBtn;
+		}
+		
+		private JButton getRemoveAllBtn() {
+			if (removeAllBtn == null) {
+				removeAllBtn = new JButton(IconManager.ICON_DOUBLE_ANGLE_LEFT);
+				removeAllBtn.setFont(iconMgr.getIconFont(14.0f));
+				removeAllBtn.setToolTipText("Remove All");
+				
+				removeAllBtn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						moveDataColumns(getSelColumnsLs(), getAllColumnsLs(), true);
+					}
+				});
+			}
+			
+			return removeAllBtn;
+		}
+		
+		private void updateButtons() {
+			getAddBtn().setEnabled(!getAllColumnsLs().getSelectionModel().isSelectionEmpty());
+			getRemoveBtn().setEnabled(!getSelColumnsLs().getSelectionModel().isSelectionEmpty());
+			
+			getAddAllBtn().setEnabled(getAllColumnsLs().getModel().getSize() > 0);
+			getRemoveAllBtn().setEnabled(getSelColumnsLs().getModel().getSize() > 0);
+		}
+		
+		private void moveDataColumns(final JList<CyColumnIdentifier> src,
+									 final JList<CyColumnIdentifier> tgt,
+									 final boolean all) {
+			final Set<CyColumnIdentifier> set = new HashSet<>();
+			
+			final DefaultListModel<CyColumnIdentifier> srcModel = (DefaultListModel<CyColumnIdentifier>) src.getModel();
+			final DefaultListModel<CyColumnIdentifier> tgtModel = (DefaultListModel<CyColumnIdentifier>) tgt.getModel();
+			
+			for (int i = 0; i < srcModel.getSize(); i++) {
+				final CyColumnIdentifier colId = srcModel.get(i);
+				
+				if (all || src.isSelectedIndex(i)) {
+					set.add(colId);
+					
+					if (!tgtModel.contains(colId))
+						tgtModel.addElement(colId);
+				}
+			}
+			
+			for (final CyColumnIdentifier colId : set) {
+				srcModel.removeElement(colId);
+			}
+			
+			chart.set(DATA_COLUMNS, getDataColumns());
+			
+			if (!initializing) {
+				updateRangeMinMax(true);
+				getColorSchemeEditor().reset();
+			}
+		}
+		
+		protected List<CyColumnIdentifier> getDataColumns() {
+			final List<CyColumnIdentifier> columns = new ArrayList<>();
+			final ListModel<CyColumnIdentifier> model = getSelColumnsLs().getModel();
+			
+			for (int i = 0; i < model.getSize(); i++) {
+				final CyColumnIdentifier colId = model.getElementAt(i);
+				columns.add(colId);
+			}
+			
+			return columns;
 		}
 	}
 	
@@ -1395,18 +1490,19 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			if (acceptsNull && !values.contains(null))
 				values.add(0, null);
 			
-			DefaultComboBoxModel<CyColumnIdentifier> model = new DefaultComboBoxModel(values.toArray());
+			final DefaultComboBoxModel<CyColumnIdentifier> model =
+					new DefaultComboBoxModel<>(values.toArray(new CyColumnIdentifier[values.size()]));
 			this.setModel(model);
-			this.setRenderer(new CyColumnComboBoxRenderer());
+			this.setRenderer(new CyColumnCellRenderer());
 		}
 	}
 	
-	protected static class CyColumnComboBoxRenderer extends DefaultListCellRenderer {
+	protected static class CyColumnCellRenderer extends DefaultListCellRenderer {
 
 		private static final long serialVersionUID = 840896421390898632L;
 
 		@Override
-		public Component getListCellRendererComponent(final JList list, final Object value, final int index,
+		public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
 				final boolean isSelected, final boolean cellHasFocus) {
 			final DefaultListCellRenderer c = (DefaultListCellRenderer) super.getListCellRendererComponent(
 					list, value, index, isSelected, cellHasFocus);

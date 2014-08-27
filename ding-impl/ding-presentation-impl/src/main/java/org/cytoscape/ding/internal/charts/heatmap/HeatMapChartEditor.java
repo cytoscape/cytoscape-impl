@@ -37,7 +37,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	
 	public HeatMapChartEditor(final HeatMapChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, false, 10, true, true, false, true, true, true, appMgr, iconMgr, colIdFactory);
+		super(chart, Number.class, false, true, true, false, true, true, true, appMgr, iconMgr, colIdFactory);
 		
 		getBorderPnl().setVisible(false);
 	}

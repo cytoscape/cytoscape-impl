@@ -13,7 +13,7 @@ public class BoxChartEditor extends AbstractChartEditor<BoxChart> {
 	
 	public BoxChartEditor(final BoxChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, true, 10, true, true, false, false, false, true, appMgr, iconMgr, colIdFactory);
+		super(chart, Number.class, true, true, true, false, false, false, true, appMgr, iconMgr, colIdFactory);
 		
 		getDomainAxisVisibleCkb().setVisible(false);
 	}
