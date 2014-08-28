@@ -29,7 +29,7 @@ public class LineChart extends AbstractChart<LineLayer> {
 	public static final String DISPLAY_NAME = "Line Chart";
 	
 	
-	public static final String LINE_WIDTH = "linewidth";
+	public static final String LINE_WIDTH = "lineWidth";
 	
 	public static ImageIcon ICON;
 	

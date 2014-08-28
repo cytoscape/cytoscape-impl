@@ -28,22 +28,22 @@ import org.cytoscape.view.presentation.property.values.MappableVisualPropertyVal
 public abstract class AbstractChart<T extends CustomGraphicLayer> extends AbstractCustomGraphics2<T>
 		implements MappableVisualPropertyValue {
 
-	public static final String DATA_COLUMNS = "datacolumns";
-	public static final String ITEM_LABELS_COLUMN = "itemlabelscolumn";
-	public static final String ITEM_LABELS = "itemlabels";
-	public static final String DOMAIN_LABELS_COLUMN = "domainlabelscolumn";
-	public static final String RANGE_LABELS_COLUMN = "rangelabelscolumn";
-	public static final String GLOBAL_RANGE = "globalrange";
-	public static final String AUTO_RANGE = "autorange";
+	public static final String DATA_COLUMNS = "dataColumns";
+	public static final String ITEM_LABELS_COLUMN = "itemLabelsColumn";
+	public static final String ITEM_LABELS = "itemLabels";
+	public static final String DOMAIN_LABELS_COLUMN = "domainLabelsColumn";
+	public static final String RANGE_LABELS_COLUMN = "rangeLabelsColumn";
+	public static final String GLOBAL_RANGE = "globalRange";
+	public static final String AUTO_RANGE = "autoRange";
 	public static final String RANGE = "range";
-	public static final String SHOW_ITEM_LABELS = "showitemlabels";
-	public static final String SHOW_DOMAIN_AXIS = "showdomainaxis";
-	public static final String SHOW_RANGE_AXIS = "showrangeaxis";
-	public static final String AXIS_WIDTH = "axiswidth";
-	public static final String AXIS_COLOR = "axiscolor";
-	public static final String VALUES = "valuelist";
-	public static final String BORDER_WIDTH = "borderwidth";
-	public static final String BORDER_COLOR = "bordercolor";
+	public static final String SHOW_ITEM_LABELS = "showItemLabels";
+	public static final String SHOW_DOMAIN_AXIS = "showDomainAxis";
+	public static final String SHOW_RANGE_AXIS = "showRangeAxis";
+	public static final String AXIS_WIDTH = "axisWidth";
+	public static final String AXIS_COLOR = "axisColor";
+	public static final String VALUES = "values";
+	public static final String BORDER_WIDTH = "borderWidth";
+	public static final String BORDER_COLOR = "borderColor";
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	

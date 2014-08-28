@@ -7,7 +7,7 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public abstract class AbstractGradient<T extends CustomGraphicLayer> extends AbstractCustomGraphics2<T> {
 
-	public static final String STOP_LIST = "stoplist";
+	public static final String STOP_LIST = "stopList";
 	
 	protected AbstractGradient(final String displayName) {
 		super(displayName);

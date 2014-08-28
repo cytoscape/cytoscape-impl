@@ -27,7 +27,7 @@ public class PieChart extends AbstractChart<PieLayer> {
 	public static final String FACTORY_ID = "org.cytoscape.PieChart";
 	public static final String DISPLAY_NAME = "Pie Chart";
 	
-	public static final String START_ANGLE = "startangle";
+	public static final String START_ANGLE = "startAngle";
 	
 	public static ImageIcon ICON;
 	
