@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +19,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class PieChart extends AbstractChart<PieLayer> {
@@ -82,6 +85,23 @@ public class PieChart extends AbstractChart<PieLayer> {
 	@Override
 	public String getId() {
 		return FACTORY_ID;
+	}
+	
+	@Override
+	public Map<String, List<Double>> getDataFromColumns(final CyNetwork network, final CyIdentifiable model,
+			final List<CyColumnIdentifier> columnNames) {
+		final Map<String, List<Double>> data = new HashMap<String, List<Double>>();
+		
+		// Values from multiple series have to be merged into one single series
+		final Map<String, List<Double>> rawData = super.getDataFromColumns(network, model, columnNames);
+		final List<Double> allValues = new ArrayList<>();
+		
+		for (final List<Double> values : rawData.values())
+			allValues.addAll(values);
+		
+		data.put("Values", allValues);
+		
+		return data;
 	}
 	
 	@Override
