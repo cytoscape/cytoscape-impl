@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -119,9 +120,14 @@ public class CytoscapejsMapper implements JSONMapper {
 				&& fieldName.equals(CyNetwork.SELECTED) == false) {
 
 				final CyTable table = network.getRow(graphObject).getTable();
+				
+				// New column creation:
+				// TODO: how can we handle number types?  
 				if (table.getColumn(fieldName) == null) {
-					// Create new column if necessary
+					
+					// GUESSS data type.
 					final Class<?> dataType = getDataType(data.get(fieldName));
+					
 					if (dataType == List.class) {
 						final Class<?> listDataType = getListDataType(data.get(fieldName));
 						table.createListColumn(fieldName, listDataType, false);
@@ -130,7 +136,8 @@ public class CytoscapejsMapper implements JSONMapper {
 					}
 				}
 
-				network.getRow(graphObject).set(fieldName, getValue(data.get(fieldName)));
+				final CyColumn col = table.getColumn(fieldName);
+				network.getRow(graphObject).set(fieldName, getValue(data.get(fieldName), col));
 			}
 		}
 	}
@@ -143,66 +150,48 @@ public class CytoscapejsMapper implements JSONMapper {
 		}
 		
 		final JsonNode entry = arrayNode.get(0);
-
-		if (entry.isLong()) {
-			return Long.class;
-		} else if (entry.isBoolean()) {
-			return Boolean.class;
-		} else if (entry.isInt()) {
-			return Integer.class;
-		} else if (entry.isFloat()) {
-			return Float.class;
-		} else if (entry.isDouble()) {
-			return Double.class;
-		} else {
-			return String.class;
-		}
+		return getDataType(entry);
 	}
+
 
 
 	private final Class<?> getDataType(final JsonNode entry) {
 		if (entry.isArray()) {
 			return List.class;
-		} else if (entry.isLong()) {
-			return Long.class;
 		} else if (entry.isBoolean()) {
 			return Boolean.class;
-		} else if (entry.isInt()) {
-			return Integer.class;
-		} else if (entry.isFloat()) {
-			return Float.class;
-		} else if (entry.isDouble()) {
+		} else if (entry.isNumber()) {
 			return Double.class;
 		} else {
 			return String.class;
 		}
 	}
 
-	private final Object getValue(final JsonNode entry) {
+	private final Object getValue(final JsonNode entry, final CyColumn column) {
 		// Check the data is list or not.
 		if (entry.isArray()) {
 			final Iterator<JsonNode> values = entry.elements();
 			final List<Object> list = new ArrayList<Object>();
 			while (values.hasNext()) {
-				list.add(parseValue(values.next()));
+				list.add(parseValue(values.next(), column.getListElementType()));
 			}
 			return list;
 		} else {
-			return parseValue(entry);
+			return parseValue(entry, column.getType());
 		}
 	}
 
 
-	private final Object parseValue(final JsonNode entry) {
-		if (entry.isLong()) {
+	private final Object parseValue(final JsonNode entry, final Class<?> type) {
+		if (type == Long.class) {
 			return entry.longValue();
-		} else if (entry.isInt()) {
+		} else if (type == Integer.class) {
 			return entry.intValue();
-		} else if (entry.isFloat()) {
+		} else if (type == Float.class) {
 			return entry.floatValue();
-		} else if (entry.isDouble()) {
+		} else if (type == Double.class) {
 			return entry.doubleValue();
-		} else if (entry.isBoolean()) {
+		} else if (type == Boolean.class) {
 			return entry.booleanValue();
 		} else {
 			return entry.asText();
