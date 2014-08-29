@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyIdentifiable;
@@ -73,7 +74,7 @@ public class JSONCytoscapejsNetworkReaderTest {
 	@Test
 	public void testYeastNetwork() throws Exception {
 		// galFiltered Cytoscape.js JSON file
-		final File testFile = new File("src/test/resources/testData/galFiltered.cyjs");
+		final File testFile = new File("src/test/resources/testData/galFiltered.json");
 		final CyNetworkView view = loadNetwork(testFile);
 		testYeast(view);
 	}
@@ -249,7 +250,22 @@ public class JSONCytoscapejsNetworkReaderTest {
 		final String networkSharedName = network.getRow(network).get("shared_name", String.class);
 		assertEquals("Yeast Network Sample", networkName);
 		assertEquals("Yeast Sample", networkSharedName);
-
+		
+		
+		// Type checking
+		final CyColumn longColumn = network.getDefaultNetworkTable().getColumn("longTest");
+		assertNotNull(longColumn);
+		assertEquals(Long.class, longColumn.getType());
+		
+		final CyColumn longListColumn = network.getDefaultNetworkTable().getColumn("longList");
+		assertNotNull(longListColumn);
+		assertEquals(List.class, longListColumn.getType());
+		assertEquals(Long.class, longListColumn.getListElementType());
+		List<Long> longList = network.getRow(network).getList("longList", Long.class);
+		assertFalse(longList.isEmpty());
+		assertEquals(3, longList.size());
+		assertEquals((Long)322222l, longList.get(2));
+		
 		final List<Double> numbers = network.getRow(network).getList("numberList", Double.class);
 		assertEquals(4, numbers.size());
 		assertTrue(200 == numbers.get(1));
@@ -268,7 +284,8 @@ public class JSONCytoscapejsNetworkReaderTest {
 		assertNotNull(network.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME));
 
 		assertEquals(Double.class, network.getDefaultNodeTable().getColumn("gal1RGexp").getType());
-		assertEquals(Double.class, network.getDefaultNodeTable().getColumn("Degree").getType());
+		assertEquals(Integer.class, network.getDefaultNodeTable().getColumn("Degree").getType());
+		assertEquals(Long.class, network.getDefaultNodeTable().getColumn("Eccentricity").getType());
 		assertEquals(Double.class, network.getDefaultNodeTable().getColumn("ClusteringCoefficient").getType());
 		assertEquals(Boolean.class, network.getDefaultNodeTable().getColumn("IsSingleNode").getType());
 		assertEquals(Long.class, network.getDefaultNodeTable().getColumn("SUID").getType());

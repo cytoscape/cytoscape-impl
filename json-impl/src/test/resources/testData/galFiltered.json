@@ -10,7 +10,48 @@
     "name" : "Yeast Network Sample",
     "description" : "Sample network created by JSON export.",
     "numberList" : [1, 200, 322, -100],
-    "floatList" : [1.2, 0.30, 3]
+    "floatList" : [1.2, 0.30, 3],
+    "longList" : [1111111, 30, 322222.0000],
+    "longTest": 123456789
+  },
+  "columnTypes": {
+    "node":[
+        {
+            "columnName":"gal80Rsig",
+            "type": "Double"
+        },
+        {
+            "columnName":"Degree",
+            "type": "Integer"
+        },
+        {
+            "columnName":"Eccentricity",
+            "type": "Long"
+        },
+        {
+            "columnName":"Radiality",
+            "type": "Double"
+        }
+    ],
+    "edge":[
+
+        {
+            "columnName":"EdgeBetweenness",
+            "type": "Double"
+        }
+    
+    ],
+    "network":[
+        {
+            "columnName":"longList",
+            "type": "List",
+            "listType": "Long"
+        },
+        {
+            "columnName":"longTest",
+            "type": "Long"
+        }
+    ]
   },
   "elements" : {
     "nodes" : [ {

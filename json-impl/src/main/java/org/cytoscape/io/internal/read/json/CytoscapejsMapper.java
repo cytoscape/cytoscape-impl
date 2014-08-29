@@ -1,15 +1,6 @@
 package org.cytoscape.io.internal.read.json;
 
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.DATA;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.EDGES;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ELEMENTS;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ID;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.NODES;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION_X;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION_Y;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.SOURCE;
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.TARGET;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,11 +34,18 @@ public class CytoscapejsMapper implements JSONMapper {
 	@Override
 	public CyNetwork createNetwork(final JsonNode rootNode) {
 
+		final CyNetwork network = factory.createNetwork();
+		
+		// Create Columns first if this optional field is available.
+		final JsonNode columnTypes = rootNode.get(COLUMN_TYPES.getTag());
+		if(columnTypes != null) {
+			parseColumnTypes(columnTypes, network);
+		}
+		
 		final JsonNode elements = rootNode.get(ELEMENTS.getTag());
 		final JsonNode nodes = elements.get(NODES.getTag());
 		final JsonNode edges = elements.get(EDGES.getTag());
 
-		final CyNetwork network = factory.createNetwork();
 		// Read network 
 		final JsonNode data = rootNode.get(DATA.getTag());
 		addTableData(data, network, network);
@@ -58,6 +56,65 @@ public class CytoscapejsMapper implements JSONMapper {
 
 		return network;
 	}
+	
+	
+	private final void parseColumnTypes(final JsonNode columnTypes, final CyNetwork network) {
+		final JsonNode node = columnTypes.get(NODE.getTag());
+		if(node != null) {
+			parseType(node, network.getDefaultNodeTable());
+		}
+		
+		final JsonNode edge = columnTypes.get(EDGE.getTag());
+		if(edge != null) {
+			parseType(edge, network.getDefaultEdgeTable());
+		}
+
+		final JsonNode net = columnTypes.get(NETWORK.getTag());
+		if(net != null) {
+			parseType(net, network.getDefaultNetworkTable());
+		}
+	}
+	
+	private final void parseType(final JsonNode typeArray, final CyTable table) {
+		for (final JsonNode entry : typeArray) {
+			final JsonNode columnName = entry.get(COLUMN_NAME.getTag());
+			final JsonNode type = entry.get(TYPE.getTag());
+		
+			final String name = columnName.textValue();
+			final CyColumn column = table.getColumn(name);
+			if(column == null) {
+				final String typeString = type.textValue();
+				final Class<?> dataType = getType(typeString);
+				if(dataType == List.class) {
+					final JsonNode listClass = entry.get(LIST_TYPE.getTag());
+					final Class<?> listType = getType(listClass.textValue());
+					table.createListColumn(name, listType, false);
+				} else {
+					// Create actual column
+					table.createColumn(name, dataType, false);
+				}
+				
+			}
+		}
+	}
+	
+	private final Class<?> getType(final String type) {
+		
+		if(type.equals(List.class.getSimpleName())) {
+			return List.class;
+		} else if(type.equals(Double.class.getSimpleName())) {
+			return Double.class;
+		} else if(type.equals(Integer.class.getSimpleName())) {
+			return Integer.class;
+		} else if(type.equals(Long.class.getSimpleName())) {
+			return Long.class;
+		} else if(type.equals(Boolean.class.getSimpleName())) {
+			return Boolean.class;
+		} else {
+			return String.class;
+		}
+	}
+	
 
 	private final Map<String, CyNode> addNodes(final CyNetwork network, final JsonNode nodes) {
 

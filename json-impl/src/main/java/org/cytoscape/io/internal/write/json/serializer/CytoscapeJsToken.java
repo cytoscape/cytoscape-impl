@@ -13,6 +13,11 @@ public enum CytoscapeJsToken {
 	NODES("nodes"),
 	EDGES("edges"),
 	DATA("data"),
+	COLUMN_TYPES("columnTypes"),
+	COLUMN_NAME("columnName"),
+	TYPE("type"),
+	LIST_TYPE("listType"),
+	NETWORK("network"),
 
 	ID("id"),
 	SOURCE("source"),
