@@ -344,8 +344,6 @@ public class CyActivator extends AbstractCyActivator {
 		bc.addBundleListener(startupMonitor);
 
 		URL welcomeJarUrl = bc.getBundle().getResource("welcome-screen-jar/welcome-impl-default.jar");
-		System.out.println("Welcome URL!!!!");
-		System.out.println(welcomeJarUrl);
 
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, 
