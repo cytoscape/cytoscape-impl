@@ -52,6 +52,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		EdgeBundlerTaskFactory edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 0, cam);
 		Properties edgeBundlerTaskFactoryProps = new Properties();
+		edgeBundlerTaskFactoryProps.setProperty("id", "edgeBundlerTaskFactory");
 		edgeBundlerTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
 		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
 		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"11.0");

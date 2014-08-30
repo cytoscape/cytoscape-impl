@@ -98,16 +98,12 @@ public class BuildQueryTask extends AbstractTask {
 		final CyRow row = table.getRow(nodeView.getModel().getSUID());
 
 		String defaultSelection = null;
-
-		boolean alreadySet = false;
 		for (CyColumn col : columns) {
 			final Object val = row.get(col.getName(), col.getType());
 			if (val != null && col.getType() == String.class) {
 				final String labelString = col.getName() + " (" + val.toString() + ")";
 				colName2column.put(labelString, col);
-				if (col.getName().equals(CyNetwork.NAME) && !alreadySet )
-					defaultSelection = labelString;
-				else if( col.getName().equals("identifier") )
+				if (col.getName().equals(CyNetwork.NAME))
 					defaultSelection = labelString;
 			}
 		}

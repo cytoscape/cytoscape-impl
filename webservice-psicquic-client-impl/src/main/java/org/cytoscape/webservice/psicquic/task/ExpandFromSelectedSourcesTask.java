@@ -120,10 +120,12 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 
 		taskMonitor.setProgress(0.8d);
 		expand(ic);
+
 		
 		final CyLayoutAlgorithm layout = layouts.getLayout(DEFAULT_LAYOUT);
 		final Set<View<CyNode>> entries = new HashSet<View<CyNode>>();
 		final CyNetwork network = netView.getModel();
+		network.getRow(nodeView.getModel()).set(CyNetwork.SELECTED, false);
 		for (final CyNode node : network.getNodeList()) {
 			final CyRow row = network.getRow(node);
 			if (row.get(CyNetwork.SELECTED, Boolean.class)) {

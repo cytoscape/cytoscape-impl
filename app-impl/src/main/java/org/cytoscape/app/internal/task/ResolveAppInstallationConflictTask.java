@@ -28,8 +28,8 @@ public class ResolveAppInstallationConflictTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (replaceApp == JOptionPane.YES_OPTION) {
-			appManager.uninstallApp(conflictingApp);
 			appManager.installApp(appToInstall);
+			appManager.uninstallApp(conflictingApp);
 		}
 		
 		else if (replaceApp == JOptionPane.NO_OPTION) {
