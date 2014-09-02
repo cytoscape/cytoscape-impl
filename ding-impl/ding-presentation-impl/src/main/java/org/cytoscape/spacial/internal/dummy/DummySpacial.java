@@ -47,7 +47,7 @@ public class DummySpacial implements SpacialIndex2D {
 		nodeViews = new ArrayList<DNodeView>();
 		for (CyNode node: networkView.getModel().getNodeList()) {
 			DNodeView v = (DNodeView)networkView.getNodeView(node);
-			if (v != null) nodeViews.add(v);
+			if (v != null && v.isVisible()) nodeViews.add(v);
 		}
 	}
 
@@ -60,9 +60,13 @@ public class DummySpacial implements SpacialIndex2D {
 		CyNode node = networkView.getModel().getNode(objKey);
 		if (node == null)
 			return false;
-		if (extentsArr == null) return true;
 
 		DNodeView nodeView = (DNodeView)networkView.getNodeView(node);
+		if (!nodeView.isVisible())
+			return false;
+
+		if (extentsArr == null) return true;
+
 		return nodeView.getExtents(extentsArr, offset);
 	}
 
@@ -86,6 +90,9 @@ public class DummySpacial implements SpacialIndex2D {
 			return 0.0;
 
 		DNodeView nodeView = (DNodeView)networkView.getNodeView(node);
+		if (!nodeView.isVisible())
+			return 0.0;
+
 		return nodeView.getZPosition();
 	}
 

@@ -1410,6 +1410,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		return cg.transform(scale);
 	}
 
+	public boolean isVisible() { return isVisible; }
+
 	@Override
 	protected <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return graphView.m_nodeDetails.getDefaultValue(vp);
