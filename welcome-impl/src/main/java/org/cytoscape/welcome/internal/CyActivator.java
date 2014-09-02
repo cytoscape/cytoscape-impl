@@ -44,7 +44,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
@@ -65,7 +64,6 @@ import org.cytoscape.welcome.internal.task.ApplySelectedLayoutTaskFactory;
 import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -120,10 +118,8 @@ public class CyActivator extends AbstractCyActivator {
 		final CyNetworkViewManager  networkViewManager = getService(bc, CyNetworkViewManager.class);
 
 		final WebServiceClient webServiceClient = getService(bc, WebServiceClient.class, "(id=PSICQUICWebServiceClient)");
-		final NetworkTaskFactory edgeBundlerTaskFactory = getService(bc, NetworkTaskFactory.class, "(id=edgeBundlerTaskFactory)");
-		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
-		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, webServiceClient, edgeBundlerTaskFactory, serviceRegistrar);
+		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, webServiceClient);
 
 		final CreateNewNetworkPanel createNewNetworkPanel = new CreateNewNetworkPanel(bc, dialogTaskManagerServiceRef,
 				importNetworkFileTF, importNetworkTF, dsManagerServiceRef, newEmptyNetworkViewFactory);

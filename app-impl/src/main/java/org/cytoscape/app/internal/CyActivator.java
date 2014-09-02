@@ -94,7 +94,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
 
-import java.net.URL;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -342,14 +341,10 @@ public class CyActivator extends AbstractCyActivator {
 		PackageAdmin packageAdmin = getService(bc, PackageAdmin.class);
 		StartupMonitor startupMonitor = new StartupMonitor(bc, packageAdmin, cyEventHelperRef);
 		bc.addBundleListener(startupMonitor);
-
-		URL welcomeJarUrl = bc.getBundle().getResource("welcome-screen-jar/welcome-impl-default.jar");
-		System.out.println("Welcome URL!!!!");
-		System.out.println(welcomeJarUrl);
-
+		
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, 
-				cyApplicationConfigurationServiceRef, webQuerier, startLevel, startupMonitor, welcomeJarUrl);
+				cyApplicationConfigurationServiceRef, webQuerier, startLevel, startupMonitor);
 		registerService(bc, appManager, AppManager.class, new Properties());
 		bc.addFrameworkListener(appManager);
 		

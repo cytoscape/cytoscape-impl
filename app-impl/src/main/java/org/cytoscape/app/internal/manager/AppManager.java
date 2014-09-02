@@ -24,10 +24,9 @@ package org.cytoscape.app.internal.manager;
  * #L%
  */
 
-import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -166,15 +165,12 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 			return true;
 		}
 	}
-
-	private final URL welcomeJarUrl;
 	
-	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration,
-					  final WebQuerier webQuerier, StartLevel startLevel, StartupMonitor startupMonitor, URL welcomeJarUrl) {
+	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration, 
+			final WebQuerier webQuerier, StartLevel startLevel, StartupMonitor startupMonitor) {
 		this.applicationConfiguration = applicationConfiguration;
 		this.swingAppAdapter = swingAppAdapter;
 		this.webQuerier = webQuerier;
-		this.welcomeJarUrl = welcomeJarUrl;
 		webQuerier.setAppManager(this);
 		this.startLevel = startLevel;
 		this.startupMonitor = startupMonitor;
@@ -753,23 +749,6 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 			// Create the directory if it doesn't exist	
 			if (!path.exists()) {
 				path.mkdirs();
-			}
-
-			File[] welcomeImpls = path.listFiles( new FilenameFilter()
-			{
-				@Override
-				public boolean accept(File dir, String name)
-				{
-					return name.startsWith("welcome-impl");
-				}
-			});
-
-			if( welcomeImpls.length == 0 )
-			{
-				ReadableByteChannel rbc = Channels.newChannel( welcomeJarUrl.openStream() );
-				File welcomeJarDestination = new File( path, "welcome-impl-default.jar" );
-				FileOutputStream fos = new FileOutputStream( welcomeJarDestination );
-				fos.getChannel().transferFrom( rbc, 0, Long.MAX_VALUE );
 			}
 			
 			return path.getCanonicalPath();

@@ -24,28 +24,37 @@ package org.cytoscape.welcome.internal.panel;
  * #L%
  */
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.*;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
-
-import javax.swing.*;
-import javax.swing.GroupLayout.Alignment;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.*;
 
 public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements ActionListener
 {
@@ -61,11 +70,9 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 	private final VisualMappingManager visualMappingManager;
 	private final CyNetworkViewManager networkViewManager;
 	private final WebServiceClient webServiceClient;
-	private final NetworkTaskFactory edgeBundlerTaskFactory;
-	private final CyServiceRegistrar serviceRegistrar;
 
 
-	public GeneSearchPanel(final DialogTaskManager taskManager, CyNetworkReaderManager networkReaderManager, CyNetworkManager networkManager, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layoutAlgorithmManager, VisualMappingManager visualMappingManager, CyNetworkViewManager networkViewManager, WebServiceClient webServiceClient, NetworkTaskFactory edgeBundlerTaskFactory, CyServiceRegistrar serviceRegistrar)
+	public GeneSearchPanel(final DialogTaskManager taskManager, CyNetworkReaderManager networkReaderManager, CyNetworkManager networkManager, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layoutAlgorithmManager, VisualMappingManager visualMappingManager, CyNetworkViewManager networkViewManager, WebServiceClient webServiceClient)
 	{
 		this.taskManager = taskManager;
 		this.networkReaderManager = networkReaderManager;
@@ -75,8 +82,6 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 		this.visualMappingManager = visualMappingManager;
 		this.networkViewManager = networkViewManager;
 		this.webServiceClient = webServiceClient;
-		this.edgeBundlerTaskFactory = edgeBundlerTaskFactory;
-		this.serviceRegistrar = serviceRegistrar;
 		initComponents();
 	}
 
@@ -139,20 +144,20 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 		layout.setAutoCreateContainerGaps(false);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-						.addComponent(speciesLabel)
-						.addComponent(species, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(genesLabel)
-						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
-										.addComponent(sp, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.addComponent(buildNetwork)
-						)
+				.addComponent(speciesLabel)
+				.addComponent(species, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(genesLabel)
+				.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+					.addComponent(sp, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(buildNetwork)
+				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-						.addComponent(speciesLabel)
-						.addComponent(species)
-						.addComponent(genesLabel)
-						.addComponent(sp)
-						.addComponent(buildNetwork)
+				.addComponent(speciesLabel)
+				.addComponent(species)
+				.addComponent(genesLabel)
+				.addComponent(sp)
+				.addComponent(buildNetwork)
 		);
 		
 		buildNetwork.addActionListener(this);
@@ -208,47 +213,16 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 			@Override
 			public void allFinished(FinishStatus finishStatus)
 			{
+				System.out.println("All finished FOO BAR");
 				Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 				CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("force-directed");
-
-				for( final CyNetworkView view : views )
+				for( CyNetworkView view : views )
 				{
-					Object ctx = layoutAlgorithm.getDefaultLayoutContext();
-					TaskIterator ti = layoutAlgorithm.createTaskIterator(view, ctx, CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
-
-					Task styleTask = new AbstractTask()
-					{
-						@Override
-						public void run(TaskMonitor taskMonitor) throws Exception
-						{
-							VisualStyle defaultStyle = visualMappingManager.getDefaultVisualStyle();
-
-							visualMappingManager.setVisualStyle(defaultStyle, view);
-
-							defaultStyle.apply(view);
-							view.updateView();
-						}
-					};
-					ti.append(styleTask);
-
-
-					TaskIterator edgeBundleTaskIterator = edgeBundlerTaskFactory.createTaskIterator(view.getModel());
-					//Task edgeBundleTask = edgeBundleTaskIterator.next();
-					Map<String, Object> settings = new HashMap<String, Object>();
-					settings.put("numNubs", 3);
-					settings.put("K", 0.003);
-					settings.put("COMPATABILITY_THRESHOLD", 0.3);
-					settings.put("maxIterations", 5000);
-					TunableSetter setter = serviceRegistrar.getService(TunableSetter.class);;
-					//setter.applyTunables(edgeBundleTask, settings);
-
-					ti.append( setter.createTaskIterator(edgeBundleTaskIterator, settings) );
-
-
-
-					taskManager.execute(ti);
+					taskManager.execute(layoutAlgorithm.createTaskIterator(view, layoutAlgorithm.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, ""));
 				}
 			}
 		});
+		//BuildNetworkBasedOnGenesTaskFactory buildNetworkFactory = new BuildNetworkBasedOnGenesTaskFactory(networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, visualMappingManager, networkViewManager, intActVSBuilder, selectedSpecies, geneNames);
+		//taskManager.execute( buildNetworkFactory.createTaskIterator() );
 	}
 }

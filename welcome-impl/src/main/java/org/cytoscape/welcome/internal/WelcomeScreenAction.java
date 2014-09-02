@@ -79,21 +79,12 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 		this.cyProps = cyProps;
 
-		Properties systemProperties = System.getProperties();
-
 		// Show it if necessary
-		if( !systemProperties.containsKey("cytoscape.welcome.already.started.once") )
-		{
-			systemProperties.setProperty("cytoscape.welcome.already.started.once", "true");
-			System.setProperties(systemProperties);
-			SwingUtilities.invokeLater(new Runnable()
-			{
-				public void run()
-				{
-					startup();
-				}
-			});
-		}
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				startup();
+			}
+		});
 	}
 
 	@Override
