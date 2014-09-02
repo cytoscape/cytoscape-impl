@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -87,6 +88,8 @@ import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.ding.internal.util.SortedListModel;
+import org.cytoscape.ding.internal.util.SortedListModel.SortOrder;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -164,7 +167,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected final CyColumnIdentifierFactory colIdFactory;
 
 	protected boolean initializing;
-
+	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	protected AbstractChartEditor(final T chart,
@@ -203,13 +206,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		this.iconMgr = iconMgr;
 		this.colIdFactory = colIdFactory;
 		
-		final Collator collator = Collator.getInstance(Locale.getDefault());
-		final Comparator<CyColumnIdentifier> columnComparator = new Comparator<CyColumnIdentifier>() {
-			@Override
-			public int compare(final CyColumnIdentifier c1, final CyColumnIdentifier c2) {
-				return collator.compare(c1.getColumnName(), c2.getColumnName());
-			}
-		};
+		final Comparator<CyColumnIdentifier> columnComparator = new ColumnComparator();
 		columns = new TreeMap<CyColumnIdentifier, CyColumn>(columnComparator);
 		labelColumns = new TreeMap<CyColumnIdentifier, CyColumn>(columnComparator);
 		
@@ -1173,14 +1170,20 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		
 		private JList<CyColumnIdentifier> allColumnsLs;
 		private JList<CyColumnIdentifier> selColumnsLs;
+		private final DefaultListModel<CyColumnIdentifier> allModel;
+		private final DefaultListModel<CyColumnIdentifier> selModel;
 		private JPanel btnPnl;
 		private JButton addBtn;
 		private JButton addAllBtn;
 		private JButton removeBtn;
 		private JButton removeAllBtn;
+		private JButton moveUpBtn;
+		private JButton moveDownBtn;
 
 		protected DataPanel() {
 			dataColumns = new LinkedHashSet<CyColumnIdentifier>();
+			allModel = new DefaultListModel<>();
+			selModel = new DefaultListModel<>();
 			
 			// Filter all columns that are list of numbers
 			for (final CyColumnIdentifier colId : columns.keySet()) {
@@ -1214,7 +1217,13 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						.addComponent(getBtnPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 									GroupLayout.PREFERRED_SIZE)
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-							.addComponent(selColumnsLbl)
+							.addGroup(layout.createSequentialGroup()
+									.addComponent(selColumnsLbl)
+									.addGap(70)
+									.addComponent(getMoveUpBtn())
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(getMoveDownBtn())
+								)
 							.addComponent(listScr2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
 									Short.MAX_VALUE)
 						)
@@ -1229,7 +1238,11 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						)
 						.addComponent(getBtnPnl(), GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(layout.createSequentialGroup()
-							.addComponent(selColumnsLbl)
+							.addGroup(layout.createParallelGroup(Alignment.BASELINE, true)
+								.addComponent(selColumnsLbl)
+								.addComponent(getMoveUpBtn())
+								.addComponent(getMoveDownBtn())
+							)
 							.addComponent(listScr2)
 						)
 					)
@@ -1242,16 +1255,13 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		protected void refresh() {
 			final List<CyColumnIdentifier> chartDataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
 			
-			final DefaultListModel<CyColumnIdentifier> allModel = 
-					(DefaultListModel<CyColumnIdentifier>) getAllColumnsLs().getModel();
-			final DefaultListModel<CyColumnIdentifier> selModel = 
-					(DefaultListModel<CyColumnIdentifier>) getSelColumnsLs().getModel();
-
+			for (final CyColumnIdentifier colId : chartDataColumns) {
+				selModel.addElement(colId);
+			}
+			
 			if (dataColumns != null) {
 				for (final CyColumnIdentifier colId : dataColumns) {
-					if (chartDataColumns.contains(colId))
-						selModel.addElement(colId);
-					else
+					if (!chartDataColumns.contains(colId))
 						allModel.addElement(colId);
 				}
 			}
@@ -1270,7 +1280,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JList<CyColumnIdentifier> getAllColumnsLs() {
 			if (allColumnsLs == null) {
 				allColumnsLs = new JList<>();
-				allColumnsLs.setModel(new DefaultListModel<CyColumnIdentifier>());
+				allColumnsLs.setModel(
+						new SortedListModel<CyColumnIdentifier>(allModel, SortOrder.ASCENDING, new ColumnComparator()));
 				allColumnsLs.setCellRenderer(new CyColumnCellRenderer());
 				
 				allColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -1301,7 +1312,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JList<CyColumnIdentifier> getSelColumnsLs() {
 			if (selColumnsLs == null) {
 				selColumnsLs = new JList<>();
-				selColumnsLs.setModel(new DefaultListModel<CyColumnIdentifier>());
+				selColumnsLs.setModel(selModel);
 				selColumnsLs.setCellRenderer(new CyColumnCellRenderer());
 				
 				selColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -1402,22 +1413,84 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			return removeAllBtn;
 		}
 		
+		private JButton getMoveUpBtn() {
+			if (moveUpBtn == null) {
+				moveUpBtn = new JButton(IconManager.ICON_CARET_UP);
+				moveUpBtn.setFont(iconMgr.getIconFont(17.0f));
+				moveUpBtn.setToolTipText("Move Selected Up");
+				moveUpBtn.setBorderPainted(false);
+				moveUpBtn.setContentAreaFilled(false);
+				moveUpBtn.setOpaque(false);
+				moveUpBtn.setFocusPainted(false);
+				moveUpBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+				
+				moveUpBtn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						moveUp(getSelColumnsLs());
+					}
+				});
+			}
+			
+			return moveUpBtn;
+		}
+		
+		private JButton getMoveDownBtn() {
+			if (moveDownBtn == null) {
+				moveDownBtn = new JButton(IconManager.ICON_CARET_DOWN);
+				moveDownBtn.setFont(iconMgr.getIconFont(17.0f));
+				moveDownBtn.setToolTipText("Move Selected Down");
+				moveDownBtn.setBorderPainted(false);
+				moveDownBtn.setContentAreaFilled(false);
+				moveDownBtn.setOpaque(false);
+				moveDownBtn.setFocusPainted(false);
+				moveDownBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+				
+				moveDownBtn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						moveDown(getSelColumnsLs());
+					}
+				});
+			}
+			
+			return moveDownBtn;
+		}
+		
 		private void updateButtons() {
 			getAddBtn().setEnabled(!getAllColumnsLs().getSelectionModel().isSelectionEmpty());
 			getRemoveBtn().setEnabled(!getSelColumnsLs().getSelectionModel().isSelectionEmpty());
 			
 			getAddAllBtn().setEnabled(getAllColumnsLs().getModel().getSize() > 0);
 			getRemoveAllBtn().setEnabled(getSelColumnsLs().getModel().getSize() > 0);
+			
+			final int[] selIndices = getSelColumnsLs().getSelectedIndices();
+			int size = getSelColumnsLs().getModel().getSize();
+			boolean b = selIndices != null && selIndices.length > 0;
+			
+			getMoveUpBtn().setEnabled(b && selIndices[0] > 0);
+			getMoveDownBtn().setEnabled(b && selIndices[selIndices.length - 1] < size - 1);
 		}
 		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		private void moveDataColumns(final JList<CyColumnIdentifier> src,
 									 final JList<CyColumnIdentifier> tgt,
 									 final boolean all) {
 			final Set<CyColumnIdentifier> set = new HashSet<>();
 			
-			final DefaultListModel<CyColumnIdentifier> srcModel = (DefaultListModel<CyColumnIdentifier>) src.getModel();
-			final DefaultListModel<CyColumnIdentifier> tgtModel = (DefaultListModel<CyColumnIdentifier>) tgt.getModel();
+			final DefaultListModel<CyColumnIdentifier> srcModel;
+			final DefaultListModel<CyColumnIdentifier> tgtModel;
 			
+			if (src.getModel() instanceof SortedListModel)
+				srcModel = (DefaultListModel) ((SortedListModel)src.getModel()).getUnsortedModel();
+			else
+				srcModel = (DefaultListModel) src.getModel();
+			
+			if (tgt.getModel() instanceof SortedListModel)
+				tgtModel = (DefaultListModel) ((SortedListModel)tgt.getModel()).getUnsortedModel();
+			else
+				tgtModel = (DefaultListModel) tgt.getModel();
+				
 			for (int i = 0; i < srcModel.getSize(); i++) {
 				final CyColumnIdentifier colId = srcModel.get(i);
 				
@@ -1441,6 +1514,75 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			}
 		}
 		
+		private void moveUp(final JList<CyColumnIdentifier> list) {
+			final DefaultListModel<CyColumnIdentifier> model = (DefaultListModel<CyColumnIdentifier>) list.getModel();
+
+			final List<CyColumnIdentifier> all = new LinkedList<>();
+			final int[] selIndices = new int[list.getSelectedIndices().length];
+			int selCount = 0;
+			boolean move = true;
+			
+			for (int i = 0; i < model.getSize(); i++) {
+				final CyColumnIdentifier colId = model.get(i);
+				
+				if (list.isSelectedIndex(i)) {
+					if (i == 0) {
+						move = false;
+						break;
+					}
+					
+					all.add(i - 1, colId);
+					selIndices[selCount++] = i - 1;
+				} else {
+					all.add(colId);
+				}
+			}
+			
+			if (move)
+				replaceAll(list, all, selIndices);
+		}
+
+		private void moveDown(final JList<CyColumnIdentifier> list) {
+			final DefaultListModel<CyColumnIdentifier> model = (DefaultListModel<CyColumnIdentifier>) list.getModel();
+			final List<CyColumnIdentifier> all = new LinkedList<>();
+			final int[] selIndices = new int[list.getSelectedIndices().length];
+			int selCount = 0;
+			boolean move = true;
+			
+			for (int i = model.getSize() - 1; i >= 0; i--) {
+				final CyColumnIdentifier colId = model.get(i);
+				
+				if (list.isSelectedIndex(i)) {
+					if (i == model.getSize() - 1) {
+						move = false;
+						break;
+					}
+					
+					all.add(1, colId);
+					selIndices[selCount++] = i + 1;
+				} else {
+					all.add(0, colId);
+				}
+			}
+			
+			if (move)
+				replaceAll(list, all, selIndices);
+		}
+		
+		private void replaceAll(final JList<CyColumnIdentifier> list, final List<CyColumnIdentifier> elements,
+				final int[] selectedIndices) {
+			final DefaultListModel<CyColumnIdentifier> model = (DefaultListModel<CyColumnIdentifier>) list.getModel();
+			model.removeAllElements();
+			int i = 0;
+			
+			for (final CyColumnIdentifier colId : elements) {
+				model.add(i++, colId);
+			}
+			
+			list.setSelectedIndices(selectedIndices);
+			chart.set(DATA_COLUMNS, getDataColumns());
+		}
+		
 		protected List<CyColumnIdentifier> getDataColumns() {
 			final List<CyColumnIdentifier> columns = new ArrayList<>();
 			final ListModel<CyColumnIdentifier> model = getSelColumnsLs().getModel();
@@ -1451,6 +1593,16 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			}
 			
 			return columns;
+		}
+	}
+	
+	public class ColumnComparator implements Comparator<CyColumnIdentifier> {
+
+		private final Collator collator = Collator.getInstance(Locale.getDefault());
+		
+		@Override
+		public int compare(final CyColumnIdentifier c1, final CyColumnIdentifier c2) {
+			return collator.compare(c1.getColumnName(), c2.getColumnName());
 		}
 	}
 	
