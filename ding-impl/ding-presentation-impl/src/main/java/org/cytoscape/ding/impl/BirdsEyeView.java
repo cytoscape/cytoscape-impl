@@ -305,6 +305,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		// System.out.println("BirdsEyeView: updateSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		try {
 		if (networkImage == null) {
+			// System.out.println("BirdsEyeView: updateSubgraph creating network image");
 			final GraphicsConfiguration gc = getGraphicsConfiguration();
 			networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
 		}

@@ -1786,7 +1786,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// synchronized (m_lock) {
 		try {
-			// System.out.println("Calling renderGraph to draw snapshot");
+			// System.out.println("Calling renderGraph to draw snapshot: bgPaint="+bgPaint);
 			GraphRenderer.renderGraph(this, dummySpacialFactory.createSpacialIndex2D(), lod, m_nodeDetails,
 			                          m_edgeDetails, m_hash, new GraphGraphics(img, false, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor, haveZOrder);
@@ -1801,7 +1801,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	                         double xMin, double yMin, double xCenter,
 	                         double yCenter, double scaleFactor,
 	                         List<CyNode> nodes, List<CyEdge> edges) {
-		if ((nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4) {
+		// System.out.println("drawing snapshot: nodes.size()="+nodes.size()+"node count="+m_drawPersp.getNodeCount());
+		// System.out.println("drawing snapshot: edges.size()="+edges.size()+"edges count="+m_drawPersp.getEdgeCount());
+		if (!largeModel || 
+				(nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4) {
 			drawSnapshot(img, lod, bgPaint, xMin, yMin, xCenter, yCenter, scaleFactor);
 			return;
 		}
