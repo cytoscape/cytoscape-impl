@@ -76,7 +76,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 			super.draw(g, shape, networkView, view);
 		} else {
 	        for (final JFreeChart chart : chartList) {
-	        	chart.draw(g, shape.getBounds2D());
+	        	chart.draw(g, bounds);
 	        }
 		}
 	}

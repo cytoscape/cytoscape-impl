@@ -1,30 +1,30 @@
 package org.cytoscape.ding.internal.gradients;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Shape;
-import java.awt.geom.Point2D;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.ding.internal.charts.ControlPoint;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
-public abstract class AbstractGradientLayer implements Cy2DGraphicLayer {
+public abstract class AbstractGradientLayer implements CustomGraphicLayer {
 	
 	protected final List<ControlPoint> controlPoints;
 	protected final Color[] colors;
 	protected final float[] positions;
 
+	protected Rectangle2D bounds;
 	protected Paint paint;
-
+	
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public AbstractGradientLayer(final List<ControlPoint> controlPoints) {
 		this.controlPoints = controlPoints != null ? controlPoints : new ArrayList<ControlPoint>();
+		this.bounds = new Rectangle2D.Double(0, 0, 100, 100);
 		
 		colors = new Color[controlPoints.size()];
 		positions = new float[controlPoints.size()];
@@ -37,17 +37,18 @@ public abstract class AbstractGradientLayer implements Cy2DGraphicLayer {
 		}
 	}
 	
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
 	@Override
-	public void draw(final Graphics2D g, final Shape shape, final CyNetworkView networkView, 
-			final View<? extends CyIdentifiable> view) {
-		g.setPaint(getPaint(shape.getBounds2D()));
-		g.fill(shape);
+	public Rectangle2D getBounds2D() {
+		return bounds;
 	}
 
-	protected Point2D scale(Point2D point, Rectangle2D bound) { 
-		double xvalue = point.getX() * bound.getWidth() + bound.getX();
-		double yvalue = point.getY() * bound.getHeight() + bound.getY();
+	@Override
+	public CustomGraphicLayer transform(final AffineTransform xform) {
+		final Shape s = xform.createTransformedShape(bounds);
+		bounds = s.getBounds2D();
 		
-		return new Point2D.Float((float)xvalue, (float)yvalue);
+		return this;
 	}
 }

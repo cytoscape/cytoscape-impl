@@ -113,8 +113,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 			final View<? extends CyIdentifiable> view) {
 		// Give JFreeChart a larger area to draw into, so the proportions of the chart elements looks better
 		final double scale = 2.0;
-		Rectangle2D bounds = shape.getBounds2D();
-		bounds = new Rectangle2D.Double(bounds.getX() * scale, bounds.getY() * scale,
+		Rectangle2D newBounds = new Rectangle2D.Double(bounds.getX() * scale, bounds.getY() * scale,
 				bounds.getWidth() * scale, bounds.getHeight() * scale);
 		// Of course, we also have to ask Graphics2D to apply the inverse transformation
 		final double invScale = 1.0 / scale;
@@ -122,7 +121,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		at.scale(invScale, invScale);
 		g.transform(at);
 		
-		getChart().draw(g, bounds);
+		getChart().draw(g, newBounds);
 		
 		// Make sure Graphics2D is "back to normal" before returning
 		try {

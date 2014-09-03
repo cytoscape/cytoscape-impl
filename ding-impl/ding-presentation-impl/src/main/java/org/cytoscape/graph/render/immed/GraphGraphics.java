@@ -2084,6 +2084,7 @@ public final class GraphGraphics {
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
 		} else if (cg instanceof Cy2DGraphicLayer) {
+			m_g2d.translate(xOffset, yOffset);
 			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
 			layer.draw(m_g2d, nodeShape, netView, view);
 		} else if (cg instanceof ImageCustomGraphicLayer) {

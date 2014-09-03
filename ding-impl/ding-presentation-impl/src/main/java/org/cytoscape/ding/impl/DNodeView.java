@@ -65,6 +65,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -1392,7 +1393,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		final float fit = graphics.getFitRatio();
 
 		// Case 1: if custom graphic is a vector fit width and length
-		if (cg instanceof PaintedShape) {
+		if (cg instanceof PaintedShape || cg instanceof Cy2DGraphicLayer) {
 			scale = AffineTransform.getScaleInstance(fit * width / cgW, fit * height / cgH);
 		} else {
 			double scaleW = width/cgW;
