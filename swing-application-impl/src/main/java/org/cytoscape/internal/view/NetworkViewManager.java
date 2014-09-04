@@ -55,7 +55,6 @@ import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
@@ -75,15 +74,15 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.LockedValueSetRecord;
-import org.cytoscape.view.model.events.LockedValuesSetEvent;
-import org.cytoscape.view.model.events.LockedValuesSetListener;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
+import org.cytoscape.view.model.events.ViewChangedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -111,7 +110,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
 		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
 		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
-		ColumnDeletedListener, LockedValuesSetListener {
+		ColumnDeletedListener, ViewChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -134,7 +133,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final Properties props;
 	
 	/** columnIdentifier -> { valueInfo -> [views] }*/
-	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<? extends CyIdentifiable>>>> mappedValuesMap;
+	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<?>>>> mappedValuesMap;
 	
 	private volatile boolean loadingSession;
 
@@ -176,12 +175,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
 
-		presentationContainerMap = new WeakHashMap<CyNetworkView, JInternalFrame>();
-		presentationMap = new WeakHashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
-		iFrameMap = new WeakHashMap<JInternalFrame, CyNetworkView>();
-		frameListeners = new HashMap<JInternalFrame, InternalFrameListener>();
-		viewUpdateRequired = new HashSet<CyNetworkView>();
-		mappedValuesMap = new HashMap<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<? extends CyIdentifiable>>>>();
+		presentationContainerMap = new WeakHashMap<>();
+		presentationMap = new WeakHashMap<>();
+		iFrameMap = new WeakHashMap<>();
+		frameListeners = new HashMap<>();
+		viewUpdateRequired = new HashSet<>();
+		mappedValuesMap = new HashMap<>();
 	}
 
 	/**
@@ -722,12 +721,15 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	}
 	
 	@Override
-	public void handleEvent(final LockedValuesSetEvent e) {
+	public void handleEvent(final ViewChangedEvent<?> e) {
 		final CyNetworkView netView = e.getSource();
 		
 		// Look for MappableVisualPropertyValue objects, so they can be saved for future reference
-		for (final LockedValueSetRecord record : e.getPayloadCollection()) {
-			final View<? extends CyIdentifiable> view = record.getView();
+		for (final ViewChangeRecord<?> record : e.getPayloadCollection()) {
+			if (!record.isLockedValue())
+				continue;
+			
+			final View<?> view = record.getView();
 			final Object value = record.getValue();
 			
 			if (value instanceof MappableVisualPropertyValue) {
@@ -739,28 +741,21 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				final VisualProperty<?> vp = record.getVisualProperty();
 				
 				for (final CyColumnIdentifier colId : columnIds) {
-					Map<MappedVisualPropertyValueInfo, Set<View<? extends CyIdentifiable>>> mvpInfoMap =
-							mappedValuesMap.get(colId);
+					Map<MappedVisualPropertyValueInfo, Set<View<?>>> mvpInfoMap = mappedValuesMap.get(colId);
 					
 					if (mvpInfoMap == null)
-						mappedValuesMap.put(colId,
-								mvpInfoMap = new HashMap<MappedVisualPropertyValueInfo, Set<View<? extends CyIdentifiable>>>());
+						mappedValuesMap.put(colId, mvpInfoMap = new HashMap<>());
 					
 					final MappedVisualPropertyValueInfo mvpInfo =
 							new MappedVisualPropertyValueInfo((MappableVisualPropertyValue)value, vp, netView);
-					Set<View<? extends CyIdentifiable>> viewSet = mvpInfoMap.get(mvpInfo);
+					Set<View<?>> viewSet = mvpInfoMap.get(mvpInfo);
 					
 					if (viewSet == null)
-						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<View<? extends CyIdentifiable>>());
+						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<View<?>>());
 					
 					viewSet.add(view);
 				}
 			}
-		}
-		
-		// Do NOT update the view is session is being loaded
-		if (!loadingSession) {
-			updateView(netView, null);
 		}
 	}
 
@@ -831,8 +826,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private boolean reapplyLockedValues(final String columnName, final Collection<CyNetworkView> networkViews) {
 		boolean result = false;
 		final CyColumnIdentifier colId = colIdfFactory.createColumnIdentifier(columnName);
-		final Map<MappedVisualPropertyValueInfo, Set<View<? extends CyIdentifiable>>> mvpInfoMap =
-				mappedValuesMap.get(colId);
+		final Map<MappedVisualPropertyValueInfo, Set<View<?>>> mvpInfoMap = mappedValuesMap.get(colId);
 		
 		if (mvpInfoMap != null) {
 			for (final MappedVisualPropertyValueInfo mvpInfo : mvpInfoMap.keySet()) {
@@ -841,9 +835,9 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				
 				final MappableVisualPropertyValue value = mvpInfo.getValue();
 				final VisualProperty vp = mvpInfo.getVisualProperty();
-				final Set<View<? extends CyIdentifiable>> viewSet = mvpInfoMap.get(mvpInfo);
+				final Set<View<?>> viewSet = mvpInfoMap.get(mvpInfo);
 				
-				for (final View<? extends CyIdentifiable> view : viewSet) {
+				for (final View<?> view : viewSet) {
 					if (view.isDirectlyLocked(vp) && value.equals(view.getVisualProperty(vp))) {
 						view.setLockedValue(vp, value);
 						result = true;

@@ -37,13 +37,12 @@ import java.util.Map.Entry;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.LockedValueSetRecord;
-import org.cytoscape.view.model.events.LockedValuesSetEvent;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public abstract class AbstractDViewModel<M extends CyIdentifiable> implements View<M> {
@@ -105,6 +104,8 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 				applyVisualProperty(vp, value);
 			}
 		}
+		
+		fireViewChangedEvent(vp, value, false);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -147,8 +148,7 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 			propagateLockedVisualProperty(vp, node.getChildren(), value);
 		}
 		
-		eventHelper.addEventPayload((CyNetworkView)getDGraphView(),
-				new LockedValueSetRecord(this, vp, value), LockedValuesSetEvent.class);
+		fireViewChangedEvent(vp, value, true);
 	}
 
 	@Override
@@ -165,6 +165,7 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 			VisualLexiconNode root = lexicon.getVisualLexiconNode(vp);
 			LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
 			nodes.add(root);
+			
 			while (!nodes.isEmpty()) {
 				VisualLexiconNode node = nodes.pop();
 				VisualProperty visualProperty = node.getVisualProperty();
@@ -185,9 +186,12 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 						nodes.add(child);
 					}
 				}
+				
 				nodes.addAll(node.getChildren());
 			}
 		}
+		
+		fireViewChangedEvent(vp, null, true);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -256,4 +260,10 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 	}
 	
 	protected abstract DGraphView getDGraphView();
+	
+	protected <T, V extends T> void fireViewChangedEvent(final VisualProperty<? extends T> vp, final V value,
+			final boolean lockedValue) {
+		final ViewChangeRecord record = new ViewChangeRecord(this, vp, value, lockedValue);
+		eventHelper.addEventPayload(getDGraphView(), record, ViewChangedEvent.class);
+	}
 }
