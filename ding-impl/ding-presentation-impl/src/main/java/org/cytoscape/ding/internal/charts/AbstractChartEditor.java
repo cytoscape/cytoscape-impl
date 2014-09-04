@@ -1492,7 +1492,12 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				tgtModel = (DefaultListModel) tgt.getModel();
 				
 			for (int i = 0; i < srcModel.getSize(); i++) {
-				final CyColumnIdentifier colId = srcModel.get(i);
+				int index = i;
+				
+				if (src.getModel() instanceof SortedListModel)
+					index = ((SortedListModel)src.getModel()).toUnsortedModelIndex(i);
+				
+				final CyColumnIdentifier colId = srcModel.get(index);
 				
 				if (all || src.isSelectedIndex(i)) {
 					set.add(colId);
