@@ -60,6 +60,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	private LineType lineType;
 	private boolean selected;
+
+	// Cached visibility information
+	private boolean isVisible = true;
 	
 	DEdgeView(final DGraphView graphView,
 			  final CyEdge model,
@@ -695,10 +698,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		} else if (vp == BasicVisualLexicon.EDGE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
 		} else if (vp == BasicVisualLexicon.EDGE_VISIBLE) {
-			if (((Boolean) value).booleanValue())
+			if (((Boolean) value).booleanValue()) {
 				graphView.showGraphObject(this);
-			else
+				isVisible = true;
+			} else {
 				graphView.hideGraphObject(this);
+				isVisible = false;
+			}
 		} else if (vp == DVisualLexicon.EDGE_CURVED) {
 			final Boolean curved = (Boolean) value;
 			if (curved)
@@ -719,4 +725,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	protected DGraphView getDGraphView() {
 		return graphView;
 	}
+
+	public boolean isVisible() { return isVisible; }
 }

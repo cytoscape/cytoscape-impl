@@ -1005,6 +1005,11 @@ final class DEdgeDetails extends EdgeDetails {
 	private final MinLongHeap m_heap = new MinLongHeap();
 	private final float[] m_extentsBuff = new float[4];
 
+	public boolean isVisible(final CyEdge edge) {
+		final DEdgeView edgeView = (DEdgeView) dGraphView.getDEdgeView(edge);
+		return edgeView.isVisible();
+	}
+
 	@Override
 	public EdgeAnchors getAnchors(final CyEdge edge) {
 		final DEdgeView edgeView = (DEdgeView) dGraphView.getDEdgeView(edge);

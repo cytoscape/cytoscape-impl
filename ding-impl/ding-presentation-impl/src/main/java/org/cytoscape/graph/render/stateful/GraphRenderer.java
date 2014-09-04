@@ -250,6 +250,8 @@ public final class GraphRenderer {
 					final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
 					for ( CyEdge e : touchingEdges ) {
+						if (!edgeDetails.isVisible(e))
+							continue;
 						final long edge = e.getSUID(); 
 						final long otherNode = node ^ e.getSource().getSUID() ^ e.getTarget().getSUID();
 
@@ -346,6 +348,8 @@ public final class GraphRenderer {
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
 					for ( CyEdge edge : touchingEdges ) {
+						if (!edgeDetails.isVisible(edge))
+							continue;
 						final long otherNode = node ^ edge.getSource().getSUID() ^ edge.getTarget().getSUID();
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
@@ -368,6 +372,8 @@ public final class GraphRenderer {
 					final byte nodeShape = nodeDetails.getShape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
 					for (final CyEdge edge : touchingEdges ) {
+						if (!edgeDetails.isVisible(edge))
+							continue;
 						final long otherNode = node ^ edge.getSource().getSUID()
 							^ edge.getTarget().getSUID();
 						final CyNode otherCyNode = graph.getNode(otherNode);
