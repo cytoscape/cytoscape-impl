@@ -1282,7 +1282,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				allColumnsLs = new JList<>();
 				allColumnsLs.setModel(
 						new SortedListModel<CyColumnIdentifier>(allModel, SortOrder.ASCENDING, new ColumnComparator()));
-				allColumnsLs.setCellRenderer(new CyColumnCellRenderer());
+				allColumnsLs.setCellRenderer(new CyColumnCellRenderer(true));
 				
 				allColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 					@Override
@@ -1313,7 +1313,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			if (selColumnsLs == null) {
 				selColumnsLs = new JList<>();
 				selColumnsLs.setModel(selModel);
-				selColumnsLs.setCellRenderer(new CyColumnCellRenderer());
+				selColumnsLs.setCellRenderer(new CyColumnCellRenderer(true));
 				
 				selColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 					@Override
@@ -1657,19 +1657,41 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected static class CyColumnCellRenderer extends DefaultListCellRenderer {
 
 		private static final long serialVersionUID = 840896421390898632L;
+		
+		private final boolean showCount;
+
+		public CyColumnCellRenderer() {
+			this(false);
+		}
+		
+		public CyColumnCellRenderer(final boolean showCount) {
+			this.showCount = showCount;
+		}
 
 		@Override
 		public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
 				final boolean isSelected, final boolean cellHasFocus) {
 			final DefaultListCellRenderer c = (DefaultListCellRenderer) super.getListCellRendererComponent(
 					list, value, index, isSelected, cellHasFocus);
-			
-			if (value == null)
+			if (value == null) {
 				c.setText("-- none --");
-			else if (value instanceof CyColumnIdentifier)
-				c.setText(((CyColumnIdentifier)value).getColumnName());
-			else
+			} else if (value instanceof CyColumnIdentifier) {
+				String count = "";
+				
+				if (showCount) {
+					int totalLength = (int)(Math.log10(list.getModel().getSize()) + 1);
+					int idxLength = (int)(Math.log10(index + 1) + 1);
+					int dif = totalLength - idxLength;
+					
+					while (dif-- > 0) count += "&nbsp;";
+					count += (index + 1) + ". ";
+				}
+				
+				c.setText( "<html><font face='Monospaced'>" + count + "</font>" +
+						   ((CyColumnIdentifier)value).getColumnName() + "</html>" );
+			} else {
 				c.setText("[ invalid column ]"); // Should never happen
+			}
 				
 			return c;
 		}
