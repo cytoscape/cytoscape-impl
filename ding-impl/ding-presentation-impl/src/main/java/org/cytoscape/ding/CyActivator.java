@@ -108,21 +108,13 @@ import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
-import org.cytoscape.ding.internal.charts.bar.BarChartEditorFactory;
 import org.cytoscape.ding.internal.charts.bar.BarChartFactory;
-import org.cytoscape.ding.internal.charts.box.BoxChartEditorFactory;
 import org.cytoscape.ding.internal.charts.box.BoxChartFactory;
-import org.cytoscape.ding.internal.charts.heatmap.HeatMapChartEditorFactory;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChartFactory;
-import org.cytoscape.ding.internal.charts.line.LineChartEditorFactory;
 import org.cytoscape.ding.internal.charts.line.LineChartFactory;
-import org.cytoscape.ding.internal.charts.pie.PieChartEditorFactory;
 import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
-import org.cytoscape.ding.internal.charts.ring.RingChartEditorFactory;
 import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
-import org.cytoscape.ding.internal.gradients.linear.LinearGradientEditorFactory;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
-import org.cytoscape.ding.internal.gradients.radial.RadialGradientEditorFactory;
 import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconManagerImpl;
@@ -154,7 +146,6 @@ import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.property.values.BendFactory;
@@ -204,7 +195,6 @@ public class CyActivator extends AbstractCyActivator {
 		SpacialIndex2DFactory spacialIndex2DFactoryServiceRef = getService(bc, SpacialIndex2DFactory.class);
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
 		CyServiceRegistrar cyServiceRegistrarRef = getService(bc, CyServiceRegistrar.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 		CyProperty cyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
@@ -639,7 +629,6 @@ public class CyActivator extends AbstractCyActivator {
 		final CyCustomGraphics2Manager chartFactoryManager = CyCustomGraphics2ManagerImpl.getInstance();
 		registerAllServices(bc, chartFactoryManager, new Properties());
 		registerServiceListener(bc, chartFactoryManager, "addFactory", "removeFactory", CyCustomGraphics2Factory.class);
-		registerServiceListener(bc, chartFactoryManager, "addEditorFactory", "removeEditorFactory", CyCustomGraphics2EditorFactory.class);
 	}
 	
 	private void startCharts(BundleContext bc) {
@@ -651,35 +640,23 @@ public class CyActivator extends AbstractCyActivator {
 		final Properties factoryProps = new Properties();
 		factoryProps.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_CHARTS);
 		{
-			final BarChartFactory factory = new BarChartFactory(colIdFactory);
+			final BarChartFactory factory = new BarChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final BarChartEditorFactory editorFactory = new BarChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}{
-			final BoxChartFactory factory = new BoxChartFactory(colIdFactory);
+			final BoxChartFactory factory = new BoxChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final BoxChartEditorFactory editorFactory = new BoxChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}{
-			final PieChartFactory factory = new PieChartFactory(colIdFactory);
+			final PieChartFactory factory = new PieChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final PieChartEditorFactory editorFactory = new PieChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}{
-			final RingChartFactory factory = new RingChartFactory(colIdFactory);
+			final RingChartFactory factory = new RingChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final RingChartEditorFactory editorFactory = new RingChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}{
-			final LineChartFactory factory = new LineChartFactory(colIdFactory);
+			final LineChartFactory factory = new LineChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final LineChartEditorFactory editorFactory = new LineChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}{
-			final HeatMapChartFactory factory = new HeatMapChartFactory(colIdFactory);
+			final HeatMapChartFactory factory = new HeatMapChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final HeatMapChartEditorFactory editorFactory = new HeatMapChartEditorFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}
 	}
 	
@@ -690,13 +667,9 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			final LinearGradientFactory factory = new LinearGradientFactory();
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final LinearGradientEditorFactory editorFactory = new LinearGradientEditorFactory();
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}{
 			final RadialGradientFactory factory = new RadialGradientFactory();
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
-			final RadialGradientEditorFactory editorFactory = new RadialGradientEditorFactory();
-			registerService(bc, editorFactory, CyCustomGraphics2EditorFactory.class, new Properties());
 		}
 	}
 	

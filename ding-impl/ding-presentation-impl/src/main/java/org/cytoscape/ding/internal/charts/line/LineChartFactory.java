@@ -3,17 +3,25 @@ package org.cytoscape.ding.internal.charts.line;
 import java.util.Map;
 
 import javax.swing.Icon;
+import javax.swing.JComponent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils;
+import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class LineChartFactory implements CyCustomGraphics2Factory<LineLayer> {
 	
+	private final CyApplicationManager appMgr;
+	private final IconManager iconMgr;
 	private final CyColumnIdentifierFactory colIdFactory;
 	
-	public LineChartFactory(final CyColumnIdentifierFactory colIdFactory) {
+	public LineChartFactory(final CyApplicationManager appMgr, final IconManager iconMgr,
+			final CyColumnIdentifierFactory colIdFactory) {
+		this.appMgr = appMgr;
+		this.iconMgr = iconMgr;
 		this.colIdFactory = colIdFactory;
 	}
 	
@@ -50,6 +58,11 @@ public class LineChartFactory implements CyCustomGraphics2Factory<LineLayer> {
 	@Override
 	public Icon getIcon(int width, int height) {
 		return ViewUtils.resizeIcon(LineChart.ICON, width, height);
+	}
+	
+	@Override
+	public JComponent createEditor(final CyCustomGraphics2<LineLayer> chart) {
+		return new LineChartEditor((LineChart)chart, appMgr, iconMgr, colIdFactory);
 	}
 	
 	@Override

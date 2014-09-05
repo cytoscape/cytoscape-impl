@@ -3,17 +3,25 @@ package org.cytoscape.ding.internal.charts.ring;
 import java.util.Map;
 
 import javax.swing.Icon;
+import javax.swing.JComponent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils;
+import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class RingChartFactory implements CyCustomGraphics2Factory<RingLayer> {
 
+	private final CyApplicationManager appMgr;
+	private final IconManager iconMgr;
 	private final CyColumnIdentifierFactory colIdFactory;
-	
-	public RingChartFactory(final CyColumnIdentifierFactory colIdFactory) {
+
+	public RingChartFactory(final CyApplicationManager appMgr, final IconManager iconMgr,
+			final CyColumnIdentifierFactory colIdFactory) {
+		this.appMgr = appMgr;
+		this.iconMgr = iconMgr;
 		this.colIdFactory = colIdFactory;
 	}
 	
@@ -50,6 +58,11 @@ public class RingChartFactory implements CyCustomGraphics2Factory<RingLayer> {
 	@Override
 	public Icon getIcon(int width, int height) {
 		return ViewUtils.resizeIcon(RingChart.ICON, width, height);
+	}
+	
+	@Override
+	public JComponent createEditor(final CyCustomGraphics2<RingLayer> chart) {
+		return new RingChartEditor((RingChart)chart, appMgr, iconMgr, colIdFactory);
 	}
 	
 	@Override

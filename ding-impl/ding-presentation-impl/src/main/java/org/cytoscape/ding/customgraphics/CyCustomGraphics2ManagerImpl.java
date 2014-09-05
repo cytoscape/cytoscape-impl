@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 
 @SuppressWarnings("rawtypes")
@@ -21,7 +20,6 @@ public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
 
 	private final Map<String, Set<CyCustomGraphics2Factory<? extends CustomGraphicLayer>>> groups;
 	private final Map<String, CyCustomGraphics2Factory<? extends CustomGraphicLayer>> factories;
-	private final Map<Class, CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer>> editorFactories;
 	
 	private final Collator collator = Collator.getInstance(Locale.getDefault());
 	private final Comparator<CyCustomGraphics2Factory<? extends CustomGraphicLayer>> factoryComparator;
@@ -31,7 +29,6 @@ public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
 	private CyCustomGraphics2ManagerImpl() {
 		groups = new ConcurrentHashMap<>();
 		factories = new ConcurrentHashMap<>();
-		editorFactories = new ConcurrentHashMap<>();
 		
 		factoryComparator = new Comparator<CyCustomGraphics2Factory<? extends CustomGraphicLayer>>() {
 			@Override
@@ -82,12 +79,6 @@ public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
 	}
 	
 	@Override
-	public CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> getCyCustomGraphics2EditorFactory(
-			final Class<? extends CyCustomGraphics2<? extends CustomGraphicLayer>> cls) {
-		return editorFactories.get(cls);
-	}
-	
-	@Override
 	public Set<String> getGroups() {
 		return groups.keySet();
 	}
@@ -117,16 +108,6 @@ public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
 		}
 	}
 	
-	public void addEditorFactory(final CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> factory,
-			final Map<?, ?> props) {
-		editorFactories.put(factory.getSupportedClass(), factory);
-	}
-
-	public void removeEditorFactory(final CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> factory,
-			final Map<?, ?> props) {
-		editorFactories.remove(factory.getSupportedClass());
-	}
-
 	public static CyCustomGraphics2ManagerImpl getInstance() {
 		return me;
 	}

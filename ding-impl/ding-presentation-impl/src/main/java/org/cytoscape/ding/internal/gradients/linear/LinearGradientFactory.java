@@ -3,6 +3,7 @@ package org.cytoscape.ding.internal.gradients.linear;
 import java.util.Map;
 
 import javax.swing.Icon;
+import javax.swing.JComponent;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -42,6 +43,11 @@ public class LinearGradientFactory implements CyCustomGraphics2Factory<LinearGra
 	@Override
 	public Class<? extends CyCustomGraphics2<LinearGradientLayer>> getSupportedClass() {
 		return LinearGradient.class;
+	}
+	
+	@Override
+	public JComponent createEditor(final CyCustomGraphics2<LinearGradientLayer> gradient) {
+		return new LinearGradientEditor((LinearGradient)gradient);
 	}
 	
 	@Override

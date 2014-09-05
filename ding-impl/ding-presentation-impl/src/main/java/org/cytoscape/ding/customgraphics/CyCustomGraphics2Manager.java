@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2EditorFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 
 public interface CyCustomGraphics2Manager {
@@ -22,7 +21,5 @@ public interface CyCustomGraphics2Manager {
 	
 	CyCustomGraphics2Factory<? extends CustomGraphicLayer> getCyCustomGraphics2Factory(Class<? extends CyCustomGraphics2<? extends CustomGraphicLayer>> cls);
 	
-	CyCustomGraphics2EditorFactory<? extends CustomGraphicLayer> getCyCustomGraphics2EditorFactory(Class<? extends CyCustomGraphics2<? extends CustomGraphicLayer>> cls);
-
 	Set<String> getGroups();
 }

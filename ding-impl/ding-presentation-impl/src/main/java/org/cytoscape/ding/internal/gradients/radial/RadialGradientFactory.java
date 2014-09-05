@@ -3,6 +3,7 @@ package org.cytoscape.ding.internal.gradients.radial;
 import java.util.Map;
 
 import javax.swing.Icon;
+import javax.swing.JComponent;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -42,6 +43,11 @@ public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGra
 	@Override
 	public Class<? extends CyCustomGraphics2<RadialGradientLayer>> getSupportedClass() {
 		return RadialGradient.class;
+	}
+	
+	@Override
+	public JComponent createEditor(final CyCustomGraphics2<RadialGradientLayer> gradient) {
+		return new RadialGradientEditor((RadialGradient)gradient);
 	}
 	
 	@Override
