@@ -91,7 +91,11 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 			Arrays.fill(seriesData[0], x);
 			
 			for (int y = 0; y < maxYSize; y++) {
-				final double z = zValues.size() > y ? zValues.get(y) : Double.NaN;
+				double z = Double.NaN;
+				
+				if (zValues.size() > y && zValues.get(y) != null)
+					 z = zValues.get(y);
+				
 				seriesData[1][y] = y;
 				seriesData[2][y] = z;
 			}

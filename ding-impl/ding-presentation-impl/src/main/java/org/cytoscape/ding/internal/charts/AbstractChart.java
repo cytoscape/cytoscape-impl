@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
@@ -121,7 +122,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	 */
 	public Map<String, List<Double>> getDataFromColumns(final CyNetwork network, final CyIdentifiable model,
 			final List<CyColumnIdentifier> columnNames) {
-		final LinkedHashMap<String, List<Double>> data = new LinkedHashMap<String, List<Double>>();
+		LinkedHashMap<String, List<Double>> data = new LinkedHashMap<>();
 		final CyRow row = network.getRow(model);
 		
 		if (row == null)
@@ -130,6 +131,8 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		final CyTable table = row.getTable();
 		final List<Double> singleSeriesValues = new ArrayList<Double>();
 		final StringBuilder singleSeriesKey = new StringBuilder();
+		int singleSeriesIndex = -1;
+		int count = 0;
 
 		for (final CyColumnIdentifier colId : columnNames) {
 			final CyColumn column = table.getColumn(colId.getColumnName());
@@ -141,68 +144,85 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 			final List<Double> values = new ArrayList<Double>();
 			
 			if (column.getType() == List.class) {
+				// List Column: One column = one data series
 				final Class<?> type = column.getListElementType();
 				
 				if (type == Double.class) {
-					List<Double> dlist = row.getList(colName, Double.class);
-					if (dlist != null)
-						values.addAll(dlist);
+					List<Double> list = row.getList(colName, Double.class);
+					
+					if (list != null)
+						values.addAll(list);
 				} else if (type == Integer.class) {
-					List<Integer> iList = row.getList(colName, Integer.class);
-					for (Integer i : iList)
-						values.add(i.doubleValue());
+					List<Integer> list = row.getList(colName, Integer.class);
+					
+					if (list != null) {
+						for (Integer i : list)
+							values.add(i.doubleValue());
+					}
 				} else if (type == Long.class) {
-					List<Long> lList = row.getList(colName, Long.class);
-					for (Long l : lList)
-						values.add(l.doubleValue());
+					List<Long> list = row.getList(colName, Long.class);
+					
+					if (list != null) {
+						for (Long l : list)
+							values.add(l.doubleValue());
+					}
 				} else if (type == Float.class) {
-					List<Float> fList = row.getList(colName, Float.class);
-					for (Float f : fList)
-						values.add(f.doubleValue());
-				} else if (type == String.class) {
-					List<String> sList = row.getList(colName, String.class);
-					for (String s : sList) {
-						try {
-							values.add(Double.valueOf(s));
-						} catch (Exception e) {
-							values.add(0.0);
-						}
+					List<Float> list = row.getList(colName, Float.class);
+					
+					if (list != null) {
+						for (Float f : list)
+							values.add(f.doubleValue());
 					}
 				}
 				
 				data.put(colName, values);
 			} else {
+				// Single Column: All single columns together make only one data series
 				final Class<?> type = column.getType();
-				final boolean isSet = row.isSet(colName);
 				
-				if (!isSet)
-					continue;
-				
-				if (type == Double.class) {
-					singleSeriesValues.add(row.get(colName, Double.class));
-					singleSeriesKey.append(colName + ",");
-				} else if (type == Integer.class) {
-					Integer i = row.get(colName, Integer.class);
-					singleSeriesValues.add(i.doubleValue());
-					singleSeriesKey.append(colName + ",");
-				} else if (type == Float.class) {
-					Float f = row.get(colName, Float.class);
-					singleSeriesValues.add(f.doubleValue());
-					singleSeriesKey.append(colName + ",");
-				} else if (type == String.class) {
-					String s = row.get(colName, String.class);
-					
-					try {
-						singleSeriesValues.add(Double.valueOf(s));
-						singleSeriesKey.append(colName + ",");
-					} catch (Exception e) {
+				if (Number.class.isAssignableFrom(type)) {
+					if (!row.isSet(colName)) {
+						singleSeriesValues.add(Double.NaN);
+					} else if (type == Double.class) {
+						singleSeriesValues.add(row.get(colName, Double.class));
+					} else if (type == Integer.class) {
+						Integer i = row.get(colName, Integer.class);
+						singleSeriesValues.add(i.doubleValue());
+					} else if (type == Float.class) {
+						Float f = row.get(colName, Float.class);
+						singleSeriesValues.add(f.doubleValue());
 					}
+					
+					singleSeriesKey.append(colName + ",");
+					
+					// The index of this data series is the index of the first single column
+					if (singleSeriesIndex == -1)
+						singleSeriesIndex = count;
 				}
 			}
+			
+			count++;
 		}
 		
-		if (!singleSeriesValues.isEmpty())
-			data.put(singleSeriesKey.deleteCharAt(singleSeriesKey.length()-1).toString(), singleSeriesValues);
+		if (!singleSeriesValues.isEmpty()) {
+			singleSeriesKey.deleteCharAt(singleSeriesKey.length() - 1);
+			
+			// To add the series of single columns into the correct position, we have to rebuild the data map
+			final Set<Entry<String, List<Double>>> entrySet = data.entrySet();
+			data = new LinkedHashMap<>();
+			int i = 0;
+			
+			for (final Entry<String, List<Double>> entry : entrySet) {
+				if (i == singleSeriesIndex)
+					data.put(singleSeriesKey.toString(), singleSeriesValues);
+				
+				data.put(entry.getKey(), entry.getValue());
+				i++;
+			}
+			
+			if (!data.containsKey(singleSeriesKey.toString())) // (entrySet.isEmpty() || i >= entrySet.size())
+				data.put(singleSeriesKey.toString(), singleSeriesValues);
+		}
 
 		return data;
 	}
@@ -210,7 +230,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	@SuppressWarnings("unchecked")
 	public List<String> getLabelsFromColumn(final CyNetwork network, final CyIdentifiable model,
 			final CyColumnIdentifier columnId) {
-		final List<String> labels = new ArrayList<String>();
+		final List<String> labels = new ArrayList<>();
 		final CyRow row = network.getRow(model);
 		
 		if (row != null && columnId != null) {
@@ -234,7 +254,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	}
 
 	public List<Double> convertStringList(List<String> input) {
-		List<Double> values = new ArrayList<Double>(input.size());
+		List<Double> values = new ArrayList<>(input.size());
 		for (String s : input) {
 			try {
 				Double d = Double.valueOf(s);
@@ -247,7 +267,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	}
 
 	public List<Double> convertIntegerList(List<Integer> input) {
-		List<Double> values = new ArrayList<Double>(input.size());
+		List<Double> values = new ArrayList<>(input.size());
 		for (Integer s : input) {
 			double d = s.doubleValue();
 			values.add(d);
@@ -323,7 +343,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	public List<Double> arrayMax(List<Double> maxValues, List<Double> values) {
 		// Initialize, if necessary
 		if (maxValues == null) {
-			maxValues = new ArrayList<Double>(values.size());
+			maxValues = new ArrayList<>(values.size());
 			for (Double d : values)
 				maxValues.add(Math.abs(d));
 			return maxValues;
