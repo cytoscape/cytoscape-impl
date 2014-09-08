@@ -89,7 +89,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	}
 
 	@Override
-	public Set<CyColumnIdentifier> getMappedColumnNames() {
+	public Set<CyColumnIdentifier> getMappedColumns() {
 		final Set<CyColumnIdentifier> set = new HashSet<CyColumnIdentifier>();
 		set.addAll(getList(DATA_COLUMNS, CyColumnIdentifier.class));
 		

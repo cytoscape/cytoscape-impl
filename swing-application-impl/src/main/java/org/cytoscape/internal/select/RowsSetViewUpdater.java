@@ -195,7 +195,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 				final Object defValue = vs.getDefaultValue(vp);
 				
 				if (defValue instanceof MappableVisualPropertyValue) {
-					final Set<CyColumnIdentifier> mappedColIds = ((MappableVisualPropertyValue)defValue).getMappedColumnNames();
+					final Set<CyColumnIdentifier> mappedColIds = ((MappableVisualPropertyValue)defValue).getMappedColumns();
 					
 					if (mappedColIds.contains(colId)) {
 						result = true;

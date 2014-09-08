@@ -733,7 +733,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			final Object value = record.getValue();
 			
 			if (value instanceof MappableVisualPropertyValue) {
-				final Set<CyColumnIdentifier> columnIds = ((MappableVisualPropertyValue)value).getMappedColumnNames();
+				final Set<CyColumnIdentifier> columnIds = ((MappableVisualPropertyValue)value).getMappedColumns();
 				
 				if (columnIds == null)
 					continue;
