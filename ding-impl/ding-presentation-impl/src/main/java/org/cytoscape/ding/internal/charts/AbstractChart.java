@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;

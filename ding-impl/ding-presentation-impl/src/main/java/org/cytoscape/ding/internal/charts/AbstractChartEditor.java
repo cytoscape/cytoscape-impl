@@ -84,7 +84,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.customgraphics.Orientation;
-import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconManager;

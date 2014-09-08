@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
 import org.cytoscape.ding.internal.charts.AbstractChart;
-import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
+import org.cytoscape.ding.internal.charts.DoubleRange;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;

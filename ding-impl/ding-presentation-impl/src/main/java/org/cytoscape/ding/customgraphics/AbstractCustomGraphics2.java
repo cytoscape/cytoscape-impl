@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.cytoscape.ding.internal.charts.ControlPoint;
-import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.ding.internal.charts.ViewUtils.Position;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
@@ -29,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> implements CyCustomGraphics2<T> {
 
-	public static final String POSITION = "position";
 	public static final String SCALE = "scale";
 	public static final String SIZE = "size";
 	
@@ -244,7 +241,6 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		if (key.equalsIgnoreCase(COLOR_SCHEME)) return ColorScheme.class;
 		if (key.equalsIgnoreCase(SCALE)) return Double.class;
 		if (key.equalsIgnoreCase(SIZE)) return Rectangle2D.class;
-		if (key.equalsIgnoreCase(POSITION)) return Position.class;
 		if (key.equalsIgnoreCase(ORIENTATION)) return Orientation.class;
 		if (key.equalsIgnoreCase(ROTATION)) return Rotation.class;
 			
@@ -290,8 +286,6 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 					value = ColorScheme.parse(value.toString());
 				} else if (type == Rectangle2D.class) {
 					value = parseRectangle(value.toString());
-				} else if (type == Position.class) {
-					value = ViewUtils.getPosition(value.toString());
 				} else if (type == Orientation.class) {
 					value = Orientation.valueOf(value.toString().toUpperCase());
 				} else if (type == Point2D.class) {

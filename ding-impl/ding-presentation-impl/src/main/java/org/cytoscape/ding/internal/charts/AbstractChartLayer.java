@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
-import org.cytoscape.ding.internal.charts.ViewUtils.DoubleRange;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
