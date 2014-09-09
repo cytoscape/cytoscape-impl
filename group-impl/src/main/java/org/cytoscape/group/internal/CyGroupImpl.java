@@ -364,8 +364,11 @@ class CyGroupImpl implements CyGroup {
 						externalEdges.add(edge);
 						updateMeta = true;
 					}
-				} else
-					throwIllegalArgumentException("Attempted to add an edge that has no node in the group");
+				} else {
+					System.out.println("WARNING: Attempted to add edge '"+edge.toString()+"' which has no node in the group");
+					// throwIllegalArgumentException("Attempted to add edge '"+edge.toString()+"' which has no node in the group");
+					continue;
+				}
 			}
 			if (updateMeta) {
 				updateMetaEdges(true);
