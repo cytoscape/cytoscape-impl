@@ -1,6 +1,22 @@
 package org.cytoscape.io.internal.read.json;
 
-import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.*;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.COLUMN_NAME;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.COLUMN_TYPES;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.DATA;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.EDGE;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.EDGES;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ELEMENTS;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ID;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.LIST_TYPE;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.NETWORK;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.NODE;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.NODES;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION_X;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION_Y;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.SOURCE;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.TARGET;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.TYPE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,9 +28,10 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -22,20 +39,12 @@ import com.fasterxml.jackson.databind.JsonNode;
  * Parse Cytoscape.js style map.
  * 
  */
-public class CytoscapejsMapper implements JSONMapper {
+public class CytoscapejsMapper {
 
-	private final CyNetworkFactory factory;
 	private Map<CyNode, Double[]> positionMap;
 
-	public CytoscapejsMapper(final CyNetworkFactory factory) {
-		this.factory = factory;
-	}
+	public CyNetwork createNetwork(final JsonNode rootNode, final CyNetwork network, final String collectionName) {
 
-	@Override
-	public CyNetwork createNetwork(final JsonNode rootNode) {
-
-		final CyNetwork network = factory.createNetwork();
-		
 		// Create Columns first if this optional field is available.
 		final JsonNode columnTypes = rootNode.get(COLUMN_TYPES.getTag());
 		if(columnTypes != null) {
@@ -54,6 +63,11 @@ public class CytoscapejsMapper implements JSONMapper {
 		final Map<String, CyNode> nodeMap = this.addNodes(network, nodes);
 		this.addEdges(network, edges, nodeMap);
 
+		if(collectionName != null) {
+			final CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
+			rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, collectionName);
+		}
+		
 		return network;
 	}
 	

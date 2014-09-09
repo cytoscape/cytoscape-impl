@@ -20,7 +20,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -54,7 +53,7 @@ public class JSONCytoscapejsNetworkReaderTest {
 	private CyNetworkView loadNetwork(final File testFile) throws Exception {
 
 		InputStream is = new FileInputStream(testFile);
-		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(is, viewFactory, networkFactory, networkManager,
+		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(null, is, viewFactory, networkFactory, networkManager,
 				rootNetworkManager);
 		reader.run(tm);
 		is.close();
