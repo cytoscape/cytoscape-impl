@@ -435,8 +435,9 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network[1.0]");
 		loadNetworkFileTaskFactoryProps.setProperty(ACCELERATOR,"cmd l");
 		loadNetworkFileTaskFactoryProps.setProperty(TITLE,"File...");
-		//loadNetworkFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		//loadNetworkFileTaskFactoryProps.setProperty(COMMAND,"load file");
+		loadNetworkFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		loadNetworkFileTaskFactoryProps.setProperty(COMMAND,"load file");
+		loadNetworkFileTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Load a network file (e.g. XGMML)");
 		loadNetworkFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		loadNetworkFileTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.0");
 		loadNetworkFileTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/net_file_import.png").toString());
@@ -455,8 +456,9 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/net_url_import.png").toString());
 		loadNetworkURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		loadNetworkURLTaskFactoryProps.setProperty(TOOLTIP,"Import Network From URL");
-		//loadNetworkURLTaskFactoryProps.setProperty(COMMAND,"load url");
-		//loadNetworkURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		loadNetworkURLTaskFactoryProps.setProperty(COMMAND,"load url");
+		loadNetworkURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
+		loadNetworkURLTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Load a network file (e.g. XGMML) from a url");
 		registerService(bc, loadNetworkURLTaskFactory, TaskFactory.class, loadNetworkURLTaskFactoryProps);
 		registerService(bc, loadNetworkURLTaskFactory, LoadNetworkURLTaskFactory.class, loadNetworkURLTaskFactoryProps);
 
