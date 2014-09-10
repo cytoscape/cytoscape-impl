@@ -57,8 +57,8 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.GeneSearchPanel;
 import org.cytoscape.welcome.internal.panel.NewsPanel;
+import org.cytoscape.welcome.internal.panel.OpenPanel;
 import org.cytoscape.welcome.internal.panel.StatusPanel;
 import org.cytoscape.welcome.internal.task.ApplySelectedLayoutTaskFactory;
 import org.cytoscape.welcome.internal.task.GenerateCustomStyleTaskFactory;
@@ -106,11 +106,6 @@ public class CyActivator extends AbstractCyActivator {
 				"(cyPropertyName=cytoscape3.props)");
 
 		// Build Child Panels
-//		final OpenPanel openPanel = new OpenPanel(recentlyOpenedTrackerServiceRef, dialogTaskManagerServiceRef,
-//				openSessionTaskFactory);
-
-		//Replacing the OpenPanel with the GeneSearchPanel...
-
 		final CyNetworkReaderManager networkReaderManager = getService(bc, CyNetworkReaderManager.class);
 		final CyNetworkManager networkManager = getService(bc, CyNetworkManager.class);
 		final CyNetworkViewFactory networkViewFactory = getService(bc, CyNetworkViewFactory.class);
@@ -118,8 +113,8 @@ public class CyActivator extends AbstractCyActivator {
 		final CyNetworkViewManager  networkViewManager = getService(bc, CyNetworkViewManager.class);
 
 		final WebServiceClient webServiceClient = getService(bc, WebServiceClient.class, "(id=PSICQUICWebServiceClient)");
-
-		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, webServiceClient);
+		final OpenPanel openPanel = new OpenPanel(recentlyOpenedTrackerServiceRef, dialogTaskManagerServiceRef, openSessionTaskFactory);
+//		final GeneSearchPanel geneSearchPanel = new GeneSearchPanel(dialogTaskManagerServiceRef, networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, vmm, networkViewManager, webServiceClient);
 
 		final CreateNewNetworkPanel createNewNetworkPanel = new CreateNewNetworkPanel(bc, dialogTaskManagerServiceRef,
 				importNetworkFileTF, importNetworkTF, dsManagerServiceRef, newEmptyNetworkViewFactory);
@@ -130,7 +125,7 @@ public class CyActivator extends AbstractCyActivator {
 		final NewsPanel newsPanel = new NewsPanel(statusPanel);
 
 		// Show Welcome Screen
-		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, geneSearchPanel,
+		final WelcomeScreenAction welcomeScreenAction = new WelcomeScreenAction(createNewNetworkPanel, openPanel,
 				newsPanel, cytoscapePropertiesServiceRef, cytoscapeDesktop, openBrowserServiceRef, cyVersion);
 		registerAllServices(bc, welcomeScreenAction, new Properties());
 

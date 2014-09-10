@@ -62,7 +62,7 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final Logger logger = LoggerFactory.getLogger(OpenPanel.class);
 
-	private static final String ICON_LOCATION = "/images/Icons/open-file-32.png";
+	private static final String ICON_LOCATION = "/images/Icons/open_session.png";
 	private BufferedImage openIconImg;
 	private ImageIcon openIcon;
 

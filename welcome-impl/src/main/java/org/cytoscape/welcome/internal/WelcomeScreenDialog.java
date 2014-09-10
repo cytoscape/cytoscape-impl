@@ -57,9 +57,7 @@ import javax.swing.border.EmptyBorder;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.GeneSearchPanel;
-import org.cytoscape.welcome.internal.panel.NewsPanel;
+import org.cytoscape.welcome.internal.panel.AbstractWelcomeScreenChildPanel;
 import org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel;
 
 public class WelcomeScreenDialog extends JDialog {
@@ -75,10 +73,10 @@ public class WelcomeScreenDialog extends JDialog {
 	private final CyProperty<Properties> cyProps;
 
 	// Child Panels
-	private final CreateNewNetworkPanel importPanel;
-	private final GeneSearchPanel geneSearchPanel;
+	private final AbstractWelcomeScreenChildPanel importPanel;
+	private final AbstractWelcomeScreenChildPanel openPanel;
 	private JPanel linksPanel;
-	private final NewsPanel helpPanel;
+	private final AbstractWelcomeScreenChildPanel helpPanel;
 	
 	private JLabel about;
 	private JLabel manual;
@@ -91,19 +89,19 @@ public class WelcomeScreenDialog extends JDialog {
 	private final OpenBrowser openBrowser;
 	private final CyVersion version;
 	
-	public WelcomeScreenDialog(final CreateNewNetworkPanel importPanel,
-							   final GeneSearchPanel geneSearchPanel,
-							   final NewsPanel helpPanel,
+	public WelcomeScreenDialog(final AbstractWelcomeScreenChildPanel importPanel,
+							   final AbstractWelcomeScreenChildPanel openPanel,
+							   final AbstractWelcomeScreenChildPanel helpPanel,
 							   final CyProperty<Properties> cyProps,
 							   final boolean hide,
 							   final OpenBrowser openBrowser,
 							   final CyVersion version) {
 		this.importPanel = importPanel;
-		this.geneSearchPanel = geneSearchPanel;
+		this.openPanel = openPanel;
 		this.helpPanel = helpPanel;
 
 		this.importPanel.setParentWindow(this);
-		this.geneSearchPanel.setParentWindow(this);
+		this.openPanel.setParentWindow(this);
 		this.helpPanel.setParentWindow(this);
 
 		this.cyProps = cyProps;
@@ -229,6 +227,10 @@ public class WelcomeScreenDialog extends JDialog {
 		openSessionPanel.setOpaque(false);
 		newSessionPanel.setOpaque(false);
 		newsPanel.setOpaque(false);
+		
+		openSessionPanel.setLayout(new BorderLayout());
+		newSessionPanel.setLayout(new BorderLayout());
+		newsPanel.setLayout(new BorderLayout());
 
 		final Border border = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 		openSessionPanel.setBorder(border);
@@ -239,7 +241,7 @@ public class WelcomeScreenDialog extends JDialog {
 		newSessionPanel.setBackground(PANEL_COLOR);
 		newsPanel.setBackground(PANEL_COLOR);
 
-		setChildPanel(openSessionPanel, geneSearchPanel, "Build Network with Gene List");
+		setChildPanel(openSessionPanel, openPanel, "Open Recent Session");
 		setChildPanel(newSessionPanel, importPanel, "Start New Session");
 		setChildPanel(newsPanel, helpPanel, "Latest News");
 
@@ -261,12 +263,9 @@ public class WelcomeScreenDialog extends JDialog {
 	}
 
 	private void setChildPanel(JPanel panel, JPanel contentPanel, final String label) {
-		JPanel titlePanel = new JPanel();
-		contentPanel.setBackground(PANEL_COLOR);
-
+		final JPanel titlePanel = new JPanel();
 		titlePanel.setLayout(new GridLayout(1, 2));
 		titlePanel.setBackground(WelcomeScreenChildPanel.TITLE_BG_COLOR);
-		panel.setLayout(new BorderLayout());
 
 		final JLabel title = new JLabel();
 		title.setFont(WelcomeScreenChildPanel.TITLE_FONT);
@@ -274,8 +273,11 @@ public class WelcomeScreenDialog extends JDialog {
 		title.setForeground(WelcomeScreenChildPanel.TITLE_FONT_COLOR);
 		title.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 		titlePanel.add(title);
+		
 		panel.add(titlePanel, BorderLayout.NORTH);
 		panel.add(contentPanel, BorderLayout.CENTER);
+		
+		contentPanel.setBackground(PANEL_COLOR);
 	}
 	
 	private final class LabelMouseListener extends MouseAdapter {
