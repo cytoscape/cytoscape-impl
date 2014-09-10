@@ -143,6 +143,9 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 					i++;
 					taskMonitor.setProgress((i / (double) viewCount));
 				}
+				else
+					taskMonitor.setStatusMessage("Network view already present for:  "
+							+ n.getRow(n).get(CyNetwork.NAME, String.class));
 			}
 		}
 	
@@ -227,7 +230,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			for (CyNetworkView nv: result) {
 				strRes += nv.toString()+"\n";
 			}
-			return strRes.substring(0, strRes.length()-1); // This strips the trailing tab
+			if(strRes.length() > 0)
+				return strRes.substring(0, strRes.length()-1); // This strips the trailing tab
+			else
+				return strRes;
 		} else
 			return result;
 	}
