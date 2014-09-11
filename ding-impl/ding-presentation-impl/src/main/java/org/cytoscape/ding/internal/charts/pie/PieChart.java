@@ -105,7 +105,7 @@ public class PieChart extends AbstractChart<PieLayer> {
 	}
 	
 	@Override
-	protected Class<?> getSettingType(final String key) {
+	public Class<?> getSettingType(final String key) {
 		if (key.equalsIgnoreCase(START_ANGLE)) return Double.class;
 		
 		return super.getSettingType(key);

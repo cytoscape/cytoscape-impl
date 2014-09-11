@@ -1072,8 +1072,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			
 			if (range != null) {
 				chart.set(RANGE, range);
-				getRangeMinTxt().setText(""+range.min);
-				getRangeMaxTxt().setText(""+range.max);
+				getRangeMinTxt().setText(""+range.getMin());
+				getRangeMaxTxt().setText(""+range.getMax());
 			}
 		}
 	}

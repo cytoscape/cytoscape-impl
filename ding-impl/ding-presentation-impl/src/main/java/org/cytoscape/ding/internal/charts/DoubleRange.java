@@ -2,14 +2,33 @@ package org.cytoscape.ding.internal.charts;
 
 public class DoubleRange {
 	
-	public double min;
-	public double max;
+	private double min;
+	private double max;
 	
-	public DoubleRange(double min, double max) {
-		this.min = min;
-		this.max = max;
+	public DoubleRange() {
 	}
 	
+	public DoubleRange(double min, double max) {
+		this.setMin(min);
+		this.setMax(max);
+	}
+	
+	public double getMin() {
+		return min;
+	}
+
+	public void setMin(double min) {
+		this.min = min;
+	}
+
+	public double getMax() {
+		return max;
+	}
+
+	public void setMax(double max) {
+		this.max = max;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

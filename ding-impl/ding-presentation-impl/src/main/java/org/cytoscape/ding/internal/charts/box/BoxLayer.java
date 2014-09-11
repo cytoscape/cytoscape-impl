@@ -116,8 +116,8 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
         
 		// Set axis range		
 		if (range != null) {
-			rangeAxis.setLowerBound(range.min);
-			rangeAxis.setUpperBound(range.max);
+			rangeAxis.setLowerBound(range.getMin());
+			rangeAxis.setUpperBound(range.getMax());
 		}
 		
 		final BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();

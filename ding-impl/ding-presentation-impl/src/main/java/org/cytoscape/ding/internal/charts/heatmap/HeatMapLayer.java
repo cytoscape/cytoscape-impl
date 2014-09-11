@@ -141,7 +141,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 			Color upperColor = colorsSize > 2 ? colors.get(2) : Color.RED;
 			Color nanColor   = colorsSize > 3 ? colors.get(3) : Color.GRAY;
 			
-			final ColorScale scale = new ColorScale(range.min, range.max, lowerColor, zeroColor, upperColor, nanColor);
+			final ColorScale scale = new ColorScale(range.getMin(), range.getMax(), lowerColor, zeroColor, upperColor, nanColor);
 			renderer.setPaintScale(scale);
 		}
 

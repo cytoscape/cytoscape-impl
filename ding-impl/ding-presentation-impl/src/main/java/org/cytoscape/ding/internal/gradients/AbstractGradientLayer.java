@@ -30,9 +30,9 @@ public abstract class AbstractGradientLayer implements CustomGraphicLayer {
 		positions = new float[controlPoints.size()];
 		int i = 0;
 		
-		for (ControlPoint cp : controlPoints) {
-			colors[i] = cp.color;
-			positions[i] = cp.position;
+		for (final ControlPoint cp : controlPoints) {
+			colors[i] = (cp != null && cp.getColor() != null) ? cp.getColor() : Color.WHITE;
+			positions[i] = cp != null ? cp.getPosition() : (i / (float)controlPoints.size());
 			i++;
 		}
 	}

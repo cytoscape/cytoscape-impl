@@ -21,6 +21,8 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
+
 /**
  * 
  */
@@ -112,10 +114,8 @@ public class BarChart extends AbstractChart<BarLayer> {
 		return FACTORY_ID;
 	}
 	
-	// ==[ PRIVATE METHODS ]============================================================================================
-	
 	@Override
-	protected Class<?> getSettingType(final String key) {
+	public Class<?> getSettingType(final String key) {
 		if (key.equalsIgnoreCase(TYPE)) return BarChartType.class;
 		if (key.equalsIgnoreCase(SEPARATION)) return Double.class;
 		
@@ -123,20 +123,11 @@ public class BarChart extends AbstractChart<BarLayer> {
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
-	protected <S> S parseValue(final String key, Object value, final Class<S> type) {
-		try {
-			if (!type.isAssignableFrom(value.getClass())) {
-				if (type == BarChartType.class) {
-					value = BarChartType.valueOf(value.toString().toUpperCase());
-				} else {
-					value = super.parseValue(key, value, type);
-				}
-			}
-			
-			return (S) value;
-		} catch (Exception e) {
-			return null;
-		}
+	public void addJsonDeserializers(final SimpleModule module) {
+		super.addJsonDeserializers(module);
+		module.addDeserializer(BarChartType.class, new BarChartTypeJsonDeserializer());
 	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
+
 }

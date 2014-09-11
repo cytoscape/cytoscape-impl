@@ -1,9 +1,7 @@
 package org.cytoscape.ding.internal.charts;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -14,7 +12,8 @@ import java.util.Set;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.internal.charts.util.ColorUtil;
+import org.cytoscape.ding.customgraphics.json.CyColumnIdentifierJsonDeserializer;
+import org.cytoscape.ding.customgraphics.json.CyColumnIdentifierJsonSerializer;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -24,6 +23,8 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.presentation.property.values.MappableVisualPropertyValue;
+
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public abstract class AbstractChart<T extends CustomGraphicLayer> extends AbstractCustomGraphics2<T>
 		implements MappableVisualPropertyValue {
@@ -59,6 +60,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	protected AbstractChart(final String displayName, final String input,
 			final CyColumnIdentifierFactory colIdFactory) {
 		this(displayName, colIdFactory);
+		
 		addProperties(parseInput(input));
 	}
 	
@@ -78,15 +80,6 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 			addProperties(properties);
 	}
 	
-	public List<Double> convertInputToDouble(String input) {
-		return parseStringList((String) input);
-	}
-	
-	@Override
-	public Map<String, Object> getProperties() {
-		return new HashMap<String, Object>(properties);
-	}
-
 	@Override
 	public Set<CyColumnIdentifier> getMappedColumns() {
 		final Set<CyColumnIdentifier> set = new HashSet<CyColumnIdentifier>();
@@ -252,109 +245,6 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		return labels;
 	}
 
-	public List<Double> convertStringList(List<String> input) {
-		List<Double> values = new ArrayList<>(input.size());
-		for (String s : input) {
-			try {
-				Double d = Double.valueOf(s);
-				values.add(d);
-			} catch (NumberFormatException e) {
-				return null;
-			}
-		}
-		return values;
-	}
-
-	public List<Double> convertIntegerList(List<Integer> input) {
-		List<Double> values = new ArrayList<>(input.size());
-		for (Integer s : input) {
-			double d = s.doubleValue();
-			values.add(d);
-		}
-		return values;
-	}
-
-	public List<Double> parseStringList(String input) {
-		if (input == null)
-			return null;
-		String[] inputArray = ((String) input).split(",");
-		return convertStringList(Arrays.asList(inputArray));
-	}
-
-	public List<String> getStringList(String input) {
-		if (input == null || input.length() == 0)
-			return new ArrayList<String>();
-
-		String[] inputArray = ((String) input).split(",");
-		return Arrays.asList(inputArray);
-	}
-
-	/**
-	 * Return the boolean equivalent of the input
-	 * 
-	 * @param input
-	 *            an input value that is supposed to be Boolean
-	 * @return the boolean value it represents
-	 */
-	public boolean getBooleanValue(Object input) {
-		if (input instanceof Boolean)
-			return ((Boolean) input).booleanValue();
-		return Boolean.parseBoolean(input.toString());
-	}
-
-	public int getFontStyle(String input) {
-		if (input.equalsIgnoreCase("italics"))
-			return Font.ITALIC;
-		if (input.equalsIgnoreCase("bold"))
-			return Font.BOLD;
-		if (input.equalsIgnoreCase("bolditalic"))
-			return Font.ITALIC | Font.BOLD;
-		return Font.PLAIN;
-	}
-
-	public Color getColorValue(String input) {
-		String[] colorArray = new String[1];
-		colorArray[0] = input;
-		List<Color> colors = ColorUtil.parseColorList(colorArray);
-		return colors.get(0);
-	}
-
-	/**
-	 * Return the double equivalent of the input
-	 * 
-	 * @param input
-	 *            an input value that is supposed to be a double
-	 * @return the a double value it represents
-	 * @throws NumberFormatException
-	 *             is the value is illegal
-	 */
-	@Override
-	public double getDoubleValue(Object input) throws NumberFormatException {
-		if (input instanceof Double)
-			return ((Double) input).doubleValue();
-		else if (input instanceof Integer)
-			return ((Integer) input).doubleValue();
-		else if (input instanceof String)
-			return Double.parseDouble((String) input);
-		throw new NumberFormatException("input can not be converted to double");
-	}
-
-	public List<Double> arrayMax(List<Double> maxValues, List<Double> values) {
-		// Initialize, if necessary
-		if (maxValues == null) {
-			maxValues = new ArrayList<>(values.size());
-			for (Double d : values)
-				maxValues.add(Math.abs(d));
-			return maxValues;
-		}
-
-		// OK, now we need to actually do the work...
-		for (int index = 0; index < values.size(); index++) {
-			maxValues.set(index, Math.max(maxValues.get(index), Math.abs(values.get(index))));
-		}
-		return maxValues;
-	}
-	
 	protected Map<String, List<Double>> getData(final CyNetwork network, final CyIdentifiable model) {
 		final Map<String, List<Double>> data;
 		final List<Double> values = getList(VALUES, Double.class);
@@ -403,7 +293,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	}
 
 	@Override
-	protected Class<?> getSettingType(final String key) {
+	public Class<?> getSettingType(final String key) {
 		if (key.equalsIgnoreCase(DATA_COLUMNS)) return List.class;
 		if (key.equalsIgnoreCase(VALUES)) return List.class;
 		if (key.equalsIgnoreCase(ITEM_LABELS_COLUMN)) return CyColumnIdentifier.class;
@@ -425,7 +315,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	}
 	
 	@Override
-	protected Class<?> getSettingListType(final String key) {
+	public Class<?> getSettingListType(final String key) {
 		if (key.equalsIgnoreCase(DATA_COLUMNS)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(VALUES)) return Double.class;
 		if (key.equalsIgnoreCase(ITEM_LABELS)) return String.class;
@@ -434,39 +324,14 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
-	protected <S> S parseValue(final String key, Object value, final Class<S> type) {
-		try {
-			if (!type.isAssignableFrom(value.getClass())) {
-				if (type == DoubleRange.class) {
-					value = parseRange(value.toString());
-				} else if (type == CyColumnIdentifier.class) {
-					value = parseColumnIdentifier(value.toString());
-				} else {
-					value = super.parseValue(key, value, type);
-				}
-			}
-			
-			return (S) value;
-		} catch (Exception e) {
-			return null;
-		}
+	protected void addJsonSerializers(final SimpleModule module) {
+		super.addJsonSerializers(module);
+		module.addSerializer(new CyColumnIdentifierJsonSerializer());
 	}
 	
-	private Object parseColumnIdentifier(final String input) {
-		return colIdFactory.createColumnIdentifier(input);
-	}
-	
-	private DoubleRange parseRange(final String input) {
-		if (input != null) {
-			String[] split = input.split(",");
-			
-			try {
-				return new DoubleRange(getDoubleValue(split[0]), getDoubleValue(split[1]));
-			} catch (NumberFormatException e) {
-			}
-		}
-		
-		return null;
+	@Override
+	protected void addJsonDeserializers(final SimpleModule module) {
+		super.addJsonDeserializers(module);
+		module.addDeserializer(CyColumnIdentifier.class, new CyColumnIdentifierJsonDeserializer(colIdFactory));
 	}
 }

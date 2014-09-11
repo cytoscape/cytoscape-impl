@@ -115,8 +115,8 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
         
 		// Set axis range		
 		if (range != null) {
-			rangeAxis.setLowerBound(range.min * 1.1); // TODO add tick size???
-			rangeAxis.setUpperBound(range.max * 1.1);
+			rangeAxis.setLowerBound(range.getMin() * 1.1); // TODO add tick size???
+			rangeAxis.setUpperBound(range.getMax() * 1.1);
 		}
 		
 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();

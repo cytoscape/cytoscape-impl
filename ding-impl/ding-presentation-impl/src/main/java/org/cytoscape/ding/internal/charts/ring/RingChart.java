@@ -87,7 +87,7 @@ public class RingChart extends AbstractChart<RingLayer> {
 	}
 	
 	@Override
-	protected Class<?> getSettingType(final String key) {
+	public Class<?> getSettingType(final String key) {
 		if (key.equalsIgnoreCase(START_ANGLE)) return Double.class;
 		if (key.equalsIgnoreCase(HOLE_SIZE)) return Double.class;
 		

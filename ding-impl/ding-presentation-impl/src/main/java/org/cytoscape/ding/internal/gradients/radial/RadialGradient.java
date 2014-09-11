@@ -76,23 +76,15 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 			dirty = true;
 	}
 	
-	// ==[ PRIVATE METHODS ]============================================================================================
-	
 	@Override
-	protected Class<?> getSettingType(final String key) {
+	public Class<?> getSettingType(final String key) {
 		if (key.equalsIgnoreCase(CENTER)) return Point2D.class;
 		if (key.equalsIgnoreCase(RADIUS)) return Float.class;
-		if (key.equalsIgnoreCase(STOP_LIST)) return List.class;
 		
 		return super.getSettingType(key);
 	}
 	
-	@Override
-	protected Class<?> getSettingListType(final String key) {
-		if (key.equalsIgnoreCase(STOP_LIST)) return ControlPoint.class;
-		
-		return super.getSettingListType(key);
-	}
+	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private RadialGradientLayer createLayer() {
 		RadialGradientLayer layer = null;

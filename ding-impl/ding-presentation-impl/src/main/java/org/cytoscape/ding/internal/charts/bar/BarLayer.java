@@ -153,8 +153,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		
 		// Set axis range		
 		if (range != null) {
-			rangeAxis.setLowerBound(range.min);
-			rangeAxis.setUpperBound(range.max);
+			rangeAxis.setLowerBound(range.getMin());
+			rangeAxis.setUpperBound(range.getMax());
 		}
 		
 		if (type != BarChartType.STACKED) {
@@ -237,7 +237,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			if (type == BarChartType.HEAT_STRIPS) {
 				// Linearly interpolate the value
 				final double f = value < 0.0 ?
-						MathUtil.invLinearInterp(value, range.min, 0) : MathUtil.invLinearInterp(value, 0, range.max);
+						MathUtil.invLinearInterp(value, range.getMin(), 0) : MathUtil.invLinearInterp(value, 0, range.getMax());
 				final double t = value < 0.0 ?
 						MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0);
 				

@@ -107,11 +107,20 @@ public class GradientEditor extends JPanel {
 		} else {
 			for (int i = 0; i < points.size() - 1; i++) {
 				if (i == 0) {
-					controlPoints.add(new ControlPoint(points.get(i).color, 0)); // start
-					controlPoints.add(new ControlPoint(points.get(points.size() - 1).color, 1)); // end
+					if (points.get(i) != null)
+						controlPoints.add(new ControlPoint(points.get(i).getColor(), 0)); // start
+					else
+						controlPoints.add(new ControlPoint(Color.WHITE, 0)); // start
+					
+					if (points.get(points.size() - 1) != null)
+						controlPoints.add(new ControlPoint(points.get(points.size() - 1).getColor(), 1)); // end
+					else
+						controlPoints.add(new ControlPoint(Color.BLACK, 1));
 				} else {
 					final ControlPoint cp = points.get(i);
-					addPoint(cp.position, cp.color);
+					
+					if (cp != null)
+						addPoint(cp.getPosition(), cp.getColor());
 				}
 			}
 		}
@@ -190,8 +199,8 @@ public class GradientEditor extends JPanel {
 			ControlPoint now = controlPoints.get(i);
 			ControlPoint next = controlPoints.get(i+1);
 			
-			int size = (int) ((next.position - now.position) * width);
-			g.setPaint(new GradientPaint(x, y, now.color, x + size, y, next.color));
+			int size = (int) ((next.getPosition() - now.getPosition()) * width);
+			g.setPaint(new GradientPaint(x, y, now.getColor(), x + size, y, next.getColor()));
 			g.fillRect(x, y, size + 1, barHeight);
 			x += size;
 		}
@@ -201,14 +210,14 @@ public class GradientEditor extends JPanel {
 		
 		for (int i = 0; i < controlPoints.size(); i++) {
 			ControlPoint pt = controlPoints.get(i);
-			g.translate(10 + (width * pt.position), y + barHeight);
-			g.setColor(pt.color);
+			g.translate(10 + (width * pt.getPosition()), y + barHeight);
+			g.setColor(pt.getColor());
 			g.fillPolygon(poly);
 			g.setColor(pt == selected? Color.BLACK : lineColor);
 			g.setStroke(new BasicStroke(pt == selected ? 1.5f : 1.0f));
 			g.drawPolygon(poly);
 			
-			g.translate(-10 - (width * pt.position), -y - barHeight);
+			g.translate(-10 - (width * pt.getPosition()), -y - barHeight);
 		}
 	}
 	
@@ -225,7 +234,7 @@ public class GradientEditor extends JPanel {
 			final ControlPoint now = controlPoints.get(i);
 			final ControlPoint next = controlPoints.get(i+1);
 			
-			if ((now.position <= pos) && (next.position >= pos)) {
+			if ((now.getPosition() <= pos) && (next.getPosition() >= pos)) {
 				controlPoints.add(i+1, point);
 				break;
 			}
@@ -240,7 +249,7 @@ public class GradientEditor extends JPanel {
 	 * @param color The color at the start of the gradient
 	 */
 	public void setStart(Color col) {
-		(controlPoints.get(0)).color = col;
+		(controlPoints.get(0)).setColor(col);
 		repaint(0);
 	}
 
@@ -250,7 +259,7 @@ public class GradientEditor extends JPanel {
 	 * @param color The color at the end of the gradient
 	 */
 	public void setEnd(Color col) {
-		(controlPoints.get(controlPoints.size()-1)).color = col;
+		(controlPoints.get(controlPoints.size()-1)).setColor(col);
 		repaint(0);
 	}
 	
@@ -284,7 +293,7 @@ public class GradientEditor extends JPanel {
 	 * @return The graident position of the control point
 	 */
 	public float getPointPos(int index) {
-		return controlPoints.get(index).position;
+		return controlPoints.get(index).getPosition();
 	}
 
 	/**
@@ -295,7 +304,7 @@ public class GradientEditor extends JPanel {
 	 * @return The color of the control point
 	 */
 	public Color getColor(int index) {
-		return controlPoints.get(index).color;
+		return controlPoints.get(index).getColor();
 	}
 	
 	public List<ControlPoint> getControlPoints() {
@@ -323,7 +332,7 @@ public class GradientEditor extends JPanel {
 	 * @return True if the mouse point coincides with the control point
 	 */
 	private boolean checkPoint(int mx, int my, ControlPoint pt) {
-		int dx = (int) Math.abs((10+(width * pt.position)) - mx);
+		int dx = (int) Math.abs((10+(width * pt.getPosition())) - mx);
 		int dy = Math.abs((y+barHeight+7)-my);
 		
 		if ((dx < 5) && (dy < 7))
@@ -342,7 +351,7 @@ public class GradientEditor extends JPanel {
 			ControlPoint now = controlPoints.get(i);
 			ControlPoint next = controlPoints.get(i+1);
 			
-			if ((now.position <= 0.5f) && (next.position >=0.5f)) {
+			if ((now.getPosition() <= 0.5f) && (next.getPosition() >=0.5f)) {
 				controlPoints.add(i+1,point);
 				break;
 			}
@@ -370,8 +379,8 @@ public class GradientEditor extends JPanel {
 				if (second == lastPt)
 					return -1;
 				
-				float a = first.position;
-				float b = second.position;
+				float a = first.getPosition();
+				float b = second.getPosition();
 				return (int) ((a-b) * 10000);
 			}
 		};
@@ -386,10 +395,10 @@ public class GradientEditor extends JPanel {
 		if (selected == null)
 			return;
 		
-		Color col = JColorChooser.showDialog(this, "Select Color", selected.color);
+		Color col = JColorChooser.showDialog(this, "Select Color", selected.getColor());
 		
 		if (col != null) {
-			selected.color = col;
+			selected.setColor(col);
 			repaint(0);
 			fireUpdate();
 		}
@@ -476,7 +485,7 @@ public class GradientEditor extends JPanel {
 		newPos = Math.min(1, newPos);
 		newPos = Math.max(0, newPos);
 		
-		selected.position = newPos;
+		selected.setPosition(newPos);
 		sortPoints();
 		fireUpdate();
 	}
