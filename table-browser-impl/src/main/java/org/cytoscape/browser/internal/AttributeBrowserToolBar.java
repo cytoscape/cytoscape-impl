@@ -535,7 +535,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		jMenuItemLongIntegerListAttribute.setText("Long Integer");
 		jMenuItemLongIntegerListAttribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Integer List", isShared);
+				createNewAttribute("Long Integer List", isShared);
 			}
 		});
 
