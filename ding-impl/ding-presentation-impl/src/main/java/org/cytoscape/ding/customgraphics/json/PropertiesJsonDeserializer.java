@@ -36,7 +36,6 @@ public class PropertiesJsonDeserializer extends JsonDeserializer<Map<String, Obj
 		final Map<String, Object> props = new LinkedHashMap<>();
 		
 		final ObjectMapper mapper = (ObjectMapper) jp.getCodec();
-		final TypeFactory typeFactory = mapper.getTypeFactory();
         final JsonNode rootNode = mapper.readTree(jp);
         
         if (rootNode.isObject()) {
@@ -44,36 +43,48 @@ public class PropertiesJsonDeserializer extends JsonDeserializer<Map<String, Obj
 	        
 	        while (fieldNames.hasNext()) {
 	        	final String key = fieldNames.next();
-	        	Object value = null;
 	        	final JsonNode jn = rootNode.get(key);
-	        	final Class<?> type = cg2.getSettingType(key);
-	        	
-	        	try {
-		        	if (type != null) {
-			        	if (List.class.isAssignableFrom(type)) {
-			        		final Class<?> elementType = cg2.getSettingListType(key);
-			        		
-			        		if (elementType != null) {
-				        		final CollectionType collType = typeFactory.constructCollectionType(List.class, elementType);
-				        		
-				        		if (mapper.canDeserialize(collType))
-				        			value = mapper.readValue(jn.toString(), collType);
-			        		}
-			        	} else {
-			        		final JavaType simpleType = typeFactory.constructSimpleType(type, new JavaType[]{});
-			        		
-			        		if (mapper.canDeserialize(simpleType))
-			        			value = mapper.readValue(jn.toString(), simpleType);
-			        	}
-		        	} 
-		        	
-		        	props.put(key, value);
-	        	} catch (Exception e) {
-	        		logger.error("Cannot parse JSON field " + key, e);
-	        	}
+	        	final Object value = readValue(key, jn.toString(), mapper, cg2);
+		        props.put(key, value);
 	        }
         }
         
 		return props;
+	}
+	
+	// TODO remove circular dependency
+	public static <T, E> T readValue(final String key,
+									 final String input,
+									 final ObjectMapper mapper,
+									 final AbstractCustomGraphics2<?> cg2) {
+		T value = null;
+		
+		final Class<?> type = cg2.getSettingType(key);
+		
+    	if (type != null) {
+			final TypeFactory typeFactory = mapper.getTypeFactory();
+			
+			try {
+				if (List.class.isAssignableFrom(type)) {
+		    		final Class<?> elementType = cg2.getSettingListType(key);
+		    		
+		    		if (elementType != null) {
+		        		final CollectionType collType = typeFactory.constructCollectionType(List.class, elementType);
+		        		
+		        		if (mapper.canDeserialize(collType))
+		        			value = mapper.readValue(input, collType);
+		    		}
+		    	} else {
+		    		final JavaType simpleType = typeFactory.constructSimpleType(type, new JavaType[]{});
+		    		
+		    		if (mapper.canDeserialize(simpleType))
+		    			value = mapper.readValue(input, simpleType);
+		    	}
+			} catch (Exception e) {
+        		logger.error("Cannot parse JSON field " + key, e);
+        	}
+    	}
+		
+		return value;
 	}
 }

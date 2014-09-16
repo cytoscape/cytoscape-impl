@@ -3,7 +3,6 @@ package org.cytoscape.ding.customgraphics;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -156,13 +155,19 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		final Class<?> type = getSettingType(key);
 		
 		if (type != null) {
-			if (value instanceof String && type != String.class) {
-				try {
-					final ObjectMapper om = getObjectMapper();
-					value = om.readValue((String)value, type);
-				} catch (IOException e) {
-					logger.error("Error parsing JSON: " + value, e);
+			if (value != null && !type.isAssignableFrom(value.getClass())) {
+				final ObjectMapper om = getObjectMapper();
+				String json = value.toString();
+				
+				if (type != List.class) {
+					try {
+						json = om.writeValueAsString(value);
+					} catch (JsonProcessingException e) {
+						logger.error("Cannot parse JSON field " + key, e);
+					}
 				}
+				
+				value = PropertiesJsonDeserializer.readValue(key, json, om, this);
 			}
 			
 			properties.put(key, value);
