@@ -1,5 +1,4 @@
 #Linkout Property File
-#01/09/2014 Links updated by Keiichiro Ono (kono@ucsd.edu)
 
 ################# Node Links ################
 
@@ -48,15 +47,19 @@ nodelinkouturl.Pathway\ Databases.Pathway\ Commons=http://www.pathwaycommons.org
 nodelinkouturl.Array\ Experiments.GEO\ DataSets=http://www.ncbi.nlm.nih.gov/gds/?term=%ID%
 nodelinkouturl.Array\ Experiments.ArrayExpress=http://www.ebi.ac.uk/arrayexpress/browse.html?keywords=%ID%
 
+
 ############## Edge Links #####################
+# For edge links, Interaction will be used to create query URL.
 
-edgelinkouturl.Publications.Pubmed\ (search\ by\ Pubmed\ ID)=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=PubMed&term\=%ID%&doptcmdl\=Abstract
+# Publications
+edgelinkouturl.Publications.Pubmed\ (search\ by\ Pubmed\ ID)=http://www.ncbi.nlm.nih.gov/pubmed/?term=%interaction%
 
-edgelinkouturl.Ontology.Molecular\ Interaction\ (PSI-MI\ Term)=http://www.ebi.ac.uk/ontology-lookup/browse.do?ontName=MI&termId=MI%3A%ID%
+# Ontology
+edgelinkouturl.Ontology.Molecular\ Interaction\ (PSI-MI\ Term)=http://www.ebi.ac.uk/ontology-lookup/?termId=%interaction%
 
 #Interaction Database Links
-edgelinkouturl.Interaction\ Databases.IntAct=http://www.ebi.ac.uk/intact/search/do/search?searchString=%ID%&filter=ac
-edgelinkouturl.Interaction\ Databases.BioGRID=http://www.thebiogrid.org/SearchResults/summary/%ID%
+edgelinkouturl.Interaction\ Databases.IntAct=http://www.ebi.ac.uk/intact/interaction/%interaction%
+
 
 #Attribute name for user-embedded URLs
 Linkout.externalLinkName=Linkout.ExternalLinks
