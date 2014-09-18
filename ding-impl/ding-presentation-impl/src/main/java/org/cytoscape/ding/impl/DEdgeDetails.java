@@ -564,20 +564,30 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	Paint getSelectedPaint(final CyEdge edge) {
+		Paint paint = null;
+		Integer trans = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_SELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_SELECTED_PAINT);
+		
+		if (dev.isValueLocked(DVisualLexicon.EDGE_TRANSPARENCY))
+			trans = getTransparency(edge);
+		
+		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT)) {
+			paint = dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
+		} else if (dev.isValueLocked(DVisualLexicon.EDGE_SELECTED_PAINT)) {
+			paint = dev.getVisualProperty(DVisualLexicon.EDGE_SELECTED_PAINT);
+		} else {
+			paint = m_selectedPaints.get(edge);
 
-		final Paint paint = m_selectedPaints.get(edge);
-
-		if (paint == null) {
-			if (m_selectedPaintDefault == null)
-				return Color.red;
-			else
-				return m_selectedPaintDefault;
+			if (paint == null) {
+				if (m_selectedPaintDefault == null)
+					paint = DVisualLexicon.EDGE_SELECTED_PAINT.getDefault();
+				else
+					paint = m_selectedPaintDefault;
+			}
 		}
+		
+		if (trans != null)
+			paint = dGraphView.getTransparentColor(paint, trans);
 
 		return paint;
 	}
