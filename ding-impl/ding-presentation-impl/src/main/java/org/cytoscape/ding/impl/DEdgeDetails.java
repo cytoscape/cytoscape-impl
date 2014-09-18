@@ -1017,7 +1017,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	public boolean isVisible(final CyEdge edge) {
 		final DEdgeView edgeView = (DEdgeView) dGraphView.getDEdgeView(edge);
-		return edgeView.isVisible();
+		return edgeView != null && edgeView.isVisible();
 	}
 
 	@Override
