@@ -492,6 +492,7 @@ class CyGroupImpl implements CyGroup {
 	public void collapse(CyNetwork net) {
 		CySubNetwork subnet;
 		CyNetwork groupNet;
+		
 		synchronized (lock) {
 			// System.out.println("collapse "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
 	
@@ -509,9 +510,13 @@ class CyGroupImpl implements CyGroup {
 			for (CyNode node: getNodeList()) {
 				// Check to see if this is a group, and if it is in our network.  If it's
 				// not in our network, it might have been collapsed by another group
-				if (mgr.isGroup(node, net) && net.containsNode(node)) {
-					// Yes, collapse it
-					mgr.getGroup(node,net).collapse(net);
+				if (mgr.isGroup(node, net)) {
+					final CyGroup gn = mgr.getGroup(node, net);
+					
+					if (!gn.isCollapsed(net)) {
+						// Yes, collapse it
+						gn.collapse(net);
+					}
 				}
 			}
 		}
@@ -700,7 +705,9 @@ class CyGroupImpl implements CyGroup {
 		}
 		
 		// Make sure the group node isn't selected
-		net.getRow(groupNode).set(CyNetwork.SELECTED, Boolean.FALSE);
+		if (net.containsNode(groupNode))
+			net.getRow(groupNode).set(CyNetwork.SELECTED, Boolean.FALSE);
+		
 		cyEventHelper.flushPayloadEvents();
 
 		// Expand it.
