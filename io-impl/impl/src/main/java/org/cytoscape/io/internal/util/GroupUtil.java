@@ -179,11 +179,12 @@ public class GroupUtil {
 		
 		for (final CyNetwork net : networks) {
 			if (net instanceof CySubNetwork)
-				createGroups((CySubNetwork) net, viewSet);
+				createGroups((CySubNetwork) net, viewSet, new HashSet<CyNode>());
 		}
 	}
 
-	public void createGroups(final CySubNetwork net, final Set<CyNetworkView> viewSet) {
+	private void createGroups(final CySubNetwork net, final Set<CyNetworkView> viewSet,
+			final Set<CyNode> collapsedChildren) {
 		// Look for possible meta-nodes by inspecting the groups metadata in the network's hidden table
 		final CyRootNetwork rootNet = net.getRootNetwork();
 		final List<CyNode> nodes = net.getNodeList();
@@ -205,7 +206,7 @@ public class GroupUtil {
 				continue;
 
 			// Check for nested groups recursively
-			createGroups((CySubNetwork) netPointer, null);
+			createGroups((CySubNetwork) netPointer, null, collapsedChildren);
 			
 			boolean collapsed = false;
 			boolean cy2group = false;
@@ -307,6 +308,13 @@ public class GroupUtil {
 						}
 					}
 				}
+			}
+			
+			if (collapsed) {
+				if (collapsedChildren.contains(n) && net.containsNode(n))
+					net.removeNodes(Collections.singleton(n));
+				
+				collapsedChildren.addAll(netPointer.getNodeList());
 			}
 		}
 
