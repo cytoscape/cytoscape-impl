@@ -35,6 +35,7 @@ import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.T
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -46,8 +47,6 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -64,6 +63,7 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -79,7 +79,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import au.com.bytecode.opencsv.CSVReader;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -87,23 +86,19 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
 import org.jdesktop.layout.GroupLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.swing.JDialog;
-import java.awt.Container;
+
+import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * General purpose preview table panel.
- * 
- * @author kono
- * 
  */
 public class PreviewTablePanel extends JPanel {
-	
+
 	private static final long serialVersionUID = -7779176856705540150L;
 
 	/**
@@ -161,9 +156,9 @@ public class PreviewTablePanel extends JPanel {
 	private int panelType;
 	private String listDelimiter;
 	private InputStream is = null;
-	private String fileType;
 
 	private static final Logger logger = LoggerFactory.getLogger(PreviewTablePanel.class);
+
 	/**
 	 * Creates a new PreviewTablePanel object.
 	 */
@@ -171,15 +166,6 @@ public class PreviewTablePanel extends JPanel {
 		this(DEF_MESSAGE, ATTRIBUTE_PREVIEW);
 	}
 
-	/**
-	 * Creates a new PreviewTablePanel object.
-	 * 
-	 * @param message
-	 *            DOCUMENT ME!
-	 */
-	public PreviewTablePanel(String message) {
-		this(message, ATTRIBUTE_PREVIEW);
-	}
 
 	/**
 	 * Creates a new PreviewTablePanel object.
@@ -202,9 +188,9 @@ public class PreviewTablePanel extends JPanel {
 		listDataTypeMap = new HashMap<String, Byte[]>();
 
 		initComponents();
-
 		hideUnnecessaryComponents();
 	}
+
 
 	private void hideUnnecessaryComponents() {
 		fileTypeLabel.setVisible(false);
@@ -245,8 +231,9 @@ public class PreviewTablePanel extends JPanel {
 	 *            DOCUMENT ME!
 	 */
 	public void addPropertyChangeListener(PropertyChangeListener l) {
-		if (changes == null) return;
-		
+		if (changes == null)
+			return;
+
 		changes.addPropertyChangeListener(l);
 	}
 
@@ -284,8 +271,7 @@ public class PreviewTablePanel extends JPanel {
 		fileTypeLabel = new JLabel();
 		fileTypeLabel.setFont(new Font("Sans-Serif", Font.BOLD, 14));
 
-		keyPreviewScrollPane.setBorder(javax.swing.BorderFactory
-				.createTitledBorder("Key Columns"));
+		keyPreviewScrollPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Key Columns"));
 
 		keyPreviewList.setOpaque(false);
 		keyPreviewList.setCellRenderer(new KeyAttributeListRenderer());
@@ -295,23 +281,20 @@ public class PreviewTablePanel extends JPanel {
 		previewScrollPane.setViewportView(previewTable);
 		previewScrollPane.setBackground(Color.WHITE);
 
-		final BufferedImage datasourceImage = getBufferedImage(getClass()
-				.getResource("/images/ximian/data_sources_trans.png"));
-		
-		final BufferedImage bi = getBufferedImage(getClass()
-				.getResource("/images/icon100_trans.png"));		
-		
+		final BufferedImage datasourceImage = getBufferedImage(getClass().getResource(
+				"/images/ximian/data_sources_trans.png"));
+
+		final BufferedImage bi = getBufferedImage(getClass().getResource("/images/icon100_trans.png"));
+
 		tableTabbedPane.setBackground(Color.white);
-		tableTabbedPane
-				.addChangeListener(new javax.swing.event.ChangeListener() {
-					public void stateChanged(javax.swing.event.ChangeEvent evt) {
-						tableTabbedPaneStateChanged(evt);
-					}
-				});
+		tableTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+			public void stateChanged(javax.swing.event.ChangeEvent evt) {
+				tableTabbedPaneStateChanged(evt);
+			}
+		});
 
 		previewScrollPane.getViewport().setOpaque(false);
-		previewScrollPane.setViewportBorder(new CentredBackgroundBorder(
-				datasourceImage));
+		previewScrollPane.setViewportBorder(new CentredBackgroundBorder(datasourceImage));
 		keyPreviewScrollPane.getViewport().setOpaque(false);
 		keyPreviewScrollPane.setViewportBorder(new CentredBackgroundBorder(bi));
 
@@ -321,9 +304,7 @@ public class PreviewTablePanel extends JPanel {
 
 		JTableHeader hd = previewTable.getTableHeader();
 		hd.setReorderingAllowed(false);
-		hd
-				.setDefaultRenderer(new HeaderRenderer(hd.getDefaultRenderer(),
-						null));
+		hd.setDefaultRenderer(new HeaderRenderer(hd.getDefaultRenderer(), null));
 
 		/*
 		 * Setting table properties
@@ -332,19 +313,13 @@ public class PreviewTablePanel extends JPanel {
 		previewTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		previewTable.setDefaultEditor(Object.class, null);
 
-		this
-				.setBorder(BorderFactory
-						.createTitledBorder(
-								javax.swing.BorderFactory
-										.createBevelBorder(javax.swing.border.BevelBorder.RAISED),
-								"Preview",
-								javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-								javax.swing.border.TitledBorder.DEFAULT_POSITION,
-								new java.awt.Font("Dialog", 1, 11)));
+		this.setBorder(BorderFactory.createTitledBorder(
+				javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Preview",
+				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 11)));
 
 		instructionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		instructionLabel
-				.setText("Left Click: Enable/Disable Column, Right Click: Edit Column");
+		instructionLabel.setText("Left Click: Enable/Disable Column, Right Click: Edit Column");
 		instructionLabel.setFont(LABEL_FONT.getFont());
 		instructionLabel.setForeground(Color.red);
 
@@ -355,38 +330,25 @@ public class PreviewTablePanel extends JPanel {
 		primaryKeyLabel.setFont(LABEL_FONT.getFont());
 		primaryKeyLabel.setForeground(Color.WHITE);
 		primaryKeyLabel.setBackground(PRIMARY_KEY_COLOR.getColor());
-		primaryKeyLabel
-				.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-		// onLabel
-		// .setIcon(CHECKED_ICON.getIcon());
+		primaryKeyLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		primaryKeyLabel.setText("Key");
-		primaryKeyLabel
-				.setToolTipText("Column in this color is the Primary Key.");
-		// onLabel.setBorder(new javax.swing.border.LineBorder(new
-		// java.awt.Color(
-		// 0, 0, 0), 1, true));
+		primaryKeyLabel.setToolTipText("Column in this color is the Primary Key.");
 		primaryKeyLabel.setOpaque(true);
 
 		aliasLabel.setFont(LABEL_FONT.getFont());
 		aliasLabel.setForeground(Color.WHITE);
 		aliasLabel.setBackground(ALIAS_COLOR.getColor());
 		aliasLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-		// offLabel
-		// .setIcon(UNCHECKED_ICON.getIcon());
 		aliasLabel.setText("Alias");
 		aliasLabel.setToolTipText("Columns in this color are Aliases.");
-		// offLabel.setBorder(new javax.swing.border.LineBorder(
-		// new java.awt.Color(0, 0, 0), 1, true));
 		aliasLabel.setOpaque(true);
 
 		ontologyTermLabel.setFont(LABEL_FONT.getFont());
 		ontologyTermLabel.setForeground(Color.WHITE);
 		ontologyTermLabel.setBackground(ONTOLOGY_COLOR.getColor());
-		ontologyTermLabel
-				.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+		ontologyTermLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		ontologyTermLabel.setText("Ontology");
-		ontologyTermLabel
-				.setToolTipText("Column in this color is Ontology Term.");
+		ontologyTermLabel.setToolTipText("Column in this color is Ontology Term.");
 		ontologyTermLabel.setOpaque(true);
 
 		taxonomyLabel.setFont(LABEL_FONT.getFont());
@@ -394,131 +356,65 @@ public class PreviewTablePanel extends JPanel {
 		taxonomyLabel.setBackground(SPECIES_COLOR.getColor());
 		taxonomyLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		taxonomyLabel.setText("Taxon");
-		taxonomyLabel
-				.setToolTipText("Columns in this color is Taxon (for Gene Association files only).");
+		taxonomyLabel.setToolTipText("Columns in this color is Taxon (for Gene Association files only).");
 		taxonomyLabel.setOpaque(true);
 
 		GroupLayout previewPanelLayout = new GroupLayout(this);
 		this.setLayout(previewPanelLayout);
 
-		previewPanelLayout
-				.setHorizontalGroup(previewPanelLayout
-						.createParallelGroup(
-								org.jdesktop.layout.GroupLayout.LEADING)
-						.add(
-								org.jdesktop.layout.GroupLayout.TRAILING,
-								previewPanelLayout
-										.createSequentialGroup()
-										.add(
-												tableTabbedPane,
-												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-												250, Short.MAX_VALUE)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(rightArrowLabel)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(
-												keyPreviewScrollPane,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-												180,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-						.add(
-								previewPanelLayout
-										.createSequentialGroup()
-										.add(fileTypeLabel)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(
-												instructionLabel,
-												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-												60, Short.MAX_VALUE)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(
-												legendLabel,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-												60,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(
-												primaryKeyLabel,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-												60,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(
-												aliasLabel,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-												60,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(
-												ontologyTermLabel,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-												70,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(
-												taxonomyLabel,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-												60,
-												org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-										.addContainerGap()));
-		previewPanelLayout
-				.setVerticalGroup(previewPanelLayout
-						.createParallelGroup(
-								org.jdesktop.layout.GroupLayout.LEADING)
-						.add(
-								previewPanelLayout
-										.createSequentialGroup()
-										.add(
-												previewPanelLayout
-														.createParallelGroup(
-																org.jdesktop.layout.GroupLayout.BASELINE)
-														.add(fileTypeLabel)
-														.add(primaryKeyLabel)
-														.add(aliasLabel)
-														.add(ontologyTermLabel)
-														.add(taxonomyLabel)
-														.add(legendLabel)
-														.add(instructionLabel))
-										.addPreferredGap(
-												org.jdesktop.layout.LayoutStyle.RELATED)
-										.add(
-												previewPanelLayout
-														.createParallelGroup(
-																org.jdesktop.layout.GroupLayout.TRAILING)
-														.add(
-																tableTabbedPane,
-																org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-																200,
-																Short.MAX_VALUE)
-														.add(
-																keyPreviewScrollPane,
-																org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-																200,
-																Short.MAX_VALUE)
-														.add(
-																org.jdesktop.layout.GroupLayout.LEADING,
-																rightArrowLabel,
-																org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-																200,
-																Short.MAX_VALUE))));
+		previewPanelLayout.setHorizontalGroup(previewPanelLayout
+				.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+				.add(org.jdesktop.layout.GroupLayout.TRAILING,
+						previewPanelLayout
+								.createSequentialGroup()
+								.add(tableTabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250,
+										Short.MAX_VALUE)
+								.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+								.add(rightArrowLabel)
+								.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+								.add(keyPreviewScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 180,
+										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+				.add(previewPanelLayout
+						.createSequentialGroup()
+						.add(fileTypeLabel)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(instructionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(legendLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(primaryKeyLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(aliasLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(ontologyTermLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(taxonomyLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60,
+								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).addContainerGap()));
+		previewPanelLayout.setVerticalGroup(previewPanelLayout.createParallelGroup(
+				org.jdesktop.layout.GroupLayout.LEADING).add(
+				previewPanelLayout
+						.createSequentialGroup()
+						.add(previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+								.add(fileTypeLabel).add(primaryKeyLabel).add(aliasLabel).add(ontologyTermLabel)
+								.add(taxonomyLabel).add(legendLabel).add(instructionLabel))
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+						.add(previewPanelLayout
+								.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+								.add(tableTabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200,
+										Short.MAX_VALUE)
+								.add(keyPreviewScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200,
+										Short.MAX_VALUE)
+								.add(org.jdesktop.layout.GroupLayout.LEADING, rightArrowLabel,
+										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))));
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	public JTable getPreviewTable() {
-		JScrollPane selected = (JScrollPane) tableTabbedPane
-				.getSelectedComponent();
+		JScrollPane selected = (JScrollPane) tableTabbedPane.getSelectedComponent();
 
 		if (selected == null) {
 			return null;
@@ -527,11 +423,7 @@ public class PreviewTablePanel extends JPanel {
 		return (JTable) selected.getViewport().getComponent(0);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
+
 	public int getTableCount() {
 		return tableTabbedPane.getTabCount();
 	}
@@ -584,8 +476,7 @@ public class PreviewTablePanel extends JPanel {
 	 * @return DOCUMENT ME!
 	 */
 	public FileTypes getFileType() {
-		final String sheetName = getSheetName(tableTabbedPane
-				.getSelectedIndex());
+		final String sheetName = getSheetName(tableTabbedPane.getSelectedIndex());
 
 		if (sheetName.startsWith("gene_association")) {
 			return FileTypes.GENE_ASSOCIATION_FILE;
@@ -612,19 +503,16 @@ public class PreviewTablePanel extends JPanel {
 	 * @return DOCUMENT ME!
 	 */
 	public JTable getPreviewTable(int index) {
-		JScrollPane selected = (JScrollPane) tableTabbedPane
-				.getComponentAt(index);
+		JScrollPane selected = (JScrollPane) tableTabbedPane.getComponentAt(index);
 
 		return (JTable) selected.getViewport().getComponent(0);
 	}
 
 	private void tableTabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {
 		if ((tableTabbedPane.getSelectedComponent() != null)
-				&& (((JScrollPane) tableTabbedPane.getSelectedComponent())
-						.getViewport().getComponent(0) != null)
+				&& (((JScrollPane) tableTabbedPane.getSelectedComponent()).getViewport().getComponent(0) != null)
 				&& (loadFlag == true)) {
-			changes.firePropertyChange(ImportTablePanel.SHEET_CHANGED,
-					null, null);
+			changes.firePropertyChange(ImportTablePanel.SHEET_CHANGED, null, null);
 		}
 	}
 
@@ -665,18 +553,13 @@ public class PreviewTablePanel extends JPanel {
 	 *            TODO
 	 * @throws IOException
 	 */
-	public void setPreviewTable(final Workbook wb, String fileType, String fileFullName, InputStream tempIs, List<String> delimiters,
-			TableCellRenderer renderer, int size, final String commentLineChar,
+	public void setPreviewTable(final Workbook wb, String fileType, String fileFullName, InputStream tempIs,
+			List<String> delimiters, TableCellRenderer renderer, int size, final String commentLineChar,
 			final int startLine) throws IOException {
-		
-		
-		if(tempIs == null) 
+
+		if (tempIs == null)
 			return;
-		logger.debug("Loading preview for the " + fileType +" file");
-		
-		//this.is = is;
-		this.fileType = fileType;
-		
+
 		TableCellRenderer curRenderer = renderer;
 
 		if ((commentLineChar != null) && (commentLineChar.trim().length() != 0))
@@ -687,11 +570,9 @@ public class PreviewTablePanel extends JPanel {
 		 * If rendrer is null, create default one.
 		 */
 		if (curRenderer == null) {
-			curRenderer = new AttributePreviewTableCellRenderer(0,
-					new ArrayList<Integer>(),
+			curRenderer = new AttributePreviewTableCellRenderer(0, new ArrayList<Integer>(),
 					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					null, TextFileDelimiters.PIPE.toString());
+					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST, null, TextFileDelimiters.PIPE.toString());
 		}
 
 		for (int i = 0; i < tableTabbedPane.getTabCount(); i++)
@@ -702,49 +583,46 @@ public class PreviewTablePanel extends JPanel {
 		TableModel newModel;
 
 		fileTypeLabel.setVisible(true);
-			
+
 		boolean isTable = false;
-		if (fileType!= null){
+		if (fileType != null) {
 			if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
-				|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-				
-			isTable = true;
-			fileTypeLabel.setIcon(SPREADSHEET_ICON.getIcon());
-			fileTypeLabel.setText("Excel" + '\u2122' + " Workbook");			
+					|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
 
-			if (wb.getNumberOfSheets() == 0)
-				throw new IllegalStateException("No sheet found in the workbook.");
+				isTable = true;
+				fileTypeLabel.setIcon(SPREADSHEET_ICON.getIcon());
+				fileTypeLabel.setText("Excel" + '\u2122' + " Workbook");
 
-			/*
-			 * Load each sheet in the workbook.
-			 */
-			logger.debug("# of Sheets = " + wb.getNumberOfSheets());
+				if (wb.getNumberOfSheets() == 0)
+					throw new IllegalStateException("No sheet found in the workbook.");
 
-			Sheet sheet = wb.getSheetAt(0);
-			logger.debug("Sheet name = " + wb.getSheetName(0) + ", ROW = "
-					+ sheet.rowIterator().hasNext());
+				/*
+				 * Load each sheet in the workbook.
+				 */
+				logger.debug("# of Sheets = " + wb.getNumberOfSheets());
 
-			newModel = parseExcel( size, curRenderer, sheet,
-					startLine);
+				Sheet sheet = wb.getSheetAt(0);
+				logger.debug("Sheet name = " + wb.getSheetName(0) + ", ROW = " + sheet.rowIterator().hasNext());
 
-			if (newModel.getRowCount() == 0)
-				throw new IllegalStateException("No data found in the Excel sheet.");
+				newModel = parseExcel(size, curRenderer, sheet, startLine);
 
-			DataTypeUtil.guessTypes(newModel, wb.getSheetName(0), dataTypeMap);
-			listDataTypeMap
-					.put(wb.getSheetName(0), initListDataTypes(newModel));
-			addTableTab(newModel, wb.getSheetName(0), curRenderer);
+				if (newModel.getRowCount() == 0)
+					throw new IllegalStateException("No data found in the Excel sheet.");
+
+				DataTypeUtil.guessTypes(newModel, wb.getSheetName(0), dataTypeMap);
+				listDataTypeMap.put(wb.getSheetName(0), initListDataTypes(newModel));
+				addTableTab(newModel, wb.getSheetName(0), curRenderer);
 			}
 		}
-		if (!isTable){
+
+		if (!isTable) {
 			fileTypeLabel.setText("Text File");
-				fileTypeLabel.setIcon(TEXT_FILE_ICON.getIcon());
-				newModel = parseText(tempIs, size, curRenderer, delimiters,
-						startLine);
-			
+			fileTypeLabel.setIcon(TEXT_FILE_ICON.getIcon());
+			newModel = parseText(tempIs, size, curRenderer, delimiters, startLine);
+
 			String tabName;
 			String[] urlParts = fileFullName.split("/");
-			if(urlParts.length > 0 && !fileFullName.isEmpty())
+			if (urlParts.length > 0 && !fileFullName.isEmpty())
 				tabName = urlParts[urlParts.length - 1];
 			else
 				tabName = "newTable";
@@ -755,15 +633,14 @@ public class PreviewTablePanel extends JPanel {
 
 		if (getFileType() == FileTypes.GENE_ASSOCIATION_FILE) {
 			fileTypeLabel.setText("Gene Association");
-			fileTypeLabel
-					.setToolTipText("This is a fixed-format Gene Association file.");
+			fileTypeLabel.setToolTipText("This is a fixed-format Gene Association file.");
 		}
 
 		loadFlag = true;
 	}
 
-	protected boolean isCytoscapeAttributeFile(final URL sourceURL)
-			throws IOException {
+
+	protected boolean isCytoscapeAttributeFile(final URL sourceURL) throws IOException {
 		InputStream is = null;
 
 		boolean testResult = true;
@@ -787,8 +664,7 @@ public class PreviewTablePanel extends JPanel {
 						} else {
 							elements = line.split("[(]");
 
-							if ((elements.length == 2)
-									&& elements[1].startsWith("class=")) {
+							if ((elements.length == 2) && elements[1].startsWith("class=")) {
 								// true so far.
 							} else {
 								testResult = false;
@@ -821,8 +697,7 @@ public class PreviewTablePanel extends JPanel {
 		return testResult;
 	}
 
-	private void addTableTab(TableModel newModel, final String tabName,
-			TableCellRenderer renderer) {
+	private void addTableTab(TableModel newModel, final String tabName, TableCellRenderer renderer) {
 		JTable newTable = new JTable(newModel);
 		previewTables.put(tabName, newTable);
 
@@ -856,11 +731,10 @@ public class PreviewTablePanel extends JPanel {
 			}
 
 			TableCellRenderer netRenderer = new AttributePreviewTableCellRenderer(
+					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST, new ArrayList<Integer>(),
 					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					new ArrayList<Integer>(),
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					importFlag, TextFileDelimiters.PIPE.toString());
+					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST, importFlag,
+					TextFileDelimiters.PIPE.toString());
 
 			newTable.setDefaultRenderer(Object.class, netRenderer);
 		} else {
@@ -869,8 +743,7 @@ public class PreviewTablePanel extends JPanel {
 
 		JTableHeader hd = newTable.getTableHeader();
 		hd.setReorderingAllowed(false);
-		hd.setDefaultRenderer(new HeaderRenderer(hd.getDefaultRenderer(),
-				dataTypeMap.get(tabName)));
+		hd.setDefaultRenderer(new HeaderRenderer(hd.getDefaultRenderer(), dataTypeMap.get(tabName)));
 
 		newTable.getTableHeader().addMouseListener(new TableHeaderListener());
 
@@ -910,124 +783,120 @@ public class PreviewTablePanel extends JPanel {
 		return colNames;
 	}
 
-	private TableModel parseText(InputStream tempIs, int size,
-			TableCellRenderer renderer, List<String> delimiters, int startLine)
-			throws IOException {
-		
+	private TableModel parseText(InputStream tempIs, int size, TableCellRenderer renderer, List<String> delimiters,
+			int startLine) throws IOException {
+
 		String line;
 		String attrName = "Attr1";
 		Vector data;
 		int maxColumn;
 
-			BufferedReader bufRd = new BufferedReader(new InputStreamReader(tempIs, Charset.forName("UTF-8").newDecoder()));
-				/*
-				 * Generate reg. exp. for delimiter.
-				 */
-				final String delimiterRegEx;
+		BufferedReader bufRd = new BufferedReader(new InputStreamReader(tempIs, Charset.forName("UTF-8").newDecoder()));
+		/*
+		 * Generate reg. exp. for delimiter.
+		 */
+		final String delimiterRegEx;
 
-				if (delimiters != null) {
-					StringBuffer delimiterBuffer = new StringBuffer();
+		if (delimiters != null) {
+			StringBuffer delimiterBuffer = new StringBuffer();
 
-					if (delimiters.size() != 0) {
-						delimiterBuffer.append("[");
+			if (delimiters.size() != 0) {
+				delimiterBuffer.append("[");
 
-						for (String delimiter : delimiters) {
-							delimiterBuffer.append(delimiter);
-						}
+				for (String delimiter : delimiters) {
+					delimiterBuffer.append(delimiter);
+				}
 
-						delimiterBuffer.append("]");
-					}
+				delimiterBuffer.append("]");
+			}
 
-					delimiterRegEx = delimiterBuffer.toString();
+			delimiterRegEx = delimiterBuffer.toString();
+		} else {
+			// treat as cytoscape attribute files.
+			delimiterRegEx = " += +";
+			// Extract first column for attr name.
+			line = bufRd.readLine();
+			String[] line1 = line.split(" +");
+			attrName = line1[0];
+		}
+
+		/*
+		 * Read & extract one line at a time. The line can be Tab delimited,
+		 */
+		boolean importAll = false;
+
+		if (size == -1) {
+			importAll = true;
+		}
+
+		// Distinguish between CSV files and everything else.
+		// TODO: Since the CSV parser allows for other delimiters, consider
+		// exploring using it for everything.
+
+		// The variables are modified by both the new method and the old method.
+		int counter = 0;
+		maxColumn = 0;
+		data = new Vector();
+		if (delimiters.contains(TextFileDelimiters.COMMA.toString()) && delimiters.size() == 1) {
+			// Only if there is exactly one delimiter and that delimiter is a
+			// comma should you read the file
+			// using OpenCSV
+			// New method... Using OpenCSV
+			CSVReader reader = new CSVReader(bufRd);
+			String[] rowData; // Note that rowData is roughly equivalent to
+								// "parts" in the old code.
+			while ((rowData = reader.readNext()) != null) {
+				Vector row = new Vector();
+				for (String field : rowData)
+					row.add(field);
+				if (rowData.length > maxColumn)
+					maxColumn = rowData.length;
+				data.add(row);
+				counter++;
+
+				if ((importAll == false) && (counter >= size)) {
+					break;
+				}
+			}
+		} else {
+			// Old method... Using naive splitting.
+			String[] parts;
+			while ((line = bufRd.readLine()) != null) {
+				if (((commentChar != null) && line.startsWith(commentChar)) || (line.trim().length() == 0)
+						|| (counter < startLine)) {
+					// ignore
 				} else {
-					// treat as cytoscape attribute files.
-					delimiterRegEx = " += +";
-					// Extract first column for attr name.
-					line = bufRd.readLine();
-					String[] line1 = line.split(" +");
-					attrName = line1[0];
-				}
+					Vector row = new Vector();
 
-				/*
-				 * Read & extract one line at a time. The line can be Tab
-				 * delimited,
-				 */
-				boolean importAll = false;
-
-				if (size == -1) {
-					importAll = true;
-				}
-
-		        //Distinguish between CSV files and everything else.
-				//TODO: Since the CSV parser allows for other delimiters, consider exploring using it for everything.
-
-				//The variables are modified by both the new method and the old method.
-				int counter = 0;
-				maxColumn = 0;
-				data = new Vector();
-				if( delimiters.contains(TextFileDelimiters.COMMA.toString()) && delimiters.size() == 1 )
-				{
-					//Only if there is exactly one delimiter and that delimiter is a comma should you read the file
-					//using OpenCSV
-					//New method... Using OpenCSV
-					CSVReader reader = new CSVReader(bufRd);
-					String [] rowData; //Note that rowData is roughly equivalent to "parts" in the old code.
-					while ((rowData = reader.readNext()) != null) {
-						Vector row = new Vector();
-						for( String field : rowData )
-							row.add(field);
-						if( rowData.length > maxColumn )
-							maxColumn = rowData.length;
-						data.add(row);
-						counter++;
-
-						if ((importAll == false) && (counter >= size)) {
-							break;
-						}
+					if (delimiterRegEx.length() == 0) {
+						parts = new String[1];
+						parts[0] = line;
+					} else {
+						parts = line.split(delimiterRegEx);
 					}
-				}
-		        else
-				{
-					//Old method... Using naive splitting.
-					String[] parts;
-					while ((line = bufRd.readLine()) != null) {
-						if (((commentChar != null) && line.startsWith(commentChar))
-								|| (line.trim().length() == 0)
-								|| (counter < startLine)) {
-							// ignore
-						} else {
-							Vector row = new Vector();
 
-							if (delimiterRegEx.length() == 0) {
-								parts = new String[1];
-								parts[0] = line;
-							} else {
-								parts = line.split(delimiterRegEx);
-							}
-
-							for (String entry : parts) {
-								row.add(entry);
-							}
-
-							if (parts.length > maxColumn) {
-								maxColumn = parts.length;
-							}
-
-							data.add(row);
-						}
-
-						counter++;
-
-						if ((importAll == false) && (counter >= size)) {
-							break;
-						}
+					for (String entry : parts) {
+						row.add(entry);
 					}
+
+					if (parts.length > maxColumn) {
+						maxColumn = parts.length;
+					}
+
+					data.add(row);
 				}
 
+				counter++;
 
-			// If the inputStream is passed in from parameter, do not close it
-			if ( tempIs!= null)
-				tempIs.close();
+				if ((importAll == false) && (counter >= size)) {
+					break;
+				}
+			}
+		}
+
+		// If the inputStream is passed in from parameter, do not close it
+		if (tempIs != null)
+			tempIs.close();
 
 		if (delimiters == null) {
 			// Cytoscape attr file.
@@ -1039,14 +908,12 @@ public class PreviewTablePanel extends JPanel {
 			return new DefaultTableModel(data, getDefaultColumnNames(maxColumn));
 	}
 
-	private TableModel parseExcel( int size,
-			TableCellRenderer renderer, final Sheet sheet, int startLine)
+	private TableModel parseExcel(int size, TableCellRenderer renderer, final Sheet sheet, int startLine)
 			throws IOException {
-		
-		if(size == -1)
+
+		if (size == -1)
 			size = Integer.MAX_VALUE;
-			
-		
+
 		int maxCol = 0;
 		final Vector<Object> data = new Vector<Object>();
 
@@ -1067,8 +934,7 @@ public class PreviewTablePanel extends JPanel {
 					if (cell == null) {
 						rowVector.add(null);
 					} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-						rowVector
-								.add(cell.getRichStringCellValue().getString());
+						rowVector.add(cell.getRichStringCellValue().getString());
 					} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
 						final Double dblValue = cell.getNumericCellValue();
 						final Integer intValue = dblValue.intValue();
@@ -1079,8 +945,7 @@ public class PreviewTablePanel extends JPanel {
 							rowVector.add(dblValue.toString());
 						}
 					} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
-						rowVector.add(Boolean.toString(cell
-								.getBooleanCellValue()));
+						rowVector.add(Boolean.toString(cell.getBooleanCellValue()));
 					} else if ((cell.getCellType() == Cell.CELL_TYPE_BLANK)
 							|| (cell.getCellType() == Cell.CELL_TYPE_ERROR)) {
 						rowVector.add(null);
@@ -1109,9 +974,9 @@ public class PreviewTablePanel extends JPanel {
 	public int checkKeyMatch(final int targetColumn) {
 		final DefaultListModel listModel = (DefaultListModel) keyPreviewList.getModel();
 		final Object[] data = listModel.toArray();
-		
+
 		final List<Object> fileKeyList = Arrays.asList(data);
-		
+
 		int matched = 0;
 
 		final TableModel curModel = getPreviewTable().getModel();
@@ -1124,7 +989,7 @@ public class PreviewTablePanel extends JPanel {
 
 		final int rowCount = curModel.getRowCount();
 		for (int i = 0; i < rowCount; i++) {
-			final Object val = curModel.getValueAt(i, targetColumn);			 
+			final Object val = curModel.getValueAt(i, targetColumn);
 			if (val != null && fileKeyList.contains(val))
 				matched++;
 		}
@@ -1140,8 +1005,8 @@ public class PreviewTablePanel extends JPanel {
 	 *            DOCUMENT ME!
 	 */
 	public void setAliasColumn(int column, boolean flag) {
-		AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) getPreviewTable()
-				.getCellRenderer(0, column);
+		AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) getPreviewTable().getCellRenderer(
+				0, column);
 		rend.setAliasFlag(column, flag);
 		// rend.setImportFlag(column, !rend.getImportFlag(column));
 		getPreviewTable().getTableHeader().resizeAndRepaint();
@@ -1155,31 +1020,30 @@ public class PreviewTablePanel extends JPanel {
 			final Byte[] dataTypes = dataTypeMap.get(selectedTabName);
 			final Byte[] listDataTypes = listDataTypeMap.get(selectedTabName);
 
-			final int column = targetTable.getColumnModel().getColumnIndexAtX(
-					e.getX());
+			final int column = targetTable.getColumnModel().getColumnIndexAtX(e.getX());
 
 			if (SwingUtilities.isRightMouseButton(e)) {
-				// determine the parent of AttributeTypeDialog, should be a TunableDialog
+				// determine the parent of AttributeTypeDialog, should be a
+				// TunableDialog
 				Object parent = null;
-				
+
 				Container cnt = PreviewTablePanel.this.getParent();
-				while(true){
+				while (true) {
 					cnt = cnt.getParent();
-					if (cnt instanceof JDialog){						
+					if (cnt instanceof JDialog) {
 						parent = cnt;
 						break;
 					}
 				}
-				
+
 				/*
 				 * Right click: This action pops up an dialog to edit the
 				 * attribute type and name.
 				 */
-				AttributeTypeDialog atd = new AttributeTypeDialog((java.awt.Dialog)parent,
-						true, targetTable.getColumnModel()
-						.getColumn(column).getHeaderValue().toString(),
-						dataTypes[column], column, listDelimiter);				
-				
+				AttributeTypeDialog atd = new AttributeTypeDialog((java.awt.Dialog) parent, true, targetTable
+						.getColumnModel().getColumn(column).getHeaderValue().toString(), dataTypes[column], column,
+						listDelimiter);
+
 				atd.setLocationRelativeTo(targetTable.getParent());
 				atd.setVisible(true);
 
@@ -1188,48 +1052,38 @@ public class PreviewTablePanel extends JPanel {
 				final byte newListType = atd.getListDataType();
 
 				if (name != null) {
-					targetTable.getColumnModel().getColumn(column)
-							.setHeaderValue(name);
+					targetTable.getColumnModel().getColumn(column).setHeaderValue(name);
 					targetTable.getTableHeader().resizeAndRepaint();
 
 					if (newType == AttributeTypes.TYPE_SIMPLE_LIST) {
 						// listDelimiter = atd.getListDelimiterType();
 						listDelimiter = atd.getListDelimiterType();
 
-						changes.firePropertyChange(
-								ImportTablePanel.LIST_DELIMITER_CHANGED,
-								null, atd.getListDelimiterType());
+						changes.firePropertyChange(ImportTablePanel.LIST_DELIMITER_CHANGED, null,
+								atd.getListDelimiterType());
 
 						listDataTypes[column] = newListType;
-						changes.firePropertyChange(
-								ImportTablePanel.LIST_DATA_TYPE_CHANGED,
-								null, listDataTypes);
+						changes.firePropertyChange(ImportTablePanel.LIST_DATA_TYPE_CHANGED, null, listDataTypes);
 						listDataTypeMap.put(selectedTabName, listDataTypes);
 					}
 
 					final Vector keyValPair = new Vector();
 					keyValPair.add(column);
 					keyValPair.add(newType);
-					changes.firePropertyChange(
-							ImportTablePanel.ATTR_DATA_TYPE_CHANGED, null,
-							keyValPair);
+					changes.firePropertyChange(ImportTablePanel.ATTR_DATA_TYPE_CHANGED, null, keyValPair);
 
 					final Vector colNamePair = new Vector();
 					colNamePair.add(column);
 					colNamePair.add(name);
-					changes.firePropertyChange(
-							ImportTablePanel.ATTRIBUTE_NAME_CHANGED, null,
-							colNamePair);
+					changes.firePropertyChange(ImportTablePanel.ATTRIBUTE_NAME_CHANGED, null, colNamePair);
 
 					dataTypes[column] = newType;
 
 					targetTable.getTableHeader().setDefaultRenderer(
-							new HeaderRenderer(targetTable.getTableHeader()
-									.getDefaultRenderer(), dataTypes));
+							new HeaderRenderer(targetTable.getTableHeader().getDefaultRenderer(), dataTypes));
 					dataTypeMap.put(selectedTabName, dataTypes);
 				}
-			} else if (SwingUtilities.isLeftMouseButton(e)
-					&& (e.getClickCount() == 1)) {
+			} else if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 1)) {
 				final AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) targetTable
 						.getCellRenderer(0, column);
 				rend.setImportFlag(column, !rend.getImportFlag(column));
@@ -1253,8 +1107,7 @@ public class PreviewTablePanel extends JPanel {
 }
 
 class KeyAttributeListRenderer extends JLabel implements ListCellRenderer {
-	private static final Font KEY_LIST_FONT = new Font("Sans-Serif", Font.BOLD,
-			16);
+	private static final Font KEY_LIST_FONT = new Font("Sans-Serif", Font.BOLD, 16);
 	private static final Color FONT_COLOR = Color.BLACK;
 
 	/**
@@ -1279,8 +1132,8 @@ class KeyAttributeListRenderer extends JLabel implements ListCellRenderer {
 	 * 
 	 * @return DOCUMENT ME!
 	 */
-	public Component getListCellRendererComponent(JList list, Object value,
-			int index, boolean isSelected, boolean cellHasFocus) {
+	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+			boolean cellHasFocus) {
 		setFont(KEY_LIST_FONT);
 		setForeground(FONT_COLOR);
 		setText(value.toString());
@@ -1320,12 +1173,10 @@ class CentredBackgroundBorder implements Border {
 	 * @param height
 	 *            DOCUMENT ME!
 	 */
-	public void paintBorder(Component c, Graphics g, int x, int y, int width,
-			int height) {
+	public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
 		x += ((width - image.getWidth()) / 2);
 		y += ((height - image.getHeight()) / 2);
-		((Graphics2D) g).drawRenderedImage(image, AffineTransform
-				.getTranslateInstance(x, y));
+		((Graphics2D) g).drawRenderedImage(image, AffineTransform.getTranslateInstance(x, y));
 	}
 
 	/**
