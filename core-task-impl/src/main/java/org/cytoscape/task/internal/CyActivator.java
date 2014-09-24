@@ -1770,14 +1770,13 @@ public class CyActivator extends AbstractCyActivator {
 		updateViewTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Update (repaint) a view");
 		registerService(bc,updateView,TaskFactory.class,updateViewTaskFactoryProps);
 
-		// Export to HTML5 archive
+		// New in 3.2.0: Export to HTML5 archive
 		ExportAsWebArchiveTaskFactory exportAsWebArchiveTaskFactory = new ExportAsWebArchiveTaskFactory();
 		Properties exportAsWebArchiveTaskFactoryProps = new Properties();
 		exportAsWebArchiveTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
 		exportAsWebArchiveTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
-		exportAsWebArchiveTaskFactoryProps.setProperty(TITLE,"Interactive web visualization...");
+		exportAsWebArchiveTaskFactoryProps.setProperty(TITLE,"Everything as Interactive Web Visualization...");
 		registerAllServices(bc, exportAsWebArchiveTaskFactory, exportAsWebArchiveTaskFactoryProps);
 		registerServiceListener(bc, exportAsWebArchiveTaskFactory, "registerFactory", "unregisterFactory", CySessionWriterFactory.class);
-
 	}
 }
