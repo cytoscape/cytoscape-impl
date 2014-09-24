@@ -200,7 +200,7 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 	@Override
 	public void handleAppStatusChanged(String symbolicName, String version, AppStatus status) {
 		for (App app : apps) {
-			if (app.getAppName().equals(symbolicName) && WebQuerier.compareVersions(app.getVersion(), version) == 0) {
+			if (!app.isDetached() && app.getAppName().equals(symbolicName) && WebQuerier.compareVersions(app.getVersion(), version) == 0) {
 				app.setStatus(status);
 				fireAppsChangedEvent();
 				break;
