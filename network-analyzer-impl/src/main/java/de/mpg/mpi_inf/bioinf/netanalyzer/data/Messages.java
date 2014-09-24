@@ -512,7 +512,7 @@ public abstract class Messages {
 
 	public static String DI_SAVEDEFAULT = "Save as Default";
 
-	public static String DI_SAVENUMBEREDGES = "Create an edge table data with number of duplicated edges";
+	public static String DI_SAVENUMBEREDGES = "Create an edge table column with number of duplicated edges";
 
 	public static String DI_SAVESTATISTICS = "Save Statistics";
 

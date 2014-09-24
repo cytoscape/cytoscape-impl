@@ -88,6 +88,7 @@ public class RemDupEdgesAction extends NetAnalyzerAction {
 				String[] networkNames = new String[size];
 				for (int i = 0; i < size; ++i) {
 					final CyNetwork currentNet = networks[i];
+					AttributeSetup.createEdgeDuplicateAttribute(currentNet.getDefaultEdgeTable());
 					networkNames[i] = currentNet.getRow(currentNet).get(CyNetwork.NAME, String.class);
 					removedEdges[i] = CyNetworkUtils.removeDuplEdges(currentNet, ignoreDir, createEdgeAttr);
 				}

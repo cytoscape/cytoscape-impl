@@ -95,7 +95,7 @@ public class DirNetworkAnalyzer extends NetworkAnalyzer {
 		this.stress = new HashMap<CyNode, Long>();
 		computeNB = true;
 		AttributeSetup.createDirectedNodeAttributes(aNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
-		AttributeSetup.createEdgeAttributes(aNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
+		AttributeSetup.createEdgeBetweennessAttribute(aNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
 	}
 
 	/*

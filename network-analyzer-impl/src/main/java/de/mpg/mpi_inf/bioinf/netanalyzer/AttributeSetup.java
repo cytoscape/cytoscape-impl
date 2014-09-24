@@ -66,8 +66,12 @@ final class AttributeSetup {
 		createAttr(nodeTable,Messages.getAttr("stress"), Long.class);
 	}
 
-	static void createEdgeAttributes(CyTable edgeTable) {
+	static void createEdgeBetweennessAttribute(CyTable edgeTable) {
 		createAttr(edgeTable,Messages.getAttr("ebt"),Double.class);
+	}
+	
+	static void createEdgeDuplicateAttribute(CyTable edgeTable) {
+		createAttr(edgeTable,Messages.getAttr("dpe"),Integer.class);
 	}
 
 	private static void createAttr(final CyTable table, final String col, final Class<?> newType) {
