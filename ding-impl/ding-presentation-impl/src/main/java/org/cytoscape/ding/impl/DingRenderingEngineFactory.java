@@ -142,7 +142,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			
 			if(view instanceof DGraphView) {
 				dgv = (DGraphView) view;				
-				logger.info("%%%%%%% This view is DGV.");
 			}
 			else {
 				dgv = new DGraphView(targetView,
@@ -150,8 +149,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 					vtfListener,dialogTaskManager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
 				dgv.registerServices();
 			}
-			logger.info("DGraphView created as a presentation for view model: "
-					+ targetView.getSUID());
 			vtfListener.viewMap.put(targetView, new WeakReference<DGraphView>(dgv));
 
 			if (presentationContainer instanceof JInternalFrame) {
