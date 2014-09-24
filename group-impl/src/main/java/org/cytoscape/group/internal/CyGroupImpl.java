@@ -34,10 +34,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
@@ -49,7 +49,6 @@ import org.cytoscape.group.events.GroupEdgesAddedEvent;
 import org.cytoscape.group.events.GroupEdgesRemovedEvent;
 import org.cytoscape.group.events.GroupCollapsedEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -59,15 +58,25 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 
 
 class CyGroupImpl implements CyGroup {
+	
 	final private static String CHILDREN_ATTR = "NumChildren";
 	final private static String DESCENDENTS_ATTR = "NumDescendents";
 	final private static String ISMETA_EDGE_ATTR = "__isMetaEdge";
 
 	final private CyEventHelper cyEventHelper;
 	final private CyGroupManager mgr;
+	final private CyServiceRegistrar serviceRegistrar;
 
 	private CyNode groupNode;
 	private Set<CyEdge> externalEdges;
@@ -79,15 +88,26 @@ class CyGroupImpl implements CyGroup {
 	private Map<Long, List<CyNode>> collapsedNodes = null;
 	private Set<CyEdge> externalEdgeProcessed = null;
 	private boolean nodeProvided = false;  // We'll need this when we destroy ourselves
+	
+	/** save bypass values and the positions of the nodes */
+	private final Map<CyIdentifiable, Map<VisualProperty<?>, Object>> bypassMap;
+	private final Collection<VisualProperty<?>> nodeProps;
+	private final Collection<VisualProperty<?>> edgeProps;
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyGroupImpl.class);
 	
 	private final Object lock = new Object();
 
 	CyGroupImpl(final CyEventHelper eventHelper, 
-				final CyGroupManager mgr, CyNetwork network, CyNode node,
-				List<CyNode>nodes, List<CyEdge>edges) {
+				final CyGroupManager mgr,
+				final CyServiceRegistrar serviceRegistrar,
+				CyNetwork network,
+				CyNode node,
+				List<CyNode>nodes,
+				List<CyEdge>edges) {
 		this.cyEventHelper = eventHelper;
 		this.mgr = mgr;
+		this.serviceRegistrar = serviceRegistrar;
 
 		// long timeStamp = System.currentTimeMillis();
 
@@ -108,12 +128,25 @@ class CyGroupImpl implements CyGroup {
 		this.collapseSet = new HashSet<Long>();
 		this.collapsedNodes = new HashMap<Long, List<CyNode>>();
 		this.externalEdgeProcessed = new HashSet<CyEdge>();
+		this.bypassMap = new HashMap<>();
+		this.nodeProps = new HashSet<VisualProperty<?>>();
+		this.edgeProps = new HashSet<VisualProperty<?>>();
 
 		networkSet.add(rootNetwork);
 		networkSet.add(network);
 
 		if (nodes == null)
 			nodes = new ArrayList<CyNode>();
+		
+		// TODO what if the network view renderer provides a different lexicon?
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		final Set<VisualLexicon> allLexicons = vmMgr.getAllVisualLexicon();
+		
+		if (allLexicons != null && !allLexicons.isEmpty()) {
+			final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
+			this.nodeProps.addAll(lexicon.getAllDescendants(BasicVisualLexicon.NODE));
+			this.edgeProps.addAll(lexicon.getAllDescendants(BasicVisualLexicon.EDGE));
+		}
 
 		// This is merely a copy of the "nodes" list but as a set,
 		// so it's fast to call the contains() method.
@@ -633,8 +666,21 @@ class CyGroupImpl implements CyGroup {
 		// creation events before we start removing things...
 		cyEventHelper.flushPayloadEvents();
 
-		// Remove all of the nodes from the target network
+		// Remove all of the nodes from the target network:
+		// But first, Save their locked visual properties values...
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final Collection<CyNetworkView> netViewList = netViewMgr.getNetworkViews(subnet);
+		
+		for (CyNode n: nodes) {
+			saveLockedValues(n, netViewList);
+			
+			for (CyEdge e : subnet.getAdjacentEdgeList(n, CyEdge.Type.ANY))
+				saveLockedValues(e, netViewList);
+		}
+		
 		subnet.removeNodes(nodes);
+		
+		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
 
 		synchronized (lock) {
 			// Add the group node and its edges to the target network.
@@ -642,21 +688,32 @@ class CyGroupImpl implements CyGroup {
 			// go away so we don't have to add it back in here
 			if (memberEdges.size() == 0) {
 				subnet.addNode(groupNode);
+				addedElements.add(groupNode);
+				
 				// Now add the edges for the group node
 				List<CyEdge> groupNodeEdges = rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
+				
 				for (CyEdge e: groupNodeEdges) {
 					// I have no idea why this would be necessary, but it is....
-					if (subnet.containsEdge(e))
-							subnet.removeEdges(Collections.singletonList(e));
-					if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget()))
+					if (subnet.containsEdge(e)) {
+						// Save edge's locked visual properties values before they are removed
+						saveLockedValues(e, netViewList);
+						subnet.removeEdges(Collections.singletonList(e));
+					}
+					
+					if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 						subnet.addEdge(e);
+						addedElements.add(e);
+					}
 				}
 			}
 	
 			// Add the meta-edges
 			for (CyEdge e: getMetaEdgeList()) {
-				if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget()))
+				if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 					subnet.addEdge(e);
+					addedElements.add(e);
+				}
 			}
 	
 			collapseSet.add(net.getSUID());
@@ -667,6 +724,9 @@ class CyGroupImpl implements CyGroup {
 		
 		cyEventHelper.flushPayloadEvents();  // Make sure the view "hears" about all of the changes...
 
+		// Restore locked visual property values of added nodes/edges
+		setLockedValues(netViewList, addedElements);
+		
 		// OK, all done
 		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, true));
 		// System.out.println("collapsed "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
@@ -712,17 +772,29 @@ class CyGroupImpl implements CyGroup {
 
 		// Expand it.
 
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final Collection<CyNetworkView> netViewList = netViewMgr.getNetworkViews(net);
+		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
+		
 		synchronized (lock) {
 			// Remove the group node from the target network only if
 			// there are no member edges. If there were member edges,
 			// the group node did not go away.
 			if (memberEdges.size() == 0) {
+				// Save group node's locked visual properties values before they are removed
+				saveLockedValues(groupNode, netViewList);
+				
+				for (CyEdge e : subnet.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY))
+					saveLockedValues(e, netViewList);
+				
 				subnet.removeNodes(Collections.singletonList(groupNode));
 			}
 	
 			// Add all of the member nodes and edges in
-			for (CyNode n: nodes)
+			for (CyNode n: nodes) {
 				subnet.addNode(n);
+				addedElements.add(n);
+			}
 		}
 		
 		cyEventHelper.flushPayloadEvents(); // Make sure everyone knows about all of our changes!
@@ -732,6 +804,7 @@ class CyGroupImpl implements CyGroup {
 			for (CyEdge e: getInternalEdgeList()) {
 				if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 					subnet.addEdge(e);
+					addedElements.add(e);
 				}
 			}
 	
@@ -743,6 +816,7 @@ class CyGroupImpl implements CyGroup {
 				// collapsed group
 				if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 					subnet.addEdge(e);
+					addedElements.add(e);
 				}
 			}
 	
@@ -751,16 +825,22 @@ class CyGroupImpl implements CyGroup {
 			for (CyEdge e: getMetaEdgeList()) {
 				if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 					subnet.addEdge(e);
+					addedElements.add(e);
 				}
 			}
 	
 			// Add all of the member edges in
-			for (CyEdge e: memberEdges)
+			for (CyEdge e: memberEdges) {
 				subnet.addEdge(e);
+				addedElements.add(e);
+			}
 		}
 		
 		cyEventHelper.flushPayloadEvents(); // Make sure everyone knows about all of our changes!
 
+		// Restore locked visual property values of added nodes/edges
+		setLockedValues(netViewList, addedElements);
+		
 		synchronized (lock) {
 			collapseSet.remove(net.getSUID());
 			collapsedNodes.remove(net.getSUID());
@@ -1162,6 +1242,63 @@ class CyGroupImpl implements CyGroup {
 			}
 		}
 		return false;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T extends CyIdentifiable> void saveLockedValues(final T element, Collection<CyNetworkView> netViewList) {
+		if (element == null || netViewList == null)
+			return;
+		
+		for (CyNetworkView netView : netViewList) {
+			View<T> view = null;
+			
+			if (element instanceof CyNode)
+				view = (View<T>) netView.getNodeView((CyNode)element);
+			else if (element instanceof CyEdge)
+				view = (View<T>) netView.getEdgeView((CyEdge)element);
+			
+		
+			if (view == null)
+				continue;
+			
+			Map<VisualProperty<?>, Object> vpMap = new HashMap<>();
+			bypassMap.put(view.getModel(), vpMap);
+			
+			final Collection<VisualProperty<?>> visualProps = (element instanceof CyNode) ? nodeProps : edgeProps;
+			
+			for (final VisualProperty<?> vp : visualProps) {
+				if (view.isValueLocked(vp))
+					vpMap.put(vp, view.getVisualProperty(vp));
+			}
+		}
+	}
+	
+	private void setLockedValues(final Collection<CyNetworkView> netViewList, final Set<CyIdentifiable> elements) {
+		for (CyNetworkView netView : netViewList) {
+			for (CyIdentifiable element : elements) {
+				View<? extends CyIdentifiable> view = null;
+				
+				if (element instanceof CyNode)
+					view = netView.getNodeView((CyNode)element);
+				else if (element instanceof CyEdge)
+					view = netView.getEdgeView((CyEdge)element);
+				
+				if (view != null)
+					setLockedValues(view);
+			}
+		}
+	}
+	
+	private void setLockedValues(final View<? extends CyIdentifiable> view) {
+		if (view == null)
+			return;
+		
+		final Map<VisualProperty<?>, Object> vpMap = bypassMap.get(view.getModel());
+		
+		if (vpMap != null) {
+			for (final Entry<VisualProperty<?>, Object> entry : vpMap.entrySet())
+				view.setLockedValue(entry.getKey(), entry.getValue());
+		}
 	}
 
 	protected void printGroup() {

@@ -25,13 +25,12 @@ package org.cytoscape.group;
  */
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -43,6 +42,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.junit.Test;
 
 
@@ -52,8 +53,15 @@ public class TestCyGroupFactory {
 	public static CyGroupFactory getFactory() {
 		DummyCyEventHelper deh = new DummyCyEventHelper();
 		CyGroupManagerImpl mgr = new CyGroupManagerImpl(deh);
+		
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		final VisualMappingManager vmMgr = mock(VisualMappingManager.class);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
+		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
+		
 		CyGroupFactoryImpl groupFactory = new CyGroupFactoryImpl(deh, mgr, serviceRegistrar);
+		
 		return groupFactory; 
 	}
 

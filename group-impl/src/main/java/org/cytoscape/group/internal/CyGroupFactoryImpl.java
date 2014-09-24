@@ -25,6 +25,7 @@ package org.cytoscape.group.internal;
  */
 
 import java.util.List;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
@@ -33,11 +34,9 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public class CyGroupFactoryImpl implements CyGroupFactory {
+	
 	private final CyEventHelper help;
 	private final CyGroupManagerImpl mgr;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -87,7 +86,7 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	@Override
 	public CyGroup createGroup(CyNetwork network, CyNode node, 
 	                           List<CyNode> nodes, List<CyEdge> edges, boolean register) {
-		CyGroup group = new CyGroupImpl(help, mgr, network, node, nodes, edges);
+		CyGroup group = new CyGroupImpl(help, mgr, serviceRegistrar, network, node, nodes, edges);
 		if (register)
 			mgr.addGroup(group);
 		return group;
@@ -98,7 +97,7 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network, CyNode node, boolean register) {
-		CyGroup group = new CyGroupImpl(help, mgr, network, node, null, null);
+		CyGroup group = new CyGroupImpl(help, mgr, serviceRegistrar, network, node, null, null);
 		if (register)
 			mgr.addGroup(group);
 		return group;

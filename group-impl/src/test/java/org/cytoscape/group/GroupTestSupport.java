@@ -28,6 +28,8 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.internal.CyGroupFactoryImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 
 import static org.mockito.Mockito.*;
 
@@ -38,7 +40,13 @@ public class GroupTestSupport {
 	
 	public GroupTestSupport() {
 		final CyEventHelper help = mock(CyEventHelper.class);
+		
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		final VisualMappingManager vmMgr = mock(VisualMappingManager.class);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
+		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
+		
 		groupManager = new CyGroupManagerImpl(help);
 		groupFactory = new CyGroupFactoryImpl(help, groupManager, serviceRegistrar);
 	}
