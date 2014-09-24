@@ -21,11 +21,16 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void registerFactory(final CySessionWriterFactory writerFactory, final Map props) {
-		if (props.get(ServiceProperties.ID).equals("fullWebSessionWriterFactory")) {
+		final Object id = props.get(ServiceProperties.ID);
+		if(id == null) {
+			return;
+		}
+		
+		if (id.equals("fullWebSessionWriterFactory")) {
 			this.fullWriterFactory = writerFactory;
 		}
 
-		if (props.get(ServiceProperties.ID).equals("simpleWebSessionWriterFactory")) {
+		if (id.equals("simpleWebSessionWriterFactory")) {
 			this.simpleWriterFactory = writerFactory;
 		}
 	}
