@@ -241,7 +241,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 		bGroup = new ButtonGroup();
 		sourceButtons = new JPanel();
-		sourceButtons.setOpaque(false);
 		
 		// Determine Size of Grid
 		final List<JButton> buttonList = new ArrayList<JButton>(buttonMap.values());
@@ -250,7 +249,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		sourceButtons.setLayout(new GridLayout(rowCount+mod, 2));
 		for(JButton rb: buttonList) {
 			sourceButtons.add(rb);
-			sourceButtons.setOpaque(false);
 			bGroup.add(rb);
 		}
 	}
@@ -265,8 +263,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		final JButton createEmptySessionButton = new JButton();
 		createEmptySessionButton.setText("With Empty Network");
 		createEmptySessionButton.setIcon(NEW_ICON);
-		createEmptySessionButton.setOpaque(true);
-		createEmptySessionButton.setBackground(PANEL_COLOR);
 		createEmptySessionButton.setHorizontalAlignment(SwingConstants.LEFT);
 		createEmptySessionButton.setIconTextGap(20);
 		createEmptySessionButton.setPreferredSize(new Dimension(createEmptySessionButton.getPreferredSize().width, BT_HEIGHT));
@@ -281,8 +277,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		final JButton importFromFileButton = new JButton();
 		importFromFileButton.setText("From Network File...");
 		importFromFileButton.setIcon(OPEN_ICON);
-		importFromFileButton.setOpaque(true);
-		importFromFileButton.setBackground(PANEL_COLOR);
 		importFromFileButton.setHorizontalAlignment(SwingConstants.LEFT);
 		importFromFileButton.setIconTextGap(20);
 		importFromFileButton.setPreferredSize(new Dimension(importFromFileButton.getPreferredSize().width, BT_HEIGHT));
@@ -296,8 +290,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 		JButton dbButton = new JButton("From Network Database...");
 		dbButton.setIcon(DATABASE_ICON);
-		dbButton.setOpaque(true);
-		dbButton.setBackground(PANEL_COLOR);
 		dbButton.setIconTextGap(20);
 		dbButton.setHorizontalAlignment(SwingConstants.LEFT);
 		dbButton.setPreferredSize(new Dimension(dbButton.getPreferredSize().width, BT_HEIGHT));
@@ -316,7 +308,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		});
 		
 		final JPanel buttonPanel = new JPanel();
-		buttonPanel.setOpaque(false);
 		buttonPanel.setLayout(new GridLayout(3, 1));
 		buttonPanel.add(createEmptySessionButton);
 		buttonPanel.add(importFromFileButton);
@@ -327,7 +318,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		orgNetTitle.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
 
 		final JPanel presetPanel = new JPanel();
-		presetPanel.setOpaque(false);
 		presetPanel.setLayout(new BorderLayout());
 		JScrollPane buttonScrollPane = new JScrollPane();
 		buttonScrollPane.setBorder(BorderFactory.createEmptyBorder());

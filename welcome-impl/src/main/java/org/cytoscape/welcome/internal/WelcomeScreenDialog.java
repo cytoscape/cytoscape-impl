@@ -132,7 +132,7 @@ public class WelcomeScreenDialog extends JDialog {
 
 	private void initComponents() {
 		linksPanel = new JPanel();
-		linksPanel.setOpaque(false);
+		linksPanel.setBackground(PANEL_COLOR);
 		
 		about = new JLabel("<html><u>About Cytoscape</u></html>");
 		manual = new JLabel("<html><u>Documentation</u></html>");
@@ -169,8 +169,6 @@ public class WelcomeScreenDialog extends JDialog {
 		}
 		
 		checkBox = new JCheckBox("Don't show again");
-		checkBox.setOpaque(true);
-		checkBox.setBackground(PANEL_COLOR);
 		checkBox.setHorizontalAlignment(SwingConstants.LEFT);
 		checkBox.addActionListener(new ActionListener() {
 			@Override
@@ -181,8 +179,6 @@ public class WelcomeScreenDialog extends JDialog {
 		});
 
 		JButton closeButton = new JButton("Close");
-		closeButton.setOpaque(true);
-		closeButton.setBackground(PANEL_COLOR);
 		closeButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -193,7 +189,6 @@ public class WelcomeScreenDialog extends JDialog {
 		final JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 		bottomPanel.setBorder(new EmptyBorder(2, 10, 2, 10));
-		bottomPanel.setBackground(PANEL_COLOR);
 		bottomPanel.setPreferredSize(new Dimension(900, 30));
 		bottomPanel.add(checkBox);
 		bottomPanel.add(Box.createHorizontalGlue());
@@ -202,11 +197,10 @@ public class WelcomeScreenDialog extends JDialog {
 		mainPanel = new JPanel();
 		mainPanel.setSize(DEF_SIZE);
 		mainPanel.setLayout(new GridLayout(1, 2));
-		mainPanel.setOpaque(false);
+		mainPanel.setBackground(PANEL_COLOR);
 		
 		final JPanel southPanel = new JPanel();
 		southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
-		southPanel.setOpaque(false);
 		southPanel.add(linksPanel);
 		southPanel.add(bottomPanel);
 		
@@ -224,10 +218,6 @@ public class WelcomeScreenDialog extends JDialog {
 		JPanel newSessionPanel = new JPanel();
 		JPanel newsPanel = new JPanel();
 
-		openSessionPanel.setOpaque(false);
-		newSessionPanel.setOpaque(false);
-		newsPanel.setOpaque(false);
-		
 		openSessionPanel.setLayout(new BorderLayout());
 		newSessionPanel.setLayout(new BorderLayout());
 		newsPanel.setLayout(new BorderLayout());
@@ -246,11 +236,9 @@ public class WelcomeScreenDialog extends JDialog {
 		setChildPanel(newsPanel, helpPanel, "Latest News");
 
 		final JPanel leftPanel = new JPanel();
-		leftPanel.setOpaque(false);
 		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
 		
 		final JPanel rightPanel = new JPanel();
-		rightPanel.setOpaque(false);
 		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
 
 		rightPanel.add(openSessionPanel);
@@ -276,8 +264,6 @@ public class WelcomeScreenDialog extends JDialog {
 		
 		panel.add(titlePanel, BorderLayout.NORTH);
 		panel.add(contentPanel, BorderLayout.CENTER);
-		
-		contentPanel.setBackground(PANEL_COLOR);
 	}
 	
 	private final class LabelMouseListener extends MouseAdapter {
