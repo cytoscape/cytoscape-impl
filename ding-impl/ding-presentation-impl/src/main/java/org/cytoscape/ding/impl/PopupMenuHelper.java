@@ -31,6 +31,7 @@ import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
+import org.cytoscape.ding.customgraphics.json.PropertiesJsonDeserializer;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -43,10 +44,13 @@ import org.cytoscape.util.swing.JMenuTracker;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -65,6 +69,8 @@ import static org.cytoscape.work.ServiceProperties.*;
  * on TaskFactory services.
  */
 class PopupMenuHelper {
+	private static final Logger logger = LoggerFactory.getLogger(PopupMenuHelper.class);
+
 	// private double largeValue = Double.MAX_VALUE / 2.0;
 	private double largeValue = 500;  // This allows us to position some system menus at the end
 
@@ -128,8 +134,13 @@ class PopupMenuHelper {
 				
 				for (CyEdgeViewContextMenuFactory edgeCMF: usableCMFs) {
 					// menu.add(edgeCMF.createMenuItem(m_view , ev).getMenuItem());
-					CyMenuItem menuItem = edgeCMF.createMenuItem(m_view, ev);
-					addCyMenuItem(ev, menu, menuItem, tracker, m_view.cyEdgeViewContextMenuFactory.get(edgeCMF));
+					try {
+						CyMenuItem menuItem = edgeCMF.createMenuItem(m_view, ev);
+						addCyMenuItem(ev, menu, menuItem, tracker, m_view.cyEdgeViewContextMenuFactory.get(edgeCMF));
+					}
+					catch (Throwable t) {
+						logger.error("Could not display context menu." , t);
+					}
 				}
 				menu.show(invoker, x, y);
 			}
@@ -187,8 +198,13 @@ class PopupMenuHelper {
 
 				for (CyNodeViewContextMenuFactory nodeCMF: usableCMFs) {
 					// menu.add(nodeVMF.createMenuItem(m_view, nv).getMenuItem());
-					CyMenuItem menuItem = nodeCMF.createMenuItem(m_view, nv);
-					addCyMenuItem(nv, menu, menuItem, tracker, m_view.cyNodeViewContextMenuFactory.get(nodeCMF));
+					try {
+						CyMenuItem menuItem = nodeCMF.createMenuItem(m_view, nv);
+						addCyMenuItem(nv, menu, menuItem, tracker, m_view.cyNodeViewContextMenuFactory.get(nodeCMF));
+					}
+					catch (Throwable t) {
+						logger.error("Could not display context menu." , t);
+					}
 				}
 				menu.show(invoker, x, y);
 			}
@@ -254,8 +270,13 @@ class PopupMenuHelper {
 			}
 			
 			for (CyNetworkViewContextMenuFactory netVMF: usableCMFs) {
-				CyMenuItem menuItem = netVMF.createMenuItem(m_view);
-				addCyMenuItem(m_view, menu, menuItem, tracker, m_view.cyNetworkViewContextMenuFactory.get(netVMF));
+				try {
+					CyMenuItem menuItem = netVMF.createMenuItem(m_view);
+					addCyMenuItem(m_view, menu, menuItem, tracker, m_view.cyNetworkViewContextMenuFactory.get(netVMF));
+				}
+				catch (Throwable t) {
+					logger.error("Could not display context menu." , t);
+				}
 			}
 			
 			// There are more than one menu item, let user make the selection
