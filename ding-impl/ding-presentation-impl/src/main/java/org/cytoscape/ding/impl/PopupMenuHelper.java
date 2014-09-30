@@ -25,13 +25,37 @@ package org.cytoscape.ding.impl;
  */
 
 
+import static org.cytoscape.work.ServiceProperties.APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyMenuItem;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
-import org.cytoscape.ding.customgraphics.json.PropertiesJsonDeserializer;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -47,19 +71,6 @@ import org.cytoscape.work.TaskFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-
-import static org.cytoscape.work.ServiceProperties.*;
-
 
 // TODO Consider generalizing this class so that it can be used by anyone
 // who needs a popup menu based on TaskFactories.
@@ -70,9 +81,6 @@ import static org.cytoscape.work.ServiceProperties.*;
  */
 class PopupMenuHelper {
 	private static final Logger logger = LoggerFactory.getLogger(PopupMenuHelper.class);
-
-	// private double largeValue = Double.MAX_VALUE / 2.0;
-	private double largeValue = 500;  // This allows us to position some system menus at the end
 
 	// provides access to the necessary task factories and managers
 	private DGraphView m_view;
