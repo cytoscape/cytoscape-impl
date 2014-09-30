@@ -71,7 +71,7 @@ import org.cytoscape.graph.render.immed.nodeshape.RectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
@@ -2058,12 +2058,10 @@ public final class GraphGraphics {
 	 * @param yOffset
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
-	 * @param scaleFactor
-	 *            current zoom factor.
 	 */
-	public final void drawCustomGraphicFull(final CyNetworkView netView, final View<? extends CyIdentifiable> view,
+	public final void drawCustomGraphicFull(final CyNetworkView netView, final CyNode node,
 											final Shape nodeShape, final CustomGraphicLayer cg,
-	                                        final float xOffset, final float yOffset, final double scaleFactor) {
+	                                        final float xOffset, final float yOffset) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
@@ -2086,18 +2084,12 @@ public final class GraphGraphics {
 		} else if (cg instanceof Cy2DGraphicLayer) {
 			m_g2d.translate(xOffset, yOffset);
 			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
+			final View<CyNode> view = (netView != null && node != null) ? netView.getNodeView(node) : null;
 			layer.draw(m_g2d, nodeShape, netView, view);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
-			m_g2d.translate(xOffset, yOffset);
-			Rectangle2D b = cg.getBounds2D();
-			Rectangle2D bounds = new Rectangle2D.Double(b.getX(), b.getY(), b.getWidth() * scaleFactor, b.getHeight() * scaleFactor);
+			Rectangle bounds = cg.getBounds2D().getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
-			m_g2d.drawImage(bImg,
-							(int)Math.round(b.getX()),
-							(int)Math.round(b.getY()),
-							(int)Math.round(b.getWidth()),
-							(int)Math.round(b.getHeight()),
-							null);
+			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
 		} else {
 			Rectangle2D bounds = nodeShape.getBounds2D();
 			m_g2d.setPaint(cg.getPaint(bounds));
