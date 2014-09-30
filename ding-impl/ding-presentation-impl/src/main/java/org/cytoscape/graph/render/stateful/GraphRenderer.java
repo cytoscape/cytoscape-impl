@@ -46,7 +46,6 @@ import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 
@@ -676,10 +675,9 @@ public final class GraphRenderer {
 				while (zHits.numRemaining() > 0) {
 					final long node = zHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
-					final View<CyNode> nodeView = netView.getNodeView(cyNode);
 
-					renderNodeHigh(netView, nodeView, grafx, floatBuff1, doubleBuff1, doubleBuff2,
-							nodeDetails, lodBits, scaleFactor);
+					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2,
+							nodeDetails, lodBits);
 
 					// Take care of label rendering.
 					if ((lodBits & LOD_NODE_LABELS) != 0) { // Potential label rendering.
@@ -1065,15 +1063,13 @@ public final class GraphRenderer {
 	 * Render node view with details, including custom graphics.
 	 */
 	private static final void renderNodeHigh(final CyNetworkView netView,
-											 final View<CyNode> nodeView,
 											 final GraphGraphics grafx,
+											 final CyNode cyNode,
 											 final float[] floatBuff1,
 											 final double[] doubleBuff1,
 											 final double[] doubleBuff2,
 											 final NodeDetails nodeDetails,
-											 final int lodBits,
-											 final double scaleFactor) {
-		final CyNode cyNode = nodeView.getModel();
+											 final int lodBits) {
 		Shape nodeShape = null;
 
 		if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
@@ -1136,10 +1132,9 @@ public final class GraphRenderer {
 					doubleBuff1[2] = floatBuff1[2];
 					doubleBuff1[3] = floatBuff1[3];
 					lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
-					grafx.drawCustomGraphicFull(netView, nodeView, nodeShape, cg,
+					grafx.drawCustomGraphicFull(netView, cyNode, nodeShape, cg,
 												(float) (doubleBuff2[0] + offsetVectorX), 
-					                            (float) (doubleBuff2[1] + offsetVectorY),
-					                            scaleFactor);
+					                            (float) (doubleBuff2[1] + offsetVectorY));
 					graphicInx++;
 				}
 			}
