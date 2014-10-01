@@ -28,26 +28,20 @@ import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
-
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-
-import org.cytoscape.task.internal.utils.DataUtils;
 
 public class CollapseGroupTask extends AbstractGroupTask {
 	private List<CyGroup> groups;
 	private boolean collapse;
 	private CyNetworkViewManager viewMgr;
+	private VisualMappingManager styleManager;
 
 	@Tunable (description="Network", context="nogui")
 	public CyNetwork network;
@@ -56,19 +50,21 @@ public class CollapseGroupTask extends AbstractGroupTask {
 	public String groupList;
 
 	public CollapseGroupTask(CyNetwork net, List<CyGroup> groups, CyNetworkViewManager viewManager,
-	                         CyGroupManager manager, boolean collapse) {
+							 VisualMappingManager styleManager, CyGroupManager manager, boolean collapse) {
 		this.net = net;
 		this.groupMgr = manager;
 		this.viewMgr = viewManager;
+		this.styleManager = styleManager;
 		this.groups = groups;
 		this.collapse = collapse;
 	}
 
 	public CollapseGroupTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager, 
-	                         CyGroupManager manager, boolean collapse) {
+							 VisualMappingManager styleManager, CyGroupManager manager, boolean collapse) {
 		this.net = appMgr.getCurrentNetwork();
 		this.groupMgr = manager;
 		this.viewMgr = viewManager;
+		this.styleManager = styleManager;
 		this.collapse = collapse;
 	}
 
@@ -107,6 +103,8 @@ public class CollapseGroupTask extends AbstractGroupTask {
 			tm.showMessage(TaskMonitor.Level.INFO, "Expanded "+collapsed+" groups");
 
 		for (CyNetworkView view: viewMgr.getNetworkViews(net)) {
+			VisualStyle style = styleManager.getVisualStyle(view);
+			style.apply(view);
 			view.updateView();
 		}
 		tm.setProgress(1.0d);

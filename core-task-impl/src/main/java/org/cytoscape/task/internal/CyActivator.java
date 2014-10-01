@@ -1211,7 +1211,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		GroupNodeContextTaskFactoryImpl collapseGroupTaskFactory = 
 			new GroupNodeContextTaskFactoryImpl(cyApplicationManagerServiceRef, 
-			                                    cyNetworkViewManagerServiceRef, cyGroupManager, true);
+			                                    cyNetworkViewManagerServiceRef, visualMappingManagerServiceRef,
+			                                    cyGroupManager, true);
 		Properties collapseGroupTaskFactoryProps = new Properties();
 		collapseGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
 		collapseGroupTaskFactoryProps.setProperty(TITLE,"Collapse Group(s)");
@@ -1228,7 +1229,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		GroupNodeContextTaskFactoryImpl expandGroupTaskFactory = 
 			new GroupNodeContextTaskFactoryImpl(cyApplicationManagerServiceRef, 
-			                                    cyNetworkViewManagerServiceRef, cyGroupManager, false);
+			                                    cyNetworkViewManagerServiceRef, visualMappingManagerServiceRef,
+			                                    cyGroupManager, false);
 		Properties expandGroupTaskFactoryProps = new Properties();
 		expandGroupTaskFactoryProps.setProperty(PREFERRED_MENU,NODE_GROUP_MENU);
 		expandGroupTaskFactoryProps.setProperty(TITLE,"Expand Group(s)");
