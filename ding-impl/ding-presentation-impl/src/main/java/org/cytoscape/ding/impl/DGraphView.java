@@ -1788,7 +1788,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		try {
 			// System.out.println("Calling renderGraph to draw snapshot: bgPaint="+bgPaint);
 			GraphRenderer.renderGraph(this, dummySpacialFactory.createSpacialIndex2D(), lod, m_nodeDetails,
-			                          m_edgeDetails, m_hash, new GraphGraphics(img, false, false),
+			                          m_edgeDetails, new LongHash(), new GraphGraphics(img, false, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor, haveZOrder);
 		} catch (Exception e) { e.printStackTrace(); }
 		// }
@@ -1821,13 +1821,18 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	int renderSubgraph(GraphGraphics graphics, final GraphLOD lod, 
 	                   Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash,
-	                   List<CyNode> nodes, List<CyEdge> edges) {
+	                   List<CyNode> nodeList, List<CyEdge> edgeList) {
 
 		// If we're updateing more then 1/4 of the nodes or edges, just redraw the entire network to avoid
 		// the overhead of creating the SpacialIndex2D and CySubNetwork
 		if (!largeModel ||
-				((nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4))
+				((nodeList.size() + edgeList.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4))
 			return renderGraph(graphics, lod, bgColor, xCenter, yCenter, scale, hash);
+
+		// Make a copy of the nodes and edges arrays to avoid a conflict with selection events
+		// The assumption here is that these arrays are relatively small
+		List<CyNode> nodes = new ArrayList<CyNode>(nodeList);
+		List<CyEdge> edges = new ArrayList<CyEdge>(edgeList);
 
 		// Make sure the graphics is initialized
 		if (!graphics.isInitialized())
@@ -1838,9 +1843,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (bg != null)
 			bg = new Color(bg.getRed(), bg.getBlue(), bg.getGreen(), 0);
 
+		// Create our private spacial index.
 		SpacialIndex2D sub_spacial = spacialFactory.createSpacialIndex2D();
-		// System.out.println("DGraphView.renderSubgraph: sub_spacial = "+sub_spacial);
+
+		// And our private subnetwork
 		CySubNetwork net = new MinimalNetwork(SUIDFactory.getNextSUID());
+
 		for (CyEdge edge: edges) {
 			nodes.add(edge.getTarget());
 			nodes.add(edge.getSource());
