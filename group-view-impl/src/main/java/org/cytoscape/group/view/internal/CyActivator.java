@@ -24,8 +24,6 @@ package org.cytoscape.group.view.internal;
  * #L%
  */
 
-import org.cytoscape.event.CyEventHelper;
-
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.group.CyGroupManager;
@@ -52,7 +50,6 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		CyGroupManager cyGroupManager = getService(bc,CyGroupManager.class);
 		CyNetworkViewManager cyNetworkViewManager = getService(bc,CyNetworkViewManager.class);
 		CyNetworkViewFactory cyNetworkViewFactory = getService(bc,CyNetworkViewFactory.class);
@@ -70,7 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Listen for double-click
 		GroupViewDoubleClickListener gvsListener =
-			new GroupViewDoubleClickListener(cyGroupManager, groupSettings);
+			new GroupViewDoubleClickListener(cyGroupManager, groupSettings, cyNetworkViewManager, styleManager);
 
 		Properties doubleClickProperties = new Properties();
 		doubleClickProperties.setProperty(PREFERRED_ACTION, "OPEN");

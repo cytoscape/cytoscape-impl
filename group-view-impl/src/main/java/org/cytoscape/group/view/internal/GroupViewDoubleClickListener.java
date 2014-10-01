@@ -39,7 +39,10 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 
 /**
  * Handle selection
@@ -48,15 +51,21 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 {
 	CyGroupManager cyGroupManager;
 	CyGroupSettingsImpl cyGroupSettings;
+	CyNetworkViewManager viewManager;
+	VisualMappingManager styleManager;
 
 	/**
 	 * 
 	 * 
 	 */
 	public GroupViewDoubleClickListener(final CyGroupManager groupManager, 
-	                                    final CyGroupSettingsImpl groupSettings) {
+	                                    final CyGroupSettingsImpl groupSettings,
+	                                    final CyNetworkViewManager viewManager,
+	                                    final VisualMappingManager styleManager) {
 		this.cyGroupManager = groupManager;
 		this.cyGroupSettings = groupSettings;
+		this.viewManager = viewManager;
+		this.styleManager = styleManager;
 	}
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
@@ -184,6 +193,12 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 					groups.get(0).collapse(network);
 				}
 			}
+			
+			for (CyNetworkView view: viewManager.getNetworkViews(netView.getModel())) {
+				VisualStyle style = styleManager.getVisualStyle(view);
+				style.apply(view);
+			}
+			
 			tm.setProgress(1.0d);
 		}
 	}
