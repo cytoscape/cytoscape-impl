@@ -1790,7 +1790,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			GraphRenderer.renderGraph(this, dummySpacialFactory.createSpacialIndex2D(), lod, m_nodeDetails,
 			                          m_edgeDetails, new LongHash(), new GraphGraphics(img, false, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor, haveZOrder);
-		} catch (Exception e) { e.printStackTrace(); }
+		} catch (Exception e) { 
+			// We probably had a node or edge view removed out from underneath us.  Just quietly return, but
+			// set content changed so we redraw again
+			m_contentChanged = true;
+		}
 		// }
 
 		// Finally, draw the foreground

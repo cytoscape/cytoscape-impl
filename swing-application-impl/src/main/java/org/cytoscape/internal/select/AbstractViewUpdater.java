@@ -26,6 +26,7 @@ package org.cytoscape.internal.select;
 
 import java.util.Map;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
@@ -78,9 +79,9 @@ public abstract class AbstractViewUpdater<S> implements RowsSetListener {
 		CyTable cyTable = e.getSource();
 
 		for (CyNetworkView networkView : tracker.getAffectedNetworkViews(cyTable)) {
-			Map<CyRow, View<?>> rowViewMap = tracker.getRowViewMap(networkView);
+			Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = tracker.getRowViewMap(networkView);
 			for (RowSetRecord record : e.getColumnRecords(columnName)) {
-				View<?> v = rowViewMap.get(record.getRow());
+				View<? extends CyIdentifiable> v = rowViewMap.get(record.getRow());
 	
 				if (v != null)
 					v.setVisualProperty(vp, (S) record.getValue());

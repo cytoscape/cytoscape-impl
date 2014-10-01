@@ -35,6 +35,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.internal.view.NetworkViewManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -113,7 +114,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			networkView = views.iterator().next();
 
 		final VisualStyle vs = vmm.getVisualStyle(networkView);
-		Map<CyRow, View<?>> rowViewMap = tracker.getRowViewMap(networkView);
+		Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = tracker.getRowViewMap(networkView);
 		
 		for (final RowSetRecord record : e.getPayloadCollection()) {
 			final CyRow row = record.getRow();
@@ -125,7 +126,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			
 			final VirtualColumnInfo virtualColInfo = column.getVirtualColumnInfo();
 			final boolean virtual = virtualColInfo.isVirtual();
-			final View<?> v = rowViewMap.get(row);
+			final View<? extends CyIdentifiable> v = rowViewMap.get(row);
 
 			if (v == null)
 				continue;
@@ -133,13 +134,17 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			if (v.getModel() instanceof CyNode) {
 				final CyNode node = (CyNode) v.getModel();
 				
-				if (network.containsNode(node) && isStyleAffected(vs, columnName))
-					refreshView = true;
+				if (network.containsNode(node) && isStyleAffected(vs, columnName)) {
+					vs.apply(row, v);
+					refreshView = false;
+				}
 			} else if (v.getModel() instanceof CyEdge) {
 				final CyEdge edge = (CyEdge) v.getModel();
 				
-				if (network.containsEdge(edge) && isStyleAffected(vs, columnName))
-					refreshView = true;
+				if (network.containsEdge(edge) && isStyleAffected(vs, columnName)) {
+					vs.apply(row, v);
+					refreshView = false;
+				}
 			}
 
 			// If virtual, it may be used in other networks.

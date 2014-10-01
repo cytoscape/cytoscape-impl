@@ -334,7 +334,11 @@ public final class MinLongHeap implements java.io.Serializable {
 					}
 
 					public long nextLong() {
-						swap(heap, 1, m_size);
+						try {
+							swap(heap, 1, m_size);
+						} catch (Exception e) {
+							return -1;
+						}
 						percolateDown(heap, 1, m_size - 1);
 
 						return heap[m_size--];

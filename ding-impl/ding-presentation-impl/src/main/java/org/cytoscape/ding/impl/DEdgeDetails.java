@@ -1124,7 +1124,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 			// Count the number of other edges.
 			while (true) {
-				if (edge.getSUID() == (otherEdge = otherEdges.nextLong()))
+				if (edge.getSUID() == (otherEdge = otherEdges.nextLong()) || otherEdge == -1)
 					break;
 
 				if (((EdgeAnchors) dGraphView.getDEdgeView(otherEdge)).numAnchors() == 0)

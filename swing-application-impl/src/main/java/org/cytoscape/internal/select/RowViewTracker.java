@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -59,11 +60,11 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	AboutToRemoveNodeViewsListener, AboutToRemoveEdgeViewsListener,
 	NetworkViewAboutToBeDestroyedListener {
 
-	private final Map<CyNetworkView, Map<CyRow,View<?>>> rowViewMapsByNetworkView;
+	private final Map<CyNetworkView, Map<CyRow,View<? extends CyIdentifiable>>> rowViewMapsByNetworkView;
 	private final Map<CyTable, Set<CyNetworkView>> networkViewsByTable;
 
 	public RowViewTracker() {
-		rowViewMapsByNetworkView = new IdentityHashMap<CyNetworkView, Map<CyRow,View<?>>>();
+		rowViewMapsByNetworkView = new IdentityHashMap<CyNetworkView, Map<CyRow,View<? extends CyIdentifiable>>>();
 		networkViewsByTable = new IdentityHashMap<CyTable, Set<CyNetworkView>>();
 	}
 
@@ -72,7 +73,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 			public void run() {
 				final CyNetworkView view = e.getNetworkView();
 				final CyNetwork net = view.getModel(); 
-				Map<CyRow, View<?>> rowViewMap = getRowViewMapInternal(view);
+				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
 
 				for ( View<CyNode> nv : view.getNodeViews() )
 					rowViewMap.put( net.getRow(nv.getModel()), nv);
@@ -128,7 +129,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 			public void run() {
 				final CyNetworkView view = e.getSource();
 				final CyNetwork net = view.getModel(); 
-				Map<CyRow, View<?>> rowViewMap = getRowViewMapInternal(view);
+				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
 				
 				for ( View<CyNode> v : e.getNodeViews()) 
 					if (net.containsNode(v.getModel())) 
@@ -142,7 +143,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 			public void run() {
 				final CyNetworkView view = e.getSource();
 				final CyNetwork net = view.getModel(); 
-				Map<CyRow, View<?>> rowViewMap = getRowViewMapInternal(view);
+				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
 
 				for ( View<CyEdge> v : e.getEdgeViews()) 
 					if (net.containsEdge(v.getModel())) 
@@ -154,12 +155,12 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final AboutToRemoveNodeViewsEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				Map<CyRow, View<?>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
+				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
 				if (rowViewMap == null) {
 					return;
 				}
 				
-				Collection<View<?>> values = rowViewMap.values();
+				Collection<View<? extends CyIdentifiable>> values = rowViewMap.values();
 				for ( View<CyNode> v : e.getPayloadCollection()) {
 					values.remove(v);
 				}
@@ -170,12 +171,12 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final AboutToRemoveEdgeViewsEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				Map<CyRow, View<?>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
+				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
 				if (rowViewMap == null) {
 					return;
 				}
 				
-				Collection<View<?>> values = rowViewMap.values();
+				Collection<View<? extends CyIdentifiable>> values = rowViewMap.values();
 				for ( View<CyEdge> v : e.getPayloadCollection()) 
 					values.remove(v);
 			}
@@ -193,17 +194,17 @@ public class RowViewTracker implements NetworkViewAddedListener,
 		});
 	}
 	
-	private Map<CyRow, View<?>> getRowViewMapInternal(CyNetworkView view) {
-		Map<CyRow, View<?>> rowViewMap = rowViewMapsByNetworkView.get(view);
+	private Map<CyRow, View<? extends CyIdentifiable>> getRowViewMapInternal(CyNetworkView view) {
+		Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(view);
 		if (rowViewMap == null) {
-			rowViewMap = new IdentityHashMap<CyRow, View<?>>();
+			rowViewMap = new IdentityHashMap<CyRow, View<? extends CyIdentifiable>>();
 			rowViewMapsByNetworkView.put(view, rowViewMap);
 		}
 		return rowViewMap;
 	}
 
-	public Map<CyRow,View<?>> getRowViewMap(CyNetworkView networkView) {
-		Map<CyRow, View<?>> map = rowViewMapsByNetworkView.get(networkView);
+	public Map<CyRow,View<? extends CyIdentifiable>> getRowViewMap(CyNetworkView networkView) {
+		Map<CyRow, View<? extends CyIdentifiable>> map = rowViewMapsByNetworkView.get(networkView);
 		if (map == null) {
 			map = Collections.emptyMap();
 		}

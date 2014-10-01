@@ -1249,8 +1249,9 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 			final Node n = (Node) o;
 			int i = -1;
 
+			int max = n.objKeys.length-1;
 			while (n.objKeys[++i] != objKey)
-				;
+				if (i >= max) return false;
 
 			extentsArr[offset] = n.xMins[i];
 			extentsArr[offset + 1] = n.yMins[i];
