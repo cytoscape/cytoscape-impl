@@ -557,6 +557,11 @@ class CyGroupImpl implements CyGroup {
 		// Now collapse ourselves
 		cyEventHelper.fireEvent(new GroupAboutToCollapseEvent(CyGroupImpl.this, net, true));
 
+		// Since we're going to hide our nodes and edges, we probably shouldn't
+		// force these to redraw while we're collapsing.  It causes a significant
+		// performance hit if we do.
+		cyEventHelper.silenceEventSource(net.getDefaultNodeTable());
+		cyEventHelper.silenceEventSource(net.getDefaultEdgeTable());
 		synchronized (lock) {
 			// Deselect all of the nodes
 			for (CyNode node: getNodeList()) {
@@ -578,7 +583,7 @@ class CyGroupImpl implements CyGroup {
 		}
 		
 		// Inform the views that we've deselected things
-		cyEventHelper.flushPayloadEvents();
+		// cyEventHelper.flushPayloadEvents();
 
 		Set<CyGroup> partnersSeen = new HashSet<CyGroup>();
 		List<CyNode> nodes;
@@ -628,6 +633,8 @@ class CyGroupImpl implements CyGroup {
 					externalEdgeProcessed.add(edge);
 				}
 			}
+			cyEventHelper.unsilenceEventSource(net.getDefaultNodeTable());
+			cyEventHelper.unsilenceEventSource(net.getDefaultEdgeTable());
 
 			// Only collapse nodes that are actually in our
 			// network.  This checks for nodes that are in
@@ -765,11 +772,12 @@ class CyGroupImpl implements CyGroup {
 		}
 		
 		// Make sure the group node isn't selected
-		if (net.containsNode(groupNode))
+		if (net.containsNode(groupNode)) {
+			cyEventHelper.silenceEventSource(net.getDefaultNodeTable());
 			net.getRow(groupNode).set(CyNetwork.SELECTED, Boolean.FALSE);
+			cyEventHelper.unsilenceEventSource(net.getDefaultNodeTable());
+		}
 		
-		cyEventHelper.flushPayloadEvents();
-
 		// Expand it.
 
 		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
