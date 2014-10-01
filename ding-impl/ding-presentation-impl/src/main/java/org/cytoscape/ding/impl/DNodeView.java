@@ -393,7 +393,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public double getWidth() {
-		if (!isVisible)
+		if (!isVisible || m_xMax == Float.MAX_VALUE)
 			return -1.0d;
 
 		return (double)(m_xMax - m_xMin);
@@ -449,7 +449,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public double getHeight() {
-		if (!isVisible)
+		if (!isVisible || m_yMax == Float.MAX_VALUE)
 			return -1.0d;
 		else
 			return (double)(m_yMax - m_yMin);
@@ -1014,8 +1014,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 				final Boolean netImgVisible = getVisualProperty(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
 
-				if (!Boolean.TRUE.equals(netImgVisible))
+				if (!Boolean.TRUE.equals(netImgVisible)) {
 					return null;
+				}
 
 				final double IMAGE_WIDTH = getWidth() * NESTED_IMAGE_SCALE_FACTOR;
 				final double IMAGE_HEIGHT = getHeight() * NESTED_IMAGE_SCALE_FACTOR;
@@ -1036,7 +1037,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 					final double scaleFactor = graphView.getGraphLOD().getNestedNetworkImageScaleFactor();
 					return nestedNetworkView.getSnapshot(IMAGE_WIDTH * scaleFactor, IMAGE_HEIGHT * scaleFactor);
 				} else {
-					if (DEFAULT_NESTED_NETWORK_IMAGE == null)
+					if (DEFAULT_NESTED_NETWORK_IMAGE == null || !isVisible || getWidth() == -1 || getHeight() == -1)
 						return null;
 
 					final Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH,
