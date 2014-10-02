@@ -37,9 +37,7 @@ import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.task.edit.CollapseGroupTaskFactory;
 import org.cytoscape.task.edit.ExpandGroupTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -48,25 +46,20 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
                                                         TaskFactory {
 	
 	private CyApplicationManager appMgr;
-	private CyNetworkViewManager viewMgr;
-	private VisualMappingManager styleManager;
 	private CyGroupManager mgr;
 	private boolean collapse;
 
-	public GroupNodeContextTaskFactoryImpl(CyApplicationManager appMgr, CyNetworkViewManager viewMgr,
-										   VisualMappingManager styleManager, CyGroupManager mgr, boolean collapse) {
+	public GroupNodeContextTaskFactoryImpl(CyApplicationManager appMgr, CyGroupManager mgr, boolean collapse) {
 		super();
 		this.mgr = mgr;
 		this.appMgr = appMgr;
-		this.viewMgr = viewMgr;
-		this.styleManager = styleManager;
 		this.collapse = collapse;
 	}
 
 	public boolean isReady() {return true;}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CollapseGroupTask(appMgr, viewMgr, styleManager, mgr, collapse));
+		return new TaskIterator(new CollapseGroupTask(appMgr, mgr, collapse));
 	}
 
 	@Override
@@ -104,7 +97,7 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 			}
 		}
 
-		return new TaskIterator(new CollapseGroupTask(netView.getModel(), groups, viewMgr, styleManager, mgr, collapse));
+		return new TaskIterator(new CollapseGroupTask(netView.getModel(), groups, mgr, collapse));
 	}
 
 	private CyGroup getExpandedGroupForNode(CyNode node, CyNetworkView netView) {

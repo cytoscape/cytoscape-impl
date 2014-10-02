@@ -194,12 +194,6 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 				}
 			}
 			
-			for (CyNetworkView view: viewManager.getNetworkViews(netView.getModel())) {
-				VisualStyle style = styleManager.getVisualStyle(view);
-				style.apply(view);
-				view.updateView();
-			}
-			
 			tm.setProgress(1.0d);
 		}
 	}

@@ -27,6 +27,7 @@ package org.cytoscape.group.view.internal;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.cytoscape.group.CyGroup;
@@ -36,8 +37,9 @@ import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedEvent;
 import org.cytoscape.group.events.GroupCollapsedListener;
-
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyEdge.Type;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -45,7 +47,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -54,7 +55,6 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,7 +149,6 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			return;
 		
 		CyRootNetwork rootNetwork = group.getRootNetwork();
-		VisualStyle viewStyle = cyStyleManager.getVisualStyle(view);
 
 		if (e.collapsed()) {
 			// Get the location to move the group node to
@@ -166,9 +165,6 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				cyNetworkViewManager.addNetworkView(nnView);
 				// Move the nodes around
 				moveNodes(group, nnView, d);
-//				// Apply our visual style
-//				viewStyle.apply(nnView);
-//				nnView.updateView();
 
 				// Allow the nested network image to be displayed
 				nView.clearValueLock(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
@@ -182,8 +178,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			if (opacity != 100.0)
 				nView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, (int)(opacity*255.0/100.0));
 
-			viewStyle.apply(network.getRow(nView.getModel()), nView);
-
+			// Apply visual property to added graph elements
+			applyStyle(Collections.singleton(nView.getModel()), views);
+			applyStyle(network.getAdjacentEdgeList(group.getGroupNode(), Type.ANY), views);
 		} else {
 			CyNode groupNode = group.getGroupNode();
 
@@ -202,15 +199,15 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				for (CyEdge edge: groupNodeEdges)
 					subnet.addEdge(edge);
 
-//				view.updateView();
-
 				// Now, call ourselves as if we had been collapsed
 				handleEvent(new GroupCollapsedEvent(group, network, true));
 				return;
 			}
 
+			final List<CyNode> nodeList = group.getNodeList();
+			
 			// TODO: turn off stupid nested network thing
-			for (CyNode node: group.getNodeList()) {
+			for (CyNode node: nodeList) {
 				if (!network.containsNode(node)) continue;
 				View<CyNode> nView = view.getNodeView(node);
 				if (node.getNetworkPointer() != null && cyGroupManager.isGroup(node, network)) {
@@ -218,14 +215,40 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 						nView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, Boolean.FALSE);
 					}
 				}
-				viewStyle.apply(network.getRow(node), nView);
 			}
+			
+			// Apply visual property to added graph elements
+			applyStyle(nodeList, views);
+			applyStyle(group.getInternalEdgeList(), views);
+			applyStyle(group.getExternalEdgeList(), views);
 		}
 		
-//		viewStyle.apply(view);
 		view.updateView();
 	}
-
+	
+	private void applyStyle(final Collection<? extends CyIdentifiable> elements,
+			final Collection<CyNetworkView> networkViews) {
+		if (elements == null || networkViews == null)
+			return;
+		
+		for (CyNetworkView netView : networkViews) {
+			final CyNetwork net = netView.getModel();
+			final VisualStyle style = cyStyleManager.getVisualStyle(netView);
+			
+			for (CyIdentifiable entry : elements) {
+				View<? extends CyIdentifiable> view = null;
+				
+				if (entry instanceof CyNode)
+					view = netView.getNodeView((CyNode)entry);
+				else if (entry instanceof CyEdge)
+					view = netView.getEdgeView((CyEdge)entry);
+				
+				if (view != null)
+					style.apply(net.getRow(entry), view);
+			}
+		}
+	}
+	
 	private Dimension calculateCenter(CyNetworkView view, List<CyNode> nodeList) {
 		double xCenter = 0.0d;
 		double yCenter = 0.0d;
