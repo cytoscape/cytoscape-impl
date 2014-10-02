@@ -1004,6 +1004,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
+	public void setNestedNetworkImgVisible(boolean visible) {
+		synchronized (graphView.m_lock) {
+			graphView.m_nodeDetails.overrideNestedNetworkImgVisible(model, visible);
+			graphView.m_contentChanged = true;
+		}
+	}
+	
 	TexturePaint getNestedNetworkTexturePaint() {
 		synchronized (graphView.m_lock) {
 			++nestedNetworkPaintingDepth;
@@ -1012,7 +1019,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 				if (nestedNetworkPaintingDepth > 1 || getModel().getNetworkPointer() == null || !nestedNetworkVisible)
 					return null;
 
-				final Boolean netImgVisible = getVisualProperty(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+				final Boolean netImgVisible = graphView.m_nodeDetails.getNestedNetworkImgVisible(model);
 
 				if (!Boolean.TRUE.equals(netImgVisible)) {
 					return null;
@@ -1214,6 +1221,8 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setFont(newFont);
 		} else if (vp == DVisualLexicon.NODE_LABEL_POSITION) {
 			this.setLabelPosition((ObjectPosition) value);
+		} else if (vp == BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE) {
+			setNestedNetworkImgVisible(Boolean.TRUE.equals(value));
 		} else if (vp instanceof CustomGraphicsVisualProperty) {
 			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphicLayer>) value);
 		} else if (vp instanceof ObjectPositionVisualProperty) {

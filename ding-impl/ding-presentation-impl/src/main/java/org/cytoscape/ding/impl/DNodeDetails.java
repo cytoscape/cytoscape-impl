@@ -48,6 +48,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
@@ -89,6 +90,7 @@ class DNodeDetails extends NodeDetails {
 	Map<CyNode, Integer> m_nodeBorderTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 	Map<CyNode, Integer> m_nodeLabelTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 	Map<CyNode, Double> m_nodeZ = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
+	Map<CyNode, Boolean> m_nestedNetworkImgVisible = new ConcurrentHashMap<CyNode, Boolean>(16, 0.75f, 2);
 
 	private final Set<CyNode> selected = new HashSet<CyNode>();
 	
@@ -153,6 +155,7 @@ class DNodeDetails extends NodeDetails {
 		this.m_nodeBorderTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		this.m_nodeLabelTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		m_nodeZ = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
+		m_nestedNetworkImgVisible = new ConcurrentHashMap<CyNode, Boolean>(16, 0.75f, 2);
 
 		// Clear all Custom Graphics
 		for (final View<CyNode> nv : dGraphView.getNodeViews())
@@ -196,6 +199,7 @@ class DNodeDetails extends NodeDetails {
 		m_nodeBorderTansparencies.remove(nodeIdx);
 		m_nodeLabelTansparencies.remove(nodeIdx);
 		m_nodeZ.remove(nodeIdx);
+		m_nestedNetworkImgVisible.remove(nodeIdx);
 	}
 
 	@Override
@@ -1013,6 +1017,29 @@ class DNodeDetails extends NodeDetails {
 			m_nodeBorderTansparencies.put(node, transparency);
 			isCleared = false;
 		}
+	}
+	
+	void setNestedNetworkImgVisibleDefault(boolean visible) {
+		defaultValues.put(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, visible);
+	}
+	
+	void overrideNestedNetworkImgVisible(final CyNode node, final boolean visible) {
+		m_nestedNetworkImgVisible.put(node, visible);
+		isCleared = false;
+	}
+	
+	Boolean getNestedNetworkImgVisible(final CyNode node) {
+		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
+		
+		if (dnv.isValueLocked(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE))
+			return dnv.getVisualProperty(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+		
+		Boolean visible = m_nestedNetworkImgVisible.get(node);
+		
+		if (visible != null)
+			return visible;
+		
+		return getDefaultValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
 	}
 
 	public Double getNodeDepth(final CyNode node) {
