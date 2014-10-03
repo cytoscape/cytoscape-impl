@@ -37,6 +37,7 @@ import java.util.HashSet;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.group.internal.CyGroupFactoryImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.LockedVisualPropertiesManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -60,7 +61,9 @@ public class TestCyGroupFactory {
 		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
 		
-		CyGroupFactoryImpl groupFactory = new CyGroupFactoryImpl(deh, mgr, serviceRegistrar);
+		final LockedVisualPropertiesManager lvpMgr = new LockedVisualPropertiesManager(serviceRegistrar);
+		
+		CyGroupFactoryImpl groupFactory = new CyGroupFactoryImpl(deh, mgr, lvpMgr, serviceRegistrar);
 		
 		return groupFactory; 
 	}

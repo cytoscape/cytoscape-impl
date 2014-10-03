@@ -43,12 +43,19 @@ public class CyActivator extends AbstractCyActivator {
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		
+		LockedVisualPropertiesManager lockedVisualPropertiesManager =
+				new LockedVisualPropertiesManager(cyServiceRegistrarServiceRef);
+		
 		CyGroupManagerImpl cyGroupManager = new CyGroupManagerImpl(cyEventHelperServiceRef);
 		CyGroupFactoryImpl cyGroupFactory = new CyGroupFactoryImpl(cyEventHelperServiceRef, 
 		                                                           cyGroupManager, 
+		                                                           lockedVisualPropertiesManager,
 		                                                           cyServiceRegistrarServiceRef);
 		registerService(bc,cyGroupManager,CyGroupManager.class, new Properties());
 		registerService(bc,cyGroupFactory,CyGroupFactory.class, new Properties());
+		
+		GroupIO groupIO = new GroupIO(cyGroupManager, lockedVisualPropertiesManager, cyServiceRegistrarServiceRef);
+		registerAllServices(bc, groupIO, new Properties());
 
 /*
 		// Move this to a separate module

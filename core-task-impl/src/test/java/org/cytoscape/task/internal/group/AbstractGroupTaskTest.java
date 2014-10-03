@@ -7,6 +7,7 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.internal.CyGroupFactoryImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.LockedVisualPropertiesManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
@@ -57,8 +58,10 @@ public class AbstractGroupTaskTest {
 		when(registrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
 		when(registrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
 		
+		final LockedVisualPropertiesManager lvpCache = new LockedVisualPropertiesManager(registrar);
+		
 		groupManager = new CyGroupManagerImpl(eventHelper);
-		groupFactory = new CyGroupFactoryImpl(eventHelper, groupManager, registrar);
+		groupFactory = new CyGroupFactoryImpl(eventHelper, groupManager, lvpCache, registrar);
 		
 		group1 = groupFactory.createGroup(network, true);
 		rootNetwork.getRow(group1.getGroupNode(), CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, "group1");

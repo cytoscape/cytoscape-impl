@@ -27,6 +27,7 @@ package org.cytoscape.group;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.internal.CyGroupFactoryImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.LockedVisualPropertiesManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -47,8 +48,10 @@ public class GroupTestSupport {
 		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
 		
+		final LockedVisualPropertiesManager lvpMgr = new LockedVisualPropertiesManager(serviceRegistrar);
+		
 		groupManager = new CyGroupManagerImpl(help);
-		groupFactory = new CyGroupFactoryImpl(help, groupManager, serviceRegistrar);
+		groupFactory = new CyGroupFactoryImpl(help, groupManager, lvpMgr, serviceRegistrar);
 	}
 
 	public CyGroupFactory getGroupFactory() {
