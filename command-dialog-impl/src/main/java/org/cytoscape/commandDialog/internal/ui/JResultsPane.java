@@ -33,12 +33,11 @@
 package org.cytoscape.commandDialog.internal.ui;
 
 import java.awt.Color;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
@@ -55,7 +54,7 @@ import javax.swing.text.Element;
 
 import org.cytoscape.commandDialog.internal.handlers.MessageHandler;
 
-public class JResultsPane extends JTextPane implements MessageHandler, AdjustmentListener {
+public class JResultsPane extends JTextPane implements MessageHandler {
 	// private SimpleAttributeSet commandAttributes;
 	// private SimpleAttributeSet messageAttributes;
 	// private SimpleAttributeSet resultAttributes;
@@ -70,6 +69,7 @@ public class JResultsPane extends JTextPane implements MessageHandler, Adjustmen
 	private Element rootElement;
 	private final JDialog parentDialog;
 	private final JPanel dataPanel;
+	private JScrollPane scrollPane = null;
 	private static String BLUE = "color:blue";
 	private static String RED = "color:red";
 	private static String GREEN = "color:green";
@@ -125,6 +125,10 @@ public class JResultsPane extends JTextPane implements MessageHandler, Adjustmen
 		updateString(messageAttributes, s);
 	}
 
+	public void setScrollPane(JScrollPane scrollPane) {
+		this.scrollPane = scrollPane;
+	}
+
 	public void clear() {
 		currentDocument = new HTMLDocument();
 		setStyledDocument(currentDocument);
@@ -155,9 +159,7 @@ public class JResultsPane extends JTextPane implements MessageHandler, Adjustmen
 			dataPanel.paintImmediately(dataPanel.getBounds());
 		} catch (Exception badLocationException) {
 		}
-	}
-
-	public void adjustmentValueChanged(AdjustmentEvent e) {
-		((JScrollBar)e.getAdjustable()).setValue(currentDocument.getLength());
+		JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+		verticalScrollBar.setValue(verticalScrollBar.getMaximum());
 	}
 }
