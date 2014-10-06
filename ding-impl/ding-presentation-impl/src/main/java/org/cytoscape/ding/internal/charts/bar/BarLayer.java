@@ -13,7 +13,7 @@ import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.DoubleRange;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
-import org.cytoscape.ding.internal.util.MathUtil;
+import org.cytoscape.ding.internal.charts.util.ColorScale;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
@@ -232,19 +232,11 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			final String rowKey = (String) dataset.getRowKey(row);
 			final String colKey = (String) dataset.getColumnKey(column);
 			final double value = dataset.getValue(rowKey, colKey).doubleValue();
-			final Color color = value < 0.0 ? downColor : upColor;
 			
-			if (type == BarChartType.HEAT_STRIPS) {
-				// Linearly interpolate the value
-				final double f = value < 0.0 ?
-						MathUtil.invLinearInterp(value, range.getMin(), 0) : MathUtil.invLinearInterp(value, 0, range.getMax());
-				final double t = value < 0.0 ?
-						MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0);
-				
-				return org.jdesktop.swingx.color.ColorUtil.interpolate(zeroColor, color, (float)t);
-			}
+			if (type == BarChartType.HEAT_STRIPS)
+				return ColorScale.getPaint(value, range.getMin(), range.getMax(), downColor, zeroColor, upColor);
 			
-			return color;
+			return value < 0.0 ? downColor : upColor;
 		}
 	}
 	

@@ -136,9 +136,9 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 		if (range != null) {
 			final int colorsSize = colors != null ? colors.size() : 0;
 			
-			Color lowerColor = colorsSize > 0 ? colors.get(0) : Color.BLUE;
+			Color upperColor = colorsSize > 0 ? colors.get(0) : Color.BLUE;
 			Color zeroColor  = colorsSize > 1 ? colors.get(1) : Color.WHITE;
-			Color upperColor = colorsSize > 2 ? colors.get(2) : Color.RED;
+			Color lowerColor = colorsSize > 2 ? colors.get(2) : Color.RED;
 			Color nanColor   = colorsSize > 3 ? colors.get(3) : Color.GRAY;
 			
 			final ColorScale scale = new ColorScale(range.getMin(), range.getMax(), lowerColor, zeroColor, upperColor, nanColor);
