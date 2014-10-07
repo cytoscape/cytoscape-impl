@@ -14,6 +14,7 @@ import javax.swing.ImageIcon;
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChart;
 import org.cytoscape.ding.internal.charts.DoubleRange;
+import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -74,11 +75,12 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 		
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
+		final LabelPosition domainLabelPosition = get(DOMAIN_LABEL_POSITION, LabelPosition.class);
 		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		
 		final HeatMapLayer layer = new HeatMapLayer(data, itemLabels, domainLabels, rangeLabels,
-				showDomainAxis, showRangeAxis, colors, axisColor, range, orientation, bounds);
+				showDomainAxis, showRangeAxis, domainLabelPosition, colors, axisColor, range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

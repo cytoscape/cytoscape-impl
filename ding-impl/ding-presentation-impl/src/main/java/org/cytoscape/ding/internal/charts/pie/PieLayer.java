@@ -10,6 +10,7 @@ import java.util.Map;
 import org.cytoscape.ding.customgraphics.Rotation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomPieSectionLabelGenerator;
+import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot;
@@ -36,8 +37,8 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 					final double startAngle,
 					final Rotation rotation,
 					final Rectangle2D bounds) {
-        super(data, itemLabels, null, null, showLabels, false, false, colors, 0.0f, TRANSPARENT_COLOR,
-        		borderWidth, borderColor, null, bounds);
+        super(data, itemLabels, null, null, showLabels, false, false, LabelPosition.STANDARD, colors, 0.0f,
+        		TRANSPARENT_COLOR, borderWidth, borderColor, null, bounds);
         this.startAngle = startAngle;
         this.rotation = rotation;
         this.labels = new HashMap<String, String>();

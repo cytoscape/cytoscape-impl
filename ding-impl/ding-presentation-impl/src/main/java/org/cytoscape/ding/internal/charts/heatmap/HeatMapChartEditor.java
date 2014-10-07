@@ -5,10 +5,13 @@ import static org.cytoscape.ding.customgraphics.ColorScheme.CUSTOM;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComboBox;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
+import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
@@ -46,6 +49,19 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
 	// ==[ PRIVATE METHODS ]============================================================================================
 
+	@Override
+	public JComboBox<LabelPosition> getDomainLabelPositionCmb() {
+		if (domainLabelPositionCmb == null) {
+			final JComboBox<LabelPosition> cmb = super.getDomainLabelPositionCmb();
+			// These options don't work with this chart
+			cmb.removeItem(LabelPosition.DOWN_45);
+			cmb.removeItem(LabelPosition.UP_45);
+			cmb.removeItem(LabelPosition.UP_90);
+		}
+		
+		return domainLabelPositionCmb;
+	}
+	
 	@Override
 	protected ColorSchemeEditor<HeatMapChart> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {

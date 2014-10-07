@@ -23,6 +23,7 @@ import java.util.Map;
 import org.cytoscape.ding.customgraphics.Rotation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomPieSectionLabelGenerator;
+import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.ding.internal.charts.pie.PieLayer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
@@ -57,8 +58,8 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 					 final double hole,
 					 final Rotation rotation,
 					 final Rectangle2D bounds) {
-        super(data, labels, null, null, showLabels, false, false, colors, 0.0f, TRANSPARENT_COLOR,
-        		borderWidth, borderColor, null, bounds);
+        super(data, labels, null, null, showLabels, false, false, LabelPosition.STANDARD, colors, 0.0f,
+        		TRANSPARENT_COLOR, borderWidth, borderColor, null, bounds);
         this.startAngle = startAngle;
         this.hole = hole;
         this.rotation = rotation;

@@ -34,6 +34,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	public static final String ITEM_LABELS = "itemLabels";
 	public static final String DOMAIN_LABELS_COLUMN = "domainLabelsColumn";
 	public static final String RANGE_LABELS_COLUMN = "rangeLabelsColumn";
+	public static final String DOMAIN_LABEL_POSITION = "domainLabelPosition";
 	public static final String GLOBAL_RANGE = "globalRange";
 	public static final String AUTO_RANGE = "autoRange";
 	public static final String RANGE = "range";
@@ -303,6 +304,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
+		if (key.equalsIgnoreCase(DOMAIN_LABEL_POSITION)) return LabelPosition.class;
 		if (key.equalsIgnoreCase(AXIS_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(AXIS_COLOR)) return Color.class;
 		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;

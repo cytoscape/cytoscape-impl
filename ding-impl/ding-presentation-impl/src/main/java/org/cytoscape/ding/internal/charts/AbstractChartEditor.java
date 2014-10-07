@@ -13,6 +13,7 @@ import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_COLOR;
 import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_WIDTH;
 import static org.cytoscape.ding.internal.charts.AbstractChart.DATA_COLUMNS;
 import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABEL_POSITION;
 import static org.cytoscape.ding.internal.charts.AbstractChart.GLOBAL_RANGE;
 import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABELS_COLUMN;
 import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE;
@@ -128,6 +129,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	private JComboBox<CyColumnIdentifier> itemLabelsColumnCmb;
 	private JComboBox<CyColumnIdentifier> domainLabelsColumnCmb;
 	private JComboBox<CyColumnIdentifier> rangeLabelsColumnCmb;
+	protected JLabel domainLabelPositionLbl;
+	protected JComboBox<LabelPosition> domainLabelPositionCmb;
 	private JCheckBox globalRangeCkb;
 	private JCheckBox autoRangeCkb;
 	private JLabel rangeMinLbl;
@@ -253,6 +256,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		itemLabelsColumnLbl = new JLabel("Column");
 		domainLabelsColumnLbl = new JLabel("Domain Labels Column");
 		rangeLabelsColumnLbl = new JLabel("Range Labels Column");
+		domainLabelPositionLbl = new JLabel("Domain Label Position");
 		rangeMinLbl = new JLabel("Min");
 		rangeMaxLbl = new JLabel("Max");
 		axisWidthLbl = new JLabel("Axis Width");
@@ -427,16 +431,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						.addComponent(getItemLabelsColumnCmb()));
 			}
 			
-			if (setDomainLabels) {
-				hGroup.addGroup(layout.createSequentialGroup()
-						.addComponent(domainLabelsColumnLbl)
-						.addComponent(getDomainLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						          GroupLayout.PREFERRED_SIZE));
-				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(domainLabelsColumnLbl)
-						.addComponent(getDomainLabelsColumnCmb()));
-			}
-			
 			if (setRangeLabels) {
 				hGroup.addGroup(layout.createSequentialGroup()
 						.addComponent(rangeLabelsColumnLbl)
@@ -447,6 +441,24 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						.addComponent(getRangeLabelsColumnCmb()));
 					
 			}
+			
+			if (setDomainLabels) {
+				hGroup.addGroup(layout.createSequentialGroup()
+						.addComponent(domainLabelsColumnLbl)
+						.addComponent(getDomainLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						          GroupLayout.PREFERRED_SIZE));
+				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(domainLabelsColumnLbl)
+						.addComponent(getDomainLabelsColumnCmb()));
+			}
+			
+			hGroup.addGroup(layout.createSequentialGroup()
+					.addComponent(domainLabelPositionLbl)
+					.addComponent(getDomainLabelPositionCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+					          GroupLayout.PREFERRED_SIZE));
+			vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(domainLabelPositionLbl)
+					.addComponent(getDomainLabelPositionCmb()));
 			
 			final JSeparator sep = new JSeparator();
 			
@@ -837,6 +849,39 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		}
 		
 		return rangeAxisVisibleCkb;
+	}
+	
+	@SuppressWarnings("serial")
+	public JComboBox<LabelPosition> getDomainLabelPositionCmb() {
+		if (domainLabelPositionCmb == null) {
+			domainLabelPositionCmb = new JComboBox<>(LabelPosition.values());
+			
+			domainLabelPositionCmb.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					final JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,
+							cellHasFocus);
+					if (value instanceof LabelPosition)
+						lbl.setText(((LabelPosition)value).getLabel());
+					
+					return lbl;
+				}
+			});
+			
+			domainLabelPositionCmb.setSelectedItem(
+					chart.get(DOMAIN_LABEL_POSITION, LabelPosition.class, LabelPosition.STANDARD));
+			
+			domainLabelPositionCmb.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final LabelPosition position = (LabelPosition) domainLabelPositionCmb.getSelectedItem();
+					chart.set(DOMAIN_LABEL_POSITION, position);
+				}
+			});
+		}
+		
+		return domainLabelPositionCmb;
 	}
 	
 	protected JTextField getAxisWidthTxt() {

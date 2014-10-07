@@ -12,6 +12,7 @@ import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.DoubleRange;
+import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorScale;
 import org.jfree.chart.ChartFactory;
@@ -47,6 +48,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showItemLabels,
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
+					final LabelPosition domainLabelPosition,
 					final List<Color> colors,
 					final float axisWidth,
 					final Color axisColor,
@@ -56,8 +58,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final DoubleRange range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
-        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
-        		axisWidth, axisColor, borderWidth, borderColor, range, bounds);
+        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
+        		domainLabelPosition, colors, axisWidth, axisColor, borderWidth, borderColor, range, bounds);
 		this.type = type;
 		this.separation = separation;
 		this.orientation = orientation;
@@ -132,10 +134,11 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         domainAxis.setAxisLinePaint(axisColor);
         domainAxis.setTickMarkStroke(axisStroke);
         domainAxis.setTickMarkPaint(axisColor);
-        domainAxis.setTickMarksVisible(false);
+        domainAxis.setTickMarksVisible(true);
         domainAxis.setTickLabelsVisible(true);
         domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize));
         domainAxis.setTickLabelPaint(axisColor);
+        domainAxis.setCategoryLabelPositions(getCategoryLabelPosition());
         domainAxis.setCategoryMargin((type == BarChartType.STACKED || singleCategory) ? separation : 0.1);
         domainAxis.setLowerMargin(.025);
         domainAxis.setUpperMargin(.025);

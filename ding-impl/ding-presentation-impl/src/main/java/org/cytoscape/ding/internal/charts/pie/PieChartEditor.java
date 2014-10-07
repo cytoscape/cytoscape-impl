@@ -35,6 +35,9 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	public PieChartEditor(final PieChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
 		super(chart, Number.class, false, false, false, true, false, false, false, appMgr, iconMgr, colIdFactory);
+		
+		domainLabelPositionLbl.setVisible(false);
+		getDomainLabelPositionCmb().setVisible(false);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================

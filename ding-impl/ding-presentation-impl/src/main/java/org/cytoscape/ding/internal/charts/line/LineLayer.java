@@ -9,6 +9,7 @@ import java.util.Map;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.DoubleRange;
+import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
@@ -34,14 +35,15 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final boolean showItemLabels,
 					 final boolean showDomainAxis,
 					 final boolean showRangeAxis,
+					 final LabelPosition domainLabelPosition,
 					 final List<Color> colors,
 					 final float axisWidth,
 					 final Color axisColor,
 					 final DoubleRange range,
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
-        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, colors,
-        		axisWidth, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
+        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
+        		domainLabelPosition, colors, axisWidth, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
         this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
 	
@@ -98,6 +100,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
         domainAxis.setTickLabelsVisible(true);
         domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize));
         domainAxis.setTickLabelPaint(axisColor);
+        domainAxis.setCategoryLabelPositions(getCategoryLabelPosition());
         domainAxis.setCategoryMargin(.1);
         domainAxis.setLowerMargin(0.0);
         domainAxis.setUpperMargin(0.0);

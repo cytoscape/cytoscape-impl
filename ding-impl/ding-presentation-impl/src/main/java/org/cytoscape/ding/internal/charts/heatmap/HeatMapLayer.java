@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.DoubleRange;
+import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.ding.internal.charts.util.ColorScale;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
@@ -37,13 +38,14 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 						final List<String> rangeLabels,
 						final boolean showDomainAxis,
 						final boolean showRangeAxis,
+						final LabelPosition domainLabelPosition,
 						final List<Color> colors,
 						final Color axisColor,
 						final DoubleRange range,
 						final Orientation orientation,
 						final Rectangle2D bounds) {
-        super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, colors,
-        		0.0f, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
+        super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, domainLabelPosition,
+        		colors, 0.0f, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
         this.orientation = orientation;
         
         // Range cannot be null
@@ -118,6 +120,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 		xAxis.setTickMarksVisible(false);
 		xAxis.setTickLabelFont(xAxis.getLabelFont().deriveFont(axisFontSize));
 		xAxis.setTickLabelPaint(axisColor);
+		xAxis.setVerticalTickLabels(domainLabelPosition != LabelPosition.STANDARD);
 		xAxis.setLowerMargin(0.0);
 		xAxis.setUpperMargin(0.0);
 

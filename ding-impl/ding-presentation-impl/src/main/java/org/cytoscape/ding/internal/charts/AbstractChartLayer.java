@@ -21,6 +21,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
@@ -43,6 +44,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	protected final boolean showItemLabels;
 	protected final boolean showDomainAxis;
 	protected final boolean showRangeAxis;
+	protected final LabelPosition domainLabelPosition;
 	protected final List<Color> colors;
 	protected final float borderWidth;
 	protected final Color borderColor;
@@ -69,6 +71,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 								 final boolean showItemLabels,
 								 final boolean showDomainAxis,
 								 final boolean showRangeAxis,
+								 final LabelPosition domainLabelPosition,
 								 final List<Color> colors,
 								 final float axisWidth,
 								 final Color axisColor,
@@ -83,6 +86,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		this.showItemLabels = showItemLabels;
 		this.showDomainAxis = showDomainAxis;
 		this.showRangeAxis = showRangeAxis;
+		this.domainLabelPosition = domainLabelPosition;
 		this.colors = colors;
 		this.axisWidth = axisWidth;
 		this.axisColor = axisColor;
@@ -191,6 +195,15 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		if (h <= 0) h = 1;
 		
 		return new Rectangle(w, h);
+	}
+	
+	protected CategoryLabelPositions getCategoryLabelPosition() {
+		if (domainLabelPosition == LabelPosition.DOWN_45) return CategoryLabelPositions.DOWN_45;
+		if (domainLabelPosition == LabelPosition.DOWN_90) return CategoryLabelPositions.DOWN_90;
+		if (domainLabelPosition == LabelPosition.UP_45) return CategoryLabelPositions.UP_45;
+		if (domainLabelPosition == LabelPosition.UP_90) return CategoryLabelPositions.UP_90;
+		
+		return CategoryLabelPositions.STANDARD;
 	}
 	
 	protected abstract T createDataset();

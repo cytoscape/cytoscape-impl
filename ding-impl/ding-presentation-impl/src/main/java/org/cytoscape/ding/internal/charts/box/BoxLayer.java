@@ -11,6 +11,7 @@ import java.util.Map;
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.DoubleRange;
+import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
@@ -42,7 +43,8 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
-        		false, false, showRangeAxis, colors, axisWidth, axisColor, borderWidth, borderColor, range, bounds);
+        		false, false, showRangeAxis, LabelPosition.STANDARD, colors, axisWidth, axisColor, borderWidth,
+        		borderColor, range, bounds);
         this.orientation = orientation;
 	}
 	
