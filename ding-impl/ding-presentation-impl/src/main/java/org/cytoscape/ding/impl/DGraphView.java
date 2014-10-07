@@ -2803,8 +2803,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				Long suid = record.getRow().get(CyNetwork.SUID, Long.class);
 				// System.out.println("suid = "+suid);
 				CyNode node = getModel().getNode(suid);
+				if (node == null) continue;
 				
 				DNodeView nv = (DNodeView)this.getNodeView(node);
+				if (nv == null) continue;
 				boolean value = record.getRow().get(CyNetwork.SELECTED, Boolean.class);
 				// System.out.println("value = "+value);
 				if (value)
@@ -2822,7 +2824,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				Long suid = record.getRow().get(CyNetwork.SUID, Long.class);
 				// System.out.println("suid = "+suid);
 				CyEdge edge = getModel().getEdge(suid);
+				if (edge == null) continue;
+
 				DEdgeView ev = (DEdgeView)this.getEdgeView(edge);
+				if (ev == null) continue;
 				boolean value = record.getRow().get(CyNetwork.SELECTED, Boolean.class);
 				// System.out.println("value = "+value);
 				if (value)
