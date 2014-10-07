@@ -17,7 +17,7 @@ public class ShowWarningTask extends AbstractTask {
 	}
 
 	@Tunable(description = "<html>Current session contains large network(s)<br />"
-			+ "Cytoscape.js may not fast enough to visualize such networks.<br />"
+			+ "Cytoscape.js may not be fast enough to visualize such networks.<br />"
 			+ "Do you still want to export?</html>", params = "ForceSetDirectly=true;ForceSetTitle=Export as Web Session")
 	public boolean showWarning = true;
 
