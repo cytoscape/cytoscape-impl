@@ -1156,6 +1156,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	@SuppressWarnings("unchecked")
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		VisualProperty<?> vp = vpOriginal;
+
+		// Check to make sure our view hasn't gotten disconnected somewhere along the line
+		if (graphView.getNodeView(this.getModel()) == null)
+			return;
 		
 		// Null means set value to VP's default.
 		if (value == null)

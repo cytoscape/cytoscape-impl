@@ -641,6 +641,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		VisualProperty<?> vp = vpOriginal;
 
+		// Check to make sure our view hasn't gotten disconnected somewhere along the line
+		if (graphView.getEdgeView(this.getModel()) == null)
+			return;
+
 		// If value is null, simply use the VP's default value.
 		if (value == null)
 			value = (V) vp.getDefault();
