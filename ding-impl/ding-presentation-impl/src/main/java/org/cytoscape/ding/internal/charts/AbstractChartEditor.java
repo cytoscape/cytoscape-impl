@@ -1315,6 +1315,9 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				final CyColumnIdentifier colId = allModel.get(0);
 				allModel.removeElement(colId);
 				selModel.addElement(colId);
+				
+				chart.set(DATA_COLUMNS, getDataColumns());
+				updateRangeMinMax(true);
 			}
 			
 			updateButtons();
