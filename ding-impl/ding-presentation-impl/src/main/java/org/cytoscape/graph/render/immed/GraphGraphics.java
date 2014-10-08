@@ -2087,6 +2087,7 @@ public final class GraphGraphics {
 			final View<CyNode> view = (netView != null && node != null) ? netView.getNodeView(node) : null;
 			layer.draw(m_g2d, nodeShape, netView, view);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
+			m_g2d.translate(xOffset, yOffset);
 			Rectangle bounds = cg.getBounds2D().getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
 			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
