@@ -81,9 +81,12 @@ public class ColorScale implements PaintScale {
 		// Linearly interpolate the value
 		final double f = value < 0.0 ?
 				MathUtil.invLinearInterp(value, lowerBound, 0) : MathUtil.invLinearInterp(value, 0, upperBound);
-		final double t = value < 0.0 ?
-				MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0);
+		float t = (float) (value < 0.0 ? MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0));
 		
-		return org.jdesktop.swingx.color.ColorUtil.interpolate(zeroColor, color, (float)t);
+		// Make sure it's between 0.0-1.0
+		t = Math.max(0.0f, t);
+		t = Math.min(1.0f, t);
+				
+		return org.jdesktop.swingx.color.ColorUtil.interpolate(zeroColor, color, t);
 	}
 }
