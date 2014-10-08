@@ -99,6 +99,7 @@ public class ViewState {
 			while (nodeIter.hasNext()) {
 				CyNode n = nodeIter.next();
 				NodeView nv = view.getDNodeView(n);
+				if (nv == null) continue;
 				points.put(n, new Point2D.Double(nv.getXPosition(), nv.getYPosition()));
 			}
 		}
@@ -112,6 +113,7 @@ public class ViewState {
 			while (edgeIter.hasNext()) {
 				CyEdge e = edgeIter.next();
 				final DEdgeView ev = view.getDEdgeView(e);
+				if (ev == null) continue;
 				DGraphView gView = (DGraphView) ev.getGraphView();
 				// FIXME!
 				//anchors.put(e, ev.getBend().getHandles());

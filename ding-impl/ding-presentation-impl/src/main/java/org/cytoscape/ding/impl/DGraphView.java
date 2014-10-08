@@ -2343,9 +2343,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	static List<CyEdge> makeEdgeList(long[] edgeids, GraphView view) {
+		if (view == null || edgeids == null || edgeids.length == 0)
+			return new ArrayList<CyEdge>();
 		List<CyEdge> l = new ArrayList<CyEdge>(edgeids.length);
-		for (long nid : edgeids)
-			l.add(view.getDEdgeView(nid).getCyEdge());
+		for (long nid : edgeids) {
+			if (view.getDEdgeView(nid) != null)
+				l.add(view.getDEdgeView(nid).getCyEdge());
+		}
 
 		return l;
 	}
