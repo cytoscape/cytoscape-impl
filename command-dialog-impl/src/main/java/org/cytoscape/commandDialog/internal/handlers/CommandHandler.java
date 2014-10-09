@@ -32,21 +32,12 @@
  */
 package org.cytoscape.commandDialog.internal.handlers;
 
-import java.io.File;
-import java.io.BufferedReader;
-import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.ops4j.pax.logging.spi.PaxAppender;
-import org.ops4j.pax.logging.spi.PaxLevel;
-import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -54,11 +45,10 @@ import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.util.AbstractBounded;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.BoundedFloat;
@@ -66,6 +56,9 @@ import org.cytoscape.work.util.BoundedInteger;
 import org.cytoscape.work.util.BoundedLong;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.ops4j.pax.logging.spi.PaxAppender;
+import org.ops4j.pax.logging.spi.PaxLevel;
+import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
 public class CommandHandler implements PaxAppender, TaskObserver {
 	boolean processingCommand = false;
@@ -177,9 +170,9 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 	}
 
 	private String parseInput(String input, Map<String,Object> settings) {
-
+		
 		// Tokenize
-		StringReader reader = new StringReader(input);
+		StringReader reader = new StringReader(input.replace("\\", "\\\\"));
 		StreamTokenizer st = new StreamTokenizer(reader);
 
 		// We don't really want to parse numbers as numbers...
@@ -187,12 +180,14 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		st.ordinaryChar('_');
 		st.ordinaryChar('-');
 		st.ordinaryChar('.');
+		st.ordinaryChar(':');
 		st.ordinaryChars('0', '9');
 
 		st.wordChars('/', '/');
 		st.wordChars('_', '_');
 		st.wordChars('-', '-');
 		st.wordChars('.', '.');
+		st.wordChars(':', ':');
 		st.wordChars('0', '9');
 
 		List<String> tokenList = new ArrayList<String>();
