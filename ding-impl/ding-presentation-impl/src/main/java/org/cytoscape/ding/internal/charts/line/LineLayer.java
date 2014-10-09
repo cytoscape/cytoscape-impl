@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
-import org.cytoscape.ding.internal.charts.DoubleRange;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -39,7 +38,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final List<Color> colors,
 					 final float axisWidth,
 					 final Color axisColor,
-					 final DoubleRange range,
+					 final Double[] range,
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
@@ -117,9 +116,9 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		rangeAxis.setUpperMargin(0.0);
         
 		// Set axis range		
-		if (range != null) {
-			rangeAxis.setLowerBound(range.getMin() * 1.1); // TODO add tick size???
-			rangeAxis.setUpperBound(range.getMax() * 1.1);
+		if (range != null && range.length >= 2) {
+			rangeAxis.setLowerBound(range[0] * 1.1); // TODO add tick size???
+			rangeAxis.setUpperBound(range[1] * 1.1);
 		}
 		
 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();

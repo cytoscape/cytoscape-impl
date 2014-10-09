@@ -1,6 +1,7 @@
 package org.cytoscape.ding.customgraphics.json;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,7 +26,16 @@ public class PropertiesJsonSerializer extends JsonSerializer<Map<String, Object>
 			final Object value = entry.getValue();
 			
 			if (key != null && value != null) {
-				if (value instanceof Collection) {
+				if (value.getClass().isArray()) {
+					int length = Array.getLength(value);
+				    
+					jgen.writeArrayFieldStart(key);
+					
+					for (int i = 0; i < length; i++)
+						jgen.writeObject(Array.get(value, i));
+					
+					jgen.writeEndArray();
+				} else if (value instanceof Collection) {
 					jgen.writeArrayFieldStart(key);
 					
 					for (final Object v : (Collection<?>)value)

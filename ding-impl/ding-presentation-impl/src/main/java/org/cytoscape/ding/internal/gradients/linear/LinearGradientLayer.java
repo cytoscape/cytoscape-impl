@@ -9,8 +9,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
-import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.ding.internal.gradients.AbstractGradientLayer;
+import org.cytoscape.ding.internal.gradients.ControlPoint;
 import org.cytoscape.ding.internal.util.MathUtil;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 

@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
-import org.cytoscape.ding.internal.charts.DoubleRange;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.ding.internal.charts.util.ColorScale;
 import org.jfree.chart.JFreeChart;
@@ -41,7 +40,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 						final LabelPosition domainLabelPosition,
 						final List<Color> colors,
 						final Color axisColor,
-						final DoubleRange range,
+						final Double[] range,
 						final Orientation orientation,
 						final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, domainLabelPosition,
@@ -136,7 +135,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 
 		final XYBlockRenderer renderer = new XYBlockRenderer();
 		
-		if (range != null) {
+		if (range != null && range.length >= 2) {
 			final int colorsSize = colors != null ? colors.size() : 0;
 			
 			Color upperColor = colorsSize > 0 ? colors.get(0) : Color.BLUE;
@@ -144,7 +143,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 			Color lowerColor = colorsSize > 2 ? colors.get(2) : Color.RED;
 			Color nanColor   = colorsSize > 3 ? colors.get(3) : Color.GRAY;
 			
-			final ColorScale scale = new ColorScale(range.getMin(), range.getMax(), lowerColor, zeroColor, upperColor, nanColor);
+			final ColorScale scale = new ColorScale(range[0], range[1], lowerColor, zeroColor, upperColor, nanColor);
 			renderer.setPaintScale(scale);
 		}
 

@@ -1,6 +1,7 @@
 package org.cytoscape.ding.internal.charts;
 
 import java.awt.Color;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,24 +62,18 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	protected AbstractChart(final String displayName, final String input,
 			final CyColumnIdentifierFactory colIdFactory) {
 		this(displayName, colIdFactory);
-		
 		addProperties(parseInput(input));
 	}
 	
-	protected AbstractChart(final AbstractChart<T> chart,
-			final CyColumnIdentifierFactory colIdFactory) {
+	protected AbstractChart(final AbstractChart<T> chart, final CyColumnIdentifierFactory colIdFactory) {
 		this(chart.getDisplayName(), colIdFactory);
-		
-		if (chart.getProperties() != null)
-			this.properties.putAll(chart.getProperties());
+		addProperties(chart.getProperties());
 	}
 	
 	protected AbstractChart(final String displayName, final Map<String, Object> properties,
 			final CyColumnIdentifierFactory colIdFactory) {
 		this(displayName, colIdFactory);
-		
-		if (properties != null)
-			addProperties(properties);
+		addProperties(properties);
 	}
 	
 	@Override
@@ -309,7 +304,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		if (key.equalsIgnoreCase(AXIS_COLOR)) return Color.class;
 		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
-		if (key.equalsIgnoreCase(RANGE)) return DoubleRange.class;
+		if (key.equalsIgnoreCase(RANGE)) return Array.class;
 		if (key.equalsIgnoreCase(BORDER_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(BORDER_COLOR)) return Color.class;
 			
@@ -317,12 +312,13 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	}
 	
 	@Override
-	public Class<?> getSettingListType(final String key) {
+	public Class<?> getSettingElementType(final String key) {
 		if (key.equalsIgnoreCase(DATA_COLUMNS)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(VALUES)) return Double.class;
 		if (key.equalsIgnoreCase(ITEM_LABELS)) return String.class;
+		if (key.equalsIgnoreCase(RANGE)) return Double.class;
 		
-		return super.getSettingListType(key);
+		return super.getSettingElementType(key);
 	}
 	
 	@Override

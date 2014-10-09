@@ -21,7 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
 
-import org.cytoscape.ding.internal.charts.ControlPoint;
+import org.cytoscape.ding.internal.gradients.ControlPoint;
 
 /**
  * A generic editor for configuring a multiple point varying gradient.

@@ -11,11 +11,11 @@ import org.cytoscape.ding.internal.charts.util.ColorGradient;
 
 public class ColorScheme {
 	
-	public static final ColorScheme CONTRASTING = new ColorScheme("contrasting", "Contrasting");
-	public static final ColorScheme MODULATED = new ColorScheme("modulated", "Modulated");
-	public static final ColorScheme RAINBOW = new ColorScheme("rainbow", "Rainbow");
-	public static final ColorScheme RANDOM = new ColorScheme("random", "Random");
-	public static final ColorScheme CUSTOM = new ColorScheme("custom", "Custom");
+	public static final ColorScheme CONTRASTING = new ColorScheme("CONTRASTING", "Contrasting");
+	public static final ColorScheme MODULATED = new ColorScheme("MODULATED", "Modulated");
+	public static final ColorScheme RAINBOW = new ColorScheme("RAINBOW", "Rainbow");
+	public static final ColorScheme RANDOM = new ColorScheme("RANDOM", "Random");
+	public static final ColorScheme CUSTOM = new ColorScheme("CUSTOM", "Custom");
 	
 	public static ColorScheme DEFAULT = CONTRASTING;
 	
@@ -161,7 +161,7 @@ public class ColorScheme {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((key == null) ? 0 : key.toLowerCase().hashCode());
+		result = prime * result + ((key == null) ? 0 : key.toUpperCase().hashCode());
 		return result;
 	}
 

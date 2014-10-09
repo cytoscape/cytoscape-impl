@@ -8,7 +8,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public abstract class AbstractGradientLayer implements CustomGraphicLayer {

@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.ding.internal.gradients.AbstractGradient;
+import org.cytoscape.ding.internal.gradients.ControlPoint;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;

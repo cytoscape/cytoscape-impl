@@ -13,7 +13,6 @@ import javax.swing.JSeparator;
 import javax.swing.GroupLayout.Alignment;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
-import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.ding.internal.util.GradientEditor;
 
 public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
