@@ -71,9 +71,9 @@ public final class ColorUtil {
 	}
 	
 	public static String toHexString(final Color color) {
-		String hex = Integer.toHexString(color.getRGB());
-		hex = hex.substring(2, hex.length()); // remove alpha bits
+		final int rgb = color.getRGB();
+		final String hex = String.format("#%06X", (0xFFFFFF & rgb));
 
-		return "#" + hex;
+		return hex;
 	}
 }
