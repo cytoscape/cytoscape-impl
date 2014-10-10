@@ -13,7 +13,6 @@ import javax.swing.ImageIcon;
 
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChart;
-import org.cytoscape.ding.internal.charts.DoubleRange;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -65,7 +64,7 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 		final List<String> rangeLabels =
 				getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
-		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
+		final Double[] range = global ? getArray(RANGE, Double.class) : null;
 		
 		final Map<String, List<Double>> data = getData(network, model);
 

@@ -13,7 +13,6 @@ import javax.swing.ImageIcon;
 
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChart;
-import org.cytoscape.ding.internal.charts.DoubleRange;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -57,7 +56,7 @@ public class BoxChart extends AbstractChart<BoxLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
-		final DoubleRange range = global ? get(RANGE, DoubleRange.class) : null;
+		final Double[] range = global ? getArray(RANGE, Double.class) : null;
 		
 		final Map<String, List<Double>> data = getData(network, model);
 

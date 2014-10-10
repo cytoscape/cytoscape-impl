@@ -11,7 +11,6 @@ import java.util.Map;
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
-import org.cytoscape.ding.internal.charts.DoubleRange;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorScale;
@@ -55,7 +54,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final float borderWidth,
 					final Color borderColor,
 					final double separation,
-					final DoubleRange range,
+					final Double[] range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
@@ -65,7 +64,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		this.orientation = orientation;
 		singleCategory = data.size() == 1;
 
-		if (type == BarChartType.HEAT_STRIPS && this.range == null) // Range cannot be null
+		if (type == BarChartType.HEAT_STRIPS && (this.range == null || this.range.length < 2)) // Range cannot be null
 			this.range = calculateRange(data.values(), false);
 	}
 	
@@ -155,9 +154,9 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		rangeAxis.setUpperMargin(0.1);
 		
 		// Set axis range		
-		if (range != null) {
-			rangeAxis.setLowerBound(range.getMin());
-			rangeAxis.setUpperBound(range.getMax());
+		if (range != null && range.length >= 2) {
+			rangeAxis.setLowerBound(range[0]);
+			rangeAxis.setUpperBound(range[1]);
 		}
 		
 		if (type != BarChartType.STACKED) {
@@ -237,7 +236,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			final double value = dataset.getValue(rowKey, colKey).doubleValue();
 			
 			if (type == BarChartType.HEAT_STRIPS)
-				return ColorScale.getPaint(value, range.getMin(), range.getMax(), downColor, zeroColor, upColor);
+				return ColorScale.getPaint(value, range[0], range[1], downColor, zeroColor, upColor);
 			
 			return value < 0.0 ? downColor : upColor;
 		}

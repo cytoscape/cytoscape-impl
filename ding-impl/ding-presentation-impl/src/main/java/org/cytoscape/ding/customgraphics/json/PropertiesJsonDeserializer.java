@@ -1,6 +1,7 @@
 package org.cytoscape.ding.customgraphics.json;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.ArrayType;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
@@ -65,8 +67,17 @@ public class PropertiesJsonDeserializer extends JsonDeserializer<Map<String, Obj
 			final TypeFactory typeFactory = mapper.getTypeFactory();
 			
 			try {
-				if (List.class.isAssignableFrom(type)) {
-		    		final Class<?> elementType = cg2.getSettingListType(key);
+				if (type == Array.class) {
+					final Class<?> elementType = cg2.getSettingElementType(key);
+					
+					if (elementType != null) {
+		        		final ArrayType arrType = typeFactory.constructArrayType(elementType);
+		        		
+		        		if (mapper.canDeserialize(arrType))
+		        			value = mapper.readValue(input, arrType);
+		    		}
+				} else if (List.class.isAssignableFrom(type)) {
+		    		final Class<?> elementType = cg2.getSettingElementType(key);
 		    		
 		    		if (elementType != null) {
 		        		final CollectionType collType = typeFactory.constructCollectionType(List.class, elementType);

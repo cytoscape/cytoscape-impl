@@ -3,8 +3,8 @@ package org.cytoscape.ding.customgraphics.json;
 import java.awt.Color;
 import java.io.IOException;
 
-import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
+import org.cytoscape.ding.internal.gradients.ControlPoint;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

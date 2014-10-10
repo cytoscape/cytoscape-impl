@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.json.ControlPointJsonDeserializer;
-import org.cytoscape.ding.internal.charts.ControlPoint;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -24,7 +23,7 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	
 	protected AbstractGradient(final AbstractGradient<T> gradient) {
 		this(gradient.getDisplayName());
-		this.properties.putAll(gradient.getProperties());
+		addProperties(gradient.getProperties());
 	}
 	
 	protected AbstractGradient(final String displayName, final Map<String, Object> properties) {
@@ -44,10 +43,10 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	}
 	
 	@Override
-	public Class<?> getSettingListType(final String key) {
+	public Class<?> getSettingElementType(final String key) {
 		if (key.equalsIgnoreCase(STOP_LIST)) return ControlPoint.class;
 		
-		return super.getSettingListType(key);
+		return super.getSettingElementType(key);
 	}
 	
 	@Override

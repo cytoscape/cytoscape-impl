@@ -1,4 +1,4 @@
-package org.cytoscape.ding.internal.charts;
+package org.cytoscape.ding.internal.gradients;
 
 import java.awt.Color;
 

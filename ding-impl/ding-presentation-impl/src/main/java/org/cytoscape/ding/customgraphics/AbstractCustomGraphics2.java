@@ -5,6 +5,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,7 +50,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	protected int width = 50;
 	protected int height = 50;
 	
-	protected final Map<String, Object> properties;
+	private final Map<String, Object> properties;
 	
 	private ObjectMapper mapper;
 	
@@ -73,7 +74,22 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	
 	@Override
 	public Map<String, Object> getProperties() {
-		return new HashMap<String, Object>(properties);
+		final Map<String, Object> map = new LinkedHashMap<>();
+		
+		// Make sure the returned map does not contain types not exposed in the API
+		for (final Entry<String, Object> entry : properties.entrySet()) {
+			final String key = entry.getKey();
+			Object value = entry.getValue();
+			
+			if (value instanceof ColorScheme)
+				value = ((ColorScheme)value).getKey();
+			else if (value instanceof Class && ((Class<?>)value).isEnum())
+				value = value.toString();
+			
+			map.put(key, value);
+		}
+		
+		return map;
 	}
 
 	@Override
@@ -192,6 +208,20 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	}
 	
 	@SuppressWarnings("unchecked")
+	public synchronized <S> S[] getArray(final String key, final Class<S> cls) {
+		final Object obj = properties.get(key);
+		S[] arr = null;
+		
+		try {
+			arr = (obj != null && obj.getClass().isArray()) ? (S[])obj : null;
+		} catch (ClassCastException e) {
+			logger.error("Cannot cast property '" + key + "' to array.", e);
+		}
+		
+		return arr;
+	}
+	
+	@SuppressWarnings("unchecked")
 	protected Map<String, Object> parseInput(final String input) {
 		final Map<String, Object> props = new HashMap<String, Object>();
 		
@@ -225,7 +255,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		return null;
 	}
 	
-	public Class<?> getSettingListType(final String key) {
+	public Class<?> getSettingElementType(final String key) {
 		if (key.equalsIgnoreCase(COLORS)) return Color.class;
 		
 		return Object.class;
