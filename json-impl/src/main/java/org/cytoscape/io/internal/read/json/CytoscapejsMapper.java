@@ -57,7 +57,8 @@ public class CytoscapejsMapper {
 
 		// Read network 
 		final JsonNode data = rootNode.get(DATA.getTag());
-		addTableData(data, network, network);
+		// Need to put all columns to local table, not the default (shared) one.
+		addTableData(data, network, network, network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
 		
 		this.positionMap = new HashMap<CyNode, Double[]>();
 		final Map<String, CyNode> nodeMap = this.addNodes(network, nodes);
@@ -85,7 +86,7 @@ public class CytoscapejsMapper {
 
 		final JsonNode net = columnTypes.get(NETWORK.getTag());
 		if(net != null) {
-			parseType(net, network.getDefaultNetworkTable());
+			parseType(net, network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
 		}
 	}
 	
@@ -134,6 +135,8 @@ public class CytoscapejsMapper {
 
 		final Map<String, CyNode> nodeMap = new HashMap<String, CyNode>();
 
+		final CyTable nodeTable = network.getDefaultNodeTable();
+		
 		for (final JsonNode node : nodes) {
 			// Extract node properties.
 			final JsonNode data = node.get(DATA.getTag());
@@ -145,7 +148,7 @@ public class CytoscapejsMapper {
 				// Use ID as unique name.
 				network.getRow(cyNode).set(CyNetwork.NAME, nodeId.textValue());
 				nodeMap.put(nodeId.textValue(), cyNode);
-				addTableData(data, cyNode, network);
+				addTableData(data, cyNode, network, nodeTable);
 			}
 
 			// Get (x,y) location if available.
@@ -165,6 +168,8 @@ public class CytoscapejsMapper {
 
 	private final void addEdges(final CyNetwork network, final JsonNode edges, final Map<String, CyNode> nodeMap) {
 
+		final CyTable edgeTable = network.getDefaultEdgeTable();
+		
 		for (final JsonNode edge : edges) {
 			final JsonNode data = edge.get(DATA.getTag());
 			final JsonNode source = data.get(SOURCE.getTag());
@@ -175,12 +180,12 @@ public class CytoscapejsMapper {
 			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
 			
 			// Add edge table data
-			addTableData(data, newEdge, network);
+			addTableData(data, newEdge, network, edgeTable);
 		}
 	}
 
 
-	private final void addTableData(final JsonNode data, final CyIdentifiable graphObject, final CyNetwork network) {
+	private final void addTableData(final JsonNode data, final CyIdentifiable graphObject, final CyNetwork network, final CyTable table) {
 		final Iterator<String> fieldNames = data.fieldNames();
 
 		while (fieldNames.hasNext()) {
@@ -189,9 +194,6 @@ public class CytoscapejsMapper {
 			// Ignore unnecessary fields (ID, SUID, SELECTED)
 			if (fieldName.equals(CyIdentifiable.SUID) == false
 				&& fieldName.equals(CyNetwork.SELECTED) == false) {
-
-				final CyTable table = network.getRow(graphObject).getTable();
-				
 				// New column creation:
 				// TODO: how can we handle number types?  
 				if (table.getColumn(fieldName) == null) {

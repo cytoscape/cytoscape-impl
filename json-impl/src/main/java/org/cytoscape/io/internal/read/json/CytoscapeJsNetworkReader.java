@@ -1,9 +1,11 @@
 package org.cytoscape.io.internal.read.json;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Map;
 
 import org.cytoscape.io.read.AbstractCyNetworkReader;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
