@@ -31,8 +31,8 @@ public class BarChart extends AbstractChart<BarLayer> {
 	public static final String FACTORY_ID = "org.cytoscape.BarChart";
 	public static final String DISPLAY_NAME = "Bar Chart";
 	
-	public static final String TYPE = "type";
-	public static final String SEPARATION = "separation";
+	public static final String TYPE = "cy_type";
+	public static final String SEPARATION = "cy_separation";
 	
 	public static final double MAX_SEPARATION = 0.5;
 	

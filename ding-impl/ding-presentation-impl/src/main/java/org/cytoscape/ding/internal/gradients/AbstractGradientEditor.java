@@ -1,16 +1,17 @@
 package org.cytoscape.ding.internal.gradients;
 
-import static org.cytoscape.ding.internal.gradients.linear.LinearGradient.STOP_LIST;
+import static org.cytoscape.ding.internal.gradients.AbstractGradient.STOP_LIST;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
+import java.util.Map;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.GroupLayout.Alignment;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.internal.util.GradientEditor;
@@ -66,7 +67,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 
 	protected GradientEditor getGrEditor() {
 		if (grEditor == null) {
-			final List<ControlPoint> points = gradient.getList(STOP_LIST, ControlPoint.class);
+			final Map<Float, Color> points = gradient.getMap(STOP_LIST);
 			grEditor = new GradientEditor(points);
 			
 			// Add listener--update gradient when user interacts with the UI
@@ -78,7 +79,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 			});
 			
 			if (points.isEmpty())
-				gradient.set(STOP_LIST, getGrEditor().getControlPoints());
+				gradient.set(STOP_LIST, getGrEditor().getControlPointsMap());
 		}
 		
 		return grEditor;
@@ -99,6 +100,6 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 	}
 	
 	protected void updateGradient() {
-		gradient.set(STOP_LIST, getGrEditor().getControlPoints());
+		gradient.set(STOP_LIST, getGrEditor().getControlPointsMap());
 	}
 }

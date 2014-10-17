@@ -34,15 +34,13 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  */
 public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> implements CyCustomGraphics2<T> {
 
-	public static final String SCALE = "scale";
-	
 	/**
 	 * The list of colors, one for each chart element
 	 */
-	public static final String COLORS = "colors";
-	public static final String COLOR_SCHEME = "colorScheme";
-	public static final String ORIENTATION = "orientation";
-	public static final String ROTATION = "rotation";
+	public static final String COLORS = "cy_colors";
+	public static final String COLOR_SCHEME = "cy_colorScheme";
+	public static final String ORIENTATION = "cy_orientation";
+	public static final String ROTATION = "cy_rotation";
 	
 	protected Long id;
 	protected float fitRatio = 0.9f;
@@ -221,6 +219,13 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		return arr;
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public <K, V> Map<K, V> getMap(final String key) {
+		final Object obj = properties.get(key);
+		
+		return obj instanceof Map ? (Map)obj : Collections.emptyMap();
+	}
+	
 	@SuppressWarnings("unchecked")
 	protected Map<String, Object> parseInput(final String input) {
 		final Map<String, Object> props = new HashMap<String, Object>();
@@ -248,7 +253,6 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	public Class<?> getSettingType(final String key) {
 		if (key.equalsIgnoreCase(COLORS)) return List.class;
 		if (key.equalsIgnoreCase(COLOR_SCHEME)) return ColorScheme.class;
-		if (key.equalsIgnoreCase(SCALE)) return Double.class;
 		if (key.equalsIgnoreCase(ORIENTATION)) return Orientation.class;
 		if (key.equalsIgnoreCase(ROTATION)) return Rotation.class;
 			

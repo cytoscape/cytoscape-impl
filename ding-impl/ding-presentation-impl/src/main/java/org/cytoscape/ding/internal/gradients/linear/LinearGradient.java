@@ -1,5 +1,6 @@
 package org.cytoscape.ding.internal.gradients.linear;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -9,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradient;
-import org.cytoscape.ding.internal.gradients.ControlPoint;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -19,7 +19,7 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	public static final String FACTORY_ID = "org.cytoscape.LinearGradient";
 	public static final String DISPLAY_NAME = "Linear Gradient";
 	
-	public static final String ANGLE = "angle";
+	public static final String ANGLE = "cy_angle";
 	
 	private BufferedImage renderedImg;
 	private volatile boolean dirty = true;
@@ -84,7 +84,7 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	private LinearGradientLayer createLayer() {
 		LinearGradientLayer layer = null;
 		final Double angle = get(ANGLE, Double.class, 0.0);
-		final List<ControlPoint> controlPoints = getList(STOP_LIST, ControlPoint.class);
+		final Map<Float, Color> controlPoints = getMap(STOP_LIST);
 		
 		if (angle != null && controlPoints.size() > 1)
 			layer = new LinearGradientLayer(angle, controlPoints);

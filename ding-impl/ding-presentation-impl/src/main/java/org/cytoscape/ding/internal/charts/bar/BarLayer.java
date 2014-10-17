@@ -235,8 +235,12 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			final String colKey = (String) dataset.getColumnKey(column);
 			final double value = dataset.getValue(rowKey, colKey).doubleValue();
 			
-			if (type == BarChartType.HEAT_STRIPS)
+			if (type == BarChartType.HEAT_STRIPS) {
+				if (Double.isNaN(value))
+					return zeroColor;
+				
 				return ColorScale.getPaint(value, range[0], range[1], downColor, zeroColor, upColor);
+			}
 			
 			return value < 0.0 ? downColor : upColor;
 		}

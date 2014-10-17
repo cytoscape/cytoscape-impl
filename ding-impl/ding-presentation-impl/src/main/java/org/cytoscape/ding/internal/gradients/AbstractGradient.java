@@ -1,17 +1,13 @@
 package org.cytoscape.ding.internal.gradients;
 
-import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
-import org.cytoscape.ding.customgraphics.json.ControlPointJsonDeserializer;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-
-import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public abstract class AbstractGradient<T extends CustomGraphicLayer> extends AbstractCustomGraphics2<T> {
 
-	public static final String STOP_LIST = "stopList";
+	public static final String STOP_LIST = "cy_stopList";
 	
 	protected AbstractGradient(final String displayName) {
 		super(displayName);
@@ -37,21 +33,8 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	
 	@Override
 	public Class<?> getSettingType(final String key) {
-		if (key.equalsIgnoreCase(STOP_LIST)) return List.class;
+		if (key.equalsIgnoreCase(STOP_LIST)) return Map.class;
 		
 		return super.getSettingType(key);
-	}
-	
-	@Override
-	public Class<?> getSettingElementType(final String key) {
-		if (key.equalsIgnoreCase(STOP_LIST)) return ControlPoint.class;
-		
-		return super.getSettingElementType(key);
-	}
-	
-	@Override
-	protected void addJsonDeserializers(final SimpleModule module) {
-		super.addJsonDeserializers(module);
-		module.addDeserializer(ControlPoint.class, new ControlPointJsonDeserializer());
 	}
 }

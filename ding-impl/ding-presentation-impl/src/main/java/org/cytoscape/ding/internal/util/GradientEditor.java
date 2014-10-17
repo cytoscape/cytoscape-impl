@@ -16,12 +16,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
-
-import org.cytoscape.ding.internal.gradients.ControlPoint;
 
 /**
  * A generic editor for configuring a multiple point varying gradient.
@@ -59,97 +60,24 @@ public class GradientEditor extends JPanel {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	@SuppressWarnings("unchecked")
-	public GradientEditor() {
-		this(Collections.EMPTY_LIST);
-	}
-	
 	/**
 	 * Create a new editor for gradients
 	 */
 	public GradientEditor(final List<ControlPoint> points) {
-		setLayout(null);
-		setOpaque(false);
+		setPoints(points);
+		init();
+	}
+	
+	public GradientEditor(final Map<Float, Color> points) {
+		final List<ControlPoint> list = new ArrayList<>();
 		
-		addBtn.setBounds(20, 70, 75, 20);
-		add(addBtn);
-		
-		editBtn.setBounds(100, 70, 75, 20);
-		editBtn.setEnabled(false);
-		add(editBtn);
-		
-		delBtn.setBounds(180, 70, 75, 20);
-		delBtn.setEnabled(false);
-		add(delBtn);
-		
-		addBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				addPoint();
-			}
-		});
-		delBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				delPoint();
-			}
-		});
-		editBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				editPoint();
-			}
-		});
-		
-		if (points == null || points.isEmpty()) {
-			controlPoints.add(new ControlPoint(Color.WHITE, 0));
-			controlPoints.add(new ControlPoint(Color.BLACK, 1));
-		} else {
-			for (int i = 0; i < points.size() - 1; i++) {
-				if (i == 0) {
-					if (points.get(i) != null)
-						controlPoints.add(new ControlPoint(points.get(i).getColor(), 0)); // start
-					else
-						controlPoints.add(new ControlPoint(Color.WHITE, 0)); // start
-					
-					if (points.get(points.size() - 1) != null)
-						controlPoints.add(new ControlPoint(points.get(points.size() - 1).getColor(), 1)); // end
-					else
-						controlPoints.add(new ControlPoint(Color.BLACK, 1));
-				} else {
-					final ControlPoint cp = points.get(i);
-					
-					if (cp != null)
-						addPoint(cp.getPosition(), cp.getColor());
-				}
-			}
+		if (points != null) {
+			for (final Entry<Float, Color> entry : points.entrySet())
+				list.add(new ControlPoint(entry.getValue(), entry.getKey()));
 		}
 		
-		poly.addPoint(0, 0);
-		poly.addPoint(5, 10);
-		poly.addPoint(-5, 10);
-		
-		this.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				selectPoint(e.getX(), e.getY());
-				repaint(0);
-				
-				if (e.getClickCount() == 2)
-					editPoint();
-			}
-		});
-		
-		this.addMouseMotionListener(new MouseMotionListener() {
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				movePoint(e.getX(), e.getY());
-				repaint(0);
-			}
-			@Override
-			public void mouseMoved(MouseEvent e) {
-			}
-		});
+		setPoints(list);
+		init();
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -311,7 +239,105 @@ public class GradientEditor extends JPanel {
 		return new ArrayList<ControlPoint>(controlPoints);
 	}
 	
+	public Map<Float, Color> getControlPointsMap() {
+		final Map<Float, Color> map = new TreeMap<>();
+		
+		for (final ControlPoint cp : controlPoints)
+			map.put(cp.getPosition(), cp.getColor());
+		
+		return map;
+	}
+	
 	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	private void init() {
+		setLayout(null);
+		setOpaque(false);
+		
+		addBtn.setBounds(20, 70, 75, 20);
+		add(addBtn);
+		
+		editBtn.setBounds(100, 70, 75, 20);
+		editBtn.setEnabled(false);
+		add(editBtn);
+		
+		delBtn.setBounds(180, 70, 75, 20);
+		delBtn.setEnabled(false);
+		add(delBtn);
+		
+		addBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				addPoint();
+			}
+		});
+		delBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				delPoint();
+			}
+		});
+		editBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				editPoint();
+			}
+		});
+		
+		poly.addPoint(0, 0);
+		poly.addPoint(5, 10);
+		poly.addPoint(-5, 10);
+		
+		this.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				selectPoint(e.getX(), e.getY());
+				repaint(0);
+				
+				if (e.getClickCount() == 2)
+					editPoint();
+			}
+		});
+		
+		this.addMouseMotionListener(new MouseMotionListener() {
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				movePoint(e.getX(), e.getY());
+				repaint(0);
+			}
+			@Override
+			public void mouseMoved(MouseEvent e) {
+			}
+		});
+	}
+	
+	private void setPoints(final List<ControlPoint> points) {
+		controlPoints.clear();
+		
+		if (points == null || points.isEmpty()) {
+			controlPoints.add(new ControlPoint(Color.WHITE, 0));
+			controlPoints.add(new ControlPoint(Color.BLACK, 1));
+		} else {
+			for (int i = 0; i < points.size() - 1; i++) {
+				if (i == 0) {
+					if (points.get(i) != null)
+						controlPoints.add(new ControlPoint(points.get(i).getColor(), 0)); // start
+					else
+						controlPoints.add(new ControlPoint(Color.WHITE, 0)); // start
+					
+					if (points.get(points.size() - 1) != null)
+						controlPoints.add(new ControlPoint(points.get(points.size() - 1).getColor(), 1)); // end
+					else
+						controlPoints.add(new ControlPoint(Color.BLACK, 1));
+				} else {
+					final ControlPoint cp = points.get(i);
+					
+					if (cp != null)
+						addPoint(cp.getPosition(), cp.getColor());
+				}
+			}
+		}
+	}
 	
 	/**
 	 * Fire an update to all listeners
