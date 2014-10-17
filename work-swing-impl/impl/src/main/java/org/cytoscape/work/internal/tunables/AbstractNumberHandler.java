@@ -76,9 +76,10 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 	}
 
 	private void init() {
-		format = new DecimalFormat();
-		if (getFormat() != null && getFormat().length() > 0)
+		format = null;
+		if (getFormat() != null && getFormat().length() > 0) {
 			format = new DecimalFormat(getFormat());
+		}
 
 		Number d;
 		try {
@@ -86,6 +87,15 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 		} catch(final Exception e) {
 			e.printStackTrace();
 			d = Double.valueOf(0.0);
+		}
+
+		// Figure out how to handle the format for this particular value
+		if (format == null) {
+			double dx = d.doubleValue();
+			if (dx > 1000000.0 || dx < 0.001)
+				format = new DecimalFormat("0.#####E0");
+			else
+				format = new DecimalFormat();
 		}
 
 		//set Gui
