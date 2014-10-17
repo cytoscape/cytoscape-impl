@@ -24,6 +24,8 @@ package org.cytoscape.prefuse.layouts.internal;
  * #L%
  */
 
+import java.io.IOException;
+
 import org.cytoscape.view.layout.EdgeWeighter;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.ContainsTunables;
@@ -49,6 +51,16 @@ public class ForceDirectedLayoutContext implements TunableValidator {
 
 	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
+		try {
+		if (!isPositive(numIterations))
+			errMsg.append("Number of iterations must be > 0; current value = "+numIterations);
+		if (!isPositive(defaultSpringCoefficient))
+			errMsg.append("Default spring coefficient must be > 0; current value = "+defaultSpringCoefficient);
+		if (!isPositive(defaultSpringLength))
+			errMsg.append("Default spring length must be > 0; current value = "+defaultSpringLength);
+		if (!isPositive(defaultNodeMass))
+			errMsg.append("Default node mass must be > 0; current value = "+defaultNodeMass);
+		} catch (IOException e) {}
 		return isPositive(numIterations) && isPositive(defaultSpringCoefficient)
 		       && isPositive(defaultSpringLength) && isPositive(defaultNodeMass)
 			? ValidationState.OK : ValidationState.INVALID;
