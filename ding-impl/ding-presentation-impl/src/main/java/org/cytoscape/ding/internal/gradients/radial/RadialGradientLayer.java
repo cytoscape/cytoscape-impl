@@ -1,15 +1,15 @@
 package org.cytoscape.ding.internal.gradients.radial;
 
+import java.awt.Color;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradientLayer;
-import org.cytoscape.ding.internal.gradients.ControlPoint;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public class RadialGradientLayer extends AbstractGradientLayer {
@@ -22,7 +22,7 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 	
 	public RadialGradientLayer(final Point2D center,
 							   final float radius,
-							   final List<ControlPoint> controlPoints) {
+							   final Map<Float, Color> controlPoints) {
 		super(controlPoints);
 		this.center = center;
 		this.radius = radius;

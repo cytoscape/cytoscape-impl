@@ -24,8 +24,8 @@ public class RingChart extends AbstractChart<RingLayer> {
 	public static final String FACTORY_ID = "org.cytoscape.RingChart";
 	public static final String DISPLAY_NAME = "Ring Chart";
 	
-	public static final String START_ANGLE = "startAngle";
-	public static final String HOLE_SIZE = "holeSize";
+	public static final String START_ANGLE = "cy_startAngle";
+	public static final String HOLE_SIZE = "cy_holeSize";
 	
 	public static ImageIcon ICON;
 	

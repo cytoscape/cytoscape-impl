@@ -30,23 +30,23 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 public abstract class AbstractChart<T extends CustomGraphicLayer> extends AbstractCustomGraphics2<T>
 		implements MappableVisualPropertyValue {
 
-	public static final String DATA_COLUMNS = "dataColumns";
-	public static final String ITEM_LABELS_COLUMN = "itemLabelsColumn";
-	public static final String ITEM_LABELS = "itemLabels";
-	public static final String DOMAIN_LABELS_COLUMN = "domainLabelsColumn";
-	public static final String RANGE_LABELS_COLUMN = "rangeLabelsColumn";
-	public static final String DOMAIN_LABEL_POSITION = "domainLabelPosition";
-	public static final String GLOBAL_RANGE = "globalRange";
-	public static final String AUTO_RANGE = "autoRange";
-	public static final String RANGE = "range";
-	public static final String SHOW_ITEM_LABELS = "showItemLabels";
-	public static final String SHOW_DOMAIN_AXIS = "showDomainAxis";
-	public static final String SHOW_RANGE_AXIS = "showRangeAxis";
-	public static final String AXIS_WIDTH = "axisWidth";
-	public static final String AXIS_COLOR = "axisColor";
-	public static final String VALUES = "values";
-	public static final String BORDER_WIDTH = "borderWidth";
-	public static final String BORDER_COLOR = "borderColor";
+	public static final String DATA_COLUMNS = "cy_dataColumns";
+	public static final String ITEM_LABELS_COLUMN = "cy_itemLabelsColumn";
+	public static final String ITEM_LABELS = "cy_itemLabels";
+	public static final String DOMAIN_LABELS_COLUMN = "cy_domainLabelsColumn";
+	public static final String RANGE_LABELS_COLUMN = "cy_rangeLabelsColumn";
+	public static final String DOMAIN_LABEL_POSITION = "cy_domainLabelPosition";
+	public static final String GLOBAL_RANGE = "cy_globalRange";
+	public static final String AUTO_RANGE = "cy_autoRange";
+	public static final String RANGE = "cy_range";
+	public static final String SHOW_ITEM_LABELS = "cy_showItemLabels";
+	public static final String SHOW_DOMAIN_AXIS = "cy_showDomainAxis";
+	public static final String SHOW_RANGE_AXIS = "cy_showRangeAxis";
+	public static final String AXIS_WIDTH = "cy_axisWidth";
+	public static final String AXIS_COLOR = "cy_axisColor";
+	public static final String VALUES = "cy_values";
+	public static final String BORDER_WIDTH = "cy_borderWidth";
+	public static final String BORDER_COLOR = "cy_borderColor";
 	
 	private final CyColumnIdentifierFactory colIdFactory;
 	

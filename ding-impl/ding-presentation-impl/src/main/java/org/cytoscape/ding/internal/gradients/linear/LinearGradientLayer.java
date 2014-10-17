@@ -1,5 +1,6 @@
 package org.cytoscape.ding.internal.gradients.linear;
 
+import java.awt.Color;
 import java.awt.LinearGradientPaint;
 import java.awt.Paint;
 import java.awt.Rectangle;
@@ -7,10 +8,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradientLayer;
-import org.cytoscape.ding.internal.gradients.ControlPoint;
 import org.cytoscape.ding.internal.util.MathUtil;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
@@ -22,7 +22,7 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public LinearGradientLayer(final double angle,
-							   final List<ControlPoint> controlPoints) {
+							   final Map<Float, Color> controlPoints) {
 		super(controlPoints);
 		this.angle = MathUtil.normalizeAngle(angle);
 		rectangle = new Rectangle(0, 0, 100, 100);

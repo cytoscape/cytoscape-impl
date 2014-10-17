@@ -794,7 +794,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	
 	protected JCheckBox getItemLabelsVisibleCkb() {
 		if (itemLabelsVisibleCkb == null) {
-			itemLabelsVisibleCkb = new JCheckBox("Show Item Labels");
+			itemLabelsVisibleCkb = new JCheckBox("Show Value Labels");
 			itemLabelsVisibleCkb.setVisible(setItemLabels);
 			
 			if (setItemLabels) {

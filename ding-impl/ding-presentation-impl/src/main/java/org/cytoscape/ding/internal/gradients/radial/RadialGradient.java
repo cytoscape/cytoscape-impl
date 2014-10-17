@@ -1,5 +1,6 @@
 package org.cytoscape.ding.internal.gradients.radial;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradient;
-import org.cytoscape.ding.internal.gradients.ControlPoint;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -22,8 +22,8 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 	public static final String FACTORY_ID = "org.cytoscape.RadialGradient";
 	public static final String DISPLAY_NAME = "Radial Gradient";
 	
-	public static final String CENTER = "center";
-	public static final String RADIUS = "radius";
+	public static final String CENTER = "cy_center";
+	public static final String RADIUS = "cy_radius";
 	
 	private BufferedImage renderedImg;
 	private volatile boolean dirty = true;
@@ -90,7 +90,7 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 		RadialGradientLayer layer = null;
 		final float radius = get(RADIUS, Float.class, 1.0f);
 		final Point2D center = get(CENTER, Point2D.class, new Point2D.Float(radius/2, radius/2));
-		final List<ControlPoint> controlPoints = getList(STOP_LIST, ControlPoint.class);
+		final Map<Float, Color> controlPoints = getMap(STOP_LIST);
 		
 		if (center != null && controlPoints.size() > 1)
 			layer = new RadialGradientLayer(center, radius, controlPoints);
