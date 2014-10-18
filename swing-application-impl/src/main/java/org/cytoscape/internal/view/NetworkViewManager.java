@@ -60,6 +60,8 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
@@ -110,7 +112,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
 		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
 		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
-		ColumnDeletedListener, ViewChangedListener {
+		ColumnDeletedListener, ColumnNameChangedListener, ViewChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -558,28 +560,13 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	@Override
 	public void handleEvent(final ColumnDeletedEvent e) {
-		if (loadingSession || iFrameMap.isEmpty())
-			return;
-		
-		// Is this column from a network table?
-		final CyTable tbl = e.getSource();
-		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
-		
-		// And if there is no related view, nothing needs to be done
-		if ( net != null && netViewMgr.viewExists(net) && 
-				(tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) ) {
-			final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
-			final boolean lockedValuesApplyed = reapplyLockedValues(e.getColumnName(), networkViews);
-			
-			final Set<VisualStyle> styles = findStylesWithMappedColumn(e.getColumnName());
-			final Set<CyNetworkView> viewsToUpdate = findNetworkViewsWithStyles(styles);
-			
-			if (lockedValuesApplyed)
-				viewsToUpdate.addAll(networkViews);
-			
-			for (final CyNetworkView view : viewsToUpdate)
-				updateView(view, null);
-		}
+		onColumnChanged(e.getSource(), e.getColumnName());
+	}
+	
+	@Override
+	public void handleEvent(final ColumnNameChangedEvent e) {
+		onColumnChanged(e.getSource(), e.getOldColumnName());
+		onColumnChanged(e.getSource(), e.getNewColumnName());
 	}
 	
 	@Override
@@ -605,18 +592,52 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// And if there is no related view, nothing needs to be done
 		if ( net != null && netViewMgr.viewExists(net) && 
 				(tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) ) {
-			// Reapply locked values that map to changed columns
+			final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
+			final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
+			
 			for (final RowSetRecord record : e.getPayloadCollection()) {
 				final String columnName = record.getColumn();
 				
-				final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
+				// Reapply locked values that map to changed columns
 				final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
 				
-				if (lockedValuesApplyed) {
-					for (final CyNetworkView view : networkViews)
-						updateView(view, null);
-				}
+				if (lockedValuesApplyed)
+					viewsToUpdate.addAll(networkViews);
+				
+				// Find views that had their styles affected by the RowsSetEvent
+				final Set<VisualStyle> styles = findStylesWithMappedColumn(columnName);
+				viewsToUpdate.addAll(findNetworkViewsWithStyles(styles));
 			}
+			
+			// Update views
+			for (final CyNetworkView view : viewsToUpdate)
+				updateView(view, null);
+		}
+	}
+	
+	private void onColumnChanged(final CyTable tbl, final String columnName) {
+		if (loadingSession || iFrameMap.isEmpty())
+			return;
+		
+		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
+		
+		// And if there is no related view, nothing needs to be done
+		if ( net != null && netViewMgr.viewExists(net) && 
+				(tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) ) {
+			// Reapply locked values that map to changed columns
+			final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
+			final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
+			
+			// Find views that had their styles affected by the RowsSetEvent
+			final Set<VisualStyle> styles = findStylesWithMappedColumn(columnName);
+			final Set<CyNetworkView> viewsToUpdate = findNetworkViewsWithStyles(styles);
+			
+			if (lockedValuesApplyed)
+				viewsToUpdate.addAll(networkViews);
+			
+			// Update views
+			for (final CyNetworkView view : viewsToUpdate)
+				updateView(view, null);
 		}
 	}
 	
