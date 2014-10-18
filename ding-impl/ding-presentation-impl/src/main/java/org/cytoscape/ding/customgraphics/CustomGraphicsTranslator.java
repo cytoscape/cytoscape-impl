@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -39,6 +41,9 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 
 	private final CustomGraphicsManager cgMgr;
 	private final CyCustomGraphics2Manager cg2Mgr;
+	
+	private final Map<String,String> mimeTypes = new WeakHashMap<>();
+	
 	
 	public CustomGraphicsTranslator(final CustomGraphicsManager cgMgr, final CyCustomGraphics2Manager cg2Mgr) {
 		this.cgMgr = cgMgr;
@@ -82,9 +87,13 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 	private CyCustomGraphics translateURL(String inputValue) {
 		try {
 			final URL url = new URL(inputValue);
-			URLConnection conn = url.openConnection();
-			if (conn == null) return null;
-			String mimeType = conn.getContentType();
+			String mimeType = mimeTypes.get(inputValue);
+			if(mimeType == null) {
+				URLConnection conn = url.openConnection();
+				if (conn == null) return null;
+				mimeType = conn.getContentType();
+				mimeTypes.put(inputValue, mimeType);
+			}
 			for (CyCustomGraphicsFactory factory: cgMgr.getAllCustomGraphicsFactories()) {
 				if (factory.supportsMime(mimeType)) {
 					CyCustomGraphics cg = factory.getInstance(url);
