@@ -199,7 +199,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			renderer.setSeriesOutlineStroke(i, borderStroke);
 			renderer.setSeriesOutlinePaint(i, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 			
-			if (type != BarChartType.UP_DOWN) {
+			if (type != BarChartType.UP_DOWN && type != BarChartType.HEAT_STRIPS) {
 				Color c = DEFAULT_ITEM_BG_COLOR;
 				
 				if (colors != null && colors.size() > i)

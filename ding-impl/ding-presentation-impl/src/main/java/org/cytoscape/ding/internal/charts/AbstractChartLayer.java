@@ -288,6 +288,9 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 				
 				if (values != null) {
 					for (final double v : values) {
+						if (Double.isNaN(v))
+							continue;
+						
 						if (stacked) {
 							sum += v;
 						} else {
