@@ -25,12 +25,9 @@ package org.cytoscape.ding.customgraphics.bitmap;
  */
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
@@ -111,22 +108,18 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 	}
 
 	public CyCustomGraphics getInstance(String input) {
-		Long id = manager.getNextAvailableID();
-		URL url = null;
-		CyCustomGraphics ccg = null;
-		// System.out.println("URLImageCustomGraphicsFactory: input = "+input);
-
 		try {
-			ccg = new URLImageCustomGraphics(id, input);
-			url = new URL(input);
-		} catch (MalformedURLException e) {
-			// Just fall through
-		} catch (IOException e) {
-			// Just fall through
+			URL url = new URL(input);
+			CyCustomGraphics cg = manager.getCustomGraphicsBySourceURL(url);
+			if(cg == null) {
+				Long id = manager.getNextAvailableID();
+				cg = new URLImageCustomGraphics(id, input);
+				manager.addCustomGraphics(cg, url);
+			}
+			return cg;
+		} catch(IOException e) {
+			return null;
 		}
-		if (input != null && url != null)
-			manager.addCustomGraphics(ccg, url);
-		return ccg;
 	}
 
 	public Class<? extends CyCustomGraphics> getSupportedClass() { return TARGET_CLASS; }
