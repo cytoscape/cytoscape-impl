@@ -64,7 +64,7 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 		final List<String> rangeLabels =
 				getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
-		final Double[] range = global ? getArray(RANGE, Double.class) : null;
+		final double[] range = global ? getDoubleArray(RANGE) : null;
 		
 		final Map<String, List<Double>> data = getData(network, model);
 

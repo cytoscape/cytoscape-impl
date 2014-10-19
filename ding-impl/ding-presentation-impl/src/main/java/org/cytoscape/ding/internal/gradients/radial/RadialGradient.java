@@ -72,7 +72,8 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 	public synchronized void set(String key, Object value) {
 		super.set(key, value);
 		
-		if (CENTER.equalsIgnoreCase(key) || RADIUS.equalsIgnoreCase(key) || STOP_LIST.equalsIgnoreCase(key))
+		if (CENTER.equalsIgnoreCase(key) || RADIUS.equalsIgnoreCase(key) ||
+				GRADIENT_FRACTIONS.equalsIgnoreCase(key) || GRADIENT_COLORS.equalsIgnoreCase(key))
 			dirty = true;
 	}
 	
@@ -90,10 +91,11 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 		RadialGradientLayer layer = null;
 		final float radius = get(RADIUS, Float.class, 1.0f);
 		final Point2D center = get(CENTER, Point2D.class, new Point2D.Float(radius/2, radius/2));
-		final Map<Float, Color> controlPoints = getMap(STOP_LIST);
+		final float[] fractions = getFloatArray(GRADIENT_FRACTIONS);
+		final Color[] colors = getArray(GRADIENT_COLORS, Color.class);
 		
-		if (center != null && controlPoints.size() > 1)
-			layer = new RadialGradientLayer(center, radius, controlPoints);
+		if (center != null && fractions.length > 1)
+			layer = new RadialGradientLayer(center, radius, fractions, colors);
 		
 		return layer;
 	}

@@ -704,7 +704,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					updateGlobalRange();
 					
 					if (selected)
-						updateRangeMinMax(chart.getArray(RANGE, Double.class) == null);
+						updateRangeMinMax(chart.getDoubleArray(RANGE) == null);
 				}
 			});
 		}
@@ -1017,8 +1017,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected Double[] calculateAutoRange() {
-		Double[] range = null;
+	protected double[] calculateAutoRange() {
+		double[] range = null;
 		final CyNetwork net = appMgr.getCurrentNetwork();
 		
 		if (net != null) {
@@ -1053,7 +1053,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					}
 					
 					if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY)
-						range = new Double[]{ min, max };
+						range = new double[]{ min, max };
 				}
 			}
 		}
@@ -1105,7 +1105,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		
 		if (global && setRange) {
 			final boolean auto = chart.get(AUTO_RANGE, Boolean.class, Boolean.TRUE);
-			Double[] range = chart.getArray(RANGE, Double.class);
+			double[] range = chart.getDoubleArray(RANGE);
 			
 			if (auto) {
 				if (recalculate) {
@@ -1130,8 +1130,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			b = b && chart.get(AUTO_RANGE, Boolean.class, Boolean.TRUE);
 			
 			if (b) {
-				final Double[] range = chart.getArray(RANGE, Double.class);
-				b = b && (range == null || !Arrays.deepEquals(range, calculateAutoRange()));
+				final double[] range = chart.getDoubleArray(RANGE);
+				b = b && (range == null || !Arrays.equals(range, calculateAutoRange()));
 			}
 			
 			getRefreshRangeBtn().setEnabled(b);
@@ -1148,7 +1148,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			try {
 	            double min = Double.parseDouble(minTxt);
 	            double max = Double.parseDouble(maxTxt);
-	            chart.set(RANGE, new Double[]{ min, max });
+	            chart.set(RANGE, new double[]{ min, max });
 	        } catch (NumberFormatException e) {
 	        }
 		}

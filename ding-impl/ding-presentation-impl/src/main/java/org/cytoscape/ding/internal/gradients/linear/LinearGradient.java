@@ -68,7 +68,8 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	public synchronized void set(String key, Object value) {
 		super.set(key, value);
 		
-		if (ANGLE.equalsIgnoreCase(key) || STOP_LIST.equalsIgnoreCase(key))
+		if (ANGLE.equalsIgnoreCase(key) ||
+				GRADIENT_FRACTIONS.equalsIgnoreCase(key) || GRADIENT_COLORS.equalsIgnoreCase(key))
 			dirty = true;
 	}
 	
@@ -84,10 +85,11 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	private LinearGradientLayer createLayer() {
 		LinearGradientLayer layer = null;
 		final Double angle = get(ANGLE, Double.class, 0.0);
-		final Map<Float, Color> controlPoints = getMap(STOP_LIST);
+		final float[] fractions = getFloatArray(GRADIENT_FRACTIONS);
+		final Color[] colors = getArray(GRADIENT_COLORS, Color.class);
 		
-		if (angle != null && controlPoints.size() > 1)
-			layer = new LinearGradientLayer(angle, controlPoints);
+		if (angle != null && fractions.length > 1)
+			layer = new LinearGradientLayer(angle, fractions, colors);
 		
 		return layer;
 	}

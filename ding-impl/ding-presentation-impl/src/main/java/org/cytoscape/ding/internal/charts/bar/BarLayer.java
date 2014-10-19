@@ -54,7 +54,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final float borderWidth,
 					final Color borderColor,
 					final double separation,
-					final Double[] range,
+					final double[] range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,

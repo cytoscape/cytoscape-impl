@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.gradients;
 
+import java.awt.Color;
+import java.lang.reflect.Array;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
@@ -7,7 +9,8 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public abstract class AbstractGradient<T extends CustomGraphicLayer> extends AbstractCustomGraphics2<T> {
 
-	public static final String STOP_LIST = "cy_stopList";
+	public static final String GRADIENT_FRACTIONS = "cy_gradientFractions";
+	public static final String GRADIENT_COLORS = "cy_gradientColors";
 	
 	protected AbstractGradient(final String displayName) {
 		super(displayName);
@@ -33,8 +36,17 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	
 	@Override
 	public Class<?> getSettingType(final String key) {
-		if (key.equalsIgnoreCase(STOP_LIST)) return Map.class;
+		if (key.equalsIgnoreCase(GRADIENT_FRACTIONS)) return Array.class;
+		if (key.equalsIgnoreCase(GRADIENT_COLORS)) return Array.class;
 		
 		return super.getSettingType(key);
+	}
+	
+	@Override
+	public Class<?> getSettingElementType(final String key) {
+		if (key.equalsIgnoreCase(GRADIENT_FRACTIONS)) return Float.TYPE;
+		if (key.equalsIgnoreCase(GRADIENT_COLORS)) return Color.class;
+		
+		return super.getSettingElementType(key);
 	}
 }
