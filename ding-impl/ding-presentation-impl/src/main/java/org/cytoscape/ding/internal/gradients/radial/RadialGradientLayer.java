@@ -7,7 +7,6 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Map;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradientLayer;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
@@ -16,23 +15,23 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 	
 	protected Point2D center;
 	protected float radius;
-	protected Rectangle2D rectangle;
+	protected Rectangle2D rectangle = new Rectangle(0, 0, 1, 1);
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public RadialGradientLayer(final Point2D center,
-							   final float radius,
-							   final Map<Float, Color> controlPoints) {
-		super(controlPoints);
+			   				   final float radius,
+			   				   final float[] fractions,
+			   				   final Color[] colors) {
+		super(fractions, colors);
 		this.center = center;
 		this.radius = radius;
 		
 		if (this.center == null)
 			this.center = new Point2D.Float(0.5f, 0.5f);
+		
 		if (this.radius <= 0.0f)
 			this.radius = 1.0f; // 100%
-
-		rectangle = new Rectangle(0, 0, 1, 1);
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -50,7 +49,7 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 		final double r =  Math.sqrt(w*w + h*h) / 2;
 		final double newRadius = delta + r * radius;
 		
-		paint = new RadialGradientPaint(newCenter, (float)newRadius, positions, colors);
+		paint = new RadialGradientPaint(newCenter, (float)newRadius, fractions, colors);
 		
 		return paint;
 	}
@@ -62,7 +61,7 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 
 	@Override
 	public CustomGraphicLayer transform(final AffineTransform xform) {
-		final RadialGradientLayer newLayer = new RadialGradientLayer(center, radius, controlPoints);
+		final RadialGradientLayer newLayer = new RadialGradientLayer(center, radius, fractions, colors);
 		newLayer.rectangle = xform.createTransformedShape(rectangle).getBounds2D();
 		
 		return newLayer;

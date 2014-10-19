@@ -1,24 +1,18 @@
 package org.cytoscape.ding.customgraphics.json;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
-import org.cytoscape.ding.internal.charts.util.ColorUtil;
-import org.cytoscape.ding.internal.gradients.AbstractGradient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -71,51 +65,7 @@ public class PropertiesJsonDeserializer extends JsonDeserializer<Map<String, Obj
 			final TypeFactory typeFactory = mapper.getTypeFactory();
 			
 			try {
-				if (key.equals(AbstractGradient.STOP_LIST) && type.isAssignableFrom(Map.class)) {
-					final JsonFactory factory = mapper.getFactory();
-					final JsonParser jp = factory.createParser(input);
-					
-					try {
-						jp.nextToken();
-						
-						if (jp.getCurrentToken() != JsonToken.START_ARRAY)
-							return null;
-						
-						final Map<Float, Color> map = new TreeMap<>();
-						
-						while (jp.nextToken() != JsonToken.END_ARRAY) {
-							if (jp.getCurrentToken() != JsonToken.START_OBJECT)
-								continue;
-							
-							float position = -1;
-							Color color = null;
-							
-							while (jp.nextToken() != JsonToken.END_OBJECT) {
-								if (jp.getCurrentToken() != JsonToken.FIELD_NAME)
-									continue;
-								
-								final String fieldName = jp.getCurrentName();
-								final JsonToken valueToken = jp.nextToken();
-								
-								if ("position".equals(fieldName)) {
-									if (valueToken == JsonToken.VALUE_NUMBER_FLOAT)
-										position = jp.getFloatValue();
-									else if (valueToken == JsonToken.VALUE_NUMBER_INT)
-										position = jp.getIntValue();
-								} else if ("color".equals(fieldName) && valueToken == JsonToken.VALUE_STRING) {
-									color = ColorUtil.parseColor(jp.getText());
-								}
-							}
-							
-							if (position >= 0.0f && color != null)
-								map.put(position, color);
-						}
-					
-						value = map;
-					} finally {
-						jp.close();
-					}
-				} else if (type == Array.class) {
+				if (type == Array.class) {
 					final Class<?> elementType = cg2.getSettingElementType(key);
 					
 					if (elementType != null) {

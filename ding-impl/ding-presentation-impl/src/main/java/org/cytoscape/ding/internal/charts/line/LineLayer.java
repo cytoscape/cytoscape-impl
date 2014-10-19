@@ -38,7 +38,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final List<Color> colors,
 					 final float axisWidth,
 					 final Color axisColor,
-					 final Double[] range,
+					 final double[] range,
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,

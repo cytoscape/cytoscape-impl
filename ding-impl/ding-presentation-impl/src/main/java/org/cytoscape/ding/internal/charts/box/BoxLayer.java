@@ -38,7 +38,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 					final Color axisColor,
 					final float borderWidth,
 					final Color borderColor,
-					final Double[] range,
+					final double[] range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST,

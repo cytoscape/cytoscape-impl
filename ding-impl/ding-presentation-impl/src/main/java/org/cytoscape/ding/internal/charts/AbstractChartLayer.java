@@ -53,7 +53,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	protected float axisWidth;
 	protected Color axisColor;
 	protected float axisFontSize = 2.0f;
-	protected Double[] range;
+	protected double[] range;
 	
 	protected Rectangle2D bounds;
 	protected Rectangle2D scaledBounds;
@@ -77,7 +77,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 								 final Color axisColor,
 								 final float borderWidth,
 								 final Color borderColor,
-								 final Double[] range,
+								 final double[] range,
 								 final Rectangle2D bounds) {
 		this.data = data;
 		this.itemLabels = itemLabels;
@@ -276,8 +276,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		return labels;
 	}
 	
-	public static Double[] calculateRange(final Collection<List<Double>> lists, final boolean stacked) {
-		Double[] range = null;
+	public static double[] calculateRange(final Collection<List<Double>> lists, final boolean stacked) {
+		double[] range = null;
 		
 		if (lists != null && !lists.isEmpty()) {
 			double min = Double.POSITIVE_INFINITY;
@@ -306,7 +306,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 				}
 				
 				if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY)
-					range = new Double[]{ min, max };
+					range = new double[]{ min, max };
 			}
 		}
 		

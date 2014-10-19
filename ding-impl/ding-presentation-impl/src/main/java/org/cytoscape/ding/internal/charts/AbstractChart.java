@@ -316,7 +316,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		if (key.equalsIgnoreCase(DATA_COLUMNS)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(VALUES)) return Double.class;
 		if (key.equalsIgnoreCase(ITEM_LABELS)) return String.class;
-		if (key.equalsIgnoreCase(RANGE)) return Double.class;
+		if (key.equalsIgnoreCase(RANGE)) return Double.TYPE;
 		
 		return super.getSettingElementType(key);
 	}

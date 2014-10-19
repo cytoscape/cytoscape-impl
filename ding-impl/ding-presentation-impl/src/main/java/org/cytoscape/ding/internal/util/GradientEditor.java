@@ -16,9 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Map.Entry;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -68,15 +65,22 @@ public class GradientEditor extends JPanel {
 		init();
 	}
 	
-	public GradientEditor(final Map<Float, Color> points) {
-		final List<ControlPoint> list = new ArrayList<>();
+	public GradientEditor(final float[] positions, final Color[] colors) {
+		final List<ControlPoint> points = new ArrayList<>();
 		
-		if (points != null) {
-			for (final Entry<Float, Color> entry : points.entrySet())
-				list.add(new ControlPoint(entry.getValue(), entry.getKey()));
+		if (positions != null) {
+			for (int i = 0; i < positions.length; i++) {
+				final float pos = positions[i];
+				Color c = null;
+					
+				if (colors != null && colors.length > i)
+					c = colors[i];
+				
+				points.add(new ControlPoint((c != null ? c : Color.WHITE), pos));
+			}
 		}
 		
-		setPoints(list);
+		setPoints(points);
 		init();
 	}
 	
@@ -239,13 +243,22 @@ public class GradientEditor extends JPanel {
 		return new ArrayList<ControlPoint>(controlPoints);
 	}
 	
-	public Map<Float, Color> getControlPointsMap() {
-		final Map<Float, Color> map = new TreeMap<>();
+	public float[] getPositions() {
+		final float[] positions = new float[controlPoints.size()];
 		
-		for (final ControlPoint cp : controlPoints)
-			map.put(cp.getPosition(), cp.getColor());
+		for (int i = 0; i < controlPoints.size(); i++)
+			positions[i] = controlPoints.get(i).getPosition();
 		
-		return map;
+		return positions;
+	}
+	
+	public Color[] getColors() {
+		final Color[] colors = new Color[controlPoints.size()];
+		
+		for (int i = 0; i < controlPoints.size(); i++)
+			colors[i] = controlPoints.get(i).getColor();
+		
+		return colors;
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================

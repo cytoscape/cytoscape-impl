@@ -3,6 +3,7 @@ package org.cytoscape.ding.customgraphics;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -169,19 +170,25 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		final Class<?> type = getSettingType(key);
 		
 		if (type != null) {
-			if (value != null && !type.isAssignableFrom(value.getClass())) {
-				final ObjectMapper om = getObjectMapper();
-				String json = value.toString();
-				
-				if (type != List.class) {
-					try {
-						json = om.writeValueAsString(value);
-					} catch (JsonProcessingException e) {
-						logger.error("Cannot parse JSON field " + key, e);
+			if (value != null) {
+				if (type == Array.class
+						&& value.getClass().isArray() 
+						&& value.getClass().getComponentType() == getSettingElementType(key)) {
+					// It's OK; just take the value as it is.
+				} else if (!type.isAssignableFrom(value.getClass())) {
+					final ObjectMapper om = getObjectMapper();
+					String json = value.toString();
+					
+					if (type != List.class) {
+						try {
+							json = om.writeValueAsString(value);
+						} catch (JsonProcessingException e) {
+							logger.error("Cannot parse JSON field " + key, e);
+						}
 					}
+					
+					value = PropertiesJsonDeserializer.readValue(key, json, om, this);
 				}
-				
-				value = PropertiesJsonDeserializer.readValue(key, json, om, this);
 			}
 			
 			properties.put(key, value);
@@ -219,11 +226,24 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		return arr;
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public <K, V> Map<K, V> getMap(final String key) {
+	public synchronized float[] getFloatArray(final String key) {
 		final Object obj = properties.get(key);
 		
-		return obj instanceof Map ? (Map)obj : Collections.emptyMap();
+		try {
+			return (float[]) obj;
+		} catch (ClassCastException e) {
+			return null;
+		}
+	}
+	
+	public synchronized double[] getDoubleArray(final String key) {
+		final Object obj = properties.get(key);
+		
+		try {
+			return (double[]) obj;
+		} catch (ClassCastException e) {
+			return null;
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

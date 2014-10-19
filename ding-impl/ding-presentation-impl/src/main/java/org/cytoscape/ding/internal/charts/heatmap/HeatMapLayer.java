@@ -40,7 +40,7 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 						final LabelPosition domainLabelPosition,
 						final List<Color> colors,
 						final Color axisColor,
-						final Double[] range,
+						final double[] range,
 						final Orientation orientation,
 						final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, domainLabelPosition,

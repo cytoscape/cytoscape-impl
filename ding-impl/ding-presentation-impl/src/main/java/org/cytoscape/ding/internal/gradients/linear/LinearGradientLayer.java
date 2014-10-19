@@ -8,7 +8,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Map;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradientLayer;
 import org.cytoscape.ding.internal.util.MathUtil;
@@ -17,15 +16,13 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 public class LinearGradientLayer extends AbstractGradientLayer {
 	
 	protected double angle;
-	protected Rectangle2D rectangle;
+	protected Rectangle2D rectangle = new Rectangle(0, 0, 100, 100);
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public LinearGradientLayer(final double angle,
-							   final Map<Float, Color> controlPoints) {
-		super(controlPoints);
+	public LinearGradientLayer(final double angle, final float[] fractions, final Color[] colors) {
+		super(fractions, colors);
 		this.angle = MathUtil.normalizeAngle(angle);
-		rectangle = new Rectangle(0, 0, 100, 100);
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -73,7 +70,7 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 	@Override
 	public Paint getPaint(final Rectangle2D bounds) {
 		final Line2D line = getGradientAxis(bounds, angle);
-		paint = new LinearGradientPaint(line.getP1(), line.getP2(), positions, colors);
+		paint = new LinearGradientPaint(line.getP1(), line.getP2(), fractions, colors);
 		
 		return paint;
 	}
@@ -85,7 +82,7 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 
 	@Override
 	public CustomGraphicLayer transform(final AffineTransform xform) {
-		final LinearGradientLayer newLayer = new LinearGradientLayer(angle, controlPoints);
+		final LinearGradientLayer newLayer = new LinearGradientLayer(angle, fractions, colors);
 		newLayer.rectangle = xform.createTransformedShape(rectangle) .getBounds2D();
 		
 		return newLayer;
