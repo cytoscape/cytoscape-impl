@@ -82,7 +82,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 			
 			if (value instanceof ColorScheme)
 				value = ((ColorScheme)value).getKey();
-			else if (value instanceof Class && ((Class<?>)value).isEnum())
+			else if (value instanceof Enum)
 				value = value.toString();
 			
 			map.put(key, value);
@@ -171,11 +171,14 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		
 		if (type != null) {
 			if (value != null) {
-				if (type == Array.class
-						&& value.getClass().isArray() 
-						&& value.getClass().getComponentType() == getSettingElementType(key)) {
-					// It's OK; just take the value as it is.
-				} else if (!type.isAssignableFrom(value.getClass())) {
+				// It's OK; just take the value as it is.
+				boolean correctType = 
+						type == Array.class &&
+						value.getClass().isArray() &&
+						value.getClass().getComponentType() == getSettingElementType(key);
+				correctType = correctType || type.isAssignableFrom(value.getClass());
+				
+				if (!correctType) {
 					final ObjectMapper om = getObjectMapper();
 					String json = value.toString();
 					
@@ -197,7 +200,9 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	
 	@SuppressWarnings("unchecked")
 	public synchronized <S> S get(final String key, final Class<S> cls) {
-		return (S) properties.get(key);
+		Object obj = properties.get(key);
+		
+		return obj != null && cls.isAssignableFrom(obj.getClass()) ? (S) obj : null;
 	}
 	
 	public synchronized <S> S get(final String key, final Class<S> cls, final S defValue) {
