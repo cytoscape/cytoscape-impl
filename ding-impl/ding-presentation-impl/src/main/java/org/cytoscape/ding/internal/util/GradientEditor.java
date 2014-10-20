@@ -65,16 +65,16 @@ public class GradientEditor extends JPanel {
 		init();
 	}
 	
-	public GradientEditor(final float[] positions, final Color[] colors) {
+	public GradientEditor(final List<Float> positions, final List<Color> colors) {
 		final List<ControlPoint> points = new ArrayList<>();
 		
 		if (positions != null) {
-			for (int i = 0; i < positions.length; i++) {
-				final float pos = positions[i];
+			for (int i = 0; i < positions.size(); i++) {
+				final float pos = positions.get(i);
 				Color c = null;
 					
-				if (colors != null && colors.length > i)
-					c = colors[i];
+				if (colors != null && colors.size() > i)
+					c = colors.get(i);
 				
 				points.add(new ControlPoint((c != null ? c : Color.WHITE), pos));
 			}
@@ -243,20 +243,20 @@ public class GradientEditor extends JPanel {
 		return new ArrayList<ControlPoint>(controlPoints);
 	}
 	
-	public float[] getPositions() {
-		final float[] positions = new float[controlPoints.size()];
+	public List<Float> getPositions() {
+		final List<Float> positions = new ArrayList<>(controlPoints.size());
 		
 		for (int i = 0; i < controlPoints.size(); i++)
-			positions[i] = controlPoints.get(i).getPosition();
+			positions.add(controlPoints.get(i).getPosition());
 		
 		return positions;
 	}
 	
-	public Color[] getColors() {
-		final Color[] colors = new Color[controlPoints.size()];
+	public List<Color> getColors() {
+		final List<Color> colors = new ArrayList<>(controlPoints.size());
 		
 		for (int i = 0; i < controlPoints.size(); i++)
-			colors[i] = controlPoints.get(i).getColor();
+			colors.add(controlPoints.get(i).getColor());
 		
 		return colors;
 	}

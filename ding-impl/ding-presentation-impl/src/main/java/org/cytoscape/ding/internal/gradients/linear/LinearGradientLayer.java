@@ -8,6 +8,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradientLayer;
 import org.cytoscape.ding.internal.util.MathUtil;
@@ -20,7 +21,7 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public LinearGradientLayer(final double angle, final float[] fractions, final Color[] colors) {
+	public LinearGradientLayer(final double angle, final List<Float> fractions, final List<Color> colors) {
 		super(fractions, colors);
 		this.angle = MathUtil.normalizeAngle(angle);
 	}
@@ -70,7 +71,7 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 	@Override
 	public Paint getPaint(final Rectangle2D bounds) {
 		final Line2D line = getGradientAxis(bounds, angle);
-		paint = new LinearGradientPaint(line.getP1(), line.getP2(), fractions, colors);
+		paint = new LinearGradientPaint(line.getP1(), line.getP2(), fractionArray, colorArray);
 		
 		return paint;
 	}

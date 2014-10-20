@@ -38,7 +38,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 					final Color axisColor,
 					final float borderWidth,
 					final Color borderColor,
-					final double[] range,
+					final List<Double> range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
@@ -116,9 +116,9 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		rangeAxis.setUpperMargin(0.1);
         
 		// Set axis range		
-		if (range != null && range.length >= 2) {
-			rangeAxis.setLowerBound(range[0]);
-			rangeAxis.setUpperBound(range[1]);
+		if (range != null && range.size() >= 2 && range.get(0) != null && range.get(1) != null) {
+			rangeAxis.setLowerBound(range.get(0));
+			rangeAxis.setUpperBound(range.get(1));
 		}
 		
 		final BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();

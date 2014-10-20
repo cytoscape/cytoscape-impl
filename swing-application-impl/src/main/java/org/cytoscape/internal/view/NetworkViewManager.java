@@ -816,6 +816,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 					final Object defValue = vs.getDefaultValue(vp);
 					
 					if (defValue instanceof MappableVisualPropertyValue) {
+						((MappableVisualPropertyValue) defValue).update();
 						styles.add(vs);
 						break;
 					}
@@ -860,6 +861,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				
 				for (final View<?> view : viewSet) {
 					if (view.isDirectlyLocked(vp) && value.equals(view.getVisualProperty(vp))) {
+						value.update();
 						view.setLockedValue(vp, value);
 						result = true;
 					}

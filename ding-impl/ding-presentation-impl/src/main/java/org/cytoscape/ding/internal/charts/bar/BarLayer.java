@@ -54,7 +54,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final float borderWidth,
 					final Color borderColor,
 					final double separation,
-					final double[] range,
+					final List<Double> range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
@@ -64,7 +64,9 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		this.orientation = orientation;
 		singleCategory = data.size() == 1;
 
-		if (type == BarChartType.HEAT_STRIPS && (this.range == null || this.range.length < 2)) // Range cannot be null
+		// Range cannot be null
+		if (type == BarChartType.HEAT_STRIPS &&
+				(this.range == null || this.range.size() < 2 || this.range.get(0) == null || this.range.get(1) == null))
 			this.range = calculateRange(data.values(), false);
 	}
 	
@@ -154,9 +156,9 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		rangeAxis.setUpperMargin(0.1);
 		
 		// Set axis range		
-		if (range != null && range.length >= 2) {
-			rangeAxis.setLowerBound(range[0]);
-			rangeAxis.setUpperBound(range[1]);
+		if (range != null && range.size() >= 2 && range.get(0) != null && range.get(1) != null) {
+			rangeAxis.setLowerBound(range.get(0));
+			rangeAxis.setUpperBound(range.get(1));
 		}
 		
 		if (type != BarChartType.STACKED) {
@@ -239,7 +241,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 				if (Double.isNaN(value))
 					return zeroColor;
 				
-				return ColorScale.getPaint(value, range[0], range[1], downColor, zeroColor, upColor);
+				return ColorScale.getPaint(value, range.get(0), range.get(1), downColor, zeroColor, upColor);
 			}
 			
 			return value < 0.0 ? downColor : upColor;

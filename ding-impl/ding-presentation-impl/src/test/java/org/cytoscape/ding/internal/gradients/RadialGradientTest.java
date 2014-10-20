@@ -1,5 +1,6 @@
 package org.cytoscape.ding.internal.gradients;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.cytoscape.ding.internal.gradients.radial.RadialGradient.*;
 
@@ -22,8 +23,8 @@ public class RadialGradientTest {
 	@Test
 	public void testChartProperties() {
 		Map<String, Object> props1 = new HashMap<String, Object>();
-		props1.put(GRADIENT_COLORS, new Color[]{ Color.WHITE, Color.RED, Color.BLUE, Color.GREEN });
-		props1.put(GRADIENT_FRACTIONS, new float[]{ 0.0f, 0.25f, 0.75f, 1.0f });
+		props1.put(GRADIENT_COLORS, asList(Color.WHITE, Color.RED, Color.BLUE, Color.GREEN));
+		props1.put(GRADIENT_FRACTIONS, asList(0.0f, 0.25f, 0.75f, 1.0f));
 		props1.put(CENTER, new Point2D.Float(0.25f, 0.5f));
 		props1.put(RADIUS, 2.0f);
 		
@@ -38,10 +39,9 @@ public class RadialGradientTest {
 		
 		// When calling the internal get methods, some property values are converted to internal types,
 		// which are not exposed to the API client code
-		assertArrayEquals((Color[])props1.get(GRADIENT_COLORS), grad.getArray(GRADIENT_COLORS, Color.class));
-		assertArrayEquals((float[])props1.get(GRADIENT_FRACTIONS), grad.getFloatArray(GRADIENT_FRACTIONS), 0.0f);
+		assertEquals(props1.get(GRADIENT_COLORS), grad.getList(GRADIENT_COLORS, Color.class));
+		assertEquals(props1.get(GRADIENT_FRACTIONS), grad.getList(GRADIENT_FRACTIONS, Float.class));
 		assertEquals(props1.get(CENTER), grad.get(CENTER, Point2D.class));
 		assertEquals(new Float(2.0f), grad.get(RADIUS, Float.class));
 	}
 }
-

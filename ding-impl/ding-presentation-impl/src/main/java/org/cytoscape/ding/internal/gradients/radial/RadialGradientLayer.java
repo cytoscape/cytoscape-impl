@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 import org.cytoscape.ding.internal.gradients.AbstractGradientLayer;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
@@ -21,8 +22,8 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 	
 	public RadialGradientLayer(final Point2D center,
 			   				   final float radius,
-			   				   final float[] fractions,
-			   				   final Color[] colors) {
+			   				   final List<Float> fractions,
+			   				   final List<Color> colors) {
 		super(fractions, colors);
 		this.center = center;
 		this.radius = radius;
@@ -49,7 +50,7 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 		final double r =  Math.sqrt(w*w + h*h) / 2;
 		final double newRadius = delta + r * radius;
 		
-		paint = new RadialGradientPaint(newCenter, (float)newRadius, fractions, colors);
+		paint = new RadialGradientPaint(newCenter, (float)newRadius, fractionArray, colorArray);
 		
 		return paint;
 	}

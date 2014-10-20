@@ -1,15 +1,14 @@
 package org.cytoscape.ding.internal.charts;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.cytoscape.ding.internal.charts.ring.RingChart.*;
 
 import java.awt.Color;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.ring.RingChart;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
@@ -29,15 +28,14 @@ public class RingChartTest {
 	public void testChartProperties() {
 		Map<String, Object> props1 = new HashMap<String, Object>();
 		props1.put(DATA_COLUMNS, 
-				Arrays.asList(new CyColumnIdentifier[]{ 
-						colIdFactory.createColumnIdentifier("data1"),
-						colIdFactory.createColumnIdentifier("data2") }));
+				asList(colIdFactory.createColumnIdentifier("data1"),
+					   colIdFactory.createColumnIdentifier("data2")));
 		props1.put(COLOR_SCHEME, "CUSTOM");
-		props1.put(COLORS, Arrays.asList(new Color[]{ Color.RED, Color.BLUE, Color.GREEN }));
+		props1.put(COLORS, asList(Color.RED, Color.BLUE, Color.GREEN));
 		props1.put(BORDER_COLOR, Color.WHITE);
 		props1.put(BORDER_WIDTH, 2.5f);
 		props1.put(ITEM_LABELS_COLUMN, "labels1");
-		props1.put(ITEM_LABELS, Arrays.asList(new String[]{ "A", "B", "C" }));
+		props1.put(ITEM_LABELS, asList("A", "B", "C"));
 		props1.put(START_ANGLE, -45.0);
 		props1.put(HOLE_SIZE, -2.5);
 		props1.put(SHOW_ITEM_LABELS, true);

@@ -1,7 +1,6 @@
 package org.cytoscape.ding.internal.charts;
 
 import java.awt.Color;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -96,6 +95,11 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	@Override
 	public String getSerializableString() {
 		return toSerializableString();
+	}
+	
+	@Override
+	public void update() {
+		// Doesn't need to do anything here, because charts are updated when layers are recreated.
 	}
 	
 	/**
@@ -304,7 +308,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		if (key.equalsIgnoreCase(AXIS_COLOR)) return Color.class;
 		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
 		if (key.equalsIgnoreCase(AUTO_RANGE)) return Boolean.class;
-		if (key.equalsIgnoreCase(RANGE)) return Array.class;
+		if (key.equalsIgnoreCase(RANGE)) return List.class;
 		if (key.equalsIgnoreCase(BORDER_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(BORDER_COLOR)) return Color.class;
 			
@@ -316,7 +320,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		if (key.equalsIgnoreCase(DATA_COLUMNS)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(VALUES)) return Double.class;
 		if (key.equalsIgnoreCase(ITEM_LABELS)) return String.class;
-		if (key.equalsIgnoreCase(RANGE)) return Double.TYPE;
+		if (key.equalsIgnoreCase(RANGE)) return Double.class;
 		
 		return super.getSettingElementType(key);
 	}
