@@ -85,10 +85,10 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	private LinearGradientLayer createLayer() {
 		LinearGradientLayer layer = null;
 		final Double angle = get(ANGLE, Double.class, 0.0);
-		final float[] fractions = getFloatArray(GRADIENT_FRACTIONS);
-		final Color[] colors = getArray(GRADIENT_COLORS, Color.class);
+		final List<Float> fractions = getList(GRADIENT_FRACTIONS, Float.class);
+		final List<Color> colors = getList(GRADIENT_COLORS, Color.class);
 		
-		if (angle != null && fractions.length > 1)
+		if (angle != null && fractions.size() > 1)
 			layer = new LinearGradientLayer(angle, fractions, colors);
 		
 		return layer;

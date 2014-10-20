@@ -38,7 +38,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final List<Color> colors,
 					 final float axisWidth,
 					 final Color axisColor,
-					 final double[] range,
+					 final List<Double> range,
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
@@ -116,9 +116,9 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		rangeAxis.setUpperMargin(0.0);
         
 		// Set axis range		
-		if (range != null && range.length >= 2) {
-			rangeAxis.setLowerBound(range[0] * 1.1); // TODO add tick size???
-			rangeAxis.setUpperBound(range[1] * 1.1);
+		if (range != null && range.size() >= 2 && range.get(0) != null && range.get(1) != null) {
+			rangeAxis.setLowerBound(range.get(0) * 1.1);
+			rangeAxis.setUpperBound(range.get(1) * 1.1);
 		}
 		
 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();

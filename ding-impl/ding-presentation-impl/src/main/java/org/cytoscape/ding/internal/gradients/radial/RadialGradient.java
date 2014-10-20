@@ -91,10 +91,10 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 		RadialGradientLayer layer = null;
 		final float radius = get(RADIUS, Float.class, 1.0f);
 		final Point2D center = get(CENTER, Point2D.class, new Point2D.Float(radius/2, radius/2));
-		final float[] fractions = getFloatArray(GRADIENT_FRACTIONS);
-		final Color[] colors = getArray(GRADIENT_COLORS, Color.class);
+		final List<Float> fractions = getList(GRADIENT_FRACTIONS, Float.class);
+		final List<Color> colors = getList(GRADIENT_COLORS, Color.class);
 		
-		if (center != null && fractions.length > 1)
+		if (center != null && fractions.size() > 1)
 			layer = new RadialGradientLayer(center, radius, fractions, colors);
 		
 		return layer;

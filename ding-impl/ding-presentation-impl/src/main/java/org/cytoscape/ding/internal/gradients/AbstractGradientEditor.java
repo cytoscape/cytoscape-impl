@@ -6,6 +6,7 @@ import static org.cytoscape.ding.internal.gradients.AbstractGradient.GRADIENT_FR
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -67,8 +68,8 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 
 	protected GradientEditor getGrEditor() {
 		if (grEditor == null) {
-			final float[] fractions = gradient.getFloatArray(GRADIENT_FRACTIONS);
-			final Color[] colors = gradient.getArray(GRADIENT_COLORS, Color.class);
+			final List<Float> fractions = gradient.getList(GRADIENT_FRACTIONS, Float.class);
+			final List<Color> colors = gradient.getList(GRADIENT_COLORS, Color.class);
 			grEditor = new GradientEditor(fractions, colors);
 			
 			// Add listener--update gradient when user interacts with the UI
@@ -79,7 +80,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 				}
 			});
 			
-			if (fractions == null || fractions.length < 2) {
+			if (fractions == null || fractions.size() < 2) {
 				gradient.set(GRADIENT_FRACTIONS, getGrEditor().getPositions());
 				gradient.set(GRADIENT_COLORS, getGrEditor().getColors());
 			}

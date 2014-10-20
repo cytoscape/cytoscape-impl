@@ -56,7 +56,7 @@ public class BoxChart extends AbstractChart<BoxLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
-		final double[] range = global ? getDoubleArray(RANGE) : null;
+		final List<Double> range = global ? getList(RANGE, Double.class) : null;
 		
 		final Map<String, List<Double>> data = getData(network, model);
 

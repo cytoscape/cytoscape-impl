@@ -704,7 +704,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					updateGlobalRange();
 					
 					if (selected)
-						updateRangeMinMax(chart.getDoubleArray(RANGE) == null);
+						updateRangeMinMax(chart.getList(RANGE, Double.class).isEmpty());
 				}
 			});
 		}
@@ -1017,8 +1017,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected double[] calculateAutoRange() {
-		double[] range = null;
+	protected List<Double> calculateAutoRange() {
+		final List<Double> range = new ArrayList<>(2);
 		final CyNetwork net = appMgr.getCurrentNetwork();
 		
 		if (net != null) {
@@ -1052,8 +1052,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						max = mm[1];
 					}
 					
-					if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY)
-						range = new double[]{ min, max };
+					if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY) {
+						range.add(min);
+						range.add(max);
+					}
 				}
 			}
 		}
@@ -1105,7 +1107,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		
 		if (global && setRange) {
 			final boolean auto = chart.get(AUTO_RANGE, Boolean.class, Boolean.TRUE);
-			double[] range = chart.getDoubleArray(RANGE);
+			List<Double> range = chart.getList(RANGE, Double.class);
 			
 			if (auto) {
 				if (recalculate) {
@@ -1116,10 +1118,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				}
 			}
 			
-			if (range != null && range.length >= 2) {
+			if (range != null && range.size() >= 2) {
 				chart.set(RANGE, range);
-				getRangeMinTxt().setText(""+range[0]);
-				getRangeMaxTxt().setText(""+range[1]);
+				getRangeMinTxt().setText(""+range.get(0));
+				getRangeMaxTxt().setText(""+range.get(1));
 			}
 		}
 	}
@@ -1130,8 +1132,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			b = b && chart.get(AUTO_RANGE, Boolean.class, Boolean.TRUE);
 			
 			if (b) {
-				final double[] range = chart.getDoubleArray(RANGE);
-				b = b && (range == null || !Arrays.equals(range, calculateAutoRange()));
+				final List<Double> range = chart.getList(RANGE, Double.class);
+				b = b && (range == null || !range.equals(calculateAutoRange()));
 			}
 			
 			getRefreshRangeBtn().setEnabled(b);
@@ -1148,7 +1150,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			try {
 	            double min = Double.parseDouble(minTxt);
 	            double max = Double.parseDouble(maxTxt);
-	            chart.set(RANGE, new double[]{ min, max });
+	            chart.set(RANGE, Arrays.asList(min, max));
 	        } catch (NumberFormatException e) {
 	        }
 		}

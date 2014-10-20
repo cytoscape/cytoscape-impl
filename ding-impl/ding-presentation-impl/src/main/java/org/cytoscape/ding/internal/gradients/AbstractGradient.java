@@ -1,7 +1,7 @@
 package org.cytoscape.ding.internal.gradients;
 
 import java.awt.Color;
-import java.lang.reflect.Array;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
@@ -36,15 +36,15 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	
 	@Override
 	public Class<?> getSettingType(final String key) {
-		if (key.equalsIgnoreCase(GRADIENT_FRACTIONS)) return Array.class;
-		if (key.equalsIgnoreCase(GRADIENT_COLORS)) return Array.class;
+		if (key.equalsIgnoreCase(GRADIENT_FRACTIONS)) return List.class;
+		if (key.equalsIgnoreCase(GRADIENT_COLORS)) return List.class;
 		
 		return super.getSettingType(key);
 	}
 	
 	@Override
 	public Class<?> getSettingElementType(final String key) {
-		if (key.equalsIgnoreCase(GRADIENT_FRACTIONS)) return Float.TYPE;
+		if (key.equalsIgnoreCase(GRADIENT_FRACTIONS)) return Float.class;
 		if (key.equalsIgnoreCase(GRADIENT_COLORS)) return Color.class;
 		
 		return super.getSettingElementType(key);

@@ -1,10 +1,10 @@
 package org.cytoscape.ding.internal.charts;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.cytoscape.ding.internal.charts.bar.BarChart.*;
 
 import java.awt.Color;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,16 +29,15 @@ public class BarChartTest {
 	public void testChartProperties() {
 		Map<String, Object> props1 = new HashMap<String, Object>();
 		props1.put(DATA_COLUMNS, 
-				Arrays.asList(new CyColumnIdentifier[]{ 
-						colIdFactory.createColumnIdentifier("data1"),
-						colIdFactory.createColumnIdentifier("data2") }));
+				asList(colIdFactory.createColumnIdentifier("data1"),
+					   colIdFactory.createColumnIdentifier("data2")));
 		props1.put(COLOR_SCHEME, "RAINBOW");
 		props1.put(TYPE, "HEAT_STRIPS");
 		props1.put(SEPARATION, 0.2);
 		props1.put(AUTO_RANGE, false);
 		props1.put(GLOBAL_RANGE, true);
-		props1.put(RANGE, new double[]{ -10.5, 15.0 });
-		props1.put(COLORS, Arrays.asList(new Color[]{ Color.RED, Color.BLUE, Color.GREEN }));
+		props1.put(RANGE, asList(-10.5, 15.0));
+		props1.put(COLORS, asList(Color.RED, Color.BLUE, Color.GREEN));
 		props1.put(ORIENTATION, "VERTICAL");
 		props1.put(BORDER_COLOR, Color.WHITE);
 		props1.put(BORDER_WIDTH, 2.5f);
@@ -46,7 +45,7 @@ public class BarChartTest {
 		props1.put(DOMAIN_LABELS_COLUMN, "labels2");
 		props1.put(RANGE_LABELS_COLUMN, colIdFactory.createColumnIdentifier("labels3"));
 		props1.put(DOMAIN_LABEL_POSITION, "UP_45");
-		props1.put(ITEM_LABELS, Arrays.asList(new String[]{ "A", "B", "C" }));
+		props1.put(ITEM_LABELS, asList("A", "B", "C"));
 		props1.put(SHOW_ITEM_LABELS, true);
 		props1.put(SHOW_DOMAIN_AXIS, true);
 		props1.put(SHOW_RANGE_AXIS, false);
@@ -64,7 +63,7 @@ public class BarChartTest {
 		assertEquals(props1.get(SEPARATION), props2.get(SEPARATION));
 		assertEquals(props1.get(AUTO_RANGE), props2.get(AUTO_RANGE));
 		assertEquals(props1.get(GLOBAL_RANGE), props2.get(GLOBAL_RANGE));
-		assertArrayEquals((double[])props1.get(RANGE), (double[])props2.get(RANGE), 0.0);
+		assertEquals(props1.get(RANGE), props2.get(RANGE));
 		assertEquals(props1.get(COLORS), props2.get(COLORS));
 		assertEquals(props1.get(ORIENTATION), props2.get(ORIENTATION));
 		assertEquals(props1.get(BORDER_COLOR), props2.get(BORDER_COLOR));
@@ -89,7 +88,7 @@ public class BarChartTest {
 		assertEquals(new Double(0.2), chart.get(SEPARATION, Double.class));
 		assertEquals(Boolean.FALSE, chart.get(AUTO_RANGE, Boolean.class));
 		assertEquals(Boolean.TRUE, chart.get(GLOBAL_RANGE, Boolean.class));
-		assertArrayEquals((double[])props1.get(RANGE), (double[])chart.getDoubleArray(RANGE), 0.0);
+		assertEquals(props1.get(RANGE), chart.getList(RANGE, Double.class));
 		assertEquals(props1.get(COLORS), chart.getList(COLORS, Color.class));
 		assertEquals(Orientation.VERTICAL, chart.get(ORIENTATION, Orientation.class));
 		assertEquals(Color.WHITE, chart.get(BORDER_COLOR, Color.class));

@@ -381,6 +381,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 						}
 					} else {
 						initialCg2 = cf.getInstance(new HashMap<String, Object>());
+						this.cg2 = null;
 					}
 					
 					cg2EditorPn.update(initialCg2);
@@ -398,6 +399,8 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 				
 				if (selectedEditorPn != null)
 					getTypeTpn().setSelectedComponent(selectedEditorPn);
+				else
+					getTypeTpn().setSelectedIndex(0);
 			} finally {
 				updatingTypes = false;
 			}
@@ -438,6 +441,11 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 			return typeTpn;
 		}
 		
+		@Override
+		public String toString() {
+			return "CG2 Panel for " + group;
+		}
+		
 		private class CustomGraphics2EditorPane extends JScrollPane {
 			
 			private static final long serialVersionUID = -5023596235150818148L;
@@ -470,6 +478,11 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 			
 			JComponent getEditor() {
 				return editor;
+			}
+			
+			@Override
+			public String toString() {
+				return "CG2EditorPane for " + factory.getDisplayName();
 			}
 		}
 	}
