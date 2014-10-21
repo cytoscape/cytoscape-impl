@@ -50,8 +50,8 @@ public class CytoscapeJsVisualStyleWriter extends AbstractTask implements CyWrit
 	}
 
 	private final void displayMessage(TaskMonitor taskMonitor) {
-		taskMonitor.showMessage(Level.WARN, "The following Visual Properties are not supported in this version.");
-		taskMonitor.showMessage(Level.WARN, "For these Visual Properties, default values will be used:");
+		taskMonitor.showMessage(Level.INFO, "The following Visual Properties are not supported in this version.");
+		taskMonitor.showMessage(Level.INFO, "For these Visual Properties, default values will be used:");
 
 		final Collection<VisualProperty<?>> nodeVPs = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
 		final Collection<VisualProperty<?>> edgeVPs = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
@@ -71,9 +71,9 @@ public class CytoscapeJsVisualStyleWriter extends AbstractTask implements CyWrit
 			}
 		}
 		for(String vpText: valueSet) {
-			taskMonitor.showMessage(Level.WARN, vpText);
+			taskMonitor.showMessage(Level.INFO, vpText);
 		}
 		taskMonitor.setProgress(100);
-		taskMonitor.setTitle("Some incompatible Visual Properties were not converted (see warnings).");
+		taskMonitor.setTitle("Some incompatible Visual Properties were not converted.");
 	}
 }

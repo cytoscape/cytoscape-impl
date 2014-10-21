@@ -58,7 +58,6 @@ public class SimpleWebSessionWriterImpl extends WebSessionWriterImpl {
 		// Phase 3: Zip everything
 		final File webResourceFiles = new File(webResourceDirectory, WEB_RESOURCE_NAME + "/"
 				+ WebSessionWriterFactoryImpl.SIMPLE_EXPORT);
-		System.out.println("CONF DIR---------> " + webResourceFiles.getAbsolutePath());
 		files.add(webResourceFiles);
 		zipAll(files);
 
