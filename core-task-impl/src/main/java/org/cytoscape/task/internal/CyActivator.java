@@ -1773,7 +1773,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties exportAsWebArchiveTaskFactoryProps = new Properties();
 		exportAsWebArchiveTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
 		exportAsWebArchiveTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
-		exportAsWebArchiveTaskFactoryProps.setProperty(TITLE,"Network Views as Web Page...");
+		exportAsWebArchiveTaskFactoryProps.setProperty(TITLE,"Network View(s) as Web Page...");
 		registerAllServices(bc, exportAsWebArchiveTaskFactory, exportAsWebArchiveTaskFactoryProps);
 		registerServiceListener(bc, exportAsWebArchiveTaskFactory, "registerFactory", "unregisterFactory", CySessionWriterFactory.class);
 	}
