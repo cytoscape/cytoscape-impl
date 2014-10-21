@@ -386,7 +386,6 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			if(dep.getIdString().equals("nodeSizeLocked")) {
 				if(dep.isDependencyEnabled()) {
 					useSize = true;
-					dep.setDependency(false);
 				}
 			}
 			
