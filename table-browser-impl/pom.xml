@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.2.0-SNAPSHOT</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<properties>
@@ -13,7 +13,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>table-browser-impl</artifactId>
-  <version>3.2.0-SNAPSHOT</version>
+  <version>3.2.0</version>
     <name>Cytoscape Table Browser Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
