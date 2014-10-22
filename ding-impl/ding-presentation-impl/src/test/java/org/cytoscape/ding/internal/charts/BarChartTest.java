@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.bar.BarChart;
@@ -16,18 +17,13 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
 import org.junit.Before;
 import org.junit.Test;
 
-public class BarChartTest {
+public class BarChartTest extends AbstractCustomGraphics2Test {
 
 	private CyColumnIdentifierFactory colIdFactory = new DummyCyColumnIdentifierFactory();
 	
 	@Before
 	public void setUp() throws Exception {
-		
-	}
-
-	@Test
-	public void testChartProperties() {
-		Map<String, Object> props1 = new HashMap<String, Object>();
+		props1 = new HashMap<String, Object>();
 		props1.put(DATA_COLUMNS, 
 				asList(colIdFactory.createColumnIdentifier("data1"),
 					   colIdFactory.createColumnIdentifier("data2")));
@@ -51,7 +47,10 @@ public class BarChartTest {
 		props1.put(SHOW_RANGE_AXIS, false);
 		props1.put(AXIS_WIDTH, 1.5f);
 		props1.put(AXIS_COLOR, Color.YELLOW);
-		
+	}
+
+	@Test
+	public void testChartProperties() {
 		final BarChart chart = new BarChart(props1, colIdFactory);
 		
 		// The chart properties has to return exactly the same values,
