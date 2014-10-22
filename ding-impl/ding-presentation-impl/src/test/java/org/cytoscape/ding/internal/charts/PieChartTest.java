@@ -10,13 +10,13 @@ import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
 import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.internal.charts.ring.RingChart;
+import org.cytoscape.ding.internal.charts.pie.PieChart;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.junit.Before;
 import org.junit.Test;
 
-public class RingChartTest extends AbstractCustomGraphics2Test {
+public class PieChartTest extends AbstractCustomGraphics2Test {
 
 	private CyColumnIdentifierFactory colIdFactory = new DummyCyColumnIdentifierFactory();
 	
@@ -30,16 +30,15 @@ public class RingChartTest extends AbstractCustomGraphics2Test {
 		props1.put(COLORS, asList(Color.RED, Color.BLUE, Color.GREEN));
 		props1.put(BORDER_COLOR, Color.WHITE);
 		props1.put(BORDER_WIDTH, 2.5f);
-		props1.put(ITEM_LABELS_COLUMN, "labels1");
+		props1.put(ITEM_LABELS_COLUMN, colIdFactory.createColumnIdentifier("labels1"));
 		props1.put(ITEM_LABELS, asList("A", "B", "C"));
-		props1.put(START_ANGLE, -45.0);
-		props1.put(HOLE_SIZE, -2.5);
+		props1.put(START_ANGLE, -700.0);
 		props1.put(SHOW_ITEM_LABELS, true);
 	}
 
 	@Test
 	public void testChartProperties() {
-		final RingChart chart = new RingChart(props1, colIdFactory);
+		final PieChart chart = new PieChart(props1, colIdFactory);
 		
 		// The chart properties has to return exactly the same values,
 		// except column names, which are converted to CyColumIdentifier when set as String
@@ -53,7 +52,6 @@ public class RingChartTest extends AbstractCustomGraphics2Test {
 		assertEquals(props1.get(ITEM_LABELS), props2.get(ITEM_LABELS));
 		assertEquals(props1.get(SHOW_ITEM_LABELS), props2.get(SHOW_ITEM_LABELS));
 		assertEquals(props1.get(START_ANGLE), props2.get(START_ANGLE));
-		assertEquals(props1.get(HOLE_SIZE), props2.get(HOLE_SIZE));
 		assertNull(props2.get(VALUES));
 		
 		// When calling the internal get methods, some property values are converted to internal types,
@@ -66,8 +64,7 @@ public class RingChartTest extends AbstractCustomGraphics2Test {
 		assertEquals("labels1", chart.get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class).getColumnName());
 		assertEquals(props1.get(ITEM_LABELS), chart.getList(ITEM_LABELS, String.class));
 		assertEquals(Boolean.TRUE, chart.get(SHOW_ITEM_LABELS, Boolean.class));
-		assertEquals(new Double(-45), chart.get(START_ANGLE, Double.class));
-		assertEquals(new Double(-2.5), chart.get(HOLE_SIZE, Double.class));
+		assertEquals(new Double(-700), chart.get(START_ANGLE, Double.class));
 		assertTrue(chart.getList(VALUES, Double.class).isEmpty()); // Must never be null!
 	}
 }

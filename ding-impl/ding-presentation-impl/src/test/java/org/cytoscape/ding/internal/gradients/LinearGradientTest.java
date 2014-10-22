@@ -8,24 +8,23 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradient;
 import org.junit.Before;
 import org.junit.Test;
 
-public class LinearGradientTest {
+public class LinearGradientTest extends AbstractCustomGraphics2Test {
 
 	@Before
 	public void setUp() throws Exception {
-		
+		props1 = new HashMap<String, Object>();
+		props1.put(GRADIENT_COLORS, asList(Color.WHITE, Color.RED, Color.BLUE, Color.GREEN));
+		props1.put(GRADIENT_FRACTIONS, asList(0.0f, 0.25f, 0.75f, 1.0f));
+		props1.put(ANGLE, 270.0);
 	}
 
 	@Test
 	public void testChartProperties() {
-		Map<String, Object> props1 = new HashMap<String, Object>();
-		props1.put(GRADIENT_COLORS, asList(Color.WHITE, Color.RED, Color.BLUE, Color.GREEN));
-		props1.put(GRADIENT_FRACTIONS, asList(0.0f, 0.25f, 0.75f, 1.0f));
-		props1.put(ANGLE, 270.0);
-		
 		final LinearGradient grad = new LinearGradient(props1);
 		
 		// The gradient properties has to return exactly the same values

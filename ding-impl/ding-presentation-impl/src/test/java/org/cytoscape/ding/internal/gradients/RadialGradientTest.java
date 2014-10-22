@@ -9,25 +9,24 @@ import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
 import org.cytoscape.ding.internal.gradients.radial.RadialGradient;
 import org.junit.Before;
 import org.junit.Test;
 
-public class RadialGradientTest {
+public class RadialGradientTest extends AbstractCustomGraphics2Test {
 
 	@Before
 	public void setUp() throws Exception {
-		
-	}
-
-	@Test
-	public void testChartProperties() {
-		Map<String, Object> props1 = new HashMap<String, Object>();
+		props1 = new HashMap<String, Object>();
 		props1.put(GRADIENT_COLORS, asList(Color.WHITE, Color.RED, Color.BLUE, Color.GREEN));
 		props1.put(GRADIENT_FRACTIONS, asList(0.0f, 0.25f, 0.75f, 1.0f));
 		props1.put(CENTER, new Point2D.Float(0.25f, 0.5f));
 		props1.put(RADIUS, 2.0f);
-		
+	}
+
+	@Test
+	public void testChartProperties() {
 		final RadialGradient grad = new RadialGradient(props1);
 		
 		// The gradient properties has to return exactly the same values
