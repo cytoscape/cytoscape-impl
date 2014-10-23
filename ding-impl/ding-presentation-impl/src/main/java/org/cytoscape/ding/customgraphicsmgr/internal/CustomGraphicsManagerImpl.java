@@ -59,6 +59,7 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
@@ -83,6 +84,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
 	private final Map<CyCustomGraphicsFactory, Map> factoryPropsMap;
 	private final DialogTaskManager taskManager;
+	private final SynchronousTaskManager<?> syncTaskManager;
 
 	private final CyEventHelper eventHelper;
 
@@ -96,6 +98,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	 */
 	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, 
 	                                 final DialogTaskManager taskManager, 
+	                                 final SynchronousTaskManager<?> syncTaskManager, 
 	                                 final CyApplicationConfiguration config, 
 	                                 final CyEventHelper eventHelper, 
 	                                 final VisualMappingManager vmm, 
@@ -103,6 +106,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	                                 final Set<URL> defaultImageURLs) {
 
 		this.taskManager = taskManager;
+		this.syncTaskManager = syncTaskManager;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
 		this.applicationManager = applicationManager;
@@ -359,7 +363,8 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 				e);
 
 		try {
-			taskManager.execute(factory.createTaskIterator());
+			// Make sure this task is executed synchronously in the current thread!
+			syncTaskManager.execute(factory.createTaskIterator());
 		} catch (Exception ex) {
 			logger.error("Could not save images to .", ex);
 		}

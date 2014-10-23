@@ -156,6 +156,7 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -586,6 +587,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void startCustomGraphicsMgr(BundleContext bc) {
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
+		SynchronousTaskManager<?> syncTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
 		CyProperty coreCyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
@@ -595,8 +597,8 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 		
 		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,
-				dialogTaskManagerServiceRef, cyApplicationConfigurationServiceRef, eventHelperServiceRef,
-				vmmServiceRef, cyApplicationManagerServiceRef, getdefaultImageURLs(bc));
+				dialogTaskManagerServiceRef, syncTaskManagerServiceRef, cyApplicationConfigurationServiceRef, 
+				eventHelperServiceRef, vmmServiceRef, cyApplicationManagerServiceRef, getdefaultImageURLs(bc));
 		CustomGraphicsBrowser browser = new CustomGraphicsBrowser(customGraphicsManager);
 		registerAllServices(bc, browser, new Properties());
 
