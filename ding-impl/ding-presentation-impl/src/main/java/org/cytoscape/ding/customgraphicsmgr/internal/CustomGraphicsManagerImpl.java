@@ -127,8 +127,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 		// Restore Custom Graphics from the directory.
 		final RestoreImageTaskFactory taskFactory = 
-		                 new RestoreImageTaskFactory(defaultImageURLs, imageHomeDirectory, this, eventHelper,
-		                                             vmm, applicationManager);
+		                 new RestoreImageTaskFactory(defaultImageURLs, imageHomeDirectory, this, eventHelper);
 		taskManager.execute(taskFactory.createTaskIterator());
 		instance = this;
 	}
@@ -385,7 +384,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 				if (files != null && files.size() != 0) {
 					// get parent directory
 					final File parent = files.get(0).getParentFile();
-					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<URL>(), parent, this, eventHelper, vmm, applicationManager);
+					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<URL>(), parent, this, eventHelper);
 					TaskIterator loadImagesIterator = taskFactory.createTaskIterator();
 					for (CyNetworkView networkView: sess.getNetworkViews()) {
 						loadImagesIterator.append(((DGraphView)networkView).getCyAnnotator().getReloadImagesTask());
