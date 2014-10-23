@@ -28,8 +28,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -110,59 +108,7 @@ public class RestoreImageTask implements Task {
 		this.imageHomeDirectory = imageLocaiton;
 		this.defaultImageURLs = defaultImageURLs;
 	}
-	
-//	RestoreImageTask(final File imageLocaiton, Collection<File> fileList, final CustomGraphicsManagerImpl manager, final CyEventHelper eventHelper) {
-//		this.manager = manager;
-//		this.eventHelper = eventHelper;
-//
-//		// For loading images in parallel.
-//		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS);
-//		this.imageHomeDirectory = imageLocaiton;
-//	}
 
-	private void restoreDefaultVectorImageObjects() {
-
-		final Class<?>[] types = { Long.class };
-		
-		final Collection<CyCustomGraphics> allCG = manager.getAllCustomGraphics();
-		for (Class<?> cls : DEF_VECTORS) {
-			
-			try {
-				final Constructor<?> constructor = cls.getConstructor(types);
-				final Object[] args = { manager.getNextAvailableID() };
-				Object obj = constructor.newInstance(args);
-				if (obj instanceof CyCustomGraphics) {
-					final CyCustomGraphics<?> cg = (CyCustomGraphics) obj;
-					boolean isExist = false;
-					for(final CyCustomGraphics<?> testCG: allCG) {
-						if(testCG.getClass() == cg.getClass())
-							isExist = true;
-					}
-					
-					if (isExist == false) {
-						manager.addCustomGraphics(cg, null);
-					}
-				}
-			} catch (InstantiationException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			} catch (SecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchMethodException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {		
@@ -173,7 +119,6 @@ public class RestoreImageTask implements Task {
 
 		restoreImages();
 		restoreSampleImages();
-		restoreDefaultVectorImageObjects();
 
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
