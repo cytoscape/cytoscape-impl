@@ -37,10 +37,10 @@ public class RestoreImageTaskFactory extends AbstractTaskFactory {
 	private final File imageLocation;
 	private final CustomGraphicsManagerImpl manager;
 	private final CyEventHelper eventHelper;
-	
 	private final Set<URL> defaultImageURLs;
 
-	RestoreImageTaskFactory(final Set<URL> defaultImageURLs, final File imageLocation, final CustomGraphicsManagerImpl manager,
+	RestoreImageTaskFactory(final Set<URL> defaultImageURLs,
+			final File imageLocation, final CustomGraphicsManagerImpl manager,
 			final CyEventHelper eventHelper) {
 		this.manager = manager;
 		this.imageLocation = imageLocation;
@@ -50,9 +50,9 @@ public class RestoreImageTaskFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		final RestoreImageTask firstTask = new RestoreImageTask(defaultImageURLs, imageLocation, manager, eventHelper);
+		final RestoreImageTask firstTask = new RestoreImageTask(
+				defaultImageURLs, imageLocation, manager, eventHelper);
 		final TaskIterator itr = new TaskIterator(firstTask);
 		return itr;
 	}
-
 }
