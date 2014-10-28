@@ -47,6 +47,7 @@ import javax.swing.JPanel;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.BoundedDouble;
@@ -65,8 +66,12 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	private static final double MAX_ZOOM= 500;
 
 	//****
+	@ProvidesTitle
+	public String getTitle() { return "Image parameters"; }
+
+	//****
 	public BoundedDouble zoom;
-	@Tunable(description = "Zoom (%)",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"})
+	@Tunable(description = "Zoom (%)",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###%")
 	public BoundedDouble getZoom(){
 		return zoom;
 	}
