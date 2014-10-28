@@ -141,8 +141,8 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	}
 
 	private void initPanel (T bounded) {
-		double min = ((Number)bounded.getUpperBound()).doubleValue();
-		double max = ((Number)bounded.getLowerBound()).doubleValue();
+		double min = ((Number)bounded.getLowerBound()).doubleValue();
+		double max = ((Number)bounded.getUpperBound()).doubleValue();
 		double range = max - min;
 		DecimalFormat format = getDecimalFormat(range);
 
