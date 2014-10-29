@@ -129,8 +129,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         final boolean showItemLabelsAsDomain = showItemLabels && singleCategory;
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
-        domainAxis.setVisible(showDomainAxis || showItemLabelsAsDomain);
-        domainAxis.setAxisLineVisible(showDomainAxis && !showItemLabelsAsDomain);
+        domainAxis.setVisible(showDomainAxis);
         domainAxis.setAxisLineStroke(axisStroke);
         domainAxis.setAxisLinePaint(axisColor);
         domainAxis.setTickMarkStroke(axisStroke);
