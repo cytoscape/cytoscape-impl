@@ -56,7 +56,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import org.cytoscape.application.swing.CyAction;
@@ -319,11 +318,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 		final JPanel presetPanel = new JPanel();
 		presetPanel.setLayout(new BorderLayout());
-		JScrollPane buttonScrollPane = new JScrollPane();
-		buttonScrollPane.setBorder(BorderFactory.createEmptyBorder());
-		buttonScrollPane.setViewportView(sourceButtons);
-		presetPanel.add(orgNetTitle, BorderLayout.NORTH);
-		presetPanel.add(buttonScrollPane, BorderLayout.CENTER);
+		presetPanel.add(sourceButtons, BorderLayout.CENTER);
 		
 		this.add(buttonPanel);
 		this.add(presetPanel);
